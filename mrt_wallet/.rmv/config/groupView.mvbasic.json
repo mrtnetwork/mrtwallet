@@ -1,0 +1,61 @@
+{
+    "version": "1.0",
+
+    // This functionality is used to combine files that have similar names into groups. 
+    // It allows you to organize file lists with more concise groupings. 
+    // You can also customize group content and hide unnecessary files.
+    // Please refer more details at https://rocketsoftware.github.io/rocket-mvbasic/usage/GroupView/
+    "groupView": {
+
+        // Files to ignore (not be displayed in the group view) in “Group View”.
+        // You can input file names or a pattern. 
+        // Multiple items are supported.
+        "ignore": [
+            ".rmv"
+        ],
+
+        // Default rule to auto-group the files. If you don't specify any custom groups, 
+        // This rule will take effect.
+        "default": {
+
+            // By default, use this delimiter to split file name.
+            // For example, if delimiter is "." and a file name is "HEAD.MID.TAIL", 
+            // then the name will be splitted to 3 parts: "HEAD", "MID" and "TAIL", 
+            // these 3 parts will be used to auto-group the files.
+            "delimiter": ".",
+
+            // This setting determins how to group the files in the default rule.
+            // For example, if a file name is "HEAD.MID.TAIL" and through delimiter it's
+            // splitted into 3 parts "HEAD", "MID", "TAIL", then this is a level 3 file name.
+            // If level is set to 2, when auto-group, this file will be put into group "HEAD.MID"
+            // whose name uses the first 2 levels.
+            "level": "2"
+        },
+
+        // User can customize groups. 
+        // One file will be put into only one group. If you put a file into customized group, 
+        // then it will not appear in a default group.
+        // You can add multiple groups here.
+        "groups": [
+            {
+                // Put a group name here.
+                "groupName": "", 
+
+                // Specify the source code folder name in current account.
+                // For example, "BP", "SRC".
+                "sourceDir": "", 
+
+                // Specify the BASIC program files in "sourceDir" you want to put into this group.
+                // For example, "TEST", "*.ABC", "FILE*".
+                // If this setting is removed or set to empty, the group will be empty.
+                "include": [], 
+
+                // If you have configured "include" settings and want to exclude 
+                // some files from "include", you can add the file to this setting.
+                // For example, "include" contains "TEST.*", but you want to exclude "TEST.ABC"
+                // from this group, then you can add "TEST.ABC" to this setting.
+                "exclude": []
+            }
+        ]
+    }
+}

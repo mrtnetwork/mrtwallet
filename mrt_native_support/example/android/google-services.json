@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "307340376097",
+    "project_id": "mrtnetwork-dc857",
+    "storage_bucket": "mrtnetwork-dc857.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307340376097:android:51ac168c7e110faf8a0b60",
+        "android_client_info": {
+          "package_name": "com.mrtnetwork.mrt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "307340376097-le6i0078l1pfu2fbu9n1uuh65761bsfp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mrtnetwork.mrt",
+            "certificate_hash": "b8bd04c8a2b8f707b8bb65cc8fdf586e6c5e080e"
+          }
+        },
+        {
+          "client_id": "307340376097-33dd5es2g8u6uocibvtj1irs56ao7sgp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1Wmu2l-YRRTqmcO-g3C0iDAyvKw_WdUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "307340376097-33dd5es2g8u6uocibvtj1irs56ao7sgp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

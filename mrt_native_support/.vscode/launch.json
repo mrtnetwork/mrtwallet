@@ -1,0 +1,61 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "flutter_demo",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "flutter_demo (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "flutter_demo (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "x64",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "emulator-5554"
+        },
+        {
+            "name": "x86",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "emulator-5556"
+        },
+        {
+            "name": "phone",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "ce041604a0f4933d05"
+        },
+        {
+            "name": "nox",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "127.0.0.1:62001"
+        },
+    ],
+    "compounds": [
+        {
+            "name": "All Devices",
+            "configurations": [
+                "x64",
+                "x86"
+            ],
+        },
+        {
+            "name": "real device",
+            "configurations": [
+                "phone"
+            ],
+        }
+    ]
+}
