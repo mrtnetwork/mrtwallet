@@ -26,33 +26,28 @@ MRT Wallet is available on multiple platforms to provide a seamless experience:
 
 Clone the repository and build using Flutter:
 
-### Web
-
+## Web
 ```
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
 flutter pub get
 flutter build web --release
-
 ```
-### Web
 
+## Android
 ```
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
 flutter pub get
 flutter build apk --release
-
 ```
 
-### Windows
-
+## Windows
 ```
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
 flutter pub get
 flutter build windows
-
 ```
 
 
@@ -75,13 +70,11 @@ Contributions are welcome! Please follow these guidelines:
 
 Please file feature requests and bugs in the issue tracker.
 
-
-
 ### Support
 
 For support or assistance, please visit our [Help Center](https://github.com/mrtnetwork/mrtwallet) or reach out to our [community forums](https://github.com/mrtnetwork/mrtwallet). Our support team is here to ensure you have a seamless experience with MRT Wallet.
 
-**Get Involved**
+### Get Involved
 
 Join us on our mission to redefine the landscape of decentralized finance. Contribute to our open-source project on [GitHub](https://github.com/mrtnetwork/mrtwallet) or connect with our community on [Telegram](https://t.me/blockchain_web3_solidity).
 
