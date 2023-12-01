@@ -37,6 +37,9 @@ MRT Wallet is not just a wallet; it's a community-driven project. We welcome col
 Clone the repository and build using Flutter:
 
 **WEB**
+
+ you can view the web version of MRT Wallet at https://mrtnetwork.github.io/mrtwallet/.
+
 ```
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
