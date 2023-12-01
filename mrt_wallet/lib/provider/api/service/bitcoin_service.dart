@@ -11,21 +11,25 @@ class BitcoinApiService with HttpProvider implements ApiService {
   BitcoinApiService(this.provider);
 
   final ApiProviderTracker provider;
-  Future<T> _httpCaller<T>(Future<http.Response> Function() t) async {
+  Future<T> _httpCaller<T>(Future<http.Response> Function() t,
+      {bool isPost = false}) async {
     bool hasError = false;
     bool isRechedLimit = false;
     try {
       final tx = await t();
       print(tx.body);
-      return _readResponse(tx);
+      return _readResponse(tx, isPost: isPost);
     } on http.ClientException catch (e) {
+      WalletLogging.print("got error $e");
       hasError = true;
       throw ApiProviderException(message: e.message);
     } on ApiProviderException catch (e) {
+      WalletLogging.print("got error $e");
       hasError = true;
       isRechedLimit = e.statusCode == 429;
       rethrow;
     } catch (e) {
+      WalletLogging.print("got error $e");
       hasError = true;
       rethrow;
     } finally {
@@ -53,14 +57,14 @@ class BitcoinApiService with HttpProvider implements ApiService {
       {Map<String, String> headers = const {"Content-Type": "application/json"},
       Object? body}) async {
     final result = await _httpCaller<T>(
-        () async => client.post(Uri.parse(url), headers: headers, body: body));
+        () async => client.post(Uri.parse(url), headers: headers, body: body),
+        isPost: true);
 
     return result;
   }
 
   T _readResponse<T>(http.Response response, {bool isPost = false}) {
     final String toString = _readBody(response, isPost: isPost);
-    WalletLogging.print("method ${response.request?.method}");
     switch (T) {
       case String:
         return toString as T;

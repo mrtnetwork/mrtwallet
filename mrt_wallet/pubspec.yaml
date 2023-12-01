@@ -36,7 +36,7 @@ dependencies:
     path: ../mrt_native_support
   http: ^1.1.0
   blockchain_utils: ^1.1.0
-  bitcoin_base: ^1.3.0
+  bitcoin_base: ^1.4.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2

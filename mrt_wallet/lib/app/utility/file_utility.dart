@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/utility/file/file.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -76,7 +77,7 @@ class _QrCodeMarkerPainter extends CustomPainter {
       fontSize: 18,
     ))
           ..pushStyle(ui.TextStyle(color: textColor, fontSize: 14))
-          ..addText("https://github.com/mrtnetwork");
+          ..addText(AppLinkConst.appGithub);
     final ui.Paragraph paragraph = paragraphBuilder.build()
       ..layout(ui.ParagraphConstraints(width: size.width - 12.0 - 12.0));
     canvas.drawParagraph(paragraph, Offset(50, (imageSize + 30)));

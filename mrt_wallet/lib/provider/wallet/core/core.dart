@@ -183,7 +183,6 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
 
   Future<MethodResult<void>> eraseWallet(String password) async {
     try {
-      print("come here!");
       await _cleanWallet();
 
       final result = await _callSynchronized(() async => _eraseWallet(password),

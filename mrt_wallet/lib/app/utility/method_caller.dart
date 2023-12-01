@@ -61,7 +61,8 @@ class MethodResult<T> {
         exception is ApiProviderException) {
       return exception!.toString();
     }
-
+    WalletLogging.print(
+        "error ${exception.runtimeType} ${exception.toString()}");
     return "somthing_wrong";
   }
 
