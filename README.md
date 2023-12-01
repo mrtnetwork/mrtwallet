@@ -1,4 +1,5 @@
 # About MRT Wallet
+---
 
 Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
 
@@ -32,6 +33,7 @@ MRT Wallet is not just a wallet; it's a community-driven project. We welcome col
 
 ### Build Instructions
 ---
+
 Clone the repository and build using Flutter:
 
 **WEB**
@@ -60,22 +62,27 @@ flutter build windows
 
 
 ### Contributing
+---
 
 Contributions are welcome! Please follow these guidelines:
  - Fork the repository and create a new branch.
  - Make your changes and ensure tests pass.
  - Submit a pull request with a detailed description of your changes.
 
-### Feature requests and bugs 
+### Feature requests and bugs
+---
 
 Please file feature requests and bugs in the issue tracker.
 
-### Support
-
-For support or assistance, please visit our [Help Center](https://github.com/mrtnetwork/mrtwallet) or reach out to our [community forums](https://github.com/mrtnetwork/mrtwallet). Our support team is here to ensure you have a seamless experience with MRT Wallet.
-
 ### Get Involved
+---
 
 Join us on our mission to redefine the landscape of decentralized finance. Contribute to our open-source project on [GitHub](https://github.com/mrtnetwork/mrtwallet) or connect with our community on [Telegram](https://t.me/blockchain_web3_solidity).
 
 Thank you for choosing MRT Wallet as your trusted partner in the world of decentralized finance.
+
+
+### Support
+---
+
+For support or assistance, please visit our [Help Center](https://github.com/mrtnetwork/mrtwallet) or reach out to our [community forums](https://github.com/mrtnetwork/mrtwallet). Our support team is here to ensure you have a seamless experience with MRT Wallet.
