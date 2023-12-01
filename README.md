@@ -22,35 +22,6 @@ MRT Wallet is available on multiple platforms to provide a seamless experience:
 
 - **Web:** Access your wallet from any web browser with our web platform. Manage your assets with ease, all while enjoying the security and privacy MRT Wallet provides.
 
-**Build Instructions**
-
-Clone the repository and build using Flutter:
-
-## Web
-```
-gh repo clone mrtnetwork/mrtwallet
-cd mrt_wallet
-flutter pub get
-flutter build web --release
-```
-
-## Android
-```
-gh repo clone mrtnetwork/mrtwallet
-cd mrt_wallet
-flutter pub get
-flutter build apk --release
-```
-
-## Windows
-```
-gh repo clone mrtnetwork/mrtwallet
-cd mrt_wallet
-flutter pub get
-flutter build windows
-```
-
-
 **Roadmap: Embracing a Diverse Crypto Landscape**
 
 Our journey doesn't end with Bitcoin. The MRT Wallet roadmap is a dynamic chart that outlines our commitment to support a wide range of cryptocurrencies. We're dedicated to staying at the forefront of innovation, adapting to new technologies, and expanding our capabilities to serve the evolving needs of the crypto community.
@@ -59,14 +30,43 @@ Our journey doesn't end with Bitcoin. The MRT Wallet roadmap is a dynamic chart 
 
 MRT Wallet is not just a wallet; it's a community-driven project. We welcome collaboration, feedback, and contributions from the community. Together, we're building a decentralized future that prioritizes security, privacy, and inclusivity.
 
-## Contributing
+### Build Instructions
+
+Clone the repository and build using Flutter:
+
+**WEB**
+```
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+flutter pub get
+flutter build web --release
+```
+
+**Android**
+```
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+flutter pub get
+flutter build apk --release
+```
+
+**Windows**
+```
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+flutter pub get
+flutter build windows
+```
+
+
+### Contributing
 
 Contributions are welcome! Please follow these guidelines:
  - Fork the repository and create a new branch.
  - Make your changes and ensure tests pass.
  - Submit a pull request with a detailed description of your changes.
 
-## Feature requests and bugs #
+### Feature requests and bugs 
 
 Please file feature requests and bugs in the issue tracker.
 
