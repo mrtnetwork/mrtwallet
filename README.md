@@ -30,8 +30,8 @@ Our journey doesn't end with Bitcoin. The MRT Wallet roadmap is a dynamic chart 
 
 MRT Wallet is not just a wallet; it's a community-driven project. We welcome collaboration, feedback, and contributions from the community. Together, we're building a decentralized future that prioritizes security, privacy, and inclusivity.
 
-### Build Instructions *
-
+### Build Instructions
+---
 Clone the repository and build using Flutter:
 
 **WEB**
