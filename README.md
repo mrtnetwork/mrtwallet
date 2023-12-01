@@ -22,6 +22,40 @@ MRT Wallet is available on multiple platforms to provide a seamless experience:
 
 - **Web:** Access your wallet from any web browser with our web platform. Manage your assets with ease, all while enjoying the security and privacy MRT Wallet provides.
 
+**Build Instructions**
+
+Clone the repository and build using Flutter:
+
+### Web
+
+```
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+flutter pub get
+flutter build web --release
+
+```
+### Web
+
+```
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+flutter pub get
+flutter build apk --release
+
+```
+
+### Windows
+
+```
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+flutter pub get
+flutter build windows
+
+```
+
+
 **Roadmap: Embracing a Diverse Crypto Landscape**
 
 Our journey doesn't end with Bitcoin. The MRT Wallet roadmap is a dynamic chart that outlines our commitment to support a wide range of cryptocurrencies. We're dedicated to staying at the forefront of innovation, adapting to new technologies, and expanding our capabilities to serve the evolving needs of the crypto community.
@@ -49,6 +83,6 @@ For support or assistance, please visit our [Help Center](https://github.com/mrt
 
 **Get Involved**
 
-Join us on our mission to redefine the landscape of decentralized finance. Contribute to our open-source project on [GitHub](https://github.com/mrtnetwork/mrtwallet) or connect with our community on [social media links].
+Join us on our mission to redefine the landscape of decentralized finance. Contribute to our open-source project on [GitHub](https://github.com/mrtnetwork/mrtwallet) or connect with our community on [Telegram](https://t.me/blockchain_web3_solidity).
 
 Thank you for choosing MRT Wallet as your trusted partner in the world of decentralized finance.
