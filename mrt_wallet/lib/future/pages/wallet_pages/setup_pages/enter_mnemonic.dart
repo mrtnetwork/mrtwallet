@@ -16,8 +16,6 @@ class EnterMnemonicView extends StatefulWidget {
 }
 
 class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
-  // final GlobalKey<PageProgressState> _pageProgressController =
-  //     GlobalKey(debugLabel: "EnterMnemonicView");
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "EnterMnemonicView_1");
 
@@ -94,7 +92,7 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
               children: [
                 Text("enter_mnemonic_desc".tr),
                 WidgetConstant.height8,
-                Text("enter_mnemonic_desc2".tr)
+                Text("enter_mnemonic_desc2".tr),
               ],
             ),
           ),
@@ -109,7 +107,13 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
           WidgetConstant.height20,
           PageTitleSubtitle(
             title: "mn_password".tr,
-            body: Text("enter_passphrase_desc".tr),
+            body: Column(crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("enter_passphrase_desc".tr),
+                WidgetConstant.height8,
+                Text("extra_opetion_desc".tr)
+              ],
+            ),
           ),
           AppSwitchListTile(
             title: Text("enable_mnemonic_password".tr),

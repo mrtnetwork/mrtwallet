@@ -31,7 +31,9 @@ mixin WalletNetworkImpl
   }
 
   Future<void> _readAccounts() async {
-    _account = await _readNetworkAccout(_network);
+    _account = null;
+    final acc = await _readNetworkAccout(_network);
+    _account = await _clenCustomKeysAccount(acc, _massterKey!.customKeys);
   }
 
   Future<void> _addNewAccountToNetwork(
@@ -52,6 +54,7 @@ mixin WalletNetworkImpl
     if (_network == changeNetwork) return;
     final provider = await _readNetworkProvider(changeNetwork);
     _changeNetwork(changeNetwork, provider: provider);
+
     await _readAccounts();
     await _saveNetwork(_network);
   }
@@ -61,5 +64,42 @@ mixin WalletNetworkImpl
     final correctProvider = currentNetwork.getProvider(provider);
     _setProvider(currentNetwork, provider: correctProvider);
     await _saveNetworkProvider(currentNetwork, correctProvider);
+  }
+
+  Future<NetworkAccountCore> _clenCustomKeysAccount(
+      NetworkAccountCore account, List<EncryptedCustomKey> existKeys) async {
+    final signers = existKeys.map((e) => e.publicKey).toList();
+    List<CryptoAddress> removeList = [];
+    for (final a in account.addresses) {
+      if (a.keyIndex is Bip32AddressIndex) continue;
+      List<String> pubKyes = [];
+      if (a.keyIndex is MultiSigAddressIndex) {
+        a as IBitcoinMultiSigAddress;
+        final pubkeys = a.multiSignatureAddress.signers
+            .where((element) => element.keyIndex is ImportedAddressIndex)
+            .map((e) => e.publicKey)
+            .toList();
+        if (pubkeys.isEmpty) continue;
+      } else {
+        pubKyes.addAll(a.signers);
+      }
+      for (final s in pubKyes) {
+        if (signers.contains(s)) continue;
+        removeList.add(a);
+        break;
+      }
+    }
+    for (final r in removeList) {
+      try {
+        account.removeAccount(r);
+      } on WalletException {
+        WalletLogging.print("got error !");
+        continue;
+      }
+    }
+    if (removeList.isNotEmpty) {
+      await _saveAccount(account);
+    }
+    return account;
   }
 }

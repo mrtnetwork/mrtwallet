@@ -3,6 +3,7 @@ part of 'package:mrt_wallet/provider/wallet/wallet_provider.dart';
 // ignore: library_private_types_in_public_api
 mixin MasterKeyImpl on WalletCryptoImpl {
   EncryptedMasterKey? _massterKey;
+  bool get hasCustomKeys => _massterKey?.customKeys.isNotEmpty ?? false;
   WalletSetting get setting => _massterKey!.setting;
   Future<EncryptedMasterKey> _readMasterKey(
     String encryptedWallet,
@@ -63,6 +64,17 @@ mixin MasterKeyImpl on WalletCryptoImpl {
     return true;
   }
 
+  String _getImportedKeyFromId(List<int> password, String accountId) {
+    final WalletMasterKeys walletMasterKeys =
+        _fromMemoryStorage(password, _massterKey!);
+    final acc = walletMasterKeys.getKeyById(accountId);
+
+    if (acc == null) {
+      throw WalletExceptionConst.privateKeyIsNotAvailable;
+    }
+    return acc.extendedPrivateKey;
+  }
+
   Bip32Slip10Secp256k1 _getBip32FromKeyIndex(
       AddressDerivationIndex keyIndex, WalletMasterKeys masterKey) {
     if (keyIndex is MultiSigAddressIndex) {
@@ -118,6 +130,13 @@ mixin MasterKeyImpl on WalletCryptoImpl {
       throw WalletExceptionConst.addressAlreadyExist;
     }
     return keys.addKey(newKey);
+  }
+
+  WalletMasterKeys _removeCustomKey(
+      EncryptedCustomKey importedKey, List<int> password) {
+    final WalletMasterKeys keys = _fromMemoryStorage(password, _massterKey!);
+    final newWallet = keys.removeKey(importedKey.id);
+    return newWallet;
   }
 
   Future<void> _setupMasterKey(

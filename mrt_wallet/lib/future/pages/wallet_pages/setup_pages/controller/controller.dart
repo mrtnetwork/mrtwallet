@@ -2,6 +2,7 @@ import 'package:blockchain_utils/bip/bip/bip39/bip39.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/compare/compare.dart';
 import 'package:flutter/material.dart';
+import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -119,4 +120,15 @@ class SetupWalletController extends StateController {
 
   @override
   String get repositoryId => "setup_wallet";
+
+  @override
+  void close() {
+    PlatformInterface.interface.secureFlag(isSecure: false);
+  }
+
+  @override
+  void init() {
+    PlatformInterface.interface.secureFlag(isSecure: true);
+    super.init();
+  }
 }

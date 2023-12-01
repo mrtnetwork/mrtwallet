@@ -28,13 +28,16 @@ class ErrorWithTextView extends StatelessWidget {
 }
 
 class SuccessWithTextView extends StatelessWidget {
-  const SuccessWithTextView({super.key, required this.text});
+  const SuccessWithTextView({super.key, required this.text, this.icon});
   final String text;
+  final IconData? icon;
   @override
   Widget build(BuildContext context) {
     return _ProgressWithTextView(
         text: Text(text, textAlign: TextAlign.center),
-        icon: WidgetConstant.checkCircleLarge);
+        icon: icon != null
+            ? Icon(icon, size: AppGlobalConst.double80)
+            : WidgetConstant.checkCircleLarge);
   }
 }
 

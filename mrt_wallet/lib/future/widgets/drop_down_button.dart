@@ -12,7 +12,7 @@ class AppDropDownBottom<T> extends StatefulWidget {
     this.icon,
     this.error,
   });
-  final Map<T, String> items;
+  final Map<T, Widget> items;
   final FuncVoidNullT? onChanged;
   final NullStringT? validator;
   final String label;
@@ -30,7 +30,7 @@ class _AppDropDownBottomState<T> extends State<AppDropDownBottom> {
       items: widget.items.keys
           .map<DropdownMenuItem<T>>((e) => DropdownMenuItem<T>(
                 value: e,
-                child: Text(widget.items[e]!),
+                child: widget.items[e]!,
               ))
           .toList(),
       icon: widget.icon,

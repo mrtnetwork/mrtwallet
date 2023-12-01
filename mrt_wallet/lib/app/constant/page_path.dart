@@ -15,4 +15,5 @@ class PagePathConst {
   static const String exportPrivateKey = "/security/privateKey";
   static const String removeAccount = "/account/remove";
   static const String importAccount = "/account/import";
+  static const String manageImportedKey = "/security/manageKeys";
 }

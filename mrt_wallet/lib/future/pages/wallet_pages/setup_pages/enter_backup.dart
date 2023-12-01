@@ -32,9 +32,9 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
     setState(() {});
   }
 
-  late final Map<_BackupMode, String> backupModes = {
-    _BackupMode.mnemonicBackup: "mnemonic_backup".tr,
-    _BackupMode.walletBaackup: "wallet_backup".tr
+  late final Map<_BackupMode, Widget> backupModes = {
+    _BackupMode.mnemonicBackup: Text("mnemonic_backup".tr),
+    _BackupMode.walletBaackup: Text("wallet_backup".tr)
   };
   String _backup = "";
   String _passphrase = "";
@@ -104,7 +104,7 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
       if (selectedMode == _BackupMode.walletBaackup) {
         final backup = WalletBackup.fromCborHex(decrypt);
         await walletProvider.setupBackup(backup, _password);
-    
+        return;
       }
       BlockchainUtils.validateMnemonic(decrypt);
       final Mnemonic exitingMnemonic = Mnemonic.fromString(decrypt);
@@ -158,7 +158,7 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
             }).toList(),
             onChanged: onChangeEncoding,
           ),
-          WidgetConstant.height20,
+          WidgetConstant.height8,
           AppTextField(
             label: "enter_backup".tr,
             validator: bcakupValidator,
@@ -177,7 +177,7 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
             error: _error,
             obscureText: true,
           ),
-          WidgetConstant.height20,
+          WidgetConstant.height8,
           PageTitleSubtitle(
             title: "mn_password".tr,
             body: Text("enter_passphrase_desc".tr),

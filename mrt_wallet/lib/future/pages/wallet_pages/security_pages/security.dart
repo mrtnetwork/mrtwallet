@@ -5,3 +5,4 @@ export 'import_account.dart';
 export 'password_checker.dart';
 export 'secure_backup.dart';
 export 'wallet_settings.dart';
+export 'export_private_key.dart';

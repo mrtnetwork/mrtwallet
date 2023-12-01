@@ -9,12 +9,13 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
-enum PrivateKeyTypes {
+enum _PrivateKeyTypes {
   extendKey("Extended key"),
   privateKey("Private key"),
-  wif("Wif");
+  wif("Wif"),
+  backup("Backup");
 
-  const PrivateKeyTypes(this.value);
+  const _PrivateKeyTypes(this.value);
   final String value;
 }
 
@@ -51,11 +52,13 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   final GlobalKey<FormState> form =
       GlobalKey(debugLabel: "_ImportAccountState_2");
   late Map<dynamic, String> keyTypes = {
-    for (final i in PrivateKeyTypes.values) i: i.value
+    for (final i in _PrivateKeyTypes.values) i: i.value
   };
-  Set<PrivateKeyTypes> selected = {PrivateKeyTypes.values[1]};
+  Set<_PrivateKeyTypes> selected = {_PrivateKeyTypes.values[1]};
 
   Bip32Base? _account;
+
+  bool get isBackup => selected.first == _PrivateKeyTypes.backup;
 
   void onSelect<T>(Set<T> s) {
     selected = s.cast();
@@ -70,21 +73,22 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
 
   String? _error;
 
-  Bip32Base? _getKey() {
-    try {
-      final coin = widget.network.coins.first;
+  Future<Bip32Base> _getKey(WalletProvider model) async {
+    final coin = widget.network.coins.first;
 
-      switch (selected.first) {
-        case PrivateKeyTypes.extendKey:
-          return BlockchainUtils.extendedKeyToBip32(_key, coin.conf.type);
-        case PrivateKeyTypes.privateKey:
-          return BlockchainUtils.privteKeyToBip32(
-              BytesUtils.fromHexString(_key), coin.conf.type);
-        case PrivateKeyTypes.wif:
-          return BlockchainUtils.wifToBip32(_key, coin);
-      }
-    } catch (e) {
-      return null;
+    switch (selected.first) {
+      case _PrivateKeyTypes.extendKey:
+        return BlockchainUtils.extendedKeyToBip32(_key, coin.conf.type);
+      case _PrivateKeyTypes.privateKey:
+        return BlockchainUtils.privteKeyToBip32(
+            BytesUtils.fromHexString(_key), coin.conf.type);
+      case _PrivateKeyTypes.wif:
+        return BlockchainUtils.wifToBip32(_key, coin);
+      case _PrivateKeyTypes.backup:
+        final backupResult =
+            await model.restoreBackup(_password, _backup, encoding);
+        return BlockchainUtils.privteKeyToBip32(
+            BytesUtils.fromHexString(backupResult), coin.conf.type);
     }
   }
 
@@ -92,18 +96,26 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     if (!(form.currentState?.validate() ?? false)) return;
     progressKey.progressText("importing_key_pls_wait".tr);
     final model = context.watch<WalletProvider>(StateIdsConst.main);
-    _account = _getKey();
-    if (_account == null) {
-      _error = "private_key_invalid".tr;
-      progressKey.errorText("private_key_invalid".tr);
+
+    final createKey = await MethodCaller.call(() async {
+      _account = await _getKey(model);
+      if (_account == null) {
+        _error = "private_key_invalid".tr;
+        throw WalletExceptionConst.invalidPrivateKey;
+      }
+      final customKey = WalletCustomKeys(
+          checksum: _account!.publicKey.fingerPrint.toHex(),
+          extendedPrivateKey: _account!.privateKey.toExtended,
+          type: _account!.curveType,
+          publicKey: _account!.publicKey.toHex());
+      return customKey;
+    });
+    if (createKey.hasError) {
+      _error = createKey.error!.tr;
+      progressKey.errorText(createKey.error!.tr);
       return;
     }
-    final customKey = WalletCustomKeys(
-        checksum: _account!.publicKey.fingerPrint.toHex(),
-        extendedPrivateKey: _account!.privateKey.toExtended,
-        type: _account!.curveType,
-        publicKey: _account!.publicKey.toHex());
-    final result = await model.importAccount(customKey, widget.password);
+    final result = await model.importAccount(createKey.result, widget.password);
     if (result.hasError) {
       _error = result.error!.tr;
       progressKey.errorText(result.error!.tr);
@@ -126,6 +138,52 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     if (_error != null) {
       _error = null;
       setState(() {});
+    }
+  }
+
+  SecretWalletEncoding encoding = SecretWalletEncoding.json;
+
+  void onChangeEncoding(SecretWalletEncoding? updateEncoding) {
+    encoding = updateEncoding ?? encoding;
+
+    setState(() {});
+  }
+
+  String _password = "";
+  void onChangePassword(String password) {
+    _password = password;
+  }
+
+  final GlobalKey<AppTextFieldState> backupTextField =
+      GlobalKey<AppTextFieldState>(debugLabel: "EnterMnemonicBackupView_2");
+  String? passwordValidator(String? v) {
+    if (v?.isEmpty ?? true) {
+      return "backup_password_validator".tr;
+    }
+    return null;
+  }
+
+  void onPaseBackupText(String v) {
+    backupTextField.currentState?.updateText(v);
+  }
+
+  bool isValid(String? v) {
+    if (v == null) return false;
+    return v.trim().length > 100;
+  }
+
+  String? bcakupValidator(String? v) {
+    if (isValid(v)) return null;
+    return "bcakup_validator".tr;
+  }
+
+  String _backup = "";
+  void onChange(String v) {
+    _backup = v;
+    if (_error != null) {
+      setState(() {
+        _error = null;
+      });
     }
   }
 
@@ -161,17 +219,54 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                       selected: selected,
                       onChangeSelected: onSelect),
                   WidgetConstant.height20,
-                  AppTextField(
-                    key: textFieldState,
-                    label: selected.first.value,
-                    onChanged: onChangeKey,
-                    initialValue: _key,
-                    validator: validate,
-                    minlines: 2,
-                    suffixIcon: PasteTextIcon(onPaste: onPaste),
-                    error: _error,
-                    helperText: "import_account_desc2".tr,
-                  ),
+                  if (isBackup) ...[
+                    DropdownButtonFormField<SecretWalletEncoding>(
+                      value: encoding,
+                      decoration: InputDecoration(
+                          label: Text("decoding_type".tr),
+                          helperText: _error,
+                          helperStyle: context.textTheme.bodySmall
+                              ?.copyWith(color: context.colors.error),
+                          helperMaxLines: 3),
+                      items: SecretWalletEncoding.values.map((enc) {
+                        return DropdownMenuItem<SecretWalletEncoding>(
+                          value: enc,
+                          child: Text(enc.name.camelCase),
+                        );
+                      }).toList(),
+                      onChanged: onChangeEncoding,
+                    ),
+                    WidgetConstant.height20,
+                    AppTextField(
+                      label: "enter_backup".tr,
+                      validator: bcakupValidator,
+                      onChanged: onChange,
+                      key: backupTextField,
+                      minlines: 3,
+                      maxLines: 5,
+                      initialValue: _backup,
+                      suffixIcon: PasteTextIcon(onPaste: onPaseBackupText),
+                    ),
+                    AppTextField(
+                      label: "input_backup_password".tr,
+                      validator: passwordValidator,
+                      onChanged: onChangePassword,
+                      initialValue: _password,
+                      error: _error,
+                      obscureText: true,
+                    ),
+                  ] else
+                    AppTextField(
+                      key: textFieldState,
+                      label: selected.first.value,
+                      onChanged: onChangeKey,
+                      initialValue: _key,
+                      validator: validate,
+                      minlines: 2,
+                      suffixIcon: PasteTextIcon(onPaste: onPaste),
+                      error: _error,
+                      helperText: "import_account_desc2".tr,
+                    ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

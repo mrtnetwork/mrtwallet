@@ -2,6 +2,7 @@ import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/utility/secure_flag_state.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
@@ -30,7 +31,8 @@ class _ExportSeedView extends StatefulWidget {
   State<_ExportSeedView> createState() => _ExportSeedViewState();
 }
 
-class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
+class _ExportSeedViewState extends State<_ExportSeedView>
+    with SafeState, SecureState {
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "ExportSeedView");
   final GlobalKey<PageProgressState> progressKey = GlobalKey();

@@ -22,10 +22,6 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
   late final List<SelectedMnemonic> inSelectMnemonic =
       List<SelectedMnemonic>.filled(
           widget.mnemonic.length, SelectedMnemonic.notSelected());
-  // late final List<SelectedMnemonic> inSelectMnemonic = List.generate(
-  //     widget.mnemonic.length,
-  //     (index) => SelectedMnemonic.select(index, widget.mnemonic[index]));
-
   bool equal = false;
   bool compelte = false;
   bool get wrongFilled => compelte && !equal;

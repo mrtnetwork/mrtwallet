@@ -17,12 +17,16 @@ class PasswordCheckerView extends StatefulWidget {
       required this.onAccsess,
       required this.title,
       required this.subtitle,
-      this.account});
+      this.account,
+      this.password,
+      this.accountId});
   final FuncWidgetStringPaagePrgoressKey onAccsess;
   final WalletAccsessType accsess;
   final String title;
   final Widget subtitle;
   final CryptoAddress? account;
+  final String? password;
+  final String? accountId;
 
   @override
   State<PasswordCheckerView> createState() => _PasswordCheckerViewState();
@@ -34,6 +38,8 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
       GlobalKey<FormState>(debugLabel: "ExportSeedView");
   final GlobalKey<StreamWidgetState> progressKey =
       GlobalKey<StreamWidgetState>(debugLabel: "ExportSeedView");
+  final GlobalKey<AppTextFieldState> textFildState =
+      GlobalKey<AppTextFieldState>(debugLabel: "AppTextFieldState");
   String _password = "";
 
   String? credentials;
@@ -57,10 +63,14 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
       error = null;
       setState(() {});
     }
+    await getKey();
+  }
+
+  Future<void> getKey() async {
     progressKey.process();
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     final result = await wallet.accsess(widget.accsess, _password,
-        account: widget.account);
+        account: widget.account, accountId: widget.accountId);
     if (result.hasError) {
       error = result.error?.tr;
       progressKey.error();
@@ -85,6 +95,22 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     }
     _heightSpace = mid;
     setState(() {});
+  }
+
+  bool inited = false;
+  void _init() {
+    if (inited) return;
+    inited = true;
+    _password = widget.password ?? "";
+    if (_password.isNotEmpty) {
+      getKey();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _init();
   }
 
   @override
@@ -135,6 +161,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
                                         AppTextField(
                                           label: "wallet_password".tr,
                                           obscureText: true,
+                                          key: textFildState,
                                           validator: psaswordValidator,
                                           initialValue: _password,
                                           onChanged: onChange,
@@ -149,6 +176,10 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
                                           children: [
                                             StreamWidget(
                                               key: progressKey,
+                                              initialStatus: widget.password !=
+                                                      null
+                                                  ? StreamWidgetStatus.progress
+                                                  : StreamWidgetStatus.idle,
                                               buttomWidget: FixedElevatedButton(
                                                 onPressed: onSubmit,
                                                 child: Text("unlock".tr),

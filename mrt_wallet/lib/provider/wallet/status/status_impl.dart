@@ -70,6 +70,18 @@ mixin WalletStatusImpl on _WalletCore {
     await _writeWallet(encrypt, _toStorageChecksum());
   }
 
+  Future<void> _removeKey(EncryptedCustomKey newKey, String password) async {
+    final pw = _validatePassword(password);
+    if (!_massterKey!.customKeys.contains(newKey)) {
+      throw WalletExceptionConst.accountDoesNotFound;
+    }
+    final key = _removeCustomKey(newKey, pw);
+    final encrypt = await _forStorage(key, pw);
+    await _setupMasterKey(encrypt, pw);
+    await _clenCustomKeysAccount(_account!, _massterKey!.customKeys);
+    await _writeWallet(encrypt, _toStorageChecksum());
+  }
+
   Future<void> _setup(WalletMasterKeys mnemonic, String password) async {
     final checkshum = QuickCrypto.generateRandom(16);
     final pw = _toWalletPassword(password, checkshum);
@@ -182,7 +194,6 @@ mixin WalletStatusImpl on _WalletCore {
     _account = null;
     await _deleteAll();
     await deleteAll();
-    print("done!");
   }
 
   void _logout() {

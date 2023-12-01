@@ -39,8 +39,8 @@ class _ExportSeedView extends StatefulWidget {
 class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
   late final WalletSetting setting;
-  late final Map<WalletLockTime, String> lockTime = {
-    for (final i in WalletLockTime.values) i: i.viewName.tr
+  late final Map<WalletLockTime, Widget> lockTime = {
+    for (final i in WalletLockTime.values) i: Text(i.viewName.tr)
   };
   late WalletLockTime selected;
   bool inited = false;

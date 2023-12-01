@@ -100,10 +100,35 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
 
   Future<MethodResult<void>> importAccount(
       WalletCustomKeys newAccountParams, String password) async {
-    final result = await _callSynchronized(
-        () async => await _importNewKey(newAccountParams, password),
-        conditionStatus: WalletStatus.unlock);
+    try {
+      final result = await _callSynchronized(
+          () async => await _importNewKey(newAccountParams, password),
+          conditionStatus: WalletStatus.unlock);
+      return result;
+    } finally {
+      notify();
+    }
+  }
+
+  Future<MethodResult<List<EncryptedCustomKey>>> getImportedAccounts(
+      String password) {
+    final result = _callSynchronized(() async {
+      _validatePassword(password);
+      return _massterKey!.customKeys;
+    }, conditionStatus: WalletStatus.unlock);
     return result;
+  }
+
+  Future<MethodResult<void>> removeImportedKey(
+      EncryptedCustomKey key, String password) {
+    try {
+      final result = _callSynchronized(() async {
+        return await _removeKey(key, password);
+      }, conditionStatus: WalletStatus.unlock);
+      return result;
+    } finally {
+      notify();
+    }
   }
 
   Future<MethodResult<void>> removeAccount(CryptoAddress account) async {
@@ -136,16 +161,24 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
 
   Future<MethodResult<String>> accsess(
       WalletAccsessType accsessType, String password,
-      {CryptoAddress? account}) async {
+      {CryptoAddress? account, String? accountId}) async {
     final result = await _callSynchronized(() async {
-      if (accsessType == WalletAccsessType.privateKey && account == null) {
+      if (accsessType == WalletAccsessType.privateKey &&
+          account == null &&
+          accountId == null) {
         throw WalletException.invalidArgruments(["CryptoAddress", "null"]);
       }
 
       if (accsessType == WalletAccsessType.privateKey) {
-        final privateKey =
-            _getPrivateKey(_validatePassword(password), account!.keyIndex);
-        return BytesUtils.toHexString(privateKey);
+        if (account != null) {
+          final privateKey =
+              _getPrivateKey(_validatePassword(password), account.keyIndex);
+          return BytesUtils.toHexString(privateKey);
+        } else {
+          final extendedKey =
+              _getImportedKeyFromId(_validatePassword(password), accountId!);
+          return extendedKey;
+        }
       } else if (accsessType == WalletAccsessType.seed) {
         final mnemoic = await _unlockMnemonic(password);
         return mnemoic.toStr();

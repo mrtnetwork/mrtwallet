@@ -15,6 +15,12 @@ class WalletMasterKeys with CborSerializable {
         mnemonic, seed, List.unmodifiable([newKey, ...customKeys]), setting);
   }
 
+  WalletMasterKeys removeKey(String keyId) {
+    final accounts = customKeys.where((element) => element.checksum != keyId);
+    return WalletMasterKeys._(
+        mnemonic, seed, List.unmodifiable(accounts), setting);
+  }
+
   WalletMasterKeys updateSetting(WalletSetting newSetting) {
     return WalletMasterKeys._(mnemonic, seed, customKeys, newSetting);
   }

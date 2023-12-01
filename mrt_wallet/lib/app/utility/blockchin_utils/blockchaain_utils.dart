@@ -88,4 +88,35 @@ class BlockchainUtils {
         Bip39SeedGenerator(Mnemonic.fromString(mnemonic)).generate, passphrase);
     return seed;
   }
+
+  static Bip44Base privateKeyToBip44(String key, CryptoCoins coin) {
+    final privateKey = BytesUtils.fromHexString(key);
+    switch (coin.proposal) {
+      case BipProposal.bip44:
+        return Bip44.fromPrivateKey(privateKey, coin as Bip44Coins);
+      case BipProposal.bip49:
+        return Bip49.fromPrivateKey(privateKey, coin as Bip49Coins);
+      case BipProposal.bip84:
+        return Bip84.fromPrivateKey(privateKey, coin as Bip84Coins);
+      case BipProposal.bip86:
+        return Bip86.fromPrivateKey(privateKey, coin as Bip86Coins);
+      default:
+        throw WalletExceptionConst.invalidPrivateKey;
+    }
+  }
+
+  static Bip44Base extendedKeyToBip44(String key, CryptoCoins coin) {
+    switch (coin.proposal) {
+      case BipProposal.bip44:
+        return Bip44.fromExtendedKey(key, coin as Bip44Coins);
+      case BipProposal.bip49:
+        return Bip49.fromExtendedKey(key, coin as Bip49Coins);
+      case BipProposal.bip84:
+        return Bip84.fromExtendedKey(key, coin as Bip84Coins);
+      case BipProposal.bip86:
+        return Bip86.fromExtendedKey(key, coin as Bip86Coins);
+      default:
+        throw WalletExceptionConst.invalidPrivateKey;
+    }
+  }
 }

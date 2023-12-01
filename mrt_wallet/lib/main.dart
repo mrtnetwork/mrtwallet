@@ -7,6 +7,7 @@ import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/app/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/backup_wallet.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/manage_account_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/security.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/setting/setting.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/setup_pages/setup.dart';
@@ -155,6 +156,8 @@ class PageRouter {
         return const UpdateWalletSettingView();
       case PagePathConst.backupWallet:
         return const BackupWalletView();
+      case PagePathConst.manageImportedKey:
+        return const ManageImportedKeysView();
       default:
         return const HomeScreen();
     }

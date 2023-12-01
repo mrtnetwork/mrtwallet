@@ -90,11 +90,12 @@ extension QuickContextAccsess on BuildContext {
   T? getNullArgruments<T>() {
     final args = ModalRoute.of(this)?.settings.arguments;
     if (args == null) return null;
+    print("arags ${args.runtimeType} ${T}");
     if (args.runtimeType != T) {
       throw ArgumentError(
           "value of type ${args.runtimeType} is not subtype ${T.runtimeType}");
     }
-    return args as T;
+    return args as T?;
   }
 
   T getArgruments<T>() {
@@ -104,6 +105,15 @@ extension QuickContextAccsess on BuildContext {
     }
 
     return args as T;
+  }
+
+  dynamic getDynamicArgs() {
+    final args = ModalRoute.of(this)?.settings.arguments;
+    if (args == null) {
+      throw StateError("argruments not found");
+    }
+
+    return args;
   }
 
   void popToHome() {

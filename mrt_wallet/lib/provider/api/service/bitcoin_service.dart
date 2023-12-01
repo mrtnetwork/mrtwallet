@@ -1,35 +1,36 @@
+import 'dart:async';
+
 import 'package:bitcoin_base/bitcoin_base.dart' show ApiService;
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:http/http.dart' as http;
-import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/dev/logging.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/provider/api/core/http_provider.dart';
 
 class BitcoinApiService with HttpProvider implements ApiService {
-  BitcoinApiService(this.provider);
+  BitcoinApiService(this.provider,
+      {this.defaultTimeOut = const Duration(seconds: 30)});
 
   final ApiProviderTracker provider;
+  final Duration defaultTimeOut;
   Future<T> _httpCaller<T>(Future<http.Response> Function() t,
       {bool isPost = false}) async {
     bool hasError = false;
     bool isRechedLimit = false;
     try {
-      final tx = await t();
-      print(tx.body);
+      final tx = await t().timeout(defaultTimeOut);
       return _readResponse(tx, isPost: isPost);
     } on http.ClientException catch (e) {
-      WalletLogging.print("got error $e");
       hasError = true;
       throw ApiProviderException(message: e.message);
+    } on TimeoutException catch (e) {
+      hasError = true;
+      throw ApiProviderException(message: e.toString());
     } on ApiProviderException catch (e) {
-      WalletLogging.print("got error $e");
       hasError = true;
       isRechedLimit = e.statusCode == 429;
       rethrow;
     } catch (e) {
-      WalletLogging.print("got error $e");
       hasError = true;
       rethrow;
     } finally {

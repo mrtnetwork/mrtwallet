@@ -69,9 +69,9 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     return true;
   }
 
-  late final Map<AddressDerivationMode, String> derivationModes = {
-    AddressDerivationMode.hdWallet: "hd_wallet".tr,
-    AddressDerivationMode.importedKey: "imported_key".tr
+  late final Map<AddressDerivationMode, Widget> derivationModes = {
+    AddressDerivationMode.hdWallet: Text("hd_wallet".tr),
+    AddressDerivationMode.importedKey: Text("imported_key".tr)
   };
 
   void onChangeDerivationMode<T>(T? mode) async {

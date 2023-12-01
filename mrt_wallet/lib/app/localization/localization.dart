@@ -482,7 +482,24 @@ class Localization {
           "invalid_wallet_backup": "Invalid wallet backup.",
           "mnemonic_backup": "Mnemonic backup",
           "wallet_backup": "Wallet backup",
-          "select_backup_option": "Select your backup option."
+          "select_backup_option": "Select your backup option.",
+          "adjust_app_brightness": "Adjust App Brightness",
+          "define_primary_of_app":
+              "Define the primary color scheme for the application",
+          "essence_of_mrt_wallet": "Discover the Essence of MRT Wallet",
+          "manage_imported_key": "Administer Imported Keys",
+          "manage_key_desc1": "Delete Imported Keys from Your Wallet",
+          "retrieving_imported_keys_wait":
+              "Retrieving Imported Keys – Please Wait",
+          "no_imported_key_found": "No Imported Private Keys Detected",
+          "manage_key_desc2":
+              "If the key is removed, and an address has already been generated with the corresponding account, it will become inaccessible in the wallet.",
+          "inventory_keys": "Keys Inventory",
+          "remove": "Remove",
+          "key_extended_for": "Key Expansion for",
+          "wif_for": "WIF (Wallet Import Format) for",
+          "wif": "WIF (Wallet Import Format)",
+          "deleting_key": "Deleting Key - Please Wait"
         }
       };
 }

@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/core.dart';
 
 import 'setting.dart';
 
@@ -27,7 +28,7 @@ class EncryptedMasterKey {
   }
 }
 
-class EncryptedCustomKey {
+class EncryptedCustomKey with Equatable {
   final String publicKey;
   final String id;
   final EllipticCurveTypes type;
@@ -37,4 +38,7 @@ class EncryptedCustomKey {
       required this.type,
       required this.id,
       required this.created});
+
+  @override
+  List get variabels => [publicKey, id, type];
 }
