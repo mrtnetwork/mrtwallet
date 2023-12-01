@@ -1,5 +1,5 @@
 name: mrt_wallet
-description: A new Flutter project.
+description: Open-source decentralized wallet for the future of finance. Securely manage assets, support for Bitcoin, Android, Windows, web.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -17,6 +17,16 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
 version: 1.0.0+1
+
+homepage: "https://github.com/mrtnetwork/mrtwallet"
+repository: "https://github.com/mrtnetwork/mrtwallet"
+Author: mrhaydari.t@gmail.com
+topics:
+  - bitcoin-wallet
+  - bitcoin
+  - p2tr
+  - p2sh
+  - p2wpkh-p2wsh
 
 environment:
   sdk: '>=3.1.4 <4.0.0'

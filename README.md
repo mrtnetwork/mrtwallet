@@ -1,5 +1,4 @@
 # About MRT Wallet
----
 
 Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
 
