@@ -31,18 +31,10 @@ const RESOURCES = {"assets/AssetManifest.bin": "782d782a5d3020c2c7bc10a991eed459
 "icons/Icon-512.png": "429b0f2eeadd3c52452d3eead2205184",
 "icons/Icon-maskable-192.png": "4fd751826796e9526ba08f9e1f25dcd9",
 "icons/Icon-maskable-512.png": "429b0f2eeadd3c52452d3eead2205184",
-"index.html": "566da9ba0081a9e30cba937ee725324a",
-"/": "566da9ba0081a9e30cba937ee725324a",
+"index.html": "4325c2108ff60f8263685684a7db8a69",
+"/": "4325c2108ff60f8263685684a7db8a69",
 "main.dart.js": "af1bd806b1c5e1b94eed772b33027a37",
-"manifest.json": "8aca43b7610e2e9d1697e117cd547592",
-"splash/img/dark-1x.png": "c2ed42d86c073654b0901fe4f07c17bd",
-"splash/img/dark-2x.png": "4f5e5ee1f7fa60868cb7df98b0fdd77c",
-"splash/img/dark-3x.png": "9483b141d29bef540175e61455c70929",
-"splash/img/dark-4x.png": "73adcc13b8a06c301187b9d09ca5f421",
-"splash/img/light-1x.png": "760e10bdf1620f4e331aca8387c74367",
-"splash/img/light-2x.png": "3bf51a4f7af12d7a1892482a32df8131",
-"splash/img/light-3x.png": "2821fef40aa85b442cbc05c32c4da06d",
-"splash/img/light-4x.png": "5effb1a69242ec7da63b1f130c014c4d",
+"manifest.json": "4aad1646bc606329a38074c8a1729634",
 "version.json": "421c596e72569161616e179392d797cb"};
 // The application shell files that are downloaded before a service worker can
 // start.

@@ -1,6 +1,6 @@
 {
-    "name": "MRT WALLET",
-    "short_name": "MRT",
+    "name": "mrt_wallet",
+    "short_name": "mrt_wallet",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

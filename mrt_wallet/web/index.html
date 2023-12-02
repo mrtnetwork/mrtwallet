@@ -1,4 +1,7 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html>
+<html>
+
+<head>
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
@@ -21,13 +24,13 @@
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="mybtc">
+  <meta name="apple-mobile-web-app-title" content="mrt_wallet">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="favicon.png" />
 
-  <title>MRT Wallet</title>
+  <title>mrt_wallet</title>
   <link rel="manifest" href="manifest.json">
 
   <script>
@@ -35,121 +38,64 @@
     const serviceWorkerVersion = null;
   </script>
   <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer=""></script>
-  <style id="splash-screen-style">
-    .flutter-loader {
-      z-index: 999999;
-    }
-    
-    #splash {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        top: 0px;
-        left: 0px;
-        z-index: 999998;
-        opacity: 1;
-        /* animation type and duration */
-        transition: opacity 0.25s;
-        background-color: #fbfdf9;
-              -moz-osx-font-smoothing: grayscale;
-        -webkit-font-smoothing: antialiased;
-    }
-    
-    #splash.remove {
-      /* enable click through when run animation */
-      pointer-events: none;
-      /* start animation */
-      opacity: 0;
-    }
-
-    #splash .center {
+  <script src="flutter.js" defer></script>
+  <style>
+  body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       margin: 0;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      -ms-transform: translate(-50%, -50%);
-      transform: translate(-50%, -50%);
+      flex-direction: column; /* Stack image and loading spinner vertically */
     }
 
-    #splash .contain {
-      display:block;
-      width:100%; height:100%;
-      object-fit: contain;
+    img {
+      width: 256px;
+      height: 256px;
+      /* Additional styles for positioning or styling the image */
     }
 
-    #splash .stretch {
-      display:block;
-      width:100%; height:100%;
+    #loadingSpinner {
+      border: 8px solid #f3f3f3; /* Light gray border */
+      border-top: 8px solid #3498db; /* Blue border for spinning effect */
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite; /* Animation for spinning effect */
+      margin-top: 10px; /* Adjust as needed */
     }
 
-    #splash .cover {
-      display:block;
-      width:100%; height:100%;
-      object-fit: cover;
-    }
-
-    #splash .bottom {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      -ms-transform: translate(-50%, 0);
-      transform: translate(-50%, 0);
-    }
-
-    #splash .bottomLeft {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-    }
-
-    #splash .bottomRight {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      #splash {
-        background-color: #191c1b;
-          }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
-  <script id="splash-screen-script">
-    function removeSplashFromWeb() {
-      const splashElement = document.getElementById("splash");
-      splashElement.classList.add("remove");
-      setTimeout(function () {
-        splashElement.remove();
-        document.getElementById("splash-screen-script")?.remove();
-      }, 750 /* animation time + wait rendering and others(500ms) */);
-    }
-  </script>
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
 </head>
+
 <body>
-  <div id="splash">
-    <picture>
-        <source srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x" media="(prefers-color-scheme: light)">
-        <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
-        <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
-    </picture>
-  </div>
+
+  <img id="centeredImage" src="icons/Icon-512.png" />
+  <div id="loadingSpinner"></div>
   <script>
-    window.addEventListener('load', function(ev) {
+    window.addEventListener('load', function (ev) {
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
           serviceWorkerVersion: serviceWorkerVersion,
         },
-        onEntrypointLoaded: function(engineInitializer) {
-          engineInitializer.initializeEngine().then(function(appRunner) {
+        onEntrypointLoaded: function (engineInitializer) {
+          engineInitializer.initializeEngine().then(function (appRunner) {
             appRunner.runApp();
+            var centeredImage = document.getElementById('centeredImage');
+            if (centeredImage) {
+              centeredImage.style.display = 'none';
+              loadingSpinner.style.display = 'none';
+            }
           });
         }
       });
     });
   </script>
+</body>
 
-
-</body></html>
+</html>
