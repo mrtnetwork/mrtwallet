@@ -25,7 +25,7 @@ class NetworkCoins {
       decimal: 8,
       logo: "assets/image/btc.png",
       transacationNetwork: BitcoinNetwork.mainnet,
-      providers: [ApiProviderService.blockCypher, ApiProviderService.mempool]);
+      providers:  [ApiProviderService.mempool, ApiProviderService.blockCypher]);
   static const BitcoinParams bitcoinTestnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/btc-testnet/tx/#txid/",
       addressExplorer:
@@ -35,5 +35,5 @@ class NetworkCoins {
       decimal: 8,
       logo: "assets/image/btc.png",
       transacationNetwork: BitcoinNetwork.testnet,
-      providers: [ApiProviderService.blockCypher, ApiProviderService.mempool]);
+      providers: [ApiProviderService.mempool, ApiProviderService.blockCypher]);
 }
