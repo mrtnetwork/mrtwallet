@@ -86,5 +86,6 @@ Thank you for choosing MRT Wallet as your trusted partner in the world of decent
 
 ### Support
 ---
+1KMRGUzRFCuR9y73gUnjxfC1Dte8Ua3vcp
 
-For support or assistance, please visit our [Help Center](https://github.com/mrtnetwork/mrtwallet) or reach out to our [community forums](https://github.com/mrtnetwork/mrtwallet). Our support team is here to ensure you have a seamless experience with MRT Wallet.
+bc1q92fvc5jm4k8e5wegzmhzdv72gwe43sgfnuspgzfmj7llkd8xhmusgd44qf
