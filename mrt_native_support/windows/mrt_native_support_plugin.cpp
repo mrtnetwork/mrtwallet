@@ -1014,7 +1014,7 @@ namespace mrt_native_support {
 			CoTaskMemFree(cachePath);
 
 			// Calculate application-specific subdirectory within LocalAppData
-			std::wstring appSpecificCachePath = getAppSpecificSubdirectory(wideCachePath.c_str(), L"MyApp");
+			std::wstring appSpecificCachePath = getAppSpecificSubdirectory(wideCachePath.c_str(), L"MRTNETWORK");
 
 			// Convert wide string to BSTR
 			BSTR bstrAppSpecificCachePath = SysAllocString(appSpecificCachePath.c_str());
@@ -1036,7 +1036,7 @@ namespace mrt_native_support {
 			CoTaskMemFree(appSupportPath);
 
 			// Calculate application-specific subdirectory within RoamingAppData
-			std::wstring appSpecificSupportPath = getAppSpecificSubdirectory(wideAppSupportPath.c_str(), L"MyApp");
+			std::wstring appSpecificSupportPath = getAppSpecificSubdirectory(wideAppSupportPath.c_str(), L"MRTNETWORK");
 
 			// Convert wide string to BSTR
 			BSTR bstrAppSpecificSupportPath = SysAllocString(appSpecificSupportPath.c_str());

@@ -66,9 +66,7 @@ class AppCheckListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return CheckboxListTile(
       onChanged: onChanged,
-      
       value: value,
-    
       title: title == null
           ? null
           : DefaultTextStyle(

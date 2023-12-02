@@ -3,7 +3,6 @@ import 'package:mrt_wallet/app/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
-
 class PriceTooltipWidget extends StatelessWidget {
   const PriceTooltipWidget(
       {Key? key,

@@ -7,7 +7,8 @@ class QrBitBuffer extends Object with ListMixin<bool> {
   QrBitBuffer() : _buffer = <int>[];
 
   @override
-  void operator []=(int index, bool value) => throw UnsupportedError('cannot change');
+  void operator []=(int index, bool value) =>
+      throw UnsupportedError('cannot change');
 
   @override
   bool operator [](int index) {

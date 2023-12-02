@@ -96,8 +96,7 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
           widget: SelectableText(account.publicKey.toExtended),
         )),
         WidgetConstant.height20,
-        Text("comperessed_public_key".tr,
-            style: context.textTheme.titleLarge),
+        Text("comperessed_public_key".tr, style: context.textTheme.titleLarge),
         WidgetConstant.height8,
         ContainerWithBorder(
             child: CopyTextWithBarcode(

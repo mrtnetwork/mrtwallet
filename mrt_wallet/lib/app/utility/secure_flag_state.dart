@@ -10,7 +10,7 @@ mixin SecureState<T extends StatefulWidget> on State<T> {
     super.initState();
     if (PlatformInterface.appPlatform == AppPlatform.android) {
       PlatformInterface.interface.secureFlag(isSecure: true);
-      WalletLogging.print("yes enabled!");
+
       _enabled = true;
     }
   }

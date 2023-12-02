@@ -48,7 +48,7 @@ class MethodCaller {
 
 class MethodResult<T> {
   MethodResult.error(this.exception, this.trace) : _result = null {
-    WalletLogging.print("ERROR: $error");
+    WalletLogging.print("request error: $error");
   }
   MethodResult.succsess(this._result)
       : exception = null,
@@ -61,8 +61,7 @@ class MethodResult<T> {
         exception is ApiProviderException) {
       return exception!.toString();
     }
-    WalletLogging.print(
-        "error ${exception.runtimeType} ${exception.toString()}");
+
     return "somthing_wrong";
   }
 

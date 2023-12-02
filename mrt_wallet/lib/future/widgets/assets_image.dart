@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 class CircleAssetsImgaeView extends StatelessWidget {
   const CircleAssetsImgaeView(this.assetPath,
-      {this.radius = 120, this.backgroundColor = Colors.transparent, super.key});
+      {this.radius = 120,
+      this.backgroundColor = Colors.transparent,
+      super.key});
   final String assetPath;
   final double radius;
   final Color backgroundColor;

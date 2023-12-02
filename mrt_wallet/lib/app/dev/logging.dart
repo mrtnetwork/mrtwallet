@@ -13,10 +13,6 @@ class WalletLogging {
     const green = '\x1b[32m';
     final msg = '$green${prefix.toString()}$end =>  $err$message$end';
     dev.log(msg,
-        time: DateTime.now(),
-
-        zone: Zone.root,
-        name: "wallet",
-        level: 0);
+        time: DateTime.now(), zone: Zone.root, name: "wallet", level: 0);
   }
 }

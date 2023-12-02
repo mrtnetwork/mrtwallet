@@ -61,7 +61,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
-  flutter_native_splash: ^2.3.6
+  # flutter_native_splash: ^2.3.6
+  msix: ^3.16.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -124,3 +125,10 @@ flutter_native_splash:
 
     web: false
     fullscreen: true
+
+msix_config:
+    display_name: MRT Wallet
+    publisher_display_name: MRT NETWORK
+    identity_name: com.mrtnetwork.wallet
+    msix_version: 1.0.0.0
+    logo_path: C:\in_work\bitcoin\mrt_wallet\docs\icons\Icon-512.png

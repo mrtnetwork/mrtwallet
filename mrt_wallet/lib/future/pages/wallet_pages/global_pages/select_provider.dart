@@ -19,8 +19,7 @@ class SelectProviderView extends StatelessWidget {
             title: "what_is_service_provider".tr,
             body: Text("what_is_api_provider".tr)),
         PageTitleSubtitle(
-            title: "choose_provider".tr,
-            body: Text("select_provider_desc".tr)),
+            title: "choose_provider".tr, body: Text("select_provider_desc".tr)),
         ListView.builder(
           shrinkWrap: true,
           itemBuilder: (context, index) {

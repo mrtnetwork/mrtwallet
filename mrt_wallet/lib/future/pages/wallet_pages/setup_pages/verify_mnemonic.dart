@@ -69,9 +69,6 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
   @override
   void initState() {
     super.initState();
-    // isEqual();
-    // setState(() {});
-    WalletLogging.print(widget.mnemonic.toList());
   }
 
   @override

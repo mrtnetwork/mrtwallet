@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/extention/extention.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+
 class DialogView extends StatelessWidget {
   const DialogView({required this.child, required this.title, super.key});
   final Widget child;

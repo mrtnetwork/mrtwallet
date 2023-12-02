@@ -93,7 +93,6 @@ mixin WalletNetworkImpl
       try {
         account.removeAccount(r);
       } on WalletException {
-        WalletLogging.print("got error !");
         continue;
       }
     }

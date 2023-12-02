@@ -57,7 +57,7 @@ class SwitchOrSelectAccountView extends StatelessWidget {
                     children: [
                       Expanded(
                         child: InkWell(
-                          onTap: !forSelect 
+                          onTap: !forSelect
                               ? null
                               : () {
                                   if (context.mounted) {

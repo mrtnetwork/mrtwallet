@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:mrt_native_support/models/models.dart';
@@ -30,6 +32,23 @@ class _MyWidgetState extends State<MyWidget> with WindowListener {
     super.initState();
   }
 
+  void write() async {
+    final plat = PlatformInterface.interface;
+    final path = await plat.path();
+    final naame = "${path.support}" +
+        r"\" +
+        DateTime.now().microsecond.toString() +
+        ".txt";
+    print("name $naame");
+    final f = File(naame);
+
+    await f.create(recursive: true);
+    final v = List.generate(1000, (index) => "m").join();
+    await f.writeAsString(v);
+    print(f.path);
+    plat.launchUri(f.path);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +58,11 @@ class _MyWidgetState extends State<MyWidget> with WindowListener {
           Expanded(
               child: Center(
             child: InkWell(
-              onTap: () async {},
+              onTap: () async {
+                final p = await PlatformInterface.interface.path();
+                write();
+                print(p);
+              },
               child: const Icon(
                 Icons.abc,
                 size: 120,

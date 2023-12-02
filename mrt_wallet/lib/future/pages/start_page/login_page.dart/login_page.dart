@@ -39,7 +39,7 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
     buttonKey.process();
     final login = await provider.login(password);
     buttonKey.fromMethodResult(login);
-    _error = login.error?.tr ;
+    _error = login.error?.tr;
     setState(() {});
   }
 

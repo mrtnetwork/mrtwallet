@@ -231,7 +231,7 @@ class _SetupBitcoinMultiSigAddressViewState
 
     if (result.hasError || !result.result) {
       buttomState.error();
-      _shareError = result.error?.tr ;
+      _shareError = result.error?.tr;
       setState(() {});
     } else {
       buttomState.success();

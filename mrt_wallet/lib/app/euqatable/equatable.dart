@@ -1,4 +1,3 @@
-
 abstract mixin class Equatable {
   List<dynamic> get variabels;
 

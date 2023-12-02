@@ -107,7 +107,8 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
           WidgetConstant.height20,
           PageTitleSubtitle(
             title: "mn_password".tr,
-            body: Column(crossAxisAlignment: CrossAxisAlignment.start,
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("enter_passphrase_desc".tr),
                 WidgetConstant.height8,

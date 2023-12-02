@@ -284,7 +284,7 @@ class BitcoinStateController extends StateController {
           enableRBF: true,
           outputs: _receivers.values.map((e) => e.address).toList(),
           network: network.coinParam.transacationNetwork);
-      WalletLogging.print("end");
+
       if (_networkFeeRate == null) {
         _networkFeeRate = await _getFeeRate();
       } else {
