@@ -25,7 +25,7 @@ class AbountWalletView extends StatelessWidget {
         ),
         WidgetConstant.height8,
         const Text(
-            "Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, with a roadmap set to embrace a broad spectrum of cryptocurrencies."),
+            "Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as Dogecoin, Litecoin, and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies."),
         WidgetConstant.height20,
         Text(
           "Decentralized, Secure, and Open Source",
@@ -52,7 +52,7 @@ class AbountWalletView extends StatelessWidget {
         ])),
         WidgetConstant.height20,
         Text(
-          "Bitcoin Support — Mainnet and Testnet",
+          "Bitcoin, Dogecoin, Litecoin, Dash Support — Mainnet and Testnet",
           style: context.textTheme.titleLarge,
         ),
         WidgetConstant.height8,
@@ -100,7 +100,7 @@ class AbountWalletView extends StatelessWidget {
         ),
         WidgetConstant.height8,
         const Text(
-            "Our journey doesn't end with Bitcoin. The MRT Wallet roadmap is a dynamic chart that outlines our commitment to support a wide range of cryptocurrencies. We're dedicated to staying at the forefront of innovation, adapting to new technologies, and expanding our capabilities to serve the evolving needs of the crypto community."),
+            "Our journey doesn't end with four networks. The MRT Wallet roadmap is a dynamic chart that outlines our commitment to support a wide range of cryptocurrencies. We're dedicated to staying at the forefront of innovation, adapting to new technologies, and expanding our capabilities to serve the evolving needs of the crypto community."),
         WidgetConstant.height20,
         Text(
           "Community-Driven Development",

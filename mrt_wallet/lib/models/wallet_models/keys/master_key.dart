@@ -28,13 +28,12 @@ class WalletMasterKeys with CborSerializable {
   final WalletSetting setting;
   final Mnemonic mnemonic;
   final List<int> seed;
-  static Future<WalletMasterKeys> setup(
-      String mnemonic, String passphrase) async {
-    // BlockchainUtils.validateMnemonic(mnemonic);
+  static Future<WalletMasterKeys> setup(String mnemonic, String passphrase,
+      {List<WalletCustomKeys> customKeys = const []}) async {
     final seed =
         await BlockchainUtils.mnemonicToSeed(mnemonic, passphrase: passphrase);
-    return WalletMasterKeys._(Mnemonic.fromString(mnemonic), seed, const [],
-        WalletSetting.defaultSetting());
+    return WalletMasterKeys._(Mnemonic.fromString(mnemonic), seed,
+        List.unmodifiable(customKeys), WalletSetting.defaultSetting());
   }
 
   factory WalletMasterKeys.fromCborBytesOrObject(
@@ -62,11 +61,11 @@ class WalletMasterKeys with CborSerializable {
   List<String> get toList => mnemonic.toList();
   final List<WalletCustomKeys> customKeys;
   @override
-  CborTagValue toCbor() {
+  CborTagValue toCbor([bool withSeed = true]) {
     return CborTagValue(
         CborListValue.fixedLength([
           mnemonic.toStr(),
-          CborBytesValue(seed),
+          if (withSeed) CborBytesValue(seed) else const CborBytesValue([]),
           CborListValue.fixedLength(customKeys.map((e) => e.toCbor()).toList()),
           setting.toCbor()
         ]),

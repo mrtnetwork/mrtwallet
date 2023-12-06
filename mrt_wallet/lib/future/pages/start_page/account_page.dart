@@ -23,8 +23,10 @@ class NetworkAccountPageView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               PageTitleSubtitle(
-                title: "setup_bitcoin_address".tr,
-                body: Text("setup_bitcoin_address_desc".tr),
+                title: "setup_network_address"
+                    .tr
+                    .replaceOne(wallet.network.coinParam.coinName),
+                body: Text("setup_network_address_desc".tr.replaceOne(wallet.network.coinParam.coinName)),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

@@ -25,7 +25,7 @@ class NetworkCoins {
       decimal: 8,
       logo: "assets/image/btc.png",
       transacationNetwork: BitcoinNetwork.mainnet,
-      providers:  [ApiProviderService.mempool, ApiProviderService.blockCypher]);
+      providers: [ApiProviderService.mempool, ApiProviderService.blockCypher]);
   static const BitcoinParams bitcoinTestnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/btc-testnet/tx/#txid/",
       addressExplorer:
@@ -36,4 +36,31 @@ class NetworkCoins {
       logo: "assets/image/btc.png",
       transacationNetwork: BitcoinNetwork.testnet,
       providers: [ApiProviderService.mempool, ApiProviderService.blockCypher]);
+  static const BitcoinParams litecoinMainnet = BitcoinParams(
+      transactionExplorer: "https://live.blockcypher.com/ltc/tx/#txid/",
+      addressExplorer: "https://live.blockcypher.com/ltc/address/#address/",
+      coinName: "Litecoin",
+      coinSymbol: "LTC",
+      decimal: 8,
+      logo: "assets/image/ltc.png",
+      transacationNetwork: LitecoinNetwork.mainnet,
+      providers: [ApiProviderService.blockCypher]);
+  static const BitcoinParams dogecoinMainnet = BitcoinParams(
+      transactionExplorer: "https://live.blockcypher.com/doge/tx/#txid/",
+      addressExplorer: "https://live.blockcypher.com/doge/address/#address/",
+      coinName: "Dogecoin",
+      coinSymbol: "Ɖ",
+      decimal: 8,
+      logo: "assets/image/doge.png",
+      transacationNetwork: DogecoinNetwork.mainnet,
+      providers: [ApiProviderService.blockCypher]);
+  static const BitcoinParams dashMainnet = BitcoinParams(
+      transactionExplorer: "https://live.blockcypher.com/dash/tx/#txid/",
+      addressExplorer: "https://live.blockcypher.com/dash/address/#address/",
+      coinName: "Dash",
+      coinSymbol: "DASH",
+      decimal: 8,
+      logo: "assets/image/dash.png",
+      transacationNetwork: DashNetwork.mainnet,
+      providers: [ApiProviderService.blockCypher]);
 }

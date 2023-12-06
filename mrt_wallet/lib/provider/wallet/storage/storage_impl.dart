@@ -36,8 +36,7 @@ mixin WalletStorageImpl on NativeSecureStorageImpl {
 
       final networkId = int.parse(networkStr!);
       final network = AppNetworkImpl.fromValue(networkId);
-      final provider = await read(key: _toProviderKey(networkId));
-      final service = ApiProviderService.fromServiceName(provider!);
+      final service = await _readNetworkProvider(network);
       return (network, service);
     } catch (e) {
       return null;

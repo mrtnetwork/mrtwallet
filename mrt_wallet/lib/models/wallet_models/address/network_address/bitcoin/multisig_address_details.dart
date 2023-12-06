@@ -158,16 +158,39 @@ class BitcoinMultiSignatureAddress
   }
 
   @override
-  BitcoinAddress toP2wshAddress() {
+  BitcoinAddress toP2wshAddress({required BasedUtxoNetwork network}) {
     return P2wshAddress.fromScript(script: multiSigScript);
   }
 
   @override
-  BitcoinAddress toP2wshInP2shAddress() {
-    final p2wsh = toP2wshAddress();
+  BitcoinAddress toP2wshInP2shAddress({required BasedUtxoNetwork network}) {
+    final p2wsh = toP2wshAddress(network: network);
     return P2shAddress.fromScript(
         script: p2wsh.toScriptPubKey(), type: BitcoinAddressType.p2wshInP2sh);
   }
 
   List get variabels => [threshold, multiSigScript.toHex()];
+
+  @override
+  BitcoinAddress toP2shAddress() {
+    return P2shAddress.fromScript(
+        script: multiSigScript, type: BitcoinAddressType.p2pkhInP2sh);
+  }
+
+  @override
+  BitcoinAddress fromType(
+      {required BasedUtxoNetwork network,
+      required BitcoinAddressType addressType}) {
+    switch (addressType) {
+      case BitcoinAddressType.p2wsh:
+        return toP2wshAddress(network: network);
+      case BitcoinAddressType.p2wshInP2sh:
+        return toP2wshInP2shAddress(network: network);
+      case BitcoinAddressType.p2pkhInP2sh:
+        return toP2shAddress();
+      default:
+        throw ArgumentError(
+            "invalid multisig address type. use of of them [BitcoinAddressType.p2wsh, BitcoinAddressType.p2wshInP2sh, BitcoinAddressType.p2pkhInP2sh]");
+    }
+  }
 }

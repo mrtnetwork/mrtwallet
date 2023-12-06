@@ -2,77 +2,25 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:blockchain_utils/compare/compare.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
+import 'package:mrt_wallet/app/utility/blockchin_utils/blockchain_addr_utils.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:bitcoin_base/bitcoin_base.dart'
-    show ECPublic, BitcoinAddress, BitcoinAddressType, BitcoinNetwork;
+    show  BitcoinAddress, BitcoinAddressType;
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
 class IBitcoinAddress with Equatable implements Bip32AddressCore {
-  static BitcoinAddress _toBitcoinAddress(
-      List<int> publicKey, CryptoCoins coin, BitcoinAddressType addressType) {
-    final bitcoinPublicKey = ECPublic.fromBytes(publicKey);
-    BitcoinAddress address;
-
-    switch (coin.proposal) {
-      case BipProposal.bip44:
-        address = bitcoinPublicKey.toAddress();
-        break;
-      case BipProposal.bip49:
-        switch (addressType) {
-          case BitcoinAddressType.p2wshInP2sh:
-            address = bitcoinPublicKey.toP2wshInP2sh();
-            break;
-          case BitcoinAddressType.p2wpkhInP2sh:
-            address = bitcoinPublicKey.toP2wpkhInP2sh();
-            break;
-          case BitcoinAddressType.p2pkhInP2sh:
-            address = bitcoinPublicKey.toP2pkhInP2sh();
-            break;
-          default:
-            address = bitcoinPublicKey.toP2pkInP2sh();
-            break;
-        }
-        break;
-      case BipProposal.bip84:
-        if (addressType == BitcoinAddressType.p2wsh) {
-          address = bitcoinPublicKey.toP2wshAddress();
-        } else {
-          address = bitcoinPublicKey.toSegwitAddress();
-        }
-
-        break;
-      default:
-        address = bitcoinPublicKey.toTaprootAddress();
-        break;
-    }
-    if (address.type != addressType) {
-      throw WalletExceptionConst.invalidBitcoinAddressType;
-    }
-
-    return address;
-  }
-
   factory IBitcoinAddress.newAccount(
       {required BitcoinNewAddressParams accountParams,
       required List<int> publicKey,
       required AppBitcoinNetwork network}) {
-    final bitcoinAddress = _toBitcoinAddress(
+    final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
         publicKey, accountParams.coin, accountParams.bitcoinAddressType);
-    BitcoinNetwork bitcoinNetwork;
-    switch (network) {
-      case AppBitcoinNetwork.bitcoinMainnet:
-        bitcoinNetwork = BitcoinNetwork.mainnet;
-        break;
-      case AppBitcoinNetwork.bitcoinTestnet:
-        bitcoinNetwork = BitcoinNetwork.testnet;
-        break;
-      default:
-        throw WalletExceptionConst.incorrectNetwork;
-    }
+
     final addressDetauls = CryptoAddressDetails(
-        address: bitcoinAddress.toAddress(bitcoinNetwork),
+        address:
+            bitcoinAddress.toAddress(network.coinParam.transacationNetwork),
         balance: CurrencyBalance.zero(network.coinParam.decimal));
 
     return IBitcoinAddress._(
@@ -113,8 +61,8 @@ class IBitcoinAddress with Equatable implements Bip32AddressCore {
 
       final BitcoinAddressType bitcoinAddressType =
           BitcoinAddressType.fromNameOrValue(cbor.value[5].value);
-      final bitcoinAddress =
-          _toBitcoinAddress(publicKey, coin, bitcoinAddressType);
+      final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
+          publicKey, coin, bitcoinAddressType);
 
       return IBitcoinAddress._(
           coin: coin,
@@ -191,35 +139,19 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress {
     required BitcoinAddressType bitcoinAddressType,
   }) {
     try {
-      BitcoinNetwork bitcoinNetwork;
-      switch (network) {
-        case AppBitcoinNetwork.bitcoinMainnet:
-          bitcoinNetwork = BitcoinNetwork.mainnet;
-          break;
-        case AppBitcoinNetwork.bitcoinTestnet:
-          bitcoinNetwork = BitcoinNetwork.testnet;
-          break;
-        default:
-          throw WalletExceptionConst.incorrectNetwork;
-      }
-      BitcoinAddress? bitcoinAddress;
-      switch (bitcoinAddressType) {
-        case BitcoinAddressType.p2wsh:
-          bitcoinAddress = multiSignatureAddress.toP2wshAddress();
-          break;
-        case BitcoinAddressType.p2wshInP2sh:
-          bitcoinAddress = multiSignatureAddress.toP2wshInP2shAddress();
-        default:
-      }
+      final toBitcoinAddress = multiSignatureAddress.fromType(
+          network: network.coinParam.transacationNetwork,
+          addressType: bitcoinAddressType);
       final addressDetauls = CryptoAddressDetails(
-          address: bitcoinAddress!.toAddress(bitcoinNetwork),
+          address:
+              toBitcoinAddress.toAddress(network.coinParam.transacationNetwork),
           balance: CurrencyBalance.zero(network.coinParam.decimal));
 
       return IBitcoinMultiSigAddress._(
           coin: coin,
           address: addressDetauls,
           multiSignatureAddress: multiSignatureAddress,
-          bitcoinAddress: bitcoinAddress,
+          bitcoinAddress: toBitcoinAddress,
           addressType: bitcoinAddressType,
           network: network,
           keyIndex: const MultiSigAddressIndex());
@@ -249,23 +181,14 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress {
               obj: cbor.value[3]);
       final BitcoinAddressType bitcoinAddressType =
           BitcoinAddressType.fromNameOrValue(cbor.value[4].value);
-
-      BitcoinAddress? bitcoinAddress;
-      switch (bitcoinAddressType) {
-        case BitcoinAddressType.p2wsh:
-          bitcoinAddress = multiSignatureAddress.toP2wshAddress();
-          break;
-        case BitcoinAddressType.p2wshInP2sh:
-          bitcoinAddress = multiSignatureAddress.toP2wshInP2shAddress();
-        default:
-      }
-
       final keyIndex =
           AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.value[6]);
       return IBitcoinMultiSigAddress._(
           coin: coin,
           address: address,
-          bitcoinAddress: bitcoinAddress!,
+          bitcoinAddress: multiSignatureAddress.fromType(
+              network: network.coinParam.transacationNetwork,
+              addressType: bitcoinAddressType),
           addressType: bitcoinAddressType,
           multiSignatureAddress: multiSignatureAddress,
           network: network,

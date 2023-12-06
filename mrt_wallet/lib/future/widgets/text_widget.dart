@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 
 class OneLineTextWidget extends StatelessWidget {
-  const OneLineTextWidget(this.text, {this.style, super.key, this.maxLine = 1});
+  const OneLineTextWidget(this.text,
+      {this.style, super.key, this.maxLine = 1, this.align});
   final String text;
   final TextStyle? style;
   final int maxLine;
+  final TextAlign? align;
   @override
   Widget build(BuildContext context) {
     return Text(
@@ -13,6 +15,7 @@ class OneLineTextWidget extends StatelessWidget {
       maxLines: maxLine,
       overflow: TextOverflow.ellipsis,
       style: style,
+      textAlign: align,
     );
   }
 }

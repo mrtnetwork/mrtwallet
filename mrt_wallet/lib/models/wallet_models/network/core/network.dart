@@ -19,7 +19,10 @@ abstract class AppNetworkImpl {
 
 enum AppBitcoinNetwork implements AppNetworkImpl {
   bitcoinMainnet(0, NetworkCoins.bitcoinMainnet),
-  bitcoinTestnet(1, NetworkCoins.bitcoinTestnet);
+  bitcoinTestnet(1, NetworkCoins.bitcoinTestnet),
+  litecoinMainnet(2, NetworkCoins.litecoinMainnet),
+  dogecoinMainnet(3, NetworkCoins.dogecoinMainnet),
+  dashMainnet(4, NetworkCoins.dashMainnet);
 
   @override
   final int value;
@@ -51,26 +54,38 @@ enum AppBitcoinNetwork implements AppNetworkImpl {
           Bip84Coins.bitcoin,
           Bip86Coins.bitcoin,
         ];
-      default:
+      case AppBitcoinNetwork.bitcoinTestnet:
         return [
           Bip44Coins.bitcoinTestnet,
           Bip49Coins.bitcoinTestnet,
           Bip84Coins.bitcoinTestnet,
           Bip86Coins.bitcoinTestnet,
         ];
+      case AppBitcoinNetwork.litecoinMainnet:
+        return [Bip44Coins.litecoin, Bip49Coins.litecoin, Bip84Coins.litecoin];
+      case AppBitcoinNetwork.dogecoinMainnet:
+        return [Bip44Coins.dogecoin, Bip49Coins.dogecoin];
+      case AppBitcoinNetwork.dashMainnet:
+        return [Bip44Coins.dash, Bip49Coins.dash];
+      default:
+        throw UnimplementedError();
     }
   }
 
   CryptoCoins findCOinFromBitcoinAddressType(BitcoinAddressType type) {
     switch (type) {
       case BitcoinAddressType.p2pkh:
+      case BitcoinAddressType.p2pk:
         return coins
             .firstWhere((element) => element.proposal == BipProposal.bip44);
       case BitcoinAddressType.p2wsh:
       case BitcoinAddressType.p2wpkh:
         return coins
             .firstWhere((element) => element.proposal == BipProposal.bip84);
+      case BitcoinAddressType.p2pkInP2sh:
+      case BitcoinAddressType.p2pkhInP2sh:
       case BitcoinAddressType.p2wpkhInP2sh:
+      case BitcoinAddressType.p2wshInP2sh:
         return coins
             .firstWhere((element) => element.proposal == BipProposal.bip49);
       default:

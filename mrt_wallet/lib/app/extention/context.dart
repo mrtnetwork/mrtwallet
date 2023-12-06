@@ -90,7 +90,6 @@ extension QuickContextAccsess on BuildContext {
   T? getNullArgruments<T>() {
     final args = ModalRoute.of(this)?.settings.arguments;
     if (args == null) return null;
-    print("arags ${args.runtimeType} ${T}");
     if (args.runtimeType != T) {
       throw ArgumentError(
           "value of type ${args.runtimeType} is not subtype ${T.runtimeType}");

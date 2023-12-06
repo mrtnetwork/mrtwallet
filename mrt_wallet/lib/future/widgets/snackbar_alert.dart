@@ -14,25 +14,22 @@ SnackBar createSnackAlert(
     content: GestureDetector(
       onTap: onTap,
       child: Center(
-        child: SizedBox(
-          height: 60,
-          width: 230,
-          child: Center(
-            child: Card(
-              elevation: 3,
-              child: Container(
-                padding: WidgetConstant.padding10,
-                decoration: BoxDecoration(
-                    color: theme.colorScheme.background,
-                    borderRadius: WidgetConstant.border8),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Center(
-                      child: OneLineTextWidget(message),
-                    )
-                  ],
-                ),
+        child: ConstraintsBoxView(
+          maxWidth: 230,
+          child: Card(
+            elevation: 3,
+            child: Container(
+              padding: WidgetConstant.padding10,
+              decoration: BoxDecoration(
+                  color: theme.colorScheme.background,
+                  borderRadius: WidgetConstant.border8),
+              child: Stack(
+                children: [
+                  Center(
+                    child: OneLineTextWidget(message,
+                        maxLine: 2, align: TextAlign.center),
+                  )
+                ],
               ),
             ),
           ),

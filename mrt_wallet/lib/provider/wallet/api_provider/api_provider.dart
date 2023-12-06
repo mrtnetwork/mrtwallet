@@ -8,6 +8,9 @@ mixin NetworkApiProviderImpl on WalletStorageImpl {
     switch (network) {
       case AppBitcoinNetwork.bitcoinMainnet:
       case AppBitcoinNetwork.bitcoinTestnet:
+      case AppBitcoinNetwork.litecoinMainnet:
+      case AppBitcoinNetwork.dogecoinMainnet:
+      case AppBitcoinNetwork.dashMainnet:
         final btcNetwork =
             (network as AppBitcoinNetwork).coinParam.transacationNetwork;
         final serviceProvider = ApiProviderTracker(provider: provider);

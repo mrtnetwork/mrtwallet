@@ -5,7 +5,7 @@ mixin Signer on MasterKeyImpl {
       {required BitcoinTransactionBuilder builder,
       required List<Bip32AddressCore> accouts,
       required List<int> password}) {
-    return builder.buildTransaction((trDigest, utxo, publicKey) {
+    return builder.buildTransaction((trDigest, utxo, publicKey, sighash) {
       try {
         final account =
             accouts.whereType<IBitcoinAddress>().firstWhere((element) {
@@ -21,9 +21,9 @@ mixin Signer on MasterKeyImpl {
         final prv = _getPrivateKey(password, keyIndex);
         final btcPrivateKey = ECPrivate.fromBytes(prv);
         if (utxo.utxo.isP2tr()) {
-          return btcPrivateKey.signTapRoot(trDigest);
+          return btcPrivateKey.signTapRoot(trDigest, sighash: sighash);
         }
-        return btcPrivateKey.signInput(trDigest);
+        return btcPrivateKey.signInput(trDigest, sigHash: sighash);
       } on StateError {
         throw WalletExceptionConst.accountDoesNotFound;
       } catch (e) {

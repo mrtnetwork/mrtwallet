@@ -183,7 +183,7 @@ mixin WalletStatusImpl on _WalletCore {
   }
 
   Future<void> _eraseWallet(String password) async {
-    // _validatePassword(password);
+    _validatePassword(password);
     await _cleanWallet();
   }
 

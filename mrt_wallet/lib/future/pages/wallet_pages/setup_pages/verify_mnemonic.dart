@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/compare/compare.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
@@ -69,6 +70,17 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
   @override
   void initState() {
     super.initState();
+    _test();
+  }
+
+  void _test() {
+    if (kDebugMode) {
+      for (int i = 0; i < widget.mnemonic.length; i++) {
+        inSelectMnemonic[i] = SelectedMnemonic.select(i, widget.mnemonic[i]);
+      }
+      isEqual();
+      setState(() {});
+    }
   }
 
   @override

@@ -67,7 +67,7 @@ class SelectProviderView extends StatelessWidget {
               ],
             );
           },
-          itemCount: AppBitcoinNetwork.values.length,
+          itemCount: network.coinParam.providers.length,
         ),
       ],
     );

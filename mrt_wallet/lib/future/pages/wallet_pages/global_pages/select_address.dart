@@ -2,6 +2,7 @@ import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:flutter/material.dart';
 
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/utility/blockchin_utils/blockchain_addr_utils.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -25,7 +26,7 @@ class _SelectAddressState extends State<SelectAddress> with SafeState {
 
   BitcoinAddress? validateBitcoinNetwork(String address) {
     try {
-      return BitcoinAddress.fromAddress(
+      return BlockchainAddressUtils.toBitcoinAddress(
           address, widget.network.coinParam.transacationNetwork);
     } on ArgumentError {
       return null;

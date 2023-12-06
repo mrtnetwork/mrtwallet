@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/models/wallet_models/keys/wallet_backup.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 enum SetupWalletPage {
@@ -37,7 +38,7 @@ class SetupWalletController extends StateController {
   bool get inConfirm => _page == SetupWalletPage.confirm;
   bool get inExtraOption => _page == SetupWalletPage.extraOption;
 
-  Future<bool> backButton() async {
+  void backButton() {
     switch (page) {
       case SetupWalletPage.extraOption:
         _page = SetupWalletPage.confirm;
@@ -47,13 +48,13 @@ class SetupWalletController extends StateController {
         _mnemonic = null;
         break;
       case SetupWalletPage.mnemonic:
+      case SetupWalletPage.enterMnemonic:
         _page = SetupWalletPage.password;
         break;
       default:
-        return true;
+        break;
     }
     notify();
-    return false;
   }
 
   String _password = "";
@@ -116,6 +117,15 @@ class SetupWalletController extends StateController {
     final generate = await WalletMasterKeys.setup(
         exitingMnemonic?.toStr() ?? mnemonic!.toStr(), passphrase ?? "");
     return (generate, _password);
+  }
+
+  Future<String> setupBackup(WalletBackup backup,
+      {Mnemonic? exitingMnemonic}) async {
+    if (!AppStringUtility.isStrongPassword(_password)) {
+      throw WalletExceptionConst.incorrectPassword;
+    }
+
+    return _password;
   }
 
   @override

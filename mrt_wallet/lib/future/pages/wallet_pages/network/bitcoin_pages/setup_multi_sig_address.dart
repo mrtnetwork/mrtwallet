@@ -23,6 +23,7 @@ class _SetupBitcoinMultiSigAddressViewState
   final Map<String, BitcoinMultiSigSignerDetais> _signers = {};
   List<BitcoinMultiSigSignerDetais> get signers => _signers.values.toList();
   final GlobalKey visibleReview = GlobalKey();
+  late final AppBitcoinNetwork network;
   String? _errorText;
   int? _thresHold;
   bool isValidThreshHold = false;
@@ -106,26 +107,27 @@ class _SetupBitcoinMultiSigAddressViewState
 
   bool isValid() => _thresHold != null && _thresHold! >= 2 && _thresHold! <= 16;
   bool inReview = false;
-  static const List<BitcoinAddressType> multiSigAddressTyes = [
-    BitcoinAddressType.p2wshInP2sh,
-    BitcoinAddressType.p2wsh
-  ];
-  BitcoinAddressType multiSigAddressTye = BitcoinAddressType.p2wsh;
+  // final List<BitcoinAddressType> multiSigAddressTyes = [];
+  final Map<BitcoinAddressType, String> supportedMultisigTypes = {};
+
+  BitcoinAddressType multiSigAddressTye = BitcoinAddressType.p2pkhInP2sh;
   BitcoinMultiSignatureAddress? _multiSigAddress;
   MultiSignatureAddress get multiSigAddress => _multiSigAddress!;
   BitcoinAddress get bitcoinAddress {
     switch (multiSigAddressTye) {
       case BitcoinAddressType.p2wsh:
-        return multiSigAddress.toP2wshAddress();
+        return multiSigAddress.toP2wshAddress(
+            network: network.coinParam.transacationNetwork);
+      case BitcoinAddressType.p2pkhInP2sh:
+        return multiSigAddress.toP2shAddress();
       default:
-        return multiSigAddress.toP2wshInP2shAddress();
+        return multiSigAddress.toP2wshInP2shAddress(
+            network: network.coinParam.transacationNetwork);
     }
   }
 
   late String? _multiSigViewAddress;
   void _toMultiSigAddress() {
-    final network = context.watch<WalletProvider>(StateIdsConst.main).network
-        as AppBitcoinNetwork;
     _multiSigViewAddress =
         bitcoinAddress.toAddress(network.coinParam.transacationNetwork);
   }
@@ -141,14 +143,17 @@ class _SetupBitcoinMultiSigAddressViewState
     setState(() {});
   }
 
-  Future<bool> _onBack() async {
-    if (progressKey.isSuccess) return true;
-    if (!inReview) return true;
-    inReview = false;
-    setState(() {});
-    _multiSigAddress = null;
-    _multiSigViewAddress = null;
-    return false;
+  void _onBack() {
+    try {
+      if (progressKey.isSuccess) return;
+      if (!inReview) return;
+      inReview = false;
+
+      _multiSigAddress = null;
+      _multiSigViewAddress = null;
+    } finally {
+      setState(() {});
+    }
   }
 
   void onChangeAddressType(BitcoinAddressType? selectType) {
@@ -211,6 +216,7 @@ class _SetupBitcoinMultiSigAddressViewState
             backToIdle: false);
       }
     }
+    setState(() {});
   }
 
   final GlobalKey<StreamWidgetState> buttomState = GlobalKey();
@@ -232,18 +238,45 @@ class _SetupBitcoinMultiSigAddressViewState
     if (result.hasError || !result.result) {
       buttomState.error();
       _shareError = result.error?.tr;
-      setState(() {});
     } else {
       buttomState.success();
+    }
+    setState(() {});
+  }
+
+  bool _init = false;
+  void init() {
+    if (_init) return;
+    _init = true;
+    network = context.watch<WalletProvider>(StateIdsConst.main).network
+        as AppBitcoinNetwork;
+    supportedMultisigTypes[BitcoinAddressType.p2pkhInP2sh] = "P2SH";
+    if (network.coinParam.transacationNetwork.supportedAddress
+        .contains(BitcoinAddressType.p2wpkh)) {
+      supportedMultisigTypes[BitcoinAddressType.p2wshInP2sh] =
+          BitcoinAddressType.p2wshInP2sh.value;
+      supportedMultisigTypes[BitcoinAddressType.p2wsh] =
+          BitcoinAddressType.p2wsh.value;
     }
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    init();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onBack,
+    return PopScope(
+      canPop: progressKey.isSuccess || !inReview,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _onBack();
+        }
+      },
       child: ScaffolPageView(
-          appBar: AppBar(title: Text("bitcoin_multi_sig_addr".tr)),
+          appBar: AppBar(title: Text("multi_sig_addr".tr)),
           child: UnfocusableChild(
             child: PageProgress(
               key: progressKey,
@@ -274,11 +307,13 @@ class _SetupBitcoinMultiSigAddressViewState
                                   WidgetConstant.height8,
                                   Column(
                                     children: List.generate(
-                                        multiSigAddressTyes.length, (index) {
+                                        supportedMultisigTypes.length, (index) {
+                                      final supportTypes =
+                                          supportedMultisigTypes.keys.toList();
                                       return RadioListTile(
-                                          title: Text(
-                                              multiSigAddressTyes[index].value),
-                                          value: multiSigAddressTyes[index],
+                                          title:
+                                              Text(supportTypes[index].value),
+                                          value: supportTypes[index],
                                           groupValue: multiSigAddressTye,
                                           onChanged: onChangeAddressType);
                                     }),
@@ -469,9 +504,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   PageTitleSubtitle(
-                                      title:
-                                          "establishing_bitcoin_multi_sig_addr"
-                                              .tr,
+                                      title: "establishing_multi_sig_addr".tr,
                                       body: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,

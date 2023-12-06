@@ -75,7 +75,7 @@ class Localization {
               "Welcome to the secure login portal for your cryptocurrency wallet. Please enter your credentials below to access your digital assets",
           "password": "Password",
           "unlock": "Unlock",
-          "derive_bitcoin_address": "Deriving Bitcoin Addresses",
+          "derive_network_address": "Deriving ___1__ Addresses",
           "generate_from_hd_wallet":
               "Generating an address based on your HD wallet seed.",
           "generate_from_imported_keys":
@@ -97,13 +97,13 @@ class Localization {
               "BIP84: Introduces native SegWit (bech32) for more efficient fund storage, reducing fees and improving processing.",
           "bip86_desc":
               "BIP86: Proposes SegWit Version 1 P2TR, advancing Bitcoin's features, security, and scalability in line with community efforts.",
-          "setup_bitcoin_address": "Setup bitcoin address",
-          "setup_bitcoin_address_desc":
-              "You have not set up any Bitcoin account. To begin setup, please click on the 'Setup Address' button.",
+          "setup_network_address": "Setup ___1__ address",
+          "setup_network_address_desc":
+              "You have not set up any ___1__ account. To begin setup, please click on the 'Setup Address' button.",
           "setup_address": "Setup Address",
           "choose_bitcoin_address_type": "Choose Address Type",
           "choose_bitcoin_address_type_desc":
-              "Please select a Bitcoin address type to create an address.",
+              "Please select the address type to create an address.",
           "bitcoin_type_recomended":
               "We recommend creating a P2TR or P2WPKH address due to their enhanced security features and lower cost fees.",
           "standard_derivation": "Standard Derivation",
@@ -143,7 +143,7 @@ class Localization {
           "invalid_bip_key_index": "invalid bip proposal derivation index",
           "address_already_exist": "Address already exist",
           "generating_new_addr": "Generating new address",
-          "copied_to_clipboard": "Copied to clipboard.",
+          "copied_to_clipboard": "Copied to cliqwe qwe qwe qwe qwe qwe pboard.",
           "selected": "Selected",
           "switch_account": "Switch account",
           "new_address": "New Address",
@@ -151,10 +151,12 @@ class Localization {
           "invalid_request_type":
               "Invalid type, request result can be string, list, or map",
           "build_transacation": "Build transaction",
-          "create_and_send_bitcoin_transaction":
-              "Create and send Bitcoin transactions",
+          "create_and_send_network_transaction":
+              "Create and send ___1__ transactions",
           "please_selected_acc_spend":
-              "Please select the Bitcoin accounts you want to spend.",
+              "Please select the ___1__ accounts you want to spend.",
+          "spend_multiple_account_desc":
+              "In a single transaction, you can spend from multiple addresses.",
           "export_mnemonic": "Export mnemonic",
           "export_mnemonic_desc":
               "Export your mnemonic for secure backup and recovery",
@@ -277,9 +279,9 @@ class Localization {
               "Insufficient balance to finalize the transaction. Prior to proceeding, please review the transaction outputs for accuracy.",
           "create_send_transaction":
               "Creating and sending Bitcoin transaction. Kindly await completion.",
-          "bitcoin_multi_sig_addr": "Bitcoin multi-signature address",
-          "establishing_bitcoin_multi_sig_addr":
-              "Establishing a Bitcoin multi-signature address.",
+          "multi_sig_addr": "Multi-signature address",
+          "establishing_multi_sig_addr":
+              "Establishing a multi-signature address.",
           "multi_sig_desc":
               "This feature is specifically crafted to enhance the security of your funds. It involves creating an account with the public keys of multiple chosen accounts. This address serves as an added layer of security, ensuring that even if one of your private keys is compromised, your funds remain both accessible and secure.",
           "mutli_sig_desc2":
@@ -466,7 +468,7 @@ class Localization {
           "last_request_error": "The most recent request encountered an error",
           "reached_limit_error":
               "You have reached the limit for free requests. Please wait.",
-          "bitcoin_api_provider_service": "Bitcoin service provider",
+          "service_provider": "Service provider",
           "what_is_api_provider":
               "A Blockchain API provider service, offers developers a comprehensive interface for interacting with the blockchain. It facilitates functions such as reading UTXOs, checking balances, and sending transactions, providing seamless integration for applications requiring real-time access to blockchain network data and transaction management.",
           "what_is_service_provider": "What is a blockchain service provider?",

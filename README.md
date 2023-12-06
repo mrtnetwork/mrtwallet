@@ -1,6 +1,6 @@
 # About MRT Wallet
 
-Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
+Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as Dogecoin, Litecoin, and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
 
 **Decentralized, Secure, and Open Source**
 
@@ -8,7 +8,7 @@ At MRT Wallet, we believe in the power of decentralization. Our commitment to de
 
 We take pride in being fully open source. You can explore and audit our code on [GitHub](https://github.com/mrtnetwork/mrtwallet) under the Apache License 2.0. This commitment to transparency means that every line of code is accessible, empowering the community to verify the security and integrity of our wallet.
 
-**Bitcoin Support — Mainnet and Testnet**
+**Bitcoin, Dogecoin, Litecoin, Dash Support — Mainnet and Testnet**
 
 Whether you're navigating the Bitcoin mainnet for your financial transactions or experimenting on the testnet, MRT Wallet is your reliable companion. Seamlessly switch between mainnet and testnet environments to explore, test, and transact with confidence.
 

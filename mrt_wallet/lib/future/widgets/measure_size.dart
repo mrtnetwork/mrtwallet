@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mrt_wallet/types/typedef.dart';
@@ -38,9 +40,7 @@ class MeasureSize extends SingleChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      // ignore: library_private_types_in_public_api
-      BuildContext context,
-      covariant _MeasureSizeRenderObject renderObject) {
+      BuildContext context, covariant _MeasureSizeRenderObject renderObject) {
     renderObject.onChange = onChange;
   }
 }

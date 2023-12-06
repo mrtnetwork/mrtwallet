@@ -15,8 +15,13 @@ class SetupWallet extends StatelessWidget {
     return MrtViewBuilder<SetupWalletController>(
       controller: () => SetupWalletController(setupMode),
       builder: (model) {
-        return WillPopScope(
-          onWillPop: model.backButton,
+        return PopScope(
+          canPop: model.page == SetupWalletPage.password,
+          onPopInvoked: (didPop) async {
+            if (!didPop) {
+              model.backButton();
+            }
+          },
           child: ScaffolPageView(
             appBar: AppBar(title: Text("setup".tr)),
             child: PageProgress(

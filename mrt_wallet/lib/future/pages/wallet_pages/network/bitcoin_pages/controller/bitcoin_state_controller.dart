@@ -14,7 +14,7 @@ enum BitcoinTransactionPages { account, utxo, receiver, send }
 class BitcoinStateController extends StateController {
   BitcoinStateController(this._walletProvider);
 
-  Future<bool> onBackButtom() async {
+  bool onBackButtom() {
     if (progressKey.status == StreamWidgetStatus.success) {
       return true;
     }
@@ -70,6 +70,9 @@ class BitcoinStateController extends StateController {
   int _utxosCount = 0;
 
   BitcoinTransactionPages _page = BitcoinTransactionPages.account;
+  bool get canPopPage =>
+      progressKey.status == StreamWidgetStatus.success ||
+      _page == BitcoinTransactionPages.account;
   bool get inAccountPage => _page == BitcoinTransactionPages.account;
   bool get inUtxoPage => _page == BitcoinTransactionPages.utxo;
   bool get inReceiverPage => _page == BitcoinTransactionPages.receiver;
@@ -113,6 +116,7 @@ class BitcoinStateController extends StateController {
     }
   }
 
+  bool get haveUtxos => _utxosCount > 0;
   bool get allUtxosSelected => _selectedUtxo.length == _utxosCount;
   void selectAll() {
     if (allUtxosSelected) {
@@ -148,14 +152,16 @@ class BitcoinStateController extends StateController {
   void addAccount(IBitcoinAddress account) {
     final address = account.address.toAddress;
     final blanace = account.address.balance.value.balance;
+    final bool canSpend = blanace > BigInt.zero;
+
     if (_addresses.containsKey(address)) {
       _addresses.remove(address);
     } else {
-      if (blanace > BigInt.zero) {
+      if (canSpend) {
         if (account.isMultiSigAccounts) {
           account as IBitcoinMultiSigAddress;
           _addresses.addAll({
-            address: UtxoAddressDetails(
+            address: UtxoAddressDetails.multiSigAddress(
                 address: account.bitcoinAddress,
                 multiSigAddress: account.multiSignatureAddress)
           });
@@ -393,6 +399,7 @@ class BitcoinStateController extends StateController {
           ),
           backToIdle: false);
     }
+    notify();
   }
 
   void changeAccount(CryptoAddress? change) {

@@ -9,7 +9,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/keys/wallet_backup.dart';
 
-enum _BackupMode { mnemonicBackup, walletBaackup }
+enum _BackupMode { mnemonicBackup, walletBackup }
 
 class EnterMnemonicBackupView extends StatefulWidget {
   const EnterMnemonicBackupView({super.key});
@@ -34,7 +34,7 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
 
   late final Map<_BackupMode, Widget> backupModes = {
     _BackupMode.mnemonicBackup: Text("mnemonic_backup".tr),
-    _BackupMode.walletBaackup: Text("wallet_backup".tr)
+    _BackupMode.walletBackup: Text("wallet_backup".tr)
   };
   String _backup = "";
   String _passphrase = "";
@@ -77,9 +77,9 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
     return "bcakup_validator".tr;
   }
 
-  String _password = "";
-  void onChangePassword(String password) {
-    _password = password;
+  String _backupPassword = "";
+  void onChangeBackupPassword(String password) {
+    _backupPassword = password;
   }
 
   String? passwordValidator(String? v) {
@@ -99,11 +99,16 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
     model.progressKey.progressText("launch_the_wallet".tr);
     final result = await MethodCaller.call(() async {
       final walletProvider = context.watch<WalletProvider>(StateIdsConst.main);
-      final decrypt =
-          await walletProvider.restoreBackup(_password, _backup, encoding);
-      if (selectedMode == _BackupMode.walletBaackup) {
-        final backup = WalletBackup.fromCborHex(decrypt);
-        await walletProvider.setupBackup(backup, _password);
+      final decrypt = await walletProvider.restoreBackup(
+          _backupPassword, _backup, encoding);
+      if (selectedMode == _BackupMode.walletBackup) {
+        final backup = await WalletBackup.fromBackup(
+            decrypt, passphrase ? _passphrase : '');
+        final password = await model.setupBackup(backup);
+        final result = await walletProvider.setupBackup(backup, password);
+        if (result.hasError) {
+          throw result.exception!;
+        }
         return;
       }
       BlockchainUtils.validateMnemonic(decrypt);
@@ -172,8 +177,8 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
           AppTextField(
             label: "input_backup_password".tr,
             validator: passwordValidator,
-            onChanged: onChangePassword,
-            initialValue: _password,
+            onChanged: onChangeBackupPassword,
+            initialValue: _backupPassword,
             error: _error,
             obscureText: true,
           ),

@@ -16,8 +16,13 @@ class SendBitcoinTransactionView extends StatelessWidget {
     return MrtViewBuilder<BitcoinStateController>(
       controller: () => BitcoinStateController(wallet),
       builder: (controller) {
-        return WillPopScope(
-          onWillPop: controller.onBackButtom,
+        return PopScope(
+          canPop: controller.canPopPage,
+          onPopInvoked: (didPop) {
+            if (!didPop) {
+              controller.onBackButtom();
+            }
+          },
           child: Scaffold(
             appBar: AppBar(
               title: Text("build_transacation".tr),
@@ -70,11 +75,17 @@ class _SelectAccountUtxo extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PageTitleSubtitle(
-            title: "create_and_send_bitcoin_transaction".tr,
+            title: "create_and_send_network_transaction"
+                .tr
+                .replaceOne(controller.network.coinParam.coinName),
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("please_selected_acc_spend".tr),
+                Text("please_selected_acc_spend"
+                    .tr
+                    .replaceOne(controller.network.coinParam.coinName)),
+                WidgetConstant.height8,
+                Text("spend_multiple_account_desc".tr),
                 WidgetConstant.height20,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -191,14 +202,16 @@ class _UtxoPage extends StatelessWidget {
         WidgetConstant.height20,
         PageTitleSubtitle(
             title: "utxos".tr, body: Text("choose_utxos_each_account".tr)),
-        CheckboxListTile(
-          title: Text("choose_all".tr),
-          value: controller.allUtxosSelected,
-          onChanged: (value) {
-            controller.selectAll();
-          },
-        ),
-        WidgetConstant.height8,
+        if (controller.haveUtxos) ...[
+          CheckboxListTile(
+            title: Text("choose_all".tr),
+            value: controller.allUtxosSelected,
+            onChanged: (value) {
+              controller.selectAll();
+            },
+          ),
+          WidgetConstant.height8
+        ],
         Column(
           children: List.generate(controller.utxos.length, (index) {
             return ContainerWithBorder(

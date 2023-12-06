@@ -31,15 +31,7 @@ class BitcoinParams implements NetworkCoinParams {
 
   @override
   final String logo;
-  final BitcoinNetwork transacationNetwork;
-  // BitcoinNetwork get transacationNetwork {
-  //   switch (this) {
-  //     case AppBitcoinNetwork.bitcoinMainnet:
-  //       return BitcoinNetwork.mainnet;
-  //     default:
-  //       return BitcoinNetwork.testnet;
-  //   }
-  // }
+  final BasedUtxoNetwork transacationNetwork;
 
   @override
   String getAccountExplorer(String address) {

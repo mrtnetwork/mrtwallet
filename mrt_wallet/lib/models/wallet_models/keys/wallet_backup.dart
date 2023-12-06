@@ -13,29 +13,29 @@ class WalletBackup with CborSerializable {
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          masterKeys.toCbor(),
+          masterKeys.toCbor(false),
           CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList())
         ]),
         WalletModelCborTagsConst.backup);
   }
 
-  factory WalletBackup.fromCborHex(String cborHex) {
-    final obj = CborObject.fromCborHex(cborHex);
-    return WalletBackup.fromCborBytesOrObject(obj: obj);
-  }
-  factory WalletBackup.fromCborBytesOrObject(
-      {List<int>? bytes, CborObject? obj}) {
+  static Future<WalletBackup> fromBackup(
+      String cborHex, String passhphrase) async {
     try {
+      final obj = CborObject.fromCborHex(cborHex);
       final CborListValue cbor = CborSerializable.decodeCborTags(
-          bytes, obj, WalletModelCborTagsConst.backup);
-      final WalletMasterKeys keys =
+          null, obj, WalletModelCborTagsConst.backup);
+      final WalletMasterKeys backupkey =
           WalletMasterKeys.fromCborBytesOrObject(obj: cbor.value[0]);
+      final WalletMasterKeys key = await WalletMasterKeys.setup(
+          backupkey.mnemonic.toStr(), passhphrase,
+          customKeys: backupkey.customKeys);
       final CborListValue accountList = cbor.value[1];
       final accs = accountList.value
           .map((e) => Bip32NetworkAccount.fromCborBytesOrObject(obj: e))
           .toList();
 
-      return WalletBackup(accounts: accs, masterKeys: keys);
+      return WalletBackup(accounts: accs, masterKeys: key);
     } catch (e) {
       throw WalletExceptionConst.invalidBackup;
     }

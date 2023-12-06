@@ -53,8 +53,8 @@ mixin WalletNetworkImpl
   Future<void> _switchNetwork(AppNetworkImpl changeNetwork) async {
     if (_network == changeNetwork) return;
     final provider = await _readNetworkProvider(changeNetwork);
-    _changeNetwork(changeNetwork, provider: provider);
 
+    _changeNetwork(changeNetwork, provider: provider);
     await _readAccounts();
     await _saveNetwork(_network);
   }
