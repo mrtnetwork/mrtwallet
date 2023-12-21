@@ -1,5 +1,5 @@
 name: mrt_wallet
-description: Open-source decentralized wallet for the future of finance. Securely manage assets, support for Bitcoin, Android, Windows, web.
+description: Open-source decentralized wallet for the future of finance. Securely manage assets, support for Bitcoin, Dogecoin, Ripple, Litecoin, Dash, Android, Windows, web.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.0+2
+version: 2.0.0+1
 
 homepage: "https://github.com/mrtnetwork/mrtwallet"
 repository: "https://github.com/mrtnetwork/mrtwallet"
@@ -45,9 +45,9 @@ dependencies:
   mrt_native_support:
     path: ../mrt_native_support
   http: ^1.1.0
-  blockchain_utils: ^1.1.0
-  bitcoin_base: ^2.0.1
- 
+  blockchain_utils: ^1.4.1
+  bitcoin_base: ^3.0.1
+  xrp_dart: ^3.0.1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2

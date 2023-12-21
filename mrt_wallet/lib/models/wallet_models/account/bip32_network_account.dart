@@ -1,65 +1,71 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
+import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class Bip32NetworkAccount implements NetworkAccountCore {
+class Bip32NetworkAccount<N, T, X> implements NetworkAccountCore<N, T, X> {
   factory Bip32NetworkAccount.setup(AppNetworkImpl network) {
     return Bip32NetworkAccount._(network: network, addressIndex: 0);
   }
   Bip32NetworkAccount._(
       {required this.network,
       List<Bip32AddressCore> addresses = const [],
+      List<ContactCore> contacts = const [],
       required int addressIndex})
       : _addresses = List.unmodifiable(addresses),
-        _addressIndex = addressIndex;
+        _addressIndex = addressIndex,
+        _contacts = List.unmodifiable(contacts);
   factory Bip32NetworkAccount.fromHex(String cborHex) {
     return Bip32NetworkAccount.fromCborBytesOrObject(
         bytes: BytesUtils.fromHexString(cborHex));
   }
   factory Bip32NetworkAccount.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    try {
-      final CborListValue cbor = CborSerializable.decodeCborTags(
-          bytes, obj, WalletModelCborTagsConst.iAccount);
-      final network = AppBitcoinNetwork.fromValue(cbor.value[0].value);
-      final CborListValue accounts = cbor.value[1];
-      final toAccounts = accounts.value
-          .map((e) => IBitcoinAddress.fromCborBytesOrObject(obj: e))
-          .toList();
-
-      int? addressIndex;
-      if (cbor.value[2] is CborStringValue) {
-        try {
-          final String addr = cbor.value[2].value;
-          final index = toAccounts
-              .indexWhere((element) => element.address.toAddress == addr);
-          if (index >= 0) {
-            addressIndex = index;
-          }
-          // ignore: empty_catches
-        } on StateError {}
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.iAccount);
+    final network = AppNetworkImpl.fromValue(cbor.getIndex(0));
+    final List<CborObject> accounts = cbor.getIndex(1) ?? <CborObject>[];
+    final toAccounts =
+        accounts.map((e) => CryptoAccountAddress.fromCbor(e)).toList();
+    int addressIndex = 0;
+    final String? currentAddress = cbor.getIndex(2);
+    if (currentAddress != null) {
+      final index = MethodCaller.nullOnException(() => toAccounts.indexWhere(
+              (element) => element.address.toAddress == currentAddress)) ??
+          0;
+      if (index > 0) {
+        addressIndex = index;
       }
-
-      return Bip32NetworkAccount._(
-          network: network,
-          addresses: toAccounts,
-          addressIndex: addressIndex ?? 0);
-    } catch (e) {
-      throw WalletExceptionConst.invalidAccountDetails;
     }
+    List<ContactCore> contacts = [];
+    final List? cborContacts = cbor.getIndex(3);
+    if (cborContacts != null) {
+      contacts = cborContacts
+          .map((e) => ContactCore.fromCborBytesOrObject(network, obj: e))
+          .toList();
+    }
+
+    return Bip32NetworkAccount._(
+        network: network,
+        addresses: toAccounts.cast(),
+        addressIndex: addressIndex,
+        contacts: contacts);
   }
   @override
   final AppNetworkImpl network;
-  List<Bip32AddressCore> _addresses;
+  List<Bip32AddressCore<N, T, X>> _addresses;
 
   @override
-  List<Bip32AddressCore> get addresses => _addresses;
+  List<Bip32AddressCore<N, T, X>> get addresses => _addresses;
 
   @override
   bool get haveAddress => addresses.isNotEmpty;
+  List<ContactCore<X>> _contacts;
+  @override
+  List<ContactCore<X>> get contacts => _contacts;
 
   @override
   Bip32AddressIndex nextDrive(CryptoCoins coin) {
@@ -85,12 +91,25 @@ class Bip32NetworkAccount implements NetworkAccountCore {
 
   @override
   void addNewAddress(List<int> publicKey, NewAccountParams accountParams) {
-    if (accountParams is! BitcoinNewAddressParams) {
-      throw WalletExceptionConst.invalidAccountDetails;
-    }
     if (!network.coins.contains(accountParams.coin)) {
       throw WalletExceptionConst.invalidCoin;
     }
+    Bip32AddressCore newAddress;
+    if (accountParams is RippleNewAddressParam) {
+      newAddress = _addXrpAddress(publicKey, accountParams);
+    } else if (accountParams is BitcoinNewAddressParams) {
+      newAddress = _addBitcoinAddress(publicKey, accountParams);
+    } else {
+      throw WalletExceptionConst.invalidAccountDetails;
+    }
+    if (addresses.contains(newAddress)) {
+      throw WalletExceptionConst.addressAlreadyExist;
+    }
+    _addresses = List.unmodifiable([newAddress, ..._addresses]);
+  }
+
+  IBitcoinAddress _addBitcoinAddress(
+      List<int> publicKey, BitcoinNewAddressParams accountParams) {
     IBitcoinAddress newAddress;
     if (accountParams.isMultiSig) {
       accountParams as BitcoinMultiSigNewAddressParams;
@@ -105,31 +124,43 @@ class Bip32NetworkAccount implements NetworkAccountCore {
           publicKey: publicKey,
           network: network as AppBitcoinNetwork);
     }
-    if (addresses.contains(newAddress)) {
-      throw WalletExceptionConst.addressAlreadyExist;
-    }
-    _addresses = List.unmodifiable([newAddress, ..._addresses]);
+
+    return newAddress;
+  }
+
+  IXRPAddress _addXrpAddress(
+      List<int> publicKey, RippleNewAddressParam accountParams) {
+    IXRPAddress newAddress = accountParams.isMultiSig
+        ? IXRPMultisigAddress.newAccount(
+            accountParams: accountParams as RippleMultisigNewAddressParam,
+            network: network as AppXRPNetwork)
+        : IXRPAddress.newAccount(
+            accountParams: accountParams,
+            publicKey: publicKey,
+            network: network as AppXRPNetwork);
+
+    return newAddress;
   }
 
   int _addressIndex;
   @override
-  CryptoAddress get address => addresses.elementAt(_addressIndex);
+  CryptoAccountAddress get address => addresses.elementAt(_addressIndex);
 
   @override
-  void switchAccount(CryptoAddress address) {
-    if (address is! Bip32AddressCore) return;
+  void switchAccount(CryptoAccountAddress<N, T, X> address) {
+    if (address is! Bip32AddressCore<N, T, X>) return;
     final index = addresses.indexOf(address);
     if (index < 0 || index == _addressIndex) return;
     _addressIndex = index;
   }
 
   @override
-  void removeAccount(CryptoAddress address) {
+  void removeAccount(CryptoAccountAddress address) {
     if (address is! Bip32AddressCore) return;
     if (!addresses.contains(address)) {
       throw WalletExceptionConst.accountDoesNotFound;
     }
-    final currentAccounts = List<Bip32AddressCore>.from(_addresses);
+    final currentAccounts = List<Bip32AddressCore<N, T, X>>.from(_addresses);
     currentAccounts.remove(address);
     _addressIndex = 0;
     _addresses = currentAccounts;
@@ -145,8 +176,73 @@ class Bip32NetworkAccount implements NetworkAccountCore {
         CborListValue.fixedLength([
           network.value,
           CborListValue.fixedLength(addresses.map((e) => e.toCbor()).toList()),
-          currentAddress ?? const CborNullValue()
+          currentAddress ?? const CborNullValue(),
+          CborListValue.fixedLength(contacts.map((e) => e.toCbor()).toList())
         ]),
         WalletModelCborTagsConst.iAccount);
+  }
+
+  @override
+  CryptoAccountAddress? getAddress(String address) {
+    return MethodCaller.nullOnException(() => _addresses
+        .firstWhere((element) => element.address.toAddress == address));
+  }
+
+  @override
+  ContactCore<X>? getContact(String address) {
+    return MethodCaller.nullOnException(() {
+      return _contacts.firstWhere((element) {
+        return element.address == address;
+      });
+    });
+  }
+
+  @override
+  void addContact(ContactCore newContact) {
+    final validate = MethodCaller.nullOnException(() {
+      if (newContact.name.length < 3) return null;
+      return ContactCore.newContact(
+          network: network,
+          address: newContact.addressObject,
+          name: newContact.name);
+    });
+    if (validate == null || validate.address != newContact.address) {
+      throw WalletExceptionConst.invalidContactDetails;
+    }
+    final exist = getContact(newContact.address);
+    if (exist != null) {
+      throw WalletExceptionConst.contactExists;
+    }
+    _contacts = List.unmodifiable([newContact, ..._contacts]);
+  }
+
+  @override
+  void removeContact(ContactCore contact) {
+    final findContact = getContact(contact.address);
+    if (findContact == null) return;
+    final newContacts =
+        _contacts.where((element) => element != findContact).toList();
+    _contacts = List.unmodifiable(newContacts);
+  }
+
+  @override
+  ReceiptAddress<X>? getReceiptAddress(String address) {
+    final isAccount = getAddress(address);
+    if (isAccount != null) {
+      return ReceiptAddress<X>(
+          account: isAccount,
+          view: isAccount.address.toAddress,
+          type: isAccount.type,
+          networkAddress: isAccount.networkAddress);
+    }
+    final contact = getContact(address);
+    if (contact != null) {
+      return ReceiptAddress<X>(
+          contact: contact,
+          view: contact.address,
+          type: contact.type,
+          networkAddress: contact.addressObject);
+    }
+    return null;
   }
 }

@@ -5,4 +5,5 @@ class StorageKeysConst {
   static const String walletChecksum = "wallet_checksum";
   static const String walletNetworkKey = "network";
   static const String apiProviderKey = "provider";
+  static const String networkContactKey = "C";
 }

@@ -11,19 +11,19 @@ class AppSegmentedButton<T> extends StatelessWidget {
       required this.onChangeSelected});
   final Set<T> selected;
   final Map<T, String> items;
-  final VoidSetT onChangeSelected;
+  final VoidSetT<T> onChangeSelected;
   @override
   Widget build(BuildContext context) {
     return InteractiveViewer(
       minScale: 0.5,
       maxScale: 1,
       scaleFactor: 0.5,
-      child: SegmentedButton(
+      child: SegmentedButton<T>(
         emptySelectionAllowed: false,
         multiSelectionEnabled: false,
         showSelectedIcon: false,
         segments: items.keys
-            .map<ButtonSegment>((e) => ButtonSegment(
+            .map<ButtonSegment<T>>((e) => ButtonSegment(
                 value: e,
                 label: OneLineTextWidget(items[e]!,
                     style: context.textTheme.labelSmall)))

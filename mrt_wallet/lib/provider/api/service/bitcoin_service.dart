@@ -19,7 +19,7 @@ class BitcoinApiService with HttpProvider implements ApiService {
     bool isRechedLimit = false;
     try {
       final tx = await t().timeout(defaultTimeOut);
-      return _readResponse(tx, isPost: isPost);
+      return _readResponse<T>(tx, isPost: isPost);
     } on http.ClientException catch (e) {
       hasError = true;
       throw ApiProviderException(message: e.message);

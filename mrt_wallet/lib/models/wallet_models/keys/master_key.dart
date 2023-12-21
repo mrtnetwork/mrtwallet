@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
@@ -132,4 +133,13 @@ class WalletCustomKeys with CborSerializable, Equatable {
 
   @override
   List get variabels => [checksum, extendedPrivateKey, type, publicKey];
+
+  Bip32Base toBip32() {
+    switch (type) {
+      case EllipticCurveTypes.ed25519:
+        return Bip32Slip10Ed25519.fromExtendedKey(extendedPrivateKey);
+      default:
+        return Bip32Slip10Secp256k1.fromExtendedKey(extendedPrivateKey);
+    }
+  }
 }

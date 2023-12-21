@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
@@ -24,7 +24,7 @@ class PriceTooltipWidget extends StatelessWidget {
                 style: theme.textTheme.titleLarge
                     ?.copyWith(color: theme.colorScheme.onTertiary),
                 children: [
-              TextSpan(text: price),
+              TextSpan(text: price.to3Digits),
               const TextSpan(text: " "),
               TextSpan(
                   text: symbol,
@@ -42,63 +42,69 @@ class CoinPriceView extends StatelessWidget {
   const CoinPriceView({
     Key? key,
     this.account,
-    this.coinNames,
+    this.token,
     this.balance,
+    this.liveBalance,
     this.style,
     this.symbolColor,
     this.disableTooltip = false,
   })  : assert(
-            (balance == null && coinNames == null && account != null) ||
-                (account == null && balance != null && coinNames != null),
+            (token == null && account != null) ||
+                (account == null &&
+                    (balance != null || liveBalance != null) &&
+                    token != null),
             "use account or balance with coinName"),
         super(key: key);
 
-  final CryptoAddress? account;
-  final NetworkCoinParams? coinNames;
-  final CurrencyBalance? balance;
+  final CryptoAccountAddress? account;
+  final Token? token;
+  final BalanceCore? balance;
+  final Live<BalanceCore>? liveBalance;
   final TextStyle? style;
   final Color? symbolColor;
   final bool disableTooltip;
   @override
   Widget build(BuildContext context) {
-    final NetworkCoinParams coin = coinNames ?? account!.network.coinParam;
+    final Token coin = token ?? account!.network.coinParam.token;
     final theme = Theme.of(context);
-    return ToolTipView(
-      tooltipWidget: disableTooltip
-          ? null
-          : PriceTooltipWidget(
-              currencyName: coin.coinName,
-              price: balance?.price ?? account!.address.viewBalance,
-              symbol: coin.coinSymbol,
-            ),
-      child: Directionality(
-        textDirection: TextDirection.ltr,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: LiveWidget(() {
-                final price = balance?.price ?? account!.address.viewBalance;
-                return RichText(
+    return LiveWidget(() {
+      final price = balance?.price ??
+          liveBalance?.value.price ??
+          account!.address.viewBalance;
+      return ToolTipView(
+        tooltipWidget: disableTooltip
+            ? null
+            : PriceTooltipWidget(
+                currencyName: coin.name,
+                price: price,
+                symbol: coin.symbol,
+              ),
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: RichText(
                     textDirection: TextDirection.ltr,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     text: TextSpan(
                         style: style ?? theme.textTheme.labelLarge,
                         children: [
-                          TextSpan(text: price),
+                          TextSpan(text: price.to3Digits),
                           const TextSpan(text: " "),
-                        ]));
-              }),
-            ),
-            Text(
-              coin.coinSymbol,
-              style: theme.textTheme.labelSmall
-                  ?.copyWith(color: symbolColor ?? theme.colorScheme.primary),
-            )
-          ],
+                        ])),
+              ),
+              Text(
+                coin.symbol,
+                style: theme.textTheme.labelSmall
+                    ?.copyWith(color: symbolColor ?? theme.colorScheme.primary),
+              )
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 }

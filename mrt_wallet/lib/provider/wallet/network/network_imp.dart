@@ -8,23 +8,23 @@ mixin WalletNetworkImpl
         MasterKeyImpl {
   AppNetworkImpl _network = AppBitcoinNetwork.bitcoinTestnet;
   AppNetworkImpl get network => _network;
+  NetworkAccountCore? _account;
+  bool get haveAddress => _account?.haveAddress ?? false;
+  NetworkAccountCore get networkAccount => _account!;
+
   void _changeNetwork(AppNetworkImpl newNetwork,
       {ApiProviderService? provider}) {
     _setProvider(newNetwork, provider: provider);
     _network = newNetwork;
   }
 
-  NetworkAccountCore? _account;
-  bool get haveAddress => _account?.haveAddress ?? false;
-  NetworkAccountCore get networkAccount => _account!;
-
-  Future<void> _switchAccount(CryptoAddress account) async {
+  Future<void> _switchAccount(CryptoAccountAddress account) async {
     final acc = networkAccount;
     acc.switchAccount(account);
     await _saveAccount(acc);
   }
 
-  Future<void> _removeAccount(CryptoAddress account) async {
+  Future<void> _removeAccount(CryptoAccountAddress account) async {
     final acc = networkAccount;
     acc.removeAccount(account);
     await _saveAccount(acc);
@@ -42,6 +42,60 @@ mixin WalletNetworkImpl
   ) async {
     final currentAccount = _account!;
     currentAccount.addNewAddress(publicKey, accountParams);
+    await _saveAccount(currentAccount);
+  }
+
+  Future<void> _addNewContact(ContactCore newContact) async {
+    final currentAccount = _account!;
+    currentAccount.addContact(newContact);
+    await _saveAccount(currentAccount);
+  }
+
+  Future<void> _addNewToken(
+      TokenCore token, CryptoAccountAddress address) async {
+    final currentAccount = _account!;
+    if (!currentAccount.addresses.contains(address)) {
+      throw WalletExceptionConst.accountDoesNotFound;
+    }
+    address.addToken(token);
+    await _saveAccount(currentAccount);
+  }
+
+  Future<void> _removeToken(
+      TokenCore token, CryptoAccountAddress address) async {
+    final currentAccount = _account!;
+    if (!currentAccount.addresses.contains(address)) {
+      throw WalletExceptionConst.accountDoesNotFound;
+    }
+    address.removeToken(token);
+    await _saveAccount(currentAccount);
+  }
+
+  Future<void> _addNewNFT(NFTCore nft, CryptoAccountAddress address) async {
+    final currentAccount = _account!;
+    if (!currentAccount.addresses.contains(address)) {
+      throw WalletExceptionConst.accountDoesNotFound;
+    }
+    address.addNFT(nft);
+    await _saveAccount(currentAccount);
+  }
+
+  Future<void> _removeNFT(NFTCore nft, CryptoAccountAddress address) async {
+    final currentAccount = _account!;
+    if (!currentAccount.addresses.contains(address)) {
+      throw WalletExceptionConst.accountDoesNotFound;
+    }
+    address.removeNFT(nft);
+    await _saveAccount(currentAccount);
+  }
+
+  Future<void> _setAccountName(
+      String? name, CryptoAccountAddress address) async {
+    final currentAccount = _account!;
+    if (!currentAccount.addresses.contains(address)) {
+      throw WalletExceptionConst.accountDoesNotFound;
+    }
+    address.setAccountName(name);
     await _saveAccount(currentAccount);
   }
 
@@ -69,17 +123,16 @@ mixin WalletNetworkImpl
   Future<NetworkAccountCore> _clenCustomKeysAccount(
       NetworkAccountCore account, List<EncryptedCustomKey> existKeys) async {
     final signers = existKeys.map((e) => e.publicKey).toList();
-    List<CryptoAddress> removeList = [];
+    List<CryptoAccountAddress> removeList = [];
     for (final a in account.addresses) {
       if (a.keyIndex is Bip32AddressIndex) continue;
       List<String> pubKyes = [];
-      if (a.keyIndex is MultiSigAddressIndex) {
-        a as IBitcoinMultiSigAddress;
-        final pubkeys = a.multiSignatureAddress.signers
-            .where((element) => element.keyIndex is ImportedAddressIndex)
-            .map((e) => e.publicKey)
-            .toList();
-        if (pubkeys.isEmpty) continue;
+      if (a.multiSigAccount) {
+        final multiSigAccount = a as MultiSigCryptoAccountAddress;
+        bool hasImportedKey = multiSigAccount.keyDetails
+            .where((element) => element.$2 is ImportedAddressIndex)
+            .isEmpty;
+        if (hasImportedKey) continue;
       } else {
         pubKyes.addAll(a.signers);
       }

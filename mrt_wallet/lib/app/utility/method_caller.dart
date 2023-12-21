@@ -44,14 +44,22 @@ class MethodCaller {
       return MethodResult.error(e, stackTrace);
     }
   }
+
+  static T? nullOnException<T>(T? Function() t, {T? defaultValue}) {
+    try {
+      return t();
+    } catch (e) {
+      return defaultValue;
+    }
+  }
 }
 
 class MethodResult<T> {
-  MethodResult.error(this.exception, this.trace) : _result = null;
+  MethodResult.error(this.exception, this.trace);
   MethodResult.succsess(this._result)
       : exception = null,
         trace = null;
-  final T? _result;
+  late final T _result;
   String? get error {
     if (exception == null) return null;
     if (exception is AppException ||
@@ -66,8 +74,8 @@ class MethodResult<T> {
   final StackTrace? trace;
   bool get hasError => error != null;
   bool get hasResult => error == null;
-  bool get isCacel => exception is CancelableExption;
-  T get result => _result!;
+  bool get isCancel => exception is CancelableExption;
+  T get result => hasError ? throw WalletException(error!) : _result;
   bool get isBadCondition => exception is BadCondition;
 }
 

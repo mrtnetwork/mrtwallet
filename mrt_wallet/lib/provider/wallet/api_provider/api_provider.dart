@@ -5,25 +5,53 @@ mixin NetworkApiProviderImpl on WalletStorageImpl {
 
   NetworkApiProvider _buildApiProvider(AppNetworkImpl network,
       {ApiProviderService provider = ApiProviderService.mempool}) {
-    switch (network) {
-      case AppBitcoinNetwork.bitcoinMainnet:
-      case AppBitcoinNetwork.bitcoinTestnet:
-      case AppBitcoinNetwork.litecoinMainnet:
-      case AppBitcoinNetwork.dogecoinMainnet:
-      case AppBitcoinNetwork.dashMainnet:
-        final btcNetwork =
-            (network as AppBitcoinNetwork).coinParam.transacationNetwork;
-        final serviceProvider = ApiProviderTracker(provider: provider);
-        final api = provider == ApiProviderService.mempool
-            ? ApiProvider.fromMempool(
-                btcNetwork, BitcoinApiService(serviceProvider))
-            : ApiProvider.fromBlocCypher(
-                btcNetwork, BitcoinApiService(serviceProvider));
-        return BitcoinApiProvider(
-            provider: api, network: network, serviceProvider: serviceProvider);
+    switch (network.value) {
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+        return _buildBlockCypherOrMempolProvider(
+            network as AppBitcoinNetwork, provider);
+      case 30:
+      case 31:
+      case 32:
+        return _buildRippleProvider(network as AppXRPNetwork, provider);
       default:
         throw WalletExceptionConst.incorrectNetwork;
     }
+  }
+
+  BitcoinApiProvider _buildBlockCypherOrMempolProvider(
+      AppBitcoinNetwork network, ApiProviderService provider) {
+    final btcNetwork = network.coinParam.transacationNetwork;
+    final serviceProvider = ApiProviderTracker(provider: provider);
+    final api = provider == ApiProviderService.mempool
+        ? ApiProvider.fromMempool(
+            btcNetwork, BitcoinApiService(serviceProvider))
+        : ApiProvider.fromBlocCypher(
+            btcNetwork, BitcoinApiService(serviceProvider));
+    return BitcoinApiProvider(
+        provider: api, network: network, serviceProvider: serviceProvider);
+  }
+
+  RippleApiProvider _buildRippleProvider(
+      AppXRPNetwork network, ApiProviderService provider) {
+    final tracker = ApiProviderTracker(provider: provider);
+    XRPLRpc rpcProvider;
+    switch (network) {
+      case AppXRPNetwork.rippleMainnet:
+        rpcProvider = XRPLRpc(RPCV2Service(RPCConst.mainetUri, tracker));
+        break;
+      case AppXRPNetwork.rippleTestnet:
+        rpcProvider = XRPLRpc(RPCV2Service(RPCConst.testnetUri, tracker));
+        break;
+      default:
+        rpcProvider = XRPLRpc(RPCV2Service(RPCConst.devnetUri, tracker));
+        break;
+    }
+    return RippleApiProvider(
+        provider: rpcProvider, network: network, serviceProvider: tracker);
   }
 
   ApiProviderTracker currentProvider(AppNetworkImpl network) =>
@@ -54,13 +82,13 @@ mixin NetworkApiProviderImpl on WalletStorageImpl {
   }
 
   Future<void> _updateAccountBalance(NetworkAccountCore? account) async {
-    if (account == null) return;
+    if (account == null || !account.haveAddress) return;
     await getNetworkApiProvider(account.network).updateBalance(account.address);
     await _saveAccount(account);
   }
 
   Future<void> _updateAccountsBalance(NetworkAccountCore? account) async {
-    if (account == null) return;
+    if (account == null || !account.haveAddress) return;
     final provider = getNetworkApiProvider(account.network);
     for (final i in account.addresses) {
       await provider.updateBalance(i).catchError((e) {

@@ -1,40 +1,37 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
-
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class CryptoAddressDetails implements CryptoAddressDetailsCore {
-  CryptoAddressDetails(
+class NoneDecimalNetworkAddressDetails
+    implements NetworkAddressDetailsCore<BigInt> {
+  NoneDecimalNetworkAddressDetails(
       {required this.address,
-      required CurrencyBalance balance,
+      required NoneDecimalBalance balance,
       DateTime? updated})
       : _updated = updated ?? DateTime.now(),
-        balance = Live<CurrencyBalance>(balance);
+        balance = Live<NoneDecimalBalance>(balance);
 
-  factory CryptoAddressDetails.fromCborBytesOrObject(int currencyDecimal,
-      {List<int>? bytes, CborObject? obj}) {
-    try {
-      final CborListValue cbor = CborSerializable.decodeCborTags(
-          bytes, obj, WalletModelCborTagsConst.address);
-      final String address = cbor.value[0].value;
-      final BigInt balance = cbor.value[1].value;
-      final DateTime updated = cbor.value[2].value;
-      return CryptoAddressDetails(
-          address: address,
-          balance: CurrencyBalance(balance, currencyDecimal),
-          updated: updated);
-    } catch (e) {
-      throw WalletExceptionConst.invalidAccountDetails;
-    }
+  factory NoneDecimalNetworkAddressDetails.fromCborBytesOrObject(
+      int currencyDecimal,
+      {List<int>? bytes,
+      CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.address);
+    final String address = cbor.getIndex(0);
+    final BigInt balance = cbor.getIndex(1);
+    final DateTime updated = cbor.getIndex(2);
+    return NoneDecimalNetworkAddressDetails(
+        address: address,
+        balance: NoneDecimalBalance(balance, currencyDecimal),
+        updated: updated);
   }
 
   final String address;
 
   @override
-  final Live<CurrencyBalance> balance;
+  final Live<NoneDecimalBalance> balance;
 
   @override
   CborTagValue toCbor() {
@@ -58,8 +55,10 @@ class CryptoAddressDetails implements CryptoAddressDetailsCore {
   DateTime get updated => _updated;
 
   @override
-  void updateBalance(BigInt updateBalance) {
+  void updateBalance([BigInt? updateBalance]) {
     balance.value.updateBalance(updateBalance);
-    balance.notify();
+    if (updateBalance != null) {
+      balance.notify();
+    }
   }
 }

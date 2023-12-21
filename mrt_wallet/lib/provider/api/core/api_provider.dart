@@ -3,7 +3,8 @@ import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 enum ApiProviderService {
   blockCypher("BlockCypher", "https://www.blockcypher.com/"),
-  mempool("Mempool", "https://mempool.space/");
+  mempool("Mempool", "https://mempool.space/"),
+  xrpl("XRPL", "https://xrpl.org");
 
   final String serviceName;
   final String websiteUri;
@@ -13,8 +14,8 @@ enum ApiProviderService {
   }
 }
 
-abstract class NetworkApiProvider {
-  Future<void> updateBalance(CryptoAddress account);
+abstract class NetworkApiProvider<T> {
+  Future<void> updateBalance(T account);
   abstract final AppNetworkImpl network;
   abstract final ApiProviderTracker serviceProvider;
 }

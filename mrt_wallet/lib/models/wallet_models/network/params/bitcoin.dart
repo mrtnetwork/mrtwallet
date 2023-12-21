@@ -8,29 +8,22 @@ class BitcoinParams implements NetworkCoinParams {
   const BitcoinParams(
       {required this.transactionExplorer,
       required this.addressExplorer,
-      required this.coinName,
-      required this.coinSymbol,
-      required this.decimal,
-      required this.logo,
       required this.transacationNetwork,
-      required this.providers});
+      required this.providers,
+      required this.token});
   @override
   final String transactionExplorer;
+  @override
+  final Token token;
 
   @override
   final String addressExplorer;
 
   @override
-  final String coinName;
+  int get decimal => token.decimal!;
 
   @override
-  final String coinSymbol;
-
-  @override
-  final int decimal;
-
-  @override
-  final String logo;
+  String get logo => token.logo!;
   final BasedUtxoNetwork transacationNetwork;
 
   @override

@@ -46,6 +46,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
   }
 
   Future<MethodResult<void>> login(String password) async {
+    bool isFirst = _checksum == null;
     try {
       final result = await _callSynchronized(() async => await _login(password),
           conditionStatus: WalletStatus.lock,
@@ -54,6 +55,11 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
       return result;
     } finally {
       notify();
+      if (isFirst && walletIsUnlock) {
+        updateAccountBalance();
+      } else if (walletIsUnlock) {
+        updateBalance();
+      }
     }
   }
 
@@ -110,6 +116,76 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     }
   }
 
+  Future<MethodResult<void>> addNewContact(ContactCore newContact) async {
+    final result = await _callSynchronized(
+        () async => await _addNewContact(newContact),
+        conditionStatus: WalletStatus.unlock);
+    return result;
+  }
+
+  Future<MethodResult<void>> addNewToken(
+      TokenCore token, CryptoAccountAddress address) async {
+    try {
+      final result = await _callSynchronized(
+          () async => await _addNewToken(token, address),
+          conditionStatus: WalletStatus.unlock);
+      return result;
+    } finally {
+      notify();
+    }
+  }
+
+  Future<MethodResult<void>> removeToken(
+      TokenCore token, CryptoAccountAddress address) async {
+    try {
+      final result = await _callSynchronized(
+          () async => await _removeToken(token, address),
+          conditionStatus: WalletStatus.unlock);
+      return result;
+    } finally {
+      notify();
+    }
+  }
+
+  Future<MethodResult<void>> addNewNFT(
+      NFTCore nft, CryptoAccountAddress address) async {
+    try {
+      final result = await _callSynchronized(
+          () async => await _addNewNFT(nft, address),
+          conditionStatus: WalletStatus.unlock);
+      return result;
+    } finally {
+      notify();
+    }
+  }
+
+  Future<MethodResult<void>> removeNFT(
+      NFTCore nft, CryptoAccountAddress address) async {
+    try {
+      final result = await _callSynchronized(
+          () async => await _removeNFT(nft, address),
+          conditionStatus: WalletStatus.unlock);
+      return result;
+    } finally {
+      notify();
+    }
+  }
+
+  Future<MethodResult<void>> setupAccountName(
+      String? name, CryptoAccountAddress address) async {
+    try {
+      final result = await _callSynchronized(() async {
+        if (name == null || !AppGlobalConst.accountNameRegExp.hasMatch(name)) {
+          return;
+        }
+        await _setAccountName(name.trim().isEmpty ? null : name, address);
+      }, conditionStatus: WalletStatus.unlock);
+      return result;
+    } finally {
+      notify();
+    }
+  }
+
   Future<MethodResult<List<EncryptedCustomKey>>> getImportedAccounts(
       String password) {
     final result = _callSynchronized(() async {
@@ -131,7 +207,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     }
   }
 
-  Future<MethodResult<void>> removeAccount(CryptoAddress account) async {
+  Future<MethodResult<void>> removeAccount(CryptoAccountAddress account) async {
     try {
       final result = await _callSynchronized(
           () async => await _removeAccount(account),
@@ -150,6 +226,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
         conditionStatus: WalletStatus.unlock);
     _backToHome();
     pageStatusHandler.success();
+    updateAccountBalance();
   }
 
   Future<void> changeProvider(ApiProviderService? provider) async {
@@ -161,19 +238,20 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
 
   Future<MethodResult<String>> accsess(
       WalletAccsessType accsessType, String password,
-      {CryptoAddress? account, String? accountId}) async {
+      {CryptoAccountAddress? account, String? accountId}) async {
     final result = await _callSynchronized(() async {
       if (accsessType == WalletAccsessType.privateKey &&
           account == null &&
           accountId == null) {
-        throw WalletException.invalidArgruments(["CryptoAddress", "null"]);
+        throw WalletException.invalidArgruments(
+            ["CryptoAccountAddress", "null"]);
       }
 
       if (accsessType == WalletAccsessType.privateKey) {
         if (account != null) {
           final privateKey =
               _getPrivateKey(_validatePassword(password), account.keyIndex);
-          return BytesUtils.toHexString(privateKey);
+          return BytesUtils.toHexString(privateKey.privateKey.raw);
         } else {
           final extendedKey =
               _getImportedKeyFromId(_validatePassword(password), accountId!);
@@ -206,12 +284,16 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     return result;
   }
 
-  Future<void> switchAccount(CryptoAddress? account) async {
-    if (account == null || account == _account?.address) return;
+  Future<MethodResult<void>> switchAccount(
+      CryptoAccountAddress? account) async {
+    if (account == null || account == _account?.address) {
+      return MethodResult.succsess(null);
+    }
     pageStatusHandler.progressText("switching_account".tr);
-    await _callSynchronized(() async => _switchAccount(account),
+    final result = await _callSynchronized(() async => _switchAccount(account),
         conditionStatus: WalletStatus.unlock);
     pageStatusHandler.success();
+    return result;
   }
 
   Future<MethodResult<void>> eraseWallet(String password) async {
@@ -241,28 +323,29 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     }
   }
 
-  Future<String> _getPassword(List<Bip32AddressCore> accouts) async {
+  Future<String> _getPassword(SigningRequest request) async {
     bool inRetry = false;
 
     final pw =
         await _navigatorKey.currentContext?.openSliverBottomSheet<String>(
-            WalletSigningPassword(
-              onPasswordValidator: (p0) async {
-                try {
-                  if (inRetry) {
-                    throw WalletExceptionConst.toManyRequests;
-                  }
-                  inRetry = true;
-                  await Future.delayed(AppGlobalConst.oneSecoundDuration);
-                  _validatePassword(p0);
-                  return true;
-                } finally {
-                  inRetry = false;
-                }
-              },
-              signers: accouts,
-            ),
-            "sign_transaction".tr);
+      "sign_transaction".tr,
+      child: WalletSigningPassword(
+        onPasswordValidator: (p0) async {
+          try {
+            if (inRetry) {
+              throw WalletExceptionConst.toManyRequests;
+            }
+            inRetry = true;
+            await Future.delayed(AppGlobalConst.oneSecoundDuration);
+            _validatePassword(p0);
+            return true;
+          } finally {
+            inRetry = false;
+          }
+        },
+        request: request,
+      ),
+    );
     if (pw == null) {
       throw WalletExceptionConst.rejectSigning;
     }
@@ -270,12 +353,20 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
   }
 
   Future<MethodResult<BtcTransaction>> signBitcoinTransaction(
-      {required BitcoinTransactionBuilder builder,
-      required List<Bip32AddressCore> accouts}) async {
+      {required BitcoinSigningRequest request}) async {
     final result = await _callSynchronized(() async {
-      final password = await _getPassword(accouts);
-      return await _signBitcoinTransaction(
-          builder: builder, accouts: accouts, password: password);
+      final password = await _getPassword(request);
+      return _signBitcoin(
+          request: request, password: _validatePassword(password));
+    }, conditionStatus: WalletStatus.unlock);
+    return result;
+  }
+
+  Future<MethodResult<void>> signRippleTransaction(
+      {required RippleSigningRequest request}) async {
+    final result = await _callSynchronized(() async {
+      final toPassword = _validatePassword(await _getPassword(request));
+      return _signRipple(request: request, password: toPassword);
     }, conditionStatus: WalletStatus.unlock);
     return result;
   }
@@ -321,11 +412,8 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
 
   List<EncryptedCustomKey> getNetworkImportedKeys() {
     if (walletIsUnlock) {
-      final EllipticCurveTypes keyCurveMode = haveAddress
-          ? networkAccount.address.coin.conf.type
-          : network.coins.first.conf.type;
       return _massterKey!.customKeys
-          .where((element) => element.type == keyCurveMode)
+          .where((element) => network.keyTypes.contains(element.type))
           .toList();
     }
     return [];

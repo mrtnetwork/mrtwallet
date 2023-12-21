@@ -112,7 +112,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                         ],
                       )),
                   Text("inventory_keys".tr,
-                      style: context.textTheme.titleLarge),
+                      style: context.textTheme.titleMedium),
                   WidgetConstant.height8,
                   ...List.generate(importedKeys.length, (index) {
                     final EncryptedCustomKey key =
@@ -133,16 +133,44 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              FilledButton.tonalIcon(
+                              FilledButton.icon(
                                   onPressed: () {
-                                    removeKey(key);
+                                    context
+                                        .openSliverDialog<bool>(
+                                      (p0) => DialogTextView(
+                                          buttomWidget: DialogDoubleButtonView(
+                                            firstButtonLabel: "remove".tr,
+                                            secoundButtonLabel: "cancel".tr,
+                                          ),
+                                          widget: Column(
+                                            children: [
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text("manage_key_desc1".tr),
+                                                  WidgetConstant.height8,
+                                                  Text("manage_key_desc2".tr)
+                                                ],
+                                              )
+                                            ],
+                                          )),
+                                      "remove_account".tr,
+                                    )
+                                        .then((value) {
+                                      if (value == true && context.mounted) {
+                                        removeKey(key);
+                                      }
+                                    });
                                   },
-                                  icon: const Icon(Icons.delete),
+                                  icon: Icon(Icons.delete,
+                                      color: context.colors.errorContainer),
                                   label: Text("remove".tr)),
-                              FilledButton.tonalIcon(
+                              WidgetConstant.width8,
+                              FilledButton.icon(
                                   onPressed: () {
                                     context.to(PagePathConst.exportPrivateKey,
-                                        argruments: [key.id, widget.password]);
+                                        argruments: (key, widget.password));
                                   },
                                   icon: const Icon(Icons.share),
                                   label: Text("export".tr))

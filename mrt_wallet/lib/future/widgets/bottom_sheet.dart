@@ -5,17 +5,23 @@ import 'dart:math' as math;
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
+typedef BodyBuilder = Widget Function(ScrollController controller);
+
 class AppBottomSheet extends StatefulWidget {
   const AppBottomSheet(
       {super.key,
       required this.label,
-      required this.child,
+      this.child,
+      this.body,
       this.minExtent = 0.7,
       this.maxExtend = 1.0,
       this.initiaalExtend,
-      this.actions = const []});
+      this.actions = const []})
+      : assert(body != null || child != null,
+            "use child or body for build bottomSheet widget");
   final String label;
-  final Widget child;
+  final Widget? child;
+  final BodyBuilder? body;
   final double maxExtend;
   final double minExtent;
   final double? initiaalExtend;
@@ -108,34 +114,36 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(appBarAnimationRadius),
                           topRight: Radius.circular(appBarAnimationRadius)),
-                      child: Scaffold(
-                        body: Column(
-                          children: [
-                            Expanded(
-                              child: CustomScrollView(
-                                controller: scroll,
-                                slivers: [
-                                  SliverAppBar(
-                                    pinned: true,
-                                    leadingWidth:
-                                        appBarAnimationRadius < 2 ? 56.0 : 0,
-                                    actions: widget.actions,
-                                    leading: appBarAnimationRadius < 2
-                                        ? null
-                                        : const SizedBox(),
-                                    title: Text(widget.label),
+                      child: widget.body?.call(scroll) ??
+                          Scaffold(
+                            body: Column(
+                              children: [
+                                Expanded(
+                                  child: CustomScrollView(
+                                    controller: scroll,
+                                    slivers: [
+                                      SliverAppBar(
+                                        pinned: true,
+                                        leadingWidth: appBarAnimationRadius < 2
+                                            ? 56.0
+                                            : 0,
+                                        actions: widget.actions,
+                                        leading: appBarAnimationRadius < 2
+                                            ? null
+                                            : const SizedBox(),
+                                        title: Text(widget.label),
+                                      ),
+                                      SliverToBoxAdapter(
+                                        child: ConstraintsBoxView(
+                                            padding: WidgetConstant.padding20,
+                                            child: widget.child!),
+                                      )
+                                    ],
                                   ),
-                                  SliverToBoxAdapter(
-                                    child: ConstraintsBoxView(
-                                        padding: WidgetConstant.padding20,
-                                        child: widget.child),
-                                  )
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
                     ),
                   );
                 },

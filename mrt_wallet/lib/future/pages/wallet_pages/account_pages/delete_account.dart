@@ -12,7 +12,7 @@ class DeleteAccountView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CryptoAddress account = context.getArgruments();
+    final CryptoAccountAddress account = context.getArgruments();
     return PasswordCheckerView(
         accsess: WalletAccsessType.verify,
         onAccsess: (p0, p1) {
@@ -27,7 +27,7 @@ class DeleteAccountView extends StatelessWidget {
 class _DeleteAccountView extends StatefulWidget {
   const _DeleteAccountView({required this.password, required this.account});
   final String password;
-  final CryptoAddress account;
+  final CryptoAccountAddress account;
 
   @override
   State<_DeleteAccountView> createState() => __DeleteAccountViewState();
@@ -100,15 +100,15 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
                       Text("address_details".tr,
                           style: context.textTheme.titleLarge),
                       WidgetConstant.height8,
-                      BitcoinAddressDetailsView(
-                        account: widget.account as IBitcoinAddress,
-                      ),
+                      ContainerWithBorder(
+                          child: AddressDetailsView(
+                              address: widget.account, isSelected: false)),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Padding(
                             padding: WidgetConstant.paddingVertical20,
-                            child: FilledButton.tonalIcon(
+                            child: FilledButton.icon(
                                 label: Text("remove_account".tr),
                                 onPressed: deleteAccount,
                                 icon: Icon(Icons.delete,

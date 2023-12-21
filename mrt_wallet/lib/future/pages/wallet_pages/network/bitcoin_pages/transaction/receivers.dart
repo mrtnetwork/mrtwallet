@@ -2,6 +2,7 @@ import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/extention/extention.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/receipt_address_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/types/typedef.dart';
@@ -13,34 +14,30 @@ class BitcoinTransactionReceiverView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageTitleSubtitle(
-            title: "recipients".tr,
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("select_output_addresses".tr),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FixedElevatedButton.icon(
-                        padding: WidgetConstant.paddingVertical20,
-                        onPressed: () {
-                          context
-                              .openSliverBottomSheet<BitcoinAddress>(
-                                  SelectAddress(network: controller.network),
-                                  "receiver_address".tr,
-                                  maxExtend: 0.8,
-                                  minExtent: 0.7,
-                                  initialExtend: 0.7)
-                              .then(controller.onAddRecever);
-                        },
-                        icon: const Icon(Icons.add),
-                        label: Text("tap_to_select".tr))
-                  ],
-                )
-              ],
-            )),
+        Text("list_of_recipients".tr, style: context.textTheme.titleMedium),
+        Text("select_output_addresses".tr),
+        WidgetConstant.height8,
+        ReceiptAddressView(
+          title: null,
+          subtitle: null,
+          validate: controller.receivers.isNotEmpty,
+          onTap: () {
+            context
+                .openSliverBottomSheet<ReceiptAddress<BitcoinAddress>>(
+                    "receiver_address".tr,
+                    child:
+                        SelectNetworkAddressView(account: controller.account),
+                    maxExtend: 0.8,
+                    minExtent: 0.7,
+                    initialExtend: 0.7)
+                .then(
+                  controller.onAddRecever,
+                );
+          },
+          address: null,
+        ),
         _OutputSelectedList(
           outputs: controller.receivers,
           onDelete: controller.onAddRecever,
@@ -51,7 +48,8 @@ class BitcoinTransactionReceiverView extends StatelessWidget {
   }
 }
 
-typedef _OnDeleteAddress = void Function(BitcoinAddress? address);
+typedef _OnDeleteAddress = void Function(
+    ReceiptAddress<BitcoinAddress>? address);
 
 class _OutputSelectedList extends StatelessWidget {
   const _OutputSelectedList(
@@ -66,32 +64,21 @@ class _OutputSelectedList extends StatelessWidget {
     return AnimatedSize(
         duration: AppGlobalConst.animationDuraion,
         child: outputs.isEmpty
-            ? const SizedBox()
+            ? WidgetConstant.sizedBox
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("list_of_recipients".tr,
-                      style: context.textTheme.titleLarge),
-                  WidgetConstant.height8,
                   Column(
                     children: List.generate(outputs.length, (index) {
-                      return ContainerWithBorder(
-                          onRemove: () {
-                            onDelete(outputs[index].address);
-                          },
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                outputs[index].address.type.value,
-                                style: context.textTheme.labelLarge,
-                              ),
-                              OneLineTextWidget(
-                                outputs[index].viewAddress,
-                                style: context.textTheme.bodyMedium,
-                              ),
-                            ],
-                          ));
+                      return ReceiptAddressView(
+                        title: null,
+                        onEditIcon: const Icon(Icons.remove_circle),
+                        subtitle: null,
+                        onTap: () {
+                          onDelete(outputs[index].address);
+                        },
+                        address: outputs[index].address,
+                      );
                     }),
                   ),
                   Row(

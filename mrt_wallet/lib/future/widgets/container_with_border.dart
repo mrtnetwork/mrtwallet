@@ -33,52 +33,56 @@ class ContainerWithBorder extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: padding,
-          margin: margin,
-          decoration: BoxDecoration(
-              color: backgroundColor ?? context.colors.primaryContainer,
-              borderRadius: borderRadius ?? WidgetConstant.border8,
-              boxShadow: !shadow
-                  ? null
-                  : [
-                      BoxShadow(
-                          color: context.colors.shadow,
-                          blurRadius: 4,
-                          spreadRadius: 0.2)
-                    ],
-              border: validate
-                  ? null
-                  : Border.all(
-                      color: context.colors.error,
-                      width: 1,
-                      strokeAlign: 1,
-                    )),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(child: child),
-                  if (onRemove != null)
-                    Row(
-                      children: [
-                        WidgetConstant.width8,
-                        onRemoveWidget ??
-                            IconButton(
-                                onPressed: onRemove,
-                                icon: onRemoveIcon ??
-                                    const Icon(Icons.remove_circle))
+        InkWell(
+          borderRadius: borderRadius ?? WidgetConstant.border8,
+          onTap: onRemove,
+          child: Container(
+            padding: padding,
+            margin: margin,
+            decoration: BoxDecoration(
+                color: backgroundColor ?? context.colors.primaryContainer,
+                borderRadius: borderRadius ?? WidgetConstant.border8,
+                boxShadow: !shadow
+                    ? null
+                    : [
+                        BoxShadow(
+                            color: context.colors.shadow,
+                            blurRadius: 4,
+                            spreadRadius: 0.2)
                       ],
-                    )
-                ],
-              ),
-              if (!validate && validateText != null)
-                ErrorTextContainer(
-                    error: validateText ?? "",
-                    margin: WidgetConstant.padding5,
-                    padding: WidgetConstant.padding5)
-            ],
+                border: validate
+                    ? null
+                    : Border.all(
+                        color: context.colors.error,
+                        width: 1,
+                        strokeAlign: 1,
+                      )),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: child),
+                    if (onRemove != null)
+                      Row(
+                        children: [
+                          WidgetConstant.width8,
+                          onRemoveWidget ??
+                              IconButton(
+                                  onPressed: onRemove,
+                                  icon: onRemoveIcon ??
+                                      const Icon(Icons.remove_circle))
+                        ],
+                      )
+                  ],
+                ),
+                if (!validate && validateText != null)
+                  ErrorTextContainer(
+                      error: validateText ?? "",
+                      margin: WidgetConstant.padding5,
+                      padding: WidgetConstant.padding5)
+              ],
+            ),
           ),
         ),
       ],

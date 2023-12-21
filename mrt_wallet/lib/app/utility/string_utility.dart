@@ -46,6 +46,29 @@ class AppStringUtility {
 
     return camelCaseString;
   }
+
+  static String to3Digits(String number, {String separator = ","}) {
+    String str = "";
+    List<String> numberSplit = number.split('.');
+    number = numberSplit[0].replaceAll(separator, '');
+    for (int i = number.length; i > 0;) {
+      if (i > 3) {
+        str = separator + number.substring(i - 3, i) + str;
+      } else {
+        str = number.substring(0, i) + str;
+      }
+      i = i - 3;
+    }
+    if (numberSplit.length > 1) {
+      str += '.${numberSplit[1]}';
+    }
+    return str;
+  }
+
+  static String? validateLengthOrNull(String? val, int length) {
+    if (val == null || val.length > length) return null;
+    return val;
+  }
 }
 
 void ensureKeyVisible(

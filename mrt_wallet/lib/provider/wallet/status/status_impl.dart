@@ -54,7 +54,7 @@ mixin WalletStatusImpl on _WalletCore {
     if (!network.coins.contains(newAccountParams.coin)) {
       throw WalletExceptionConst.incorrectNetwork;
     }
-    if (newAccountParams is BitcoinMultiSigNewAddressParams) {
+    if (newAccountParams.isMultiSig) {
       await _addNewAccountToNetwork(newAccountParams, const []);
       return;
     }
@@ -138,15 +138,6 @@ mixin WalletStatusImpl on _WalletCore {
       throw WalletExceptionConst.incorrectPassword;
     }
     return toPw;
-  }
-
-  Future<BtcTransaction> _signBitcoinTransaction(
-      {required BitcoinTransactionBuilder builder,
-      required List<Bip32AddressCore> accouts,
-      required String password}) async {
-    final toPasasword = _validatePassword(password);
-    return _signBitcoin(
-        password: toPasasword, builder: builder, accouts: accouts);
   }
 
   Future<String> restoreBackup(

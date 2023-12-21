@@ -12,7 +12,19 @@ extension Translate on String {
     return replaceAll("___1__", replace);
   }
 
+  String replaceTwo(String replace) {
+    return replaceAll("___2__", replace);
+  }
+
+  String replaceThere(String replace) {
+    return replaceAll("___3__", replace);
+  }
+
   String get camelCase {
     return AppStringUtility.toCamelCase(this);
   }
+
+  String get orEmpty => trim().isEmpty ? "value_is_empty".tr : this;
+
+  String get to3Digits => AppStringUtility.to3Digits(this, separator: ",");
 }

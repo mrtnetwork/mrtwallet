@@ -26,7 +26,9 @@ class WidgetConstant {
   static const BorderRadius borderBottom8 = BorderRadius.only(
       bottomRight: Radius.circular(8), bottomLeft: Radius.circular(8));
   static const SizedBox sizedBox = SizedBox();
-
+  static const BoxShadow circleShadow =
+      BoxShadow(blurRadius: 2, spreadRadius: 0.5);
+  static const Divider divider = Divider();
   static const Icon checkCircle = Icon(
     Icons.check_circle,
     color: CustomColors.green,

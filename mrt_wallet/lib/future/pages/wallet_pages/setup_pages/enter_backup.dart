@@ -27,8 +27,8 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
   final GlobalKey<AppTextFieldState> backupTextField =
       GlobalKey<AppTextFieldState>(debugLabel: "EnterMnemonicBackupView_2");
   _BackupMode selectedMode = _BackupMode.mnemonicBackup;
-  void onChangeBackupMode<T>(T? v) {
-    selectedMode = (v as _BackupMode?) ?? selectedMode;
+  void onChangeBackupMode(_BackupMode? v) {
+    selectedMode = v ?? selectedMode;
     setState(() {});
   }
 

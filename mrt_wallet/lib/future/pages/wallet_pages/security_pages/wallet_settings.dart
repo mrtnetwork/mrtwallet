@@ -45,8 +45,8 @@ class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
   late WalletLockTime selected;
   bool inited = false;
 
-  void onChanged<T>(T? v) {
-    selected = (v as WalletLockTime?) ?? selected;
+  void onChanged(WalletLockTime? v) {
+    selected = v ?? selected;
     setState(() {});
   }
 

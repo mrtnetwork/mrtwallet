@@ -1,5 +1,4 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class BItcoinAccountUtxos {
@@ -17,7 +16,7 @@ class BItcoinAccountUtxos {
       List<BitcoinUtxoWithBalance> utxosWithBalance = utxos
           .map((e) => BitcoinUtxoWithBalance(e.utxo, e.ownerDetails, network))
           .toList();
-      final CurrencyBalance sumOfUtxos = CurrencyBalance(
+      final NoneDecimalBalance sumOfUtxos = NoneDecimalBalance(
           utxos.fold(BigInt.zero,
               (previousValue, element) => previousValue + element.utxo.value),
           network.coinParam.decimal);
@@ -34,27 +33,28 @@ class BItcoinAccountUtxos {
   final String address;
   final UtxoAddressDetails utxoAddressDetails;
   final List<BitcoinUtxoWithBalance>? utxosWithBalance;
-  final CurrencyBalance? sumOfUtxos;
+  final NoneDecimalBalance? sumOfUtxos;
 
   bool get hasUtxo => utxosWithBalance != null;
 }
 
 class BitcoinUtxoWithBalance {
   BitcoinUtxoWithBalance(this.utxo, this.address, AppBitcoinNetwork network)
-      : balance = CurrencyBalance(utxo.value, network.coinParam.decimal);
+      : balance = NoneDecimalBalance(utxo.value, network.coinParam.decimal);
 
   final BitcoinUtxo utxo;
-  late final CurrencyBalance balance;
+  late final NoneDecimalBalance balance;
   final UtxoAddressDetails address;
 }
 
 class BitcoinOutputWithBalance {
   BitcoinOutputWithBalance(
       {required this.address, required AppBitcoinNetwork network})
-      : viewAddress = address.toAddress(network.coinParam.transacationNetwork),
-        balance = CurrencyBalance.zero(network.coinParam.decimal);
-  final BitcoinAddress address;
+      : viewAddress = address.networkAddress
+            .toAddress(network.coinParam.transacationNetwork),
+        balance = NoneDecimalBalance.zero(network.coinParam.decimal);
   final String viewAddress;
-  final CurrencyBalance balance;
+  final NoneDecimalBalance balance;
   bool get hasAmount => !balance.isZero;
+  final ReceiptAddress<BitcoinAddress> address;
 }

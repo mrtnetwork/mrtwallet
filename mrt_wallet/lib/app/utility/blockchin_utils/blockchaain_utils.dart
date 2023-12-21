@@ -2,8 +2,13 @@ import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:blockchain_utils/compare/compare.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/utility/blockchin_utils/ripple_utils.dart';
 import 'package:mrt_wallet/app/utility/compute/compute.dart';
+import 'package:mrt_wallet/models/wallet_models/keys/exported_pubkes.dart';
+import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
+import 'package:xrp_dart/xrp_dart.dart';
 
 class BlockchainUtils {
   static Bip32Base privteKeyToBip32(
@@ -61,7 +66,7 @@ class BlockchainUtils {
   static Bip32Base wifToBip32(String wifKey, CryptoCoins coin) {
     try {
       final keyBytes =
-          WifDecoder.decode(wifKey, netVer: coin.conf.wifNetVer!).$1;
+          WifDecoder.decode(wifKey, netVer: coin.conf.wifNetVer!).item1;
       return privteKeyToBip32(keyBytes, coin.conf.type);
     } on WalletException {
       rethrow;
@@ -118,5 +123,68 @@ class BlockchainUtils {
       default:
         throw WalletExceptionConst.invalidPrivateKey;
     }
+  }
+
+  static String exportPrivateKey(String privateKey, CryptoCoins coin) {
+    switch (coin) {
+      case Bip44Coins.rippleEd25519:
+      case Bip44Coins.ripple:
+      case Bip44Coins.rippleTestnet:
+      case Bip44Coins.rippleTestnetED25519:
+        final prv = XRPPrivateKey.fromHex(privateKey,
+            algorithm: XRPKeyAlgorithm.values
+                .firstWhere((element) => element.curveType == coin.conf.type));
+        return prv.toHex();
+      default:
+        return privateKey;
+    }
+  }
+
+  static String extendedKeyToPrivateKey(String privateKey, CryptoCoins coin) {
+    final bip32 = extendedKeyToBip32(privateKey, coin.conf.type);
+    return BytesUtils.toHexString(bip32.privateKey.raw);
+  }
+
+  static ExportedPublicKey? exportPublicKey(
+      List<int> pubkeyBytes, CryptoCoins coin, AppNetworkImpl network) {
+    final Bip44Base account;
+    try {
+      switch (coin.proposal) {
+        case BipProposal.bip44:
+          account = Bip44.fromPublicKey(pubkeyBytes, coin as Bip44Coins);
+          break;
+        case BipProposal.bip49:
+          account = Bip49.fromPublicKey(pubkeyBytes, coin as Bip49Coins);
+          break;
+        case BipProposal.bip84:
+          account = Bip84.fromPublicKey(pubkeyBytes, coin as Bip84Coins);
+          break;
+        case BipProposal.bip86:
+          account = Bip86.fromPublicKey(pubkeyBytes, coin as Bip86Coins);
+          break;
+        default:
+          return null;
+      }
+    } catch (e) {
+      return null;
+    }
+    String extendedKey = account.publicKey.toExtended;
+    List<int> comprossed = account.publicKey.compressed;
+    List<int>? unComprossed = account.publicKey.uncompressed;
+    String pubKey;
+    String? unComprossedPubKey;
+    if (network is AppXRPNetwork) {
+      pubKey =
+          RippleUtils.toRipplePublicKey(BytesUtils.toHexString(comprossed));
+    } else {
+      pubKey = BytesUtils.toHexString(comprossed);
+    }
+    if (!bytesEqual(unComprossed, comprossed)) {
+      unComprossedPubKey = BytesUtils.toHexString(unComprossed);
+    }
+    return ExportedPublicKey(
+        extendedKey: extendedKey,
+        comprossed: pubKey,
+        uncomprossed: unComprossedPubKey);
   }
 }

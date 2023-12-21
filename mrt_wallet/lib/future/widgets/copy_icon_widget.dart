@@ -159,7 +159,7 @@ class CopyTextWithBarcodeState extends State<CopyTextWithBarcode> {
               IconButton(
                   onPressed: () {
                     context.openSliverDialog(
-                        BarcodeView(
+                        (ctx) => BarcodeView(
                             secure: widget.secureBarcode,
                             underBarcodeWidget: widget.underBarcodeWidget,
                             title: widget.barcodeWidget ??

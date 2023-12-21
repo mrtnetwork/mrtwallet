@@ -56,17 +56,40 @@ class WalletExceptionConst {
       WalletException("user_rejected_signing_request");
   static final WalletException incorrectStatus =
       WalletException("incorrect_wallet_status");
+  static final WalletException invalidContactDetails =
+      WalletException("invalid_contact_details");
+  static final WalletException contactExists =
+      WalletException("contact_already_exist");
+  static final WalletException invalidBalance =
+      WalletException("invalid_balance");
+
   static final WalletException condition = WalletException("message");
+  static final WalletException emptyThrow = WalletException("");
+
   static final WalletException invalidCoin = WalletException("invalid_coin");
 
   static final WalletException invalidPrivateKey =
       WalletException("private_key_invalid");
+  static final WalletException invalidRipplePrivateKeyAlgorithm =
+      WalletException("invalid_ripple_privatekey_algorithm");
   static final WalletException multiSigDerivationNotSuported =
       WalletException("not_support_multisig_derivation");
+  static final WalletException invalidTokenInformation =
+      WalletException("invalid_token_information");
+  static final WalletException invalidNftInfromaation =
+      WalletException("invalid_nft_information");
   static WalletException invalidArgruments(String expected, String got) {
     return WalletException.invalidArgruments([expected, got]);
   }
 
   static final WalletException walletIsLocked =
       WalletException("wallet_is_locked");
+  static final WalletException networkTokenUnsuported =
+      WalletException("network_support_token_error");
+  static final WalletException networkNFTsUnsuported =
+      WalletException("network_support_nft_error");
+  static final WalletException tokenAlreadyExist =
+      WalletException("token_already_exists");
+  static final WalletException nftsAlreadyExist =
+      WalletException("nfts_already_exists");
 }

@@ -6,12 +6,12 @@ import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_derivation_type.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/bip32_derivation.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/types/typedef.dart';
-
-enum AddressDerivationMode { hdWallet, importedKey }
 
 class SetupBitcoinAddressView extends StatefulWidget {
   const SetupBitcoinAddressView({super.key});
@@ -26,40 +26,29 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
   final GlobalKey<PageProgressState> pageProgressKey =
       GlobalKey<PageProgressState>(debugLabel: "SetupBitcoinAddressView");
   late final NetworkAccountCore networkAccounts;
-  String? _error;
-  final GlobalKey visibleContinue =
-      GlobalKey(debugLabel: "visibleGenerateAddress");
   final GlobalKey visibleGenerateAddress =
       GlobalKey(debugLabel: "visibleContinue");
 
   AddressDerivationMode? selectedDerivationMode;
-  bool showCustomKes = false;
-  bool showSetupPage = false;
+  EncryptedCustomKey? selectedCustomKey;
   bool inAddressPage = false;
 
-  EncryptedCustomKey? selectedCustomKey;
-
-  void onChangeCustomKey(EncryptedCustomKey? newSelected) {
-    selectedCustomKey = newSelected;
-    if (selectedCustomKey != null && showCustomKes) {
-      showSetupPage = true;
-    } else {
-      showSetupPage = false;
-    }
+  void goToAddressPage(
+      AddressDerivationMode derivationMode, EncryptedCustomKey? customKey) {
+    if (derivationMode == AddressDerivationMode.importedKey &&
+        customKey == null) return;
+    selectedDerivationMode = derivationMode;
+    selectedCustomKey = customKey;
+    inAddressPage = true;
     setState(() {});
-  }
-
-  void goToAddressPage() {
-    if (showSetupPage) {
-      inAddressPage = true;
-      setState(() {});
-      ensureKeyVisible(key: visibleGenerateAddress);
-    }
+    ensureKeyVisible(key: visibleGenerateAddress);
   }
 
   void _onBackButton() {
     if (pageProgressKey.isSuccess) return;
     if (inAddressPage) {
+      selectedDerivationMode = null;
+      selectedCustomKey = null;
       inAddressPage = false;
       p2shType = _defaultP2sh();
       customKeyIndex = null;
@@ -67,41 +56,6 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     setState(() {});
   }
 
-  late final Map<AddressDerivationMode, Widget> derivationModes = {
-    AddressDerivationMode.hdWallet: Text("hd_wallet".tr),
-    AddressDerivationMode.importedKey: Text("imported_key".tr)
-  };
-
-  void onChangeDerivationMode<T>(T? mode) async {
-    if (mode == selectedDerivationMode) return;
-    selectedDerivationMode =
-        (mode as AddressDerivationMode?) ?? selectedDerivationMode;
-    _error = null;
-    showCustomKes = false;
-    showSetupPage = false;
-    selectedCustomKey = null;
-
-    try {
-      if (selectedDerivationMode == AddressDerivationMode.importedKey) {
-        if (customKeys.isEmpty) {
-          _error = "empty_custom_key_desc".tr;
-        } else {
-          showCustomKes = true;
-          selectedCustomKey = customKeys.first;
-          showSetupPage = true;
-        }
-      } else {
-        showSetupPage = true;
-      }
-      setState(() {});
-    } finally {
-      if (showSetupPage) {
-        ensureKeyVisible(key: visibleContinue);
-      }
-    }
-  }
-
-  List<EncryptedCustomKey> customKeys = [];
   AppBitcoinNetwork get network => networkAccounts.network as AppBitcoinNetwork;
   List<CryptoCoins> get coins => network.coins;
   bool inited = false;
@@ -134,7 +88,6 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     inited = true;
     final model = context.watch<WalletProvider>(StateIdsConst.main);
     networkAccounts = model.networkAccount;
-    customKeys = model.getNetworkImportedKeys();
     supportAddressTypes =
         network.coinParam.transacationNetwork.supportedAddress;
     p2shTypes = supportAddressTypes.where((e) => e.isP2sh).toList();
@@ -159,8 +112,8 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     return BitcoinAddressType.p2pkInP2sh;
   }
 
-  void onChangeSelected<T>(Set<T> value) {
-    selected = value.cast();
+  void onChangeSelected(Set<BitcoinAddressType> value) {
+    selected = value;
     p2shType = _defaultP2sh();
     customKeyIndex = null;
     setState(() {});
@@ -209,9 +162,8 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     final model = context.watch<WalletProvider>(StateIdsConst.main);
     final coin = findCoin();
 
-    final selectedType = selected.first == BitcoinAddressType.p2wpkhInP2sh
-        ? p2shType
-        : selected.first;
+    final selectedType =
+        selected.first == _defaultP2sh() ? p2shType : selected.first;
     final keyIndex = derivationkey() ?? model.networkAccount.nextDrive(coin);
     final newAccount = BitcoinNewAddressParams(
         coin: coin, deriveIndex: keyIndex, bitcoinAddressType: selectedType);
@@ -238,7 +190,7 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !inAddressPage,
+      canPop: !inAddressPage || pageProgressKey.isSuccess,
       onPopInvoked: (didPop) {
         if (!didPop) {
           _onBackButton();
@@ -274,9 +226,11 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
                                       context
                                           .openSliverBottomSheet<
                                                   Bip32AddressIndex>(
-                                              _AddressTypePathSetup(
-                                                  coin: findCoin()),
-                                              "key_derivation".tr)
+                                              "key_derivation".tr,
+                                              child: Bip32KeyDerivationView(
+                                                  coin: findCoin(),
+                                                  curve: EllipticCurveTypes
+                                                      .secp256k1))
                                           .then(setupKeyIndex);
                                     },
                                   );
@@ -299,7 +253,7 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
                               PageTitleSubtitle(
                                   title: "derive_network_address"
                                       .tr
-                                      .replaceOne(network.coinParam.coinName),
+                                      .replaceOne(network.coinParam.token.name),
                                   body: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -317,50 +271,7 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
                                       ]
                                     ],
                                   )),
-                              PageTitleSubtitle(
-                                  title: "select_derivation_type".tr,
-                                  body: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("select_derivation_desc".tr)
-                                    ],
-                                  )),
-                              AppDropDownBottom<AddressDerivationMode>(
-                                items: derivationModes,
-                                onChanged: onChangeDerivationMode,
-                                label: "derivation_type".tr,
-                                value: selectedDerivationMode,
-                                error: _error,
-                              ),
-                              WidgetConstant.height20,
-                              AnimatedSize(
-                                duration: AppGlobalConst.animationDuraion,
-                                child: showCustomKes
-                                    ? _SelectCustomKeys(
-                                        existsKeys: customKeys,
-                                        selectedKey: selectedCustomKey,
-                                        onChangeCustomKey: onChangeCustomKey,
-                                      )
-                                    : const SizedBox(),
-                              ),
-                              AnimatedSwitcher(
-                                duration: AppGlobalConst.animationDuraion,
-                                child: showSetupPage
-                                    ? Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                            FixedElevatedButton(
-                                              padding: WidgetConstant
-                                                  .paddingVertical20,
-                                              onPressed: goToAddressPage,
-                                              key: visibleContinue,
-                                              child: Text("continue".tr),
-                                            )
-                                          ])
-                                    : const SizedBox(),
-                              )
+                              SetupAddressDerivation(goToAddressPage)
                             ],
                           ),
                   ),
@@ -370,51 +281,6 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
           ),
         ),
       ),
-    );
-  }
-}
-
-typedef _OnChangeCustomKey = void Function(EncryptedCustomKey?);
-
-class _SelectCustomKeys extends StatelessWidget {
-  const _SelectCustomKeys(
-      {required this.existsKeys,
-      required this.selectedKey,
-      required this.onChangeCustomKey});
-  final List<EncryptedCustomKey> existsKeys;
-  final EncryptedCustomKey? selectedKey;
-  final _OnChangeCustomKey onChangeCustomKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        PageTitleSubtitle(
-            title: "choose_public_key".tr,
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("generate_from_imported_keys".tr),
-                WidgetConstant.height8,
-                Text("select_imported_key_desc".tr),
-                WidgetConstant.height8,
-              ],
-            )),
-        Column(
-          children: List.generate(existsKeys.length, (index) {
-            return RadioListTile(
-              value: existsKeys[index],
-              groupValue: selectedKey,
-              onChanged: onChangeCustomKey,
-              title: OneLineTextWidget(existsKeys[index].publicKey),
-              subtitle: Text("imported_at"
-                  .tr
-                  .replaceOne(existsKeys[index].created.toString())),
-            );
-          }),
-        ),
-      ],
     );
   }
 }
@@ -435,7 +301,7 @@ class _DriveFromHdWallet extends StatelessWidget {
   final Set<BitcoinAddressType> selected;
   final void Function(BitcoinAddressType?) onChageSegwit;
   final DynamicVoid generateAddress;
-  final VoidSetT onChangeSelected;
+  final VoidSetT<BitcoinAddressType> onChangeSelected;
   final bool derivationStandard;
   final List<BitcoinAddressType> nestedP2shTyes;
   final BitcoinAddressType selectedP2shType;
@@ -558,7 +424,7 @@ class _AddressTypeOPtion extends StatelessWidget {
                     title: Text(nestedP2shTyes[index].value),
                     value: nestedP2shTyes[index],
                     groupValue: selectedP2shType,
-                    subtitle: Text(nestedP2shTyes[index].name.tr),
+                    subtitle: Text(nestedP2shTyes[index].value.tr),
                     onChanged: onChangeP2shSegwit);
               }),
             ),
@@ -567,319 +433,6 @@ class _AddressTypeOPtion extends StatelessWidget {
               "p2wsh_one_of_one_desc".tr,
               textAlign: TextAlign.center,
             )
-        ],
-      ),
-    );
-  }
-}
-
-class _AddressTypePathSetup extends StatefulWidget {
-  const _AddressTypePathSetup({required this.coin});
-  final CryptoCoins coin;
-
-  @override
-  State<_AddressTypePathSetup> createState() => _AddressTypePathSetupState();
-}
-
-class _AddressTypePathSetupState extends State<_AddressTypePathSetup> {
-  final GlobalKey<FormState> form =
-      GlobalKey<FormState>(debugLabel: "_AddressTypePathSetupState");
-  final Map<Bip44Levels, GlobalKey<NumberTextFieldState>> levelStateKeys = {
-    Bip44Levels.purpose: GlobalKey<NumberTextFieldState>(
-        debugLabel: "_AddressTypePathSetupState_1"),
-    Bip44Levels.coin: GlobalKey<NumberTextFieldState>(
-        debugLabel: "_AddressTypePathSetupState_2"),
-    Bip44Levels.account: GlobalKey<NumberTextFieldState>(
-        debugLabel: "_AddressTypePathSetupState_3"),
-    Bip44Levels.change: GlobalKey<NumberTextFieldState>(
-        debugLabel: "_AddressTypePathSetupState_4"),
-    Bip44Levels.addressIndex: GlobalKey<NumberTextFieldState>(
-        debugLabel: "_AddressTypePathSetupState_5"),
-  };
-
-  String? validate(String? v, Bip44Levels level) {
-    if (levels[level] == null) {
-      return "bip32_key_index_validate".tr;
-    }
-    return null;
-  }
-
-  final Map<Bip44Levels, Bip44LevelsDetails?> levels = {
-    Bip44Levels.purpose: null,
-    Bip44Levels.coin: null,
-    Bip44Levels.account: null,
-    Bip44Levels.change: null,
-    Bip44Levels.addressIndex: null,
-  };
-  void onChangedValue(String? v, Bip44Levels level) {
-    if (v == null) return;
-    try {
-      levels[level] = Bip44LevelsDetails.fromIntIndex(int.parse(v), level);
-    } on Exception {
-      levels[level] = null;
-    } finally {
-      path = calculatePath();
-      setState(() {});
-    }
-  }
-
-  String? helperText(Bip44Levels level) {
-    if (levels[level]?.isHardened ?? false) {
-      return "hardened_index"
-          .tr
-          .replaceOne(levels[level]!.unHardendValue.toString());
-    }
-    return null;
-  }
-
-  Color? hardenedColor(Bip44Levels level) {
-    return (levels[level]?.isHardened ?? false)
-        ? context.theme.iconTheme.color
-        : null;
-  }
-
-  void onSubmit() {
-    if (!(form.currentState?.validate() ?? false)) return;
-    final keyIndex = Bip32AddressIndex.fromBip44KeyIndexDetais(
-        levels.values.toList().cast());
-    context.pop(keyIndex);
-  }
-
-  void onTapHardened(Bip44Levels level) {
-    if (levels[level]?.isHardened ?? true) return;
-    stateKey(level)
-        .currentState
-        ?.changeIndex(Bip32KeyIndex.hardenIndex(levels[level]!.index).index);
-  }
-
-  GlobalKey<NumberTextFieldState> stateKey(Bip44Levels level) {
-    return levelStateKeys[level]!;
-  }
-
-  String path = "";
-
-  String calculatePath() {
-    String p = "m";
-    for (final i in levels.values) {
-      if (i == null) {
-        p += "/***";
-      } else {
-        p += "/${i.path}";
-      }
-    }
-    return p;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: form,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PageTitleSubtitle(
-              title: "bip32_key_derivation".tr,
-              subtitle: "p_note".tr,
-              body: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("bip32_derivation_desc".tr),
-                  WidgetConstant.height8,
-                  Text("bip32_derivation_desc2".tr),
-                  WidgetConstant.height8,
-                  Text("bip32_derivation_desc3".tr)
-                ],
-              )),
-          PageTitleSubtitle(
-              title: "choose_index_each_level".tr,
-              body: Text("bip32_level_desc".tr)),
-          PageTitleSubtitle(
-              title: "path".tr,
-              body: AnimatedSwitcher(
-                duration: AppGlobalConst.animationDuraion,
-                child: Container(
-                  key: ValueKey<String>(path),
-                  padding: WidgetConstant.padding10,
-                  decoration: BoxDecoration(
-                      color: context.colors.primaryContainer,
-                      borderRadius: WidgetConstant.border8),
-                  child: Text(
-                    path,
-                    style: context.textTheme.bodyLarge,
-                  ),
-                ),
-              )),
-          WidgetConstant.height20,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "p_level".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  defaultValue:
-                      (widget.coin.proposal as BipProposal).purpose.index,
-                  helperText: helperText(Bip44Levels.purpose),
-                  key: stateKey(Bip44Levels.purpose),
-                  min: 0,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.purpose);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.purpose),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.purpose);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.purpose),
-                        )),
-                  ))
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "c_level".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  helperText: helperText(Bip44Levels.coin),
-                  key: stateKey(Bip44Levels.coin),
-                  defaultValue:
-                      Bip32KeyIndex.hardenIndex(widget.coin.conf.coinIdx).index,
-                  min: 0,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.coin);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.coin),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.coin);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.coin),
-                        )),
-                  ))
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "a_level".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  helperText: helperText(Bip44Levels.account),
-                  key: stateKey(Bip44Levels.account),
-                  min: 0,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.account);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.account),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.account);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.account),
-                        )),
-                  ))
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "change_level".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  helperText: helperText(Bip44Levels.change),
-                  key: stateKey(Bip44Levels.change),
-                  min: 0,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.change);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.change),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.change);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.change),
-                        )),
-                  ))
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "address_index".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  helperText: helperText(Bip44Levels.addressIndex),
-                  key: stateKey(Bip44Levels.addressIndex),
-                  min: 0,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.addressIndex);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.addressIndex),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.addressIndex);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.addressIndex),
-                        )),
-                  ))
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical20,
-                onPressed: onSubmit,
-                child: Text("setup_derivation_path".tr),
-              ),
-            ],
-          )
         ],
       ),
     );

@@ -1,8 +1,23 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
+import 'package:xrp_dart/xrp_dart.dart';
 
 class BlockchainAddressUtils {
+  static XRPAddress toRippleAddress(String address, AppXRPNetwork network) {
+    try {
+      if (XRPAddressUtils.isXAddress(address)) {
+        return XRPAddress.fromXAddress(address,
+            isTestnet: network.coins.first.conf.isTestnet);
+      }
+      return XRPAddress(address);
+    } catch (e) {
+      throw ArgumentError("invalid ${network.coinParam.token.name} address");
+    }
+  }
+
   static BitcoinAddress toBitcoinAddress(
       String address, BasedUtxoNetwork network) {
     final length = address.length;
@@ -29,20 +44,18 @@ class BlockchainAddressUtils {
           }
 
         default:
-          throw ArgumentError("invalid bitcoin address length");
+          throw ArgumentError();
       }
-    } on ArgumentError {
-      rethrow;
     } catch (e) {
-      throw ArgumentError("invalid bitcoin address");
+      throw ArgumentError("invalid ${network.conf.coinName} address");
     }
   }
+
 
   static BitcoinAddress publicKeyToBitcoinAddress(
       List<int> publicKey, CryptoCoins coin, BitcoinAddressType addressType) {
     final bitcoinPublicKey = ECPublic.fromBytes(publicKey);
     BitcoinAddress address;
-
     switch (coin.proposal) {
       case BipProposal.bip44:
         address = bitcoinPublicKey.toAddress();
@@ -75,10 +88,52 @@ class BlockchainAddressUtils {
         address = bitcoinPublicKey.toTaprootAddress();
         break;
     }
+
     if (address.type != addressType) {
       throw WalletExceptionConst.invalidBitcoinAddressType;
     }
 
+    return address;
+  }
+
+  static BitcoinAddress toBitcoinAddressFromType(
+      {required String bitcoinAddress,
+      required BitcoinAddressType addressType,
+      required AppBitcoinNetwork network}) {
+    BitcoinAddress address;
+    final bitcoinNetwork = network.coinParam.transacationNetwork;
+    switch (addressType) {
+      case BitcoinAddressType.p2pkh:
+        address = P2pkhAddress.fromAddress(
+            address: bitcoinAddress, network: bitcoinNetwork);
+        break;
+      case BitcoinAddressType.p2pk:
+        final bitcoinPublicKey = ECPublic.fromHex(bitcoinAddress);
+        address = P2pkAddress(publicKey: bitcoinPublicKey.toHex());
+      case BitcoinAddressType.p2wshInP2sh:
+      case BitcoinAddressType.p2wpkhInP2sh:
+      case BitcoinAddressType.p2pkhInP2sh:
+      case BitcoinAddressType.p2pkInP2sh:
+        address = P2shAddress.fromAddress(
+            address: bitcoinAddress,
+            network: bitcoinNetwork,
+            type: addressType);
+        break;
+      case BitcoinAddressType.p2wpkh:
+        address = P2wpkhAddress.fromAddress(
+            address: bitcoinAddress, network: bitcoinNetwork);
+        break;
+      case BitcoinAddressType.p2tr:
+        address = P2trAddress.fromAddress(
+            address: bitcoinAddress, network: bitcoinNetwork);
+        break;
+      case BitcoinAddressType.p2wsh:
+        address = P2wshAddress.fromAddress(
+            address: bitcoinAddress, network: bitcoinNetwork);
+        break;
+      default:
+        throw UnimplementedError("invalid address types");
+    }
     return address;
   }
 }

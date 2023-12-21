@@ -5,6 +5,7 @@ import 'package:mrt_wallet/app/core.dart';
 
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/models/wallet_models/signing_request/networks/bitcoin/bitcoin_signing_request.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/types/typedef.dart';
@@ -43,6 +44,7 @@ class BitcoinStateController extends StateController {
       _walletProvider.networkAccount.addresses.cast();
 
   AppBitcoinNetwork get network => _walletProvider.network as AppBitcoinNetwork;
+  NetworkAccountCore get account => _walletProvider.networkAccount;
   late final BitcoinApiProvider _apiProvider =
       _walletProvider.getNetworkApiProvider(network);
 
@@ -158,17 +160,17 @@ class BitcoinStateController extends StateController {
       _addresses.remove(address);
     } else {
       if (canSpend) {
-        if (account.isMultiSigAccounts) {
+        if (account.multiSigAccount) {
           account as IBitcoinMultiSigAddress;
           _addresses.addAll({
             address: UtxoAddressDetails.multiSigAddress(
-                address: account.bitcoinAddress,
+                address: account.networkAddress,
                 multiSigAddress: account.multiSignatureAddress)
           });
         } else {
           _addresses.addAll({
             address: UtxoAddressDetails(
-                address: account.bitcoinAddress,
+                address: account.networkAddress,
                 publicKey: BytesUtils.toHexString(account.publicKey))
           });
         }
@@ -210,12 +212,12 @@ class BitcoinStateController extends StateController {
     }
   }
 
-  late final CurrencyBalance spendableAmount =
-      CurrencyBalance.zero(network.coinParam.decimal);
+  late final NoneDecimalBalance spendableAmount =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
 
-  late final CurrencyBalance _sumOfSelectedUtxo =
-      CurrencyBalance.zero(network.coinParam.decimal);
-  CurrencyBalance get sumOfSelectedUtxo => _sumOfSelectedUtxo;
+  late final NoneDecimalBalance _sumOfSelectedUtxo =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
+  NoneDecimalBalance get sumOfSelectedUtxo => _sumOfSelectedUtxo;
   void moveToReceiver() {
     final sum = _selectedUtxo.fold(BigInt.zero,
         (previousValue, element) => previousValue + element.balance.balance);
@@ -228,9 +230,10 @@ class BitcoinStateController extends StateController {
   final Map<String, BitcoinOutputWithBalance> _receivers = {};
   List<BitcoinOutputWithBalance> get receivers => _receivers.values.toList();
   bool get hasOutput => _receivers.isNotEmpty;
-  void onAddRecever(BitcoinAddress? addr) {
+  void onAddRecever(ReceiptAddress<BitcoinAddress>? addr) {
     if (addr == null) return;
-    final toAddr = addr.toAddress(network.coinParam.transacationNetwork);
+    final toAddr =
+        addr.networkAddress.toAddress(network.coinParam.transacationNetwork);
     if (_receivers.containsKey(toAddr)) {
       _receivers.remove(toAddr);
     } else {
@@ -244,10 +247,27 @@ class BitcoinStateController extends StateController {
 
   BitcoinFeeRate? _networkFeeRate;
   BitcoinFeeRate get feeRate => _networkFeeRate!;
-  late final CurrencyBalance _feeRate =
-      CurrencyBalance.zero(network.coinParam.decimal);
-  CurrencyBalance get transactionFee => _feeRate;
+  late final NoneDecimalBalance _feeRate =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
+  NoneDecimalBalance get transactionFee => _feeRate;
   BitcoinFeeRateType? get feeRateType => _feeRateType;
+
+  late Map<String, NoneDecimalBalance> _fees;
+  Map<String, NoneDecimalBalance> get fees => _fees;
+
+  Map<String, NoneDecimalBalance> _buildFeeRate() {
+    return {
+      BitcoinFeeRateType.medium.name: NoneDecimalBalance(
+          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.medium),
+          network.coinParam.decimal),
+      BitcoinFeeRateType.low.name: NoneDecimalBalance(
+          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.low),
+          network.coinParam.decimal),
+      BitcoinFeeRateType.high.name: NoneDecimalBalance(
+          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.high),
+          network.coinParam.decimal),
+    };
+  }
 
   void setFee(BitcoinFeeRateType? feeType, {BigInt? customFee}) {
     if (feeType == null && customFee == null) return;
@@ -288,7 +308,8 @@ class BitcoinStateController extends StateController {
               .toList(),
           memo: _memo,
           enableRBF: true,
-          outputs: _receivers.values.map((e) => e.address).toList(),
+          outputs:
+              _receivers.values.map((e) => e.address.networkAddress).toList(),
           network: network.coinParam.transacationNetwork);
 
       if (_networkFeeRate == null) {
@@ -300,6 +321,7 @@ class BitcoinStateController extends StateController {
       _feeRate.updateBalance(
           _networkFeeRate!.getEstimate(_trSize!, feeRateType: _feeRateType!));
       _calculateSetupAmount();
+      _fees = _buildFeeRate();
     });
 
     if (result.hasError) {
@@ -310,12 +332,12 @@ class BitcoinStateController extends StateController {
     }
   }
 
-  late final CurrencyBalance _remindAmount =
-      CurrencyBalance.zero(network.coinParam.decimal);
-  CurrencyBalance get remindAmount => _remindAmount;
-  late final CurrencyBalance _setupAmount =
-      CurrencyBalance.zero(network.coinParam.decimal);
-  CurrencyBalance get setupAmout => _setupAmount;
+  late final NoneDecimalBalance _remindAmount =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
+  NoneDecimalBalance get remindAmount => _remindAmount;
+  late final NoneDecimalBalance _setupAmount =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
+  NoneDecimalBalance get setupAmout => _setupAmount;
   bool _trReady = false;
   bool get trReady => _trReady;
   bool _isReady() {
@@ -351,7 +373,8 @@ class BitcoinStateController extends StateController {
 
   void sigTr() async {
     if (!trReady) return;
-    progressKey.progressText("create_send_transaction".tr);
+    progressKey
+        .progressText("create_send_transaction".tr.replaceOne(network.name));
     final result = await MethodCaller.call(() async {
       final List<IBitcoinAddress> signers = [];
       for (final i in _selectedUtxo) {
@@ -361,8 +384,8 @@ class BitcoinStateController extends StateController {
         signers.add(utxosAcount);
       }
       final List<BitcoinOutput> outputs = receivers
-          .map((e) =>
-              BitcoinOutput(address: e.address, value: e.balance.balance))
+          .map((e) => BitcoinOutput(
+              address: e.address.networkAddress, value: e.balance.balance))
           .toList();
       if (_remindAmount.balance >= BigInt.zero) {
         outputs.add(BitcoinOutput(
@@ -380,7 +403,8 @@ class BitcoinStateController extends StateController {
           enableRBF: _rbf);
 
       final signedTr = await _walletProvider.signBitcoinTransaction(
-          builder: tr, accouts: signers);
+          request: BitcoinSigningRequest(
+              addresses: signers, network: network, transaction: tr));
       if (signedTr.hasError) {
         throw signedTr.exception!;
       }
@@ -402,10 +426,10 @@ class BitcoinStateController extends StateController {
     notify();
   }
 
-  void changeAccount(CryptoAddress? change) {
+  void changeAccount(CryptoAccountAddress? change) {
     if (change == null || !addresses.contains(change)) return;
     change as IBitcoinAddress;
-    _onChangeAddress = change.bitcoinAddress;
+    _onChangeAddress = change.networkAddress;
     _onChangeAddressView = change.address.toAddress;
     notify();
   }

@@ -1,13 +1,12 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
-import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/models/wallet_models/keys/exported_pubkes.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class AccountPublicKeyView extends StatelessWidget {
-  final CryptoAddress address;
+  final CryptoAccountAddress address;
   const AccountPublicKeyView({required this.address, super.key});
   @override
   Widget build(BuildContext context) {
@@ -23,38 +22,11 @@ class _BipAccountPublicKey extends StatefulWidget {
 }
 
 class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
-  late final Bip44Base account;
-  late final String publicKey;
-  late final String uncompressedPublicKey;
-
-  bool supported = false;
+  ExportedPublicKey? publicKey;
 
   void initPubKey() {
-    switch (widget.bip.coin.proposal) {
-      case BipProposal.bip44:
-        account = Bip44.fromPublicKey(
-            widget.bip.publicKey, widget.bip.coin as Bip44Coins);
-        break;
-      case BipProposal.bip49:
-        account = Bip49.fromPublicKey(
-            widget.bip.publicKey, widget.bip.coin as Bip49Coins);
-        break;
-      case BipProposal.bip84:
-        account = Bip84.fromPublicKey(
-            widget.bip.publicKey, widget.bip.coin as Bip84Coins);
-        break;
-      case BipProposal.bip86:
-        account = Bip86.fromPublicKey(
-            widget.bip.publicKey, widget.bip.coin as Bip86Coins);
-        break;
-      default:
-        supported = false;
-        return;
-    }
-    publicKey = BytesUtils.toHexString(account.publicKey.compressed);
-    uncompressedPublicKey =
-        BytesUtils.toHexString(account.publicKey.uncompressed);
-    supported = true;
+    publicKey = BlockchainUtils.exportPublicKey(
+        widget.bip.publicKey, widget.bip.coin, widget.bip.network);
   }
 
   @override
@@ -65,6 +37,15 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
 
   @override
   Widget build(BuildContext context) {
+    if (publicKey == null) {
+      return Column(
+        children: [
+          WidgetConstant.errorIconLarge,
+          WidgetConstant.height8,
+          Text("cannot_export_public_key".tr)
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -74,46 +55,45 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [Text("export_public_key_desc1".tr)],
             )),
-        Text("address_details".tr, style: context.textTheme.titleLarge),
+        Text("address_details".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
-          margin: EdgeInsets.zero,
-          padding: EdgeInsets.zero,
           child: CopyTextWithBarcode(
               dataToCopy: widget.bip.address.toAddress,
-              widget: BitcoinAddressDetailsView(
-                account: widget.bip as IBitcoinAddress,
-              ),
+              widget:
+                  AddressDetailsView(address: widget.bip, isSelected: false),
               barcodeTitle: "address_sharing".tr),
         ),
         WidgetConstant.height20,
-        Text("extended_public_key".tr, style: context.textTheme.titleLarge),
+        Text("extended_public_key".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
             child: CopyTextWithBarcode(
-          dataToCopy: account.publicKey.toExtended,
+          dataToCopy: publicKey!.extendedKey,
           barcodeTitle: "extended_public_key".tr,
-          widget: SelectableText(account.publicKey.toExtended),
+          widget: SelectableText(publicKey!.extendedKey),
         )),
         WidgetConstant.height20,
-        Text("comperessed_public_key".tr, style: context.textTheme.titleLarge),
+        Text("comperessed_public_key".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
             child: CopyTextWithBarcode(
           barcodeTitle: "comperessed_public_key".tr,
-          dataToCopy: publicKey,
-          widget: SelectableText(publicKey),
+          dataToCopy: publicKey!.comprossed,
+          widget: SelectableText(publicKey!.comprossed),
         )),
-        WidgetConstant.height20,
-        Text("uncomperessed_public_key".tr,
-            style: context.textTheme.titleLarge),
-        WidgetConstant.height8,
-        ContainerWithBorder(
-            child: CopyTextWithBarcode(
-          dataToCopy: uncompressedPublicKey,
-          barcodeTitle: "uncomperessed_public_key".tr,
-          widget: SelectableText(uncompressedPublicKey),
-        )),
+        if (publicKey!.uncomprossed != null) ...[
+          WidgetConstant.height20,
+          Text("uncomperessed_public_key".tr,
+              style: context.textTheme.titleMedium),
+          WidgetConstant.height8,
+          ContainerWithBorder(
+              child: CopyTextWithBarcode(
+            dataToCopy: publicKey!.uncomprossed!,
+            barcodeTitle: "uncomperessed_public_key".tr,
+            widget: SelectableText(publicKey!.uncomprossed!),
+          )),
+        ]
       ],
     );
   }

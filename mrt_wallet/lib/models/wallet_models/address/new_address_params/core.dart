@@ -4,4 +4,5 @@ import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 abstract class NewAccountParams {
   abstract final CryptoCoins coin;
   abstract final AddressDerivationIndex deriveIndex;
+  bool get isMultiSig;
 }

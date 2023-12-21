@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
+import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/provider/api/core/api_provider.dart';
 
 class SelectProviderView extends StatelessWidget {

@@ -51,6 +51,7 @@ extension QuickAccsessPageProgressState on GlobalKey<PageProgressState> {
 
   PageProgressStatus? get status => currentState?.status;
   bool get isSuccess => currentState?.status == PageProgressStatus.success;
+  bool get inProgress => currentState?.status == PageProgressStatus.progress;
   void error([Widget? progressWidget]) {
     currentState?.updateStream(StreamWidgetStatus.error,
         progressWidget: progressWidget);

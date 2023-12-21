@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+import 'package:mrt_wallet/models/wallet_models/address/address.dart';
+import 'package:mrt_wallet/models/wallet_models/signing_request/core/signing_request.dart';
 import 'package:mrt_wallet/types/typedef.dart';
 
 class WalletSigningPassword extends StatefulWidget {
   const WalletSigningPassword(
-      {super.key, required this.signers, required this.onPasswordValidator});
-  final List<CryptoAddress> signers;
+      {super.key, required this.request, required this.onPasswordValidator});
+  final SigningRequest request;
   final FuncFutureBoolString onPasswordValidator;
 
   @override
@@ -96,13 +98,26 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                 ],
               )),
           WidgetConstant.height20,
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(widget.signers.length, (index) {
-              return ContainerWithBorder(
-                  child: _ShowSignerDetails(address: widget.signers[index]));
-            }),
-          ),
+          Text("accounts".tr, style: context.textTheme.titleMedium),
+          WidgetConstant.height8,
+          ...List.generate(widget.request.addresses.length, (index) {
+            final address = widget.request.addresses[index];
+            return ContainerWithBorder(
+                child: AddressDetailsView(
+              address: address,
+              isSelected: false,
+            ));
+          }),
+          WidgetConstant.height20,
+          Text("private_keys".tr, style: context.textTheme.titleMedium),
+          Text("private_keys__signing_access_desc".tr),
+          WidgetConstant.height8,
+          ...List.generate(widget.request.signers.length, (index) {
+            final keyIndex = widget.request.signers[index];
+            return ContainerWithBorder(
+                child: _KeyIndexDetails(keyIndex: keyIndex));
+          }),
+          WidgetConstant.height20,
           AppTextField(
             label: "password".tr,
             validator: validator,
@@ -130,46 +145,51 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
   }
 }
 
-class _ShowSignerDetails extends StatelessWidget {
-  const _ShowSignerDetails({required this.address});
-  final CryptoAddress address;
+class _KeyIndexDetails extends StatelessWidget {
+  const _KeyIndexDetails({required this.keyIndex});
+  final AddressDerivationIndex keyIndex;
   @override
   Widget build(BuildContext context) {
-    switch (address.runtimeType) {
-      case IBitcoinAddress:
-        return _BitcoinSignerDetais(address: address as IBitcoinAddress);
-      case IBitcoinMultiSigAddress:
-        return _BitcoinSignerDetais(address: address as IBitcoinAddress);
+    switch (keyIndex.runtimeType) {
+      case ImportedAddressIndex:
+        return _ImportedKeyDerivationDetails(
+            keyIndex: keyIndex as ImportedAddressIndex);
       default:
-        return const SizedBox();
+        return _HDWalletDerivationDetails(
+            keyIndex: keyIndex as Bip32AddressIndex);
     }
   }
 }
 
-class _BitcoinSignerDetais extends StatelessWidget {
-  const _BitcoinSignerDetais({required this.address});
-  final IBitcoinAddress address;
+class _ImportedKeyDerivationDetails extends StatelessWidget {
+  const _ImportedKeyDerivationDetails({required this.keyIndex});
+  final ImportedAddressIndex keyIndex;
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(address.addressType.value, style: context.textTheme.labelLarge),
-        OneLineTextWidget(address.address.toAddress),
-        Text(address.keyIndex.path.tr, style: context.textTheme.bodySmall),
-        if (address.isMultiSigAccounts) ...[
-          WidgetConstant.height8,
-          Text("public_key_signatories".tr,
-              style: context.textTheme.labelLarge),
-          WidgetConstant.height8,
-          Column(
-            children: List.generate(address.signers.length, (index) {
-              return Padding(
-                  padding: WidgetConstant.padding5,
-                  child: OneLineTextWidget(address.signers[index]));
-            }),
-          )
+        Text("imported".tr, style: context.textTheme.labelLarge),
+        Text(keyIndex.accountId),
+        if (keyIndex.bip32KeyIndex != null) ...[
+          Text(keyIndex.bip32KeyIndex!.toString(),
+              style: context.textTheme.bodySmall)
         ]
+      ],
+    );
+  }
+}
+
+class _HDWalletDerivationDetails extends StatelessWidget {
+  const _HDWalletDerivationDetails({required this.keyIndex});
+  final Bip32AddressIndex keyIndex;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("hd_wallet".tr, style: context.textTheme.labelLarge),
+        Text(keyIndex.toString()),
       ],
     );
   }

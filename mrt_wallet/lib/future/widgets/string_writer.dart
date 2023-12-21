@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/types/typedef.dart';
 
 class StringWriterView extends StatefulWidget {
   const StringWriterView({
@@ -8,6 +9,8 @@ class StringWriterView extends StatefulWidget {
     required this.title,
     required this.label,
     required this.buttomText,
+    this.customValidator,
+    this.defaultValue,
     this.minLength,
     this.maxLength,
     this.regExp,
@@ -18,6 +21,8 @@ class StringWriterView extends StatefulWidget {
   final int? minLength;
   final int? maxLength;
   final RegExp? regExp;
+  final String? defaultValue;
+  final NullStringString? customValidator;
 
   @override
   State<StringWriterView> createState() => _StringWriterViewState();
@@ -28,13 +33,22 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
       GlobalKey(debugLabel: "_StringWriterViewState");
   final GlobalKey<FormState> formKey =
       GlobalKey(debugLabel: "_StringWriterViewState_1");
-  String text = "";
+  late String text = widget.defaultValue ?? "";
   void onChange(String v) {
     text = v;
   }
 
   String? validator(String? v) {
-    if (widget.minLength == null && widget.maxLength == null) return null;
+    if (widget.minLength == null &&
+        widget.maxLength == null &&
+        widget.regExp == null) return null;
+    if (widget.regExp != null) {
+      if (!widget.regExp!.hasMatch(v!)) {
+        return "regular_exception_validate_desc"
+            .tr
+            .replaceOne(widget.regExp!.pattern);
+      }
+    }
     final int length = v?.length ?? 0;
     if (length < (widget.minLength ?? 0)) {
       return "character_length_min_validator"
@@ -73,8 +87,9 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
             label: widget.label,
             minlines: 3,
             maxLines: 5,
-            validator: validator,
-            suffix: PasteTextIcon(onPaste: onPaste),
+            initialValue: text,
+            validator: widget.customValidator ?? validator,
+            suffixIcon: PasteTextIcon(onPaste: onPaste),
             onChanged: onChange,
             key: textFieldKey,
           ),

@@ -77,14 +77,10 @@ class _SelectAccountUtxo extends StatelessWidget {
         PageTitleSubtitle(
             title: "create_and_send_network_transaction"
                 .tr
-                .replaceOne(controller.network.coinParam.coinName),
+                .replaceOne(controller.network.coinParam.token.name),
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("please_selected_acc_spend"
-                    .tr
-                    .replaceOne(controller.network.coinParam.coinName)),
-                WidgetConstant.height8,
                 Text("spend_multiple_account_desc".tr),
                 WidgetConstant.height20,
                 Row(
@@ -101,6 +97,11 @@ class _SelectAccountUtxo extends StatelessWidget {
                 )
               ],
             )),
+        Text("accounts".tr, style: context.textTheme.titleMedium),
+        Text("please_selected_acc_spend"
+            .tr
+            .replaceOne(controller.network.coinParam.token.name)),
+        WidgetConstant.height8,
         Column(
           children: List.generate(controller.addresses.length, (index) {
             final balance =
@@ -181,7 +182,7 @@ class _UtxoPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("spendable_amount".tr, style: context.textTheme.titleLarge),
+        Text("spendable_amount".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
           child: AnimatedSwitcher(
@@ -192,7 +193,7 @@ class _UtxoPage extends StatelessWidget {
                 Expanded(
                   child: CoinPriceView(
                       balance: controller.spendableAmount,
-                      coinNames: controller.network.coinParam,
+                      token: controller.network.coinParam.token,
                       style: context.textTheme.titleLarge),
                 ),
               ],
@@ -200,8 +201,9 @@ class _UtxoPage extends StatelessWidget {
           ),
         ),
         WidgetConstant.height20,
-        PageTitleSubtitle(
-            title: "utxos".tr, body: Text("choose_utxos_each_account".tr)),
+        Text("utxos".tr, style: context.textTheme.titleMedium),
+        Text("choose_utxos_each_account".tr),
+        WidgetConstant.height8,
         if (controller.haveUtxos) ...[
           CheckboxListTile(
             title: Text("choose_all".tr),
@@ -254,7 +256,7 @@ class _UtxoPage extends StatelessWidget {
                             children: [
                               CoinPriceView(
                                   balance: controller.utxos[index].sumOfUtxos,
-                                  coinNames: controller.network.coinParam,
+                                  token: controller.network.coinParam.token,
                                   style: context.textTheme.titleLarge),
                               const Divider(),
                               // WidgetConstant.height8,
@@ -281,8 +283,8 @@ class _UtxoPage extends StatelessWidget {
                                       children: [
                                         CoinPriceView(
                                           balance: utxo.balance,
-                                          coinNames:
-                                              controller.network.coinParam,
+                                          token: controller
+                                              .network.coinParam.token,
                                           style: context.textTheme.titleLarge,
                                         ),
                                         OneLineTextWidget(utxo.utxo.txHash),

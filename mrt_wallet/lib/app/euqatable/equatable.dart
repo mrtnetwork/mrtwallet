@@ -1,9 +1,12 @@
+
 abstract mixin class Equatable {
   List<dynamic> get variabels;
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is! Equatable) {
       return false;
     }

@@ -3,7 +3,6 @@ import 'package:mrt_wallet/provider/api/api_provider.dart';
 
 enum ApiProviderStatus {
   active,
-
   error,
   reachedLimit,
 }

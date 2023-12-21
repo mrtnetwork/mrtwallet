@@ -25,21 +25,26 @@ mixin MasterKeyImpl on WalletCryptoImpl {
             .toList());
   }
 
-  List<int> _getPrivateKey(
+  Bip32Base _getPrivateKey(
       List<int> password, AddressDerivationIndex keyIndex) {
-    switch (keyIndex.runtimeType) {
-      case Bip32AddressIndex:
-      case ImportedAddressIndex:
-        final WalletMasterKeys walletMasterKeys =
-            _fromMemoryStorage(password, _massterKey!);
-        final prv = _getBip32FromKeyIndex(keyIndex, walletMasterKeys);
-        return prv.privateKey.raw;
-      default:
-        throw WalletExceptionConst.privateKeyIsNotAvailable;
+    try {
+      switch (keyIndex.runtimeType) {
+        case Bip32AddressIndex:
+        case ImportedAddressIndex:
+          final WalletMasterKeys walletMasterKeys =
+              _fromMemoryStorage(password, _massterKey!);
+
+          return _getBip32FromKeyIndex(keyIndex, walletMasterKeys);
+        default:
+          throw WalletExceptionConst.privateKeyIsNotAvailable;
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
-  bool _validateBcakupAccounts(WalletBackup backup, CryptoAddress address) {
+  bool _validateBcakupAccounts(
+      WalletBackup backup, CryptoAccountAddress address) {
     if (address.keyIndex is ImportedAddressIndex ||
         address.keyIndex is Bip32AddressIndex) {
       final bip32 = _getBip32FromKeyIndex(address.keyIndex, backup.masterKeys);
@@ -75,15 +80,14 @@ mixin MasterKeyImpl on WalletCryptoImpl {
     return acc.extendedPrivateKey;
   }
 
-  Bip32Slip10Secp256k1 _getBip32FromKeyIndex(
+  Bip32Base _getBip32FromKeyIndex(
       AddressDerivationIndex keyIndex, WalletMasterKeys masterKey) {
     if (keyIndex is MultiSigAddressIndex) {
       throw WalletExceptionConst.privateKeyIsNotAvailable;
     }
     if (keyIndex is ImportedAddressIndex) {
       final key = masterKey.getKeyById(keyIndex.accountId)!;
-      final Bip32Slip10Secp256k1 bip32 =
-          Bip32Slip10Secp256k1.fromExtendedKey(key.extendedPrivateKey);
+      final Bip32Base bip32 = key.toBip32();
       return keyIndex.derive(bip32);
     }
     final Bip32Slip10Secp256k1 bip32 =
@@ -102,15 +106,15 @@ mixin MasterKeyImpl on WalletCryptoImpl {
   List<int> _deriveNewAddress(NewAccountParams params, List<int> password) {
     final WalletMasterKeys keys = _fromMemoryStorage(password, _massterKey!);
     final keyIndex = params.deriveIndex;
-    Bip32Slip10Secp256k1 bip32;
+    Bip32Base bip32;
     if (keyIndex is ImportedAddressIndex) {
       final WalletCustomKeys key = keys.customKeys
           .firstWhere((element) => element.checksum == keyIndex.accountId);
-      bip32 = Bip32Slip10Secp256k1.fromExtendedKey(key.extendedPrivateKey);
+      bip32 = key.toBip32();
     } else {
       bip32 = Bip32Slip10Secp256k1.fromSeed(keys.seed);
     }
-    final Bip32Slip10Secp256k1 derive = keyIndex.derive(bip32);
+    final Bip32Base derive = keyIndex.derive(bip32);
     final publicKey = derive.publicKey.compressed;
     return publicKey;
   }
@@ -118,8 +122,7 @@ mixin MasterKeyImpl on WalletCryptoImpl {
   WalletMasterKeys _importCustomKey(
       WalletCustomKeys newKey, List<int> password) {
     final WalletMasterKeys keys = _fromMemoryStorage(password, _massterKey!);
-    final bip32 =
-        Bip32Slip10Secp256k1.fromExtendedKey(newKey.extendedPrivateKey);
+    final Bip32Base bip32 = newKey.toBip32();
     final checkshum = bip32.publicKey.fingerPrint.toHex();
     final publicKey = bip32.publicKey.toHex();
     if (checkshum != newKey.checksum || newKey.publicKey != publicKey) {

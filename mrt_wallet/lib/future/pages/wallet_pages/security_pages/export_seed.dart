@@ -121,7 +121,7 @@ class _ExportSeedViewState extends State<_ExportSeedView>
                               duration: AppGlobalConst.animationDuraion,
                               child: _showMnemonic
                                   ? const SizedBox()
-                                  : FilledButton.tonalIcon(
+                                  : FilledButton.icon(
                                       onPressed: onChangeShowMnemonic,
                                       icon: const Icon(Icons.remove_red_eye),
                                       label: Text("show_mnemonic".tr)),
@@ -143,6 +143,7 @@ class _ExportSeedViewState extends State<_ExportSeedView>
                               size: AppGlobalConst.double40),
                           onPressed: () {
                             context.openSliverDialog(
+                        (ctx) =>
                                 BarcodeView(
                                     underBarcodeWidget: ErrorTextContainer(
                                         margin:
@@ -160,10 +161,11 @@ class _ExportSeedViewState extends State<_ExportSeedView>
                           },
                         ),
                         WidgetConstant.width8,
-                        FilledButton.tonalIcon(
+                        FilledButton.icon(
                             label: Text("create_backup".tr),
                             onPressed: () {
                               context.openSliverDialog(
+                        (ctx) =>
                                   SecureBackupView(
                                     data: _mnemonic.toStr(),
                                     password: widget.password,

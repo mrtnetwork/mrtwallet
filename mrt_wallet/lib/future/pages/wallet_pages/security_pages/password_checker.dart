@@ -19,14 +19,14 @@ class PasswordCheckerView extends StatefulWidget {
       required this.subtitle,
       this.account,
       this.password,
-      this.accountId});
+      this.customKey});
   final FuncWidgetStringPaagePrgoressKey onAccsess;
   final WalletAccsessType accsess;
   final String title;
   final Widget subtitle;
-  final CryptoAddress? account;
+  final CryptoAccountAddress? account;
   final String? password;
-  final String? accountId;
+  final EncryptedCustomKey? customKey;
 
   @override
   State<PasswordCheckerView> createState() => _PasswordCheckerViewState();
@@ -70,7 +70,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     progressKey.process();
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     final result = await wallet.accsess(widget.accsess, _password,
-        account: widget.account, accountId: widget.accountId);
+        account: widget.account, accountId: widget.customKey?.id);
     if (result.hasError) {
       error = result.error?.tr;
       progressKey.error();

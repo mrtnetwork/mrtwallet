@@ -7,9 +7,18 @@ extension QuickDateTimeFormater on DateTime {
     }
   }
 
-  String toDateAndTime() {
+  String toDateAndTimeWithSecound() {
     return "$year-${_twoDigits(month)}-${_twoDigits(day)} "
         "${_twoDigits(hour)}:${_twoDigits(minute)}:${_twoDigits(second)}";
+  }
+
+  String toDateAndTime() {
+    return "$year-${_twoDigits(month)}-${_twoDigits(day)} "
+        "${_twoDigits(hour)}:${_twoDigits(minute)}";
+  }
+
+  String toOnlyDate() {
+    return "$year-${_twoDigits(month)}-${_twoDigits(day)}";
   }
 
   String toFileName() {

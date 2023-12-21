@@ -3,6 +3,11 @@ import 'package:mrt_wallet/app/constant/constant.dart';
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
+import 'package:mrt_wallet/types/typedef.dart';
+
+extension CustomColorsSchame on ColorScheme {
+  Color get disable => onSurface.withOpacity(0.38);
+}
 
 extension QuickContextAccsess on BuildContext {
   ThemeData get theme => Theme.of(this);
@@ -43,15 +48,18 @@ extension QuickContextAccsess on BuildContext {
     }
   }
 
-  Future<T?> openSliverBottomSheet<T>(Widget child, String label,
+  Future<T?> openSliverBottomSheet<T>(String label,
       {double minExtent = 0.7,
       double maxExtend = 1,
+      Widget? child,
       double? initialExtend,
+      BodyBuilder? bodyBuilder,
       List<Widget> appbarActions = const []}) async {
     return await showModalBottomSheet<T>(
       context: this,
       builder: (context) => AppBottomSheet(
         label: label,
+        body: bodyBuilder,
         actions: appbarActions,
         minExtent: minExtent,
         maxExtend: maxExtend,
@@ -65,17 +73,16 @@ extension QuickContextAccsess on BuildContext {
     );
   }
 
-  Future<T?> openSliverDialog<T>(
-    Widget widget,
-    String label,
-  ) async {
+  Future<T?> openSliverDialog<T>(WidgetContext widget, String label,
+      {List<Widget> Function(BuildContext)? content}) async {
     return await showAdaptiveDialog(
       context: this,
       useRootNavigator: false,
       builder: (context) {
         return DialogView(
           title: label,
-          child: widget,
+          content: content?.call(context) ?? const [],
+          child: widget(context),
         );
       },
     );

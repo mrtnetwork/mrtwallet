@@ -6,18 +6,21 @@ import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/main.dart';
+import 'package:mrt_wallet/models/wallet_models/account/core/account.dart';
+import 'package:mrt_wallet/models/wallet_models/address/address.dart';
 
 class SwitchOrSelectAccountView extends StatelessWidget {
-  const SwitchOrSelectAccountView({super.key, this.forSelect = true});
-  final bool forSelect;
-
+  const SwitchOrSelectAccountView(
+      {super.key, required this.account, this.currentAddress});
+  final NetworkAccountCore account;
+  final CryptoAccountAddress? currentAddress;
   @override
   Widget build(BuildContext context) {
     return MrtViewBuilder<WalletProvider>(
         controller: () => context.watch<WalletProvider>(StateIdsConst.main),
         removable: false,
         builder: (wallet) {
-          if (!wallet.haveAddress) {
+          if (!account.haveAddress) {
             return Padding(
               padding: WidgetConstant.padding20,
               child: Column(
@@ -26,18 +29,19 @@ class SwitchOrSelectAccountView extends StatelessWidget {
                   PageTitleSubtitle(
                     title: "setup_network_address"
                         .tr
-                        .replaceOne(wallet.network.coinParam.coinName),
+                        .replaceOne(wallet.network.coinParam.token.name),
                     body: Text("setup_network_address_desc"
                         .tr
-                        .replaceOne(wallet.network.coinParam.coinName)),
+                        .replaceOne(wallet.network.coinParam.token.name)),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FixedElevatedButton(
                           onPressed: () {
-                            context.to(PagePathConst.setupBitcoinAddress,
-                                argruments: wallet.networkAccount);
+                            context.to(
+                                PagePathConst.setupAddressPage(account.network),
+                                argruments: account);
                           },
                           child: Text("setup_address".tr)),
                     ],
@@ -46,8 +50,8 @@ class SwitchOrSelectAccountView extends StatelessWidget {
               ),
             );
           }
-          final addresses = wallet.networkAccount.addresses;
-          final currentAccount = wallet.networkAccount.address;
+          final addresses = account.addresses;
+          final currentAccount = currentAddress ?? account.address;
 
           return ListView.builder(
               itemCount: addresses.length,
@@ -61,13 +65,11 @@ class SwitchOrSelectAccountView extends StatelessWidget {
                     children: [
                       Expanded(
                         child: InkWell(
-                          onTap: !forSelect
-                              ? null
-                              : () {
-                                  if (context.mounted) {
-                                    context.pop(addresses[index]);
-                                  }
-                                },
+                          onTap: () {
+                            if (context.mounted) {
+                              context.pop(addresses[index]);
+                            }
+                          },
                           child: AddressDetailsView(
                               address: addresses[index],
                               isSelected: addresses[index] == currentAccount),

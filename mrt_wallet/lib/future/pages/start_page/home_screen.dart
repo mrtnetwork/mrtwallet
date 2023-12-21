@@ -41,87 +41,83 @@ class HomeScreen extends StatelessWidget {
                 child: () => RefreshIndicator(
                   notificationPredicate: (notification) => model.walletIsUnlock,
                   onRefresh: model.updateBalance,
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: AnimatedSwitcher(
-                          duration: AppGlobalConst.animationDuraion,
-                          child: model.walletIsLock
-                              ? const WalletLoginPageView()
-                              : model.walletIsUnlock
-                                  ? NetworkAccountPageView(wallet: model)
-                                  : ConstraintsBoxView(
-                                      padding: WidgetConstant.padding20,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          const CircleAssetsImgaeView(
-                                              AppGlobalConst.logo),
-                                          WidgetConstant.height8,
-                                          Text(
-                                            "wellcome".tr,
-                                            style: context.textTheme.titleLarge,
-                                          ),
-                                          WidgetConstant.height20,
-                                          AppListTile(
-                                            title: Text("use_mnemonic".tr),
-                                            subtitle: Text("e_mnemonic".tr),
-                                            trailing:
-                                                const Icon(Icons.arrow_forward),
-                                            onTap: () async {
-                                              context.to(PagePathConst.setup,
-                                                  argruments:
-                                                      SetupWalletMode.exist);
-                                            },
-                                          ),
-                                          WidgetConstant.height8,
-                                          AppListTile(
-                                            title: Text("generate_mnemonic".tr),
-                                            subtitle: Text("g_mnemonic".tr),
-                                            trailing:
-                                                const Icon(Icons.arrow_forward),
-                                            onTap: () {
-                                              context.to(PagePathConst.setup);
-                                            },
-                                          ),
-                                          WidgetConstant.height8,
-                                          AppListTile(
-                                            title: Text("restore_backup".tr),
-                                            subtitle:
-                                                Text("restore_backuo_desc".tr),
-                                            trailing:
-                                                const Icon(Icons.arrow_forward),
-                                            onTap: () {
-                                              context.to(PagePathConst.setup,
-                                                  argruments:
-                                                      SetupWalletMode.backup);
-                                            },
-                                          ),
-                                          WidgetConstant.height20,
-                                          FilledButton(
-                                              style: ButtonStyle(
-                                                  foregroundColor:
-                                                      MaterialStatePropertyAll(
-                                                          context.colors
-                                                              .onBackground),
-                                                  backgroundColor:
-                                                      MaterialStatePropertyAll(
-                                                          context.colors
-                                                              .background)),
-                                              onPressed: () {
-                                                context.openSliverDialog(
-                                                    const AbountWalletView(),
-                                                    AppGlobalConst.name);
-                                              },
-                                              child:
-                                                  Text("about_mrt_wallet".tr))
-                                        ],
+                  child: AnimatedSwitcher(
+                    duration: AppGlobalConst.animationDuraion,
+                    child: model.walletIsLock
+                        ? const WalletLoginPageView()
+                        : model.walletIsUnlock
+                            ? NetworkAccountPageView(wallet: model)
+                            : ConstraintsBoxView(
+                                padding: WidgetConstant.padding20,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      const CircleAssetsImgaeView(
+                                          AppGlobalConst.logo),
+                                      WidgetConstant.height8,
+                                      Text(
+                                        "wellcome".tr,
+                                        style: context.textTheme.titleLarge,
                                       ),
-                                    ),
-                        ),
-                      ),
-                    ],
+                                      WidgetConstant.height20,
+                                      AppListTile(
+                                        title: Text("use_mnemonic".tr),
+                                        subtitle: Text("e_mnemonic".tr),
+                                        trailing:
+                                            const Icon(Icons.arrow_forward),
+                                        onTap: () async {
+                                          context.to(PagePathConst.setup,
+                                              argruments:
+                                                  SetupWalletMode.exist);
+                                        },
+                                      ),
+                                      WidgetConstant.height8,
+                                      AppListTile(
+                                        title: Text("generate_mnemonic".tr),
+                                        subtitle: Text("g_mnemonic".tr),
+                                        trailing:
+                                            const Icon(Icons.arrow_forward),
+                                        onTap: () {
+                                          context.to(PagePathConst.setup);
+                                        },
+                                      ),
+                                      WidgetConstant.height8,
+                                      AppListTile(
+                                        title: Text("restore_backup".tr),
+                                        subtitle:
+                                            Text("restore_backuo_desc".tr),
+                                        trailing:
+                                            const Icon(Icons.arrow_forward),
+                                        onTap: () {
+                                          context.to(PagePathConst.setup,
+                                              argruments:
+                                                  SetupWalletMode.backup);
+                                        },
+                                      ),
+                                      WidgetConstant.height20,
+                                      FilledButton(
+                                          style: ButtonStyle(
+                                              foregroundColor:
+                                                  MaterialStatePropertyAll(
+                                                      context
+                                                          .colors.onBackground),
+                                              backgroundColor:
+                                                  MaterialStatePropertyAll(
+                                                      context
+                                                          .colors.background)),
+                                          onPressed: () {
+                                            context.openSliverDialog(
+                                                (ctx) =>
+                                                    const AbountWalletView(),
+                                                AppGlobalConst.name);
+                                          },
+                                          child: Text("about_mrt_wallet".tr))
+                                    ],
+                                  ),
+                                ),
+                              ),
                   ),
                 ),
               ),
@@ -157,16 +153,19 @@ class _BottomAppBar extends StatelessWidget {
                   label: Text("switch_address".tr),
                   onPressed: () {
                     context
-                        .openSliverBottomSheet<CryptoAddress>(
-                          const SwitchOrSelectAccountView(),
+                        .openSliverBottomSheet<CryptoAccountAddress>(
                           "switch_account".tr,
+                          child: SwitchOrSelectAccountView(
+                              account: wallet.networkAccount),
                           appbarActions: [
                             Padding(
                               padding: WidgetConstant.paddingHorizontal10,
-                              child: FilledButton.tonalIcon(
+                              child: FilledButton.icon(
                                   onPressed: () {
-                                    context
-                                        .to(PagePathConst.setupBitcoinAddress);
+                                    context.to(
+                                        PagePathConst.setupAddressPage(
+                                            wallet.network),
+                                        argruments: wallet.networkAccount);
                                   },
                                   icon: const Icon(Icons.add),
                                   label: Text("new_address".tr)),
@@ -192,14 +191,16 @@ class _BottomAppBar extends StatelessWidget {
                 ),
                 IconButton(
                     tooltip: "switch_network".tr,
-                    onPressed: () {
-                      context
-                          .openSliverDialog<AppNetworkImpl>(
-                              SwitchNetworkView(
-                                selectedNetwork: model.network,
-                              ),
-                              "switch_network".tr)
-                          .then(model.switchNetwork);
+                    onPressed: () async {
+                      await showAdaptiveDialog<AppNetworkImpl>(
+                        context: context,
+                        useRootNavigator: false,
+                        builder: (context) {
+                          return SwitchNetworkView(
+                            selectedNetwork: model.network,
+                          );
+                        },
+                      ).then(model.switchNetwork);
                     },
                     icon: const Icon(Icons.account_tree_sharp)),
                 IconButton(

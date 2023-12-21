@@ -140,6 +140,7 @@ class _AppSettingViewState extends State<AppSettingView> {
               AppListTile(
                 onTap: () {
                   context.openSliverDialog(
+                        (ctx) =>
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -181,6 +182,7 @@ class _AppSettingViewState extends State<AppSettingView> {
                 subtitle: Text("essence_of_mrt_wallet".tr),
                 onTap: () {
                   context.openSliverDialog(
+                        (ctx) =>
                       const AbountWalletView(), AppGlobalConst.name);
                 },
               ),

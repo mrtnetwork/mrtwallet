@@ -7,6 +7,7 @@ class BitcoinNewAddressParams implements NewAccountParams {
       {required this.coin,
       required this.deriveIndex,
       required this.bitcoinAddressType});
+  @override
   bool get isMultiSig => false;
 
   @override

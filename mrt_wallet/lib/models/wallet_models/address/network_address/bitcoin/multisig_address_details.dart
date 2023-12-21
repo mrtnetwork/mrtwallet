@@ -1,8 +1,7 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:blockchain_utils/compare/compare.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/app/euqatable/equatable.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
@@ -35,10 +34,10 @@ class BitcoinMultiSigSignerDetais
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.bitcoinMultiSigSignerAddress);
 
-    final List<int> publicKey = (cbor.value[0] as CborBytesValue).value;
-    final int weight = cbor.value[1].value;
+    final List<int> publicKey = cbor.getIndex(0);
+    final int weight = cbor.getIndex(1);
     final keyIndex =
-        AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.value[2]);
+        AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     return BitcoinMultiSigSignerDetais(
         publicKey: publicKey, weight: weight, keyIndex: keyIndex);
   }
@@ -134,27 +133,23 @@ class BitcoinMultiSignatureAddress
 
   factory BitcoinMultiSignatureAddress.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    try {
-      final CborListValue cbor = CborSerializable.decodeCborTags(
-          bytes, obj, WalletModelCborTagsConst.bitcoinMultiSignaturAddress);
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.bitcoinMultiSignaturAddress);
 
-      final signersList = cbor.value[0] as CborListValue;
-      final List<BitcoinMultiSigSignerDetais> signers = signersList.value
-          .map((e) => BitcoinMultiSigSignerDetais.fromCborBytesOrObject(obj: e))
-          .toList();
-      final int threshHold = cbor.value[1].value;
-      final List<String> scriptDetails = (cbor.value[2] as CborListValue)
-          .value
-          .map<String>((e) => e.value)
-          .toList();
+    final List<dynamic> signersList = cbor.getIndex(0);
+    final List<BitcoinMultiSigSignerDetais> signers = signersList
+        .map<BitcoinMultiSigSignerDetais>(
+            (e) => BitcoinMultiSigSignerDetais.fromCborBytesOrObject(obj: e))
+        .toList();
+    final int threshHold = cbor.getIndex(1);
+    final List<dynamic> scriptsOpcode = cbor.getIndex(2);
+    final List<String> scriptDetails =
+        scriptsOpcode.map<String>((e) => e.value).toList();
 
-      return BitcoinMultiSignatureAddress._(
-          multiSigScript: Script(script: scriptDetails),
-          signers: signers,
-          threshold: threshHold);
-    } catch (e) {
-      throw WalletExceptionConst.invalidAccountDetails;
-    }
+    return BitcoinMultiSignatureAddress._(
+        multiSigScript: Script(script: scriptDetails),
+        signers: signers,
+        threshold: threshHold);
   }
 
   @override

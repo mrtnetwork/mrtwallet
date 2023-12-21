@@ -85,15 +85,38 @@ mixin WalletStorageImpl on NativeSecureStorageImpl {
   Future<NetworkAccountCore> _readNetworkAccout(AppNetworkImpl network) async {
     try {
       final accounts = await read(key: _toKey(network.value.toString()));
-      return Bip32NetworkAccount.fromHex(accounts!);
+      return _toNetworkAccount(network, accounts!);
     } catch (e) {
-      return Bip32NetworkAccount.setup(network);
+      return _createNetworkAccount(network);
+    }
+  }
+
+  Bip32NetworkAccount _toNetworkAccount(
+      AppNetworkImpl network, String account) {
+    switch (network.runtimeType) {
+      case AppXRPNetwork:
+        return Bip32NetworkAccount<BigInt, BigRational, XRPAddress>.fromHex(
+            account);
+      default:
+        return Bip32NetworkAccount<BigInt, BigInt, BitcoinAddress>.fromHex(
+            account);
+    }
+  }
+
+  Bip32NetworkAccount _createNetworkAccount(AppNetworkImpl network) {
+    switch (network.runtimeType) {
+      case AppXRPNetwork:
+        return Bip32NetworkAccount<BigInt, BigRational, XRPAddress>.setup(
+            network);
+      default:
+        return Bip32NetworkAccount<BigInt, BigInt, BitcoinAddress>.setup(
+            network);
     }
   }
 
   Future<List<NetworkAccountCore>> _readAllAccounts() async {
     final List<NetworkAccountCore> accounts = [];
-    for (final i in AppBitcoinNetwork.values) {
+    for (final i in AppNetworkImpl.networks) {
       final acc = await _readNetworkAccout(i);
       if (!acc.haveAddress) continue;
       accounts.add(acc);

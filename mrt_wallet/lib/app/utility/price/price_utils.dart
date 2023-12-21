@@ -31,13 +31,13 @@ class PriceUtils {
         return dec.toBigInt() as T;
       case double:
         return dec.toDouble() as T;
-      case CurrencyBalance:
-        return CurrencyBalance(dec.toBigInt(), 8) as T;
+      case NoneDecimalBalance:
+        return NoneDecimalBalance(dec.toBigInt(), 8) as T;
       case dynamic:
         return dec.toBigInt() as T;
       default:
         throw ArgumentError(
-            "Invalid decode type price only accept bigint, double, and CurrencyBalance for decode");
+            "Invalid decode type price only accept bigint, double, and NoneDecimalBalance for decode");
     }
   }
 

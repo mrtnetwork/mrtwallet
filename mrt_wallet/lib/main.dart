@@ -6,6 +6,12 @@ import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/setup_address.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/setup_multi_sig_address.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/token/import_nfts.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/token/import_token.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/fields/ripple_tranaction_fields_view.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/fields/transfer.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/backup_wallet.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/manage_account_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/security.dart';
@@ -158,6 +164,18 @@ class PageRouter {
         return const BackupWalletView();
       case PagePathConst.manageImportedKey:
         return const ManageImportedKeysView();
+      case PagePathConst.setupRippleAddress:
+        return const SetupRippleAddressView();
+      case PagePathConst.rippleTransfer:
+        return const RippleTransferTransactionView();
+      case PagePathConst.rippleAddToken:
+        return const MonitorRippleTokenView();
+      case PagePathConst.rippleAddNfts:
+        return const MonitorRippleNFTsView();
+      case PagePathConst.rippleTransaction:
+        return const RippleTransactionFieldsView();
+      case PagePathConst.rippleMultisigAddress:
+        return const SetupRippleMutlisigAddressView();
       default:
         return const HomeScreen();
     }

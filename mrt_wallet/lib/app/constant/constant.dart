@@ -15,4 +15,6 @@ class AppGlobalConst {
   static const double double80 = 80;
   static const double double40 = 40;
   static const double dialogWidth = 450;
+  static const double maxTextFieldWidth = 400;
+  static final RegExp accountNameRegExp = RegExp(r'^[^\n]{0,20}$');
 }

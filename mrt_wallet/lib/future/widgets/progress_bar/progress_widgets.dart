@@ -97,9 +97,12 @@ class SuccessTransactionTextView extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget successTrText = Column(
       children: [
-        CircleAssetsImgaeView(network.coinParam.logo),
-        const Icon(Icons.check_circle, color: CustomColors.green),
-        Text(network.coinParam.coinName, style: context.textTheme.labelLarge),
+        CircleAssetsImgaeView(network.coinParam.logo,
+            radius: AppGlobalConst.double80),
+        WidgetConstant.height20,
+        WidgetConstant.checkCircle,
+        Text(network.coinParam.token.name, style: context.textTheme.labelLarge),
+        WidgetConstant.height20,
         ContainerWithBorder(
             child: CopyTextIcon(
                 dataToCopy: txId, widget: OneLineTextWidget(txId))),

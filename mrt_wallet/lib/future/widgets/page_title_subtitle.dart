@@ -4,10 +4,15 @@ import 'widget_constant.dart';
 
 class PageTitleSubtitle extends StatelessWidget {
   const PageTitleSubtitle(
-      {super.key, required this.title, required this.body, this.subtitle});
+      {super.key,
+      required this.title,
+      required this.body,
+      this.subtitle,
+      this.titleStyle});
   final String? title;
   final Widget body;
   final String? subtitle;
+  final TextStyle? titleStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +22,7 @@ class PageTitleSubtitle extends StatelessWidget {
         if (title != null)
           Text(
             title ?? "",
-            style: context.textTheme.titleLarge,
+            style: titleStyle ?? context.textTheme.titleLarge,
           ),
         Padding(
           padding: title == null ? EdgeInsets.zero : WidgetConstant.padding10,

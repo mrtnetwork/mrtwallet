@@ -16,29 +16,30 @@ class AccountPrivteKeyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
-    CryptoAddress? account;
-    String? accountId;
+    CryptoAccountAddress? account;
+    EncryptedCustomKey? customKey;
     String? password;
     final args = context.getDynamicArgs();
-    if (args is CryptoAddress) {
+    if (args is CryptoAccountAddress) {
       account = args;
     } else {
-      args as List<String>;
-      accountId = args.first;
-      password = args.last;
+      args as (EncryptedCustomKey, String);
+      customKey = args.$1;
+      password = args.$2;
     }
 
     return PasswordCheckerView(
         accsess: WalletAccsessType.privateKey,
         account: account,
         password: password,
-        accountId: accountId,
+        customKey: customKey,
         onAccsess: (p0, p1) {
           return _AccountPrivateKeyView(
               privateKey: p0,
               password: p1,
               account: account,
-              network: wallet.network);
+              network: wallet.network,
+              customKey: customKey);
         },
         title: "export_private_key".tr,
         subtitle: PageTitleSubtitle(
@@ -60,10 +61,12 @@ class _AccountPrivateKeyView extends StatefulWidget {
     required this.password,
     required this.account,
     required this.network,
+    required this.customKey,
   });
   final String privateKey;
   final String password;
-  final CryptoAddress? account;
+  final CryptoAccountAddress? account;
+  final EncryptedCustomKey? customKey;
   final AppNetworkImpl network;
   @override
   State<_AccountPrivateKeyView> createState() => _AccountPrivateKeyViewState();
@@ -73,14 +76,17 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
     with SafeState, SecureState {
   late Bip44Base account;
   late final String privateKeyHex;
-  late CryptoCoins coin = widget.network.coins.first;
-  late final List<CryptoCoins> coins = widget.network.coins;
+  String? coinPrivateKey;
+  String get privateKey => coinPrivateKey ?? privateKeyHex;
+  late CryptoCoins coin;
+  final List<CryptoCoins> coins = [];
   CryptoCoins? wifCoin;
+  bool inited = false;
 
   late final Map<CryptoCoins, Widget> supportedCoins = {
     for (final i in coins)
       i: RichText(
-          text: TextSpan(children: [
+          text: TextSpan(style: context.textTheme.bodyMedium, children: [
         TextSpan(text: i.coinName.camelCase),
         TextSpan(text: " (${i.proposal.specName.toUpperCase()}) ")
       ]))
@@ -89,7 +95,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
     for (final i in coins)
       if (i.conf.wifNetVer != null)
         i: RichText(
-            text: TextSpan(children: [
+            text: TextSpan(style: context.textTheme.bodyMedium, children: [
           TextSpan(text: i.coinName.camelCase),
           TextSpan(text: " (${i.proposal.specName.toUpperCase()}) ")
         ]))
@@ -98,25 +104,38 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
   String? wif;
 
   bool supported = false;
+  void _importCoins() {
+    for (final i in widget.network.coins) {
+      final coin = MethodCaller.nullOnException(
+          () => coins.firstWhere((element) => element.proposal == i.proposal));
+      if (coin != null) continue;
+      coins.add(i);
+    }
+  }
 
   void initPrivateKey() {
     try {
+      if (inited) return;
+      inited = true;
+      coin = widget.network.coins.firstWhere((element) =>
+          element.conf.type ==
+          (widget.account?.coin.conf.type ?? widget.customKey!.type));
+      coins.add(coin);
       if (widget.account != null) {
-        if (coins.contains(widget.account!.coin)) {
-          coin = widget.account!.coin;
-        }
+        coin = widget.account!.coin;
         privateKeyHex = widget.privateKey;
         account = BlockchainUtils.privateKeyToBip44(privateKeyHex, coin);
       } else {
-        final bip32 = Bip32Slip10Ed25519.fromExtendedKey(widget.privateKey);
-        privateKeyHex = bip32.privateKey.toHex();
+        privateKeyHex =
+            BlockchainUtils.extendedKeyToPrivateKey(widget.privateKey, coin);
         account = BlockchainUtils.privateKeyToBip44(privateKeyHex, coin);
       }
+      coinPrivateKey = BlockchainUtils.exportPrivateKey(privateKeyHex, coin);
+      _importCoins();
       if (supportWif) {
         wifCoin = coin.conf.wifNetVer != null ? coin : supportedWif.keys.first;
         wif = _toWif();
       }
-
       supported = true;
     } catch (e) {
       supported = false;
@@ -137,24 +156,23 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
     setState(() {});
   }
 
+  final GlobalKey<PageProgressState> progressKey = GlobalKey();
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
     initPrivateKey();
+    super.didChangeDependencies();
   }
 
-  final GlobalKey<PageProgressState> progressKey = GlobalKey();
-
-  void onChangeExtendedType<T>(T? v) {
+  void onChangeExtendedType(CryptoCoins? v) {
     if (v == null) return;
-    coin = v as CryptoCoins;
+    coin = v;
     account = BlockchainUtils.privateKeyToBip44(privateKeyHex, coin);
     setState(() {});
   }
 
-  void onChangeWif<T>(T? v) {
+  void onChangeWif(CryptoCoins? v) {
     if (v == null) return;
-    wifCoin = v as CryptoCoins;
+    wifCoin = v;
     wif = _toWif();
     setState(() {});
   }
@@ -182,21 +200,19 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                     children: [Text("export_private_key_desc".tr)],
                   )),
               if (widget.account != null) ...[
-                Text("address_details".tr, style: context.textTheme.titleLarge),
+                Text("address_details".tr,
+                    style: context.textTheme.titleMedium),
                 WidgetConstant.height8,
                 ContainerWithBorder(
-                  margin: EdgeInsets.zero,
-                  padding: EdgeInsets.zero,
                   child: CopyTextWithBarcode(
                       dataToCopy: widget.account!.address.toAddress,
-                      widget: BitcoinAddressDetailsView(
-                        account: widget.account as IBitcoinAddress,
-                      ),
+                      widget: AddressDetailsView(
+                          address: widget.account!, isSelected: false),
                       barcodeTitle: "address_sharing".tr),
                 ),
                 WidgetConstant.height20,
               ],
-              Text("private_key".tr, style: context.textTheme.titleLarge),
+              Text("private_key".tr, style: context.textTheme.titleMedium),
               WidgetConstant.height8,
               Stack(
                 children: [
@@ -214,15 +230,15 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                         secureBarcode: true,
                         barcodeWidget: ContainerWithBorder(
                             child: CopyTextIcon(
-                                dataToCopy: privateKeyHex,
-                                widget: ObscureTextView(privateKeyHex,
-                                    maxLine: 3))),
+                                dataToCopy: privateKey,
+                                widget:
+                                    ObscureTextView(privateKey, maxLine: 3))),
                         underBarcodeWidget: ErrorTextContainer(
                             margin: WidgetConstant.paddingVertical10,
                             error: "image_store_alert_keys".tr),
-                        dataToCopy: privateKeyHex,
+                        dataToCopy: privateKey,
                         barcodeTitle: "private_key".tr,
-                        widget: SelectableText(privateKeyHex),
+                        widget: SelectableText(privateKey),
                       )),
                     ),
                   ),
@@ -233,7 +249,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                         key: ValueKey(_showPrivateKey),
                         child: _showPrivateKey
                             ? WidgetConstant.sizedBox
-                            : FilledButton.tonalIcon(
+                            : FilledButton.icon(
                                 onPressed: onChangeShowPrivateKey,
                                 icon: const Icon(Icons.remove_red_eye),
                                 label: Text("show_private_key".tr)),
@@ -244,7 +260,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
               ),
               WidgetConstant.height20,
               Text("extended_private_key".tr,
-                  style: context.textTheme.titleLarge),
+                  style: context.textTheme.titleMedium),
               WidgetConstant.height8,
               AppDropDownBottom(
                 items: supportedCoins,
@@ -289,7 +305,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                         key: ValueKey(_showPrivateKey),
                         child: _showPrivateKey
                             ? WidgetConstant.sizedBox
-                            : FilledButton.tonalIcon(
+                            : FilledButton.icon(
                                 onPressed: onChangeShowPrivateKey,
                                 icon: const Icon(Icons.remove_red_eye),
                                 label: Text("show_private_key".tr)),
@@ -300,7 +316,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
               ),
               if (supportWif) ...[
                 WidgetConstant.height20,
-                Text("wif".tr, style: context.textTheme.titleLarge),
+                Text("wif".tr, style: context.textTheme.titleMedium),
                 WidgetConstant.height8,
                 AppDropDownBottom(
                   items: supportedWif,
@@ -344,7 +360,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                             key: ValueKey(_showPrivateKey),
                             child: _showPrivateKey
                                 ? WidgetConstant.sizedBox
-                                : FilledButton.tonalIcon(
+                                : FilledButton.icon(
                                     onPressed: onChangeShowPrivateKey,
                                     icon: const Icon(Icons.remove_red_eye),
                                     label: Text("show_private_key".tr)),
@@ -360,18 +376,18 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                 children: [
                   Padding(
                     padding: WidgetConstant.paddingVertical20,
-                    child: FilledButton.tonalIcon(
+                    child: FilledButton.icon(
                         label: Text("create_backup".tr),
                         onPressed: () {
                           context.openSliverDialog<SecretWalletEncoding>(
-                              SecureBackupView(
-                                password: widget.password,
-                                data: privateKeyHex,
-                                descriptions: [
-                                  WidgetConstant.height8,
-                                  Text("about_web3_defination_desc4".tr),
-                                ],
-                              ),
+                              (ctx) => SecureBackupView(
+                                    password: widget.password,
+                                    data: privateKey,
+                                    descriptions: [
+                                      WidgetConstant.height8,
+                                      Text("about_web3_defination_desc4".tr),
+                                    ],
+                                  ),
                               "backup_private_key".tr);
                         },
                         icon: const Icon(Icons.backup)),

@@ -31,7 +31,7 @@ class _SetupBitcoinMultiSigAddressViewState
   bool signersReady = false;
   void onAddSigner(IBitcoinAddress? acc) {
     if (acc == null) return;
-    if (acc.isMultiSigAccounts) {
+    if (acc.multiSigAccount) {
       context.showAlert("unavailable_multi_sig_public_key".tr);
       return;
     }
@@ -107,9 +107,8 @@ class _SetupBitcoinMultiSigAddressViewState
 
   bool isValid() => _thresHold != null && _thresHold! >= 2 && _thresHold! <= 16;
   bool inReview = false;
-  // final List<BitcoinAddressType> multiSigAddressTyes = [];
   final Map<BitcoinAddressType, String> supportedMultisigTypes = {};
-
+  late final NetworkAccountCore account;
   BitcoinAddressType multiSigAddressTye = BitcoinAddressType.p2pkhInP2sh;
   BitcoinMultiSignatureAddress? _multiSigAddress;
   MultiSignatureAddress get multiSigAddress => _multiSigAddress!;
@@ -248,8 +247,9 @@ class _SetupBitcoinMultiSigAddressViewState
   void init() {
     if (_init) return;
     _init = true;
-    network = context.watch<WalletProvider>(StateIdsConst.main).network
-        as AppBitcoinNetwork;
+    final wallet = context.watch<WalletProvider>(StateIdsConst.main);
+    network = wallet.network as AppBitcoinNetwork;
+    account = wallet.networkAccount;
     supportedMultisigTypes[BitcoinAddressType.p2pkhInP2sh] = "P2SH";
     if (network.coinParam.transacationNetwork.supportedAddress
         .contains(BitcoinAddressType.p2wpkh)) {
@@ -303,7 +303,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                         ],
                                       )),
                                   Text("type_of_address".tr,
-                                      style: context.textTheme.titleLarge),
+                                      style: context.textTheme.titleMedium),
                                   WidgetConstant.height8,
                                   Column(
                                     children: List.generate(
@@ -328,7 +328,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                         WidgetConstant.height20,
                                         Text("address".tr,
                                             style:
-                                                context.textTheme.titleLarge),
+                                                context.textTheme.titleMedium),
                                         WidgetConstant.height8,
                                         ContainerWithBorder(
                                             child: CopyTextIcon(
@@ -340,7 +340,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                         Text(
                                             "public_keys_and_weight_of_each".tr,
                                             style:
-                                                context.textTheme.titleLarge),
+                                                context.textTheme.titleMedium),
                                         WidgetConstant.height8,
                                         Column(
                                           children: List.generate(
@@ -369,7 +369,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                         WidgetConstant.height20,
                                         Text("threshold".tr,
                                             style:
-                                                context.textTheme.titleLarge),
+                                                context.textTheme.titleMedium),
                                         WidgetConstant.height8,
                                         ContainerWithBorder(
                                             child: Column(
@@ -382,7 +382,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                         WidgetConstant.height20,
                                         Text("multi_sig_script".tr,
                                             style:
-                                                context.textTheme.titleLarge),
+                                                context.textTheme.titleMedium),
                                         WidgetConstant.height8,
                                         ContainerWithBorder(
                                             child: Column(
@@ -397,7 +397,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                         WidgetConstant.height20,
                                         Text("address_script".tr,
                                             style:
-                                                context.textTheme.titleLarge),
+                                                context.textTheme.titleMedium),
                                         WidgetConstant.height8,
                                         ContainerWithBorder(
                                             child: Column(
@@ -431,65 +431,69 @@ class _SetupBitcoinMultiSigAddressViewState
                                               label: Text("backup_as_text".tr),
                                               onPressed: () {
                                                 context.openSliverDialog(
-                                                    Column(
-                                                      children: [
-                                                        PageTitleSubtitle(
-                                                            title:
-                                                                "address_details2"
-                                                                    .tr,
-                                                            body: Text(
-                                                                "address_backup_desc1"
-                                                                    .tr)),
-                                                        WidgetConstant.height8,
-                                                        ContainerWithBorder(
-                                                            child:
-                                                                ConstraintsBoxView(
-                                                          maxHeight: 200,
-                                                          child:
-                                                              SingleChildScrollView(
-                                                            scrollDirection:
-                                                                Axis.vertical,
-                                                            child:
-                                                                SelectableText(
-                                                                    toText),
-                                                          ),
-                                                        )),
-                                                        WidgetConstant.height20,
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceEvenly,
+                                                    (ctx) => Column(
                                                           children: [
-                                                            StreamWidget(
-                                                              buttomWidget: FilledButton.icon(
-                                                                  onPressed:
-                                                                      share,
-                                                                  icon: const Icon(
-                                                                      Icons
-                                                                          .share),
-                                                                  label: Text(
-                                                                      "share_as_file"
-                                                                          .tr)),
-                                                              backToIdle:
-                                                                  AppGlobalConst
-                                                                      .oneSecoundDuration,
-                                                              key: buttomState,
-                                                            ),
+                                                            PageTitleSubtitle(
+                                                                title:
+                                                                    "address_details2"
+                                                                        .tr,
+                                                                body: Text(
+                                                                    "address_backup_desc1"
+                                                                        .tr)),
                                                             WidgetConstant
-                                                                .width8,
-                                                            CopyTextIcon(
-                                                                dataToCopy:
-                                                                    toText,
-                                                                size: AppGlobalConst
-                                                                    .double40),
+                                                                .height8,
+                                                            ContainerWithBorder(
+                                                                child:
+                                                                    ConstraintsBoxView(
+                                                              maxHeight: 200,
+                                                              child:
+                                                                  SingleChildScrollView(
+                                                                scrollDirection:
+                                                                    Axis.vertical,
+                                                                child:
+                                                                    SelectableText(
+                                                                        toText),
+                                                              ),
+                                                            )),
+                                                            WidgetConstant
+                                                                .height20,
+                                                            Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceEvenly,
+                                                              children: [
+                                                                StreamWidget(
+                                                                  buttomWidget: FilledButton.icon(
+                                                                      onPressed:
+                                                                          share,
+                                                                      icon: const Icon(
+                                                                          Icons
+                                                                              .share),
+                                                                      label: Text(
+                                                                          "share_as_file"
+                                                                              .tr)),
+                                                                  backToIdle:
+                                                                      AppGlobalConst
+                                                                          .oneSecoundDuration,
+                                                                  key:
+                                                                      buttomState,
+                                                                ),
+                                                                WidgetConstant
+                                                                    .width8,
+                                                                CopyTextIcon(
+                                                                    dataToCopy:
+                                                                        toText,
+                                                                    size: AppGlobalConst
+                                                                        .double40),
+                                                              ],
+                                                            ),
+                                                            ErrorTextContainer(
+                                                                error:
+                                                                    _shareError,
+                                                                margin: WidgetConstant
+                                                                    .paddingVertical10)
                                                           ],
                                                         ),
-                                                        ErrorTextContainer(
-                                                            error: _shareError,
-                                                            margin: WidgetConstant
-                                                                .paddingVertical10)
-                                                      ],
-                                                    ),
                                                     "address_details".tr);
                                               },
                                             )
@@ -519,35 +523,27 @@ class _SetupBitcoinMultiSigAddressViewState
                                           WidgetConstant.height8,
                                         ],
                                       )),
-                                  PageTitleSubtitle(
-                                      title: "list_of_public_keys".tr,
-                                      body: Column(
-                                        children: [
-                                          Text("multi_sig_desc5".tr),
-                                          WidgetConstant.height8,
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              FixedElevatedButton(
-                                                  child:
-                                                      Text("tap_to_select".tr),
-                                                  onPressed: () {
-                                                    context
-                                                        .openSliverBottomSheet<
-                                                            IBitcoinAddress>(
-                                                          const SwitchOrSelectAccountView(),
-                                                          "select_account".tr,
-                                                          minExtent: 0.5,
-                                                          maxExtend: 0.9,
-                                                          initialExtend: 0.7,
-                                                        )
-                                                        .then(onAddSigner);
-                                                  })
-                                            ],
-                                          )
-                                        ],
-                                      )),
+                                  Text("list_of_public_keys".tr,
+                                      style: context.textTheme.titleMedium),
+                                  Text("multi_sig_desc5".tr),
+                                  WidgetConstant.height8,
+                                  ContainerWithBorder(
+                                      validate: _signers.isNotEmpty,
+                                      onRemoveIcon: const Icon(Icons.add),
+                                      onRemove: () {
+                                        context
+                                            .openSliverBottomSheet<
+                                                IBitcoinAddress>(
+                                              "select_account".tr,
+                                              minExtent: 0.5,
+                                              child: SwitchOrSelectAccountView(
+                                                  account: account),
+                                              maxExtend: 0.9,
+                                              initialExtend: 0.7,
+                                            )
+                                            .then(onAddSigner);
+                                      },
+                                      child: Text("tap_to_select".tr)),
                                   AnimatedSize(
                                     duration: AppGlobalConst.animationDuraion,
                                     child: Column(
@@ -573,15 +569,10 @@ class _SetupBitcoinMultiSigAddressViewState
                                     ),
                                   ),
                                   WidgetConstant.height20,
-                                  PageTitleSubtitle(
-                                      title: "threshold_configuration".tr,
-                                      body: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text("threshhold_desc".tr),
-                                        ],
-                                      )),
+                                  Text("threshold_configuration".tr,
+                                      style: context.textTheme.titleMedium),
+                                  Text("threshhold_desc".tr),
+                                  WidgetConstant.height8,
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -601,21 +592,17 @@ class _SetupBitcoinMultiSigAddressViewState
                                     duration: AppGlobalConst.animationDuraion,
                                     child: isValidThreshHold
                                         ? Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               WidgetConstant.height20,
-                                              PageTitleSubtitle(
-                                                  title:
-                                                      "signers_weight_configuration"
-                                                          .tr,
-                                                  body: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text("signer_wight_desc1"
-                                                          .tr)
-                                                    ],
-                                                  )),
+                                              Text(
+                                                  "signers_weight_configuration"
+                                                      .tr,
+                                                  style: context
+                                                      .textTheme.titleMedium),
+                                              Text("signer_wight_desc1".tr),
+                                              WidgetConstant.height8,
                                               Column(
                                                 children: List.generate(
                                                     signers.length,

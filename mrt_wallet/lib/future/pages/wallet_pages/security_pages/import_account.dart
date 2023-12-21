@@ -3,20 +3,27 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/utility/blockchin_utils/ripple_utils.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+import 'package:xrp_dart/xrp_dart.dart';
 
 enum _PrivateKeyTypes {
   extendKey("Extended key"),
   privateKey("Private key"),
   wif("Wif"),
+  rippleSeed("Ripple seed"),
+  rippleEntropy("Ripple entropy"),
   backup("Backup");
 
   const _PrivateKeyTypes(this.value);
   final String value;
+  bool get forRipple =>
+      this == _PrivateKeyTypes.rippleEntropy ||
+      this == _PrivateKeyTypes.rippleSeed;
 }
 
 class ImportAccountView extends StatelessWidget {
@@ -51,19 +58,52 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       GlobalKey<PageProgressState>(debugLabel: "_ImportAccountState_1");
   final GlobalKey<FormState> form =
       GlobalKey(debugLabel: "_ImportAccountState_2");
-  late Map<dynamic, String> keyTypes = {
-    for (final i in _PrivateKeyTypes.values) i: i.value
-  };
-  Set<_PrivateKeyTypes> selected = {_PrivateKeyTypes.values[1]};
+  late Map<_PrivateKeyTypes, Widget> keyTypes = _buildKeyTypes();
+  bool get inRipple => widget.network is AppXRPNetwork;
+  XRPKeyAlgorithm rippleKeyAlgorith = XRPKeyAlgorithm.secp256k1;
+
+  bool showRippleKeyAlgorithm = false;
+
+  bool _showRippleKeyAlgorithm() {
+    if (inRipple && selected == _PrivateKeyTypes.rippleEntropy ||
+        selected == _PrivateKeyTypes.privateKey ||
+        selected == _PrivateKeyTypes.backup) {
+      return true;
+    }
+    return false;
+  }
+
+  // bool showAlgorithm =>;
+
+  Map<_PrivateKeyTypes, Widget> _buildKeyTypes() {
+    Map<_PrivateKeyTypes, Widget> types = {};
+    final coin = widget.network.coins.first;
+    for (final i in _PrivateKeyTypes.values) {
+      if (i == _PrivateKeyTypes.wif && coin.conf.wifNetVer == null) continue;
+      if (i.forRipple) {
+        if (!inRipple) continue;
+      }
+      types[i] = OneLineTextWidget(i.value);
+    }
+    return types;
+  }
+
+  _PrivateKeyTypes selected = _PrivateKeyTypes.privateKey;
 
   Bip32Base? _account;
 
-  bool get isBackup => selected.first == _PrivateKeyTypes.backup;
+  bool get isBackup => selected == _PrivateKeyTypes.backup;
 
-  void onSelect<T>(Set<T> s) {
-    selected = s.cast();
+  void onSelect(_PrivateKeyTypes? s) {
+    selected = s ?? selected;
     _account = null;
     _error = null;
+    showRippleKeyAlgorithm = _showRippleKeyAlgorithm();
+    setState(() {});
+  }
+
+  void onSelectRippleKeyAlgorithm(XRPKeyAlgorithm? alg) {
+    rippleKeyAlgorith = alg ?? rippleKeyAlgorith;
     setState(() {});
   }
 
@@ -76,10 +116,17 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   Future<Bip32Base> _getKey(WalletProvider model) async {
     final coin = widget.network.coins.first;
 
-    switch (selected.first) {
+    switch (selected) {
       case _PrivateKeyTypes.extendKey:
         return BlockchainUtils.extendedKeyToBip32(_key, coin.conf.type);
       case _PrivateKeyTypes.privateKey:
+        if (inRipple) {
+          final alg = RippleUtils.findXRPPrivateKeyAlgorithm(_key);
+          if (alg != null && rippleKeyAlgorith != alg) {
+            throw WalletExceptionConst.invalidRipplePrivateKeyAlgorithm;
+          }
+          return RippleUtils.ripplePrivateKeyToBip32(_key, rippleKeyAlgorith);
+        }
         return BlockchainUtils.privteKeyToBip32(
             BytesUtils.fromHexString(_key), coin.conf.type);
       case _PrivateKeyTypes.wif:
@@ -87,8 +134,22 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       case _PrivateKeyTypes.backup:
         final backupResult =
             await model.restoreBackup(_password, _backup, encoding);
+        if (inRipple) {
+          final alg = RippleUtils.findXRPPrivateKeyAlgorithm(backupResult);
+          if (alg != null && rippleKeyAlgorith != alg) {
+            throw WalletExceptionConst.invalidRipplePrivateKeyAlgorithm;
+          }
+          return RippleUtils.ripplePrivateKeyToBip32(
+              backupResult, rippleKeyAlgorith);
+        }
         return BlockchainUtils.privteKeyToBip32(
             BytesUtils.fromHexString(backupResult), coin.conf.type);
+      case _PrivateKeyTypes.rippleSeed:
+        return RippleUtils.rippleSeedToBip32(_key);
+      case _PrivateKeyTypes.rippleEntropy:
+        return RippleUtils.rippleEntropyToBip32(_key, rippleKeyAlgorith);
+      default:
+        throw UnimplementedError();
     }
   }
 
@@ -211,14 +272,30 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                           Text("import_account_desc1".tr),
                         ],
                       )),
-                  Text("import_accounts_desc3".tr,
-                      style: context.textTheme.titleLarge),
+                  Text("key_type".tr, style: context.textTheme.titleMedium),
+                  Text("inidicate_type_of_key".tr),
                   WidgetConstant.height8,
-                  AppSegmentedButton(
+                  AppDropDownBottom(
                       items: keyTypes,
-                      selected: selected,
-                      onChangeSelected: onSelect),
+                      value: selected,
+                      label: "key_type".tr,
+                      onChanged: onSelect),
                   WidgetConstant.height20,
+                  if (showRippleKeyAlgorithm) ...[
+                    Text("ripple_key_type".tr,
+                        style: context.textTheme.titleMedium),
+                    Text("inidicate_type_of_key".tr),
+                    WidgetConstant.height8,
+                    AppDropDownBottom(
+                        items: {
+                          for (final i in XRPKeyAlgorithm.values)
+                            i: Text(i.curveType.name)
+                        },
+                        value: rippleKeyAlgorith,
+                        label: "ripple_key_type".tr,
+                        onChanged: onSelectRippleKeyAlgorithm),
+                    WidgetConstant.height20,
+                  ],
                   if (isBackup) ...[
                     DropdownButtonFormField<SecretWalletEncoding>(
                       value: encoding,
@@ -258,7 +335,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                   ] else
                     AppTextField(
                       key: textFieldState,
-                      label: selected.first.value,
+                      label: selected.value,
                       onChanged: onChangeKey,
                       initialValue: _key,
                       validator: validate,

@@ -143,7 +143,7 @@ class Localization {
           "invalid_bip_key_index": "invalid bip proposal derivation index",
           "address_already_exist": "Address already exist",
           "generating_new_addr": "Generating new address",
-          "copied_to_clipboard": "Copied to cliqwe qwe qwe qwe qwe qwe pboard.",
+          "copied_to_clipboard": "Copied to cliboard.",
           "selected": "Selected",
           "switch_account": "Switch account",
           "new_address": "New Address",
@@ -211,7 +211,7 @@ class Localization {
           "p2pkhInP2sh": "P2PKH Inside P2SH",
           "p2pkInP2sh": "P2PK Inside P2SH",
           "get_unspent_transaction": "Get Unspent Transactions",
-          "retrieving_transaction": "Retrieving Transactions - Please Wait",
+          "retrieving_transaction": "Retrieving Transactions. Please Wait.",
           "transaction_successfully_received":
               "Transaction outputs successfully received.",
           "problem_when_receiving_utxos":
@@ -222,6 +222,7 @@ class Localization {
           "select_output_addresses":
               "Select the addresses for transaction outputs.",
           "recipients": "Recipients",
+          "recipient": "Recipient",
           "tap_to_select": "Tap to select",
           "bitcoin_address": "Bitcoin address",
           "receiver_address": "Receiver address",
@@ -278,7 +279,7 @@ class Localization {
           "transaction_Insufficient_balance":
               "Insufficient balance to finalize the transaction. Prior to proceeding, please review the transaction outputs for accuracy.",
           "create_send_transaction":
-              "Creating and sending Bitcoin transaction. Kindly await completion.",
+              "Creating and sending ___1__ transaction. Kindly await completion.",
           "multi_sig_addr": "Multi-signature address",
           "establishing_multi_sig_addr":
               "Establishing a multi-signature address.",
@@ -345,7 +346,7 @@ class Localization {
           "extended_private_key": "Extended private key",
           "show_private_key": "Show private key",
           "unable_to_accsess_private_key":
-              "Unable to access the private key for this account.",
+              "Accessing the private key in this network is not feasible.",
           "remove_account_desc":
               "Remove the account from the network accounts list.",
           "remove_accounts_desc1":
@@ -355,17 +356,18 @@ class Localization {
           "wallet_password": "Wallet password",
           "backup_private_key_desc":
               "To generate a backup, kindly proceed to the 'Extract Private Key' page.",
-          "remove_account_pls_wait": "Removing account—please wait.",
+          "remove_account_pls_wait": "Removing account. please wait.",
           "account_deleted": "Account successfully deleted.",
           "import_account": "Account Import",
+          "inidicate_type_of_key": "Indicate the type of your private key.",
           "import_account_desc1":
               "The new account should align with the app's coin and network settings.",
           "import_account_desc2":
               "Please enter your private key, extended key, or Wallet Import Format (WIF) to proceed.",
           "private_key_invalid": "The provided private key is not valid.",
-          "import_accounts_desc3": "Indicate the type of your private key",
+          "key_type": "key type",
           "imported": "Imported",
-          "importing_key_pls_wait": "Importing key—please wait.",
+          "importing_key_pls_wait": "Importing key. please wait.",
           "address_imported_desc1":
               "Key successfully imported. Please proceed to the 'New Address' option in the address menu to create a new address.",
           "hd_wallet": "HD Wallet",
@@ -400,8 +402,6 @@ class Localization {
           "transaction_memo": "Transaction mome",
           "memo_desc1":
               "The transaction fee escalates based on the volume of entered text.",
-          "memo_desc2":
-              "If you initiate the momo, the program will record even an empty message. If you don't require a note, please close the page.",
           "memo": "Memo",
           "address_sharing": "Address sharing",
           "share_barcode": "Share barcode",
@@ -492,7 +492,7 @@ class Localization {
           "manage_imported_key": "Administer Imported Keys",
           "manage_key_desc1": "Delete Imported Keys from Your Wallet",
           "retrieving_imported_keys_wait":
-              "Retrieving Imported Keys – Please Wait",
+              "Retrieving Imported Keys. Please Wait.",
           "no_imported_key_found": "No Imported Private Keys Detected",
           "manage_key_desc2":
               "If the key is removed, and an address has already been generated with the corresponding account, it will become inaccessible in the wallet.",
@@ -501,7 +501,386 @@ class Localization {
           "key_extended_for": "Key Expansion for",
           "wif_for": "WIF (Wallet Import Format) for",
           "wif": "WIF (Wallet Import Format)",
-          "deleting_key": "Deleting Key - Please Wait"
+          "deleting_key": "Deleting Key. Please Wait.",
+          "bitcoin_and_forked": "Bitcoins and forked",
+          "ripple": "Ripple",
+          "bip44_derivation_desc":
+              "BIP44 is a Bitcoin Improvement Proposal that defines a hierarchical deterministic wallet structure. It outlines the methodology for deriving a tree of cryptographic key pairs from a single master key, allowing for secure and flexible key management. The key pairs generated through BIP44 can correspond to different cryptocurrencies and are derived in a structured way, making it easier to manage multiple assets in a single wallet. The structure includes the master node, which leads to the formation of child nodes, ultimately generating a tree-like structure of key pairs. This method provides a standardized approach for wallet software to derive multiple accounts and addresses from a single seed, enhancing security and ease of use for cryptocurrency users.",
+          "bip44_derivation": "Bip-44 derivation",
+          "classic_address": "Classic address",
+          "x_address": "X-Address",
+          "x_address_desc":
+              "X-address: The X-address is a more user-friendly and interoperable format for Ripple addresses. It includes an additional destination tag and an optional invoice ID, allowing for smoother transactions. The X-address is designed to simplify the process of sending and receiving Ripple payments while reducing errors often associated with using classic addresses.",
+          "classic_address_desc":
+              "Classic address: The classic address is the traditional format for identifying Ripple accounts. It consists of a series of letters and numbers that uniquely represent a Ripple account. Classic addresses can also include a destination tag, which is used to associate incoming payments with a specific account, particularly in cases where multiple users share the same receiving address.",
+          "tag": "Tag",
+          "x_address_desc2": "Understanding Ripple X-Address Tags",
+          "x_address_desc3":
+              "In the context of Ripple X-addresses, a tag is a supplementary identifier used to associate incoming payments with a specific account. This feature is especially useful for scenarios where multiple users share the same receiving address. By including a tag along with the X-address, the sender can specify which account the payment is intended for, ensuring that the funds are correctly attributed to the intended recipient within the target account. This is particularly important for exchanges and services that manage large volumes of transactions for numerous users using a single address. Therefore, the tag plays a crucial role in facilitating accurate and efficient routing of incoming payments within the Ripple network.",
+          "assigning_tag": "Assigning a Tag to Your Ripple X-Address",
+          "enter_tag_desc":
+              "Please enter the desired tag for your account. The tag must be a value between 0 and 2^32-1.",
+          "tag_validator": "The tag must be a value between 0 and 2^32-1.",
+          "tap_to_choose_address": "Tap to choose address",
+          "invalid_contact_details": "Contact details are invalid",
+          "your_accounts": "Your Accounts",
+          "contacts": "Contacts",
+          "no_contacts_found": "No contacts were found in this network",
+          "add_to_contacts": "Add to Contacts",
+          "contact_name_validator":
+              "The contact name must be at least 3 characters long",
+          "name_of_contact": "Name of contact",
+          "contact_desc_1":
+              "The contact will be saved in the ___1__ network contact list and will only be available within this network.",
+          "new_contact": "New Contact",
+          "contact_already_exist": "Contact already exists",
+          "contact_saved": "Contact saved successfully",
+          "tap_to_enter_amount": "Tap to enter amount",
+          "retrieving_network_condition":
+              "Retrieving network condition. Please Wait.",
+          "memo_data": "Memo data",
+          "memo_format": "Memo format",
+          "memo_type": "Memo type",
+          "memos": "Memos",
+          "memo_desc":
+              "You can add multiple notes up to 1 KB to this transaction.",
+          "tap_to_create_memo": "Tap to create memo",
+          "create_memo": "Create memo",
+          "ripple_memo_desc1":
+              "The Memos field includes arbitrary messaging data with the transaction. It is presented as an array of objects. Each object has only one field, Memo, which in turn contains another object with one or more of the following fields:",
+          "memos_field": "Memos Field",
+          "memo_data_desc":
+              "Arbitrary hex value, conventionally containing the content of the memo.",
+          "memo_format_desc":
+              "Hex value representing characters allowed in URLs. Conventionally containing information on how the memo is encoded",
+          "memo_type_desc":
+              "Hex value representing characters allowed in URLs. Conventionally, a unique relation (according to RFC 5988) that defines the format of this memo.",
+          "tap_to_input_value": "Tap to input the value",
+          "empty_desc":
+              "If you submit an empty value, it will be recorded. To cancel, please close the page.",
+          "hex_desc":
+              "Inputs must be in hexadecimal format. If the entered input is not in hexadecimal, the program will convert it to hexadecimal.",
+          "setup_input": "Setup input",
+          "value_is_empty": "The value is empty.",
+          "depositor": "Depositor",
+          "trust_set": "TrustSet",
+          "tust_line_desc": "Create a trust line for holding tokens.",
+          "trust_set_desc2":
+              "Create or modify a trust line linking two accounts",
+          "issuer": "Issuer",
+          "issuer_desc": "The address of the account to extend trust to.",
+          "currency": "Currency",
+          "currency_desc": "The currency to this trust line applies to",
+          "ripple_currency_desc1":
+              r"Currency codes must be exactly 3 ASCII characters in length. The following characters are permitted: all uppercase and lowercase letters, digits, as well as the symbols ?, !, @, #, $, %, ^, &, *, <, >, (, ), {, }, [, ], and |.",
+          "ripple_currency_desc2": "Currency codes are case-sensitive.",
+          "ripple_currency_desc3":
+              "The currency code XRP (all-uppercase) is disallowed. Real XRP typically does not use a currency code in the XRP Ledger protocol.",
+          "tap_to_enter_currency_code": "Tap to enter the currency code",
+          "ripple_currency_desc4":
+              "The standard format for currency codes is a three-character string such as USD. This is intended for use with ISO 4217 Currency Codes . The following rules apply:",
+          "regular_exception_validate_desc":
+              "The input must match the following regular expression ___1__",
+          "trust_set_value": "Value",
+          "trust_set_value_desc":
+              "Quoted decimal representation of the limit to set on this trust line.",
+          "enter_valid_number": "Please enter a valid number",
+          "minium_numnber_validator":
+              "The input number should not be less than ___1__",
+          "maximum_number_validator":
+              "The input number should not be greater than ___1__",
+          "limit_amount_fields": "Fields for LimitAmount",
+          "trust_set_quality_in": "Quality In",
+          "trust_set_quality_out": "Quality out",
+          "trust_set_quality_in_desc":
+              "Value incoming balances on this trust line at the ratio of this number per 1,000,000,000 units. A value of 0 is shorthand for treating balances at face value.",
+          "trust_set_quality_out_desc":
+              "Value outgoing balances on this trust line at the ratio of this number per 1,000,000,000 units. A value of 0 is shorthand for treating balances at face value",
+          "trust_set_fields": "TrustSet Fields",
+          "trust_set_flags": "TrustSet Flags",
+          "account": "Account",
+          "insufficient_balance_error":
+              "Insufficient balance: You need ___1__ to complete this transaction.",
+          "account_set": "AccountSet",
+          "account_set_desc":
+              "An AccountSet transaction modifies the properties of an account in the XRP Ledger.",
+          "domain": "Domain",
+          "domain_desc":
+              "The domain that owns this account, as a string of hex representing the ASCII for the domain in lowercase.",
+          "account_set_fields": "AccountSet Fields",
+          "character_length_validator_desc":
+              "The ___1__ length cannot exceed ___2__ characters (___3__ bytes).",
+          "email_hash": "Email Hash",
+          "ripple_email_hash_desc":
+              "An arbitrary 128-bit value. Conventionally, clients treat this as the md5 hash of an email address to use for displaying a Gravatar  image.",
+          "ripple_message_key": "Message key",
+          "ripple_message_key_desc":
+              "Public key for sending encrypted messages to this account.",
+          "ripple_message_key_desc2":
+              "it must be exactly 33 bytes, with the first byte indicating the key type: 0x02 or 0x03 for secp256k1 keys, 0xED for Ed25519 keys. To remove the key, use an empty value",
+          "ripple_public_key":
+              "Please enter a valid secp256k1 or Ed25519 (Ripple) public key.",
+          "ripple_nft_token_minter": "NFT token minter",
+          "ripple_nft_token_minter_desc":
+              "Another account that can mint NFTokens for you.",
+          "ripple_transfer_rate": "Transfer rate",
+          "ripple_transfer_rate_desc":
+              "The fee to charge when users transfer this account's tokens, represented as billionths of a unit.",
+          "ripple_transfer_rate_desc2":
+              "Cannot be more than 2000000000 or less than 1000000000, except for the special case 0 meaning no fee",
+          "ripple_validate_transfer_rate":
+              "Please enter a valid number for the transfer rate.",
+          "ripple_tick_size": "Tick size",
+          "ripple_tick_size_desc":
+              "Tick size to use for offers involving a currency issued by this address",
+          "ripple_tick_size_desc2":
+              "The exchange rates of those offers is rounded to this many significant digits. Valid values are 3 to 15 inclusive, or 0 to disable.",
+          "ripple_validate_tick_size":
+              "Please enter a valid number for the tick size.",
+          "ripple_enable_account_set_flags": "Enable account set flags",
+          "ripple_disable_account_set_flags": "Disable account set flags",
+          "account_set_flags": "Account set flags",
+          "invalid_balance": "Invalid balance information",
+          "network_support_token_error":
+              "Token issuance not supported by the network.",
+          "network_support_nft_error":
+              "NFT issuance not supported by the network.",
+          "invalid_token_information": "Invalid token information",
+          "invalid_nft_information": "Invalid NFT information",
+          "token_already_exists": "Token already exists.",
+          "nfts_already_exists": "NFTs already exists.",
+          "services": "Services",
+          "tokens": "Tokens",
+          "no_tokens_found": "No tokens found in the account.",
+          "no_nft_found": "No NFTs found in the account.",
+          "monitor_my_tokens": "Monitor my tokens.",
+          "monitor_my_nfts": "Monitor my NFTs.",
+          "add_token": "Add Token",
+          "fetching_account_token_please_wait":
+              "Retrieving account tokens. please wait.",
+          "no_items_found": "No items found.",
+          "yes": "Yes",
+          "no": "No",
+          "add_token_to_your_account": "Add token to your account?",
+          "remove_token_from_account": "Remove Token from Your Account?",
+          "remove_token": "Remove token",
+          "token_transfer": "Token Transfer",
+          "token_info": "Token info",
+          "account_qr_code": "Account QR Code",
+          "manage_tokens": "Manage Tokens",
+          "add_or_remove_tokens": "Add or Remove Tokens from Your Account",
+          "nfts": "NFTs",
+          "add_nft_to_your_account": "Add NFTs to your account?",
+          "remove_nft_from_account": "Remove NFTs from Your Account?",
+          "remove_nfts": "Remove NFTs",
+          "manage_nfts": "Manage NFTs",
+          "manage_nfts_desc":
+              "Administer NFTs: Burn, Manage, Create, or Cancel Offers",
+          "serial": "Serial",
+          "nfts_id": "NFTs ID",
+          "uri": "URI",
+          "ripple_nftokentaxon":
+              "	An arbitrary taxon, or shared identifier, for a series or collection of related NFTs",
+          "ripple_mint_token_issuer":
+              "The issuer of the token, if the sender of the account is issuing it on behalf of another account.",
+          "ripple_mint_token_transfer_rate":
+              "The value specifies the fee charged by the issuer for secondary sales of the NFToken, if such sales are allowed",
+          "nft_token_uri":
+              "The contents could decode to an HTTP or HTTPS URL, an IPFS URI, a magnet link",
+          "flags": "Flags",
+          "nft_flags_field_desc":
+              "Transactions of the NFTokenMint type support additional values in the Flags field,",
+          "field_is_req": "___1__ is required",
+          "ripple_nfttoken_fields": "NFTokenMint Fields",
+          "ripple_nftoken_burn_id":
+              "The NFToken to be removed by this transaction.",
+          "token_id": "Token ID",
+          "owner": "Owner",
+          "ripple_nftoken_burn_owner":
+              "The owner of the NFToken to burn. Only used if that owner is different than the account sending this transaction.",
+          "ripple_nftoken_burn_fields": "NFTokenBurn Fields",
+          "ripple_create_offer_owner":
+              "Who owns the corresponding NFToken. If the offer is to buy a token, this field must be present and it must be different than the Account field (since an offer to buy a token one already holds is meaningless)",
+          "expiration": "Expiration",
+          "ripple_create_offer_expiration":
+              "Indicates the time after which the offer will no longer be valid.",
+          "destination": "Destination",
+          "ripple_create_offer_destination":
+              "If present, indicates that this offer may only be accepted by the specified account.",
+          "ripple_create_nft_offer_amount":
+              "Indicates the amount expected or offered for the corresponding NFToken.",
+          "ripple_create_nft_offer_id":
+              "	Identifies the NFToken object that the offer references.",
+          "nftoken_create_offer_fields": "NFTokenCreateOffer Fields",
+          "token_issuer": "Generally, the account that issues this token.",
+          "token_amount": "Token Amount",
+          "token_currency":
+              "Arbitrary currency code for the token. Cannot be XRP.",
+          "token_value":
+              "Quoted decimal representation of the amount of the token",
+          "plese_enter_currency_first":
+              "Please begin by entering the currency.",
+          "token_amount_desc": "To specify an amount of a (fungible) token",
+          "xrp_amount": "XRP Amount",
+          "setup_currency_amount": "Setup currency amount",
+          "nft_offer_flag_desc":
+              "Transactions of the NFTokenCreateOffer type support additional values in the Flags field",
+          "ripple_nftoken_create_offer_fields": "NFTokenCreateOffer fields",
+          "ripple_nftoken_accept_offer_fields": "NFTokenAcceptOffer fields",
+          "ripple_accept_offer_sell_offer":
+              "Identifies the NFTokenOffer that offers to sell the NFToken",
+          "ripple_accept_offer_buy_offer":
+              "Identifies the NFTokenOffer that offers to buy the NFToken.",
+          "ripple_accept_offer_broker_fee":
+              "specifies the amount that the broker keeps as part of their fee for bringing the two offers together; the remaining amount is sent to the seller of the NFToken being bought.",
+          "ripple_nftoken_cancel_offer_fields": "NFTokenCancelOffer fields",
+          "ripple_cancel_nft_token_nftoken_offers":
+              "An array of IDs of the NFTokenOffer objects to cancel (not the IDs of NFToken objects, but the IDs of the NFTokenOffer objects)",
+          "ripple_escrow_create_fields": "EscrowCreate Fields",
+          "ripple_escrow_create_amount":
+              "	Amount of XRP to deduct from the sender's balance and escrow.",
+          "ripple_escrow_create_destionation":
+              "Address to receive escrowed XRP.",
+          "ripple_escrow_create_cancel_after":
+              "This value is immutable; the funds can only be returned to the sender after this time.",
+          "ripple_escrow_create_finish_after":
+              "when the escrowed XRP can be released to the recipient. This value is immutable, and the funds can't be accessed until this time.",
+          "condition": "Condition",
+          "ripple_escrow_create_condition":
+              "if this condition is fulfilled. If the condition is not fulfilled before the expiration time specified in the CancelAfter field, the XRP can only revert to the sender.",
+          "ripple_escrow_create_destination_tag":
+              "Arbitrary tag to further specify the destination for this escrowed payment, such as a hosted recipient at the destination address",
+          "ripple_escrow_finish_fields": "EscrowFinish Fields",
+          "ripple_escrow_finish_owner":
+              "Address of the source account that funded the held payment.",
+          "ripple_escrow_finish_sequence":
+              "	Transaction sequence of EscrowCreate transaction that created the held payment to finish.",
+          "ripple_escrow_finish_condition":
+              "Hex value matching the previously-supplied of the held payment.",
+          "ripple_escrow_finish_fulfillment":
+              "Hex value of the fulfillment matching the held payment's Condition.",
+          "ripple_escrow_cancel_fields": "EscrowCancel Fields",
+          "ripple_escrow_cancel_owner":
+              "Address of the source account that funded the escrow payment.",
+          "ripple_escrow_cancel_offer_sequence":
+              "Transaction sequence (or Ticket number) of EscrowCreate transaction that created the escrow to cancel.",
+          "ripple_trust_set_limit_amount":
+              "Object defining the trust line to create or modify, in the format of a Currency Amount.",
+          "ripple_trust_set_flags":
+              "Transactions of the TrustSet type support additional values in the Flags field, as follows:",
+          "ripple_payment_fields": "Payment Fields",
+          "invoiceid": "InvoiceID",
+          "ripple_payment_invoiceid":
+              "Arbitrary 256-bit hash representing a specific reason or identifier for this payment.",
+          "payment_flags": "Payment Flags",
+          "ripple_payment_flags":
+              "Transactions of the Payment type support additional values in the Flags field, as follows",
+          "ripple_accept_offer_desc":
+              "The NFTokenAcceptOffer transaction is used to accept offers to buy or sell an NFToken.",
+          "ripple_nftoken_burn_desc":
+              "The NFTokenBurn transaction is used to remove a NFToken object from the NFTokenPage in which it is being held, effectively removing the token from the ledger (burning it).",
+          "ripple_nftoken_cancel_offer_desc":
+              "The NFTokenCancelOffer transaction can be used to cancel existing token offers created using NFTokenCreateOffer.",
+          "ripple_create_nftoken_offer_desc":
+              "Creates either a new Sell offer for an NFToken owned by the account executing the transaction, or a new Buy offer for an NFToken owned by another account.",
+          "ripple_mint_nftoken_desc":
+              "The NFTokenMint transaction creates a non-fungible token and adds it to the relevant NFTokenPage object of the NFTokenMinter as an NFToken object",
+          "ripple_payment_desc":
+              "A Payment transaction represents a transfer of value from one account to another.",
+          "ripple_escrow_cancel_desc": "Return escrowed XRP to the sender.",
+          "ripple_escrow_create_desc":
+              "Sequester XRP until the escrow process either finishes or is canceled.",
+          "ripple_escrow_finish_desc":
+              "Deliver XRP from a held payment to the recipient.",
+          "ripple_trust_set_desc":
+              "Create or modify a trust line linking two accounts.",
+          "fulfillment_desc":
+              "Crypto condition fulfillment refers to the automated execution of predefined conditions in blockchain-based smart contracts, ensuring trustless and transparent outcomes without the need for intermediaries.",
+          "create_random_fulfillment": "Create random fulfillment.",
+          "fulfillment": "Fulfillment",
+          "fulfillment_desc2":
+              "Ensure to securely save both fulfillment and conditions, as they are essential for completing transactions in the escrow process.",
+          "apply_for_condition": "Apply for condition.",
+          "saved_fulfillment_desc":
+              "Are you certain that the fulfillment and conditions have been securely saved?",
+          "ripple_key_type": "Ripple key type",
+          "invalid_ripple_privatekey_algorithm":
+              "Invalid Ripple private key encryption algorithm.",
+          "ed25519_support_derivation_desc":
+              "ED25519 derivation only supports hardened indices.",
+          "cannot_export_public_key": "Unable to export public key.",
+          "regular_key": "RegularKey",
+          "ripple_regular_key_desc":
+              "A SetRegularKey transaction assigns, changes, or removes the regular key pair associated with an account.",
+          "ripple_set_regular_key_fields": "SetRegularKey Fields",
+          "ripple_regular_key_field_desc":
+              "A XRP Address that indicates the regular key pair to be assigned to the account. If omitted, removes any existing regular key pair from the account. Must not match the master key pair for the address.",
+          "ripple_signer_list_fields": "SignerListSet Fields",
+          "ripple_set_signer_list_desc":
+              "The SignerListSet transaction creates, replaces, or removes a list of signers that can be used to multi-sign a transaction. This transaction type was introduced by the MultiSign amendment",
+          "ripple_signer_quorum_desc":
+              "A target number for the signer weights. A multi-signature from this list is valid only if the sum weights of the signatures provided is greater than or equal to this value. To delete a signer list, use the value 0.",
+          "ripple_signer_entries_desc":
+              "Array of SignerEntry objects, indicating the addresses and weights of signers in this list. This signer list must have at least 1 member and no more than 32 members.",
+          "ripple_signer_entery": "Signer Entry",
+          "ripple_signer_entery_desc":
+              "Each member of the SignerEntries field is an object that describes that signer in the list",
+          "ripple_signer_enteris_fields": "SignerEntries fields",
+          "ripple_signer_entry_account_desc":
+              "An XRP Ledger address whose signature contributes to the multi-signature. It does not need to be a funded address in the ledger.",
+          "ripple_signer_weight": "SignerWeight",
+          "ripple_signer_weight_desc":
+              "The weight of a signature from this signer. A multi-signature is only valid if the sum weight of the signatures provided meets or exceeds the signer list's SignerQuorum value.",
+          "ripple_wallet_locator": "WalletLocator",
+          "ripple_signer_entry_wallet_locator_desc":
+              "Arbitrary hexadecimal data. This can be used to identify the signer or for other, related purposes.",
+          "hash256_validator":
+              "Invalid hash256: The hash256 value must be a hexadecimal string with a length of 64 characters",
+          "setup_signer": "Setup signer",
+          "ripple_signer_quorum_validator":
+              "signerQuorum must be less than or equal to the sum of the SignerWeight values in the signerEntries list.",
+          "disable_master_key_addr":
+              "Master key disablement is active. Please utilize a multi-signature account for signing or creating transactions.",
+          "ripple_multi_sig_address_desc":
+              "Ripple accommodates both multi-signature and regular key signature transactions.",
+          "ripple_multi_sig_account_desc":
+              "Kindly input the address of the primary account supporting either multi-signature or regular key transactions.",
+          "retrieving_account_information":
+              "Retrieving account information. Please Wait.",
+          "get_account_information": "Get account information",
+          "ripple_mutlti_sig_address_not_found":
+              "The account could not be found or does not support the multi-signature feature",
+          "ripple_multi_sig_address_desc2":
+              "Please choose either a signer list or a regular key to create a multi-signature address.",
+          "signer_list": "Signer list",
+          "account_does_not_support_feature":
+              "The account does not support this feature",
+          "multi_sig_feature_type": "Multi-signature Feature Type",
+          "signerquorum": "SignerQuorum",
+          "ripple_multi_sig_addres_signer_list_desc":
+              "Please choose the required number of signers, matching the Signer Quorum, whose private keys are accessible from your accounts for verification. If the desired account is not in your account list, you must first add it to your wallet through the settings.",
+          "account_does_not_match_with_signer_account":
+              "The account does not match with the signer account.",
+          "ripple_multi_sig_addres_signer_list_desc2":
+              "Kindly tap each address to confirm the availability of its private key",
+          "ripple_multi_sig_regular_key_desc":
+              "The account has a regular key. To send and sign the transaction, you need the private key of the regular key address",
+          "its_not_multisig_account": "It is not a multi-signature account",
+          "ripple_payment_send_to_self_desc":
+              "An XRP payment transaction cannot have the same sender and destination",
+          "ripple_account_signature_updated_desc":
+              "The account signature settings have been updated. To ensure proper functionality, we recommend removing the account from your list and adding it again with the revised settings.",
+          "accounts": "Accounts",
+          "private_keys": "Private keys",
+          "private_keys__signing_access_desc":
+              "The transaction requires the use of the following private keys for signing.",
+          "amount_for_each_output":
+              "Kindly input the preferred quantity for each output.",
+          "cancel": "Cancel",
+          "account_name": "Account name",
+          "setup_or_update_account_name": "Establish or Refresh Account Name",
+          "remove_account_name_desc":
+              "If you wish to remove the account name, please confirm by entering an empty text."
         }
       };
 }

@@ -6,7 +6,7 @@ import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class ShareAccountView extends StatelessWidget {
   const ShareAccountView({required this.address, super.key});
-  final CryptoAddress address;
+  final CryptoAccountAddress address;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class ShareAccountView extends StatelessWidget {
               showBalance: false,
             )),
         barcodeData: address.address.toAddress,
-        shareSubject: address.network.coinParam.coinName,
+        shareSubject: address.network.coinParam.token.name,
         shareText: address.accountToString());
   }
 }

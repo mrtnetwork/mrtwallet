@@ -67,10 +67,11 @@ class _BackupWalletState extends State<_BackupWallet> with SafeState {
                   children: [
                     Padding(
                       padding: WidgetConstant.paddingVertical20,
-                      child: FilledButton.tonalIcon(
+                      child: FilledButton.icon(
                           label: Text("create_backup".tr),
                           onPressed: () {
                             context.openSliverDialog(
+                        (ctx) =>
                                 SecureBackupView(
                                   data: "",
                                   password: widget.password,

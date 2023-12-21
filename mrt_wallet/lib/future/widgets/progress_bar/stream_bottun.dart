@@ -66,7 +66,7 @@ class StreamWidgetState extends State<StreamWidget> with SafeState {
   bool get isProgress => _status == StreamWidgetStatus.progress;
   Size? size;
   void onChangeSize(Size widgetSize) {
-    if (size == null && _status == StreamWidgetStatus.idle) {
+    if (size != widgetSize && _status == StreamWidgetStatus.idle) {
       size = widgetSize;
       setState(() {});
     }

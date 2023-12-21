@@ -1,6 +1,18 @@
 # About MRT Wallet
 
-Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as Dogecoin, Litecoin, and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
+Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as Ripple, Dogecoin, Litecoin, and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
+
+**Networks**
+
+- Bitcoin (mainnet, testnet): Experience enhanced control over your transactions. With MRT Wallet, you can effortlessly create, sign, and send transactions from multiple UTXOs and addresses. Our robust support includes P2TR, P2WPKH, P2WSH, P2SH, P2PKH, and multisignature functionalities, providing you with a versatile and secure platform for managing your Bitcoin transactions.
+
+- Dogecoin: Extend your capabilities to the playful realm of Dogecoin. MRT Wallet supports seamless transaction creation and management on the Dogecoin network, ensuring a smooth and secure experience.
+
+- Dash: Explore the fast and efficient world of Dash with MRT Wallet. Easily create, sign, and send transactions, enjoying support for various Dash network functionalities.
+
+- Litecoin: Dive into the silver to Bitcoin's gold with MRT Wallet's support for Litecoin. Manage your Litecoin transactions effortlessly, creating, signing, and sending with confidence.
+
+- Ripple: Unlock the potential of the Ripple network with MRT Wallet. Our support extends to advanced cryptographic algorithms such as secp256k1 and ed25519. Explore features like NFTs, tokens, multisignature transactions, account settings (AccountSet), trust settings (TrustSet), escrow transactions, regular key settings, and more. MRT Wallet provides a comprehensive platform for managing your assets on the Ripple network.
 
 **Decentralized, Secure, and Open Source**
 
@@ -8,9 +20,9 @@ At MRT Wallet, we believe in the power of decentralization. Our commitment to de
 
 We take pride in being fully open source. You can explore and audit our code on [GitHub](https://github.com/mrtnetwork/mrtwallet) under the Apache License 2.0. This commitment to transparency means that every line of code is accessible, empowering the community to verify the security and integrity of our wallet.
 
-**Bitcoin, Dogecoin, Litecoin, Dash Support — Mainnet and Testnet**
+**Bitcoin, Dogecoin, Litecoin, Dash, Ripple Support — Mainnet and Testnet**
 
-Whether you're navigating the Bitcoin mainnet for your financial transactions or experimenting on the testnet, MRT Wallet is your reliable companion. Seamlessly switch between mainnet and testnet environments to explore, test, and transact with confidence.
+Whether you're navigating the robust Bitcoin mainnet for your financial transactions or experimenting on the testnet to fine-tune your strategies, MRT Wallet is your reliable companion. Seamlessly switch between the secure environments of Bitcoin mainnet and testnet, and explore additional horizons with support for diverse cryptocurrencies like Dogecoin, Dash, Litecoin, and Ripple. MRT Wallet empowers you to transact with confidence across a broad spectrum of digital assets.
 
 **Platform Support**
 

@@ -42,10 +42,10 @@ class BitcoinAccountPageView extends StatelessWidget {
                 onTap: () {
                   context
                       .openSliverDialog<ApiProviderService>(
-                          SelectProviderView(
-                            network: wallet.network,
-                            selectedProvider: apiProvider.provider,
-                          ),
+                          (ctx) => SelectProviderView(
+                                network: wallet.network,
+                                selectedProvider: apiProvider.provider,
+                              ),
                           "service_provider".tr)
                       .then(wallet.changeProvider);
                 },

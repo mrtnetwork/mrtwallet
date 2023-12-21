@@ -49,34 +49,37 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
       padding: WidgetConstant.padding20,
       child: Form(
         key: formKey,
-        child: Column(
-          children: [
-            PageTitleSubtitle(title: null, body: Text("wallet_login_desc".tr)),
-            const CircleAssetsImgaeView(AppGlobalConst.logo),
-            WidgetConstant.height20,
-            AppTextField(
-              obscureText: true,
-              onChanged: onChange,
-              label: "password".tr,
-              disableContextMenu: true,
-              error: _error,
-              validator: (v) {
-                if (AppStringUtility.isStrongPassword(v)) {
-                  return null;
-                }
-                return "password_desc".tr;
-              },
-            ),
-            StreamWidget(
-              padding: WidgetConstant.paddingVertical20,
-              buttomWidget: FixedElevatedButton(
-                onPressed: unlock,
-                child: Text("unlock".tr),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              PageTitleSubtitle(
+                  title: null, body: Text("wallet_login_desc".tr)),
+              const CircleAssetsImgaeView(AppGlobalConst.logo),
+              WidgetConstant.height20,
+              AppTextField(
+                obscureText: true,
+                onChanged: onChange,
+                label: "password".tr,
+                disableContextMenu: true,
+                error: _error,
+                validator: (v) {
+                  if (AppStringUtility.isStrongPassword(v)) {
+                    return null;
+                  }
+                  return "password_desc".tr;
+                },
               ),
-              backToIdle: AppGlobalConst.oneSecoundDuration,
-              key: buttonKey,
-            ),
-          ],
+              StreamWidget(
+                padding: WidgetConstant.paddingVertical20,
+                buttomWidget: FixedElevatedButton(
+                  onPressed: unlock,
+                  child: Text("unlock".tr),
+                ),
+                backToIdle: AppGlobalConst.oneSecoundDuration,
+                key: buttonKey,
+              ),
+            ],
+          ),
         ),
       ),
     );
