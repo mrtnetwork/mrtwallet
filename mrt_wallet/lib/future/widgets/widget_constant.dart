@@ -6,6 +6,7 @@ class WidgetConstant {
   static const Widget height8 = SizedBox(height: 8);
   static const Widget width8 = SizedBox(width: 8);
   static const Widget height20 = SizedBox(height: 20);
+  static const Widget height15 = SizedBox(height: 15);
   static const ScrollPhysics noScrollPhysics = NeverScrollableScrollPhysics();
   static const EdgeInsets padding5 = EdgeInsets.all(5);
   static const EdgeInsets padding10 = EdgeInsets.all(10);
@@ -27,7 +28,7 @@ class WidgetConstant {
       bottomRight: Radius.circular(8), bottomLeft: Radius.circular(8));
   static const SizedBox sizedBox = SizedBox();
   static const BoxShadow circleShadow =
-      BoxShadow(blurRadius: 2, spreadRadius: 0.5);
+      BoxShadow(blurRadius: 0.3, spreadRadius: 0.1);
   static const Divider divider = Divider();
   static const Icon checkCircle = Icon(
     Icons.check_circle,

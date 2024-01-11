@@ -88,11 +88,13 @@ class WalletCustomKeys with CborSerializable, Equatable {
       required this.extendedPrivateKey,
       required this.type,
       required this.publicKey,
+      required this.name,
       DateTime? created})
       : created = created ?? DateTime.now();
   final String checksum;
   final String extendedPrivateKey;
   final String publicKey;
+  final String? name;
   final DateTime created;
 
   final EllipticCurveTypes type;
@@ -101,18 +103,20 @@ class WalletCustomKeys with CborSerializable, Equatable {
     try {
       final CborListValue cbor = CborSerializable.decodeCborTags(
           bytes, obj, WalletModelCborTagsConst.walletCustomKey);
-      final String checksum = cbor.value[0].value;
-      final String extendedPrivateKey = cbor.value[1].value;
-      final String publicKey = cbor.value[2].value;
-      final String curveName = cbor.value[3].value;
+      final String checksum = cbor.getIndex(0);
+      final String extendedPrivateKey = cbor.getIndex(1);
+      final String publicKey = cbor.getIndex(2);
+      final String curveName = cbor.getIndex(3);
       final curve = EllipticCurveTypes.fromName(curveName);
-      final DateTime created = cbor.value[4].value;
+      final DateTime created = cbor.getIndex(4);
+      final String? name = cbor.getIndex(5);
       return WalletCustomKeys(
           checksum: checksum,
           extendedPrivateKey: extendedPrivateKey,
           type: curve,
           publicKey: publicKey,
-          created: created);
+          created: created,
+          name: name);
     } catch (e) {
       throw WalletExceptionConst.invalidMnemonic;
     }
@@ -126,7 +130,8 @@ class WalletCustomKeys with CborSerializable, Equatable {
           extendedPrivateKey,
           publicKey,
           type.name,
-          CborEpochIntValue(created)
+          CborEpochIntValue(created),
+          name
         ]),
         WalletModelCborTagsConst.walletCustomKey);
   }

@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
-import 'package:mrt_wallet/app/utility/text_field/input_formaters.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/types/typedef.dart';
 
@@ -21,12 +19,13 @@ class NumberTextField extends StatefulWidget {
     this.defaultValue,
     required this.max,
     required this.min,
+    this.suffixIcon,
     this.focusNode,
     this.nextFocus,
     this.disableWriting = false,
   });
   final int min;
-  final int max;
+  final int? max;
   final EdgeInsets padding;
   final String label;
   final String? helperText;
@@ -38,6 +37,7 @@ class NumberTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final FocusNode? nextFocus;
   final bool disableWriting;
+  final Widget? suffixIcon;
   @override
   State<NumberTextField> createState() => NumberTextFieldState();
 }
@@ -50,8 +50,8 @@ class NumberTextFieldState extends State<NumberTextField> {
   void _add(bool isAdd) {
     int index = int.parse(controller.text);
     if (isAdd) {
-      if (index >= widget.max) {
-        index = widget.max;
+      if (widget.max != null && index >= widget.max!) {
+        index = widget.max!;
       } else {
         index++;
       }
@@ -102,7 +102,10 @@ class NumberTextFieldState extends State<NumberTextField> {
   }
 
   void changeIndex(int newIndex) {
-    if (newIndex < widget.min || newIndex > widget.max) return;
+    if (newIndex < widget.min ||
+        (widget.max != null && newIndex > widget.max!)) {
+      return;
+    }
     controller.text = "$newIndex";
   }
 
@@ -139,65 +142,87 @@ class NumberTextFieldState extends State<NumberTextField> {
         children: [
           ConstraintsBoxView(
             maxWidth: 350,
-            child: TextFormField(
-              textAlign: TextAlign.center,
-              autovalidateMode: AutovalidateMode.always,
-              enableInteractiveSelection: false,
-              focusNode: widget.focusNode,
-              keyboardType: TextInputType.numberWithOptions(
-                  decimal: false, signed: widget.min < 0),
-              controller: controller,
-              validator: widget.validator,
-              onFieldSubmitted: onSubmitField,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                RangeTextInputFormatter(min: widget.min, max: widget.max)
-              ],
-              readOnly: widget.disableWriting,
-              decoration: InputDecoration(
-                  filled: true,
-                  hintText: widget.hintText,
-                  helperText: widget.helperText,
-                  errorText: widget.error,
-                  labelText: widget.label,
-                  suffixIcon: AnimatedContainer(
-                    duration: AppGlobalConst.animationDuraion,
-                    decoration: BoxDecoration(
-                        color: add
-                            ? context.theme.highlightColor
-                            : Colors.transparent,
-                        shape: BoxShape.circle),
-                    child: GestureDetector(
-                      onTap: () => onTap(true),
-                      onLongPress: () => onLongPress(true),
-                      onLongPressEnd: (e) => onLongPressCancel(),
-                      child: IconButton(
-                        icon: const Icon(Icons.add_box),
-                        onPressed: () {
-                          onTap(true);
-                        },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  children: [
+                    WidgetConstant.height8,
+                    AnimatedContainer(
+                      duration: AppGlobalConst.animationDuraion,
+                      decoration: BoxDecoration(
+                          color: minus
+                              ? context.theme.highlightColor
+                              : Colors.transparent,
+                          shape: BoxShape.circle),
+                      child: GestureDetector(
+                        onTap: () => onTap(false),
+                        onLongPress: () => onLongPress(false),
+                        onLongPressEnd: (e) => onLongPressCancel(),
+                        child: IconButton(
+                            onPressed: () {
+                              onTap(false);
+                            },
+                            icon: const Icon(
+                                Icons.indeterminate_check_box_rounded)),
                       ),
                     ),
+                  ],
+                ),
+                Flexible(
+                  child: TextFormField(
+                    textAlign: TextAlign.center,
+                    autovalidateMode: AutovalidateMode.always,
+                    focusNode: widget.focusNode,
+                    keyboardType: TextInputType.numberWithOptions(
+                        decimal: false, signed: widget.min < 0),
+                    controller: controller,
+                    validator: widget.validator,
+                    onFieldSubmitted: onSubmitField,
+                    minLines: null,
+                    maxLines: null,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      RangeTextInputFormatter(min: widget.min, max: widget.max)
+                    ],
+                    readOnly: widget.disableWriting,
+                    decoration: InputDecoration(
+                        filled: true,
+                        hintText: widget.hintText,
+                        helperText: widget.helperText,
+                        suffixIcon: widget.suffixIcon,
+                        errorText: widget.error,
+                        labelText: widget.label,
+                        border: OutlineInputBorder(
+                            borderRadius: WidgetConstant.border8,
+                            borderSide: BorderSide.none)),
                   ),
-                  prefixIcon: AnimatedContainer(
-                    duration: AppGlobalConst.animationDuraion,
-                    decoration: BoxDecoration(
-                        color: minus
-                            ? context.theme.highlightColor
-                            : Colors.transparent,
-                        shape: BoxShape.circle),
-                    child: GestureDetector(
-                      onTap: () => onTap(false),
-                      onLongPress: () => onLongPress(false),
-                      onLongPressEnd: (e) => onLongPressCancel(),
-                      child: IconButton(
+                ),
+                Column(
+                  children: [
+                    WidgetConstant.height8,
+                    AnimatedContainer(
+                      duration: AppGlobalConst.animationDuraion,
+                      decoration: BoxDecoration(
+                          color: add
+                              ? context.theme.highlightColor
+                              : Colors.transparent,
+                          shape: BoxShape.circle),
+                      child: GestureDetector(
+                        onTap: () => onTap(true),
+                        onLongPress: () => onLongPress(true),
+                        onLongPressEnd: (e) => onLongPressCancel(),
+                        child: IconButton(
+                          icon: const Icon(Icons.add_box),
                           onPressed: () {
-                            onTap(false);
+                            onTap(true);
                           },
-                          icon: const Icon(
-                              Icons.indeterminate_check_box_rounded)),
+                        ),
+                      ),
                     ),
-                  )),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

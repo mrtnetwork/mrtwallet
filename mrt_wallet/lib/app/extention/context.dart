@@ -7,6 +7,9 @@ import 'package:mrt_wallet/types/typedef.dart';
 
 extension CustomColorsSchame on ColorScheme {
   Color get disable => onSurface.withOpacity(0.38);
+  Color get orange => Colors.orange;
+  Color get green => Colors.green;
+  Color get transparent => Colors.transparent;
 }
 
 extension QuickContextAccsess on BuildContext {
@@ -54,15 +57,18 @@ extension QuickContextAccsess on BuildContext {
       Widget? child,
       double? initialExtend,
       BodyBuilder? bodyBuilder,
-      List<Widget> appbarActions = const []}) async {
+      List<Widget> appbarActions = const [],
+      bool centerContent = true}) async {
     return await showModalBottomSheet<T>(
       context: this,
+      constraints: const BoxConstraints(maxWidth: 900),
       builder: (context) => AppBottomSheet(
         label: label,
         body: bodyBuilder,
         actions: appbarActions,
         minExtent: minExtent,
         maxExtend: maxExtend,
+        centerContent: centerContent,
         initiaalExtend: initialExtend,
         child: child,
       ),
@@ -77,7 +83,7 @@ extension QuickContextAccsess on BuildContext {
       {List<Widget> Function(BuildContext)? content}) async {
     return await showAdaptiveDialog(
       context: this,
-      useRootNavigator: false,
+      useRootNavigator: true,
       builder: (context) {
         return DialogView(
           title: label,
@@ -98,8 +104,7 @@ extension QuickContextAccsess on BuildContext {
     final args = ModalRoute.of(this)?.settings.arguments;
     if (args == null) return null;
     if (args.runtimeType != T) {
-      throw ArgumentError(
-          "value of type ${args.runtimeType} is not subtype ${T.runtimeType}");
+      return null;
     }
     return args as T?;
   }

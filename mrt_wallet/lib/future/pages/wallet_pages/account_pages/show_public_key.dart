@@ -2,21 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/keys/exported_pubkes.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class AccountPublicKeyView extends StatelessWidget {
-  final CryptoAccountAddress address;
-  const AccountPublicKeyView({required this.address, super.key});
+  final AppChain chainAccount;
+  const AccountPublicKeyView({
+    required this.chainAccount,
+    super.key,
+  });
   @override
   Widget build(BuildContext context) {
-    return _BipAccountPublicKey(bip: address as Bip32AddressCore);
+    return _BipAccountPublicKey(
+        account: chainAccount.account.address as Bip32AddressCore,
+        network: chainAccount.network);
   }
 }
 
 class _BipAccountPublicKey extends StatefulWidget {
-  const _BipAccountPublicKey({required this.bip});
-  final Bip32AddressCore bip;
+  const _BipAccountPublicKey({required this.account, required this.network});
+  final Bip32AddressCore account;
+  final AppNetworkImpl network;
   @override
   State<_BipAccountPublicKey> createState() => __BipAccountPublicKeyState();
 }
@@ -26,7 +31,7 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
 
   void initPubKey() {
     publicKey = BlockchainUtils.exportPublicKey(
-        widget.bip.publicKey, widget.bip.coin, widget.bip.network);
+        widget.account.publicKey, widget.account.coin, widget.network);
   }
 
   @override
@@ -59,9 +64,9 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
         WidgetConstant.height8,
         ContainerWithBorder(
           child: CopyTextWithBarcode(
-              dataToCopy: widget.bip.address.toAddress,
-              widget:
-                  AddressDetailsView(address: widget.bip, isSelected: false),
+              dataToCopy: widget.account.address.toAddress,
+              widget: AddressDetailsView(
+                  address: widget.account, isSelected: false),
               barcodeTitle: "address_sharing".tr),
         ),
         WidgetConstant.height20,

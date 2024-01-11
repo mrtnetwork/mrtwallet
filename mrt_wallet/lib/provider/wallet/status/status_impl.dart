@@ -28,26 +28,14 @@ mixin WalletStatusImpl on _WalletCore {
   }
 
   Future<void> _login(String password) async {
-    List<int> wp;
-    List<int> walletChecksum;
-    if (_password != null && _checksum != null) {
-      wp = _toWalletPassword(password, _checksum!);
-      walletChecksum = List.unmodifiable(_checksum!);
-      if (!bytesEqual(wp, _password)) {
-        throw WalletExceptionConst.incorrectPassword;
-      }
-    } else {
-      final encrypWallet = await _readWallet();
-      walletChecksum = BytesUtils.fromHexString(encrypWallet!.$2);
-      wp = _toWalletPassword(password, walletChecksum);
-      await _setupMasterKey(encrypWallet.$1, wp);
-      _setStorageCheckSum(_massterKey!.checksum);
-    }
+    final encrypWallet = await _readWallet();
+    List<int> walletChecksum = BytesUtils.fromHexString(encrypWallet!.$2);
+    List<int> wp = _toWalletPassword(password, walletChecksum);
+    await _setupMasterKey(encrypWallet.$1, wp);
+    _setStorageCheckSum(_massterKey!.checksum);
     await _setupNetwork();
-    await _readAccounts();
-
-    _password = wp;
-    _checksum = walletChecksum;
+    _password = List<int>.unmodifiable(wp);
+    _checksum = List<int>.unmodifiable(walletChecksum);
   }
 
   Future<void> _deriveNewAccount(NewAccountParams newAccountParams) async {
@@ -78,7 +66,10 @@ mixin WalletStatusImpl on _WalletCore {
     final key = _removeCustomKey(newKey, pw);
     final encrypt = await _forStorage(key, pw);
     await _setupMasterKey(encrypt, pw);
-    await _clenCustomKeysAccount(_account!, _massterKey!.customKeys);
+    for (final i in _appChains.networks.values) {
+      await _clenCustomKeysAccount(i.account, _massterKey!.customKeys);
+    }
+
     await _writeWallet(encrypt, _toStorageChecksum());
   }
 
@@ -90,24 +81,25 @@ mixin WalletStatusImpl on _WalletCore {
     await _login(password);
   }
 
-  Future<void> _setupBackup(WalletBackup backup, String password) async {
+  Future<void> _setupBackupV2(WalletBackupCore backup, String password) async {
     try {
+      backup as WalletBackupV2;
       BlockchainUtils.validateMnemonic(backup.masterKeys.mnemonic.toStr());
-      for (final i in backup.accounts) {
-        for (final b in i.addresses) {
-          final validate = _validateBcakupAccounts(backup, b);
+      for (final i in backup.chains) {
+        for (final b in i.account.addresses) {
+          final validate = _validateBcakupAccounts(backup.masterKeys, b);
           if (!validate) {
             throw WalletExceptionConst.invalidBackup;
           }
         }
       }
       await _setup(backup.masterKeys, password);
-      for (final i in backup.accounts) {
+      for (final i in backup.chains) {
         await _saveAccount(i);
       }
       await _login(password);
     } catch (e) {
-      await _cleanWallet();
+      await _clearWallet();
       throw WalletExceptionConst.invalidBackup;
     }
   }
@@ -140,7 +132,7 @@ mixin WalletStatusImpl on _WalletCore {
     return toPw;
   }
 
-  Future<String> restoreBackup(
+  Future<List<int>> restoreBackup(
     String password,
     String backup,
     SecretWalletEncoding encoding,
@@ -149,12 +141,12 @@ mixin WalletStatusImpl on _WalletCore {
   }
 
   Future<void> _changePassword(String password, String newPassword) async {
-    _validatePassword(password);
+    final pw = _validatePassword(password);
     if (!AppStringUtility.isStrongPassword(newPassword)) {
       throw WalletExceptionConst.incorrectPassword;
     }
     final encrypWallet = await _readWallet();
-    final walletKey = await _fromStroage(encrypWallet!.$1, _password!);
+    final walletKey = await _fromStroage(encrypWallet!.$1, pw);
     final newCheckSum = QuickCrypto.generateRandom(16);
     final nPassword = _toWalletPassword(newPassword, newCheckSum);
     final data = await _forStorage(walletKey, nPassword);
@@ -175,31 +167,37 @@ mixin WalletStatusImpl on _WalletCore {
 
   Future<void> _eraseWallet(String password) async {
     _validatePassword(password);
-    await _cleanWallet();
+    await _clearWallet();
   }
 
-  Future<void> _cleanWallet() async {
-    _password = null;
-    _account = null;
-    _massterKey = null;
-    _account = null;
+  Future<void> _clearWallet() async {
+    _cleanWallet();
     await _deleteAll();
     await deleteAll();
   }
 
   void _logout() {
-    _password = null;
+    _cleanWallet();
     _status = WalletStatus.lock;
-    _account = null;
   }
 
-  Future<String> _getWalletBackup(String password,
+  void _cleanWallet() {
+    _password = null;
+    _checksum = null;
+    _walletChecksum = null;
+    _massterKey = null;
+    // _accounts = null;
+  }
+
+  Future<String> _getWalletBackupV2(String password,
       {SecretWalletEncoding encoding = SecretWalletEncoding.cbor}) async {
     final pw = _validatePassword(password);
     final encrypWallet = await _readWallet();
     final masterKeys = await _fromStroage(encrypWallet!.$1, pw);
-    final accounts = await _readAllAccounts();
-    final backup = WalletBackup(masterKeys: masterKeys, accounts: accounts);
+    final backup = WalletBackupV2(
+      masterKeys: masterKeys,
+      chains: _appChains.networks.values.toList(),
+    );
     return SecretStorageCompute.encrypt(backup.toCbor().toCborHex(), password,
         encoding: encoding);
   }

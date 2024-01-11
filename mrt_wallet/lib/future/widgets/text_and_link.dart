@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 
 class TextAndLinkView extends StatelessWidget {
   const TextAndLinkView({required this.text, required this.url, super.key});

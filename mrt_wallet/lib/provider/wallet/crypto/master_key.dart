@@ -21,7 +21,8 @@ mixin MasterKeyImpl on WalletCryptoImpl {
                 publicKey: e.publicKey,
                 type: e.type,
                 id: e.checksum,
-                created: e.created))
+                created: e.created,
+                name: e.name))
             .toList());
   }
 
@@ -44,24 +45,24 @@ mixin MasterKeyImpl on WalletCryptoImpl {
   }
 
   bool _validateBcakupAccounts(
-      WalletBackup backup, CryptoAccountAddress address) {
-    if (address.keyIndex is ImportedAddressIndex ||
-        address.keyIndex is Bip32AddressIndex) {
-      final bip32 = _getBip32FromKeyIndex(address.keyIndex, backup.masterKeys);
+      WalletMasterKeys masterKey, CryptoAccountAddress address) {
+    if (!address.multiSigAccount) {
+      final bip32 = _getBip32FromKeyIndex(address.keyIndex, masterKey);
       if (!address.signers.contains(bip32.publicKey.toHex())) {
         return false;
       }
     } else {
-      return _validateMultiSigAccount(
-          backup.masterKeys, address as IBitcoinMultiSigAddress);
+      return _validateMultiSigAccount(masterKey, address);
     }
     return true;
   }
 
   bool _validateMultiSigAccount(
-      WalletMasterKeys masterKey, IBitcoinMultiSigAddress address) {
-    for (final i in address.multiSignatureAddress.signers) {
-      final bip32 = _getBip32FromKeyIndex(i.keyIndex, masterKey);
+      WalletMasterKeys masterKey, CryptoAccountAddress address) {
+    final List<(String, AddressDerivationIndex)> keyDetails =
+        (address as MultiSigCryptoAccountAddress).keyDetails;
+    for (final i in keyDetails) {
+      final bip32 = _getBip32FromKeyIndex(i.$2, masterKey);
       if (!address.signers.contains(bip32.publicKey.toHex())) {
         return false;
       }
@@ -130,7 +131,7 @@ mixin MasterKeyImpl on WalletCryptoImpl {
     }
 
     if (keys.customKeys.contains(newKey)) {
-      throw WalletExceptionConst.addressAlreadyExist;
+      throw WalletExceptionConst.keyAlreadyExist;
     }
     return keys.addKey(newKey);
   }

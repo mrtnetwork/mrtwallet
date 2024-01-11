@@ -1,10 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/network_constant/ripple_const.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/receipt_address_view.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/select_address.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/setup_amount.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:xrp_dart/xrp_dart.dart';
@@ -174,7 +171,8 @@ class _BuildRippleCurrencyAmountViewState
                                     "xrp_amount".tr,
                                     child: SetupNetworkAmount(
                                       min: BigInt.zero,
-                                      network: widget.account.network,
+                                      token: widget
+                                          .account.network.coinParam.token,
                                       subtitle: const SizedBox(),
                                     ),
                                   )

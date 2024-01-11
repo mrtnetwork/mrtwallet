@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
-import 'package:mrt_wallet/app/utility/utility.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/provider_tracker_status_view.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/select_provider.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/main.dart';
+import 'package:mrt_wallet/models/wallet_models/chain/chain.dart';
 import 'package:mrt_wallet/provider/api/core/api_provider.dart';
 
 class BitcoinAccountPageView extends StatelessWidget {
-  const BitcoinAccountPageView({super.key, required this.wallet});
-  final WalletProvider wallet;
+  const BitcoinAccountPageView({super.key, required this.chainAccount});
+  final AppChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    final apiProvider = wallet.currentProvider(wallet.network);
+    final apiProvider = chainAccount.provider().serviceProvider;
+    final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     return Column(
       children: [
         AppListTile(
@@ -29,8 +29,8 @@ class BitcoinAccountPageView extends StatelessWidget {
           subtitle: Text("view_address_on_explorer".tr),
           trailing: const Icon(Icons.open_in_browser),
           onTap: () {
-            LunchUri.lunch(wallet.network.coinParam.getAccountExplorer(
-                wallet.networkAccount.address.address.toAddress));
+            LunchUri.lunch(chainAccount.network.coinParam.getAccountExplorer(
+                chainAccount.account.address.address.toAddress)!);
           },
         ),
         Row(
@@ -43,7 +43,7 @@ class BitcoinAccountPageView extends StatelessWidget {
                   context
                       .openSliverDialog<ApiProviderService>(
                           (ctx) => SelectProviderView(
-                                network: wallet.network,
+                                network: chainAccount.network,
                                 selectedProvider: apiProvider.provider,
                               ),
                           "service_provider".tr)

@@ -3,3 +3,7 @@ export 'bitcoin/multisig_address_details.dart';
 
 export 'xrp/mutlisig_address_details.dart';
 export 'xrp/xrp_account.dart';
+export 'ethereum/ethereum_account.dart';
+
+export 'tron/tron_account.dart';
+export 'tron/multi_sig_address_details.dart';

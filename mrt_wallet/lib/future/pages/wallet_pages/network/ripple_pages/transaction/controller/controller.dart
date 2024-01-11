@@ -6,9 +6,10 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transa
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/controller/impl/sign_transaction_impl.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/controller/impl/transaction_impl.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/currency_balance/balance.dart';
-import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
-import 'package:mrt_wallet/models/wallet_models/signing_request/networks/ripple/ripple_signing_request.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+
+import 'package:mrt_wallet/provider/transaction_validator/core/validator.dart';
+import 'package:mrt_wallet/provider/transaction_validator/ripple/transaction_validator/validators.dart';
 import 'package:xrp_dart/xrp_dart.dart';
 
 class RippleTransactionStateController extends RippleTransactionImpl
@@ -101,7 +102,7 @@ class RippleTransactionStateController extends RippleTransactionImpl
   String? get fieldsError => _fieldError;
 
   @override
-  String get repositoryId => "ripple/trustline";
+  String get repositoryId => "ripple/transaction";
 
   void sendTr() async {
     _fieldError = null;

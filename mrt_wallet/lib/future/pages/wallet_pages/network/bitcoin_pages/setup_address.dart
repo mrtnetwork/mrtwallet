@@ -2,15 +2,13 @@ import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_derivation_type.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/bip32_derivation.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+
 import 'package:mrt_wallet/types/typedef.dart';
 
 class SetupBitcoinAddressView extends StatefulWidget {
@@ -25,12 +23,12 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     with SafeState {
   final GlobalKey<PageProgressState> pageProgressKey =
       GlobalKey<PageProgressState>(debugLabel: "SetupBitcoinAddressView");
-  late final NetworkAccountCore networkAccounts;
+  late final AppChain chainAccount;
   final GlobalKey visibleGenerateAddress =
       GlobalKey(debugLabel: "visibleContinue");
-
   AddressDerivationMode? selectedDerivationMode;
   EncryptedCustomKey? selectedCustomKey;
+
   bool inAddressPage = false;
 
   void goToAddressPage(
@@ -56,7 +54,7 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     setState(() {});
   }
 
-  AppBitcoinNetwork get network => networkAccounts.network as AppBitcoinNetwork;
+  AppBitcoinNetwork get network => chainAccount.network as AppBitcoinNetwork;
   List<CryptoCoins> get coins => network.coins;
   bool inited = false;
   Bip32AddressIndex? customKeyIndex;
@@ -87,7 +85,7 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     if (inited) return;
     inited = true;
     final model = context.watch<WalletProvider>(StateIdsConst.main);
-    networkAccounts = model.networkAccount;
+    chainAccount = model.chain;
     supportAddressTypes =
         network.coinParam.transacationNetwork.supportedAddress;
     p2shTypes = supportAddressTypes.where((e) => e.isP2sh).toList();
@@ -157,18 +155,23 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     return customKeyIndex;
   }
 
+  AddressDerivationIndex get standardDerivation {
+    final coin = findCoin();
+    return chainAccount.account.nextDrive(coin);
+  }
+
   void generateAddress() async {
     pageProgressKey.progressText("generating_new_addr".tr);
-    final model = context.watch<WalletProvider>(StateIdsConst.main);
+    final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     final coin = findCoin();
 
     final selectedType =
         selected.first == _defaultP2sh() ? p2shType : selected.first;
-    final keyIndex = derivationkey() ?? model.networkAccount.nextDrive(coin);
+    final keyIndex = derivationkey() ?? chainAccount.account.nextDrive(coin);
     final newAccount = BitcoinNewAddressParams(
         coin: coin, deriveIndex: keyIndex, bitcoinAddressType: selectedType);
 
-    final result = await model.deriveNewAccount(newAccount);
+    final result = await wallet.deriveNewAccount(newAccount);
     if (result.hasError) {
       pageProgressKey.errorText(result.error!.tr);
     } else {
@@ -205,78 +208,74 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
           backToIdle: AppGlobalConst.oneSecoundDuration,
           initialStatus: PageProgressStatus.idle,
           child: () => UnfocusableChild(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                    child: ConstraintsBoxView(
-                  padding: WidgetConstant.paddingHorizontal20,
-                  child: AnimatedSwitcher(
-                    duration: AppGlobalConst.animationDuraion,
-                    child: inAddressPage
-                        ? Column(
-                            key: const ValueKey<bool>(true),
-                            children: [
-                              _DriveFromHdWallet(
-                                onVisibleGenerateAddress:
-                                    visibleGenerateAddress,
-                                onChangeDeravation: (p0) {
-                                  onChangeDerivation(
-                                    p0,
-                                    () {
-                                      context
-                                          .openSliverBottomSheet<
-                                                  Bip32AddressIndex>(
-                                              "key_derivation".tr,
-                                              child: Bip32KeyDerivationView(
-                                                  coin: findCoin(),
-                                                  curve: EllipticCurveTypes
-                                                      .secp256k1))
-                                          .then(setupKeyIndex);
-                                    },
-                                  );
-                                },
-                                derivationStandard: derivationStandard,
-                                typesToSelect: typesToSelect,
-                                generateAddress: generateAddress,
-                                nestedP2shTyes: p2shTypes,
-                                onChageSegwit: onChageSegwit,
-                                onChangeSelected: onChangeSelected,
-                                selected: selected,
-                                selectedP2shType: p2shType,
-                                customKey: selectedCustomKey,
-                              ),
-                            ],
-                          )
-                        : Column(
-                            children: [
-                              WidgetConstant.height20,
-                              PageTitleSubtitle(
+            child: Center(
+              child: CustomScrollView(
+                shrinkWrap: true,
+                slivers: [
+                  SliverToBoxAdapter(
+                      child: ConstraintsBoxView(
+                    padding: WidgetConstant.paddingHorizontal20,
+                    child: AnimatedSwitcher(
+                      duration: AppGlobalConst.animationDuraion,
+                      child: inAddressPage
+                          ? Column(
+                              key: const ValueKey<bool>(true),
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _DriveFromHdWallet(
+                                  customKeyIndex: customKeyIndex,
+                                  onVisibleGenerateAddress:
+                                      visibleGenerateAddress,
+                                  nextStandartIndex: standardDerivation,
+                                  onChangeDeravation: (p0) {
+                                    onChangeDerivation(
+                                      p0,
+                                      () {
+                                        context
+                                            .openSliverBottomSheet<
+                                                    Bip32AddressIndex>(
+                                                "key_derivation".tr,
+                                                child: Bip32KeyDerivationView(
+                                                    coin: findCoin(),
+                                                    curve: EllipticCurveTypes
+                                                        .secp256k1))
+                                            .then(setupKeyIndex);
+                                      },
+                                    );
+                                  },
+                                  derivationStandard: derivationStandard,
+                                  typesToSelect: typesToSelect,
+                                  generateAddress: generateAddress,
+                                  nestedP2shTyes: p2shTypes,
+                                  onChageSegwit: onChageSegwit,
+                                  onChangeSelected: onChangeSelected,
+                                  selected: selected,
+                                  selectedP2shType: p2shType,
+                                  customKey: selectedCustomKey,
+                                ),
+                              ],
+                            )
+                          : Column(
+                              children: [
+                                WidgetConstant.height20,
+                                PageTitleSubtitle(
                                   title: "derive_network_address"
                                       .tr
                                       .replaceOne(network.coinParam.token.name),
-                                  body: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("bip44_desc".tr),
-                                      WidgetConstant.height8,
-                                      Text("bip49_desc".tr),
-                                      if (isSupportSegwit) ...[
-                                        WidgetConstant.height8,
-                                        Text("bip84_desc".tr),
-                                      ],
-                                      if (isSupportP2tr) ...[
-                                        WidgetConstant.height8,
-                                        Text("bip86_desc".tr)
-                                      ]
-                                    ],
-                                  )),
-                              SetupAddressDerivation(goToAddressPage)
-                            ],
-                          ),
-                  ),
-                ))
-              ],
+                                  body: LargeTextView([
+                                    "bip44_desc".tr,
+                                    "bip49_desc".tr,
+                                    if (isSupportSegwit) "bip84_desc".tr,
+                                    if (isSupportP2tr) "bip86_desc".tr
+                                  ]),
+                                ),
+                                SetupAddressDerivation(goToAddressPage)
+                              ],
+                            ),
+                    ),
+                  ))
+                ],
+              ),
             ),
           ),
         ),
@@ -288,6 +287,7 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
 class _DriveFromHdWallet extends StatelessWidget {
   const _DriveFromHdWallet(
       {required this.selected,
+      required this.customKeyIndex,
       required this.onChangeDeravation,
       required this.generateAddress,
       required this.derivationStandard,
@@ -297,7 +297,10 @@ class _DriveFromHdWallet extends StatelessWidget {
       required this.selectedP2shType,
       required this.onVisibleGenerateAddress,
       required this.typesToSelect,
+      required this.nextStandartIndex,
       this.customKey});
+  final AddressDerivationIndex nextStandartIndex;
+  final AddressDerivationIndex? customKeyIndex;
   final Set<BitcoinAddressType> selected;
   final void Function(BitcoinAddressType?) onChageSegwit;
   final DynamicVoid generateAddress;
@@ -309,19 +312,6 @@ class _DriveFromHdWallet extends StatelessWidget {
   final EncryptedCustomKey? customKey;
   final GlobalKey onVisibleGenerateAddress;
   final Map<BitcoinAddressType, String> typesToSelect;
-  static String _getBipName(BitcoinAddressType select) {
-    switch (select) {
-      case BitcoinAddressType.p2pkh:
-        return "BIP44";
-      case BitcoinAddressType.p2wpkhInP2sh:
-        return "BIP49";
-      case BitcoinAddressType.p2wpkh:
-      case BitcoinAddressType.p2wsh:
-        return "BIP84";
-      default:
-        return "BIP86";
-    }
-  }
 
   bool get supportP2trOrSegwit =>
       typesToSelect.containsKey(BitcoinAddressType.p2tr) ||
@@ -330,6 +320,7 @@ class _DriveFromHdWallet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PageTitleSubtitle(
             title: "choose_bitcoin_address_type".tr,
@@ -340,54 +331,55 @@ class _DriveFromHdWallet extends StatelessWidget {
                 WidgetConstant.height8,
                 if (supportP2trOrSegwit) Text("bitcoin_type_recomended".tr),
                 WidgetConstant.height8,
-                if (customKey != null)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("generate_from_imported_keys".tr),
-                      WidgetConstant.height8,
-                      Text("generate_from_imported_key_desc1".tr)
-                    ],
-                  )
-                else
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("generate_from_hd_wallet".tr),
-                    ],
-                  )
+                if (customKey != null) ...[
+                  Text("generate_from_imported_keys".tr),
+                  WidgetConstant.height8,
+                  Text("generate_from_imported_key_desc1".tr)
+                ] else ...[
+                  Text("generate_from_hd_wallet".tr),
+                ]
               ],
             )),
         AppSwitchListTile(
           value: derivationStandard,
           onChanged: onChangeDeravation,
           title: customKey == null
-              ? Text("standard_derivation".tr)
-              : Text("non_derivation".tr),
+              ? Text(derivationStandard
+                  ? "standard_derivation".tr
+                  : "custom_derivation".tr)
+              : Text(customKeyIndex == null
+                  ? "non_derivation".tr
+                  : "custom_derivation".tr),
           subtitle: customKey == null
-              ? Text("standard_deravation_for"
-                  .tr
-                  .replaceOne(_getBipName(selected.first)))
-              : Text("import_key_derivation_desc2".tr),
+              ? Text(customKeyIndex?.path ?? nextStandartIndex.path)
+              : Text(customKeyIndex?.path ?? "import_key_derivation_desc2".tr),
         ),
         WidgetConstant.height8,
-        AppSegmentedButton<BitcoinAddressType>(
-            items: typesToSelect,
-            onChangeSelected: onChangeSelected,
-            selected: selected),
-        WidgetConstant.height20,
-        _AddressTypeOPtion(
-          select: selected.first,
-          deriveStandard: derivationStandard,
-          nestedP2shTyes: nestedP2shTyes,
-          selectedP2shType: selectedP2shType,
-          onChangeP2shSegwit: onChageSegwit,
-        ),
-        FixedElevatedButton(
-          padding: WidgetConstant.paddingVertical20,
-          onPressed: generateAddress,
-          key: onVisibleGenerateAddress,
-          child: Text("generate_address".tr),
+        SizedBox(
+          width: context.mediaQuery.size.width,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AppSegmentedButton<BitcoinAddressType>(
+                  items: typesToSelect,
+                  onChangeSelected: onChangeSelected,
+                  selected: selected),
+              WidgetConstant.height20,
+              _AddressTypeOPtion(
+                select: selected.first,
+                deriveStandard: derivationStandard,
+                nestedP2shTyes: nestedP2shTyes,
+                selectedP2shType: selectedP2shType,
+                onChangeP2shSegwit: onChageSegwit,
+              ),
+              FixedElevatedButton(
+                padding: WidgetConstant.paddingVertical20,
+                onPressed: generateAddress,
+                key: onVisibleGenerateAddress,
+                child: Text("generate_address".tr),
+              )
+            ],
+          ),
         )
       ],
     );

@@ -1,13 +1,12 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/blockchin_utils/blockchain_addr_utils.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class BitcoinContact with Equatable implements ContactCore {
+class BitcoinContact with Equatable implements ContactCore<BitcoinAddress> {
   BitcoinContact._(
       {required this.addressObject,
       required this.address,

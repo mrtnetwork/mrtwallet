@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/account_page.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/ethereum_account_page_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/account_page.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/tron_account_page_view.dart';
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -17,10 +18,11 @@ class NetworkAccountPageView extends StatelessWidget {
   final WalletProvider wallet;
   @override
   Widget build(BuildContext context) {
+    final chainAccount = wallet.chain;
     return NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
-          if (!wallet.haveAddress) return [];
-          final account = wallet.networkAccount.address;
+          if (!chainAccount.haveAddress) return [];
+
           return [
             SliverAppBar(
               pinned: true,
@@ -30,31 +32,31 @@ class NetworkAccountPageView extends StatelessWidget {
                 child: SizedBox(
                   height: 80,
                   child: _AddressDetailsView(
-                    account: account,
+                    account: chainAccount.account.address,
                     onPressed: (p0) {
                       switch (p0) {
                         case 1:
                           context.openSliverBottomSheet(
                             "publick_key".tr,
                             child: AccountPublicKeyView(
-                                address: wallet.networkAccount.address),
+                                chainAccount: wallet.chain),
                           );
 
                           break;
                         case 0:
                           context.to(PagePathConst.exportPrivateKey,
-                              argruments: wallet.networkAccount.address);
+                              argruments: chainAccount.account.address);
                           break;
                         case 2:
                           context.to(PagePathConst.removeAccount,
-                              argruments: wallet.networkAccount.address);
+                              argruments: chainAccount.account.address);
                         case 3:
                           context
                               .openSliverBottomSheet<String>(
                                 "account_name".tr,
                                 child: StringWriterView(
                                   defaultValue:
-                                      wallet.networkAccount.address.accountName,
+                                      chainAccount.account.address.accountName,
                                   regExp: AppGlobalConst.accountNameRegExp,
                                   title: PageTitleSubtitle(
                                       title: "setup_or_update_account_name".tr,
@@ -73,7 +75,7 @@ class NetworkAccountPageView extends StatelessWidget {
                                 ),
                               )
                               .then((value) => wallet.setupAccountName(
-                                  value, wallet.networkAccount.address));
+                                  value, chainAccount.account.address));
 
                         default:
                       }
@@ -99,12 +101,11 @@ class NetworkAccountPageView extends StatelessWidget {
                         children: [
                           Column(
                             children: [
-                              CircleAssetsImgaeView(
-                                wallet.network.coinParam.logo,
-                                radius: 40,
-                              ),
+                              CircleTokenImgaeView(
+                                  chainAccount.network.coinParam.token,
+                                  radius: 40),
                               WidgetConstant.height8,
-                              Text(wallet.network.coinParam.token.name,
+                              Text(chainAccount.network.coinParam.token.name,
                                   style: context.textTheme.labelLarge),
                             ],
                           ),
@@ -113,8 +114,9 @@ class NetworkAccountPageView extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 CoinPriceView(
-                                  account: wallet.networkAccount.address,
+                                  account: chainAccount.account.address,
                                   style: context.textTheme.titleLarge,
+                                  token: chainAccount.network.coinParam.token,
                                 ),
                                 WidgetConstant.height8,
                                 Row(
@@ -124,8 +126,9 @@ class NetworkAccountPageView extends StatelessWidget {
                                       onPressed: () {
                                         context.openSliverDialog(
                                             (ctx) => ShareAccountView(
-                                                  address: wallet
-                                                      .networkAccount.address,
+                                                  address: chainAccount
+                                                      .account.address,
+                                                  network: chainAccount.network,
                                                 ),
                                             "address_sharing".tr);
                                       },
@@ -138,7 +141,8 @@ class NetworkAccountPageView extends StatelessWidget {
                                       onPressed: () {
                                         context.to(
                                             PagePathConst.transactionPage(
-                                                wallet.network));
+                                                chainAccount.network),
+                                            argruments: chainAccount);
                                       },
                                       child: const Icon(Icons.upload),
                                     )
@@ -156,51 +160,54 @@ class NetworkAccountPageView extends StatelessWidget {
             )
           ];
         },
-        body: !wallet.haveAddress
+        body: !wallet.chain.haveAddress
             ? Padding(
                 padding: WidgetConstant.padding20,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     PageTitleSubtitle(
-                      title: "setup_network_address"
-                          .tr
-                          .replaceOne(wallet.network.coinParam.token.name),
-                      body: Text("setup_network_address_desc"
-                          .tr
-                          .replaceOne(wallet.network.coinParam.token.name)),
+                      title: "setup_network_address".tr.replaceOne(
+                          chainAccount.network.coinParam.token.name),
+                      body: Text("setup_network_address_desc".tr.replaceOne(
+                          chainAccount.network.coinParam.token.name)),
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         FixedElevatedButton(
+                            padding: WidgetConstant.paddingVertical20,
                             onPressed: () {
                               context.to(
                                   PagePathConst.setupAddressPage(
-                                      wallet.network),
-                                  argruments: wallet.networkAccount);
+                                      chainAccount.network),
+                                  argruments: chainAccount.account);
                             },
                             child: Text("setup_address".tr)),
                       ],
                     )
                   ],
                 ))
-            : _AccountPageView(wallet));
+            : _AccountPageView(chainAccount));
   }
 }
 
 class _AccountPageView extends StatelessWidget {
-  const _AccountPageView(this.wallet);
-  final WalletProvider wallet;
+  const _AccountPageView(this.chainAccount);
+  final AppChain chainAccount;
 
   @override
   Widget build(BuildContext context) {
-    switch (wallet.network.runtimeType) {
+    switch (chainAccount.network.runtimeType) {
       case AppBitcoinNetwork:
-        return BitcoinAccountPageView(wallet: wallet);
+        return BitcoinAccountPageView(chainAccount: chainAccount);
       case AppXRPNetwork:
-        return RippleAccountPageView(
-            account: wallet.networkAccount.address as IXRPAddress);
+        return RippleAccountPageView(chainAccount: chainAccount);
+      case APPEVMNetwork:
+        return ETHAccountPageView(chainAccount: chainAccount);
+      case APPTVMNetwork:
+        return TronAccountPageView(chainAccount: chainAccount);
       default:
         return const SizedBox();
     }
@@ -239,16 +246,20 @@ class _AddressDetailsView extends StatelessWidget {
                                   text: account.accountName,
                                   style: context.textTheme.labelLarge?.copyWith(
                                       color: context.colors.onPrimary)),
-                              TextSpan(
-                                  text: " (${account.type.tr})",
-                                  style: context.textTheme.bodySmall?.copyWith(
-                                      color: context.colors.onPrimary))
+                              if (account.type != null)
+                                TextSpan(
+                                    text: " (${account.type!.tr})",
+                                    style: context.textTheme.bodySmall
+                                        ?.copyWith(
+                                            color: context.colors.onPrimary))
                             ]))
-                        : Text(
-                            account.accountName ?? account.type.tr,
-                            style: context.textTheme.labelLarge
-                                ?.copyWith(color: context.colors.onPrimary),
-                          ),
+                        : account.type == null
+                            ? WidgetConstant.sizedBox
+                            : Text(
+                                account.accountName ?? account.type!.tr,
+                                style: context.textTheme.labelLarge
+                                    ?.copyWith(color: context.colors.onPrimary),
+                              ),
                     if (account.multiSigAccount)
                       Text(
                         "multi_signature".tr,

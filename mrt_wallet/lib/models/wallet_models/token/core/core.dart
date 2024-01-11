@@ -8,4 +8,10 @@ abstract class TokenCore<T> with CborSerializable {
   abstract final Live<BalanceCore> balance;
   void updateBalance([T? updateBalance]);
   abstract final DateTime updated;
+  String? get issuer;
+  String? get type;
+}
+
+abstract class SolidityToken implements TokenCore<BigInt> {
+  String toHex();
 }

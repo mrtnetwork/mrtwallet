@@ -1,9 +1,7 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
@@ -79,6 +77,10 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
         : null;
   }
 
+  bool isHardened(Bip44Levels level) {
+    return (levels[level]?.isHardened ?? false);
+  }
+
   void onSubmit() {
     if (!(form.currentState?.validate() ?? false)) return;
     final keyIndex = Bip32AddressIndex.fromBip44KeyIndexDetais(
@@ -128,76 +130,48 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
         children: [
           PageTitleSubtitle(
               title: "bip32_key_derivation".tr,
-              subtitle: "p_note".tr,
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("bip32_derivation_desc".tr),
-                  WidgetConstant.height8,
-                  Text("bip32_derivation_desc2".tr),
-                  WidgetConstant.height8,
-                  Text("bip32_derivation_desc3".tr),
-                  if (!isSupportNoneHardend) ...[
-                    WidgetConstant.height8,
-                    Text("ed25519_support_derivation_desc".tr)
-                  ]
+                  LargeTextView([
+                    "bip32_derivation_desc".tr,
+                    "bip32_derivation_desc2".tr,
+                    "bip32_derivation_desc3".tr,
+                    if (!isSupportNoneHardend)
+                      "ed25519_support_derivation_desc".tr
+                  ])
                 ],
               )),
           PageTitleSubtitle(
               title: "choose_index_each_level".tr,
               body: Text("bip32_level_desc".tr)),
-          PageTitleSubtitle(
-              title: "path".tr,
-              body: AnimatedSwitcher(
-                duration: AppGlobalConst.animationDuraion,
-                child: Container(
-                  key: ValueKey<String>(path),
-                  padding: WidgetConstant.padding10,
-                  decoration: BoxDecoration(
-                      color: context.colors.primaryContainer,
-                      borderRadius: WidgetConstant.border8),
-                  child: Text(
-                    path,
-                    style: context.textTheme.bodyLarge,
-                  ),
-                ),
-              )),
+          Text("path".tr, style: context.textTheme.titleMedium),
+          WidgetConstant.height8,
+          ContainerWithBorder(
+              child: Text(
+            path,
+            style: context.textTheme.bodyLarge,
+          )),
           WidgetConstant.height20,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "p_level".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  defaultValue:
-                      (widget.coin.proposal as BipProposal).purpose.index,
-                  helperText: helperText(Bip44Levels.purpose),
-                  key: stateKey(Bip44Levels.purpose),
-                  min: minIndex,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.purpose);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.purpose),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.purpose);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.purpose),
-                        )),
-                  ))
-            ],
+          NumberTextField(
+            label: "p_level".tr,
+            max: Bip32KeyDataConst.keyIndexMaxVal,
+            defaultValue: (widget.coin.proposal as BipProposal).purpose.index,
+            helperText: helperText(Bip44Levels.purpose),
+            suffixIcon: _HardenIconView(
+              isHarden: (level) => isHardened(level),
+              level: Bip44Levels.purpose,
+              onTap: (level) => onTapHardened(level),
+            ),
+            key: stateKey(Bip44Levels.purpose),
+            min: minIndex,
+            onChange: (v) {
+              onChangedValue(v, Bip44Levels.purpose);
+            },
+            validator: (v) => validate(v, Bip44Levels.purpose),
           ),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: NumberTextField(
@@ -207,6 +181,11 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
                   key: stateKey(Bip44Levels.coin),
                   defaultValue:
                       Bip32KeyIndex.hardenIndex(widget.coin.conf.coinIdx).index,
+                  suffixIcon: _HardenIconView(
+                    isHarden: (level) => isHardened(level),
+                    level: Bip44Levels.coin,
+                    onTap: (level) => onTapHardened(level),
+                  ),
                   min: minIndex,
                   onChange: (v) {
                     onChangedValue(v, Bip44Levels.coin);
@@ -214,114 +193,55 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
                   validator: (v) => validate(v, Bip44Levels.coin),
                 ),
               ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.coin);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.coin),
-                        )),
-                  ))
             ],
           ),
-          Row(
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "a_level".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  helperText: helperText(Bip44Levels.account),
-                  key: stateKey(Bip44Levels.account),
-                  min: minIndex,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.account);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.account),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.account);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.account),
-                        )),
-                  ))
-            ],
+          NumberTextField(
+            label: "a_level".tr,
+            max: Bip32KeyDataConst.keyIndexMaxVal,
+            helperText: helperText(Bip44Levels.account),
+            key: stateKey(Bip44Levels.account),
+            min: minIndex,
+            onChange: (v) {
+              onChangedValue(v, Bip44Levels.account);
+            },
+            validator: (v) => validate(v, Bip44Levels.account),
+            suffixIcon: _HardenIconView(
+              isHarden: (level) => isHardened(level),
+              level: Bip44Levels.account,
+              onTap: (level) => onTapHardened(level),
+            ),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "change_level".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  helperText: helperText(Bip44Levels.change),
-                  key: stateKey(Bip44Levels.change),
-                  min: minIndex,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.change);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.change),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.change);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.change),
-                        )),
-                  ))
-            ],
+          NumberTextField(
+            label: "change_level".tr,
+            max: Bip32KeyDataConst.keyIndexMaxVal,
+            helperText: helperText(Bip44Levels.change),
+            key: stateKey(Bip44Levels.change),
+            suffixIcon: _HardenIconView(
+              isHarden: (level) => isHardened(level),
+              level: Bip44Levels.change,
+              onTap: (level) => onTapHardened(level),
+            ),
+            min: minIndex,
+            onChange: (v) {
+              onChangedValue(v, Bip44Levels.change);
+            },
+            validator: (v) => validate(v, Bip44Levels.change),
           ),
-          Row(
-            children: [
-              Expanded(
-                child: NumberTextField(
-                  label: "address_index".tr,
-                  max: Bip32KeyDataConst.keyIndexMaxVal,
-                  helperText: helperText(Bip44Levels.addressIndex),
-                  key: stateKey(Bip44Levels.addressIndex),
-                  min: minIndex,
-                  onChange: (v) {
-                    onChangedValue(v, Bip44Levels.addressIndex);
-                  },
-                  validator: (v) => validate(v, Bip44Levels.addressIndex),
-                ),
-              ),
-              WidgetConstant.width8,
-              InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () {
-                    onTapHardened(Bip44Levels.addressIndex);
-                  },
-                  child: IgnorePointer(
-                    child: IconButton(
-                        onPressed: null,
-                        icon: Icon(
-                          Icons.h_mobiledata,
-                          color: hardenedColor(Bip44Levels.addressIndex),
-                        )),
-                  ))
-            ],
+          NumberTextField(
+            label: "address_index".tr,
+            max: Bip32KeyDataConst.keyIndexMaxVal,
+            helperText: helperText(Bip44Levels.addressIndex),
+            key: stateKey(Bip44Levels.addressIndex),
+            suffixIcon: _HardenIconView(
+              isHarden: (level) => isHardened(level),
+              level: Bip44Levels.addressIndex,
+              onTap: (level) => onTapHardened(level),
+            ),
+            min: minIndex,
+            onChange: (v) {
+              onChangedValue(v, Bip44Levels.addressIndex);
+            },
+            validator: (v) => validate(v, Bip44Levels.addressIndex),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -334,6 +254,36 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
             ],
           )
         ],
+      ),
+    );
+  }
+}
+
+typedef _IsHarden = bool Function(Bip44Levels);
+typedef _OnTapLevel = void Function(Bip44Levels);
+
+class _HardenIconView extends StatelessWidget {
+  const _HardenIconView(
+      {required this.level, required this.isHarden, required this.onTap});
+  final Bip44Levels level;
+  final _IsHarden isHarden;
+  final _OnTapLevel onTap;
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: WidgetConstant.border8,
+      onTap: () => onTap(level),
+      child: IgnorePointer(
+        ignoring: true,
+        child: Padding(
+          padding: WidgetConstant.padding5,
+          child: Column(
+            children: [
+              Text("harden".tr, style: context.textTheme.bodySmall),
+              Checkbox(value: isHarden(level), onChanged: (v) {})
+            ],
+          ),
+        ),
       ),
     );
   }

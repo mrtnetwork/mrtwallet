@@ -4,7 +4,7 @@ class ConstraintsBoxView extends StatelessWidget {
   final Widget child;
   const ConstraintsBoxView(
       {required this.child,
-      this.maxWidth = 500,
+      this.maxWidth = 650,
       this.maxHeight = double.infinity,
       this.alignment = Alignment.topCenter,
       super.key,

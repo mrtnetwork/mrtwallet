@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/keys/wallet_backup.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 enum SetupWalletPage {
@@ -119,7 +118,7 @@ class SetupWalletController extends StateController {
     return (generate, _password);
   }
 
-  Future<String> setupBackup(WalletBackup backup,
+  Future<String> setupBackup(WalletBackupCore backup,
       {Mnemonic? exitingMnemonic}) async {
     if (!AppStringUtility.isStrongPassword(_password)) {
       throw WalletExceptionConst.incorrectPassword;

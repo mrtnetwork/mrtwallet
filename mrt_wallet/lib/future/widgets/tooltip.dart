@@ -15,7 +15,8 @@ class ToolTipView extends StatelessWidget {
       this.margin = const EdgeInsets.all(15),
       this.padding = const EdgeInsets.all(10),
       this.selectableTooltip = false,
-      this.backgroundColor});
+      this.backgroundColor,
+      this.waitDuration = const Duration(seconds: 2)});
   final String? message;
   final Widget child;
   final GlobalKey? toolTipKey;
@@ -28,6 +29,7 @@ class ToolTipView extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final bool selectableTooltip;
   final Decoration? boxDecoration;
+  final Duration? waitDuration;
   final Color? backgroundColor;
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,8 @@ class ToolTipView extends StatelessWidget {
     final theme = Theme.of(context);
     return Tooltip(
       key: toolTipKey,
-      waitDuration: const Duration(seconds: 2),
+      waitDuration: waitDuration,
+      enableFeedback: true,
       richMessage: WidgetSpan(
           child: tooltipWidget ??
               Container(

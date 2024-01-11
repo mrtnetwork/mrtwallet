@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/page_path.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/nfts/networks/ripple/ripple_nft_token.dart';
-import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
+import 'package:mrt_wallet/provider/transaction_validator/transaction_validator.dart';
 
 class RippleNFTokenView extends StatelessWidget {
   const RippleNFTokenView({super.key, required this.nft});

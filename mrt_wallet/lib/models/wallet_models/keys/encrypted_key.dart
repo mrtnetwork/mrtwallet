@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
 
 import 'setting.dart';
 
@@ -33,12 +34,21 @@ class EncryptedCustomKey with Equatable {
   final String id;
   final EllipticCurveTypes type;
   final DateTime created;
+  final String? name;
   const EncryptedCustomKey(
       {required this.publicKey,
       required this.type,
       required this.id,
-      required this.created});
+      required this.created,
+      required this.name});
 
   @override
   List get variabels => [publicKey, id, type];
+
+  String networkPubKey(AppNetworkImpl network) {
+    if (network is AppXRPNetwork) {
+      return RippleUtils.toRipplePublicKey(publicKey);
+    }
+    return publicKey;
+  }
 }

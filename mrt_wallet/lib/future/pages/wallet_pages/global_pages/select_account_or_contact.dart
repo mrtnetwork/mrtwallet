@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
-
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class SelectAccountOrContactView extends StatefulWidget {
@@ -44,7 +41,7 @@ class _SelectAccountOrContactViewState extends State<SelectAccountOrContactView>
         title: Text("select_account".tr),
         bottom: TabBar(
             controller: controller,
-            tabs: [Tab(text: "your_accounts".tr), Tab(text: "contacts".tr)]),
+            tabs: [Tab(text: "accounts".tr), Tab(text: "contacts".tr)]),
       ),
       body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [],
@@ -67,14 +64,14 @@ class _SelectFromAccounts extends StatelessWidget {
   final ScrollController controller;
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: WidgetConstant.padding20,
-      child: ListView.builder(
-          itemCount: addresses.length,
-          controller: controller,
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            return ContainerWithBorder(
+    return ListView.builder(
+        itemCount: addresses.length,
+        controller: controller,
+        shrinkWrap: true,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: WidgetConstant.paddingHorizontal10,
+            child: ContainerWithBorder(
               onRemove: () {
                 if (context.mounted) {
                   context.pop(addresses[index].address.toAddress);
@@ -92,9 +89,9 @@ class _SelectFromAccounts extends StatelessWidget {
                   CopyTextIcon(dataToCopy: addresses[index].address.toAddress),
                 ],
               ),
-            );
-          }),
-    );
+            ),
+          );
+        });
   }
 }
 
@@ -115,35 +112,32 @@ class _SelectFromContacts extends StatelessWidget {
         ],
       );
     }
-    return Padding(
-      padding: WidgetConstant.padding20,
-      child: ListView.builder(
-          itemCount: contacts.length,
-          shrinkWrap: true,
-          controller: controller,
-          primary: false,
-          itemBuilder: (context, index) {
-            return ContainerWithBorder(
-              onRemoveWidget: const SizedBox(),
-              onRemove: () {
-                if (context.mounted) {
-                  context.pop(contacts[index].address);
-                }
-              },
-              child: Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                        child: ContactAddressView(
-                      contact: contacts[index],
-                    )),
-                  ),
-                  WidgetConstant.width8,
-                  CopyTextIcon(dataToCopy: contacts[index].address),
-                ],
-              ),
-            );
-          }),
-    );
+    return ListView.builder(
+        itemCount: contacts.length,
+        shrinkWrap: true,
+        controller: controller,
+        primary: false,
+        itemBuilder: (context, index) {
+          return ContainerWithBorder(
+            onRemoveWidget: const SizedBox(),
+            onRemove: () {
+              if (context.mounted) {
+                context.pop(contacts[index].address);
+              }
+            },
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                      child: ContactAddressView(
+                    contact: contacts[index],
+                  )),
+                ),
+                WidgetConstant.width8,
+                CopyTextIcon(dataToCopy: contacts[index].address),
+              ],
+            ),
+          );
+        });
   }
 }

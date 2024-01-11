@@ -37,11 +37,16 @@ mixin ListenableX {
 abstract class Disposable extends BaseController with ListenableX {
   bool _inited = false;
   bool _deleted = false;
+  bool get deleted => _deleted;
   void close() {}
   void _close() {
-    if (_deleted) return;
-    _deleted = true;
-    close();
+    try {
+      if (_deleted) return;
+      _deleted = true;
+      close();
+    } catch (e, s) {
+      WalletLogging.print("Error Disposable: $e $s", prefix: runtimeType);
+    }
   }
 
   void _start() {

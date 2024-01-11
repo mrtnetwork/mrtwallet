@@ -32,7 +32,8 @@ class AppTextField extends StatefulWidget {
       this.initialValue,
       this.style,
       this.textAlign = TextAlign.start,
-      this.readOnly = false});
+      this.readOnly = false,
+      this.helperStyle});
   final String? label;
   final String? hint;
   final String? error;
@@ -59,6 +60,7 @@ class AppTextField extends StatefulWidget {
   final TextStyle? style;
   final TextAlign textAlign;
   final bool readOnly;
+  final TextStyle? helperStyle;
   @override
   State<AppTextField> createState() => AppTextFieldState();
 }
@@ -67,7 +69,7 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
   late TextDirection? direction = widget.textDirection;
   final TextEditingController controller = TextEditingController();
   late bool obscureText = widget.obscureText;
-  listener() {
+  void listener() {
     widget.onChanged?.call(controller.text);
   }
 
@@ -158,8 +160,14 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
             suffix: widget.suffix,
             prefix: widget.prefix,
             prefixIcon: widget.prefixIcon,
+            helperStyle: widget.helperStyle,
+            helperMaxLines: 2,
+            errorMaxLines: 2,
             helperText: widget.helperText,
             labelText: widget.label,
+            border: OutlineInputBorder(
+                borderRadius: WidgetConstant.border8,
+                borderSide: BorderSide.none),
             suffixIcon: widget.suffixIcon ??
                 (widget.obscureText
                     ? ObscureIcon(

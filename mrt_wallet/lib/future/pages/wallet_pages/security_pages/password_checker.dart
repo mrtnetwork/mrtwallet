@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -124,84 +123,90 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
         child: credentials != null
             ? widget.onAccsess(credentials!, _password)
             : UnfocusableChild(
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: ConstraintsBoxView(
-                        padding: WidgetConstant.padding20,
-                        child: AnimatedSwitcher(
-                          duration: AppGlobalConst.animationDuraion,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              widget.subtitle,
-                              Form(
-                                key: form,
-                                child: AnimatedSwitcher(
-                                  duration: AppGlobalConst.animationDuraion,
-                                  child: MeasureSize(
-                                    onChange: onChangeHeight,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(height: _heightSpace),
-                                        const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.security,
-                                              size: AppGlobalConst.double80,
-                                              color: CustomColors.green,
-                                            ),
-                                          ],
-                                        ),
-                                        WidgetConstant.height8,
-                                        AppTextField(
-                                          label: "wallet_password".tr,
-                                          obscureText: true,
-                                          key: textFildState,
-                                          validator: psaswordValidator,
-                                          initialValue: _password,
-                                          onChanged: onChange,
-                                          error: error,
-                                          helperText:
-                                              "enter_wallet_password_to_continue"
-                                                  .tr,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            StreamWidget(
-                                              key: progressKey,
-                                              initialStatus: widget.password !=
-                                                      null
-                                                  ? StreamWidgetStatus.progress
-                                                  : StreamWidgetStatus.idle,
-                                              buttomWidget: FixedElevatedButton(
-                                                onPressed: onSubmit,
-                                                child: Text("unlock".tr),
+                child: Center(
+                  child: CustomScrollView(
+                    shrinkWrap: true,
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: ConstraintsBoxView(
+                          padding: WidgetConstant.padding20,
+                          child: AnimatedSwitcher(
+                            duration: AppGlobalConst.animationDuraion,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                widget.subtitle,
+                                Form(
+                                  key: form,
+                                  child: AnimatedSwitcher(
+                                    duration: AppGlobalConst.animationDuraion,
+                                    child: MeasureSize(
+                                      onChange: onChangeHeight,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(height: _heightSpace),
+                                          const Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.security,
+                                                size: AppGlobalConst.double80,
+                                                color: CustomColors.green,
                                               ),
-                                              backToIdle: AppGlobalConst
-                                                  .milliseconds100,
-                                              padding: WidgetConstant
-                                                  .paddingVertical20,
-                                            )
-                                          ],
-                                        )
-                                      ],
+                                            ],
+                                          ),
+                                          WidgetConstant.height8,
+                                          AppTextField(
+                                            label: "wallet_password".tr,
+                                            obscureText: true,
+                                            key: textFildState,
+                                            validator: psaswordValidator,
+                                            initialValue: _password,
+                                            onChanged: onChange,
+                                            error: error,
+                                            helperText:
+                                                "enter_wallet_password_to_continue"
+                                                    .tr,
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              StreamWidget(
+                                                key: progressKey,
+                                                initialStatus:
+                                                    widget.password != null
+                                                        ? StreamWidgetStatus
+                                                            .progress
+                                                        : StreamWidgetStatus
+                                                            .idle,
+                                                buttomWidget:
+                                                    FixedElevatedButton(
+                                                  onPressed: onSubmit,
+                                                  child: Text("unlock".tr),
+                                                ),
+                                                backToIdle: AppGlobalConst
+                                                    .milliseconds100,
+                                                padding: WidgetConstant
+                                                    .paddingVertical20,
+                                              )
+                                            ],
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
                 ),
               ),
       ),

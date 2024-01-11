@@ -1,9 +1,7 @@
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/blockchin_utils/ripple_utils.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -59,21 +57,27 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   final GlobalKey<FormState> form =
       GlobalKey(debugLabel: "_ImportAccountState_2");
   late Map<_PrivateKeyTypes, Widget> keyTypes = _buildKeyTypes();
+  String? keyName;
+  void setKeyName(String? name) {
+    setState(() {
+      keyName = name;
+    });
+  }
+
   bool get inRipple => widget.network is AppXRPNetwork;
   XRPKeyAlgorithm rippleKeyAlgorith = XRPKeyAlgorithm.secp256k1;
 
-  bool showRippleKeyAlgorithm = false;
+  late bool showRippleKeyAlgorithm = _showRippleKeyAlgorithm();
 
   bool _showRippleKeyAlgorithm() {
-    if (inRipple && selected == _PrivateKeyTypes.rippleEntropy ||
-        selected == _PrivateKeyTypes.privateKey ||
-        selected == _PrivateKeyTypes.backup) {
+    if (inRipple &&
+        (selected == _PrivateKeyTypes.rippleEntropy ||
+            selected == _PrivateKeyTypes.privateKey ||
+            selected == _PrivateKeyTypes.backup)) {
       return true;
     }
     return false;
   }
-
-  // bool showAlgorithm =>;
 
   Map<_PrivateKeyTypes, Widget> _buildKeyTypes() {
     Map<_PrivateKeyTypes, Widget> types = {};
@@ -132,8 +136,8 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       case _PrivateKeyTypes.wif:
         return BlockchainUtils.wifToBip32(_key, coin);
       case _PrivateKeyTypes.backup:
-        final backupResult =
-            await model.restoreBackup(_password, _backup, encoding);
+        final backupResult = BytesUtils.toHexString(
+            await model.restoreBackup(_password, _backup, encoding));
         if (inRipple) {
           final alg = RippleUtils.findXRPPrivateKeyAlgorithm(backupResult);
           if (alg != null && rippleKeyAlgorith != alg) {
@@ -168,7 +172,8 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
           checksum: _account!.publicKey.fingerPrint.toHex(),
           extendedPrivateKey: _account!.privateKey.toExtended,
           type: _account!.curveType,
-          publicKey: _account!.publicKey.toHex());
+          publicKey: _account!.publicKey.toHex(),
+          name: keyName);
       return customKey;
     });
     if (createKey.hasError) {
@@ -255,6 +260,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       backToIdle: AppGlobalConst.oneSecoundDuration,
       child: () => UnfocusableChild(
         child: ConstraintsBoxView(
+          alignment: Alignment.center,
           padding: WidgetConstant.paddingHorizontal20,
           child: Form(
             key: form,
@@ -289,13 +295,15 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                     AppDropDownBottom(
                         items: {
                           for (final i in XRPKeyAlgorithm.values)
-                            i: Text(i.curveType.name)
+                            i: Text(i.curveType.name.camelCase)
                         },
                         value: rippleKeyAlgorith,
                         label: "ripple_key_type".tr,
                         onChanged: onSelectRippleKeyAlgorithm),
                     WidgetConstant.height20,
                   ],
+                  Text(selected.value, style: context.textTheme.titleMedium),
+                  WidgetConstant.height8,
                   if (isBackup) ...[
                     DropdownButtonFormField<SecretWalletEncoding>(
                       value: encoding,
@@ -344,6 +352,34 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                       error: _error,
                       helperText: "import_account_desc2".tr,
                     ),
+                  WidgetConstant.height20,
+                  Text("key_name".tr, style: context.textTheme.titleMedium),
+                  Text("import_private_key_key_name_desc".tr),
+                  WidgetConstant.height8,
+                  ContainerWithBorder(
+                    onRemove: () {
+                      context
+                          .openSliverBottomSheet<String>(
+                            "import_account".tr,
+                            child: StringWriterView(
+                              defaultValue: keyName,
+                              regExp: AppGlobalConst.keyNameRegex,
+                              title: PageTitleSubtitle(
+                                  title: "key_name".tr,
+                                  body: Text(
+                                      "import_private_key_key_name_desc".tr)),
+                              buttomText: "setup_input".tr,
+                              label: "key_name".tr,
+                            ),
+                          )
+                          .then(setKeyName);
+                    },
+                    onRemoveIcon: keyName == null
+                        ? const Icon(Icons.edit)
+                        : const Icon(Icons.add),
+                    child: Text(keyName?.orEmpty ?? "tap_to_input_value".tr,
+                        maxLines: 3),
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

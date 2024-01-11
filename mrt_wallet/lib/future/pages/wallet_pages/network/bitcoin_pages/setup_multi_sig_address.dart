@@ -1,9 +1,7 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/file/file.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -108,7 +106,7 @@ class _SetupBitcoinMultiSigAddressViewState
   bool isValid() => _thresHold != null && _thresHold! >= 2 && _thresHold! <= 16;
   bool inReview = false;
   final Map<BitcoinAddressType, String> supportedMultisigTypes = {};
-  late final NetworkAccountCore account;
+  late final AppChain chainAccount;
   BitcoinAddressType multiSigAddressTye = BitcoinAddressType.p2pkhInP2sh;
   BitcoinMultiSignatureAddress? _multiSigAddress;
   MultiSignatureAddress get multiSigAddress => _multiSigAddress!;
@@ -192,7 +190,8 @@ class _SetupBitcoinMultiSigAddressViewState
   final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
       debugLabel: "SetupBitcoinMultiSigAddressView");
 
-  void onSetupAddress() async {
+  void onSetupAddress(bool? accept) async {
+    if (accept != true) return;
     progressKey.progressText("setup_address".tr);
 
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
@@ -249,7 +248,7 @@ class _SetupBitcoinMultiSigAddressViewState
     _init = true;
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     network = wallet.network as AppBitcoinNetwork;
-    account = wallet.networkAccount;
+    chainAccount = wallet.chain;
     supportedMultisigTypes[BitcoinAddressType.p2pkhInP2sh] = "P2SH";
     if (network.coinParam.transacationNetwork.supportedAddress
         .contains(BitcoinAddressType.p2wpkh)) {
@@ -281,412 +280,428 @@ class _SetupBitcoinMultiSigAddressViewState
             child: PageProgress(
               key: progressKey,
               backToIdle: AppGlobalConst.oneSecoundDuration,
-              child: () => CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: ConstraintsBoxView(
-                      padding: WidgetConstant.padding20,
-                      child: AnimatedSwitcher(
-                        duration: AppGlobalConst.animationDuraion,
-                        child: inReview
-                            ? Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                key: const ValueKey<bool>(true),
-                                children: [
-                                  PageTitleSubtitle(
-                                      title: "review_address".tr,
-                                      body: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text("review_address_desc".tr),
-                                        ],
-                                      )),
-                                  Text("type_of_address".tr,
-                                      style: context.textTheme.titleMedium),
-                                  WidgetConstant.height8,
-                                  Column(
-                                    children: List.generate(
-                                        supportedMultisigTypes.length, (index) {
-                                      final supportTypes =
-                                          supportedMultisigTypes.keys.toList();
-                                      return RadioListTile(
-                                          title:
-                                              Text(supportTypes[index].value),
-                                          value: supportTypes[index],
-                                          groupValue: multiSigAddressTye,
-                                          onChanged: onChangeAddressType);
-                                    }),
-                                  ),
-                                  AnimatedSwitcher(
-                                    duration: AppGlobalConst.animationDuraion,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      key: ValueKey(multiSigAddressTye),
-                                      children: [
-                                        WidgetConstant.height20,
-                                        Text("address".tr,
-                                            style:
-                                                context.textTheme.titleMedium),
-                                        WidgetConstant.height8,
-                                        ContainerWithBorder(
-                                            child: CopyTextIcon(
-                                          widget: SelectableText(
-                                              _multiSigViewAddress!),
-                                          dataToCopy: _multiSigViewAddress!,
-                                        )),
-                                        WidgetConstant.height20,
-                                        Text(
-                                            "public_keys_and_weight_of_each".tr,
-                                            style:
-                                                context.textTheme.titleMedium),
-                                        WidgetConstant.height8,
-                                        Column(
-                                          children: List.generate(
-                                              signers.length, (index) {
-                                            return ContainerWithBorder(
-                                                child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text("publick_key".tr,
-                                                    style: context
-                                                        .textTheme.labelLarge),
-                                                OneLineTextWidget(
-                                                    signers[index].publicKey),
-                                                WidgetConstant.height8,
-                                                Text("weight".tr,
-                                                    style: context
-                                                        .textTheme.labelLarge),
-                                                Text(signers[index]
-                                                    .weight
-                                                    .toString()),
-                                              ],
-                                            ));
-                                          }),
-                                        ),
-                                        WidgetConstant.height20,
-                                        Text("threshold".tr,
-                                            style:
-                                                context.textTheme.titleMedium),
-                                        WidgetConstant.height8,
-                                        ContainerWithBorder(
-                                            child: Column(
+              child: () => Center(
+                child: CustomScrollView(
+                  shrinkWrap: true,
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: ConstraintsBoxView(
+                        padding: WidgetConstant.padding20,
+                        child: AnimatedSwitcher(
+                          duration: AppGlobalConst.animationDuraion,
+                          child: inReview
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  key: const ValueKey<bool>(true),
+                                  children: [
+                                    PageTitleSubtitle(
+                                        title: "review_address".tr,
+                                        body: Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(_thresHold!.toString()),
+                                            Text("review_address_desc".tr),
                                           ],
                                         )),
-                                        WidgetConstant.height20,
-                                        Text("multi_sig_script".tr,
-                                            style:
-                                                context.textTheme.titleMedium),
-                                        WidgetConstant.height8,
-                                        ContainerWithBorder(
-                                            child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(multiSigAddress
-                                                .multiSigScript.script
-                                                .join(" ")),
-                                          ],
-                                        )),
-                                        WidgetConstant.height20,
-                                        Text("address_script".tr,
-                                            style:
-                                                context.textTheme.titleMedium),
-                                        WidgetConstant.height8,
-                                        ContainerWithBorder(
-                                            child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(bitcoinAddress
-                                                .toScriptPubKey()
-                                                .script
-                                                .join(" ")),
-                                          ],
-                                        )),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            FixedElevatedButton(
-                                              padding: WidgetConstant
-                                                  .paddingVertical20,
-                                              onPressed: onSetupAddress,
-                                              child: Text("setup_address".tr),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.end,
-                                          children: [
-                                            FilledButton.icon(
-                                              icon: const Icon(Icons.backup),
-                                              label: Text("backup_as_text".tr),
-                                              onPressed: () {
-                                                context.openSliverDialog(
-                                                    (ctx) => Column(
-                                                          children: [
-                                                            PageTitleSubtitle(
-                                                                title:
-                                                                    "address_details2"
-                                                                        .tr,
-                                                                body: Text(
-                                                                    "address_backup_desc1"
-                                                                        .tr)),
-                                                            WidgetConstant
-                                                                .height8,
-                                                            ContainerWithBorder(
-                                                                child:
-                                                                    ConstraintsBoxView(
-                                                              maxHeight: 200,
-                                                              child:
-                                                                  SingleChildScrollView(
-                                                                scrollDirection:
-                                                                    Axis.vertical,
-                                                                child:
-                                                                    SelectableText(
-                                                                        toText),
-                                                              ),
-                                                            )),
-                                                            WidgetConstant
-                                                                .height20,
-                                                            Row(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .spaceEvenly,
-                                                              children: [
-                                                                StreamWidget(
-                                                                  buttomWidget: FilledButton.icon(
-                                                                      onPressed:
-                                                                          share,
-                                                                      icon: const Icon(
-                                                                          Icons
-                                                                              .share),
-                                                                      label: Text(
-                                                                          "share_as_file"
-                                                                              .tr)),
-                                                                  backToIdle:
-                                                                      AppGlobalConst
-                                                                          .oneSecoundDuration,
-                                                                  key:
-                                                                      buttomState,
-                                                                ),
-                                                                WidgetConstant
-                                                                    .width8,
-                                                                CopyTextIcon(
-                                                                    dataToCopy:
-                                                                        toText,
-                                                                    size: AppGlobalConst
-                                                                        .double40),
-                                                              ],
-                                                            ),
-                                                            ErrorTextContainer(
-                                                                error:
-                                                                    _shareError,
-                                                                margin: WidgetConstant
-                                                                    .paddingVertical10)
-                                                          ],
-                                                        ),
-                                                    "address_details".tr);
-                                              },
-                                            )
-                                          ],
-                                        )
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  PageTitleSubtitle(
-                                      title: "establishing_multi_sig_addr".tr,
-                                      body: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text("multi_sig_desc".tr),
-                                          WidgetConstant.height8,
-                                          Text("mutli_sig_desc2".tr),
-                                          WidgetConstant.height8,
-                                          Text("multi_sig_desc3".tr),
-                                          WidgetConstant.height8,
-                                          Text("multi_sig_desc4".tr),
-                                          WidgetConstant.height8,
-                                        ],
-                                      )),
-                                  Text("list_of_public_keys".tr,
-                                      style: context.textTheme.titleMedium),
-                                  Text("multi_sig_desc5".tr),
-                                  WidgetConstant.height8,
-                                  ContainerWithBorder(
-                                      validate: _signers.isNotEmpty,
-                                      onRemoveIcon: const Icon(Icons.add),
-                                      onRemove: () {
-                                        context
-                                            .openSliverBottomSheet<
-                                                IBitcoinAddress>(
-                                              "select_account".tr,
-                                              minExtent: 0.5,
-                                              child: SwitchOrSelectAccountView(
-                                                  account: account),
-                                              maxExtend: 0.9,
-                                              initialExtend: 0.7,
-                                            )
-                                            .then(onAddSigner);
-                                      },
-                                      child: Text("tap_to_select".tr)),
-                                  AnimatedSize(
-                                    duration: AppGlobalConst.animationDuraion,
-                                    child: Column(
-                                      key: ValueKey<int>(signers.length),
-                                      children: List.generate(signers.length,
+                                    Text("type_of_address".tr,
+                                        style: context.textTheme.titleMedium),
+                                    WidgetConstant.height8,
+                                    Column(
+                                      children: List.generate(
+                                          supportedMultisigTypes.length,
                                           (index) {
-                                        return ContainerWithBorder(
-                                            onRemove: () {
-                                              onRemoveAcc(signers[index]);
-                                            },
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(signers[index].path,
-                                                    style: context
-                                                        .textTheme.labelLarge),
-                                                OneLineTextWidget(
-                                                    signers[index].publicKey)
-                                              ],
-                                            ));
+                                        final supportTypes =
+                                            supportedMultisigTypes.keys
+                                                .toList();
+                                        return RadioListTile(
+                                            title:
+                                                Text(supportTypes[index].value),
+                                            value: supportTypes[index],
+                                            groupValue: multiSigAddressTye,
+                                            onChanged: onChangeAddressType);
                                       }),
                                     ),
-                                  ),
-                                  WidgetConstant.height20,
-                                  Text("threshold_configuration".tr,
-                                      style: context.textTheme.titleMedium),
-                                  Text("threshhold_desc".tr),
-                                  WidgetConstant.height8,
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Flexible(
-                                        child: NumberTextField(
-                                          label: "threshold".tr,
-                                          disableWriting: true,
-                                          onChange: onChangeThreshHold,
-                                          max: 16,
-                                          min: 2,
-                                          defaultValue: 2,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  AnimatedSize(
-                                    duration: AppGlobalConst.animationDuraion,
-                                    child: isValidThreshHold
-                                        ? Column(
+                                    AnimatedSwitcher(
+                                      duration: AppGlobalConst.animationDuraion,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        key: ValueKey(multiSigAddressTye),
+                                        children: [
+                                          WidgetConstant.height20,
+                                          Text("address".tr,
+                                              style: context
+                                                  .textTheme.titleMedium),
+                                          WidgetConstant.height8,
+                                          ContainerWithBorder(
+                                              child: CopyTextIcon(
+                                            widget: SelectableText(
+                                                _multiSigViewAddress!),
+                                            dataToCopy: _multiSigViewAddress!,
+                                          )),
+                                          WidgetConstant.height20,
+                                          Text(
+                                              "public_keys_and_weight_of_each"
+                                                  .tr,
+                                              style: context
+                                                  .textTheme.titleMedium),
+                                          WidgetConstant.height8,
+                                          Column(
+                                            children: List.generate(
+                                                signers.length, (index) {
+                                              return ContainerWithBorder(
+                                                  child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text("publick_key".tr,
+                                                      style: context.textTheme
+                                                          .labelLarge),
+                                                  OneLineTextWidget(
+                                                      signers[index].publicKey),
+                                                  WidgetConstant.height8,
+                                                  Text("weight".tr,
+                                                      style: context.textTheme
+                                                          .labelLarge),
+                                                  Text(signers[index]
+                                                      .weight
+                                                      .toString()),
+                                                ],
+                                              ));
+                                            }),
+                                          ),
+                                          WidgetConstant.height20,
+                                          Text("threshold".tr,
+                                              style: context
+                                                  .textTheme.titleMedium),
+                                          WidgetConstant.height8,
+                                          ContainerWithBorder(
+                                              child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              WidgetConstant.height20,
-                                              Text(
-                                                  "signers_weight_configuration"
-                                                      .tr,
-                                                  style: context
-                                                      .textTheme.titleMedium),
-                                              Text("signer_wight_desc1".tr),
-                                              WidgetConstant.height8,
-                                              Column(
-                                                children: List.generate(
-                                                    signers.length,
-                                                    (index) =>
-                                                        ContainerWithBorder(
-                                                            validate: signers[
-                                                                            index]
-                                                                        .weight >=
-                                                                    1 &&
-                                                                signers[index]
-                                                                        .weight <=
-                                                                    _thresHold!,
-                                                            validateText:
-                                                                "threshhold_desc2"
-                                                                    .tr,
-                                                            child: Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Text(
-                                                                    signers[index]
-                                                                        .path,
-                                                                    style: context
-                                                                        .textTheme
-                                                                        .labelLarge),
-                                                                OneLineTextWidget(
-                                                                    signers[index]
-                                                                        .publicKey),
-                                                                WidgetConstant
-                                                                    .height8,
-                                                                NumberTextField(
-                                                                    label:
-                                                                        "weight"
-                                                                            .tr,
-                                                                    disableWriting:
-                                                                        true,
-                                                                    onChange:
-                                                                        (p0) {
-                                                                      onChangeSignerWeight(
-                                                                          signers[
-                                                                              index],
-                                                                          p0);
-                                                                    },
-                                                                    max:
-                                                                        _thresHold ??
-                                                                            0,
-                                                                    min: 1)
-                                                              ],
-                                                            ))),
+                                              Text(_thresHold!.toString()),
+                                            ],
+                                          )),
+                                          WidgetConstant.height20,
+                                          Text("multi_sig_script".tr,
+                                              style: context
+                                                  .textTheme.titleMedium),
+                                          WidgetConstant.height8,
+                                          ContainerWithBorder(
+                                              child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(multiSigAddress
+                                                  .multiSigScript.script
+                                                  .join(" ")),
+                                            ],
+                                          )),
+                                          WidgetConstant.height20,
+                                          Text("address_script".tr,
+                                              style: context
+                                                  .textTheme.titleMedium),
+                                          WidgetConstant.height8,
+                                          ContainerWithBorder(
+                                              child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(bitcoinAddress
+                                                  .toScriptPubKey()
+                                                  .script
+                                                  .join(" ")),
+                                            ],
+                                          )),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              FixedElevatedButton(
+                                                padding: WidgetConstant
+                                                    .paddingVertical20,
+                                                onPressed: () {
+                                                  context
+                                                      .openSliverDialog<bool>(
+                                                          (p0) =>
+                                                              DialogTextView(
+                                                                text:
+                                                                    "backup_multi_sig_address_desc"
+                                                                        .tr,
+                                                                buttomWidget:
+                                                                    const DialogDoubleButtonView(),
+                                                              ),
+                                                          "backup".tr)
+                                                      .then(onSetupAddress);
+                                                },
+                                                child: Text("setup_address".tr),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                            children: [
+                                              FilledButton.icon(
+                                                icon: const Icon(Icons.backup),
+                                                label:
+                                                    Text("backup_as_text".tr),
+                                                onPressed: () {
+                                                  context.openSliverDialog(
+                                                      (ctx) => Column(
+                                                            children: [
+                                                              PageTitleSubtitle(
+                                                                  title:
+                                                                      "address_details2"
+                                                                          .tr,
+                                                                  body: Text(
+                                                                      "address_backup_desc1"
+                                                                          .tr)),
+                                                              WidgetConstant
+                                                                  .height8,
+                                                              ContainerWithBorder(
+                                                                  child:
+                                                                      ConstraintsBoxView(
+                                                                maxHeight: 200,
+                                                                child:
+                                                                    SingleChildScrollView(
+                                                                  scrollDirection:
+                                                                      Axis.vertical,
+                                                                  child:
+                                                                      SelectableText(
+                                                                          toText),
+                                                                ),
+                                                              )),
+                                                              WidgetConstant
+                                                                  .height20,
+                                                              Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .spaceEvenly,
+                                                                children: [
+                                                                  StreamWidget(
+                                                                    buttomWidget: FilledButton.icon(
+                                                                        onPressed:
+                                                                            share,
+                                                                        icon: const Icon(Icons
+                                                                            .share),
+                                                                        label: Text(
+                                                                            "share_as_file".tr)),
+                                                                    backToIdle:
+                                                                        AppGlobalConst
+                                                                            .oneSecoundDuration,
+                                                                    key:
+                                                                        buttomState,
+                                                                  ),
+                                                                  WidgetConstant
+                                                                      .width8,
+                                                                  CopyTextIcon(
+                                                                      dataToCopy:
+                                                                          toText,
+                                                                      size: AppGlobalConst
+                                                                          .double40),
+                                                                ],
+                                                              ),
+                                                              ErrorTextContainer(
+                                                                  error:
+                                                                      _shareError,
+                                                                  margin: WidgetConstant
+                                                                      .paddingVertical10)
+                                                            ],
+                                                          ),
+                                                      "address_details".tr);
+                                                },
                                               )
                                             ],
                                           )
-                                        : const SizedBox(),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Flexible(
-                                        child: AnimatedSize(
-                                          duration:
-                                              AppGlobalConst.animationDuraion,
-                                          child: isReady
-                                              ? FixedElevatedButton(
-                                                  padding: WidgetConstant
-                                                      .paddingVertical20,
-                                                  onPressed:
-                                                      isReady ? onReview : null,
-                                                  key: visibleReview,
-                                                  child:
-                                                      Text("review_address".tr),
-                                                )
-                                              : ErrorTextContainer(
-                                                  error: _errorText),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    PageTitleSubtitle(
+                                        title: "establishing_multi_sig_addr".tr,
+                                        body: LargeTextView([
+                                          "multi_sig_desc".tr,
+                                          "mutli_sig_desc2".tr,
+                                          "multi_sig_desc3".tr,
+                                          "multi_sig_desc4".tr
+                                        ])),
+                                    Text("list_of_public_keys".tr,
+                                        style: context.textTheme.titleMedium),
+                                    Text("multi_sig_desc5".tr),
+                                    WidgetConstant.height8,
+                                    ContainerWithBorder(
+                                        validate: _signers.isNotEmpty,
+                                        onRemoveIcon: const Icon(Icons.add),
+                                        onRemove: () {
+                                          context
+                                              .openSliverBottomSheet<
+                                                  IBitcoinAddress>(
+                                                "select_account".tr,
+                                                minExtent: 0.5,
+                                                child:
+                                                    SwitchOrSelectAccountView(
+                                                        account: chainAccount
+                                                            .account),
+                                                maxExtend: 0.9,
+                                                initialExtend: 0.7,
+                                                centerContent: false,
+                                              )
+                                              .then(onAddSigner);
+                                        },
+                                        child: Text("tap_to_select".tr)),
+                                    AnimatedSize(
+                                      duration: AppGlobalConst.animationDuraion,
+                                      child: Column(
+                                        key: ValueKey<int>(signers.length),
+                                        children: List.generate(signers.length,
+                                            (index) {
+                                          return ContainerWithBorder(
+                                              onRemove: () {
+                                                onRemoveAcc(signers[index]);
+                                              },
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(signers[index].path,
+                                                      style: context.textTheme
+                                                          .labelLarge),
+                                                  OneLineTextWidget(
+                                                      signers[index].publicKey)
+                                                ],
+                                              ));
+                                        }),
+                                      ),
+                                    ),
+                                    WidgetConstant.height20,
+                                    Text("threshold_configuration".tr,
+                                        style: context.textTheme.titleMedium),
+                                    Text("threshhold_desc".tr),
+                                    WidgetConstant.height8,
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Flexible(
+                                          child: NumberTextField(
+                                            label: "threshold".tr,
+                                            disableWriting: true,
+                                            onChange: onChangeThreshHold,
+                                            max: 16,
+                                            min: 2,
+                                            defaultValue: 2,
+                                          ),
                                         ),
-                                      )
-                                    ],
-                                  )
-                                ],
-                              ),
+                                      ],
+                                    ),
+                                    AnimatedSize(
+                                      duration: AppGlobalConst.animationDuraion,
+                                      child:
+                                          isValidThreshHold &&
+                                                  signers.isNotEmpty
+                                              ? Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    WidgetConstant.height20,
+                                                    Text(
+                                                        "signers_weight_configuration"
+                                                            .tr,
+                                                        style: context.textTheme
+                                                            .titleMedium),
+                                                    LargeTextView([
+                                                      "signer_wight_desc1".tr
+                                                    ]),
+                                                    WidgetConstant.height8,
+                                                    Column(
+                                                      children: List.generate(
+                                                          signers.length,
+                                                          (index) =>
+                                                              ContainerWithBorder(
+                                                                  validate: signers[index]
+                                                                              .weight >=
+                                                                          1 &&
+                                                                      signers[index]
+                                                                              .weight <=
+                                                                          _thresHold!,
+                                                                  validateText:
+                                                                      "threshhold_desc2"
+                                                                          .tr,
+                                                                  child: Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Text(
+                                                                          signers[index]
+                                                                              .path,
+                                                                          style: context
+                                                                              .textTheme
+                                                                              .labelLarge),
+                                                                      OneLineTextWidget(
+                                                                          signers[index]
+                                                                              .publicKey),
+                                                                      WidgetConstant
+                                                                          .height8,
+                                                                      NumberTextField(
+                                                                          label: "weight"
+                                                                              .tr,
+                                                                          disableWriting:
+                                                                              true,
+                                                                          onChange:
+                                                                              (p0) {
+                                                                            onChangeSignerWeight(signers[index],
+                                                                                p0);
+                                                                          },
+                                                                          max: _thresHold ??
+                                                                              0,
+                                                                          min:
+                                                                              1)
+                                                                    ],
+                                                                  ))),
+                                                    )
+                                                  ],
+                                                )
+                                              : const SizedBox(),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Flexible(
+                                          child: AnimatedSize(
+                                            duration:
+                                                AppGlobalConst.animationDuraion,
+                                            child: isReady
+                                                ? FixedElevatedButton(
+                                                    padding: WidgetConstant
+                                                        .paddingVertical20,
+                                                    onPressed: isReady
+                                                        ? onReview
+                                                        : null,
+                                                    key: visibleReview,
+                                                    child: Text(
+                                                        "review_address".tr),
+                                                  )
+                                                : ErrorTextContainer(
+                                                    error: _errorText),
+                                          ),
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                ),
+                        ),
                       ),
-                    ),
-                  )
-                ],
+                    )
+                  ],
+                ),
               ),
             ),
           )),

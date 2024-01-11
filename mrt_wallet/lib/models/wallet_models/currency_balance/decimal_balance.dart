@@ -17,11 +17,13 @@ class DecimalBalance implements BalanceCore<BigRational> {
   }
   factory DecimalBalance.fromRational(BigRational rational,
       {int amoutDecimal = 4}) {
-    return DecimalBalance._(
-        rational, rational.toDecimal(digits: amoutDecimal), amoutDecimal);
+    final String toString = rational.toDecimal(digits: amoutDecimal);
+    return DecimalBalance._(rational, rational.toDecimal(digits: amoutDecimal),
+        amoutDecimal, toString.to3Digits);
   }
 
-  DecimalBalance._(this._balance, this._price, this.showDecimal);
+  DecimalBalance._(
+      this._balance, this._price, this.showDecimal, this._viewPrice);
   BigRational _balance;
   @override
   BigRational get balance => _balance;
@@ -36,6 +38,7 @@ class DecimalBalance implements BalanceCore<BigRational> {
     if (updateBalance == null) return;
     _balance = updateBalance;
     _price = _balance.toDecimal(digits: showDecimal);
+    _viewPrice = _price.to3Digits;
   }
 
   @override
@@ -47,4 +50,9 @@ class DecimalBalance implements BalanceCore<BigRational> {
   String toString() {
     return _price;
   }
+
+  String _viewPrice;
+
+  @override
+  String get viewPrice => _viewPrice;
 }

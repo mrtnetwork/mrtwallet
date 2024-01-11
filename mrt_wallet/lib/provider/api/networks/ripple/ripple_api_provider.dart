@@ -1,8 +1,7 @@
 import 'package:blockchain_utils/numbers/big_rational.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-import 'package:mrt_wallet/provider/api/core/api_provider.dart';
-import 'package:mrt_wallet/provider/api/networks/ripple/custom_request/custom_request.dart';
+import 'package:mrt_wallet/provider/api/api_provider.dart';
 
 import 'package:xrp_dart/xrp_dart.dart';
 
@@ -11,11 +10,11 @@ class _RippleApiProviderConst {
 }
 
 class RippleApiProvider implements NetworkApiProvider<IXRPAddress> {
-  RippleApiProvider(
-      {required this.provider,
-      required this.network,
-      required this.serviceProvider});
+  RippleApiProvider({required this.provider});
   final XRPLRpc provider;
+  @override
+  ApiProviderTracker get serviceProvider =>
+      (provider.rpc as HttpProvider).provider;
 
   @override
   Future<void> updateBalance(IXRPAddress account) async {
@@ -78,10 +77,4 @@ class RippleApiProvider implements NetworkApiProvider<IXRPAddress> {
         (signers?.signerEntries.isEmpty ?? true) ? null : signers!;
     return (account.accountData.regularKey, signerObject);
   }
-
-  @override
-  final AppNetworkImpl network;
-
-  @override
-  final ApiProviderTracker serviceProvider;
 }

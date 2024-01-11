@@ -37,3 +37,4 @@ export 'qr_code/qr_view.dart';
 export 'widget_constant.dart';
 export 'number_write.dart';
 export 'empty_sliver_widget.dart';
+export 'large_text_view.dart';

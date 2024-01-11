@@ -1,7 +1,7 @@
-import 'package:mrt_wallet/app/utility/blockchin_utils/ripple_utils.dart';
+import 'package:mrt_wallet/app/utility/blockchin_utils/ripple/ripple_utils.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/controller/impl/transaction_impl.dart';
-import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/xrp_account.dart';
-import 'package:mrt_wallet/models/wallet_models/currency_balance/balance.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+
 import 'package:xrp_dart/xrp_dart.dart';
 
 mixin RippleFeeImpl on RippleTransactionImpl {

@@ -4,6 +4,8 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/error/exception/app_exception.dart';
 import 'package:mrt_wallet/provider/api/excepion/exception.dart';
+import 'package:on_chain/on_chain.dart';
+import 'package:xrp_dart/xrp_dart.dart';
 
 class MethodCaller {
   static Future<void> wait({int milliseconds = 1000}) async {
@@ -19,6 +21,26 @@ class MethodCaller {
     } catch (e) {
       canclable.cancel(e);
     }
+  }
+
+  static Future<MethodResult<T>> retryCall<T>(
+      Future<T> Function() t, bool Function(Object?) onExceptionRetry,
+      {Canclable? canclable, Duration? delay, int retry = 3}) async {
+    if (delay != null) {
+      await Future.delayed(delay);
+    }
+    for (int i = 0; i < retry; i++) {
+      final result = await call(t, canclable: canclable, delay: null);
+      if (result.hasError) {
+        if (result.isCancel) return result;
+        if (i + 1 == retry) return result;
+        if (onExceptionRetry(result.exception)) {
+          continue;
+        }
+      }
+      return result;
+    }
+    return call(t, canclable: canclable, delay: null);
   }
 
   static Future<MethodResult<T>> call<T>(Future<T> Function() t,
@@ -64,9 +86,13 @@ class MethodResult<T> {
     if (exception == null) return null;
     if (exception is AppException ||
         exception is BlockchainUtilsException ||
-        exception is ApiProviderException) {
+        exception is ApiProviderException ||
+        exception is RPCException ||
+        exception is RPCError ||
+        exception is ArgumentError) {
       return exception!.toString();
     }
+
     return "somthing_wrong";
   }
 
@@ -77,6 +103,13 @@ class MethodResult<T> {
   bool get isCancel => exception is CancelableExption;
   T get result => hasError ? throw WalletException(error!) : _result;
   bool get isBadCondition => exception is BadCondition;
+  @override
+  String toString() {
+    if (hasError) {
+      return "Error $error";
+    }
+    return "Success $result";
+  }
 }
 
 typedef CompleterResult = Completer Function();

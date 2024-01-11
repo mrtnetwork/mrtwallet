@@ -53,13 +53,13 @@ class _ReceiptAddressView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(address.type.tr, style: context.textTheme.labelLarge),
-        if (address.hasContact) ...[
+        if (address.type != null)
+          Text(address.type!.tr, style: context.textTheme.labelLarge),
+        if (address.hasContact)
           Text(address.contact!.name, style: context.textTheme.labelSmall)
-        ] else if (address.isAccount) ...[
+        else if (address.isAccount)
           Text(address.account!.keyIndex.path.tr,
-              style: context.textTheme.labelSmall)
-        ],
+              style: context.textTheme.labelSmall),
         OneLineTextWidget(address.view)
       ],
     );

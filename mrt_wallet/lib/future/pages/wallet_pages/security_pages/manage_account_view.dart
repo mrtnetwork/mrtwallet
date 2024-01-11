@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
@@ -111,8 +110,15 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                           Text("manage_key_desc2".tr)
                         ],
                       )),
-                  Text("inventory_keys".tr,
-                      style: context.textTheme.titleMedium),
+                  RichText(
+                      text: TextSpan(children: [
+                    TextSpan(
+                        text: "inventory_keys".tr,
+                        style: context.textTheme.titleMedium),
+                    TextSpan(
+                        text: " (${"publick_key".tr}) ",
+                        style: context.textTheme.bodySmall)
+                  ])),
                   WidgetConstant.height8,
                   ...List.generate(importedKeys.length, (index) {
                     final EncryptedCustomKey key =
@@ -121,8 +127,9 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("publick_key".tr,
-                              style: context.textTheme.labelLarge),
+                          if (key.name != null)
+                            Text(key.name ?? "",
+                                style: context.textTheme.labelLarge),
                           Text(key.publicKey),
                           Text(
                               "imported_at"

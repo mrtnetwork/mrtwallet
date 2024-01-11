@@ -6,9 +6,13 @@ import 'package:mrt_wallet/provider/api/core/api_provider.dart';
 
 class SelectProviderView extends StatelessWidget {
   const SelectProviderView(
-      {super.key, required this.selectedProvider, required this.network});
+      {super.key,
+      required this.selectedProvider,
+      required this.network,
+      this.showEdit = false});
   final ApiProviderService selectedProvider;
   final AppNetworkImpl network;
+  final bool showEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -18,8 +22,9 @@ class SelectProviderView extends StatelessWidget {
         PageTitleSubtitle(
             title: "what_is_service_provider".tr,
             body: Text("what_is_api_provider".tr)),
-        PageTitleSubtitle(
-            title: "choose_provider".tr, body: Text("select_provider_desc".tr)),
+        Text("choose_provider".tr, style: context.textTheme.titleMedium),
+        Text("select_provider_desc".tr),
+        WidgetConstant.height8,
         ListView.builder(
           shrinkWrap: true,
           itemBuilder: (context, index) {
@@ -56,7 +61,7 @@ class SelectProviderView extends StatelessWidget {
                               ],
                             )),
                             WidgetConstant.width8,
-                            if (isSelected) const Icon(Icons.check_circle)
+                            if (isSelected) const Icon(Icons.check_circle),
                           ],
                         ),
                       ],

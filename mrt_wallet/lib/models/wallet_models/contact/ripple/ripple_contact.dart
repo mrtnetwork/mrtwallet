@@ -1,6 +1,5 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/blockchin_utils/blockchain_addr_utils.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';

@@ -1,6 +1,5 @@
 import 'package:blockchain_utils/compare/compare.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -90,8 +89,7 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
       children: [
         PageTitleSubtitle(
           title: "v_mnemonic".tr,
-          subtitle: 'p_note'.tr,
-          body: Text("v_mnemonic_desc".tr),
+          body: LargeTextView(["v_mnemonic_desc".tr]),
         ),
         Align(
             alignment: Alignment.center,

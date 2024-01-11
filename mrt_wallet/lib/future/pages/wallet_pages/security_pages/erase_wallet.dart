@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
@@ -42,7 +41,8 @@ class _EraseWalletView extends StatefulWidget {
 class _EraseWalletViewState extends State<_EraseWalletView> with SafeState {
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
 
-  void onDelete() async {
+  void onDelete(bool? accept) async {
+    if (accept != true) return;
     progressKey.progressText("deleting_wallet".tr);
     final model = context.watch<WalletProvider>(StateIdsConst.main);
     final result = await model.eraseWallet(widget.password);
@@ -63,6 +63,7 @@ class _EraseWalletViewState extends State<_EraseWalletView> with SafeState {
       child: () => UnfocusableChild(
         child: ConstraintsBoxView(
           padding: WidgetConstant.paddingHorizontal20,
+          alignment: Alignment.center,
           child: SingleChildScrollView(
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -79,7 +80,17 @@ class _EraseWalletViewState extends State<_EraseWalletView> with SafeState {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   FixedElevatedButton(
-                    onPressed: onDelete,
+                    onPressed: () {
+                      context
+                          .openSliverDialog<bool>(
+                              (p0) => DialogTextView(
+                                    text: "wallet_deletation_desc".tr,
+                                    buttomWidget:
+                                        const DialogDoubleButtonView(),
+                                  ),
+                              "erase_wallet".tr)
+                          .then(onDelete);
+                    },
                     child: Text("delete_wallet".tr),
                   )
                 ],

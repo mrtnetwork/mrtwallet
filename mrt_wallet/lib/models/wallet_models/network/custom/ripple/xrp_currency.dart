@@ -8,5 +8,4 @@ class XRPCurrencyAmount {
   final CurrencyAmount amount;
   final BalanceCore price;
   final Token token;
-
 }

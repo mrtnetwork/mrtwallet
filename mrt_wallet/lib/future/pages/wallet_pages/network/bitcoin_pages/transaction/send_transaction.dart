@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
+import 'package:mrt_wallet/models/wallet_models/chain/chain.dart';
 
 class SendBitcoinTransactionView extends StatelessWidget {
   const SendBitcoinTransactionView({super.key});
@@ -12,9 +12,10 @@ class SendBitcoinTransactionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
-
+    final AppChain appChain = context.getArgruments();
     return MrtViewBuilder<BitcoinStateController>(
-      controller: () => BitcoinStateController(wallet),
+      controller: () => BitcoinStateController(
+          walletProvider: wallet, chainAccount: appChain),
       builder: (controller) {
         return PopScope(
           canPop: controller.canPopPage,
@@ -153,6 +154,7 @@ class _SelectAccountUtxo extends StatelessWidget {
                         account: controller.addresses[index],
                         style: context.textTheme.titleLarge,
                         disableTooltip: true,
+                        token: controller.network.coinParam.token,
                       )
                     ],
                   )),
@@ -205,8 +207,9 @@ class _UtxoPage extends StatelessWidget {
         Text("choose_utxos_each_account".tr),
         WidgetConstant.height8,
         if (controller.haveUtxos) ...[
-          CheckboxListTile(
+          AppCheckListTile(
             title: Text("choose_all".tr),
+            subtitle: Text("choose_all_utxos".tr),
             value: controller.allUtxosSelected,
             onChanged: (value) {
               controller.selectAll();
@@ -258,7 +261,7 @@ class _UtxoPage extends StatelessWidget {
                                   balance: controller.utxos[index].sumOfUtxos,
                                   token: controller.network.coinParam.token,
                                   style: context.textTheme.titleLarge),
-                              const Divider(),
+                              Divider(color: context.colors.onPrimaryContainer),
                               // WidgetConstant.height8,
                               Column(
                                 children: List.generate(
@@ -268,27 +271,49 @@ class _UtxoPage extends StatelessWidget {
                                       .utxos[index].utxosWithBalance![pos];
                                   final bool canSpend =
                                       utxo.balance.balance > BigInt.zero;
-                                  return ContainerWithCheckBoxAndBorder(
-                                    value: controller.utxoSelected(utxo),
-                                    backgroundColor:
-                                        context.colors.secondaryContainer,
-                                    onChange: canSpend
-                                        ? (p0) {
-                                            controller.addUtxo(utxo);
-                                          }
-                                        : null,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        CoinPriceView(
-                                          balance: utxo.balance,
-                                          token: controller
-                                              .network.coinParam.token,
-                                          style: context.textTheme.titleLarge,
-                                        ),
-                                        OneLineTextWidget(utxo.utxo.txHash),
-                                      ],
+                                  return Theme(
+                                    data: context.theme.copyWith(
+                                        checkboxTheme: context
+                                            .theme.checkboxTheme
+                                            .copyWith(
+                                                fillColor:
+                                                    MaterialStatePropertyAll(
+                                                        context.colors
+                                                            .onSecondary),
+                                                checkColor:
+                                                    MaterialStatePropertyAll(
+                                                        context.colors
+                                                            .secondary))),
+                                    child: ContainerWithCheckBoxAndBorder(
+                                      value: controller.utxoSelected(utxo),
+                                      backgroundColor: context.colors.secondary,
+                                      onChange: canSpend
+                                          ? (p0) {
+                                              controller.addUtxo(utxo);
+                                            }
+                                          : null,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          CoinPriceView(
+                                            balance: utxo.balance,
+                                            token: controller
+                                                .network.coinParam.token,
+                                            style: context.textTheme.titleLarge
+                                                ?.copyWith(
+                                                    color: context
+                                                        .colors.onSecondary),
+                                          ),
+                                          OneLineTextWidget(
+                                            utxo.utxo.txHash,
+                                            style: context.textTheme.bodyMedium
+                                                ?.copyWith(
+                                                    color: context
+                                                        .colors.onSecondary),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   );
                                 }),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
@@ -76,10 +75,13 @@ class _MnemonicExtraOptionViewState extends State<MnemonicExtraOptionView>
               children: [
                 Text("mn_password_desc".tr),
                 WidgetConstant.height8,
-                Text("extra_opetion_desc".tr)
+                Text(
+                  "extra_opetion_desc".tr,
+                  style: context.textTheme.bodyMedium
+                      ?.copyWith(color: context.colors.error),
+                )
               ],
             ),
-            subtitle: "mn_password".tr,
           ),
           AppSwitchListTile(
             title: Text("enable_mnemonic_password".tr),

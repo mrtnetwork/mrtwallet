@@ -1,6 +1,5 @@
 import 'package:blockchain_utils/bip/bip/bip39/bip39_mnemonic.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -19,9 +18,9 @@ class GenerateMnemonicView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             PageTitleSubtitle(
-                title: "generate_mnemonic".tr,
-                body: Text("show_mnemonic_desc".tr),
-                subtitle: 'p_note'.tr),
+              title: "generate_mnemonic".tr,
+              body: LargeTextView(["show_mnemonic_desc".tr]),
+            ),
             DropdownButtonFormField<int>(
               decoration: InputDecoration(
                 label: Text("n_of_mnemonic_words".tr),

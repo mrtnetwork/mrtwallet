@@ -1,4 +1,5 @@
 import 'package:http/http.dart' as http;
+import 'package:mrt_wallet/app/core.dart';
 import 'dart:async';
 
 import 'package:mrt_wallet/app/utility/method_caller.dart';
@@ -9,7 +10,7 @@ import 'package:xrp_dart/xrp_dart.dart';
 mixin HttpProvider {
   static final http.Client _client = http.Client();
   http.Client get client => _client;
-
+  ApiProviderTracker get provider;
   Future<T> providerCaller<T>(
       Future<T> Function() t, ApiProviderTracker provider,
       {Canclable? canclable, Duration? delay}) async {

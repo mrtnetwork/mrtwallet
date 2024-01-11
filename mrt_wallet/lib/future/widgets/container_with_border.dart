@@ -16,7 +16,8 @@ class ContainerWithBorder extends StatelessWidget {
       this.onRemoveIcon,
       this.validate = true,
       this.validateText,
-      this.shadow = false});
+      this.shadow = false,
+      this.onTapWhenOnRemove = true});
   final Widget child;
   final EdgeInsets padding;
   final EdgeInsets margin;
@@ -28,6 +29,7 @@ class ContainerWithBorder extends StatelessWidget {
   final bool validate;
   final String? validateText;
   final bool shadow;
+  final bool onTapWhenOnRemove;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -35,7 +37,7 @@ class ContainerWithBorder extends StatelessWidget {
       children: [
         InkWell(
           borderRadius: borderRadius ?? WidgetConstant.border8,
-          onTap: onRemove,
+          onTap: onTapWhenOnRemove ? onRemove : null,
           child: Container(
             padding: padding,
             margin: margin,

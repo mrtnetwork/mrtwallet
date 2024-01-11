@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/currency_balance/core/balance_core.dart';
-import 'package:mrt_wallet/models/wallet_models/network/params/token.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class ErrorTextContainer extends StatelessWidget {
   const ErrorTextContainer(
@@ -18,21 +17,25 @@ class ErrorTextContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (error == null) return WidgetConstant.sizedBox;
-    return Padding(
-      padding: verticalMargin,
-      child: ContainerWithBorder(
-        onRemove: () {},
-        margin: margin,
-        padding: padding,
-        onRemoveIcon: const Icon(Icons.error),
-        backgroundColor: context.colors.errorContainer,
-        child: Text(
-          error ?? "",
-          style: context.textTheme.labelMedium
-              ?.copyWith(color: context.colors.onErrorContainer),
-        ),
-      ),
+    return AnimatedSize(
+      duration: AppGlobalConst.animationDuraion,
+      child: error == null
+          ? WidgetConstant.sizedBox
+          : Padding(
+              padding: verticalMargin,
+              child: ContainerWithBorder(
+                onRemove: () {},
+                margin: margin,
+                padding: padding,
+                onRemoveIcon: const Icon(Icons.error),
+                backgroundColor: context.colors.errorContainer,
+                child: Text(
+                  error ?? "",
+                  style: context.textTheme.labelMedium
+                      ?.copyWith(color: context.colors.onErrorContainer),
+                ),
+              ),
+            ),
     );
   }
 }

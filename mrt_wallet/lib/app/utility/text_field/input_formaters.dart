@@ -4,7 +4,7 @@ import 'package:mrt_wallet/app/utility/price/price_utils.dart';
 
 class RangeTextInputFormatter extends TextInputFormatter {
   final int min;
-  final int max;
+  final int? max;
 
   RangeTextInputFormatter({required this.min, required this.max});
 
@@ -12,17 +12,18 @@ class RangeTextInputFormatter extends TextInputFormatter {
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
     String newString = newValue.text;
-    int? enteredNumber = int.tryParse(newString);
-    if (enteredNumber != null) {
-      if (enteredNumber < min) {
-        return BigRetionalRangeTextInputFormatter._buildOldValue(oldValue);
-      } else if (enteredNumber > max) {
-        return BigRetionalRangeTextInputFormatter._buildOldValue(oldValue);
+
+    if (newString.isNotEmpty) {
+      int? enteredNumber = int.tryParse(newString);
+      if (enteredNumber != null) {
+        if (enteredNumber < min) {
+          return BigRetionalRangeTextInputFormatter._buildOldValue(oldValue);
+        } else if (max != null && enteredNumber > max!) {
+          return BigRetionalRangeTextInputFormatter._buildOldValue(oldValue);
+        }
       } else {
-        newString = "$enteredNumber";
+        return BigRetionalRangeTextInputFormatter._buildOldValue(oldValue);
       }
-    } else {
-      return BigRetionalRangeTextInputFormatter._buildOldValue(oldValue);
     }
     return TextEditingValue(
       text: newString,

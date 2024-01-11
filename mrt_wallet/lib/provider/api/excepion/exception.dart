@@ -1,4 +1,15 @@
 class ApiProviderException implements Exception {
+  static const List<int> validStatusCode = [
+    404,
+    400,
+    401,
+    403,
+    405,
+    408,
+    500,
+    503
+  ];
+
   final String? message;
   final int? statusCode;
   final int? code;
@@ -15,6 +26,9 @@ class ApiProviderException implements Exception {
     if (message != null) return message!;
     if (responseData?["error"] != null) return responseData!["error"];
     if (responseData?["message"] != null) return responseData!["message"];
+    if (statusCode != null && validStatusCode.contains(statusCode)) {
+      return "http_error_$statusCode";
+    }
     return "request_error";
   }
 }

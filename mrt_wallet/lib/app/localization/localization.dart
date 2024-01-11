@@ -243,12 +243,12 @@ class Localization {
           "replace_by_fee": "Replace by fee",
           "decimal_int_validator":
               "Please enter the amount as a decimal or an integer",
+          "int_validator": "Please enter the amount as an integer",
           "price_less_than": "The value must be less than ___1__",
           "price_greather_than": "The amount must be greater than ___1__",
           "amount_of_output": "Amount of output",
           "receiver": "Receiver",
           "setup_output_amount": "Setup output amount",
-          "the_remaining_amount": "The remaining amount",
           "amount": "Amount",
           "bitcoin_transaction_fee": "Bitcoin transaction fee",
           "transacation_fee_desc":
@@ -257,7 +257,7 @@ class Localization {
               "You may input a custom transaction fee by selecting the 'Custom' option.",
           "transaction_fee_desc3":
               "Kindly be aware that exceeding or falling below the specified transaction fee limit is non-refundable.",
-          "setup_custom_fee": "Setup custom fee",
+          "setup_custom_fee": "Setup fee",
           "transaction_fee_desc4":
               "Kindly input the preferred amount for the transaction fee.",
           "custom_fee": "Custom fee",
@@ -299,7 +299,7 @@ class Localization {
           "threshhold_desc":
               "Specify the transaction signature threshold. This threshold indicates the number of signatures required to confirm the transaction. For example, setting it to 5 means that the transaction requires 5 signatures. Maximum 16 thresholds",
           "threshold": "Threshold",
-          "signers_weight_configuration": "Configuration for Signers' Weight",
+          "signers_weight_configuration": "Configuration for Signers Weight",
           "signer_wight_desc1":
               "The weight assigned to each signer dictates their influence in signing the transaction. For example, with a transaction threshold set at 3, if you have address A with a weight of 2, address B with a weight of 1, and address C with a weight of 3, you would need the signatures of either addresses A and B or address C to confirm the transaction.",
           "weight": "Weight",
@@ -324,7 +324,7 @@ class Localization {
               "Kindly preserve the following text in a secure location to ensure you have the essential information for recreating the address when needed",
           "address_details": "Address details",
           "address_added_to_accounts":
-              "The address has been successfully added to your Bitcoin accounts.",
+              "The address has been successfully added to your accounts.",
           "unavailable_multi_sig_public_key":
               "The public key is unavailable for this multi-signature address.",
           "switch_network": "Switch network",
@@ -446,7 +446,7 @@ class Localization {
           "import_private_key": "Import private key",
           "view_on_explorer": "View on Explorer",
           "view_address_on_explorer": "View Address on Explorer",
-          "lock": "Lock wallet",
+          "lock_wallet": "Lock wallet",
           "dark_mode": "Dark mode",
           "primary_color_palette": "Primary Color Palette",
           "select_color_from_blow":
@@ -880,7 +880,272 @@ class Localization {
           "account_name": "Account name",
           "setup_or_update_account_name": "Establish or Refresh Account Name",
           "remove_account_name_desc":
-              "If you wish to remove the account name, please confirm by entering an empty text."
+              "If you wish to remove the account name, please confirm by entering an empty text.",
+          "evm_networks": "EVM",
+          "tvm_networks": "TVM",
+          "disable_standard_derivation":
+              "You can manually create a BIP32 path to generate an address by disabling the standard derivation.",
+          "transfer": "Transfer",
+          "slow": "Slow",
+          "normal": "Normal",
+          "high": "High",
+          "max_base_fee": "Max base fee",
+          "max_priority": "Max priority",
+          "gas_price": "Gas Price",
+          "gwei": "GWEI",
+          "eip_1559_gas_fee": "EIP-1559 Gas Fee",
+          "legacy_gas_fee": "Legacy Gas Fee",
+          "what_is_max_fee":
+              "Max base fee refers to the upper limit or maximum value that the base fee component of a transaction can reach within the Ethereum network",
+          "what_is_prority_fee":
+              "the Priority Fee in Ethereum, especially in the context of EIP-1559, is an extra amount that users can include in their transactions to increase the likelihood of miners including them in the next block.",
+          "eth_fee_desc":
+              "The transaction's true cost is determined by multiplying the maximum base fee by the specified gas limit.",
+          "eth_legacy_fee_desc":
+              "The transaction's true cost is determined by multiplying the gas price by the specified gas limit.",
+          "gas_limit": "Gas limit",
+          "gas_limit_desc":
+              "is the unit used to measure the amount of computational effort required to execute operations or smart contracts. Each operation consumes a certain amount of gas, and the gas limit determines the total computational resources available for the transaction.",
+          "gas_limit_validator":
+              "The gas limit must be set to a value greater than zero.",
+          "gas_limit_helper":
+              "The gas limit is below the current network conditions.",
+          "prority_fee_validator":
+              "The priority fee should be a non-negative decimal value.",
+          "max_base_fee_validator":
+              "The Max base fee should be a non-negative decimal value.",
+          "gas_price_fee_validator":
+              "The Gas price should be a non-negative decimal value.",
+          "max_base_fee_helper1":
+              "The Max base fee is below the current network conditions.",
+          "gas_price_fee_helper1":
+              "The Gas price is below the current network conditions.",
+          "max_base_fee_helper2":
+              "The Max base fee is higher than the current network conditions.",
+          "gas_price_fee_helper2":
+              "The Gas price is higher than the current network conditions.",
+          "max_priority_helper1":
+              "The Max priority is below the current network conditions.",
+          "max_priority_helper2":
+              "The Max priority is higher than the current network conditions.",
+          "input_the_amout": "Input the transaction amount in the field below",
+          "import_token": "Import Token",
+          "contract_address": "Contract address",
+          "import_erc20_token": "Import ERC-20 token",
+          "import_trc20_token": "Import TRC-20 token",
+          "import_erc20_desc":
+              "Input the contract address of your token to import it into your account.",
+          "tap_to_input_contract_address": "Tap to input contract address",
+          "add_to_my_account": "Add to My Account",
+          "retrieving_contract_detauls":
+              "Retrieving smart contract information. Please Wait.",
+          "smart_contract_not_found":
+              "No smart contract found; please verify the contract address.",
+          "import_new_token": "Import new token",
+          "transfer_erc20": "Transfer ERC-20",
+          "transfer_trc20": "Transfer TRC-20",
+          "transfer_trc10": "Transfer TRC-10",
+          "multi_sig_account_does_not_supported":
+              "Your account lacks the necessary permissions to initiate this transaction. Please utilize the multi-signature feature for authorization.",
+          "total_burn": "Total burn",
+          "fee_limit": "Fee Limit",
+          "default": "Default",
+          "custom": "Custom",
+          "burn": "Burn",
+          "bandwidth": "Bandwidth",
+          "energy": "Energy",
+          "consumed_stacked": "Consumed/Stacked",
+          "trx_burned_for_resource": "Trx burned for resource",
+          "tron_fee_limit_desc":
+              "The fee limit represents the maximum amount of energy or bandwidth that a user is allowed to consume for a specific transaction",
+          "low_fee_limit_desc":
+              "The specified fee limit is insufficient for the operation's resource requirements.",
+          "take_another_shot": "Take another shot",
+          "trc20_tokens": "TRC-20 Tokens",
+          "trc10_tokens": "TRC-10 Tokens",
+          "erc20": "ERC-20",
+          "trc20": "TRC-20",
+          "trc10": "TRC-10",
+          "update_account_permission": "Update account permission",
+          "permissions": "Permissions",
+          "tron_permission_desc":
+              "Choose the permission you wish to modify or remove.",
+          "permission_name": "Permission name",
+          "input_the_permission_name": "Input the permission name",
+          "operations": "Operations",
+          "tron_operations_desc":
+              "This permission grants access to the following operations.",
+          "all_operations": "All Operations",
+          "operation_disabled": "The operation is disabled",
+          "tron_threshhold_desc":
+              "Operation is permitted only when the combined weights of the involved signatures surpass the specified value",
+          "tron_permission_key": "Signers (Key)",
+          "tron_permission_key_desc":
+              "The accounts and weights that all own the permission, 5 keys at most.",
+          "tap_to_input_new_signer": "Tap to input new signer",
+          "signer": "Signer",
+          "signer_account_address": "The signer account address",
+          "signer_already_exist": "The signer already exist",
+          "new_active_permission": "New active permission",
+          "update_permission": "Update permission",
+          "remove_permission": "Remove permission",
+          "tron_signer_validator_desc":
+              "The number of signers should not exceed 5.",
+          "tron_signer_validator_witness_desc":
+              "The required number of witness signers is 1.",
+          "tron_permission_threshhold_validator":
+              "The cumulative weight of the signatories must meet the specified threshold.",
+          "tron_permission_validator1":
+              "Please save the current permission before making any further changes.",
+          "permission_is_being_edited": "Permission is being edited",
+          "update_account_permissions": "Update the account's permission.",
+          "tron_multi_sig_desc":
+              "Tron supports multi-signature transactions, allowing you to select a specific permission and initiate transactions corresponding to that chosen permission.",
+          "tron_multi_sig_desc2":
+              "Kindly input the Tron address to which you intend to send transactions.",
+          "tron_multi_sig_select_permission":
+              "Kindly choose the permission you desire.",
+          "tron_multi_sig_addres_threshhold":
+              "Please choose the required number of signers, matching the threshhold, whose private keys are accessible from your accounts for verification. If the desired account is not in your account list, you must first add it to your wallet through the settings.",
+          "tron_account_permission_not_access_desc":
+              "The account permission has been modified, or the current authorization does not grant access to initiate this type of transaction.",
+          "tron_stack_v2": "Stake2.0",
+          "tron_unstack_v2": "Unstake2.0",
+          "frozen_balance": "Frozen balance",
+          "unfreeze_balance": "Unfreeze balance",
+          "trx_stake_amount": "TRX stake amount",
+          "trx_unstake_amount": "The amount of TRX to unstake",
+          "resource": "Resource",
+          "trx_stake_type": "TRX stake type",
+          "stacke_amount": "Stake amount",
+          "stacking_balance_in_your_account": "Staking balance in your account",
+          "delegated_resource": "Delegate Resource",
+          "delegate_resource_desc":
+              "Delegate bandwidth or energy resources to other accounts",
+          "delegatable_amount": "Delegatable  amount",
+          "delegatable_amount_desc": "The amount of delegatable resource share",
+          "resource_delegated_amount": "Resource delegate amount",
+          "resource_receiver_address": "Resource receiver address",
+          "lock": "Lock",
+          "lock_period": "Lock period",
+          "tron_delegate_resource_lock_desc":
+              "Whether to lock the resource delegation, enable means locked the delegation, the delegating cannot be canceled within the period specified by the lock period",
+          "tron_delegate_lock_time_desc":
+              "Lock time,The unit is block interval(3 seconds), indicates the time of how many blocks which the delegation will be locked",
+          "tron_delegate_lock_time_desc2":
+              "Lock time,The unit is block interval(3 seconds), indicates the time of how many blocks which the delegation will be locked. Only when lock is true, this field is valid. If the delegate lock period is 1 day, the lock_period is: 28800. The minimum value of lock_period is the remaining lock period of this type of resource that was delegated last time, and the maximum value is 864000 (30 days). If lock is true and lock_period is not set or set to 0, lock_period will be set to the default value 86400 (3 days) automatically",
+          "retrieving_resources": "Retrieving Resources. Please Wait.",
+          "no_bandwidth_resourced": "Bandwidth resources unavailable.",
+          "no_energy_resourced": "Energy resources unavailable.",
+          "undelegated_period_time_desc":
+              "Undelegation not permitted during lock period.",
+          "balance": "Balance",
+          "undelegated_balance_desc":
+              "Amount of TRX staked for resources to be delegated",
+          "undelegated_resource": "UnDelegate Resource",
+          "undelegated_resource_validator_desc1":
+              "Undelegation requires available resources.",
+          "undelegated_resource_desc":
+              "Cancel the delegation of bandwidth or energy",
+          "url": "Url",
+          "create_witness": "Create Witness",
+          "create_witness_desc": "Apply to become a witness.",
+          "tron_create_witness_url_desc": "The website URL of the SR node",
+          "update_witness": "Update witness",
+          "update_witness_desc":
+              "Edit the URL of the witness's official website.",
+          "tron_mutlisig_active_length_validator":
+              "You must have 1 to 8 permissions with an active permission type.",
+          "permission_type": "Permission type",
+          "update_account": "Update account",
+          "account_name_desc": "name of the account",
+          "modify_account_name": "Modify account name",
+          "key_name": "Key name",
+          "import_private_key_key_name_desc":
+              "A distinctive identifier for enhanced key differentiation.",
+          "import_evm_network": "Import ethereum network",
+          "import": "Import",
+          "import_new_network": "Import new network",
+          "import_new_network_desc1":
+              "Providing an incorrect or malicious RPC endpoint can compromise the security of your wallet. Always double-check the accuracy of the RPC URL before adding a new network.",
+          "import_new_network_desc2":
+              "Custom networks might lack the same level of security as well-established, widely-used networks. Ensure that you trust the administrators and community behind the custom network to minimize potential vulnerabilities.",
+          "chain_id": "Chain ID",
+          "chain_id_desc": "Specify the unique identifier for the network.",
+          "rpc_url": "RPC Url",
+          "rpc_url_desc":
+              "Enter the RPC endpoint for the network. Ensure it is correct and secure.",
+          "network_name": "Network name",
+          "network_name_desc": "Give your custom network a descriptive name.",
+          "symbol": "Symbol",
+          "symbol_desc": "Add a symbol for easy identification.",
+          "chain_id_validator": "Please enter a valid chain ID as a number.",
+          "rpc_url_validator":
+              "Please enter a valid RPC URL starting with 'http' or 'https'.",
+          "network_name_validator":
+              "Please enter a valid network name without special characters, with a maximum length of 20 characters.",
+          "symbol_validator":
+              "Please enter a valid Symbol without special characters, with a maximum length of 6 characters.",
+          "invalid_json_response":
+              "Invalid response. Expected JSON, but received something else",
+          "http_error_404":
+              "Error 404: Resource Not Found. The requested URL or endpoint could not be located on the server.",
+          "http_error_400":
+              "Error 400: Bad Request. The server could not understand the request due to invalid syntax or missing parameters.",
+          "http_error_401":
+              "Error 401: Unauthorized. Access to the requested resource is denied due to missing or incorrect authentication credentials.",
+          "http_error_403":
+              "Error 403: Forbidden. Access to the requested resource is forbidden.",
+          "http_error_405":
+              "Error 405: Method Not Allowed. The specified HTTP method is not supported for the requested resource",
+          "http_error_408":
+              "Error 408: Request Timeout. The server timed out while waiting for the request",
+          "http_error_500":
+              "Error 500: Internal Server Error. The server encountered an unexpected condition that prevented it from fulfilling the reques",
+          "http_error_503":
+              "Error 503: Service Unavailable. The server is currently unable to handle the request due to temporary overloading or maintenance of the server",
+          "network_chain_id_already_exist":
+              "The network with the provided chain ID already exists.",
+          "invalid_chain_id":
+              "The Chain ID does not match the Network ID associated with the provided RPC link.",
+          "network_imported_to_your_wallet":
+              "The network has been successfully imported to your wallet.",
+          "providers": "Providers",
+          "edit_or_add_evm_provider_desc":
+              "Please choose the provider you wish to edit or add a new one",
+          "edit_provider_rpc_url": "Edit Provider RPC URL",
+          "update_url": "Update URL",
+          "discard_changes": "Discard Changes",
+          "checking_rpc_network_info": "Checking RPC Network Information",
+          "rpc_url_has_been_updated": "RPC URL has been updated.",
+          "rpc_url_already_exists":
+              "A provider already exists with this RPC URL.",
+          "tap_to_add_new_service_provider":
+              "Tap to add a new service provider.",
+          "update_network": "Update Network Information",
+          "chain_id_of_network": "The chain ID of the network",
+          "updating_network": "Updating network information. Please Wait.",
+          "network_updated_successfully":
+              "The network has been successfully updated.",
+          "invalid_network_information": "Invalid network information.",
+          "import_network": "Import network",
+          "backup_multi_sig_address_desc":
+              "Are you certain that the address information has been securely saved?",
+          "choose_all_utxos": "Choose all Unspent Transaction Outputs (UTXOs)",
+          "remaining_amount": "Remaining amount",
+          "remaining_amount_and_receiver":
+              "Remaining amount of UTXO and receiver address.",
+          "cost_for_transaction": "Cost for transactions",
+          "rbf_desc":
+              "Allows users to adjust transaction fees after initiation for priority or confirmation speed changes.",
+          "memo_desc2":
+              "Additional message or information attached to a Bitcoin transaction.",
+          "custom_derivation": "Custom derivation",
+          "key_already_exists": "Private key already exists",
+          "wallet_deletation_desc":
+              "Have you verified the existence of a backup for your wallet before proceeding with deletion?",
+          "read_more": "Read more...",
+          "harden": "Harden"
         }
       };
 }

@@ -12,7 +12,7 @@ class ReceiptAddress<T> {
   final CryptoAccountAddress? account;
   final T networkAddress;
   final String view;
-  final String type;
+  final String? type;
   bool get hasContact => contact != null;
   bool get isAccount => account != null;
 }

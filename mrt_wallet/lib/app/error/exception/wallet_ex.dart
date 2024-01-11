@@ -44,6 +44,8 @@ class WalletExceptionConst {
       WalletException("invalid_bip_key_index");
   static final WalletException addressAlreadyExist =
       WalletException("address_already_exist");
+  static final WalletException keyAlreadyExist =
+      WalletException("key_already_exists");
   static final WalletException accountDoesNotFound =
       WalletException("account_not_found");
   static final WalletException privateKeyIsNotAvailable =

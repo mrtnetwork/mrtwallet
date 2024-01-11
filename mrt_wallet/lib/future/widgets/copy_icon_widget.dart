@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 class CopyTextIcon extends StatefulWidget {

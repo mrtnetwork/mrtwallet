@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
-import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
-import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class AddToContactListView extends StatefulWidget {
   const AddToContactListView(
@@ -57,7 +55,7 @@ class _AddToContactListViewState extends State<AddToContactListView> {
     final result = await wallet.addNewContact(newContact);
     if (result.hasError) {
       buttomProgressKey.error();
-      _error = result.error;
+      _error = result.error?.tr;
       setState(() {});
     } else {
       added = true;
@@ -78,18 +76,21 @@ class _AddToContactListViewState extends State<AddToContactListView> {
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.contact.address),
-                  WidgetConstant.height8,
                   Text("contact_desc_1"
                       .tr
                       .replaceOne(widget.network.coinParam.token.name))
                 ],
               )),
+          Text("address".tr, style: context.textTheme.titleMedium),
+          WidgetConstant.height8,
+          ContainerWithBorder(child: Text(widget.contact.address)),
+          WidgetConstant.height20,
           AppTextField(
             key: textFieldKey,
             label: "name_of_contact".tr,
             initialValue: name,
             readOnly: buttomProgressKey.inProgress,
+            minlines: 1,
             maxLines: 2,
             error: _error,
             suffixIcon: PasteTextIcon(onPaste: onPaste),

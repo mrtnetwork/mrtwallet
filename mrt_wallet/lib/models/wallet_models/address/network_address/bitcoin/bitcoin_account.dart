@@ -1,13 +1,9 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:blockchain_utils/compare/compare.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/blockchin_utils/blockchain_addr_utils.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:bitcoin_base/bitcoin_base.dart'
     show BitcoinAddress, BitcoinAddressType;
-import 'package:mrt_wallet/models/wallet_models/nfts/core/nft_core.dart';
-import 'package:mrt_wallet/models/wallet_models/token/core/core.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
@@ -17,13 +13,15 @@ class IBitcoinAddress
   factory IBitcoinAddress.newAccount(
       {required BitcoinNewAddressParams accountParams,
       required List<int> publicKey,
-      required AppBitcoinNetwork network}) {
+      required AppNetworkImpl network}) {
     final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
         publicKey, accountParams.coin, accountParams.bitcoinAddressType);
 
     final addressDetauls = NoneDecimalNetworkAddressDetails(
-        address:
-            bitcoinAddress.toAddress(network.coinParam.transacationNetwork),
+        address: bitcoinAddress.toAddress(network
+            .toNetwork<AppBitcoinNetwork>()
+            .coinParam
+            .transacationNetwork),
         balance: NoneDecimalBalance.zero(network.coinParam.decimal));
 
     return IBitcoinAddress._(
@@ -33,18 +31,19 @@ class IBitcoinAddress
         keyIndex: accountParams.deriveIndex,
         networkAddress: bitcoinAddress,
         addressType: accountParams.bitcoinAddressType,
-        network: network);
+        network: network.value);
   }
-  factory IBitcoinAddress.fromCbsorHex(String hex) {
-    return IBitcoinAddress.fromCborBytesOrObject(
+  factory IBitcoinAddress.fromCbsorHex(AppNetworkImpl network, String hex) {
+    return IBitcoinAddress.fromCborBytesOrObject(network,
         bytes: BytesUtils.fromHexString(hex));
   }
-  factory IBitcoinAddress.fromCborBytesOrObject(
+  factory IBitcoinAddress.fromCborBytesOrObject(AppNetworkImpl network,
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
     if (bytesEqual(
         toCborTag.tags, WalletModelCborTagsConst.bitcoinMultiSigAccount)) {
-      return IBitcoinMultiSigAddress.fromCborBytesOrObject(obj: toCborTag);
+      return IBitcoinMultiSigAddress.fromCborBytesOrObject(network,
+          obj: toCborTag);
     }
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, WalletModelCborTagsConst.bitcoinAccoint);
@@ -53,7 +52,10 @@ class IBitcoinAddress
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     final List<int> publicKey = cbor.getIndex(3);
-    final network = AppBitcoinNetwork.fromValue(cbor.getIndex(6));
+    final networkId = cbor.getIndex(6);
+    if (networkId != network.value) {
+      throw WalletExceptionConst.incorrectNetwork;
+    }
     final NoneDecimalNetworkAddressDetails address =
         NoneDecimalNetworkAddressDetails.fromCborBytesOrObject(
             network.coinParam.decimal,
@@ -70,7 +72,7 @@ class IBitcoinAddress
         keyIndex: keyIndex,
         networkAddress: bitcoinAddress,
         addressType: bitcoinAddressType,
-        network: network,
+        network: network.value,
         accountName: name);
   }
   IBitcoinAddress._(
@@ -100,7 +102,7 @@ class IBitcoinAddress
           publicKey,
           address.toCbor(),
           addressType.value,
-          network.value,
+          network,
           accountName ?? const CborNullValue()
         ]),
         WalletModelCborTagsConst.bitcoinAccoint);
@@ -119,7 +121,7 @@ class IBitcoinAddress
   bool get multiSigAccount => false;
 
   @override
-  final AppBitcoinNetwork network;
+  final int network;
 
   @override
   List get variabels => [addressType, keyIndex, network];
@@ -170,6 +172,9 @@ class IBitcoinAddress
   void setAccountName(String? name) {
     _accountName = name;
   }
+
+  @override
+  String get orginalAddress => address.toAddress;
 }
 
 class IBitcoinMultiSigAddress extends IBitcoinAddress
@@ -195,17 +200,18 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
           multiSignatureAddress: multiSignatureAddress,
           bitcoinAddress: toBitcoinAddress,
           addressType: bitcoinAddressType,
-          network: network,
+          network: network.value,
           keyIndex: const MultiSigAddressIndex());
     } catch (e) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
   }
-  factory IBitcoinMultiSigAddress.fromCborHex(String hex) {
-    return IBitcoinMultiSigAddress.fromCborBytesOrObject(
+  factory IBitcoinMultiSigAddress.fromCborHex(
+      AppNetworkImpl network, String hex) {
+    return IBitcoinMultiSigAddress.fromCborBytesOrObject(network,
         bytes: BytesUtils.fromHexString(hex));
   }
-  factory IBitcoinMultiSigAddress.fromCborBytesOrObject(
+  factory IBitcoinMultiSigAddress.fromCborBytesOrObject(AppNetworkImpl network,
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.bitcoinMultiSigAccount);
@@ -214,7 +220,10 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
     final BitcoinMultiSignatureAddress multiSignatureAddress =
         BitcoinMultiSignatureAddress.fromCborBytesOrObject(
             obj: cbor.getCborTag(2));
-    final network = AppBitcoinNetwork.fromValue(cbor.getIndex(5));
+    final int networkId = cbor.getIndex(5);
+    if (networkId != network.value) {
+      throw WalletExceptionConst.incorrectNetwork;
+    }
     final NoneDecimalNetworkAddressDetails address =
         NoneDecimalNetworkAddressDetails.fromCborBytesOrObject(
             network.coinParam.decimal,
@@ -224,15 +233,19 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(6));
     final String? name = cbor.getIndex(7);
+
     return IBitcoinMultiSigAddress._(
         coin: coin,
         address: address,
         bitcoinAddress: multiSignatureAddress.fromType(
-            network: network.coinParam.transacationNetwork,
+            network: network
+                .toNetwork<AppBitcoinNetwork>()
+                .coinParam
+                .transacationNetwork,
             addressType: bitcoinAddressType),
         addressType: bitcoinAddressType,
         multiSignatureAddress: multiSignatureAddress,
-        network: network,
+        network: network.value,
         keyIndex: keyIndex,
         accountName: name);
   }
@@ -267,7 +280,7 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
           multiSignatureAddress.toCbor(),
           address.toCbor(),
           addressType.value,
-          network.value,
+          network,
           keyIndex.toCbor(),
           accountName ?? const CborNullValue()
         ]),

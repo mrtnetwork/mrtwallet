@@ -85,7 +85,7 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
           WidgetConstant.height20,
           AppTextField(
             label: widget.label,
-            minlines: 3,
+            minlines: 2,
             maxLines: 5,
             initialValue: text,
             validator: widget.customValidator ?? validator,

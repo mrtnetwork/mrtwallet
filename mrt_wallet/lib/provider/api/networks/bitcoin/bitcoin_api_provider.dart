@@ -1,13 +1,13 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-import 'package:mrt_wallet/provider/api/core/api_provider.dart';
+import 'package:mrt_wallet/provider/api/api_provider.dart';
 
 class BitcoinApiProvider implements NetworkApiProvider<IBitcoinAddress> {
-  BitcoinApiProvider(
-      {required this.provider,
-      required this.network,
-      required this.serviceProvider});
+  BitcoinApiProvider({required this.provider});
+  @override
+  ApiProviderTracker get serviceProvider =>
+      (provider.service as HttpProvider).provider;
   final ApiProvider provider;
 
   @override
@@ -22,10 +22,4 @@ class BitcoinApiProvider implements NetworkApiProvider<IBitcoinAddress> {
     final utxos = await provider.getAccountUtxo(address);
     return utxos;
   }
-
-  @override
-  final AppNetworkImpl network;
-
-  @override
-  final ApiProviderTracker serviceProvider;
 }

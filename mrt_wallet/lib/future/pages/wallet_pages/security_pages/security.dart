@@ -6,3 +6,5 @@ export 'password_checker.dart';
 export 'secure_backup.dart';
 export 'wallet_settings.dart';
 export 'export_private_key.dart';
+export 'manage_account_view.dart';
+export 'backup_wallet.dart';

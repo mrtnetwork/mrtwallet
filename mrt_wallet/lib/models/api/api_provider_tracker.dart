@@ -7,10 +7,10 @@ enum ApiProviderStatus {
   reachedLimit,
 }
 
-class ApiProviderTracker {
+class ApiProviderTracker<T extends ApiProviderService> {
   ApiProviderTracker({required this.provider});
   final Live<ApiProviderStatus> _status = Live(ApiProviderStatus.active);
-  final ApiProviderService provider;
+  final T provider;
   bool get hasActive => _status.value == ApiProviderStatus.active;
   int _requestCount = 0;
   int get requestCount => _requestCount;

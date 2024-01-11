@@ -22,26 +22,30 @@ class CircleAssetsImgaeView extends StatelessWidget {
 }
 
 class CircleTokenImgaeView extends StatelessWidget {
-  const CircleTokenImgaeView(this.token,
-      {this.radius = 120,
-      this.backgroundColor = Colors.transparent,
-      super.key});
+  const CircleTokenImgaeView(this.token, {this.radius = 120, super.key});
   final Token token;
   final double radius;
-  final Color backgroundColor;
+
   @override
   Widget build(BuildContext context) {
+    final String symbol =
+        (token.name.isEmpty ? "" : token.name[0]).toUpperCase();
     return Container(
-      decoration: const BoxDecoration(
-          shape: BoxShape.circle, boxShadow: [WidgetConstant.circleShadow]),
+      decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow:
+              token.assetLogo != null ? [] : [WidgetConstant.circleShadow]),
       child: CircleAvatar(
-        backgroundImage: token.logo != null ? AssetImage(token.logo!) : null,
+        backgroundImage:
+            token.assetLogo != null ? AssetImage(token.assetLogo!) : null,
         radius: radius,
-        backgroundColor: context.colors.primaryContainer,
-        child: token.logo != null
+        backgroundColor: token.assetLogo != null
+            ? context.colors.background
+            : context.colors.primaryContainer,
+        child: token.assetLogo != null
             ? null
             : Text(
-                token.symbol[0],
+                symbol,
                 style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: radius,

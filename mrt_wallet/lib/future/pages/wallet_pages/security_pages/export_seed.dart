@@ -1,8 +1,6 @@
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/secure_flag_state.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
@@ -50,6 +48,7 @@ class _ExportSeedViewState extends State<_ExportSeedView>
       key: progressKey,
       backToIdle: AppGlobalConst.oneSecoundDuration,
       child: () => ConstraintsBoxView(
+        alignment: Alignment.center,
         padding: WidgetConstant.paddingHorizontal20,
         child: AnimatedSwitcher(
           duration: AppGlobalConst.animationDuraion,
@@ -143,8 +142,7 @@ class _ExportSeedViewState extends State<_ExportSeedView>
                               size: AppGlobalConst.double40),
                           onPressed: () {
                             context.openSliverDialog(
-                        (ctx) =>
-                                BarcodeView(
+                                (ctx) => BarcodeView(
                                     underBarcodeWidget: ErrorTextContainer(
                                         margin:
                                             WidgetConstant.paddingVertical10,
@@ -165,15 +163,15 @@ class _ExportSeedViewState extends State<_ExportSeedView>
                             label: Text("create_backup".tr),
                             onPressed: () {
                               context.openSliverDialog(
-                        (ctx) =>
-                                  SecureBackupView(
-                                    data: _mnemonic.toStr(),
-                                    password: widget.password,
-                                    descriptions: [
-                                      WidgetConstant.height8,
-                                      Text("about_web3_defination_desc1".tr),
-                                    ],
-                                  ),
+                                  (ctx) => SecureBackupView(
+                                        data: _mnemonic.toStr(),
+                                        password: widget.password,
+                                        descriptions: [
+                                          WidgetConstant.height8,
+                                          Text(
+                                              "about_web3_defination_desc1".tr),
+                                        ],
+                                      ),
                                   "backup_mnemonic".tr);
                             },
                             icon: const Icon(Icons.backup))

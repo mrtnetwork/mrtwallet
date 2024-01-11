@@ -51,7 +51,6 @@ class BlockchainAddressUtils {
     }
   }
 
-
   static BitcoinAddress publicKeyToBitcoinAddress(
       List<int> publicKey, CryptoCoins coin, BitcoinAddressType addressType) {
     final bitcoinPublicKey = ECPublic.fromBytes(publicKey);

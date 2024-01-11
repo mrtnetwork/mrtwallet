@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/address/address.dart';
-import 'package:mrt_wallet/models/wallet_models/token/core/core.dart';
-import 'package:mrt_wallet/models/wallet_models/token/networks/ripple/ripple_issue_token.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 enum TokenAction { delete, transfer }
 
@@ -16,17 +14,16 @@ class TokenDetailsModalView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
-        _RippleTokenView(token: token as RippleIssueToken, address: address)
-      ],
+      children: [_RippleTokenView(token: token, address: address)],
     );
   }
 }
 
 class _RippleTokenView extends StatelessWidget {
   const _RippleTokenView({required this.token, required this.address});
-  final RippleIssueToken token;
+  final TokenCore token;
   final CryptoAccountAddress address;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -36,8 +33,16 @@ class _RippleTokenView extends StatelessWidget {
         const Divider(),
         CircleTokenImgaeView(token.token, radius: 60),
         WidgetConstant.height8,
-        Text(token.token.name, style: context.textTheme.labelLarge),
-        OneLineTextWidget(token.issuer),
+        RichText(
+          text: TextSpan(children: [
+            TextSpan(text: token.token.name),
+            if (token.type != null)
+              TextSpan(
+                  text: " (${token.type!.tr}) ",
+                  style: context.textTheme.bodySmall)
+          ], style: context.textTheme.labelLarge),
+        ),
+        if (token.issuer != null) SelectableText(token.issuer!),
         WidgetConstant.height8,
         CoinPriceView(
             liveBalance: token.balance,
@@ -57,8 +62,7 @@ class _RippleTokenView extends StatelessWidget {
             FloatingActionButton(
               onPressed: () {
                 context.openSliverDialog(
-                        (ctx) =>
-                    BarcodeView(
+                    (ctx) => BarcodeView(
                         secure: false,
                         title: AddressDetailsView(
                             address: address,

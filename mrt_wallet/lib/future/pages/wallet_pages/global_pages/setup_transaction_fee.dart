@@ -97,7 +97,7 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
               context
                   .openSliverBottomSheet<BigInt>("setup_custom_fee".tr,
                       child: SetupNetworkAmount(
-                        network: widget.network,
+                        token: widget.network.coinParam.token,
                         max: widget.max,
                         min: BigInt.zero,
                         buttonText: "setup_transaction_fee".tr,

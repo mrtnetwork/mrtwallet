@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/bytes_utils/quick_bytes.dart';
 import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/global/controll_ripple_transaction_account.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/widgets/nft_info.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/xrp_account.dart';
-import 'package:mrt_wallet/models/wallet_models/nfts/networks/ripple/ripple_nft_token.dart';
-import 'package:mrt_wallet/provider/api/networks/ripple/custom_request/fetch_nft_request.dart';
-import 'package:mrt_wallet/provider/api/networks/ripple/ripple_api_provider.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+
+import 'package:mrt_wallet/provider/api/api_provider.dart';
 
 class MonitorRippleNFTsView extends StatelessWidget {
   const MonitorRippleNFTsView({super.key});
@@ -18,10 +15,9 @@ class MonitorRippleNFTsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControllerRippleTransactionAccountView(
       title: "manage_nfts".tr,
-      childBulder:
-          (wallet, account, address, network, provider, switchRippleAccount) {
+      childBulder: (wallet, account, address, switchRippleAccount) {
         return _MonitorRippleNFTsView(
-            address: address, wallet: wallet, provider: provider);
+            address: address, wallet: wallet, provider: account.provider());
       },
     );
   }
@@ -49,7 +45,7 @@ class ___MonitorRippleNFTsViewState extends State<_MonitorRippleNFTsView>
     if (progressKey.isSuccess || progressKey.inProgress) return;
     final result = await MethodCaller.call(() async {
       return await widget.provider.provider.request(XRPRPCAccountNFTs(
-          account: widget.address.address.toAddress, limit: 50000));
+          account: widget.address.networkAddress.address, limit: 50000));
     });
 
     if (result.hasError) {

@@ -1,7 +1,6 @@
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
@@ -102,7 +101,7 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
       final decrypt = await walletProvider.restoreBackup(
           _backupPassword, _backup, encoding);
       if (selectedMode == _BackupMode.walletBackup) {
-        final backup = await WalletBackup.fromBackup(
+        final backup = await WalletBackupV2.fromBackup(
             decrypt, passphrase ? _passphrase : '');
         final password = await model.setupBackup(backup);
         final result = await walletProvider.setupBackup(backup, password);
@@ -111,8 +110,9 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
         }
         return;
       }
-      BlockchainUtils.validateMnemonic(decrypt);
-      final Mnemonic exitingMnemonic = Mnemonic.fromString(decrypt);
+      final toString = StringUtils.decode(decrypt);
+      BlockchainUtils.validateMnemonic(toString);
+      final Mnemonic exitingMnemonic = Mnemonic.fromString(toString);
       final mnemonic = await model.setup(passphrase ? _passphrase : null,
           exitingMnemonic: exitingMnemonic);
       await walletProvider.setup(mnemonic.$1, mnemonic.$2);
@@ -130,6 +130,7 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
     return Form(
       key: form,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitleSubtitle(
             title: "restore_mnemonic_from_bcakup".tr,
@@ -182,15 +183,15 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
             error: _error,
             obscureText: true,
           ),
+          WidgetConstant.height20,
+          Text("mn_password".tr, style: context.textTheme.titleMedium),
+          Text("enter_passphrase_desc".tr),
           WidgetConstant.height8,
-          PageTitleSubtitle(
-            title: "mn_password".tr,
-            body: Text("enter_passphrase_desc".tr),
-          ),
           AppSwitchListTile(
-            title: Text("enable_mnemonic_password".tr),
+            title: Text("passphrase".tr),
             value: passphrase,
             onChanged: usePassphrase,
+            subtitle: Text("enable_mnemonic_password".tr),
           ),
           AnimatedSize(
             duration: AppGlobalConst.animationDuraion,
@@ -201,6 +202,7 @@ class _EnterMnemonicBackupViewState extends State<EnterMnemonicBackupView>
                     padding: WidgetConstant.paddingHorizontal20,
                     child: Column(
                       children: [
+                        WidgetConstant.height8,
                         AppTextField(
                           label: "mn_password".tr,
                           obscureText: true,

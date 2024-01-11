@@ -66,17 +66,12 @@ class _SetupWalletPasswordState extends State<SetupWalletPassword>
         children: [
           PageTitleSubtitle(
             title: "setup_password".tr,
-            subtitle: 'p_note'.tr,
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("p_note1".tr),
-                WidgetConstant.height8,
-                Text("p_note2".tr),
-                WidgetConstant.height8,
-                Text("p_note3".tr),
-                WidgetConstant.height8,
-                Text("p_note4".tr),
+            body: LargeTextView(
+              [
+                "p_note1".tr,
+                "p_note2".tr,
+                "p_note3".tr,
+                "p_note4".tr,
               ],
             ),
           ),

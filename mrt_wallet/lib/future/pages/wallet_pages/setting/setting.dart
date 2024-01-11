@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/about.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -140,35 +139,34 @@ class _AppSettingViewState extends State<AppSettingView> {
               AppListTile(
                 onTap: () {
                   context.openSliverDialog(
-                        (ctx) =>
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PageTitleSubtitle(
-                              title: null,
-                              body: Text("select_color_from_blow".tr)),
-                          WidgetConstant.height20,
-                          Wrap(
-                            children:
-                                List.generate(_defaultColors.length, (index) {
-                              return InkWell(
-                                onTap: () {
-                                  context.pop(null);
-                                  changeColor(_defaultColors[index]);
-                                },
-                                child: Padding(
-                                  padding: WidgetConstant.padding10,
-                                  child: Icon(
-                                    Icons.color_lens,
-                                    color: _defaultColors[index],
-                                    size: AppGlobalConst.double40,
-                                  ),
-                                ),
-                              );
-                            }),
-                          )
-                        ],
-                      ),
+                      (ctx) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              PageTitleSubtitle(
+                                  title: null,
+                                  body: Text("select_color_from_blow".tr)),
+                              WidgetConstant.height20,
+                              Wrap(
+                                children: List.generate(_defaultColors.length,
+                                    (index) {
+                                  return InkWell(
+                                    onTap: () {
+                                      context.pop(null);
+                                      changeColor(_defaultColors[index]);
+                                    },
+                                    child: Padding(
+                                      padding: WidgetConstant.padding10,
+                                      child: Icon(
+                                        Icons.color_lens,
+                                        color: _defaultColors[index],
+                                        size: AppGlobalConst.double40,
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              )
+                            ],
+                          ),
                       "primary_color_palette".tr);
                 },
                 leading: const Icon(Icons.color_lens),
@@ -182,8 +180,7 @@ class _AppSettingViewState extends State<AppSettingView> {
                 subtitle: Text("essence_of_mrt_wallet".tr),
                 onTap: () {
                   context.openSliverDialog(
-                        (ctx) =>
-                      const AbountWalletView(), AppGlobalConst.name);
+                      (ctx) => const AbountWalletView(), AppGlobalConst.name);
                 },
               ),
               WidgetConstant.height20,

@@ -81,4 +81,42 @@ mixin Signer on MasterKeyImpl {
       request.transaction.setMultiSigSignature(signerSignatures);
     }
   }
+
+  ETHSignature _signEthTransaction(
+      {required Secp256k1SigningRequest request, required List<int> password}) {
+    final bipKey = _getPrivateKey(password, request.signers.first);
+    final ethPrivateKey = ETHPrivateKey.fromBytes(bipKey.privateKey.raw);
+    return ethPrivateKey.sign(request.transactionDigest);
+  }
+
+  List<List<int>> _signTronTransaction(
+      {required Secp256k1SigningRequest request, required List<int> password}) {
+    if (request.isMultiSig) {
+      final multiSigAddress = request.addresses.first as ITronMultisigAddress;
+      final List<List<int>> signerSignatures = [];
+      BigInt threshHold = BigInt.zero;
+      for (final i in multiSigAddress.multiSignatureAccount.signers) {
+        try {
+          final bipKey = _getPrivateKey(password, i.keyIndex);
+          final tronPrivateKey =
+              TronPrivateKey.fromBytes(bipKey.privateKey.raw);
+          final sig = tronPrivateKey.sign(request.transactionDigest);
+          signerSignatures.add(List<int>.unmodifiable(sig));
+          threshHold += i.weight;
+          if (threshHold >= multiSigAddress.multiSignatureAccount.threshold) {
+            break;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+      if (threshHold < multiSigAddress.multiSignatureAccount.threshold) {
+        throw WalletExceptionConst.privateKeyIsNotAvailable;
+      }
+      return signerSignatures;
+    }
+    final bipKey = _getPrivateKey(password, request.signers.first);
+    final tronPrivateKey = TronPrivateKey.fromBytes(bipKey.privateKey.raw);
+    return [tronPrivateKey.sign(request.transactionDigest)];
+  }
 }

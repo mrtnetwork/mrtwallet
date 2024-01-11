@@ -1,16 +1,12 @@
-import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class RippleMultiSigSignerDetais
-    with Equatable, CborSerializable
-    implements MultiSignatureSigner {
-  RippleMultiSigSignerDetais._(
-      {required this.publicKey, required int weight, required this.keyIndex})
-      : _wieght = weight;
+class RippleMultiSigSignerDetais with Equatable, CborSerializable {
+  const RippleMultiSigSignerDetais._(
+      {required this.publicKey, required this.weight, required this.keyIndex});
 
   factory RippleMultiSigSignerDetais(
       {required List<int> publicKey,
@@ -33,11 +29,9 @@ class RippleMultiSigSignerDetais
     return RippleMultiSigSignerDetais(
         publicKey: publicKey, weight: weight, keyIndex: keyIndex);
   }
-  @override
+
   final String publicKey;
-  int _wieght;
-  @override
-  int get weight => _wieght;
+  final int weight;
 
   final AddressDerivationIndex keyIndex;
   String get path => keyIndex.path;

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/blockchin_utils/ripple_utils.dart';
 import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/receipt_address_view.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/select_account.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/select_address.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
+
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/global/controll_ripple_transaction_account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -24,13 +21,12 @@ class SetupRippleMutlisigAddressView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControllerRippleTransactionAccountView(
       title: "setup_address".tr,
-      childBulder:
-          (wallet, account, address, network, provider, switchRippleAccount) {
+      childBulder: (wallet, account, address, switchRippleAccount) {
         return _SetupRippleMutlisigAddressView(
-          account: account,
-          provider: provider,
+          account: account.account,
+          provider: account.provider(),
           wallet: wallet,
-          network: network,
+          network: account.network as AppXRPNetwork,
         );
       },
     );
@@ -225,202 +221,216 @@ class _SetupRippleMutlisigAddressViewState
         backToIdle: AppGlobalConst.oneSecoundDuration,
         initialStatus: PageProgressStatus.idle,
         child: () => UnfocusableChild(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                  child: ConstraintsBoxView(
-                      padding: WidgetConstant.paddingHorizontal20,
-                      child: AnimatedSwitcher(
-                          duration: AppGlobalConst.animationDuraion,
-                          child: AnimatedSwitcher(
+          child: Center(
+            child: CustomScrollView(
+              shrinkWrap: true,
+              slivers: [
+                SliverToBoxAdapter(
+                    child: ConstraintsBoxView(
+                        padding: WidgetConstant.paddingHorizontal20,
+                        child: AnimatedSwitcher(
                             duration: AppGlobalConst.animationDuraion,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                WidgetConstant.height20,
-                                PageTitleSubtitle(
-                                    title: "multi_sig_addr".tr,
-                                    body: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                            "ripple_multi_sig_address_desc".tr),
-                                        if (inInfoPage) ...[
-                                          WidgetConstant.height8,
-                                          Text("ripple_multi_sig_address_desc2"
-                                              .tr)
-                                        ]
-                                      ],
-                                    )),
-                                inInfoPage
-                                    ? Column(
+                            child: AnimatedSwitcher(
+                              duration: AppGlobalConst.animationDuraion,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  WidgetConstant.height20,
+                                  PageTitleSubtitle(
+                                      title: "multi_sig_addr".tr,
+                                      body: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
-                                        key: ValueKey(page),
                                         children: [
-                                          Text("multi_sig_feature_type".tr,
-                                              style: context
-                                                  .textTheme.titleMedium),
-                                          WidgetConstant.height8,
-                                          RadioListTile<_MultiSigType>(
-                                              title: Text("regular_key".tr),
-                                              value: _MultiSigType.regularKey,
-                                              groupValue: addressType,
-                                              subtitle: regularKey == null
-                                                  ? Text(
-                                                      "account_does_not_support_feature"
-                                                          .tr)
-                                                  : null,
-                                              onChanged: regularKey == null
-                                                  ? null
-                                                  : onChangeType),
-                                          RadioListTile<_MultiSigType>(
-                                              value: _MultiSigType.signerList,
-                                              title: Text("signer_list".tr),
-                                              groupValue: addressType,
-                                              subtitle: signerList == null
-                                                  ? Text(
-                                                      "account_does_not_support_feature"
-                                                          .tr)
-                                                  : null,
-                                              onChanged: signerList == null
-                                                  ? null
-                                                  : onChangeType),
-                                          AnimatedSwitcher(
-                                            duration:
-                                                AppGlobalConst.animationDuraion,
-                                            child: addressType == null
-                                                ? WidgetConstant.sizedBox
-                                                : addressType ==
-                                                        _MultiSigType.regularKey
-                                                    ? _RegularKeyFeatureView(
-                                                        regularKey: regularKey!,
-                                                        onSetupRegularKey:
-                                                            onSetupRegularKey,
-                                                        hasRegularKey:
-                                                            hasRegularKey,
-                                                        onTapSetup: () {
-                                                          context
-                                                              .openSliverBottomSheet<
-                                                                  IXRPAddress>(
-                                                                "select_account"
-                                                                    .tr,
-                                                                minExtent: 0.5,
-                                                                child: SwitchOrSelectAccountView(
-                                                                    account: widget
-                                                                        .account),
-                                                                maxExtend: 0.9,
-                                                                initialExtend:
-                                                                    0.7,
-                                                              )
-                                                              .then(
-                                                                  onCheckRegularKey);
-                                                        },
-                                                      )
-                                                    : _SignerListFeatureView(
-                                                        signerQuorum:
-                                                            signerList!
-                                                                .signerQuorum,
-                                                        sumOfWeight:
-                                                            sumOfWeight,
-                                                        onTapSetup:
-                                                            onSetupSignerList,
-                                                        signers: signers,
-                                                        onTapSigner: (p0, p1) {
-                                                          if (p1 != null) {
-                                                            onAddSigner(
-                                                                null, p0);
-                                                            return;
-                                                          }
-                                                          context
-                                                              .openSliverBottomSheet<
-                                                                  IXRPAddress>(
-                                                            "select_account".tr,
-                                                            minExtent: 0.5,
-                                                            child: SwitchOrSelectAccountView(
-                                                                account: widget
-                                                                    .account),
-                                                            maxExtend: 0.9,
-                                                            initialExtend: 0.7,
-                                                          )
-                                                              .then(
-                                                            (value) {
-                                                              if (value ==
-                                                                  null) {
-                                                                return;
-                                                              }
+                                          Text("ripple_multi_sig_address_desc"
+                                              .tr),
+                                          if (inInfoPage) ...[
+                                            WidgetConstant.height8,
+                                            Text(
+                                                "ripple_multi_sig_address_desc2"
+                                                    .tr)
+                                          ]
+                                        ],
+                                      )),
+                                  inInfoPage
+                                      ? Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          key: ValueKey(page),
+                                          children: [
+                                            Text("multi_sig_feature_type".tr,
+                                                style: context
+                                                    .textTheme.titleMedium),
+                                            WidgetConstant.height8,
+                                            RadioListTile<_MultiSigType>(
+                                                title: Text("regular_key".tr),
+                                                value: _MultiSigType.regularKey,
+                                                groupValue: addressType,
+                                                subtitle: regularKey == null
+                                                    ? Text(
+                                                        "account_does_not_support_feature"
+                                                            .tr)
+                                                    : null,
+                                                onChanged: regularKey == null
+                                                    ? null
+                                                    : onChangeType),
+                                            RadioListTile<_MultiSigType>(
+                                                value: _MultiSigType.signerList,
+                                                title: Text("signer_list".tr),
+                                                groupValue: addressType,
+                                                subtitle: signerList == null
+                                                    ? Text(
+                                                        "account_does_not_support_feature"
+                                                            .tr)
+                                                    : null,
+                                                onChanged: signerList == null
+                                                    ? null
+                                                    : onChangeType),
+                                            AnimatedSwitcher(
+                                              duration: AppGlobalConst
+                                                  .animationDuraion,
+                                              child: addressType == null
+                                                  ? WidgetConstant.sizedBox
+                                                  : addressType ==
+                                                          _MultiSigType
+                                                              .regularKey
+                                                      ? _RegularKeyFeatureView(
+                                                          regularKey:
+                                                              regularKey!,
+                                                          onSetupRegularKey:
+                                                              onSetupRegularKey,
+                                                          hasRegularKey:
+                                                              hasRegularKey,
+                                                          onTapSetup: () {
+                                                            context
+                                                                .openSliverBottomSheet<
+                                                                    IXRPAddress>(
+                                                                  "select_account"
+                                                                      .tr,
+                                                                  minExtent:
+                                                                      0.5,
+                                                                  child: SwitchOrSelectAccountView(
+                                                                      account:
+                                                                          widget
+                                                                              .account),
+                                                                  maxExtend:
+                                                                      0.9,
+                                                                  initialExtend:
+                                                                      0.7,
+                                                                  centerContent:
+                                                                      false,
+                                                                )
+                                                                .then(
+                                                                    onCheckRegularKey);
+                                                          },
+                                                        )
+                                                      : _SignerListFeatureView(
+                                                          signerQuorum:
+                                                              signerList!
+                                                                  .signerQuorum,
+                                                          sumOfWeight:
+                                                              sumOfWeight,
+                                                          onTapSetup:
+                                                              onSetupSignerList,
+                                                          signers: signers,
+                                                          onTapSigner:
+                                                              (p0, p1) {
+                                                            if (p1 != null) {
                                                               onAddSigner(
-                                                                  value, p0);
-                                                            },
-                                                          );
-                                                        },
+                                                                  null, p0);
+                                                              return;
+                                                            }
+                                                            context
+                                                                .openSliverBottomSheet<
+                                                                    IXRPAddress>(
+                                                              "select_account"
+                                                                  .tr,
+                                                              minExtent: 0.5,
+                                                              child: SwitchOrSelectAccountView(
+                                                                  account: widget
+                                                                      .account),
+                                                              maxExtend: 0.9,
+                                                              initialExtend:
+                                                                  0.7,
+                                                            )
+                                                                .then(
+                                                              (value) {
+                                                                if (value ==
+                                                                    null) {
+                                                                  return;
+                                                                }
+                                                                onAddSigner(
+                                                                    value, p0);
+                                                              },
+                                                            );
+                                                          },
+                                                        ),
+                                            )
+                                          ],
+                                        )
+                                      : Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            ReceiptAddressView(
+                                              title: "account".tr,
+                                              subtitle:
+                                                  "ripple_multi_sig_account_desc"
+                                                      .tr,
+                                              onTap: () {
+                                                context
+                                                    .openSliverBottomSheet<
+                                                        ReceiptAddress>(
+                                                      "multi_sig_addr".tr,
+                                                      maxExtend: 0.8,
+                                                      minExtent: 0.7,
+                                                      initialExtend: 0.7,
+                                                      child:
+                                                          SelectNetworkAddressView(
+                                                        account: widget.account,
+                                                        subtitle:
+                                                            PageTitleSubtitle(
+                                                                title: "account"
+                                                                    .tr,
+                                                                body: Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Text(
+                                                                      "ripple_multi_sig_account_desc"
+                                                                          .tr,
+                                                                    )
+                                                                  ],
+                                                                )),
                                                       ),
-                                          )
-                                        ],
-                                      )
-                                    : Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          ReceiptAddressView(
-                                            title: "account".tr,
-                                            subtitle:
-                                                "ripple_multi_sig_account_desc"
-                                                    .tr,
-                                            onTap: () {
-                                              context
-                                                  .openSliverBottomSheet<
-                                                      ReceiptAddress>(
-                                                    "multi_sig_addr".tr,
-                                                    maxExtend: 0.8,
-                                                    minExtent: 0.7,
-                                                    initialExtend: 0.7,
-                                                    child:
-                                                        SelectNetworkAddressView(
-                                                      account: widget.account,
-                                                      subtitle:
-                                                          PageTitleSubtitle(
-                                                              title:
-                                                                  "account".tr,
-                                                              body: Column(
-                                                                crossAxisAlignment:
-                                                                    CrossAxisAlignment
-                                                                        .start,
-                                                                children: [
-                                                                  Text(
-                                                                    "ripple_multi_sig_account_desc"
-                                                                        .tr,
-                                                                  )
-                                                                ],
-                                                              )),
-                                                    ),
-                                                  )
-                                                  .then(onSelectAddress);
-                                            },
-                                            address: address,
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              FixedElevatedButton(
-                                                  padding: WidgetConstant
-                                                      .paddingVertical20,
-                                                  onPressed: address == null
-                                                      ? null
-                                                      : onAccountInformation,
-                                                  child: Text(
-                                                      "get_account_information"
-                                                          .tr))
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                              ],
-                            ),
-                          )))),
-            ],
+                                                    )
+                                                    .then(onSelectAddress);
+                                              },
+                                              address: address,
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                FixedElevatedButton(
+                                                    padding: WidgetConstant
+                                                        .paddingVertical20,
+                                                    onPressed: address == null
+                                                        ? null
+                                                        : onAccountInformation,
+                                                    child: Text(
+                                                        "get_account_information"
+                                                            .tr))
+                                              ],
+                                            )
+                                          ],
+                                        ),
+                                ],
+                              ),
+                            )))),
+              ],
+            ),
           ),
         ),
       ),

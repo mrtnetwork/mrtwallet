@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/about.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
@@ -49,6 +48,7 @@ class HomeScreen extends StatelessWidget {
                             ? NetworkAccountPageView(wallet: model)
                             : ConstraintsBoxView(
                                 padding: WidgetConstant.padding20,
+                                alignment: Alignment.center,
                                 child: SingleChildScrollView(
                                   child: Column(
                                     crossAxisAlignment:
@@ -156,18 +156,19 @@ class _BottomAppBar extends StatelessWidget {
                         .openSliverBottomSheet<CryptoAccountAddress>(
                           "switch_account".tr,
                           child: SwitchOrSelectAccountView(
-                              account: wallet.networkAccount),
+                              account: wallet.chain.account),
+                          centerContent: false,
                           appbarActions: [
                             Padding(
                               padding: WidgetConstant.paddingHorizontal10,
-                              child: FilledButton.icon(
+                              child: FixedElevatedButton.icon(
                                   onPressed: () {
                                     context.to(
                                         PagePathConst.setupAddressPage(
                                             wallet.network),
-                                        argruments: wallet.networkAccount);
+                                        argruments: wallet.chain.account);
                                   },
-                                  icon: const Icon(Icons.add),
+                                  icon: const Icon(Icons.add_box),
                                   label: Text("new_address".tr)),
                             )
                           ],
@@ -183,7 +184,7 @@ class _BottomAppBar extends StatelessWidget {
             Row(
               children: [
                 IconButton(
-                  tooltip: 'lock'.tr,
+                  tooltip: "lock_wallet".tr,
                   icon: const Icon(Icons.lock),
                   onPressed: () {
                     model.lock();
@@ -192,7 +193,7 @@ class _BottomAppBar extends StatelessWidget {
                 IconButton(
                     tooltip: "switch_network".tr,
                     onPressed: () async {
-                      await showAdaptiveDialog<AppNetworkImpl>(
+                      await showAdaptiveDialog<int>(
                         context: context,
                         useRootNavigator: false,
                         builder: (context) {
@@ -200,7 +201,16 @@ class _BottomAppBar extends StatelessWidget {
                             selectedNetwork: model.network,
                           );
                         },
-                      ).then(model.switchNetwork);
+                      ).then(
+                        (value) {
+                          if (value == null) return;
+                          if (value.isNegative) {
+                            context.to(PagePathConst.importEVMNetwork);
+                          } else {
+                            model.switchNetwork(value);
+                          }
+                        },
+                      );
                     },
                     icon: const Icon(Icons.account_tree_sharp)),
                 IconButton(

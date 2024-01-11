@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:mrt_wallet/types/typedef.dart';
+import 'dart:math' as math;
 
 class AppStringUtility {
   static bool isStrongPassword(String? password) {
@@ -47,27 +48,73 @@ class AppStringUtility {
     return camelCaseString;
   }
 
-  static String to3Digits(String number, {String separator = ","}) {
-    String str = "";
-    List<String> numberSplit = number.split('.');
-    number = numberSplit[0].replaceAll(separator, '');
-    for (int i = number.length; i > 0;) {
-      if (i > 3) {
-        str = separator + number.substring(i - 3, i) + str;
-      } else {
-        str = number.substring(0, i) + str;
-      }
-      i = i - 3;
-    }
-    if (numberSplit.length > 1) {
-      str += '.${numberSplit[1]}';
-    }
-    return str;
-  }
-
   static String? validateLengthOrNull(String? val, int length) {
     if (val == null || val.length > length) return null;
     return val;
+  }
+
+  static String to3Digits(String number, {String separator = ","}) {
+    String integerPart = '';
+    String fractionalPart = '';
+
+    if (number.contains('.')) {
+      List<String> parts = number.split('.');
+      integerPart = parts[0];
+      fractionalPart = parts[1];
+    } else {
+      integerPart = number;
+    }
+
+    List<String> groups = [];
+    int i = integerPart.length;
+    while (i > 0) {
+      String group = integerPart.substring(math.max(0, i - 3), i);
+      groups.insert(0, group);
+
+      i -= 3;
+    }
+
+    final String result = groups.join(separator) +
+        (fractionalPart.isEmpty ? '' : '.$fractionalPart');
+
+    return result;
+  }
+
+  static String? validateUri(String? url,
+      {List<String> schame = const ['http', 'https']}) {
+    if (url == null) return null;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return null;
+    if (uri.host.isEmpty) return null;
+    if (!schame.contains(uri.scheme.toLowerCase())) return null;
+    if (!uri.host.contains(".")) return null;
+    return uri.normalizePath().toString();
+  }
+
+  static int findFirstMissingNumber(List<int> numbers, {int start = 0}) {
+    final List<int> sortedNumbers = List.from(numbers)..sort();
+    int missingNumber = start;
+
+    for (int number in sortedNumbers) {
+      if (number == missingNumber) {
+        missingNumber++;
+      } else if (number > missingNumber) {
+        break;
+      }
+    }
+    return missingNumber;
+  }
+
+  static String addNumberToMakeUnique(List<String> list, String target) {
+    int count = 1;
+    String result = target;
+
+    while (list.contains(result)) {
+      count++;
+      result = '$target ($count)';
+    }
+
+    return result;
   }
 }
 

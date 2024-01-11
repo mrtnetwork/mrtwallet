@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
@@ -38,7 +37,8 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
   bool deleted = false;
 
-  void deleteAccount() async {
+  void deleteAccount(bool? accept) async {
+    if (accept != true) return;
     final model = context.watch<WalletProvider>(StateIdsConst.main);
     progressKey.progressText("remove_account_pls_wait".tr);
     final result = await model.removeAccount(widget.account);
@@ -98,7 +98,7 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
                             ],
                           )),
                       Text("address_details".tr,
-                          style: context.textTheme.titleLarge),
+                          style: context.textTheme.titleMedium),
                       WidgetConstant.height8,
                       ContainerWithBorder(
                           child: AddressDetailsView(
@@ -108,9 +108,28 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
                         children: [
                           Padding(
                             padding: WidgetConstant.paddingVertical20,
-                            child: FilledButton.icon(
+                            child: FixedElevatedButton.icon(
                                 label: Text("remove_account".tr),
-                                onPressed: deleteAccount,
+                                onPressed: () {
+                                  context
+                                      .openSliverDialog<bool>(
+                                        (p0) => DialogTextView(
+                                            buttomWidget:
+                                                DialogDoubleButtonView(
+                                              firstButtonLabel: "remove".tr,
+                                              secoundButtonLabel: "cancel".tr,
+                                            ),
+                                            widget: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text("remove_account_desc".tr),
+                                              ],
+                                            )),
+                                        "remove_account".tr,
+                                      )
+                                      .then(deleteAccount);
+                                },
                                 icon: Icon(Icons.delete,
                                     color: context.colors.error)),
                           )

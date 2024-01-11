@@ -1,9 +1,7 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/secure_flag_state.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -82,6 +80,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
   final List<CryptoCoins> coins = [];
   CryptoCoins? wifCoin;
   bool inited = false;
+  String? keyName;
 
   late final Map<CryptoCoins, Widget> supportedCoins = {
     for (final i in coins)
@@ -117,6 +116,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
     try {
       if (inited) return;
       inited = true;
+      keyName = widget.customKey?.name;
       coin = widget.network.coins.firstWhere((element) =>
           element.conf.type ==
           (widget.account?.coin.conf.type ?? widget.customKey!.type));
@@ -188,9 +188,11 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
       backToIdle: AppGlobalConst.oneSecoundDuration,
       child: () => ConstraintsBoxView(
         padding: WidgetConstant.paddingHorizontal20,
+        alignment: Alignment.center,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               WidgetConstant.height20,
               PageTitleSubtitle(
@@ -210,6 +212,12 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                           address: widget.account!, isSelected: false),
                       barcodeTitle: "address_sharing".tr),
                 ),
+                WidgetConstant.height20,
+              ],
+              if (keyName != null) ...[
+                Text("key_name".tr, style: context.textTheme.titleMedium),
+                WidgetConstant.height8,
+                ContainerWithBorder(child: Text(keyName ?? "")),
                 WidgetConstant.height20,
               ],
               Text("private_key".tr, style: context.textTheme.titleMedium),

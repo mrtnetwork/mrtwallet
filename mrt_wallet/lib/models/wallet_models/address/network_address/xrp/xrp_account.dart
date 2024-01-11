@@ -1,8 +1,6 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:blockchain_utils/compare/compare.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/blockchin_utils/ripple_utils.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/address/address.dart';
 import 'package:mrt_wallet/models/wallet_models/currency_balance/balance.dart';
@@ -66,23 +64,23 @@ class IXRPAddress
       address: addressDetauls,
       keyIndex: accountParams.deriveIndex,
       networkAddress: rippleAddress,
-      network: network,
+      network: network.value,
       tag: accountParams.tag,
       curveType: accountParams.type,
       tokens: const [],
       nfts: const [],
     );
   }
-  factory IXRPAddress.fromCbsorHex(String hex) {
-    return IXRPAddress.fromCborBytesOrObject(
+  factory IXRPAddress.fromCbsorHex(AppNetworkImpl network, String hex) {
+    return IXRPAddress.fromCborBytesOrObject(network,
         bytes: BytesUtils.fromHexString(hex));
   }
-  factory IXRPAddress.fromCborBytesOrObject(
+  factory IXRPAddress.fromCborBytesOrObject(AppNetworkImpl network,
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
     if (bytesEqual(
         toCborTag.tags, WalletModelCborTagsConst.rippleMultisigAccount)) {
-      return IXRPMultisigAddress.fromCborBytesOrObject(obj: toCborTag);
+      return IXRPMultisigAddress.fromCborBytesOrObject(network, obj: toCborTag);
     }
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
@@ -92,7 +90,10 @@ class IXRPAddress
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     final List<int> publicKey = cbor.getIndex(3);
-    final network = AppXRPNetwork.fromValue(cbor.getIndex(7));
+    final networkId = cbor.getIndex(7);
+    if (networkId != network.value) {
+      throw WalletExceptionConst.incorrectNetwork;
+    }
     final NoneDecimalNetworkAddressDetails address =
         NoneDecimalNetworkAddressDetails.fromCborBytesOrObject(
             network.coinParam.decimal,
@@ -126,7 +127,7 @@ class IXRPAddress
         address: address,
         keyIndex: keyIndex,
         networkAddress: rippleAddress,
-        network: network,
+        network: networkId,
         tag: tag,
         curveType: curveType,
         tokens: issueTokens,
@@ -149,7 +150,7 @@ class IXRPAddress
   final AddressDerivationIndex keyIndex;
 
   @override
-  final AppNetworkImpl network;
+  final int network;
 
   @override
   final List<int> publicKey;
@@ -168,7 +169,7 @@ class IXRPAddress
           address.toCbor(),
           networkAddress.toString(),
           tag == null ? const CborNullValue() : CborIntValue(tag!),
-          network.value,
+          network,
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
           curveType.name,
@@ -250,6 +251,9 @@ class IXRPAddress
   void setAccountName(String? name) {
     _accountName = name;
   }
+
+  @override
+  String get orginalAddress => networkAddress.address;
 }
 
 class IXRPMultisigAddress extends IXRPAddress
@@ -286,12 +290,12 @@ class IXRPMultisigAddress extends IXRPAddress
         multiSignatureAccount: accountParams.multiSigAccount,
         address: addressDetauls,
         networkAddress: accountParams.masterAddress,
-        network: network,
+        network: network.value,
         tag: accountParams.tag,
         tokens: const [],
         nfts: const []);
   }
-  factory IXRPMultisigAddress.fromCborBytesOrObject(
+  factory IXRPMultisigAddress.fromCborBytesOrObject(AppNetworkImpl network,
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
 
@@ -302,7 +306,10 @@ class IXRPMultisigAddress extends IXRPAddress
     final CryptoCoins coin =
         CryptoCoins.getCoin(cbor.value[1].value, proposal)!;
 
-    final network = AppXRPNetwork.fromValue(cbor.value[7].value);
+    final int networkId = cbor.getIndex(7);
+    if (networkId != network.value) {
+      throw WalletExceptionConst.incorrectNetwork;
+    }
     final NoneDecimalNetworkAddressDetails address =
         NoneDecimalNetworkAddressDetails.fromCborBytesOrObject(
             network.coinParam.decimal,
@@ -335,7 +342,7 @@ class IXRPMultisigAddress extends IXRPAddress
         coin: coin,
         address: address,
         networkAddress: rippleAddress,
-        network: network,
+        network: networkId,
         tag: tag,
         tokens: issueTokens,
         multiSignatureAccount: multiSigAccount,
@@ -368,7 +375,7 @@ class IXRPMultisigAddress extends IXRPAddress
           address.toCbor(),
           networkAddress.toString(),
           tag == null ? const CborNullValue() : CborIntValue(tag!),
-          network.value,
+          network,
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
           const CborNullValue(),

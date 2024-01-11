@@ -2,7 +2,7 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/currency_balance/balance.dart';
-import 'package:mrt_wallet/models/wallet_models/network/params/token.dart';
+import 'package:mrt_wallet/models/wallet_models/network/params/core/token.dart';
 import 'package:mrt_wallet/models/wallet_models/token/core/core.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
@@ -41,6 +41,7 @@ class RippleIssueToken with Equatable implements TokenCore<BigRational> {
   @override
   DateTime get updated => _updated;
 
+  @override
   final String issuer;
   @override
   void updateBalance([BigRational? updateBalance]) {
@@ -68,4 +69,7 @@ class RippleIssueToken with Equatable implements TokenCore<BigRational> {
 
   @override
   final Token token;
+
+  @override
+  final String? type = null;
 }

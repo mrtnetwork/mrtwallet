@@ -6,7 +6,6 @@ abstract class _WalletCore extends StateController
         WalletStorageImpl,
         WalletCryptoImpl,
         MasterKeyImpl,
-        NetworkApiProviderImpl,
         WalletNetworkImpl,
         Signer {}
 
@@ -32,10 +31,10 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
   }
 
   Future<MethodResult<void>> setupBackup(
-      WalletBackup backup, String password) async {
+      WalletBackupCore backup, String password) async {
     try {
       final result = await _callSynchronized(
-          () async => await _setupBackup(backup, password),
+          () async => await _setupBackupV2(backup, password),
           conditionStatus: WalletStatus.setup,
           onSuccessStatus: WalletStatus.lock);
 
@@ -219,10 +218,10 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     }
   }
 
-  Future<void> switchNetwork(AppNetworkImpl? network) async {
-    if (network == null || network == _network) return;
+  Future<void> switchNetwork(int? networkId) async {
+    if (networkId == null || network.value == networkId) return;
     pageStatusHandler.progressText("switching_network".tr);
-    await _callSynchronized(() async => await _switchNetwork(network),
+    await _callSynchronized(() async => await _switchNetwork(networkId),
         conditionStatus: WalletStatus.unlock);
     _backToHome();
     pageStatusHandler.success();
@@ -276,17 +275,33 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     return result;
   }
 
+  Future<void> importEVMNetwork(APPEVMNetwork network) async {
+    try {
+      final result = await _callSynchronized(
+          () async => await _importEVMNetwor(network),
+          conditionStatus: WalletStatus.unlock);
+      if (result.hasError) {
+        throw result.exception!;
+      }
+      return result.result;
+    } finally {
+      notify();
+    }
+  }
+
   Future<MethodResult<String>?> generateWalletBackup(
       String password, SecretWalletEncoding encoding) async {
     final result = await _callSynchronized(() async {
-      return await _getWalletBackup(password, encoding: encoding);
+      return await _getWalletBackupV2(password, encoding: encoding);
     }, conditionStatus: WalletStatus.unlock);
     return result;
   }
 
   Future<MethodResult<void>> switchAccount(
       CryptoAccountAddress? account) async {
-    if (account == null || account == _account?.address) {
+    if (account == null ||
+        !chain.haveAddress ||
+        account == chain.account.address) {
       return MethodResult.succsess(null);
     }
     pageStatusHandler.progressText("switching_account".tr);
@@ -362,6 +377,26 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     return result;
   }
 
+  Future<MethodResult<ETHSignature>> signETHTransaction(
+      {required Secp256k1SigningRequest request}) async {
+    final result = await _callSynchronized(() async {
+      final password = await _getPassword(request);
+      return _signEthTransaction(
+          request: request, password: _validatePassword(password));
+    }, conditionStatus: WalletStatus.unlock);
+    return result;
+  }
+
+  Future<MethodResult<List<List<int>>>> signTronTransaction(
+      {required Secp256k1SigningRequest request}) async {
+    final result = await _callSynchronized(() async {
+      final password = await _getPassword(request);
+      return _signTronTransaction(
+          request: request, password: _validatePassword(password));
+    }, conditionStatus: WalletStatus.unlock);
+    return result;
+  }
+
   Future<MethodResult<void>> signRippleTransaction(
       {required RippleSigningRequest request}) async {
     final result = await _callSynchronized(() async {
@@ -400,13 +435,13 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
 
   Future<void> updateBalance() async {
     await MethodCaller.call(() async {
-      await _updateAccountBalance(_account);
+      await _updateAccountBalance(chain);
     });
   }
 
   Future<void> updateAccountBalance() async {
     await MethodCaller.call(() async {
-      await _updateAccountsBalance(_account);
+      await _updateAccountsBalance(chain);
     });
   }
 

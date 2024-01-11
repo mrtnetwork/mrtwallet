@@ -42,22 +42,20 @@ class CoinPriceView extends StatelessWidget {
   const CoinPriceView({
     Key? key,
     this.account,
-    this.token,
+    required this.token,
     this.balance,
     this.liveBalance,
     this.style,
     this.symbolColor,
     this.disableTooltip = false,
   })  : assert(
-            (token == null && account != null) ||
-                (account == null &&
-                    (balance != null || liveBalance != null) &&
-                    token != null),
+            (account != null) ||
+                (account == null && (balance != null || liveBalance != null)),
             "use account or balance with coinName"),
         super(key: key);
 
   final CryptoAccountAddress? account;
-  final Token? token;
+  final Token token;
   final BalanceCore? balance;
   final Live<BalanceCore>? liveBalance;
   final TextStyle? style;
@@ -65,7 +63,7 @@ class CoinPriceView extends StatelessWidget {
   final bool disableTooltip;
   @override
   Widget build(BuildContext context) {
-    final Token coin = token ?? account!.network.coinParam.token;
+    final Token coin = token;
     final theme = Theme.of(context);
     return LiveWidget(() {
       final price = balance?.price ??
@@ -79,29 +77,34 @@ class CoinPriceView extends StatelessWidget {
                 price: price,
                 symbol: coin.symbol,
               ),
-        child: Directionality(
-          textDirection: TextDirection.ltr,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: RichText(
-                    textDirection: TextDirection.ltr,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                        style: style ?? theme.textTheme.labelLarge,
-                        children: [
-                          TextSpan(text: price.to3Digits),
-                          const TextSpan(text: " "),
-                        ])),
-              ),
-              Text(
-                coin.symbol,
-                style: theme.textTheme.labelSmall
-                    ?.copyWith(color: symbolColor ?? theme.colorScheme.primary),
-              )
-            ],
+        child: GestureDetector(
+          onLongPress: () {
+            account?.address.balance.notify();
+          },
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: RichText(
+                      textDirection: TextDirection.ltr,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      text: TextSpan(
+                          style: style ?? theme.textTheme.labelLarge,
+                          children: [
+                            TextSpan(text: price.to3Digits),
+                            const TextSpan(text: " "),
+                          ])),
+                ),
+                Text(
+                  coin.symbol,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                      color: symbolColor ?? theme.colorScheme.primary),
+                )
+              ],
+            ),
           ),
         ),
       );

@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/app/utility/price/price_utils.dart';
+import 'package:mrt_wallet/app/core.dart';
 
 import 'core/balance_core.dart';
 
@@ -12,10 +12,11 @@ class NoneDecimalBalance implements BalanceCore<BigInt> {
         decimalPlaces ?? (currencyDecimal > 8 ? 8 : currencyDecimal);
     final price = PriceUtils.encodePrice(balance, currencyDecimal,
         amoutDecimal: showDecimal);
-    return NoneDecimalBalance._(balance, price, currencyDecimal, showDecimal);
+    return NoneDecimalBalance._(
+        balance, price, currencyDecimal, showDecimal, price.to3Digits);
   }
-  NoneDecimalBalance._(
-      this._balance, this._price, this.currencyDecimal, this.showDecimal);
+  NoneDecimalBalance._(this._balance, this._price, this.currencyDecimal,
+      this.showDecimal, this._viewPrice);
   BigInt _balance;
   @override
   BigInt get balance => _balance;
@@ -33,6 +34,7 @@ class NoneDecimalBalance implements BalanceCore<BigInt> {
     _price = PriceUtils.encodePrice(updateBalance, currencyDecimal,
         amoutDecimal: showDecimal);
     _balance = updateBalance;
+    _viewPrice = _price.to3Digits;
   }
 
   @override
@@ -44,4 +46,9 @@ class NoneDecimalBalance implements BalanceCore<BigInt> {
   String toString() {
     return _price;
   }
+
+  String _viewPrice;
+
+  @override
+  String get viewPrice => _viewPrice;
 }

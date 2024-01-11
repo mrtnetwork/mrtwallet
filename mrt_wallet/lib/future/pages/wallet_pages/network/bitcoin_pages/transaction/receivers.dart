@@ -1,8 +1,6 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/receipt_address_view.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/types/typedef.dart';

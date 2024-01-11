@@ -1,6 +1,4 @@
-import 'package:mrt_wallet/models/wallet_models/address/core/address.dart';
-import 'package:mrt_wallet/models/wallet_models/address/core/derivation/address_derivation.dart';
-import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/xrp_account.dart';
+import 'package:mrt_wallet/models/wallet_models/address/address.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/models/wallet_models/signing_request/core/signing_request.dart';
 import 'package:xrp_dart/xrp_dart.dart';

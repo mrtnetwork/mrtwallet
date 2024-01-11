@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/address/address.dart';
-import 'package:mrt_wallet/models/wallet_models/signing_request/core/signing_request.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+
 import 'package:mrt_wallet/types/typedef.dart';
 
 class WalletSigningPassword extends StatefulWidget {

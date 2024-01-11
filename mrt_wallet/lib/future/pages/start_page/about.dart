@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
@@ -25,7 +24,7 @@ class AbountWalletView extends StatelessWidget {
         ),
         WidgetConstant.height8,
         const Text(
-            "Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as Ripple, Dogecoin, Litecoin, and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies."),
+            "Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as Ripple, Ethereum, Tron Dogecoin, Litecoin, and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies."),
         WidgetConstant.height20,
         Text(
           "Decentralized, Secure, and Open Source",
@@ -57,7 +56,7 @@ class AbountWalletView extends StatelessWidget {
         ),
         WidgetConstant.height8,
         const Text(
-            "Whether you're navigating the robust Bitcoin mainnet for your financial transactions or experimenting on the testnet to fine-tune your strategies, MRT Wallet is your reliable companion. Seamlessly switch between the secure environments of Bitcoin mainnet and testnet, and explore additional horizons with support for diverse cryptocurrencies like Dogecoin, Dash, Litecoin, and Ripple. MRT Wallet empowers you to transact with confidence across a broad spectrum of digital assets"),
+            "Whether you're navigating the robust Bitcoin mainnet for your financial transactions or experimenting on the testnet to fine-tune your strategies, MRT Wallet is your reliable companion. Seamlessly switch between the secure environments of Bitcoin mainnet and testnet, and explore additional horizons with support for diverse cryptocurrencies like Ethereum, Tron, Dogecoin, Dash, Litecoin, and Ripple. MRT Wallet empowers you to transact with confidence across a broad spectrum of digital assets"),
         WidgetConstant.height20,
         Text("Platform Support", style: context.textTheme.titleLarge),
         WidgetConstant.height8,

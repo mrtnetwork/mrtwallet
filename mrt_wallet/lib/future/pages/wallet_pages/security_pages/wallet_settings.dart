@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
@@ -80,6 +79,7 @@ class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
       backToIdle: AppGlobalConst.oneSecoundDuration,
       child: () => ConstraintsBoxView(
         padding: WidgetConstant.paddingHorizontal20,
+        alignment: Alignment.center,
         child: AnimatedSwitcher(
           duration: AppGlobalConst.animationDuraion,
           child: SingleChildScrollView(

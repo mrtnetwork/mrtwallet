@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/page_path.dart';
-import 'package:mrt_wallet/app/constant/state_ids.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/main.dart';
-import 'package:mrt_wallet/models/wallet_models/account/core/account.dart';
-import 'package:mrt_wallet/models/wallet_models/address/address.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class SwitchOrSelectAccountView extends StatelessWidget {
   const SwitchOrSelectAccountView(

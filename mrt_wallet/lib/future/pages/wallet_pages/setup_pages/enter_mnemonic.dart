@@ -1,7 +1,6 @@
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
@@ -87,12 +86,10 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
         children: [
           PageTitleSubtitle(
             title: "enter_mnemonic".tr,
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("enter_mnemonic_desc".tr),
-                WidgetConstant.height8,
-                Text("enter_mnemonic_desc2".tr),
+            body: LargeTextView(
+              [
+                "enter_mnemonic_desc".tr,
+                "enter_mnemonic_desc2".tr,
               ],
             ),
           ),
@@ -107,13 +104,8 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
           WidgetConstant.height20,
           PageTitleSubtitle(
             title: "mn_password".tr,
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("enter_passphrase_desc".tr),
-                WidgetConstant.height8,
-                Text("extra_opetion_desc".tr)
-              ],
+            body: LargeTextView(
+              ["enter_passphrase_desc".tr, "extra_opetion_desc".tr],
             ),
           ),
           AppSwitchListTile(

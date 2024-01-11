@@ -6,14 +6,23 @@ import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/import_network/edit_network.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/import_network/import_network.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/setup_address.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/token/import_tokens.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/transaction/fields/ethereum_transfer_field_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/setup_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/setup_multi_sig_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/token/import_nfts.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/token/import_token.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/fields/ripple_tranaction_fields_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/fields/transfer.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/backup_wallet.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/manage_account_view.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/setup_address.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/setup_multisig_address.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/token/import_trc10_tokens.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/transaction/fields/tron_transaction_fields.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/transaction/fields/tron_transfer_field_view.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/token/import_token.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/security.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/setting/setting.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/setup_pages/setup.dart';
@@ -111,7 +120,10 @@ class MyBTC extends StatelessWidget {
           title: AppGlobalConst.name,
           scrollBehavior: AppScrollBehavior(PlatformInterface.appPlatform),
           builder: (context, child) {
-            return ConstraintsBoxView(child: child!);
+            if (PlatformInterface.isWindows || PlatformInterface.isWeb) {
+              return ConstraintsBoxView(child: child!);
+            }
+            return child!;
           },
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
@@ -166,8 +178,16 @@ class PageRouter {
         return const ManageImportedKeysView();
       case PagePathConst.setupRippleAddress:
         return const SetupRippleAddressView();
+      case PagePathConst.setupEthAddress:
+        return const SetupEthereumAddressView();
+      case PagePathConst.setupTronAddress:
+        return const SetupTronAddressView();
       case PagePathConst.rippleTransfer:
         return const RippleTransferTransactionView();
+      case PagePathConst.ethereumTransaction:
+        return const EthereumTransferTransactionView();
+      case PagePathConst.tronTransfer:
+        return const TronTransferTransactionView();
       case PagePathConst.rippleAddToken:
         return const MonitorRippleTokenView();
       case PagePathConst.rippleAddNfts:
@@ -176,10 +196,28 @@ class PageRouter {
         return const RippleTransactionFieldsView();
       case PagePathConst.rippleMultisigAddress:
         return const SetupRippleMutlisigAddressView();
+      case PagePathConst.importERC20Token:
+        return const ImportERC20TokenView();
+      case PagePathConst.importTRC20Token:
+        return const ImportTRC20TokenView();
+      case PagePathConst.importTrc10Token:
+        return const MonitorTronTRC10TokenView();
+      case PagePathConst.tronMultiSigAddress:
+        return const SetupTronMultiSigAddressView();
+      case PagePathConst.tronTransaction:
+        return const TronTransactionFieldsView();
+      case PagePathConst.importEVMNetwork:
+        return const ImportEVMNetwork();
+      case PagePathConst.editEvmNetwork:
+        return const EditEVMNetwork();
       default:
         return const HomeScreen();
+
+      /// TronTransactionFieldsView
     }
   }
+
+  /// MonitorTronTRC10TokenView
 
   Route<dynamic> onGenerateRoute(RouteSettings settings) {
     return PageRouteBuilder(

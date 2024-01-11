@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/global/controll_ripple_transaction_account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/xrp_account.dart';
-import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
-import 'package:mrt_wallet/models/wallet_models/token/networks/ripple/ripple_issue_token.dart';
-import 'package:mrt_wallet/provider/api/networks/ripple/custom_request/fetch_token_request.dart';
-import 'package:mrt_wallet/provider/api/networks/ripple/ripple_api_provider.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+
+import 'package:mrt_wallet/provider/api/api_provider.dart';
 
 class MonitorRippleTokenView extends StatelessWidget {
   const MonitorRippleTokenView({super.key});
@@ -17,10 +14,9 @@ class MonitorRippleTokenView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ControllerRippleTransactionAccountView(
       title: "add_token".tr,
-      childBulder:
-          (wallet, account, address, network, provider, switchRippleAccount) {
+      childBulder: (wallet, account, address, switchRippleAccount) {
         return _MonitorRippleTokenView(
-            address: address, wallet: wallet, provider: provider);
+            address: address, wallet: wallet, provider: account.provider());
       },
     );
   }

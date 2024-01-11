@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
-import 'package:mrt_wallet/app/extention/context.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'dart:math' as math;
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -16,6 +15,7 @@ class AppBottomSheet extends StatefulWidget {
       this.minExtent = 0.7,
       this.maxExtend = 1.0,
       this.initiaalExtend,
+      this.centerContent = true,
       this.actions = const []})
       : assert(body != null || child != null,
             "use child or body for build bottomSheet widget");
@@ -26,6 +26,7 @@ class AppBottomSheet extends StatefulWidget {
   final double minExtent;
   final double? initiaalExtend;
   final List<Widget> actions;
+  final bool centerContent;
   @override
   State<AppBottomSheet> createState() => _AppBottomSheetState();
 }
@@ -116,31 +117,47 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                           topRight: Radius.circular(appBarAnimationRadius)),
                       child: widget.body?.call(scroll) ??
                           Scaffold(
+                            appBar: AppBar(
+                              leadingWidth:
+                                  appBarAnimationRadius < 2 ? 56.0 : 0,
+                              actions: widget.actions,
+                              leading: appBarAnimationRadius < 2
+                                  ? null
+                                  : const SizedBox(),
+                              title: Text(widget.label),
+                            ),
                             body: Column(
                               children: [
-                                Expanded(
-                                  child: CustomScrollView(
-                                    controller: scroll,
-                                    slivers: [
-                                      SliverAppBar(
-                                        pinned: true,
-                                        leadingWidth: appBarAnimationRadius < 2
-                                            ? 56.0
-                                            : 0,
-                                        actions: widget.actions,
-                                        leading: appBarAnimationRadius < 2
-                                            ? null
-                                            : const SizedBox(),
-                                        title: Text(widget.label),
+                                if (widget.centerContent)
+                                  Flexible(
+                                    child: Center(
+                                      child: CustomScrollView(
+                                        shrinkWrap: true,
+                                        controller: scroll,
+                                        slivers: [
+                                          SliverToBoxAdapter(
+                                            child: ConstraintsBoxView(
+                                                padding:
+                                                    WidgetConstant.padding20,
+                                                child: widget.child!),
+                                          )
+                                        ],
                                       ),
-                                      SliverToBoxAdapter(
-                                        child: ConstraintsBoxView(
-                                            padding: WidgetConstant.padding20,
-                                            child: widget.child!),
-                                      )
-                                    ],
+                                    ),
+                                  )
+                                else
+                                  Expanded(
+                                    child: CustomScrollView(
+                                      controller: scroll,
+                                      slivers: [
+                                        SliverToBoxAdapter(
+                                          child: ConstraintsBoxView(
+                                              padding: WidgetConstant.padding20,
+                                              child: widget.child!),
+                                        )
+                                      ],
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),

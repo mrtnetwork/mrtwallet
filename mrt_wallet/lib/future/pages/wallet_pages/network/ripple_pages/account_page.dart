@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/provider_tracker_status_view.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/select_provider.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/token_details.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
+
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
-import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/xrp_account.dart';
-import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
-import 'package:mrt_wallet/models/wallet_models/token/networks/ripple/ripple_issue_token.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+import 'package:mrt_wallet/provider/transaction_validator/core/validator.dart';
 import 'package:mrt_wallet/provider/api/core/api_provider.dart';
+import 'package:mrt_wallet/provider/transaction_validator/ripple/ripple.dart';
 
 class RippleAccountPageView extends StatelessWidget {
-  const RippleAccountPageView({required this.account, super.key});
-  final IXRPAddress account;
+  const RippleAccountPageView({required this.chainAccount, super.key});
+  final AppChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -31,8 +29,9 @@ class RippleAccountPageView extends StatelessWidget {
           ]),
           Expanded(
               child: TabBarView(children: [
-            _RippleServicesView(account: account),
-            _RippleTokensView(account: account),
+            _RippleServicesView(chainAccount: chainAccount),
+            _RippleTokensView(
+                account: chainAccount.account.address as IXRPAddress),
           ]))
         ],
       ),
@@ -41,17 +40,17 @@ class RippleAccountPageView extends StatelessWidget {
 }
 
 class _RippleServicesView extends StatelessWidget {
-  const _RippleServicesView({required this.account});
-  final IXRPAddress account;
+  const _RippleServicesView({required this.chainAccount});
+  final AppChain chainAccount;
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
-    final apiProvider = wallet.currentProvider(wallet.network);
+    final apiProvider = chainAccount.provider().serviceProvider;
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!account.multiSigAccount) ...[
+          if (!chainAccount.account.address.multiSigAccount) ...[
             AppListTile(
               title: Text("multi_sig_addr".tr),
               subtitle: Text("establishing_multi_sig_addr".tr),
@@ -65,8 +64,8 @@ class _RippleServicesView extends StatelessWidget {
             title: Text("view_on_explorer".tr),
             subtitle: Text("view_address_on_explorer".tr),
             onTap: () {
-              LunchUri.lunch(wallet.network.coinParam.getAccountExplorer(
-                  wallet.networkAccount.address.address.toAddress));
+              LunchUri.lunch(chainAccount.network.coinParam.getAccountExplorer(
+                  chainAccount.account.address.address.toAddress)!);
             },
           ),
           WidgetConstant.divider,
@@ -214,7 +213,7 @@ class _RippleServicesView extends StatelessWidget {
                     context
                         .openSliverDialog<ApiProviderService>(
                             (ctx) => SelectProviderView(
-                                  network: wallet.network,
+                                  network: chainAccount.network,
                                   selectedProvider: apiProvider.provider,
                                 ),
                             "service_provider".tr)

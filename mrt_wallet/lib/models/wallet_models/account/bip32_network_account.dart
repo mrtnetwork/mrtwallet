@@ -2,34 +2,41 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
-import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class Bip32NetworkAccount<N, T, X> implements NetworkAccountCore<N, T, X> {
+class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
   factory Bip32NetworkAccount.setup(AppNetworkImpl network) {
-    return Bip32NetworkAccount._(network: network, addressIndex: 0);
+    return Bip32NetworkAccount._(
+        network: network,
+        addressIndex: 0,
+        totalBalance:
+            Live(NoneDecimalBalance.zero(network.coinParam.token.decimal!)));
   }
   Bip32NetworkAccount._(
       {required this.network,
+      required this.totalBalance,
       List<Bip32AddressCore> addresses = const [],
       List<ContactCore> contacts = const [],
       required int addressIndex})
       : _addresses = List.unmodifiable(addresses),
         _addressIndex = addressIndex,
         _contacts = List.unmodifiable(contacts);
-  factory Bip32NetworkAccount.fromHex(String cborHex) {
-    return Bip32NetworkAccount.fromCborBytesOrObject(
+  factory Bip32NetworkAccount.fromHex(String cborHex, AppNetworkImpl network) {
+    return Bip32NetworkAccount.fromCborBytesOrObject(network,
         bytes: BytesUtils.fromHexString(cborHex));
   }
-  factory Bip32NetworkAccount.fromCborBytesOrObject(
+  factory Bip32NetworkAccount.fromCborBytesOrObject(AppNetworkImpl network,
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.iAccount);
-    final network = AppNetworkImpl.fromValue(cbor.getIndex(0));
+    final int networkId = cbor.getIndex(0);
+    if (networkId != network.value) {
+      throw WalletExceptionConst.incorrectNetwork;
+    }
     final List<CborObject> accounts = cbor.getIndex(1) ?? <CborObject>[];
     final toAccounts =
-        accounts.map((e) => CryptoAccountAddress.fromCbor(e)).toList();
+        accounts.map((e) => CryptoAccountAddress.fromCbor(network, e)).toList();
     int addressIndex = 0;
     final String? currentAddress = cbor.getIndex(2);
     if (currentAddress != null) {
@@ -47,19 +54,23 @@ class Bip32NetworkAccount<N, T, X> implements NetworkAccountCore<N, T, X> {
           .map((e) => ContactCore.fromCborBytesOrObject(network, obj: e))
           .toList();
     }
+    final BigInt? totalBalance = cbor.getIndex(4);
 
     return Bip32NetworkAccount._(
         network: network,
         addresses: toAccounts.cast(),
         addressIndex: addressIndex,
-        contacts: contacts);
+        contacts: contacts,
+        totalBalance: Live(NoneDecimalBalance(
+            totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)))
+      ..refreshTotalBalance();
   }
   @override
   final AppNetworkImpl network;
-  List<Bip32AddressCore<N, T, X>> _addresses;
+  List<Bip32AddressCore<BigInt, T, X>> _addresses;
 
   @override
-  List<Bip32AddressCore<N, T, X>> get addresses => _addresses;
+  List<Bip32AddressCore<BigInt, T, X>> get addresses => _addresses;
 
   @override
   bool get haveAddress => addresses.isNotEmpty;
@@ -99,6 +110,10 @@ class Bip32NetworkAccount<N, T, X> implements NetworkAccountCore<N, T, X> {
       newAddress = _addXrpAddress(publicKey, accountParams);
     } else if (accountParams is BitcoinNewAddressParams) {
       newAddress = _addBitcoinAddress(publicKey, accountParams);
+    } else if (accountParams is EthereumNewAddressParam) {
+      newAddress = _addEthereumAddress(publicKey, accountParams);
+    } else if (accountParams is TronNewAddressParam) {
+      newAddress = _addTronAddress(publicKey, accountParams);
     } else {
       throw WalletExceptionConst.invalidAccountDetails;
     }
@@ -142,13 +157,34 @@ class Bip32NetworkAccount<N, T, X> implements NetworkAccountCore<N, T, X> {
     return newAddress;
   }
 
+  IEthAddress _addEthereumAddress(
+      List<int> publicKey, EthereumNewAddressParam accountParams) {
+    return IEthAddress.newAccount(
+        accountParams: accountParams,
+        publicKey: publicKey,
+        network: network as APPEVMNetwork);
+  }
+
+  ITronAddress _addTronAddress(
+      List<int> publicKey, TronNewAddressParam accountParams) {
+    if (accountParams.isMultiSig) {
+      return ITronMultisigAddress.newAccount(
+          accountParams: accountParams as TronMultisigNewAddressParam,
+          network: network as APPTVMNetwork);
+    }
+    return ITronAddress.newAccount(
+        accountParams: accountParams,
+        publicKey: publicKey,
+        network: network as APPTVMNetwork);
+  }
+
   int _addressIndex;
   @override
   CryptoAccountAddress get address => addresses.elementAt(_addressIndex);
 
   @override
-  void switchAccount(CryptoAccountAddress<N, T, X> address) {
-    if (address is! Bip32AddressCore<N, T, X>) return;
+  void switchAccount(CryptoAccountAddress<BigInt, T, X> address) {
+    if (address is! Bip32AddressCore<BigInt, T, X>) return;
     final index = addresses.indexOf(address);
     if (index < 0 || index == _addressIndex) return;
     _addressIndex = index;
@@ -160,7 +196,8 @@ class Bip32NetworkAccount<N, T, X> implements NetworkAccountCore<N, T, X> {
     if (!addresses.contains(address)) {
       throw WalletExceptionConst.accountDoesNotFound;
     }
-    final currentAccounts = List<Bip32AddressCore<N, T, X>>.from(_addresses);
+    final currentAccounts =
+        List<Bip32AddressCore<BigInt, T, X>>.from(_addresses);
     currentAccounts.remove(address);
     _addressIndex = 0;
     _addresses = currentAccounts;
@@ -177,7 +214,8 @@ class Bip32NetworkAccount<N, T, X> implements NetworkAccountCore<N, T, X> {
           network.value,
           CborListValue.fixedLength(addresses.map((e) => e.toCbor()).toList()),
           currentAddress ?? const CborNullValue(),
-          CborListValue.fixedLength(contacts.map((e) => e.toCbor()).toList())
+          CborListValue.fixedLength(contacts.map((e) => e.toCbor()).toList()),
+          totalBalance.value.balance
         ]),
         WalletModelCborTagsConst.iAccount);
   }
@@ -244,5 +282,19 @@ class Bip32NetworkAccount<N, T, X> implements NetworkAccountCore<N, T, X> {
           networkAddress: contact.addressObject);
     }
     return null;
+  }
+
+  @override
+  final Live<NoneDecimalBalance> totalBalance;
+
+  @override
+  void refreshTotalBalance() {
+    Map<String, BigInt> total = {
+      for (final i in addresses)
+        i.orginalAddress: i.address.balance.value.balance
+    };
+    final totalBalances = total.values
+        .fold(BigInt.zero, (previousValue, element) => previousValue + element);
+    totalBalance.value.updateBalance(totalBalances);
   }
 }

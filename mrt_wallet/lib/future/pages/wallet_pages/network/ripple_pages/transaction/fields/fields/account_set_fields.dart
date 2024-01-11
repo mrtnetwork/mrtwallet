@@ -1,12 +1,12 @@
 import 'package:blockchain_utils/numbers/big_rational.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/network_constant/ripple_const.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/receipt_address_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
+
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:xrp_dart/xrp_dart.dart';
+import 'package:mrt_wallet/provider/transaction_validator/transaction_validator.dart';
 
 class RippleAccountSetFieldsView extends StatelessWidget {
   const RippleAccountSetFieldsView(

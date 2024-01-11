@@ -4,12 +4,11 @@ mixin WalletStorageImpl on NativeSecureStorageImpl {
   String? _walletChecksum;
 
   String _toKey(String key) {
-    return "${StorageKeysConst.walletStorageKey}${_walletChecksum!}_$key";
+    return "$_networkKey$key";
   }
 
-  String _toProviderKey(int networkId) {
-    return "${StorageKeysConst.walletStorageKey}${_walletChecksum!}_${StorageKeysConst.apiProviderKey}_$networkId";
-  }
+  String get _networkKey =>
+      "${StorageKeysConst.walletStorageKey}${_walletChecksum!}_";
 
   void _setStorageCheckSum(String v) {
     _walletChecksum = v;
@@ -29,45 +28,38 @@ mixin WalletStorageImpl on NativeSecureStorageImpl {
     return null;
   }
 
-  Future<(AppNetworkImpl, ApiProviderService)?> _readNetwork() async {
-    try {
-      final networkStr =
-          await read(key: _toKey(StorageKeysConst.walletNetworkKey));
-
-      final networkId = int.parse(networkStr!);
-      final network = AppNetworkImpl.fromValue(networkId);
-      final service = await _readNetworkProvider(network);
-      return (network, service);
-    } catch (e) {
-      return null;
+  Future<AppChains> _readNetwork() async {
+    final networkStr =
+        await read(key: _toKey(StorageKeysConst.walletNetworkKey));
+    List<AppChain> chains = [];
+    final keys = await readAll();
+    final accounts =
+        keys.keys.where((element) => element.startsWith(_networkKey));
+    for (final i in accounts) {
+      try {
+        final chain = AppChain.fromHex(keys[i]!);
+        chains.add(chain);
+      } catch (e) {
+        continue;
+      }
     }
+    final appChain =
+        AppChains(chains, currentNetwork: int.tryParse(networkStr ?? ""));
+    return appChain;
   }
 
-  Future<ApiProviderService> _readNetworkProvider(
-      AppNetworkImpl networkImpl) async {
-    try {
-      final provider = await read(key: _toProviderKey(networkImpl.value));
-      final service = ApiProviderService.fromServiceName(provider!);
-      return networkImpl.getProvider(service);
-    } catch (e) {
-      return networkImpl.getProvider();
-    }
-  }
-
-  Future<void> _saveNetwork(AppNetworkImpl network) async {
+  Future<void> _saveNetworkId(int id) async {
     await write(
-        key: _toKey(StorageKeysConst.walletNetworkKey),
-        value: "${network.value}");
+        key: _toKey(StorageKeysConst.walletNetworkKey), value: id.toString());
   }
 
-  Future<void> _saveNetworkProvider(
-      AppNetworkImpl network, ApiProviderService provider) async {
-    final serviceName = network.getProvider(provider).serviceName;
-    final providerKey = _toProviderKey(network.value);
-    await write(key: providerKey, value: serviceName);
+  Future<void> _saveNetwork(AppChain chain) async {
+    await write(
+        key: _toKey(chain.network.value.toString()),
+        value: chain.toCbor().toCborHex());
   }
 
-  Future<void> _saveAccount(NetworkAccountCore account) async {
+  Future<void> _saveAccount(AppChain account) async {
     final toCbor = account.toCbor().toCborHex();
     final accountStorageKey = _toKey(account.network.value.toString());
     await write(key: accountStorageKey, value: toCbor);
@@ -80,47 +72,5 @@ mixin WalletStorageImpl on NativeSecureStorageImpl {
     for (final i in walletKeys) {
       await delete(key: i);
     }
-  }
-
-  Future<NetworkAccountCore> _readNetworkAccout(AppNetworkImpl network) async {
-    try {
-      final accounts = await read(key: _toKey(network.value.toString()));
-      return _toNetworkAccount(network, accounts!);
-    } catch (e) {
-      return _createNetworkAccount(network);
-    }
-  }
-
-  Bip32NetworkAccount _toNetworkAccount(
-      AppNetworkImpl network, String account) {
-    switch (network.runtimeType) {
-      case AppXRPNetwork:
-        return Bip32NetworkAccount<BigInt, BigRational, XRPAddress>.fromHex(
-            account);
-      default:
-        return Bip32NetworkAccount<BigInt, BigInt, BitcoinAddress>.fromHex(
-            account);
-    }
-  }
-
-  Bip32NetworkAccount _createNetworkAccount(AppNetworkImpl network) {
-    switch (network.runtimeType) {
-      case AppXRPNetwork:
-        return Bip32NetworkAccount<BigInt, BigRational, XRPAddress>.setup(
-            network);
-      default:
-        return Bip32NetworkAccount<BigInt, BigInt, BitcoinAddress>.setup(
-            network);
-    }
-  }
-
-  Future<List<NetworkAccountCore>> _readAllAccounts() async {
-    final List<NetworkAccountCore> accounts = [];
-    for (final i in AppNetworkImpl.networks) {
-      final acc = await _readNetworkAccout(i);
-      if (!acc.haveAddress) continue;
-      accounts.add(acc);
-    }
-    return List.unmodifiable(accounts);
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -97,7 +96,7 @@ class SuccessTransactionTextView extends StatelessWidget {
   Widget build(BuildContext context) {
     final Widget successTrText = Column(
       children: [
-        CircleAssetsImgaeView(network.coinParam.logo,
+        CircleTokenImgaeView(network.coinParam.token,
             radius: AppGlobalConst.double80),
         WidgetConstant.height20,
         WidgetConstant.checkCircle,
@@ -109,7 +108,9 @@ class SuccessTransactionTextView extends StatelessWidget {
         WidgetConstant.height20,
         FilledButton.icon(
             onPressed: () {
-              LunchUri.lunch(network.coinParam.getTransactionExplorer(txId));
+              final addr = network.coinParam.getTransactionExplorer(txId);
+              if (addr == null) return;
+              LunchUri.lunch(addr);
             },
             icon: const Icon(Icons.open_in_browser),
             label: Text("view_on_explorer".tr)),

@@ -2,18 +2,69 @@ import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-
-import 'package:mrt_wallet/future/pages/start_page/home.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/controller/impl/fee_impl.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/controller/impl/memo_impl.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/controller/impl/transaction.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/signing_request/networks/bitcoin/bitcoin_signing_request.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-import 'package:mrt_wallet/provider/api/api_provider.dart';
+
 import 'package:mrt_wallet/types/typedef.dart';
 
 enum BitcoinTransactionPages { account, utxo, receiver, send }
 
-class BitcoinStateController extends StateController {
-  BitcoinStateController(this._walletProvider);
+class BitcoinStateController extends BitcoinTransactionImpl
+    with BitcoinTransactionMemoImpl, BitcoinTransactionFeeImpl {
+  BitcoinStateController(
+      {required super.chainAccount, required super.walletProvider});
+  late BitcoinAddress _onChangeAddress;
+  late String _onChangeAddressView;
+  String get onChangeAddressView => _onChangeAddressView;
+  BitcoinAddress get onChangeAddress => _onChangeAddress;
+  final GlobalKey<StreamWidgetState> updateBalancessKey =
+      GlobalKey<StreamWidgetState>(debugLabel: "updateBalancessKey");
+  final Map<String, UtxoAddressDetails> _addresses = {};
+  bool get canSpend => _addresses.isNotEmpty;
+  final Map<String, BItcoinAccountUtxos> _fetchedUtxos = {};
+  List<BItcoinAccountUtxos> get utxos => _fetchedUtxos.values.toList();
+  int _utxosCount = 0;
+
+  BitcoinTransactionPages _page = BitcoinTransactionPages.account;
+  bool get canPopPage =>
+      progressKey.status == StreamWidgetStatus.success ||
+      _page == BitcoinTransactionPages.account;
+  bool get inAccountPage => _page == BitcoinTransactionPages.account;
+  bool get inUtxoPage => _page == BitcoinTransactionPages.utxo;
+  bool get inReceiverPage => _page == BitcoinTransactionPages.receiver;
+  bool get inSendPage => _page == BitcoinTransactionPages.send;
+  bool addressSelected(String address) => _addresses.containsKey(address);
+
+  final List<BitcoinUtxoWithBalance> _selectedUtxo = [];
+  bool get canBuildTransaction => _selectedUtxo.isNotEmpty;
+  bool get haveUtxos => _utxosCount > 0;
+  bool get allUtxosSelected => _selectedUtxo.length == _utxosCount;
+  bool utxoSelected(BitcoinUtxoWithBalance utxo) =>
+      _selectedUtxo.contains(utxo);
+  final Map<String, BitcoinOutputWithBalance> _receivers = {};
+  List<BitcoinOutputWithBalance> get receivers => _receivers.values.toList();
+  bool get hasOutput => _receivers.isNotEmpty;
+
+  late final NoneDecimalBalance _remindAmount =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
+  NoneDecimalBalance get remindAmount => _remindAmount;
+  late final NoneDecimalBalance _setupAmount =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
+  NoneDecimalBalance get setupAmout => _setupAmount;
+  bool _trReady = false;
+  bool get trReady => _trReady;
+  bool _rbf = false;
+  bool get rbf => _rbf;
+
+  late final NoneDecimalBalance spendableAmount =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
+  late final NoneDecimalBalance _sumOfSelectedUtxo =
+      NoneDecimalBalance.zero(network.coinParam.decimal);
+  NoneDecimalBalance get sumOfSelectedUtxo => _sumOfSelectedUtxo;
+  bool get hasSpender => _addresses.isNotEmpty;
 
   bool onBackButtom() {
     if (progressKey.status == StreamWidgetStatus.success) {
@@ -39,65 +90,19 @@ class BitcoinStateController extends StateController {
     }
   }
 
-  final WalletProvider _walletProvider;
-  List<IBitcoinAddress> get addresses =>
-      _walletProvider.networkAccount.addresses.cast();
-
-  AppBitcoinNetwork get network => _walletProvider.network as AppBitcoinNetwork;
-  NetworkAccountCore get account => _walletProvider.networkAccount;
-  late final BitcoinApiProvider _apiProvider =
-      _walletProvider.getNetworkApiProvider(network);
-
-  late BitcoinAddress _onChangeAddress;
-  late String _onChangeAddressView;
-  String get onChangeAddressView => _onChangeAddressView;
-  BitcoinAddress get onChangeAddress => _onChangeAddress;
-
-  final GlobalKey<PageProgressState> progressKey =
-      GlobalKey(debugLabel: "BitcoinTransactionPages");
-  final GlobalKey<StreamWidgetState> updateBalancessKey =
-      GlobalKey<StreamWidgetState>(debugLabel: "updateBalancessKey");
   void updateBalances() async {
     if (updateBalancessKey.inProgress) return;
     updateBalancessKey.process();
-    await _walletProvider.updateAccountBalance();
+    await walletProvider.updateAccountBalance();
     updateBalancessKey.success();
     notify();
   }
 
-  final Map<String, UtxoAddressDetails> _addresses = {};
-  bool get canSpend => _addresses.isNotEmpty;
-  final Map<String, BItcoinAccountUtxos> _fetchedUtxos = {};
-  List<BItcoinAccountUtxos> get utxos => _fetchedUtxos.values.toList();
-  int _utxosCount = 0;
-
-  BitcoinTransactionPages _page = BitcoinTransactionPages.account;
-  bool get canPopPage =>
-      progressKey.status == StreamWidgetStatus.success ||
-      _page == BitcoinTransactionPages.account;
-  bool get inAccountPage => _page == BitcoinTransactionPages.account;
-  bool get inUtxoPage => _page == BitcoinTransactionPages.utxo;
-  bool get inReceiverPage => _page == BitcoinTransactionPages.receiver;
-  bool get inSendPage => _page == BitcoinTransactionPages.send;
-  bool addressSelected(String address) => _addresses.containsKey(address);
-
-  final List<BitcoinUtxoWithBalance> _selectedUtxo = [];
-  bool get canBuildTransaction => _selectedUtxo.isNotEmpty;
-  bool utxoSelected(BitcoinUtxoWithBalance utxo) =>
-      _selectedUtxo.contains(utxo);
-  String? _memo;
-
-  String? get memo => _memo;
-  bool get hasMemo => _memo != null;
-
-  void onTapMemo(FutureNullString onAdd) async {
-    if (hasMemo) {
-      _memo = null;
-      moveToSend();
-      return;
-    }
-    _memo = await onAdd();
-    if (_memo != null) {
+  @override
+  Future<void> onTapMemo(FutureNullString onAdd) async {
+    final currentMemo = memo;
+    await super.onTapMemo(onAdd);
+    if (currentMemo != memo) {
       moveToSend();
     }
   }
@@ -118,8 +123,6 @@ class BitcoinStateController extends StateController {
     }
   }
 
-  bool get haveUtxos => _utxosCount > 0;
-  bool get allUtxosSelected => _selectedUtxo.length == _utxosCount;
   void selectAll() {
     if (allUtxosSelected) {
       _selectedUtxo.clear();
@@ -150,7 +153,6 @@ class BitcoinStateController extends StateController {
     notify();
   }
 
-  bool get hasSpender => _addresses.isNotEmpty;
   void addAccount(IBitcoinAddress account) {
     final address = account.address.toAddress;
     final blanace = account.address.balance.value.balance;
@@ -186,13 +188,34 @@ class BitcoinStateController extends StateController {
     }
   }
 
+  @override
+  void setFee(BitcoinFeeRateType? feeType, {BigInt? customFee}) {
+    super.setFee(feeType, customFee: customFee);
+    onCalculateAmount();
+    notify();
+  }
+
+  void moveToSend() async {
+    if (_receivers.isEmpty) return;
+    progressKey.progressText("processing_fee_please_wait".tr);
+    final result = await MethodCaller.call(() async {
+      return calculateFee(receivers: _receivers, utxos: _selectedUtxo);
+    });
+    if (result.hasError) {
+      progressKey.errorText(result.error!.tr);
+    } else {
+      _page = BitcoinTransactionPages.send;
+      progressKey.success();
+    }
+  }
+
   void fetchUtxos() async {
     progressKey.progressText("retrieving_transaction".tr);
     bool hasError = false;
     for (final i in _addresses.keys) {
       if (_fetchedUtxos[i]?.hasUtxo ?? false) continue;
       final result = await MethodCaller.call(() async {
-        return await _apiProvider.readUtxos(_addresses[i]!);
+        return await apiProvider.readUtxos(_addresses[i]!);
       });
       if (result.hasError) {
         hasError = true;
@@ -212,12 +235,6 @@ class BitcoinStateController extends StateController {
     }
   }
 
-  late final NoneDecimalBalance spendableAmount =
-      NoneDecimalBalance.zero(network.coinParam.decimal);
-
-  late final NoneDecimalBalance _sumOfSelectedUtxo =
-      NoneDecimalBalance.zero(network.coinParam.decimal);
-  NoneDecimalBalance get sumOfSelectedUtxo => _sumOfSelectedUtxo;
   void moveToReceiver() {
     final sum = _selectedUtxo.fold(BigInt.zero,
         (previousValue, element) => previousValue + element.balance.balance);
@@ -227,9 +244,6 @@ class BitcoinStateController extends StateController {
     notify();
   }
 
-  final Map<String, BitcoinOutputWithBalance> _receivers = {};
-  List<BitcoinOutputWithBalance> get receivers => _receivers.values.toList();
-  bool get hasOutput => _receivers.isNotEmpty;
   void onAddRecever(ReceiptAddress<BitcoinAddress>? addr) {
     if (addr == null) return;
     final toAddr =
@@ -243,110 +257,14 @@ class BitcoinStateController extends StateController {
     notify();
   }
 
-  BitcoinFeeRateType? _feeRateType = BitcoinFeeRateType.medium;
-
-  BitcoinFeeRate? _networkFeeRate;
-  BitcoinFeeRate get feeRate => _networkFeeRate!;
-  late final NoneDecimalBalance _feeRate =
-      NoneDecimalBalance.zero(network.coinParam.decimal);
-  NoneDecimalBalance get transactionFee => _feeRate;
-  BitcoinFeeRateType? get feeRateType => _feeRateType;
-
-  late Map<String, NoneDecimalBalance> _fees;
-  Map<String, NoneDecimalBalance> get fees => _fees;
-
-  Map<String, NoneDecimalBalance> _buildFeeRate() {
-    return {
-      BitcoinFeeRateType.medium.name: NoneDecimalBalance(
-          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.medium),
-          network.coinParam.decimal),
-      BitcoinFeeRateType.low.name: NoneDecimalBalance(
-          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.low),
-          network.coinParam.decimal),
-      BitcoinFeeRateType.high.name: NoneDecimalBalance(
-          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.high),
-          network.coinParam.decimal),
-    };
-  }
-
-  void setFee(BitcoinFeeRateType? feeType, {BigInt? customFee}) {
-    if (feeType == null && customFee == null) return;
-    _feeRateType = feeType;
-    if (_feeRateType == null) {
-      _feeRate.updateBalance(customFee!);
-    } else {
-      _feeRate.updateBalance(
-          _networkFeeRate!.getEstimate(_trSize!, feeRateType: _feeRateType!));
-    }
-    _calculateSetupAmount();
-    notify();
-  }
-
-  Future<BitcoinFeeRate> _getFeeRate() async {
-    if (network == AppBitcoinNetwork.bitcoinTestnet) {
-      final BitcoinApiProvider blockCypherApi =
-          _walletProvider.getBitcoinNetworkApiProvider(network,
-              provider: ApiProviderService.blockCypher);
-      return blockCypherApi.provider.getNetworkFeeRate();
-    }
-    return _apiProvider.provider.getNetworkFeeRate();
-  }
-
-  int? _trSize;
-  int get trSize => _trSize!;
-  void moveToSend() async {
-    if (_receivers.isEmpty) return;
-    progressKey.progressText("processing_fee_please_wait".tr);
-
-    final result = await MethodCaller.call(() async {
-      _feeRateType ??= BitcoinFeeRateType.medium;
-
-      _trSize = BitcoinTransactionBuilder.estimateTransactionSize(
-          utxos: _selectedUtxo
-              .map(
-                  (e) => UtxoWithAddress(utxo: e.utxo, ownerDetails: e.address))
-              .toList(),
-          memo: _memo,
-          enableRBF: true,
-          outputs:
-              _receivers.values.map((e) => e.address.networkAddress).toList(),
-          network: network.coinParam.transacationNetwork);
-
-      if (_networkFeeRate == null) {
-        _networkFeeRate = await _getFeeRate();
-      } else {
-        await MethodCaller.wait();
-      }
-      _networkFeeRate ??= await _getFeeRate();
-      _feeRate.updateBalance(
-          _networkFeeRate!.getEstimate(_trSize!, feeRateType: _feeRateType!));
-      _calculateSetupAmount();
-      _fees = _buildFeeRate();
-    });
-
-    if (result.hasError) {
-      progressKey.errorText(result.error!.tr);
-    } else {
-      _page = BitcoinTransactionPages.send;
-      progressKey.success();
-    }
-  }
-
-  late final NoneDecimalBalance _remindAmount =
-      NoneDecimalBalance.zero(network.coinParam.decimal);
-  NoneDecimalBalance get remindAmount => _remindAmount;
-  late final NoneDecimalBalance _setupAmount =
-      NoneDecimalBalance.zero(network.coinParam.decimal);
-  NoneDecimalBalance get setupAmout => _setupAmount;
-  bool _trReady = false;
-  bool get trReady => _trReady;
   bool _isReady() {
     return _receivers.isNotEmpty &&
         !_remindAmount.isNegative &&
         !_setupAmount.isZero;
   }
 
-  void _calculateSetupAmount() {
+  @override
+  void onCalculateAmount() {
     final totalAmounts = _receivers.values.fold(BigInt.zero,
         (previousValue, element) => previousValue + element.balance.balance);
     _setupAmount.updateBalance(totalAmounts);
@@ -359,22 +277,20 @@ class BitcoinStateController extends StateController {
   void setupAccountAmount(String address, BigInt? amount) {
     if (amount == null) return;
     _receivers[address]?.balance.updateBalance(amount);
-    _calculateSetupAmount();
+    onCalculateAmount();
 
     notify();
   }
 
-  bool _rbf = false;
-  bool get rbf => _rbf;
   void toggleRbf(bool onChanged) {
     _rbf = !_rbf;
     notify();
   }
 
-  void sigTr() async {
+  void sendTransaction() async {
     if (!trReady) return;
-    progressKey
-        .progressText("create_send_transaction".tr.replaceOne(network.name));
+    progressKey.progressText(
+        "create_send_transaction".tr.replaceOne(network.coinParam.token.name));
     final result = await MethodCaller.call(() async {
       final List<IBitcoinAddress> signers = [];
       for (final i in _selectedUtxo) {
@@ -393,16 +309,16 @@ class BitcoinStateController extends StateController {
       }
       final tr = BitcoinTransactionBuilder(
           outPuts: outputs,
-          fee: _feeRate.balance,
+          fee: transactionFee.balance,
           network: network.coinParam.transacationNetwork,
-          memo: _memo,
+          memo: memo,
           utxos: _selectedUtxo
               .map(
                   (e) => UtxoWithAddress(utxo: e.utxo, ownerDetails: e.address))
               .toList(),
           enableRBF: _rbf);
 
-      final signedTr = await _walletProvider.signBitcoinTransaction(
+      final signedTr = await walletProvider.signBitcoinTransaction(
           request: BitcoinSigningRequest(
               addresses: signers, network: network, transaction: tr));
       if (signedTr.hasError) {
@@ -410,7 +326,7 @@ class BitcoinStateController extends StateController {
       }
       final ser = signedTr.result.serialize();
 
-      return await _apiProvider.provider.sendRawTransaction(ser);
+      return await apiProvider.provider.sendRawTransaction(ser);
     });
 
     if (result.hasError) {

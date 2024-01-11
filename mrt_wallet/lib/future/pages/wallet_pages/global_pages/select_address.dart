@@ -1,16 +1,12 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/blockchin_utils/blockchain_addr_utils.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/add_to_contact_list.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/select_account_or_contact.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
+
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/contact/bitcoin/bitcoin_contact.dart';
-import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
-import 'package:mrt_wallet/models/wallet_models/contact/ripple/ripple_contact.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+import 'package:on_chain/on_chain.dart';
 import 'package:xrp_dart/xrp_dart.dart';
 
 class SelectNetworkAddressView extends StatefulWidget {
@@ -37,6 +33,20 @@ class _SelectAddressState extends State<SelectNetworkAddressView>
     _address = v;
   }
 
+  ContactCore? validatorEthereumAccount(String address) {
+    return MethodCaller.nullOnException(() {
+      final addr = ETHAddress(address);
+      return EthereumContract.newContact(address: addr, name: "new_address".tr);
+    });
+  }
+
+  ContactCore? validatorTronAccount(String address) {
+    return MethodCaller.nullOnException(() {
+      final addr = TronAddress(address);
+      return TronContact.newContact(address: addr, name: "new_address".tr);
+    });
+  }
+
   ContactCore? validateBitcoinNetwork(
       String address, AppBitcoinNetwork network) {
     return MethodCaller.nullOnException(() {
@@ -59,6 +69,10 @@ class _SelectAddressState extends State<SelectNetworkAddressView>
     if (address == null) return null;
     if (network is AppXRPNetwork) {
       return validateXRPAddress(address, network.toNetwork());
+    } else if (network is APPEVMNetwork) {
+      return validatorEthereumAccount(address);
+    } else if (network is APPTVMNetwork) {
+      return validatorTronAccount(address);
     }
     return validateBitcoinNetwork(address, network.toNetwork());
   }
@@ -93,6 +107,16 @@ class _SelectAddressState extends State<SelectNetworkAddressView>
     switch (widget.account.network.runtimeType) {
       case AppXRPNetwork:
         return ReceiptAddress<XRPAddress>(
+            type: addr.type,
+            view: addr.address,
+            networkAddress: addr.addressObject);
+      case APPEVMNetwork:
+        return ReceiptAddress<ETHAddress>(
+            type: addr.type,
+            view: addr.address,
+            networkAddress: addr.addressObject);
+      case APPTVMNetwork:
+        return ReceiptAddress<TronAddress>(
             type: addr.type,
             view: addr.address,
             networkAddress: addr.addressObject);
@@ -140,26 +164,11 @@ class _SelectAddressState extends State<SelectNetworkAddressView>
           AppTextField(
             key: textFieldKey,
             label: "address".tr,
-            maxLines: 3,
+            minlines: 1,
+            maxLines: 2,
             suffixIcon: Column(
               children: [
                 PasteTextIcon(onPaste: onPaste),
-                MyAccountIcon(
-                  onTap: () {
-                    context
-                        .openSliverBottomSheet<String>(
-                          "select_account".tr,
-                          bodyBuilder: (controller) =>
-                              SelectAccountOrContactView(
-                                  account: widget.account,
-                                  scrollController: controller),
-                          minExtent: 0.6,
-                          maxExtend: 1,
-                          initialExtend: 0.7,
-                        )
-                        .then(fromMyAccount);
-                  },
-                ),
               ],
             ),
             validator: validator,
@@ -183,7 +192,22 @@ class _SelectAddressState extends State<SelectNetworkAddressView>
                             icon: const Icon(Icons.perm_contact_cal_rounded),
                             label: Text("add_to_contacts".tr))
                         : const SizedBox(),
-                  ))
+                  )),
+              MyAccountIcon(
+                onTap: () {
+                  context
+                      .openSliverBottomSheet<String>(
+                        "select_account".tr,
+                        bodyBuilder: (controller) => SelectAccountOrContactView(
+                            account: widget.account,
+                            scrollController: controller),
+                        minExtent: 0.6,
+                        maxExtend: 1,
+                        initialExtend: 0.7,
+                      )
+                      .then(fromMyAccount);
+                },
+              ),
             ],
           ),
           Row(

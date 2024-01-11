@@ -1,9 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/file/file.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 class FileUtility {
@@ -18,19 +16,20 @@ class FileUtility {
         version: QrVersions.auto,
         eyeStyle: QrEyeStyle(
           eyeShape: QrEyeShape.square,
-          color: color.onSecondary,
+          color: color.onBackground,
         ),
         dataModuleStyle: QrDataModuleStyle(
           dataModuleShape: QrDataModuleShape.square,
-          color: color.onSecondary,
+          color: color.onBackground,
         ),
       ).toImage(500);
       final ByteData? bufferBytes = await _QrCodeMarkerPainter(
               qrImage: image,
-              margin: 25,
+              margin: 10,
               imageSize: 500,
               data: uderImage,
-              textColor: color.primary)
+              textColor: color.onBackground,
+              backgroundColor: color.background)
           .toImageData();
       final List<int> bufferData = bufferBytes!.buffer.asUint8List();
       final write = await CrossFileWriter.writeBytes(
@@ -43,44 +42,42 @@ class FileUtility {
 }
 
 class _QrCodeMarkerPainter extends CustomPainter {
-  // ********************************* VARS ******************************** //
-
+  final Color textColor;
   final double margin;
   final ui.Image qrImage;
-  late Paint _paint;
+  final Color backgroundColor;
+  late final Paint _paint = Paint()
+    ..color = backgroundColor
+    ..style = ui.PaintingStyle.fill;
   final double imageSize;
   final String data;
-  // ***************************** CONSTRUCTORS **************************** //
 
   _QrCodeMarkerPainter(
       {required this.qrImage,
       this.margin = 10,
       required this.imageSize,
       required this.data,
-      required this.textColor}) {
-    _paint = Paint()
-      ..color = Colors.white
-      ..style = ui.PaintingStyle.fill;
-  }
-
-  final Color textColor;
-  //***************************** PUBLIC METHODS *************************** //
+      required this.textColor,
+      required this.backgroundColor});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromPoints(Offset.zero, Offset(size.width, size.height));
-    canvas.drawRect(rect, _paint);
-    canvas.drawImage(qrImage, Offset(margin * 2, margin), Paint());
+    const borderRadius = Radius.circular(12);
+    final rect = RRect.fromRectAndRadius(
+        Rect.fromPoints(Offset.zero, Offset(size.width, size.height)),
+        borderRadius);
+    canvas.drawRRect(rect, _paint);
+    canvas.drawImage(qrImage, Offset(margin * 2, margin), _paint);
     final ui.ParagraphBuilder paragraphBuilder =
         ui.ParagraphBuilder(ui.ParagraphStyle(
       textAlign: TextAlign.justify,
-      fontSize: 18,
+      fontSize: 14,
     ))
           ..pushStyle(ui.TextStyle(color: textColor, fontSize: 14))
           ..addText(AppLinkConst.appGithub);
     final ui.Paragraph paragraph = paragraphBuilder.build()
       ..layout(ui.ParagraphConstraints(width: size.width - 12.0 - 12.0));
-    canvas.drawParagraph(paragraph, Offset(50, (imageSize + 30)));
+    canvas.drawParagraph(paragraph, Offset(25, (imageSize + 10)));
   }
 
   @override

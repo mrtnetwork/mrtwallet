@@ -2,12 +2,17 @@ import 'package:blockchain_utils/numbers/big_rational.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class RetionalDecimalConst {
-  static BigRational bigR8 = BigRational.parseDecimal(1e8.toString());
-
+  static BigRational bigR8 = BigRational(BigInt.from(10).pow(8));
+  static BigRational bigR18 = BigRational(BigInt.from(10).pow(18));
+  static BigRational bigR6 = BigRational(BigInt.from(10).pow(6));
   static BigRational fromDecimalNumber(int decimal) {
     switch (decimal) {
       case 8:
         return bigR8;
+      case 18:
+        return bigR18;
+      case 6:
+        return bigR6;
       default:
         return BigRational(BigInt.from(10).pow(decimal));
     }
@@ -26,6 +31,9 @@ class PriceUtils {
   static T decodePrice<T>(String price, int decimal) {
     BigRational dec = BigRational.parseDecimal(price);
     dec = dec * RetionalDecimalConst.fromDecimalNumber(decimal);
+    if (decimal == 0 && dec.isDecimal) {
+      throw ArgumentError("price should not be decimal with decimal zero");
+    }
     switch (T) {
       case BigInt:
         return dec.toBigInt() as T;

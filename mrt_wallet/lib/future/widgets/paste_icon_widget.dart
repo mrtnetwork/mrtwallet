@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/types/typedef.dart';
 
 class PasteTextIcon extends StatefulWidget {

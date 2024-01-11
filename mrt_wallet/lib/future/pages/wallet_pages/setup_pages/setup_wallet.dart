@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -28,21 +27,24 @@ class SetupWallet extends StatelessWidget {
               key: model.progressKey,
               backToIdle: AppGlobalConst.oneSecoundDuration,
               child: () => UnfocusableChild(
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                        child: ConstraintsBoxView(
-                      padding: WidgetConstant.padding20,
-                      child: AnimatedSwitcher(
-                        duration: AppGlobalConst.animationDuraion,
-                        child: _SetupWalletPages(
-                          model.page,
-                          model.mnemonic?.toList(),
-                          key: ValueKey<SetupWalletPage>(model.page),
+                child: Center(
+                  child: CustomScrollView(
+                    shrinkWrap: true,
+                    slivers: [
+                      SliverToBoxAdapter(
+                          child: ConstraintsBoxView(
+                        padding: WidgetConstant.padding20,
+                        child: AnimatedSwitcher(
+                          duration: AppGlobalConst.animationDuraion,
+                          child: _SetupWalletPages(
+                            model.page,
+                            model.mnemonic?.toList(),
+                            key: ValueKey<SetupWalletPage>(model.page),
+                          ),
                         ),
-                      ),
-                    )),
-                  ],
+                      )),
+                    ],
+                  ),
                 ),
               ),
             ),
