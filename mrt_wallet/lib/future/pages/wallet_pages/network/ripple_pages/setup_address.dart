@@ -155,6 +155,9 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
           backToIdle: false,
           progressWidget: SuccessWithButtomView(
             buttomText: "generate_new_address".tr,
+            buttomWidget: ContainerWithBorder(
+                margin: WidgetConstant.paddingVertical8,
+                child: AddressDetailsView(address: result.result)),
             onPressed: () {
               if (mounted) {
                 pageProgressKey.backToIdle();

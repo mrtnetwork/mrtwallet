@@ -1,19 +1,34 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
-import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/api/core/api_provider.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
 abstract class AppNetworkImpl with Equatable, CborSerializable {
+  const AppNetworkImpl();
   abstract final int value;
   abstract final NetworkCoinParams coinParam;
   List<CryptoCoins> get coins;
-  List<EllipticCurveTypes> get keyTypes;
 
-  ApiProviderService getProvider([String? selectProvider]);
+  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
+
+  T? getProvider<T extends ApiProviderService>(
+      [ApiProviderService? selectProvider]) {
+    final supportedProviders = coinParam.providers.whereType<T>().where(
+        (element) =>
+            element.protocol.platforms.contains(PlatformInterface.appPlatform));
+    if (supportedProviders.isEmpty) return null;
+    if (selectProvider == null) return supportedProviders.first;
+    return MethodCaller.nullOnException(() {
+      return coinParam.providers.whereType<T>().firstWhere((element) =>
+          element.serviceName == selectProvider.serviceName &&
+          element.protocol == selectProvider.protocol);
+    });
+  }
 
   T toNetwork<T extends AppNetworkImpl>() => this as T;
 
@@ -22,6 +37,10 @@ abstract class AppNetworkImpl with Equatable, CborSerializable {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
     if (bytesEqual(toCborTag.tags, WalletModelCborTagsConst.bitconNetwork)) {
       return AppBitcoinNetwork.fromCborBytesOrObject(obj: toCborTag);
+    }
+    if (bytesEqual(
+        toCborTag.tags, WalletModelCborTagsConst.bitcoinCashNetwork)) {
+      return AppBitcoinCashNetwork.fromCborBytesOrObject(obj: toCborTag);
     } else if (bytesEqual(
         toCborTag.tags, WalletModelCborTagsConst.xrpNetwork)) {
       return AppXRPNetwork.fromCborBytesOrObject(obj: toCborTag);
@@ -34,20 +53,13 @@ abstract class AppNetworkImpl with Equatable, CborSerializable {
   }
 }
 
-class AppBitcoinNetwork implements AppNetworkImpl {
-  @override
-  T toNetwork<T extends AppNetworkImpl>() => this as T;
+class AppBitcoinNetwork extends AppNetworkImpl {
   @override
   final int value;
   @override
   final BitcoinParams coinParam;
-
-  @override
-  ApiProviderService getProvider([String? selectProvider]) {
-    return coinParam.providers.firstWhere(
-      (element) => element.serviceName == selectProvider,
-      orElse: () => coinParam.providers[0],
-    );
+  AppBitcoinNetwork copyWith({int? value, BitcoinParams? coinParam}) {
+    return AppBitcoinNetwork(value ?? this.value, coinParam ?? this.coinParam);
   }
 
   const AppBitcoinNetwork(this.value, this.coinParam);
@@ -70,10 +82,30 @@ class AppBitcoinNetwork implements AppNetworkImpl {
           Bip84Coins.bitcoinTestnet,
           Bip86Coins.bitcoinTestnet,
         ];
+      case 10:
+        return [
+          Bip44Coins.bitcoinCash,
+          Bip49Coins.bitcoinCash,
+        ];
+      case 11:
+        return [
+          Bip44Coins.bitcoinCashTestnet,
+          Bip49Coins.bitcoinCashTestnet,
+        ];
       case 2:
         return [Bip44Coins.litecoin, Bip49Coins.litecoin, Bip84Coins.litecoin];
+      case 7:
+        return [
+          Bip44Coins.litecoinTestnet,
+          Bip49Coins.litecoinTestnet,
+          Bip84Coins.litecoinTestnet
+        ];
       case 3:
         return [Bip44Coins.dogecoin, Bip49Coins.dogecoin];
+      case 8:
+        return [Bip44Coins.dogecoinTestnet, Bip49Coins.dogecoinTestnet];
+      case 9:
+        return [Bip44Coins.bitcoinSv];
       case 4:
         return [Bip44Coins.dash, Bip49Coins.dash];
       default:
@@ -82,29 +114,25 @@ class AppBitcoinNetwork implements AppNetworkImpl {
   }
 
   CryptoCoins findCOinFromBitcoinAddressType(BitcoinAddressType type) {
+    if (type.isP2sh) {
+      return coins
+          .firstWhere((element) => element.proposal == BipProposal.bip49);
+    }
     switch (type) {
-      case BitcoinAddressType.p2pkh:
-      case BitcoinAddressType.p2pk:
+      case P2pkhAddressType.p2pkh:
+      case P2pkhAddressType.p2pkhwt:
+      case PubKeyAddressType.p2pk:
         return coins
             .firstWhere((element) => element.proposal == BipProposal.bip44);
-      case BitcoinAddressType.p2wsh:
-      case BitcoinAddressType.p2wpkh:
+      case SegwitAddresType.p2wsh:
+      case SegwitAddresType.p2wpkh:
         return coins
             .firstWhere((element) => element.proposal == BipProposal.bip84);
-      case BitcoinAddressType.p2pkInP2sh:
-      case BitcoinAddressType.p2pkhInP2sh:
-      case BitcoinAddressType.p2wpkhInP2sh:
-      case BitcoinAddressType.p2wshInP2sh:
-        return coins
-            .firstWhere((element) => element.proposal == BipProposal.bip49);
       default:
         return coins
             .firstWhere((element) => element.proposal == BipProposal.bip86);
     }
   }
-
-  @override
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
 
   @override
   List get variabels => [value];
@@ -126,9 +154,35 @@ class AppBitcoinNetwork implements AppNetworkImpl {
   }
 }
 
-class AppXRPNetwork implements AppNetworkImpl {
+class AppBitcoinCashNetwork extends AppBitcoinNetwork {
   @override
-  T toNetwork<T extends AppNetworkImpl>() => this as T;
+  AppBitcoinCashNetwork copyWith({int? value, BitcoinParams? coinParam}) {
+    return AppBitcoinCashNetwork(
+        value ?? this.value, coinParam ?? this.coinParam);
+  }
+
+  const AppBitcoinCashNetwork(super.value, super.coinParam);
+  @override
+  bool get isBitcoin => false;
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        WalletModelCborTagsConst.bitcoinCashNetwork);
+  }
+
+  factory AppBitcoinCashNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.bitcoinCashNetwork);
+    return AppBitcoinCashNetwork(
+      cbor.getIndex(0),
+      BitcoinParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
+  }
+}
+
+class AppXRPNetwork extends AppNetworkImpl {
   const AppXRPNetwork(this.value, this.coinParam);
   @override
   CborTagValue toCbor() {
@@ -161,14 +215,6 @@ class AppXRPNetwork implements AppNetworkImpl {
   }
 
   @override
-  ApiProviderService getProvider([String? selectProvider]) {
-    return coinParam.providers.firstWhere(
-      (element) => element.serviceName == selectProvider,
-      orElse: () => coinParam.providers[0],
-    );
-  }
-
-  @override
   List<EllipticCurveTypes> get keyTypes =>
       [EllipticCurveTypes.secp256k1, EllipticCurveTypes.ed25519];
 
@@ -177,15 +223,13 @@ class AppXRPNetwork implements AppNetworkImpl {
 }
 //
 
-class APPEVMNetwork with CborSerializable implements AppNetworkImpl {
+class APPEVMNetwork extends AppNetworkImpl {
   APPEVMNetwork copyWith(
       {int? value, EVMNetworkParams? coinParam, int? slip44}) {
     return APPEVMNetwork(value ?? this.value, coinParam ?? this.coinParam,
         slip44: slip44 ?? this.slip44);
   }
 
-  @override
-  T toNetwork<T extends AppNetworkImpl>() => this as T;
   const APPEVMNetwork(this.value, this.coinParam, {this.slip44});
   factory APPEVMNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
@@ -210,17 +254,6 @@ class APPEVMNetwork with CborSerializable implements AppNetworkImpl {
   }
 
   @override
-  ApiProviderService getProvider([String? selectProvider]) {
-    return coinParam.providers.firstWhere(
-      (element) => element.serviceName == selectProvider,
-      orElse: () => coinParam.providers[0],
-    );
-  }
-
-  @override
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
-
-  @override
   List get variabels => [value];
 
   @override
@@ -231,9 +264,7 @@ class APPEVMNetwork with CborSerializable implements AppNetworkImpl {
   }
 }
 
-class APPTVMNetwork implements AppNetworkImpl {
-  @override
-  T toNetwork<T extends AppNetworkImpl>() => this as T;
+class APPTVMNetwork extends AppNetworkImpl {
   const APPTVMNetwork(this.value, this.coinParam);
   @override
   final int value;
@@ -247,17 +278,6 @@ class APPTVMNetwork implements AppNetworkImpl {
     }
     return [Bip44Coins.ethereumTestnet];
   }
-
-  @override
-  ApiProviderService getProvider([String? selectProvider]) {
-    return coinParam.providers.firstWhere(
-      (element) => element.serviceName == selectProvider,
-      orElse: () => coinParam.providers[0],
-    );
-  }
-
-  @override
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
 
   @override
   List get variabels => [value];

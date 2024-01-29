@@ -197,11 +197,12 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
             context
                 .openSliverBottomSheet<ReceiptAddress>(
                   "ripple_signer_enteris_fields".tr,
-                  maxExtend: 0.8,
-                  minExtent: 0.7,
-                  initialExtend: 0.7,
-                  child: SelectNetworkAddressView(
+                  maxExtend: 1,
+                  minExtent: 0.8,
+                  initialExtend: 0.9,
+                  bodyBuilder: (c) => SelectRecipientAccountView(
                     account: widget.account,
+                    scrollController: c,
                     subtitle: PageTitleSubtitle(
                         title: "account".tr,
                         body: Column(

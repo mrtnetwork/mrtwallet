@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class PriceTooltipWidget extends StatelessWidget {
@@ -64,11 +66,13 @@ class CoinPriceView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Token coin = token;
-    final theme = Theme.of(context);
+    final wallet = context.watch<WalletProvider>(StateIdsConst.main);
+
     return LiveWidget(() {
       final price = balance?.price ??
           liveBalance?.value.price ??
           account!.address.viewBalance;
+      final ta = wallet.amount(price, token);
       return ToolTipView(
         tooltipWidget: disableTooltip
             ? null
@@ -77,13 +81,79 @@ class CoinPriceView extends StatelessWidget {
                 price: price,
                 symbol: coin.symbol,
               ),
-        child: GestureDetector(
-          onLongPress: () {
-            account?.address.balance.notify();
-          },
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: Row(
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: RichText(
+                        textDirection: TextDirection.ltr,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        text: TextSpan(
+                            style: style ?? context.textTheme.labelLarge,
+                            children: [
+                              TextSpan(text: price.to3Digits),
+                              const TextSpan(text: " "),
+                            ])),
+                  ),
+                  Text(
+                    coin.symbolView,
+                    style: context.textTheme.labelSmall?.copyWith(
+                        color: symbolColor ?? context.colors.primary),
+                  )
+                ],
+              ),
+              CoinStringPriceView(
+                balance: ta,
+                token: wallet.currencyToken,
+                symbolColor: symbolColor,
+              )
+            ],
+          ),
+        ),
+      );
+    });
+  }
+}
+
+class CoinStringPriceView extends StatelessWidget {
+  const CoinStringPriceView({
+    Key? key,
+    required this.token,
+    required this.balance,
+    this.style,
+    this.symbolColor,
+    this.disableTooltip = false,
+  }) : super(key: key);
+
+  final Token token;
+  final NoneDecimalBalance? balance;
+  final TextStyle? style;
+  final Color? symbolColor;
+  final bool disableTooltip;
+  @override
+  Widget build(BuildContext context) {
+    if (balance?.isZero ?? true) return WidgetConstant.sizedBox;
+    return ToolTipView(
+      tooltipWidget: disableTooltip
+          ? null
+          : PriceTooltipWidget(
+              currencyName: token.name,
+              price: balance!.price,
+              symbol: token.symbol,
+            ),
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Flexible(
@@ -92,22 +162,24 @@ class CoinPriceView extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       text: TextSpan(
-                          style: style ?? theme.textTheme.labelLarge,
+                          style: style ??
+                              context.textTheme.labelSmall
+                                  ?.copyWith(color: symbolColor),
                           children: [
-                            TextSpan(text: price.to3Digits),
+                            TextSpan(text: balance!.viewPrice),
                             const TextSpan(text: " "),
                           ])),
                 ),
                 Text(
-                  coin.symbol,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                      color: symbolColor ?? theme.colorScheme.primary),
+                  token.symbolView,
+                  style: context.textTheme.labelSmall
+                      ?.copyWith(color: symbolColor ?? context.colors.primary),
                 )
               ],
             ),
-          ),
+          ],
         ),
-      );
-    });
+      ),
+    );
   }
 }

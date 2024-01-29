@@ -45,7 +45,6 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
   }
 
   Future<MethodResult<void>> login(String password) async {
-    bool isFirst = _checksum == null;
     try {
       final result = await _callSynchronized(() async => await _login(password),
           conditionStatus: WalletStatus.lock,
@@ -54,10 +53,9 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
       return result;
     } finally {
       notify();
-      if (isFirst && walletIsUnlock) {
-        updateAccountBalance();
-      } else if (walletIsUnlock) {
+      if (walletIsUnlock) {
         updateBalance();
+        _accountBalanceStream();
       }
     }
   }
@@ -87,7 +85,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     }
   }
 
-  Future<MethodResult<void>> deriveNewAccount(
+  Future<MethodResult<CryptoAccountAddress>> deriveNewAccount(
       NewAccountParams newAccountParams) async {
     try {
       final result = await _callSynchronized(
@@ -226,6 +224,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     _backToHome();
     pageStatusHandler.success();
     updateAccountBalance();
+    notify();
   }
 
   Future<void> changeProvider(ApiProviderService? provider) async {
@@ -275,10 +274,10 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     return result;
   }
 
-  Future<void> importEVMNetwork(APPEVMNetwork network) async {
+  Future<void> updateImportNetwork(AppNetworkImpl network) async {
     try {
       final result = await _callSynchronized(
-          () async => await _importEVMNetwor(network),
+          () async => await _updateImportNetwork(network),
           conditionStatus: WalletStatus.unlock);
       if (result.hasError) {
         throw result.exception!;
@@ -335,6 +334,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
       _backToHome();
       _logout();
       notify();
+      _disposeBalanceUpdater();
     }
   }
 

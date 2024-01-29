@@ -10,7 +10,7 @@ import 'package:mrt_wallet/models/wallet_models/nfts/networks/ripple/ripple_nft_
 import 'package:mrt_wallet/models/wallet_models/token/core/core.dart';
 import 'package:mrt_wallet/models/wallet_models/token/networks/ripple/ripple_issue_token.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 enum XrpAddressType {
   xAddress("x_address"),
@@ -22,7 +22,7 @@ enum XrpAddressType {
 
 class IXRPAddress
     with Equatable
-    implements Bip32AddressCore<BigInt, BigRational, XRPAddress> {
+    implements Bip32AddressCore<BigRational, XRPAddress> {
   IXRPAddress._(
       {required this.keyIndex,
       required this.coin,

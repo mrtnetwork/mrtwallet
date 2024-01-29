@@ -126,8 +126,7 @@ mixin ETHTransactionFeeImpl on EthTransactionImpl {
   }
 
   Stream<(BigInt?, FeeHistorical?)> _prediocFetchGasStream() async* {
-    while (true) {
-   
+    while (!deleted) {
       if (!_updatingGas) {
         _updatingGas = true;
         onFeeChanged();
@@ -149,7 +148,7 @@ mixin ETHTransactionFeeImpl on EthTransactionImpl {
     _perdiocFetch = null;
   }
 
-  Canclable<dynamic>? _gasLimitCanclable;
+  Cancelable<dynamic>? _gasLimitCanclable;
 
   Future<void> estimateGasLimit({Map<String, dynamic>? estimateDetails}) async {
     _gasLimitCanclable?.cancel();
@@ -162,7 +161,7 @@ mixin ETHTransactionFeeImpl on EthTransactionImpl {
       final gasLimit = await apiProvider.estimateGasLimit(estimateDetails!);
       final updatedFess = _updateFessGasLimit(gasLimit.toInt());
       return (updatedFess, gasLimit.toInt());
-    }, canclable: _gasLimitCanclable);
+    }, cancelable: _gasLimitCanclable);
     if (!estimate.hasError) {
       if (estimate.result.$1 != null) {
         fees.addAll(estimate.result.$1!);

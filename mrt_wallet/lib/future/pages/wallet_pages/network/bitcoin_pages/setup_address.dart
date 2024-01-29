@@ -26,9 +26,9 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
   late final AppChain chainAccount;
   final GlobalKey visibleGenerateAddress =
       GlobalKey(debugLabel: "visibleContinue");
+
   AddressDerivationMode? selectedDerivationMode;
   EncryptedCustomKey? selectedCustomKey;
-
   bool inAddressPage = false;
 
   void goToAddressPage(
@@ -58,20 +58,19 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
   List<CryptoCoins> get coins => network.coins;
   bool inited = false;
   Bip32AddressIndex? customKeyIndex;
-  late final List<BitcoinAddressType> p2shTypes;
+  late final List<P2shAddressType> p2shTypes;
+  late final List<P2pkhAddressType> p2pkhTypes;
   late final List<BitcoinAddressType> supportAddressTypes;
   late final Map<BitcoinAddressType, String> typesToSelect = {
-    BitcoinAddressType.p2pkh: BitcoinAddressType.p2pkh.value,
-    if (p2shTypes.contains(BitcoinAddressType.p2wpkhInP2sh))
-      BitcoinAddressType.p2wpkhInP2sh: "P2SH"
-    else
-      BitcoinAddressType.p2pkhInP2sh: "P2SH",
-    if (supportAddressTypes.contains(BitcoinAddressType.p2wpkh))
-      BitcoinAddressType.p2wpkh: BitcoinAddressType.p2wpkh.value,
-    if (supportAddressTypes.contains(BitcoinAddressType.p2wsh))
-      BitcoinAddressType.p2wsh: BitcoinAddressType.p2wsh.value,
-    if (supportAddressTypes.contains(BitcoinAddressType.p2tr))
-      BitcoinAddressType.p2tr: BitcoinAddressType.p2tr.value,
+    P2pkhAddressType.p2pkh: P2pkhAddressType.p2pkh.value,
+    if (supportAddressTypes.contains(P2shAddressType.p2pkhInP2sh))
+      _defaultP2sh(): "P2SH",
+    if (supportAddressTypes.contains(SegwitAddresType.p2wpkh))
+      SegwitAddresType.p2wpkh: SegwitAddresType.p2wpkh.value,
+    if (supportAddressTypes.contains(SegwitAddresType.p2wsh))
+      SegwitAddresType.p2wsh: SegwitAddresType.p2wsh.value,
+    if (supportAddressTypes.contains(SegwitAddresType.p2tr))
+      SegwitAddresType.p2tr: SegwitAddresType.p2tr.value,
   };
 
   late final bool isSupportSegwit;
@@ -88,37 +87,40 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     chainAccount = model.chain;
     supportAddressTypes =
         network.coinParam.transacationNetwork.supportedAddress;
-    p2shTypes = supportAddressTypes.where((e) => e.isP2sh).toList();
+    p2shTypes = supportAddressTypes.whereType<P2shAddressType>().toList();
+    p2pkhTypes = supportAddressTypes.whereType<P2pkhAddressType>().toList();
     p2shType = _defaultP2sh();
-    isSupportP2tr = supportAddressTypes.contains(BitcoinAddressType.p2tr);
-    isSupportSegwit = supportAddressTypes.contains(BitcoinAddressType.p2wpkh);
+    isSupportP2tr = supportAddressTypes.contains(SegwitAddresType.p2tr);
+    isSupportSegwit = supportAddressTypes.contains(SegwitAddresType.p2wpkh);
     if (isSupportP2tr) {
-      selected = {BitcoinAddressType.p2tr};
+      selected = {SegwitAddresType.p2tr};
     } else if (isSupportSegwit) {
-      selected = {BitcoinAddressType.p2wpkh};
+      selected = {SegwitAddresType.p2wpkh};
     } else {
-      selected = {BitcoinAddressType.p2pkh};
+      selected = {P2pkhAddressType.p2pkh};
     }
   }
 
   late Set<BitcoinAddressType> selected;
 
-  BitcoinAddressType _defaultP2sh() {
-    if (p2shTypes.contains(BitcoinAddressType.p2wpkhInP2sh)) {
-      return BitcoinAddressType.p2wpkhInP2sh;
+  P2shAddressType _defaultP2sh() {
+    if (p2shTypes.contains(P2shAddressType.p2wpkhInP2sh)) {
+      return P2shAddressType.p2wpkhInP2sh;
     }
-    return BitcoinAddressType.p2pkInP2sh;
+    return P2shAddressType.p2pkInP2sh;
   }
 
   void onChangeSelected(Set<BitcoinAddressType> value) {
     selected = value;
     p2shType = _defaultP2sh();
+    p2pkhType = P2pkhAddressType.p2pkh;
     customKeyIndex = null;
     setState(() {});
   }
 
   bool get derivationStandard => customKeyIndex == null;
-  late BitcoinAddressType p2shType;
+  late P2shAddressType p2shType;
+  P2pkhAddressType p2pkhType = P2pkhAddressType.p2pkh;
   void onChangeDerivation(bool? val, DynamicVoid onFalse) {
     if (val == null) return;
     if (derivationStandard) {
@@ -130,9 +132,15 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     }
   }
 
-  void onChageSegwit(BitcoinAddressType? val) {
+  void onChageSegwit(P2shAddressType? val) {
     if (!p2shTypes.contains(val)) return;
     p2shType = val ?? p2shType;
+    setState(() {});
+  }
+
+  void onChangeP2pkh(P2pkhAddressType? val) {
+    if (!p2pkhTypes.contains(val)) return;
+    p2pkhType = val ?? p2pkhType;
     setState(() {});
   }
 
@@ -164,12 +172,23 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     pageProgressKey.progressText("generating_new_addr".tr);
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     final coin = findCoin();
-
-    final selectedType =
-        selected.first == _defaultP2sh() ? p2shType : selected.first;
+    BitcoinAddressType selectedType;
+    if (selected.first == _defaultP2sh()) {
+      selectedType = p2shType;
+    } else if (selected.first == P2pkhAddressType.p2pkh) {
+      selectedType = p2pkhType;
+    } else {
+      selectedType = selected.first;
+    }
     final keyIndex = derivationkey() ?? chainAccount.account.nextDrive(coin);
-    final newAccount = BitcoinNewAddressParams(
-        coin: coin, deriveIndex: keyIndex, bitcoinAddressType: selectedType);
+    NewAccountParams newAccount;
+    if (network is AppBitcoinCashNetwork) {
+      newAccount = BitcoinCashNewAddressParams(
+          coin: coin, deriveIndex: keyIndex, bitcoinAddressType: selectedType);
+    } else {
+      newAccount = BitcoinNewAddressParams(
+          coin: coin, deriveIndex: keyIndex, bitcoinAddressType: selectedType);
+    }
 
     final result = await wallet.deriveNewAccount(newAccount);
     if (result.hasError) {
@@ -179,6 +198,10 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
           backToIdle: false,
           progressWidget: SuccessWithButtomView(
             buttomText: "generate_new_address".tr,
+            buttomWidget: ContainerWithBorder(
+                margin: WidgetConstant.paddingVertical8,
+                child: AddressDetailsView(
+                    address: result.result)),
             onPressed: () {
               if (mounted) {
                 pageProgressKey.backToIdle();
@@ -246,12 +269,15 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
                                   derivationStandard: derivationStandard,
                                   typesToSelect: typesToSelect,
                                   generateAddress: generateAddress,
-                                  nestedP2shTyes: p2shTypes,
+                                  p2shTypes: p2shTypes,
+                                  p2pkhTypes: p2pkhTypes,
                                   onChageSegwit: onChageSegwit,
                                   onChangeSelected: onChangeSelected,
                                   selected: selected,
                                   selectedP2shType: p2shType,
                                   customKey: selectedCustomKey,
+                                  onChangeP2pkh: onChangeP2pkh,
+                                  selectedP2pkhType: p2pkhType,
                                 ),
                               ],
                             )
@@ -291,31 +317,37 @@ class _DriveFromHdWallet extends StatelessWidget {
       required this.onChangeDeravation,
       required this.generateAddress,
       required this.derivationStandard,
-      required this.nestedP2shTyes,
+      required this.p2shTypes,
       required this.onChageSegwit,
       required this.onChangeSelected,
       required this.selectedP2shType,
       required this.onVisibleGenerateAddress,
       required this.typesToSelect,
       required this.nextStandartIndex,
+      required this.p2pkhTypes,
+      required this.onChangeP2pkh,
+      required this.selectedP2pkhType,
       this.customKey});
   final AddressDerivationIndex nextStandartIndex;
   final AddressDerivationIndex? customKeyIndex;
   final Set<BitcoinAddressType> selected;
-  final void Function(BitcoinAddressType?) onChageSegwit;
+  final _OnChangeP2shType onChageSegwit;
   final DynamicVoid generateAddress;
   final VoidSetT<BitcoinAddressType> onChangeSelected;
   final bool derivationStandard;
-  final List<BitcoinAddressType> nestedP2shTyes;
-  final BitcoinAddressType selectedP2shType;
+  final List<P2shAddressType> p2shTypes;
+  final List<P2pkhAddressType> p2pkhTypes;
+  final P2shAddressType selectedP2shType;
+  final P2pkhAddressType selectedP2pkhType;
+  final _OnChangeP2pkhTypes onChangeP2pkh;
   final NullBoolVoid onChangeDeravation;
   final EncryptedCustomKey? customKey;
   final GlobalKey onVisibleGenerateAddress;
   final Map<BitcoinAddressType, String> typesToSelect;
 
   bool get supportP2trOrSegwit =>
-      typesToSelect.containsKey(BitcoinAddressType.p2tr) ||
-      typesToSelect.containsKey(BitcoinAddressType.p2wpkh);
+      typesToSelect.containsKey(SegwitAddresType.p2tr) ||
+      typesToSelect.containsKey(SegwitAddresType.p2wpkh);
 
   @override
   Widget build(BuildContext context) {
@@ -368,9 +400,12 @@ class _DriveFromHdWallet extends StatelessWidget {
               _AddressTypeOPtion(
                 select: selected.first,
                 deriveStandard: derivationStandard,
-                nestedP2shTyes: nestedP2shTyes,
+                p2shTypes: p2shTypes,
                 selectedP2shType: selectedP2shType,
                 onChangeP2shSegwit: onChageSegwit,
+                p2pkhTypes: p2pkhTypes,
+                onChangeP2pkhAddress: onChangeP2pkh,
+                selectP2pkhType: selectedP2pkhType,
               ),
               FixedElevatedButton(
                 padding: WidgetConstant.paddingVertical20,
@@ -386,21 +421,27 @@ class _DriveFromHdWallet extends StatelessWidget {
   }
 }
 
-typedef _OnChangeP2shType = void Function(BitcoinAddressType?);
+typedef _OnChangeP2shType = void Function(P2shAddressType?);
+typedef _OnChangeP2pkhTypes = void Function(P2pkhAddressType?);
 
 class _AddressTypeOPtion extends StatelessWidget {
-  const _AddressTypeOPtion({
-    required this.select,
-    required this.deriveStandard,
-    required this.selectedP2shType,
-    required this.onChangeP2shSegwit,
-    required this.nestedP2shTyes,
-  });
-  final List<BitcoinAddressType> nestedP2shTyes;
+  const _AddressTypeOPtion(
+      {required this.select,
+      required this.p2pkhTypes,
+      required this.deriveStandard,
+      required this.selectedP2shType,
+      required this.onChangeP2shSegwit,
+      required this.p2shTypes,
+      required this.onChangeP2pkhAddress,
+      required this.selectP2pkhType});
+  final List<P2shAddressType> p2shTypes;
+  final List<P2pkhAddressType> p2pkhTypes;
   final BitcoinAddressType select;
   final bool deriveStandard;
-  final BitcoinAddressType selectedP2shType;
+  final P2shAddressType selectedP2shType;
+  final P2pkhAddressType selectP2pkhType;
   final _OnChangeP2shType onChangeP2shSegwit;
+  final _OnChangeP2pkhTypes onChangeP2pkhAddress;
 
   @override
   Widget build(BuildContext context) {
@@ -411,16 +452,30 @@ class _AddressTypeOPtion extends StatelessWidget {
         children: [
           if (select.isP2sh)
             Column(
-              children: List.generate(nestedP2shTyes.length, (index) {
-                return AppRadioListTile(
-                    title: Text(nestedP2shTyes[index].value),
-                    value: nestedP2shTyes[index],
-                    groupValue: selectedP2shType,
-                    subtitle: Text(nestedP2shTyes[index].value.tr),
-                    onChanged: onChangeP2shSegwit);
-              }),
+              children: [
+                ...List.generate(p2shTypes.length, (index) {
+                  return AppRadioListTile(
+                      title: Text(p2shTypes[index].value),
+                      value: p2shTypes[index],
+                      groupValue: selectedP2shType,
+                      subtitle: Text(
+                          BitcoinUtils.getAddressDetails(p2shTypes[index])),
+                      onChanged: onChangeP2shSegwit);
+                })
+              ],
             ),
-          if (select == BitcoinAddressType.p2wsh)
+          if (select == P2pkhAddressType.p2pkh) ...[
+            ...List.generate(
+                p2pkhTypes.length,
+                (index) => AppRadioListTile<P2pkhAddressType>(
+                    title: Text(p2pkhTypes[index].value),
+                    value: p2pkhTypes[index],
+                    groupValue: selectP2pkhType,
+                    subtitle:
+                        Text(BitcoinUtils.getAddressDetails(p2pkhTypes[index])),
+                    onChanged: onChangeP2pkhAddress))
+          ],
+          if (select == SegwitAddresType.p2wsh)
             Text(
               "p2wsh_one_of_one_desc".tr,
               textAlign: TextAlign.center,

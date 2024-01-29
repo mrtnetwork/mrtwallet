@@ -5,6 +5,7 @@ class WalletProviderConst {
 }
 
 class WalletModelCborTagsConst {
+  static const List<int> appSetting = [44];
   static const List<int> setting = [160];
   static const List<int> backup = [170];
   static const List<int> backupV2 = [170, 2];
@@ -16,7 +17,9 @@ class WalletModelCborTagsConst {
   static const List<int> importedAccountKeyIndex = [200, 82];
   static const List<int> multiSigAccountKeyIndex = [200, 83];
   // bitcoin
-  static const List<int> bitcoinAccoint = [200, 192];
+  static const List<int> bitcoinCashAccount = [200, 191];
+  static const List<int> bitcoinCashMultiSigAccount = [200, 191, 1];
+  static const List<int> bitcoinAccount = [200, 192];
   static const List<int> bitcoinMultiSigAccount = [200, 192, 1];
   static const List<int> bitcoinMultiSignaturAddress = [200, 192, 1, 0];
   static const List<int> bitcoinMultiSigSignerAddress = [200, 192, 1, 0, 0];
@@ -58,6 +61,7 @@ class WalletModelCborTagsConst {
   static const List<int> xrpNetwork = [80, 0, 2];
   static const List<int> evmNetwork = [80, 0, 3];
   static const List<int> tvmNetwork = [80, 0, 4];
+  static const List<int> bitcoinCashNetwork = [80, 0, 10];
 
   static const List<int> bitconNetworkParam = [80, 1, 1];
   static const List<int> xrpNetworkParam = [80, 1, 2];
@@ -66,6 +70,7 @@ class WalletModelCborTagsConst {
 
   ///
   static const List<int> apiServiceProvider = [90];
+  static const List<int> electrumApiServiceProvider = [90, 0];
   static const List<int> tronApiServiceProvider = [90, 4];
   static const List<int> evmApiServiceProvider = [90, 3];
 }

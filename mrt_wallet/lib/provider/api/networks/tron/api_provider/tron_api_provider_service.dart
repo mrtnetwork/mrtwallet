@@ -3,6 +3,8 @@ import 'package:blockchain_utils/cbor/types/cbor_tag.dart';
 import 'package:blockchain_utils/cbor/types/list.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
+import 'package:mrt_wallet/models/wallet_models/chain/utils.dart';
+import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
@@ -11,8 +13,11 @@ class TronApiProviderService extends ApiProviderService {
     required String serviceName,
     required String websiteUri,
     required this.httpNodeUri,
-  }) : super(serviceName, websiteUri);
+  }) : super(serviceName, websiteUri, ProviderProtocol.http);
   final String httpNodeUri;
+
+  @override
+  String get callUrl => httpNodeUri;
 
   factory TronApiProviderService.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
@@ -30,5 +35,10 @@ class TronApiProviderService extends ApiProviderService {
     return CborTagValue(
         CborListValue.fixedLength([serviceName, websiteUri, httpNodeUri]),
         WalletModelCborTagsConst.tronApiServiceProvider);
+  }
+
+  @override
+  NetworkApiProvider toProvider(AppNetworkImpl network) {
+    return ChainUtils.buildTVMProvider(network as APPTVMNetwork, this);
   }
 }

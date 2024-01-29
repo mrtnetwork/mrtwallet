@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
-class RippleRPCService with HttpProvider implements RpcService {
-  RippleRPCService(this.url, this.provider,
+class RippleHTTPRPCService extends HttpProvider implements RpcService {
+  RippleHTTPRPCService(this.url, this.provider,
       {this.defaultTimeOut = const Duration(seconds: 30)});
 
   @override
@@ -14,6 +14,7 @@ class RippleRPCService with HttpProvider implements RpcService {
 
   @override
   final ApiProviderTracker provider;
+  @override
   final Duration defaultTimeOut;
 
   /// When the request is successful, an [RPCResponse] with the request id and
@@ -21,29 +22,15 @@ class RippleRPCService with HttpProvider implements RpcService {
   /// thrown. Other errors might be thrown if an IO-Error occurs.
   @override
   Future<Map<String, dynamic>> call(RPCRequestDetails params) async {
-    final response = await providerCaller<Map<String, dynamic>>(() async {
-      final response = await client
-          .post(Uri.parse(url),
-              headers: {'Content-Type': 'application/json'},
-              body: StringUtils.fromJson(params.toJsonRpcParams()))
-          .timeout(defaultTimeOut);
-
-      if (response.statusCode != 200) {
-        throw ApiProviderException(statusCode: response.statusCode);
-      }
-      return StringUtils.toJson(StringUtils.decode(response.bodyBytes));
-    }, provider);
-
+    final response = await providerPOST<Map<String, dynamic>>(
+        url, StringUtils.fromJson(params.toJsonRpcParams()));
     return response;
   }
 
   @override
   Future<String> post(String url, String body,
       {Map<String, String>? header}) async {
-    final response = await client
-        .post(Uri.parse(url),
-            headers: header ?? {'Content-Type': 'application/json'}, body: body)
-        .timeout(const Duration(seconds: 30));
-    return response.body;
+    final response = await providerGET<String>(url);
+    return response;
   }
 }

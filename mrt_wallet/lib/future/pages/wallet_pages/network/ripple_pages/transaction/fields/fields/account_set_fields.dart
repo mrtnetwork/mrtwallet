@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/provider/transaction_validator/transaction_validator.dart';
 
 class RippleAccountSetFieldsView extends StatelessWidget {
@@ -175,15 +175,16 @@ class RippleAccountSetFieldsView extends StatelessWidget {
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress>("account_set_fields".tr,
-                    maxExtend: 0.8,
-                    minExtent: 0.7,
-                    initialExtend: 0.7,
-                    child: SelectNetworkAddressView(
-                      account: account,
-                      subtitle: PageTitleSubtitle(
+                    maxExtend: 1,
+                    minExtent: 0.8,
+                    initialExtend: 0.9,
+                    bodyBuilder: (c) => SelectRecipientAccountView(
+                        account: account,
+                        scrollController: c,
+                        subtitle: PageTitleSubtitle(
                           title: "ripple_nft_token_minter".tr,
-                          body: Text("ripple_nft_token_minter_desc".tr)),
-                    ))
+                          body: Text("ripple_nft_token_minter_desc".tr),
+                        )))
                 .then(
               (value) {
                 validator.setValue(validator.nftokenMinter, value);

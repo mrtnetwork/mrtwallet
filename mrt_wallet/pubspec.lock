@@ -29,10 +29,10 @@ packages:
     dependency: "direct main"
     description:
       name: bitcoin_base
-      sha256: "050594d1188eac6ccdad4c152d9e029fb3f2a35584112bad13a668174d9681f3"
+      sha256: fb1bed34137616b4203684fbfdf34b6b6bfc6bb1a2089e0646f966869edc4b13
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.3"
+    version: "4.0.0"
   blockchain_utils:
     dependency: "direct main"
     description:
@@ -380,14 +380,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.3.0"
-  xrp_dart:
+  xrpl_dart:
     dependency: "direct main"
     description:
-      name: xrp_dart
-      sha256: "9d4badd35f833aaabf949ab408cf548e58c2daf4c7a165fbb2c491858084c41c"
+      name: xrpl_dart
+      sha256: "3b443381d3f3bb8b205cdead0a8a6f3cb76b5b7831a4932192fa9cc50e39bdc1"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.3"
+    version: "4.0.1"
   yaml:
     dependency: transitive
     description:

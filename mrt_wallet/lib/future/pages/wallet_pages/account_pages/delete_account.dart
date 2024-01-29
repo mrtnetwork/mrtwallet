@@ -101,8 +101,7 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
                           style: context.textTheme.titleMedium),
                       WidgetConstant.height8,
                       ContainerWithBorder(
-                          child: AddressDetailsView(
-                              address: widget.account, isSelected: false)),
+                          child: AddressDetailsView(address: widget.account)),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

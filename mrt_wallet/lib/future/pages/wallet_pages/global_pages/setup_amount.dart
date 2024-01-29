@@ -30,10 +30,12 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
     with SafeState {
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "SetupNetworkAmount");
+  final GlobalKey<AppTextFieldState> textFieldKey = GlobalKey();
   late final String? maxString =
       PriceUtils.tryEncodePrice(widget.max, widget.token.decimal!);
   late final String? minString =
       PriceUtils.tryEncodePrice(widget.min, widget.token.decimal!);
+  late final bool enableMin = (widget.min ?? BigInt.zero) > BigInt.zero;
   String? validator(String? v) {
     if (v == null) {
       if (widget.token.decimal! == 0) {
@@ -48,24 +50,58 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
       }
       return "decimal_int_validator".tr;
     }
-    if (widget.max != null && toBigit > widget.max) {
+    if (widget.max != null && toBigit > widget.max!) {
       return "price_less_than".tr.replaceOne(
-          PriceUtils.priceWithCoinName(maxString!, widget.token.symbol));
-    } else if (widget.min != null && toBigit < widget.min) {
+          PriceUtils.priceWithCoinName(maxString!, widget.token.symbolView));
+    } else if (widget.min != null && toBigit < widget.min!) {
       return "price_greather_than".tr.replaceOne(
-          PriceUtils.priceWithCoinName(minString!, widget.token.symbol));
+          PriceUtils.priceWithCoinName(minString!, widget.token.symbolView));
     }
     return null;
   }
 
   late String price = widget.token.decimal! > 0 ? "0.0" : "0";
-  void onChaanged(String v) {
+  bool isMax = false;
+  bool isMin = false;
+  void onChanged(String v) {
     price = v;
+    if (widget.max == null && !enableMin) return;
+    final toBigit =
+        PriceUtils.tryDecodePrice<BigInt?>(price, widget.token.decimal!);
+    final equal = toBigit == widget.max;
+    if (equal != isMax) {
+      setState(() {
+        isMax = equal;
+      });
+    }
+    if (enableMin) {
+      final equalMin = toBigit == widget.min;
+      if (isMin != equalMin) {
+        setState(() {
+          isMin = equalMin;
+        });
+      }
+    }
+  }
+
+  void onTapMax() {
+    final p = PriceUtils.tryEncodePrice(widget.max, widget.token.decimal!);
+    if (p != null) {
+      textFieldKey.currentState?.updateText(p);
+    }
+  }
+
+  void onTapMin() {
+    final p = PriceUtils.tryEncodePrice(widget.min, widget.token.decimal!);
+    if (p != null) {
+      textFieldKey.currentState?.updateText(p);
+    }
   }
 
   void onSetup() {
     if (!(form.currentState?.validate() ?? false)) return;
-    final toBigit = PriceUtils.tryDecodePrice(price, widget.token.decimal!);
+    final BigInt? toBigit =
+        PriceUtils.tryDecodePrice(price, widget.token.decimal!);
     if (toBigit == null) return;
     if (mounted) {
       context.pop(toBigit);
@@ -88,7 +124,8 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
               Column(
                 children: [
                   CircleTokenImgaeView(widget.token, radius: 60),
-                  Text(widget.token.name, style: context.textTheme.labelLarge)
+                  OneLineTextWidget(widget.token.nameView,
+                      style: context.textTheme.labelLarge)
                 ],
               ),
             ],
@@ -105,31 +142,73 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
               alignment: Alignment.center,
               child: ConstraintsBoxView(
                 maxWidth: 350,
-                child: AppTextField(
-                  style: context.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                  keyboardType: TextInputType.numberWithOptions(
-                      decimal: widget.token.decimal! > 0, signed: false),
-                  textAlign: TextAlign.center,
-                  validator: validator,
-                  initialValue: price,
-                  onChanged: onChaanged,
-                  prefixIcon: const SizedBox(width: 40),
-                  suffixIcon: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 50,
-                        child: OneLineTextWidget(
-                          widget.token.symbol,
-                          style: context.textTheme.labelLarge?.copyWith(
-                              color: context.colors.primary,
-                              fontWeight: FontWeight.w900),
-                        ),
+                child: Column(
+                  children: [
+                    AppTextField(
+                      key: textFieldKey,
+                      style: context.textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                      keyboardType: TextInputType.numberWithOptions(
+                          decimal: widget.token.decimal! > 0, signed: false),
+                      textAlign: TextAlign.center,
+                      validator: validator,
+                      initialValue: price,
+                      onChanged: onChanged,
+                      prefixIcon: const SizedBox(width: 40),
+                      suffixIcon: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 50,
+                            child: OneLineTextWidget(
+                              widget.token.symbolView,
+                              style: context.textTheme.labelLarge?.copyWith(
+                                  color: context.colors.primary,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
                       ),
+                    ),
+                    if (widget.max != null || enableMin) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (enableMin) ...[
+                            FilledButton(
+                              onPressed: onTapMin,
+                              style: TextButton.styleFrom(
+                                  backgroundColor: isMin
+                                      ? context.colors.errorContainer
+                                      : Colors.transparent,
+                                  foregroundColor: isMin
+                                      ? context.colors.onErrorContainer
+                                      : context.colors.onBackground,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: WidgetConstant.border8)),
+                              child: Text("min".tr),
+                            ),
+                            if (widget.max != null) WidgetConstant.width8,
+                          ],
+                          if (widget.max != null)
+                            FilledButton(
+                              onPressed: onTapMax,
+                              style: TextButton.styleFrom(
+                                  backgroundColor: isMax
+                                      ? context.colors.errorContainer
+                                      : Colors.transparent,
+                                  foregroundColor: isMax
+                                      ? context.colors.onErrorContainer
+                                      : context.colors.onBackground,
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: WidgetConstant.border8)),
+                              child: Text("max".tr),
+                            ),
+                        ],
+                      )
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -222,7 +301,14 @@ class _SetupDecimalTokenAmountViewState
               Column(
                 children: [
                   CircleTokenImgaeView(widget.token, radius: 60),
-                  Text(widget.token.name, style: context.textTheme.labelLarge)
+                  Row(
+                    children: [
+                      Flexible(
+                          flex: 3,
+                          child: Text(widget.token.name,
+                              style: context.textTheme.labelLarge)),
+                    ],
+                  )
                 ],
               ),
             ],

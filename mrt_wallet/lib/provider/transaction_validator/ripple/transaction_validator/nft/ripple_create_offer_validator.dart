@@ -4,7 +4,7 @@ import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/xrp_
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/provider/transaction_validator/ripple/transaction_validator/core/ripple_field_validator.dart';
 import 'package:mrt_wallet/provider/transaction_validator/core/validator.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleCreateOfferValidator implements RippleTransactionValidator {
   RippleCreateOfferValidator({String? offerID}) {

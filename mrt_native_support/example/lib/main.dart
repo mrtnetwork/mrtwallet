@@ -39,7 +39,6 @@ class _MyWidgetState extends State<MyWidget> with WindowListener {
         r"\" +
         DateTime.now().microsecond.toString() +
         ".txt";
-    print("name $naame");
     final f = File(naame);
 
     await f.create(recursive: true);

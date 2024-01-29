@@ -3,33 +3,38 @@ part of 'package:mrt_wallet/provider/wallet/wallet_provider.dart';
 mixin Signer on MasterKeyImpl {
   BtcTransaction _signBitcoin(
       {required BitcoinSigningRequest request, required List<int> password}) {
-    return request.transaction
-        .buildTransaction((trDigest, utxo, publicKey, sighash) {
-      try {
-        final account = request.addresses
-            .whereType<IBitcoinAddress>()
-            .firstWhere((element) {
-          return element.signers.contains(publicKey);
-        });
-        AddressDerivationIndex keyIndex = account.keyIndex;
-        if (account.multiSigAccount) {
-          account as IBitcoinMultiSigAddress;
-          final correctSigner = account.multiSignatureAddress.signers
-              .firstWhere((element) => element.publicKey == publicKey);
-          keyIndex = correctSigner.keyIndex;
+    try {
+      return request.transaction
+          .buildTransaction((trDigest, utxo, publicKey, sighash) {
+        try {
+          final account = request.addresses
+              .whereType<IBitcoinAddress>()
+              .firstWhere((element) {
+            return element.signers.contains(publicKey);
+          });
+          AddressDerivationIndex keyIndex = account.keyIndex;
+          if (account.multiSigAccount) {
+            final multiSignatureAddress =
+                (account as BitcoinMultiSigBase).multiSignatureAddress;
+            final correctSigner = multiSignatureAddress.signers
+                .firstWhere((element) => element.publicKey == publicKey);
+            keyIndex = correctSigner.keyIndex;
+          }
+          final prv = _getPrivateKey(password, keyIndex);
+          final btcPrivateKey = ECPrivate.fromBytes(prv.privateKey.raw);
+          if (utxo.utxo.isP2tr()) {
+            return btcPrivateKey.signTapRoot(trDigest, sighash: sighash);
+          }
+          return btcPrivateKey.signInput(trDigest, sigHash: sighash);
+        } on StateError {
+          throw WalletExceptionConst.accountDoesNotFound;
+        } catch (e) {
+          rethrow;
         }
-        final prv = _getPrivateKey(password, keyIndex);
-        final btcPrivateKey = ECPrivate.fromBytes(prv.privateKey.raw);
-        if (utxo.utxo.isP2tr()) {
-          return btcPrivateKey.signTapRoot(trDigest, sighash: sighash);
-        }
-        return btcPrivateKey.signInput(trDigest, sigHash: sighash);
-      } on StateError {
-        throw WalletExceptionConst.accountDoesNotFound;
-      } catch (e) {
-        rethrow;
-      }
-    });
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 
   void _signRipple(

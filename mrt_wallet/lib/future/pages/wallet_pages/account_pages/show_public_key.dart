@@ -65,8 +65,7 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
         ContainerWithBorder(
           child: CopyTextWithBarcode(
               dataToCopy: widget.account.address.toAddress,
-              widget: AddressDetailsView(
-                  address: widget.account, isSelected: false),
+              widget: AddressDetailsView(address: widget.account),
               barcodeTitle: "address_sharing".tr),
         ),
         WidgetConstant.height20,

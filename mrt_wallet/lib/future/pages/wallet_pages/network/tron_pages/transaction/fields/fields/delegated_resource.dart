@@ -59,15 +59,15 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                       onTap: () {
                         context
                             .openSliverBottomSheet<ReceiptAddress>(
-                                "receiver_address".tr,
-                                maxExtend: 0.8,
-                                minExtent: 0.7,
-                                initialExtend: 0.7,
-                                child: SelectNetworkAddressView(
-                                  account: account,
-                                  subtitle:
-                                      Text("resource_receiver_address".tr),
-                                ))
+                          "receiver_address".tr,
+                          maxExtend: 1,
+                          minExtent: 0.8,
+                          initialExtend: 0.9,
+                          bodyBuilder: (c) => SelectRecipientAccountView(
+                              account: account,
+                              scrollController: c,
+                              subtitle: Text("resource_receiver_address".tr)),
+                        )
                             .then(
                           (value) {
                             validator.setValue(validator.destination, value);

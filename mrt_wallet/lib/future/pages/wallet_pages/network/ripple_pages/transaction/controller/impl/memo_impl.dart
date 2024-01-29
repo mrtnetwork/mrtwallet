@@ -1,5 +1,5 @@
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/controller/impl/transaction_impl.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 typedef OnSetupMemo = Future<XRPLMemo?> Function(XRPLMemo?);
 

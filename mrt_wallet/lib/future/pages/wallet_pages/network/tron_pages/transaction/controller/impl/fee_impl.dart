@@ -91,7 +91,7 @@ mixin TronTransactionFeeIMpl on TronTransactionImpl {
     return fee;
   }
 
-  final Canclable _feeCanclable = Canclable();
+  final Cancelable _feeCanclable = Cancelable();
   bool _loadingFee = false;
   bool get loadingFee => _loadingFee;
 
@@ -104,7 +104,7 @@ mixin TronTransactionFeeIMpl on TronTransactionImpl {
     final result = await MethodCaller.call(() async {
       final fee = await _calcuateFee();
       return fee;
-    }, canclable: _feeCanclable);
+    }, cancelable: _feeCanclable);
     if (!result.hasError) {
       _consumedFee = result.result;
       _consumedFee =

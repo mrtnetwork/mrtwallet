@@ -22,6 +22,7 @@ class _SetupBitcoinMultiSigAddressViewState
   List<BitcoinMultiSigSignerDetais> get signers => _signers.values.toList();
   final GlobalKey visibleReview = GlobalKey();
   late final AppBitcoinNetwork network;
+
   String? _errorText;
   int? _thresHold;
   bool isValidThreshHold = false;
@@ -107,16 +108,20 @@ class _SetupBitcoinMultiSigAddressViewState
   bool inReview = false;
   final Map<BitcoinAddressType, String> supportedMultisigTypes = {};
   late final AppChain chainAccount;
-  BitcoinAddressType multiSigAddressTye = BitcoinAddressType.p2pkhInP2sh;
+  BitcoinAddressType multiSigAddressTye = P2shAddressType.p2pkhInP2sh;
   BitcoinMultiSignatureAddress? _multiSigAddress;
   MultiSignatureAddress get multiSigAddress => _multiSigAddress!;
-  BitcoinAddress get bitcoinAddress {
+  BitcoinBaseAddress get bitcoinAddress {
     switch (multiSigAddressTye) {
-      case BitcoinAddressType.p2wsh:
+      case SegwitAddresType.p2wsh:
         return multiSigAddress.toP2wshAddress(
             network: network.coinParam.transacationNetwork);
-      case BitcoinAddressType.p2pkhInP2sh:
-        return multiSigAddress.toP2shAddress();
+      case P2shAddressType.p2pkhInP2sh:
+      case P2shAddressType.p2pkhInP2sh32:
+      case P2shAddressType.p2pkhInP2shwt:
+      case P2shAddressType.p2pkhInP2sh32wt:
+        return multiSigAddress
+            .toP2shAddress(multiSigAddressTye as P2shAddressType);
       default:
         return multiSigAddress.toP2wshInP2shAddress(
             network: network.coinParam.transacationNetwork);
@@ -127,6 +132,7 @@ class _SetupBitcoinMultiSigAddressViewState
   void _toMultiSigAddress() {
     _multiSigViewAddress =
         bitcoinAddress.toAddress(network.coinParam.transacationNetwork);
+    setState(() {});
   }
 
   void onReview() {
@@ -135,9 +141,8 @@ class _SetupBitcoinMultiSigAddressViewState
         threshold: _thresHold!,
         signers: signers,
         addressType: multiSigAddressTye);
-    _toMultiSigAddress();
     inReview = true;
-    setState(() {});
+    _toMultiSigAddress();
   }
 
   void _onBack() {
@@ -145,7 +150,6 @@ class _SetupBitcoinMultiSigAddressViewState
       if (progressKey.isSuccess) return;
       if (!inReview) return;
       inReview = false;
-
       _multiSigAddress = null;
       _multiSigViewAddress = null;
     } finally {
@@ -157,7 +161,6 @@ class _SetupBitcoinMultiSigAddressViewState
     if (selectType == null || multiSigAddressTye == selectType) return;
     multiSigAddressTye = selectType;
     _toMultiSigAddress();
-    setState(() {});
   }
 
   String get toText {
@@ -197,10 +200,18 @@ class _SetupBitcoinMultiSigAddressViewState
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     final accountParams = await MethodCaller.call(() async {
       final network = wallet.network as AppBitcoinNetwork;
-      final newAccountParams = BitcoinMultiSigNewAddressParams(
-          coin: network.findCOinFromBitcoinAddressType(multiSigAddressTye),
-          bitcoinAddressType: multiSigAddressTye,
-          multiSignatureAddress: _multiSigAddress!);
+      final NewAccountParams newAccountParams;
+      if (network is AppBitcoinCashNetwork) {
+        newAccountParams = BitcoinCashMultiSigNewAddressParams(
+            coin: network.findCOinFromBitcoinAddressType(multiSigAddressTye),
+            bitcoinAddressType: multiSigAddressTye,
+            multiSignatureAddress: _multiSigAddress!);
+      } else {
+        newAccountParams = BitcoinMultiSigNewAddressParams(
+            coin: network.findCOinFromBitcoinAddressType(multiSigAddressTye),
+            bitcoinAddressType: multiSigAddressTye,
+            multiSignatureAddress: _multiSigAddress!);
+      }
       return newAccountParams;
     });
     if (accountParams.hasError) {
@@ -210,8 +221,19 @@ class _SetupBitcoinMultiSigAddressViewState
       if (result.hasError) {
         progressKey.errorText(result.error!.tr);
       } else {
-        progressKey.successText("address_added_to_accounts".tr,
-            backToIdle: false);
+        progressKey.success(
+            backToIdle: false,
+            progressWidget: SuccessWithButtomView(
+              buttomWidget: ContainerWithBorder(
+                  margin: WidgetConstant.paddingVertical8,
+                  child: AddressDetailsView(address: result.result)),
+              buttomText: "generate_new_address".tr,
+              onPressed: () {
+                if (mounted) {
+                  progressKey.backToIdle();
+                }
+              },
+            ));
       }
     }
     setState(() {});
@@ -248,14 +270,23 @@ class _SetupBitcoinMultiSigAddressViewState
     _init = true;
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     network = wallet.network as AppBitcoinNetwork;
+    final List<BitcoinAddressType> supportTyes =
+        network.coinParam.transacationNetwork.supportedAddress;
     chainAccount = wallet.chain;
-    supportedMultisigTypes[BitcoinAddressType.p2pkhInP2sh] = "P2SH";
-    if (network.coinParam.transacationNetwork.supportedAddress
-        .contains(BitcoinAddressType.p2wpkh)) {
-      supportedMultisigTypes[BitcoinAddressType.p2wshInP2sh] =
-          BitcoinAddressType.p2wshInP2sh.value;
-      supportedMultisigTypes[BitcoinAddressType.p2wsh] =
-          BitcoinAddressType.p2wsh.value;
+    supportedMultisigTypes[P2shAddressType.p2pkhInP2sh] = "P2SH";
+    if (supportTyes.contains(P2shAddressType.p2pkhInP2sh32)) {
+      supportedMultisigTypes[P2shAddressType.p2pkhInP2shwt] =
+          P2shAddressType.p2pkhInP2shwt.value;
+      supportedMultisigTypes[P2shAddressType.p2pkhInP2sh32] =
+          P2shAddressType.p2pkhInP2sh32.value;
+      supportedMultisigTypes[P2shAddressType.p2pkhInP2sh32wt] =
+          P2shAddressType.p2pkhInP2sh32wt.value;
+    }
+    if (supportTyes.contains(SegwitAddresType.p2wpkh)) {
+      supportedMultisigTypes[P2shAddressType.p2wshInP2sh] =
+          P2shAddressType.p2wshInP2sh.value;
+      supportedMultisigTypes[SegwitAddresType.p2wsh] =
+          SegwitAddresType.p2wsh.value;
     }
   }
 
@@ -306,27 +337,27 @@ class _SetupBitcoinMultiSigAddressViewState
                                     Text("type_of_address".tr,
                                         style: context.textTheme.titleMedium),
                                     WidgetConstant.height8,
-                                    Column(
-                                      children: List.generate(
-                                          supportedMultisigTypes.length,
-                                          (index) {
-                                        final supportTypes =
-                                            supportedMultisigTypes.keys
-                                                .toList();
-                                        return RadioListTile(
-                                            title:
-                                                Text(supportTypes[index].value),
-                                            value: supportTypes[index],
-                                            groupValue: multiSigAddressTye,
-                                            onChanged: onChangeAddressType);
-                                      }),
-                                    ),
+                                    ...List.generate(
+                                        supportedMultisigTypes.length, (index) {
+                                      final supportTypes =
+                                          supportedMultisigTypes.keys.toList();
+                                      return RadioListTile(
+                                          title:
+                                              Text(supportTypes[index].value),
+                                          subtitle: Text(
+                                              BitcoinUtils.getAddressDetails(
+                                                  supportTypes[index])),
+                                          value: supportTypes[index],
+                                          groupValue: multiSigAddressTye,
+                                          onChanged: onChangeAddressType);
+                                    }),
                                     AnimatedSwitcher(
                                       duration: AppGlobalConst.animationDuraion,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
-                                        key: ValueKey(multiSigAddressTye),
+                                        key: ValueKey<BitcoinAddressType>(
+                                            multiSigAddressTye),
                                         children: [
                                           WidgetConstant.height20,
                                           Text("address".tr,
@@ -546,8 +577,9 @@ class _SetupBitcoinMultiSigAddressViewState
                                                 minExtent: 0.5,
                                                 child:
                                                     SwitchOrSelectAccountView(
-                                                        account: chainAccount
-                                                            .account),
+                                                  account: chainAccount.account,
+                                                  showMultiSig: false,
+                                                ),
                                                 maxExtend: 0.9,
                                                 initialExtend: 0.7,
                                                 centerContent: false,

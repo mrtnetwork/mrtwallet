@@ -4,7 +4,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class BuildRippleCurrencyAmountView extends StatefulWidget {
   const BuildRippleCurrencyAmountView({
@@ -215,15 +215,17 @@ class _BuildRippleCurrencyAmountViewState
                             context
                                 .openSliverBottomSheet<ReceiptAddress>(
                                     "token_amount".tr,
-                                    maxExtend: 0.8,
-                                    minExtent: 0.7,
-                                    initialExtend: 0.7,
-                                    child: SelectNetworkAddressView(
-                                      account: widget.account,
-                                      subtitle: PageTitleSubtitle(
-                                          title: "issuer".tr,
-                                          body: Text("token_issuer".tr)),
-                                    ))
+                                    maxExtend: 1,
+                                    minExtent: 0.8,
+                                    initialExtend: 0.9,
+                                    bodyBuilder: (c) =>
+                                        SelectRecipientAccountView(
+                                          account: widget.account,
+                                          scrollController: c,
+                                          subtitle: PageTitleSubtitle(
+                                              title: "issuer".tr,
+                                              body: Text("token_issuer".tr)),
+                                        ))
                                 .then(onSelectIssuer);
                           },
                         ),

@@ -54,7 +54,7 @@ class TronUnDelegatedResourceV2Validator extends TronTransactionValidator {
       _delegatedAccountResourceInfo;
   bool _isLoading = false;
   bool get isLoadingResource => _isLoading;
-  final Canclable _requestCancelable = Canclable();
+  final Cancelable _requestCancelable = Cancelable();
   String? _inLoadingError;
   String? get inLoadingError => _inLoadingError;
   final Map<String, DelegatedAccountResourceInfo> _fetchedResource = {};
@@ -73,7 +73,7 @@ class TronUnDelegatedResourceV2Validator extends TronTransactionValidator {
       }
       return await _provider!
           .getDelegatedResourceInfo(_address!.networkAddress, to);
-    }, canclable: _requestCancelable);
+    }, cancelable: _requestCancelable);
     if (result.isCancel) return;
     if (result.hasError) {
       _inLoadingError = result.error!;

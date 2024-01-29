@@ -152,36 +152,50 @@ class BitcoinMultiSignatureAddress
   }
 
   @override
-  BitcoinAddress toP2wshAddress({required BasedUtxoNetwork network}) {
+  BitcoinBaseAddress toP2wshAddress({required BasedUtxoNetwork network}) {
     return P2wshAddress.fromScript(script: multiSigScript);
   }
 
   @override
-  BitcoinAddress toP2wshInP2shAddress({required BasedUtxoNetwork network}) {
+  BitcoinBaseAddress toP2wshInP2shAddress({required BasedUtxoNetwork network}) {
     final p2wsh = toP2wshAddress(network: network);
     return P2shAddress.fromScript(
-        script: p2wsh.toScriptPubKey(), type: BitcoinAddressType.p2wshInP2sh);
+        script: p2wsh.toScriptPubKey(), type: P2shAddressType.p2wshInP2sh);
   }
 
   List get variabels => [threshold, multiSigScript.toHex()];
 
   @override
-  BitcoinAddress toP2shAddress() {
-    return P2shAddress.fromScript(
-        script: multiSigScript, type: BitcoinAddressType.p2pkhInP2sh);
+  BitcoinBaseAddress toP2shAddress(
+      [P2shAddressType addressType = P2shAddressType.p2pkhInP2sh]) {
+    if (!MultiSignatureAddress.legacySupportP2shTypes.contains(addressType)) {
+      throw MessageException(
+          "invalid p2sh type please use one of them ${MultiSignatureAddress.legacySupportP2shTypes.map((e) => "$e").join(", ")}");
+    }
+
+    if (addressType.hashLength == 32) {
+      return P2shAddress.fromHash160(
+          addrHash: BytesUtils.toHexString(
+              QuickCrypto.sha256DoubleHash(multiSigScript.toBytes())),
+          type: addressType);
+    }
+    return P2shAddress.fromScript(script: multiSigScript, type: addressType);
   }
 
   @override
-  BitcoinAddress fromType(
+  BitcoinBaseAddress fromType(
       {required BasedUtxoNetwork network,
       required BitcoinAddressType addressType}) {
     switch (addressType) {
-      case BitcoinAddressType.p2wsh:
+      case SegwitAddresType.p2wsh:
         return toP2wshAddress(network: network);
-      case BitcoinAddressType.p2wshInP2sh:
+      case P2shAddressType.p2wshInP2sh:
         return toP2wshInP2shAddress(network: network);
-      case BitcoinAddressType.p2pkhInP2sh:
-        return toP2shAddress();
+      case P2shAddressType.p2pkhInP2sh:
+      case P2shAddressType.p2pkhInP2sh32:
+      case P2shAddressType.p2pkhInP2shwt:
+      case P2shAddressType.p2pkhInP2sh32wt:
+        return toP2shAddress(addressType as P2shAddressType);
       default:
         throw ArgumentError(
             "invalid multisig address type. use of of them [BitcoinAddressType.p2wsh, BitcoinAddressType.p2wshInP2sh, BitcoinAddressType.p2pkhInP2sh]");

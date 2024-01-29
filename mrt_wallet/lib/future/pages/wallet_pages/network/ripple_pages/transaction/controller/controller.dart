@@ -10,7 +10,7 @@ import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 import 'package:mrt_wallet/provider/transaction_validator/core/validator.dart';
 import 'package:mrt_wallet/provider/transaction_validator/ripple/transaction_validator/validators.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleTransactionStateController extends RippleTransactionImpl
     with RippleMemoImpl, RippleFeeImpl, RippleSignTransactionImpl {

@@ -4,6 +4,7 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
   AppChains _appChains = AppChains.setup();
   AppChain get chain => _appChains.chain;
   AppNetworkImpl get network => chain.network;
+  bool get walletIsUnlock;
 
   List<AppNetworkImpl> networks() {
     return _appChains.networks.values.map((e) => e.network).toList();
@@ -16,8 +17,8 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
         .toList();
   }
 
-  Future<void> _importEVMNetwor(APPEVMNetwork network) async {
-    final newChain = _appChains.importEvmNetwork(network);
+  Future<void> _updateImportNetwork(AppNetworkImpl network) async {
+    final newChain = _appChains.updateImportNetwork(network);
     await _saveAccount(newChain);
   }
 
@@ -33,13 +34,16 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
     await _saveAccount(acc);
   }
 
-  Future<void> _addNewAccountToNetwork(
+  Future<CryptoAccountAddress> _addNewAccountToNetwork(
     NewAccountParams accountParams,
     List<int> publicKey,
   ) async {
     final acc = chain;
-    acc.account.addNewAddress(publicKey, accountParams);
+    final address = acc.account.addNewAddress(publicKey, accountParams);
     await _saveAccount(acc);
+    _updateAccountBalance(acc, address: address);
+    await MethodCaller.wait();
+    return address;
   }
 
   Future<void> _addNewContact(ContactCore newContact) async {
@@ -101,10 +105,14 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
     await _saveAccount(acc);
   }
 
-  Future<void> _updateAccountBalance(AppChain? account) async {
+  Future<void> _updateAccountBalance(AppChain? account,
+      {CryptoAccountAddress? address}) async {
     if (account == null || !account.haveAddress) return;
-
-    await account.provider().updateBalance(account.account.address);
+    if (address != null && !account.account.addresses.contains(address)) return;
+    await account
+        .provider()
+        ?.updateBalance(address ?? account.account.address)
+        .catchError((e) {});
     account.account.refreshTotalBalance();
     await _saveAccount(account);
   }
@@ -113,7 +121,7 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
     if (account == null || !account.haveAddress) return;
     final provider = account.provider();
     for (final i in account.account.addresses) {
-      await provider.updateBalance(i).catchError((e) {
+      await provider?.updateBalance(i).catchError((e) {
         return null;
       });
     }
@@ -134,9 +142,7 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
 
   Future<void> _changeNetworkApiProvider(ApiProviderService provider) async {
     final currentNetwork = chain;
-    final correctProvider =
-        currentNetwork.network.getProvider(provider.serviceName);
-    currentNetwork.setProvider(correctProvider);
+    currentNetwork.setProvider(provider);
     await _saveNetwork(currentNetwork);
   }
 
@@ -173,5 +179,36 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
       await _saveAccount(_appChains.fromAccount(account));
     }
     return account;
+  }
+
+  final Cancelable _balanceUpdaterCancelable = Cancelable();
+  StreamSubscription<void>? _balanceUpdaterStream;
+  void _accountBalanceStream() {
+    _disposeBalanceUpdater();
+    _balanceUpdaterStream = MethodCaller.prediocCaller(
+            () => MethodCaller.call(() async {
+                  for (final acc in _appChains.networks.values) {
+                    for (final i in acc.account.addresses) {
+                      if (!walletIsUnlock) return;
+                      try {
+                        await acc.provider()?.updateBalance(i);
+                      } catch (e) {
+                        continue;
+                      }
+                    }
+                    await _saveAccount(acc);
+                  }
+                }),
+            canclable: _balanceUpdaterCancelable,
+            waitOnSuccess: const Duration(minutes: 10))
+        .listen(
+      (event) {},
+    );
+  }
+
+  void _disposeBalanceUpdater() {
+    _balanceUpdaterStream?.cancel();
+    _balanceUpdaterStream = null;
+    _balanceUpdaterCancelable.cancel();
   }
 }

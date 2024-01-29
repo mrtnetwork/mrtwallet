@@ -17,7 +17,7 @@ class MonitorRippleNFTsView extends StatelessWidget {
       title: "manage_nfts".tr,
       childBulder: (wallet, account, address, switchRippleAccount) {
         return _MonitorRippleNFTsView(
-            address: address, wallet: wallet, provider: account.provider());
+            address: address, wallet: wallet, provider: account.provider()!);
       },
     );
   }

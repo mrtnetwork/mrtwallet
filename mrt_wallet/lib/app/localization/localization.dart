@@ -465,7 +465,9 @@ class Localization {
           "about_mrt_wallet": "About MRT Wallet",
           "api_provider_service": "API Provider Service",
           "active": "Active",
-          "last_request_error": "The most recent request encountered an error",
+          "no_error_found": "No error found",
+          "network_all_request_error": "All requests have encountered errors",
+          "network_some_request_error": "Some requests have encountered errors",
           "reached_limit_error":
               "You have reached the limit for free requests. Please wait.",
           "service_provider": "Service provider",
@@ -1145,7 +1147,222 @@ class Localization {
           "wallet_deletation_desc":
               "Have you verified the existence of a backup for your wallet before proceeding with deletion?",
           "read_more": "Read more...",
-          "harden": "Harden"
+          "harden": "Harden",
+          "p2sh32": "P2SH32",
+          "use_pay_to_script_hash_32": "Use Pay to Script Hash 32",
+          "transaction_fee_has_been_modified":
+              "The transaction fee has been modified.",
+          "transaction_fee_warning":
+              "The transaction fee is currently lower than the prevailing network conditions.",
+          "bch_specific": "BCH Specific",
+          "token_aware": "Token-aware",
+          "cash_token_desc":
+              "Use this address to send or receive CashTokens on the BCH network",
+          "retreiving_account_utxos": "Retrieving Accounts UTXOs. Please Wait.",
+          "create_tokens": "Create Token",
+          "fungible_tokens": "Fungible Tokens",
+          "minting_nft": "Minting NFT",
+          "immutable_nft": "Immutable NFT",
+          "select_token_type": "Choose Token Type.",
+          "create_token_desc1":
+              "Please carefully review this page before proceeding to create a token.",
+          "total_supply": "Total supply",
+          "input_total_supply": "Input the total supply of fungible tokens.",
+          "token_meta_data": "Token Metadata",
+          "cash_tokens_metadata_desc1":
+              "You can enhance your Cashtokens with metadata using the BCMR standard.",
+          "cash_token_creation_desc1":
+              "With the AuthUTXO token, you can add or update token metadata at any time. However, it's crucial to transfer the authority to update metadata (AuthUTXO) to a dedicated wallet immediately after creation. You can create an Auth account from the services section on the account page.",
+          "add_meta_data": "Add Metadata",
+          "where_meta_data_uoloaded": "Where is your token metadata uploaded?.",
+          "ipfs": "IPFS",
+          "https": "HTTPS",
+          "gist": "Github (gist)",
+          "meta_data_uploaded_in": "Metadata uploaded in",
+          "input_your_meta_data_uri_desc":
+              "Enter your Metadata URI with the 'https' prefix",
+          "input_your_meta_data_ipfs_cid":
+              "Enter your Metadata IPFS CID V1 (must start with 'baf').",
+          "ipfs_cid": "IPFS CID V1",
+          "invalid_ipfs_v1_cid": "Invalid IPFS v1 CID",
+          "validate_https": "Please enter a valid URL starting with 'https'.",
+          "read_uri_content": "Read URI Content",
+          "fetching_uri_content":
+              "Fetching the content of the URI. Please wait.",
+          "bitcoin_cash_meta_data_registeries":
+              "Bitcoin Cash Metadata Registries",
+          "content": "Content",
+          "content_of_uri": "The content of uri",
+          "bcm_uri": "BCMR URI",
+          "bcmr_hash": "BCMR Hash",
+          "bcmr_hash_desc": "The SHA-256 hash of your URI content",
+          "setup_bcmr": "Setup BCMR",
+          "tap_to_add_bcmr": "Tap to add BCMR",
+          "bcmr": "BCMR",
+          "bcmr_hash_desc1": "All URIs' BCMR content hashes must be identical.",
+          "uri_already_exist": "The URI already exist.",
+          "on_chain_uri": "On-chain URI",
+          "on_chain_uri_desc": "on-chain Metadata URI",
+          "bch_create_token_index_error":
+              "To create tokens, you need a UTXO with index 0. Your account does not currently possess any UTXOs with index 0.",
+          "bch_token_index_zero_error":
+              "To generate a token, it's essential to have a UTXO (Unspent Transaction Output) with an index of 0. Unfortunately, the UTXOs you've chosen at the moment do not include any with an index of 0.",
+          "token_authory": "Token authority",
+          "token_authory_desc":
+              "You have the option to create a token for another account instead of your own",
+          "create_token_amount_desc":
+              "The amount for the token output is required to be a minimum of ___1__ satoshis when creating a token.",
+          "bcmr_hash_validate_desc":
+              "All URIs' contents must have the same hash.",
+          "nft": "NFT",
+          "capability": "Capability",
+          "capability_desc": "The capability of the NFT",
+          "none": "None",
+          "mutable": "Mutable",
+          "minting": "Minting",
+          "capability_required_desc":
+              "The capability is required for non-fungible tokens.",
+          "commitment": "Commitment",
+          "commitment_desc": "The commitment contents of the NFT",
+          "commitment_validate_desc":
+              "The commitment must be a maximum of 40 bytes (80 characters).",
+          "output_index_desc":
+              "Output index (position) within the transaction.",
+          "max": "MAX",
+          "token_utxos": "Token UTXOs",
+          "includ_token_utxos": "Include token UTXOs.",
+          "category_id": "Category ID",
+          "tap_to_add_new_receipment": "Tap to add new recipient",
+          "add_operation_for_each_token": "Add operation for each tokens.",
+          "tap_to_add_operation": "Tap to add operation.",
+          "token_operation": "Token Operation",
+          "operation": "Operation",
+          "initiate_operations": "Initiate operations: send, mint, or burn.",
+          "t_amount": "___1__ amount",
+          "setup_operation": "Setup Operation",
+          "remaining_token_amount_and_receiver":
+              "Remaining token amount of UTXO and receiver address.",
+          "remaining_token_amount_desc":
+              "You must utilize the entire amount for the transaction to be accepted. Alternatively, you have the option to include a new recipient using your address for the remaining balance.",
+          "tap_to_add_commitment": "Tap to add commitment",
+          "without_commitment": "Without commitment",
+          "update_commitment": "Update commitment",
+          "display_all_account": "Display all accounts",
+          "spending_from_multiple_account": "Spending from multiple accounts",
+          "accounts_removed_from_spending_list":
+              "Accounts removed from spending list",
+          "transaction_ordering": "Transaction Ordering",
+          "transaction_ordering_desc":
+              "The order in which these inputs and outputs are listed in transaction.",
+          "bip69": "BIP-69",
+          "shuffle": "Shuffle",
+          "inputs": "Inputs",
+          "outputs": "Outputs",
+          "save": "Save",
+          "bip_69_desc":
+              "Lexicographical Indexing of Transaction Inputs and Outputs",
+          "shuffle_desc": "Mixing inputs and outputs (random)",
+          "none_ordering_transaction_desc":
+              "The order of selected UTXOs, added outputs, remaining output, and notes determines the shuffle.",
+          "manually": "Manually",
+          "manually_ordering_transaction_desc":
+              "Sort manually before sending; note that changes after may reset to the default (BIP-69) sort algorithm.",
+          "token_id_choose_desc":
+              "Kindly choose a UTXO that you wish to use as the hash for your token ID.",
+          "token_id_validator_desc": "The Token ID cannot be null.",
+          "ft": "Fungible Token",
+          "tap_to_create_token": "Tap to create a new token.",
+          "tap_to_add_mint_operation": "Tap to add mint operation.",
+          "tap_to_add_transfer_operation": "Tap to add transfer operation.",
+          "tap_to_add_burn_operation": "Tap to add burn operation.",
+          "setup_burnable_amount": "Setup the amount eligible for burning.",
+          "burn_amount": "Burn amount",
+          "transaction_generated_with_number_accounts":
+              "A transaction has been generated, involving ___1__ accounts",
+          "transaction_need_number_private_key_to_complete":
+              "The transaction requires the input of ___1__ private keys for completion.",
+          "list_of_operations": "List of operations",
+          "node_connection_error":
+              "The connection with the node could not be established",
+          "network_unbale_change_providers":
+              "Unable to modify default providers.",
+          "protocol": "Protocol",
+          "network_protocol_not_supported":
+              "The ___1__ protocol is not supported on this platform.",
+          "network_tittle_tcp_ssl_url":
+              "Enter the ___1__ URL or IPv4 address without any prefix, including the port, like example.com:50002.",
+          "network_title_websocket_url":
+              "Please supply the WebSocket address, including the WS or WSS prefix, and if necessary, specify the port. For example, wss://example.com.",
+          "network_tcp_address_validator":
+              "Invalid TCP or IPv4 address. Please refer to the example address for proper formatting.",
+          "network_websocket_address_validator":
+              "Invalid Websocket address. Please refer to the example address for proper formatting.",
+          "network_electrum_server_url": "Electrum Server URL",
+          "network_waiting_for_response": "Awaiting a reply. please wait.",
+          "network_verify_server_status": "Verify server status.",
+          "network_server_banner": "Server banner",
+          "network_server_banner_desc":
+              "Banner to be shown in the Electrum console.",
+          "network_server_features": "Server features",
+          "network_server_features_desc":
+              "List of features and services supported by the server.",
+          "network_header": "Block header",
+          "network_block_header_desc":
+              "The header of the current block chain tip.",
+          "network_update_node_provider": "Update node provider",
+          "network_security_title":
+              "Ensuring wallet security: tips for adding Electrum servers",
+          "network_security_desc":
+              "Ensuring the security of your wallet is paramount. When adding a new Electrum server, it's crucial to verify the RPC endpoint's accuracy to prevent potential security compromises. Before integration, double-check the RPC URL for correctness. Take an additional layer of caution by cross-referencing the current server header with a trusted block explorer or other reliable sources. These measures enhance security, providing confidence that the Electrum server added to your wallet is secure and free from any malicious intent.",
+          "network_add_to_providers": "Add to providers.",
+          "network_update_network_providers": "Update network providers.",
+          "network": "Network",
+          "network_change_detect_desc":
+              "Prioritize the use of the 'Update Network Provider' option before making any changes.",
+          "network_no_provider_detected":
+              "No node provider detected. Please add a provider for the network.",
+          "network_add_provider": "Add provider.",
+          "network_explorer_address_link": "Explore Address Link",
+          "network_explorer_transaction_link": "Explore Transaction Link",
+          "network_evm_explorer_address_desc":
+              "To retrieve the current link in the explorer, please use #address as a placeholder for the actual address in the link, such as https://etherscan.io/address/#address.",
+          "network_evm_explorer_transaction_desc":
+              "To retrieve the current link in the explorer, please use #txid as a placeholder for the actual transaction in the link, such as https://etherscan.io/tx/#txid.",
+          "validate_link_desc":
+              "Please enter a valid URL starting with 'http' or 'https'.",
+          "default_providers": "Default providers.",
+          "api_unknown_error":
+              "An unidentified error occurred during the request",
+          "api_http_timeout_error":
+              "Request Timeout: The server did not respond within the specified time frame",
+          "api_http_client_error":
+              "ClientException: An error occurred on the client side during the request.",
+          "bch_nft_wrong_capability":
+              "It is not possible to alter a mutable NFT into a minting state",
+          "network_electrum_genesis_hash": "Genesis hash",
+          "network_genesis_hash_validator":
+              "The Genesis Hash is incompatible with the current network.",
+          "network_security_issue": "Security issue",
+          "network_electrum_incorrect_genesis_hash":
+              "The Genesis Hash is not compatible with the current network. You may encounter inaccurate information, or the server may belong to another network. Are you certain about this?",
+          "network_provider_log_details": "Provider Log Details",
+          "network_total_request": "Total requests",
+          "network_total_success_request": "Total Success Requests",
+          "network_request_details": "Request details",
+          "request": "Request",
+          "response": "Response",
+          "error": "Error",
+          "status": "Status",
+          "pro_transaction_builder": "Transaction Composer Pro",
+          "bch_pro_builder_desc":
+              "Enable Cashtoken functionality, including minting, burning, spending, and sending NFTs.",
+          "toggle_currency": "Toggle Currency",
+          "view_on_coingecko": "View ___1__ on CoinGecko",
+          "network_tron_provider_desc":
+              "For the time being, the Tron network exclusively supports the Trongrid API.",
+          "min": "MIN",
+          "bitcoin_rbf_error":
+              "When using RBF, make sure your UTXOs have been confirmed; otherwise, you may encounter a non-final error"
         }
       };
 }

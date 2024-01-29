@@ -38,13 +38,20 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
     int initialIndex = 0;
     bitcoinNetworks = networks
         .where((element) => element.network is AppBitcoinNetwork)
-        .toList();
-    rippleNetworks =
-        networks.where((element) => element.network is AppXRPNetwork).toList();
-    evmNetworks =
-        networks.where((element) => element.network is APPEVMNetwork).toList();
-    tvmNetworks =
-        networks.where((element) => element.network is APPTVMNetwork).toList();
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    rippleNetworks = networks
+        .where((element) => element.network is AppXRPNetwork)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    evmNetworks = networks
+        .where((element) => element.network is APPEVMNetwork)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    tvmNetworks = networks
+        .where((element) => element.network is APPTVMNetwork)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
     final currentNetwork = MethodCaller.nullOnException(() =>
         networks.firstWhere((element) =>
             element.network.value == widget.selectedNetwork.value));

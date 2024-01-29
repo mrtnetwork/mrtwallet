@@ -22,6 +22,10 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
       GlobalKey<StreamWidgetState>(debugLabel: "WalletSigningPassword_1");
   final GlobalKey<FormState> formKey =
       GlobalKey<FormState>(debugLabel: "WalletSigningPassword");
+  late final Set<AddressDerivationIndex> signers =
+      widget.request.signers.toSet();
+  late final Set<CryptoAccountAddress> addresses =
+      widget.request.addresses.toSet();
   List<String> singerPubKeys = [];
 
   String _password = "";
@@ -80,6 +84,19 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
     setState(() {});
   }
 
+  late bool showAllPrivateKeys = signers.length == 1;
+  late bool showAllAddresses = addresses.length == 1;
+
+  void toggleShowAllPrivateKey() {
+    showAllPrivateKeys = !showAllPrivateKeys;
+    setState(() {});
+  }
+
+  void toggleShowAllAddresses() {
+    showAllAddresses = !showAllAddresses;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -99,23 +116,86 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
           WidgetConstant.height20,
           Text("accounts".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
-          ...List.generate(widget.request.addresses.length, (index) {
-            final address = widget.request.addresses[index];
-            return ContainerWithBorder(
-                child: AddressDetailsView(
-              address: address,
-              isSelected: false,
-            ));
-          }),
+          AnimatedSize(
+              duration: AppGlobalConst.animationDuraion,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: context.mediaQuery.size.width,
+                child: ContainerWithBorder(
+                    onRemove: () {
+                      toggleShowAllAddresses();
+                    },
+                    iconAlginment: showAllAddresses
+                        ? CrossAxisAlignment.start
+                        : CrossAxisAlignment.center,
+                    onRemoveIcon: showAllAddresses
+                        ? const Icon(Icons.arrow_drop_up_sharp)
+                        : const Icon(Icons.arrow_drop_down_sharp),
+                    key: ValueKey(showAllAddresses),
+                    child: showAllAddresses
+                        ? Column(
+                            children: List.generate(addresses.length, (index) {
+                              final address = addresses.elementAt(index);
+                              final bool isLastIndex =
+                                  index == addresses.length - 1;
+                              return Column(
+                                children: [
+                                  AddressDetailsView(address: address),
+                                  if (!isLastIndex)
+                                    Divider(
+                                        color:
+                                            context.colors.onPrimaryContainer)
+                                ],
+                              );
+                            }),
+                          )
+                        : Text("transaction_generated_with_number_accounts"
+                            .tr
+                            .replaceOne(addresses.length.toString()))),
+              )),
           WidgetConstant.height20,
           Text("private_keys".tr, style: context.textTheme.titleMedium),
           Text("private_keys__signing_access_desc".tr),
           WidgetConstant.height8,
-          ...List.generate(widget.request.signers.length, (index) {
-            final keyIndex = widget.request.signers[index];
-            return ContainerWithBorder(
-                child: _KeyIndexDetails(keyIndex: keyIndex));
-          }),
+          AnimatedSize(
+              duration: AppGlobalConst.animationDuraion,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                width: context.mediaQuery.size.width,
+                child: ContainerWithBorder(
+                  onRemove: () {
+                    toggleShowAllPrivateKey();
+                  },
+                  iconAlginment: showAllPrivateKeys
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.center,
+                  onRemoveIcon: showAllPrivateKeys
+                      ? const Icon(Icons.arrow_drop_up_sharp)
+                      : const Icon(Icons.arrow_drop_down_sharp),
+                  key: ValueKey(showAllPrivateKeys),
+                  child: showAllPrivateKeys
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: List.generate(signers.length, (index) {
+                            final keyIndex = signers.elementAt(index);
+                            final bool isLastIndex =
+                                index == signers.length - 1;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _KeyIndexDetails(keyIndex: keyIndex),
+                                if (!isLastIndex)
+                                  Divider(
+                                      color: context.colors.onPrimaryContainer)
+                              ],
+                            );
+                          }),
+                        )
+                      : Text("transaction_need_number_private_key_to_complete"
+                          .tr
+                          .replaceOne(signers.length.toString())),
+                ),
+              )),
           WidgetConstant.height20,
           AppTextField(
             label: "password".tr,

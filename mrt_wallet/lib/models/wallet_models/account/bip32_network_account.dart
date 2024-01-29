@@ -67,10 +67,10 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
   }
   @override
   final AppNetworkImpl network;
-  List<Bip32AddressCore<BigInt, T, X>> _addresses;
+  List<Bip32AddressCore<T, X>> _addresses;
 
   @override
-  List<Bip32AddressCore<BigInt, T, X>> get addresses => _addresses;
+  List<Bip32AddressCore<T, X>> get addresses => _addresses;
 
   @override
   bool get haveAddress => addresses.isNotEmpty;
@@ -101,13 +101,16 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
   }
 
   @override
-  void addNewAddress(List<int> publicKey, NewAccountParams accountParams) {
+  CryptoAccountAddress<BigInt, T, X> addNewAddress(
+      List<int> publicKey, NewAccountParams accountParams) {
     if (!network.coins.contains(accountParams.coin)) {
       throw WalletExceptionConst.invalidCoin;
     }
     Bip32AddressCore newAddress;
     if (accountParams is RippleNewAddressParam) {
       newAddress = _addXrpAddress(publicKey, accountParams);
+    } else if (accountParams is BitcoinCashNewAddressParams) {
+      newAddress = _addBitcoinCashAddress(publicKey, accountParams);
     } else if (accountParams is BitcoinNewAddressParams) {
       newAddress = _addBitcoinAddress(publicKey, accountParams);
     } else if (accountParams is EthereumNewAddressParam) {
@@ -121,17 +124,15 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
       throw WalletExceptionConst.addressAlreadyExist;
     }
     _addresses = List.unmodifiable([newAddress, ..._addresses]);
+    return newAddress as CryptoAccountAddress<BigInt, T, X>;
   }
 
   IBitcoinAddress _addBitcoinAddress(
       List<int> publicKey, BitcoinNewAddressParams accountParams) {
     IBitcoinAddress newAddress;
     if (accountParams.isMultiSig) {
-      accountParams as BitcoinMultiSigNewAddressParams;
       newAddress = IBitcoinMultiSigAddress.newAccount(
-          bitcoinAddressType: accountParams.bitcoinAddressType,
-          coin: accountParams.coin,
-          multiSignatureAddress: accountParams.multiSignatureAddress,
+          accountParam: accountParams as BitcoinMultiSigNewAddressParams,
           network: network as AppBitcoinNetwork);
     } else {
       newAddress = IBitcoinAddress.newAccount(
@@ -141,6 +142,19 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
     }
 
     return newAddress;
+  }
+
+  IBitcoinAddress _addBitcoinCashAddress(
+      List<int> publicKey, BitcoinCashNewAddressParams accountParams) {
+    if (accountParams.isMultiSig) {
+      return IBitcoinCashMultiSigAddress.newAccount(
+          accountParam: accountParams as BitcoinCashMultiSigNewAddressParams,
+          network: network as AppBitcoinNetwork);
+    }
+    return IBitcoinCashAddress.newAccount(
+        accountParams: accountParams,
+        publicKey: publicKey,
+        network: network as AppBitcoinNetwork);
   }
 
   IXRPAddress _addXrpAddress(
@@ -184,7 +198,7 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
 
   @override
   void switchAccount(CryptoAccountAddress<BigInt, T, X> address) {
-    if (address is! Bip32AddressCore<BigInt, T, X>) return;
+    if (address is! Bip32AddressCore<T, X>) return;
     final index = addresses.indexOf(address);
     if (index < 0 || index == _addressIndex) return;
     _addressIndex = index;
@@ -196,8 +210,7 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
     if (!addresses.contains(address)) {
       throw WalletExceptionConst.accountDoesNotFound;
     }
-    final currentAccounts =
-        List<Bip32AddressCore<BigInt, T, X>>.from(_addresses);
+    final currentAccounts = List<Bip32AddressCore<T, X>>.from(_addresses);
     currentAccounts.remove(address);
     _addressIndex = 0;
     _addresses = currentAccounts;

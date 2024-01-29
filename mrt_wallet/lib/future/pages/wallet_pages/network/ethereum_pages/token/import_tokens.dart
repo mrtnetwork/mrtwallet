@@ -21,7 +21,7 @@ class ImportERC20TokenView extends StatelessWidget {
               walletProvider: walletProvider,
               account: account.account,
               network: account.network as APPEVMNetwork,
-              apiProvider: account.provider(),
+              apiProvider: account.provider()!,
               address: address);
         },
         title: "import_token".tr);
@@ -135,11 +135,17 @@ class __ImportErc20TokenViewState extends State<_ImportErc20TokenView> {
                               .openSliverBottomSheet<
                                       ReceiptAddress<ETHAddress>>(
                                   "contract_address".tr,
-                                  maxExtend: 0.8,
-                                  minExtent: 0.7,
-                                  initialExtend: 0.7,
-                                  child: SelectNetworkAddressView(
-                                      account: widget.account))
+                                  maxExtend: 1,
+                                  minExtent: 0.8,
+                                  initialExtend: 0.9,
+                                  bodyBuilder: (c) =>
+                                      SelectRecipientAccountView(
+                                        account: widget.account,
+                                        scrollController: c,
+                                        subtitle: PageTitleSubtitle(
+                                            title: "contract_address".tr,
+                                            body: Text("import_erc20_desc".tr)),
+                                      ))
                               .then(onSetupAddress);
                         },
                       ),

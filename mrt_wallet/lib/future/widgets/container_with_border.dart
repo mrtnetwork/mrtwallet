@@ -17,7 +17,8 @@ class ContainerWithBorder extends StatelessWidget {
       this.validate = true,
       this.validateText,
       this.shadow = false,
-      this.onTapWhenOnRemove = true});
+      this.onTapWhenOnRemove = true,
+      this.iconAlginment = CrossAxisAlignment.center});
   final Widget child;
   final EdgeInsets padding;
   final EdgeInsets margin;
@@ -30,6 +31,7 @@ class ContainerWithBorder extends StatelessWidget {
   final String? validateText;
   final bool shadow;
   final bool onTapWhenOnRemove;
+  final CrossAxisAlignment iconAlginment;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -56,13 +58,14 @@ class ContainerWithBorder extends StatelessWidget {
                     ? null
                     : Border.all(
                         color: context.colors.error,
-                        width: 1,
-                        strokeAlign: 1,
+                        width: 2,
+                        strokeAlign: 0,
                       )),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
+                  crossAxisAlignment: iconAlginment,
                   children: [
                     Expanded(child: child),
                     if (onRemove != null)

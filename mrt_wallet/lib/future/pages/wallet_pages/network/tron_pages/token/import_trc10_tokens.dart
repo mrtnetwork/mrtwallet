@@ -16,7 +16,7 @@ class MonitorTronTRC10TokenView extends StatelessWidget {
       title: "add_token".tr,
       childBulder: (wallet, account, address, switchRippleAccount) {
         return _MonitorTronTRC10TokenView(
-            address: address, wallet: wallet, provider: account.provider());
+            address: address, wallet: wallet, provider: account.provider()!);
       },
     );
   }

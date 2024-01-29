@@ -18,7 +18,7 @@ class Token with CborSerializable, Equatable {
       throw WalletExceptionConst.invalidTokenInformation;
     }
   }
-  const Token(
+  Token(
       {required this.name, required this.symbol, this.assetLogo, this.decimal});
   Token copyWith({
     String? name,
@@ -40,6 +40,8 @@ class Token with CborSerializable, Equatable {
   final int? decimal;
   final String? assetLogo;
 
+  late final String nameView = AppStringUtility.substring(name, length: 20);
+  late final String symbolView = AppStringUtility.substring(symbol, length: 5);
   @override
   CborTagValue toCbor() {
     return CborTagValue(

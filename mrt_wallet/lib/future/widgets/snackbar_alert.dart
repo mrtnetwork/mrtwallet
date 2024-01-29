@@ -15,7 +15,7 @@ SnackBar createSnackAlert(
       onTap: onTap,
       child: Center(
         child: ConstraintsBoxView(
-          maxWidth: 230,
+          maxWidth: 350,
           child: Card(
             elevation: 3,
             child: Container(
@@ -27,7 +27,7 @@ SnackBar createSnackAlert(
                 children: [
                   Center(
                     child: OneLineTextWidget(message,
-                        maxLine: 2, align: TextAlign.center),
+                        maxLine: 3, align: TextAlign.center),
                   )
                 ],
               ),

@@ -3,13 +3,15 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:bitcoin_base/bitcoin_base.dart'
-    show BitcoinAddress, BitcoinAddressType;
+    show BitcoinBaseAddress, BitcoinAddressType;
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
+import 'bitcoin_multi_sig_core.dart';
+
 class IBitcoinAddress
     with Equatable
-    implements Bip32AddressCore<BigInt, BigInt, BitcoinAddress> {
+    implements Bip32AddressCore<BigInt, BitcoinBaseAddress> {
   factory IBitcoinAddress.newAccount(
       {required BitcoinNewAddressParams accountParams,
       required List<int> publicKey,
@@ -24,7 +26,7 @@ class IBitcoinAddress
             .transacationNetwork),
         balance: NoneDecimalBalance.zero(network.coinParam.decimal));
 
-    return IBitcoinAddress._(
+    return IBitcoinAddress(
         coin: accountParams.coin,
         publicKey: publicKey,
         address: addressDetauls,
@@ -46,7 +48,7 @@ class IBitcoinAddress
           obj: toCborTag);
     }
     final CborListValue cbor = CborSerializable.decodeCborTags(
-        null, toCborTag, WalletModelCborTagsConst.bitcoinAccoint);
+        null, toCborTag, WalletModelCborTagsConst.bitcoinAccount);
     final CryptoProposal proposal = CryptoProposal.fromName(cbor.getIndex(0));
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.getIndex(1), proposal)!;
     final keyIndex =
@@ -64,8 +66,13 @@ class IBitcoinAddress
         BitcoinAddressType.fromValue(cbor.getIndex(5));
     final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
         publicKey, coin, bitcoinAddressType);
+    if (bitcoinAddress.toAddress(
+            (network as AppBitcoinNetwork).coinParam.transacationNetwork) !=
+        address.toAddress) {
+      throw WalletExceptionConst.invalidAccountDetails;
+    }
     final String? name = cbor.getIndex(7);
-    return IBitcoinAddress._(
+    return IBitcoinAddress(
         coin: coin,
         publicKey: publicKey,
         address: address,
@@ -75,7 +82,7 @@ class IBitcoinAddress
         network: network.value,
         accountName: name);
   }
-  IBitcoinAddress._(
+  IBitcoinAddress(
       {required this.keyIndex,
       required this.coin,
       required List<int> publicKey,
@@ -105,11 +112,11 @@ class IBitcoinAddress
           network,
           accountName ?? const CborNullValue()
         ]),
-        WalletModelCborTagsConst.bitcoinAccoint);
+        WalletModelCborTagsConst.bitcoinAccount);
   }
 
   @override
-  final BitcoinAddress networkAddress;
+  final BitcoinBaseAddress networkAddress;
   final BitcoinAddressType addressType;
 
   @override
@@ -178,28 +185,27 @@ class IBitcoinAddress
 }
 
 class IBitcoinMultiSigAddress extends IBitcoinAddress
+    with BitcoinMultiSigBase
     implements MultiSigCryptoAccountAddress {
   factory IBitcoinMultiSigAddress.newAccount({
-    required BitcoinMultiSignatureAddress multiSignatureAddress,
     required AppBitcoinNetwork network,
-    required CryptoCoins coin,
-    required BitcoinAddressType bitcoinAddressType,
+    required BitcoinMultiSigNewAddressParams accountParam,
   }) {
     try {
-      final toBitcoinAddress = multiSignatureAddress.fromType(
+      final toBitcoinAddress = accountParam.multiSignatureAddress.fromType(
           network: network.coinParam.transacationNetwork,
-          addressType: bitcoinAddressType);
+          addressType: accountParam.bitcoinAddressType);
       final addressDetauls = NoneDecimalNetworkAddressDetails(
           address:
               toBitcoinAddress.toAddress(network.coinParam.transacationNetwork),
           balance: NoneDecimalBalance.zero(network.coinParam.decimal));
 
       return IBitcoinMultiSigAddress._(
-          coin: coin,
+          coin: accountParam.coin,
           address: addressDetauls,
-          multiSignatureAddress: multiSignatureAddress,
+          multiSignatureAddress: accountParam.multiSignatureAddress,
           bitcoinAddress: toBitcoinAddress,
-          addressType: bitcoinAddressType,
+          addressType: accountParam.bitcoinAddressType,
           network: network.value,
           keyIndex: const MultiSigAddressIndex());
     } catch (e) {
@@ -251,14 +257,14 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
   }
   IBitcoinMultiSigAddress._(
       {required CryptoCoins coin,
-      required BitcoinAddress bitcoinAddress,
+      required BitcoinBaseAddress bitcoinAddress,
       required NetworkAddressDetailsCore<BigInt> address,
       required BitcoinAddressType addressType,
       required this.multiSignatureAddress,
       required super.network,
       required super.keyIndex,
       String? accountName})
-      : super._(
+      : super(
             coin: coin,
             publicKey: const [],
             networkAddress: bitcoinAddress,
@@ -269,6 +275,7 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
   @override
   List<int> get publicKey => throw UnimplementedError();
 
+  @override
   final BitcoinMultiSignatureAddress multiSignatureAddress;
 
   @override

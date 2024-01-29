@@ -38,29 +38,35 @@ class ReceiptAddressView extends StatelessWidget {
                 : onEditIcon ?? const Icon(Icons.edit),
             child: address == null
                 ? Text("tap_to_choose_address".tr)
-                : _ReceiptAddressView(address: address!)),
+                : ReceiptAddressDetailsView(address: address!)),
       ],
     );
   }
 }
 
-class _ReceiptAddressView extends StatelessWidget {
-  const _ReceiptAddressView({required this.address});
+class ReceiptAddressDetailsView extends StatelessWidget {
+  const ReceiptAddressDetailsView(
+      {required this.address, super.key, this.color});
   final ReceiptAddress address;
-
+  final Color? color;
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (address.type != null)
-          Text(address.type!.tr, style: context.textTheme.labelLarge),
+          Text(address.type!.tr,
+              style: context.textTheme.labelLarge?.copyWith(color: color)),
         if (address.hasContact)
-          Text(address.contact!.name, style: context.textTheme.labelSmall)
+          Text(address.contact!.name,
+              style: context.textTheme.labelSmall?.copyWith(color: color))
         else if (address.isAccount)
           Text(address.account!.keyIndex.path.tr,
-              style: context.textTheme.labelSmall),
-        OneLineTextWidget(address.view)
+              style: context.textTheme.labelSmall?.copyWith(color: color)),
+        OneLineTextWidget(
+          address.view,
+          style: context.textTheme.bodyMedium?.copyWith(color: color),
+        )
       ],
     );
   }

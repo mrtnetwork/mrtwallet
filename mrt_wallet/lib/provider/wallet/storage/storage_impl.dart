@@ -29,12 +29,12 @@ mixin WalletStorageImpl on NativeSecureStorageImpl {
   }
 
   Future<AppChains> _readNetwork() async {
-    final networkStr =
-        await read(key: _toKey(StorageKeysConst.walletNetworkKey));
+    final selectedNetworkKey = _toKey(StorageKeysConst.walletNetworkKey);
+    final networkStr = await read(key: selectedNetworkKey);
     List<AppChain> chains = [];
     final keys = await readAll();
-    final accounts =
-        keys.keys.where((element) => element.startsWith(_networkKey));
+    final accounts = keys.keys.where((element) =>
+        element.startsWith(_networkKey) && element != selectedNetworkKey);
     for (final i in accounts) {
       try {
         final chain = AppChain.fromHex(keys[i]!);

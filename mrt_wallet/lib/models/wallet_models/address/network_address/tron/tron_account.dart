@@ -8,7 +8,7 @@ import 'package:on_chain/on_chain.dart';
 
 class ITronAddress
     with Equatable
-    implements Bip32AddressCore<BigInt, BigInt, TronAddress> {
+    implements Bip32AddressCore<BigInt, TronAddress> {
   ITronAddress._(
       {required this.keyIndex,
       required this.coin,

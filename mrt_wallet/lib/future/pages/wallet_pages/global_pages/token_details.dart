@@ -28,8 +28,7 @@ class _RippleTokenView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AddressDetailsView(
-            address: address, isSelected: false, showBalance: false),
+        AddressDetailsView(address: address, showBalance: false),
         const Divider(),
         CircleTokenImgaeView(token.token, radius: 60),
         WidgetConstant.height8,
@@ -65,9 +64,7 @@ class _RippleTokenView extends StatelessWidget {
                     (ctx) => BarcodeView(
                         secure: false,
                         title: AddressDetailsView(
-                            address: address,
-                            isSelected: false,
-                            showBalance: false),
+                            address: address, showBalance: false),
                         barcodeData: address.address.toAddress),
                     "account_qr_code".tr);
               },

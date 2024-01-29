@@ -1,5 +1,5 @@
 import 'package:mrt_wallet/models/wallet_models/network/custom/ripple/account_object_signer_list.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class XRPRPCSignerAccountObject
     extends XRPLedgerRequest<XRPAccountObjectEntry?> {

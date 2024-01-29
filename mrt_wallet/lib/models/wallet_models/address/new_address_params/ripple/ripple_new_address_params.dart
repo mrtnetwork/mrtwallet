@@ -4,7 +4,7 @@ import 'package:mrt_wallet/models/wallet_models/address/core/derivation/address_
 import 'package:mrt_wallet/models/wallet_models/address/core/derivation/multi_sig_address_index.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/mutlisig_address_details.dart';
 import 'package:mrt_wallet/models/wallet_models/address/new_address_params/core.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleNewAddressParam implements NewAccountParams {
   const RippleNewAddressParam(

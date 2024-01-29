@@ -148,20 +148,22 @@ class _BottomAppBar extends StatelessWidget {
           children: <Widget>[
             Row(
               children: [
-                FilledButton.icon(
+                IconButton(
                   icon: const Icon(Icons.refresh_sharp),
-                  label: Text("switch_address".tr),
+                  tooltip: "switch_address".tr,
                   onPressed: () {
                     context
                         .openSliverBottomSheet<CryptoAccountAddress>(
                           "switch_account".tr,
                           child: SwitchOrSelectAccountView(
-                              account: wallet.chain.account),
+                            account: wallet.chain.account,
+                            showMultiSig: true,
+                          ),
                           centerContent: false,
                           appbarActions: [
                             Padding(
                               padding: WidgetConstant.paddingHorizontal10,
-                              child: FixedElevatedButton.icon(
+                              child: IconButton(
                                   onPressed: () {
                                     context.to(
                                         PagePathConst.setupAddressPage(
@@ -169,7 +171,7 @@ class _BottomAppBar extends StatelessWidget {
                                         argruments: wallet.chain.account);
                                   },
                                   icon: const Icon(Icons.add_box),
-                                  label: Text("new_address".tr)),
+                                  tooltip: "new_address".tr),
                             )
                           ],
                           minExtent: 0.5,
@@ -190,6 +192,7 @@ class _BottomAppBar extends StatelessWidget {
                     model.lock();
                   },
                 ),
+                SelectProviderIcon(key: UniqueKey()),
                 IconButton(
                     tooltip: "switch_network".tr,
                     onPressed: () async {

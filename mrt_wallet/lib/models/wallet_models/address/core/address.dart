@@ -34,8 +34,15 @@ abstract class CryptoAccountAddress<N, T, X> with CborSerializable {
     if (bytesEqual(
         cbor.tags, WalletModelCborTagsConst.bitcoinMultiSigAccount)) {
       return IBitcoinMultiSigAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.bitcoinAccoint)) {
+    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.bitcoinAccount)) {
       return IBitcoinAddress.fromCborBytesOrObject(network, obj: cbor);
+    } else if (bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.bitcoinCashAccount)) {
+      return IBitcoinCashAddress.fromCborBytesOrObject(network, obj: cbor);
+    } else if (bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.bitcoinCashMultiSigAccount)) {
+      return IBitcoinCashMultiSigAddress.fromCborBytesOrObject(network,
+          obj: cbor);
     } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.rippleAccount)) {
       return IXRPAddress.fromCborBytesOrObject(network, obj: cbor);
     } else if (bytesEqual(

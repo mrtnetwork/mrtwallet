@@ -5,7 +5,8 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/error/exception/app_exception.dart';
 import 'package:mrt_wallet/provider/api/excepion/exception.dart';
 import 'package:on_chain/on_chain.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:http/http.dart' as http;
 
 class MethodCaller {
   static Future<void> wait({int milliseconds = 1000}) async {
@@ -14,7 +15,7 @@ class MethodCaller {
 
   static Future<void> _callWithCanclable<T>(
     Future<T> Function() t,
-    Canclable canclable,
+    Cancelable canclable,
   ) async {
     try {
       canclable.success(await t());
@@ -25,12 +26,12 @@ class MethodCaller {
 
   static Future<MethodResult<T>> retryCall<T>(
       Future<T> Function() t, bool Function(Object?) onExceptionRetry,
-      {Canclable? canclable, Duration? delay, int retry = 3}) async {
+      {Cancelable? canclable, Duration? delay, int retry = 3}) async {
     if (delay != null) {
       await Future.delayed(delay);
     }
     for (int i = 0; i < retry; i++) {
-      final result = await call(t, canclable: canclable, delay: null);
+      final result = await call(t, cancelable: canclable, delay: null);
       if (result.hasError) {
         if (result.isCancel) return result;
         if (i + 1 == retry) return result;
@@ -40,30 +41,104 @@ class MethodCaller {
       }
       return result;
     }
-    return call(t, canclable: canclable, delay: null);
+    return call(t, cancelable: canclable, delay: null);
   }
 
   static Future<MethodResult<T>> call<T>(Future<T> Function() t,
-      {Canclable? canclable, Duration? delay}) async {
+      {Cancelable? cancelable, Duration? delay}) async {
     try {
       if (delay != null) {
         await Future.delayed(delay);
       }
       Future<T> r;
-      if (canclable == null) {
+      if (cancelable == null) {
         r = t();
       } else {
         Completer<T> completer = Completer<T>();
-        canclable.setup(<T>() {
+        cancelable.setup(<T>() {
           return completer;
         });
-        _callWithCanclable(t, canclable);
+        _callWithCanclable(t, cancelable);
 
         r = completer.future;
       }
       return MethodResult.succsess(await r);
     } catch (e, stackTrace) {
       return MethodResult.error(e, stackTrace);
+    }
+  }
+
+  static Future<MethodResult<T>> httpCaller<T>(
+      Future<http.Response> Function() t,
+      {Cancelable? cancelable,
+      Duration? delay}) async {
+    try {
+      if (delay != null) {
+        await Future.delayed(delay);
+      }
+      Future<http.Response> r;
+      if (cancelable == null) {
+        r = t();
+      } else {
+        Completer<http.Response> completer = Completer<http.Response>();
+        cancelable.setup(<T>() {
+          return completer;
+        });
+        _callWithCanclable(t, cancelable);
+
+        r = completer.future;
+      }
+      final response = await r;
+      if (response.statusCode == 200) {
+        if (T == String) return MethodResult.succsess(response.body as T);
+        final toJson = StringUtils.toJson(response.body);
+        return MethodResult.succsess(toJson as T);
+      }
+      final errorJson =
+          nullOnException(() => StringUtils.toJson(response.body));
+      throw ApiProviderException(
+          statusCode: response.statusCode, message: errorJson?.toString());
+    } on http.ClientException catch (e) {
+      throw ApiProviderException(message: e.message);
+    } on FormatException {
+      throw const ApiProviderException(message: "invalid_json_response");
+    } on TimeoutException catch (e) {
+      throw ApiProviderException(message: e.message);
+    } catch (e, stackTrace) {
+      return MethodResult.error(e, stackTrace);
+    }
+  }
+
+  static Stream<T> prediocCaller<T>(Future<MethodResult<T>> Function() t,
+      {Duration waitOnError = const Duration(seconds: 1),
+      Duration waitOnSuccess = const Duration(seconds: 10),
+      required Cancelable canclable}) async* {
+    bool run = true;
+    while (run) {
+      Completer<void> completer = Completer();
+      canclable.setup(() => completer);
+      final result = await t();
+      try {
+        if (result.hasError) {
+          await completer.future.timeout(waitOnError).catchError((e) {
+            if (e is CancelableExption) {
+              run = false;
+            }
+            return null;
+          });
+          continue;
+        }
+        yield result.result;
+
+        await completer.future.timeout(waitOnSuccess).catchError((e) {
+          if (e is CancelableExption) {
+            run = false;
+          }
+          return null;
+        });
+      } finally {
+        canclable.cancel();
+      }
     }
   }
 
@@ -110,11 +185,17 @@ class MethodResult<T> {
     }
     return "Success $result";
   }
+
+  void rethrowIfError() {
+    if (hasError) {
+      throw exception!;
+    }
+  }
 }
 
 typedef CompleterResult = Completer Function();
 
-class Canclable<T> {
+class Cancelable<T> {
   CompleterResult? _setup;
   bool cancel([Object? exception]) {
     final completer = _setup?.call();

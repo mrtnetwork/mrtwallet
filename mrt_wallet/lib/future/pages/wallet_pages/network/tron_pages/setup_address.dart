@@ -130,13 +130,15 @@ class _SetupTronAddressViewState extends State<SetupTronAddressView>
       pageProgressKey.success(
           backToIdle: false,
           progressWidget: SuccessWithButtomView(
+            buttomWidget: ContainerWithBorder(
+                margin: WidgetConstant.paddingVertical8,
+                child: AddressDetailsView(address: result.result)),
             buttomText: "generate_new_address".tr,
             onPressed: () {
               if (mounted) {
                 pageProgressKey.backToIdle();
               }
             },
-            text: "address_added_success".tr,
           ));
     }
     setState(() {});

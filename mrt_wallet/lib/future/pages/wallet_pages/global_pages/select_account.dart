@@ -7,10 +7,15 @@ import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class SwitchOrSelectAccountView extends StatelessWidget {
-  const SwitchOrSelectAccountView(
-      {super.key, required this.account, this.currentAddress});
+  const SwitchOrSelectAccountView({
+    super.key,
+    required this.account,
+    this.currentAddress,
+    required this.showMultiSig,
+  });
   final NetworkAccountCore account;
   final CryptoAccountAddress? currentAddress;
+  final bool showMultiSig;
   @override
   Widget build(BuildContext context) {
     return MrtViewBuilder<WalletProvider>(
@@ -47,34 +52,47 @@ class SwitchOrSelectAccountView extends StatelessWidget {
               ),
             );
           }
-          final addresses = account.addresses;
           final currentAccount = currentAddress ?? account.address;
+          final addresses = List<CryptoAccountAddress>.from(account.addresses)
+            ..sort((a, b) => a == currentAccount ? 0 : 1);
 
           return ListView.builder(
               itemCount: addresses.length,
               shrinkWrap: true,
               physics: WidgetConstant.noScrollPhysics,
               itemBuilder: (context, index) {
-                final bool isSelected = addresses[index] == currentAccount;
+                final addr = addresses[index];
+                final bool isSelected = addr == currentAccount;
+                if (!showMultiSig && addr.multiSigAccount) {
+                  return WidgetConstant.sizedBox;
+                }
                 return ContainerWithBorder(
-                  shadow: isSelected,
+                  backgroundColor: isSelected
+                      ? context.colors.secondary
+                      : context.colors.primaryContainer,
                   child: Row(
                     children: [
                       Expanded(
                         child: InkWell(
                           onTap: () {
                             if (context.mounted) {
-                              context.pop(addresses[index]);
+                              context.pop(addr);
                             }
                           },
                           child: AddressDetailsView(
-                              address: addresses[index],
-                              isSelected: addresses[index] == currentAccount),
+                              address: addr,
+                              color: isSelected
+                                  ? context.colors.onSecondary
+                                  : context.colors.onPrimaryContainer),
                         ),
                       ),
                       WidgetConstant.width8,
                       CopyTextIcon(
-                          dataToCopy: addresses[index].address.toAddress),
+                        dataToCopy: addr.address.toAddress,
+                        color: isSelected
+                            ? context.colors.onSecondary
+                            : context.colors.onPrimaryContainer,
+                      ),
                     ],
                   ),
                 );

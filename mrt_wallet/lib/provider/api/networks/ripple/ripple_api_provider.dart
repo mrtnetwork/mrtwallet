@@ -3,7 +3,7 @@ import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class _RippleApiProviderConst {
   static const int accountNotFound = 19;
@@ -14,7 +14,7 @@ class RippleApiProvider implements NetworkApiProvider<IXRPAddress> {
   final XRPLRpc provider;
   @override
   ApiProviderTracker get serviceProvider =>
-      (provider.rpc as HttpProvider).provider;
+      (provider.rpc as BaseProviderProtocol).provider;
 
   @override
   Future<void> updateBalance(IXRPAddress account) async {

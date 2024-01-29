@@ -10,7 +10,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transa
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/transaction_validator/transaction_validator.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 import 'fields/signer_list_fields.dart';
 
@@ -29,7 +29,7 @@ class RippleTransactionFieldsView extends StatelessWidget {
               walletProvider: wallet,
               account: chain.account,
               network: chain.network as AppXRPNetwork,
-              apiProvider: chain.provider(),
+              apiProvider: chain.provider()!,
               address: address,
               validator: validator),
           builder: (controller) {
@@ -54,15 +54,16 @@ class RippleTransactionFieldsView extends StatelessWidget {
                               duration: AppGlobalConst.animationDuraion,
                               child: AddressDetailsView(
                                   address: controller.owner,
-                                  key: ValueKey<IXRPAddress?>(controller.owner),
-                                  isSelected: false),
+                                  key:
+                                      ValueKey<IXRPAddress?>(controller.owner)),
                             ),
                             onRemove: () {
                               context
                                   .openSliverBottomSheet<IXRPAddress>(
                                     "switch_account".tr,
                                     child: SwitchOrSelectAccountView(
-                                        account: controller.account),
+                                        account: controller.account,
+                                        showMultiSig: true),
                                     minExtent: 0.5,
                                     maxExtend: 0.9,
                                     initialExtend: 0.7,

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/types/typedef.dart';
 import 'dart:math' as math;
 
@@ -56,6 +57,7 @@ class AppStringUtility {
   static String to3Digits(String number, {String separator = ","}) {
     String integerPart = '';
     String fractionalPart = '';
+    bool negative = false;
 
     if (number.contains('.')) {
       List<String> parts = number.split('.');
@@ -63,6 +65,11 @@ class AppStringUtility {
       fractionalPart = parts[1];
     } else {
       integerPart = number;
+    }
+
+    if (integerPart.startsWith("-")) {
+      negative = true;
+      integerPart = integerPart.substring(1);
     }
 
     List<String> groups = [];
@@ -76,7 +83,7 @@ class AppStringUtility {
 
     final String result = groups.join(separator) +
         (fractionalPart.isEmpty ? '' : '.$fractionalPart');
-
+    if (negative) return "-$result";
     return result;
   }
 
@@ -89,6 +96,17 @@ class AppStringUtility {
     if (!schame.contains(uri.scheme.toLowerCase())) return null;
     if (!uri.host.contains(".")) return null;
     return uri.normalizePath().toString();
+  }
+
+  static String? validateIpfsCIDV1(String? cid,
+      {List<String> schame = const ['http', 'https']}) {
+    if (cid == null) return null;
+    RegExp regex = RegExp(
+        r'^(Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,})$');
+    if (regex.hasMatch(cid)) {
+      return cid;
+    }
+    return null;
   }
 
   static int findFirstMissingNumber(List<int> numbers, {int start = 0}) {
@@ -115,6 +133,46 @@ class AppStringUtility {
     }
 
     return result;
+  }
+
+  static String removeSchame(String uri) {
+    final schames = ["https://", "http://", "ws://", "wss://"];
+    final lower = uri.toLowerCase();
+    final schame = MethodCaller.nullOnException(
+        () => schames.firstWhere((element) => lower.startsWith(element)));
+    if (schame == null) return uri;
+    return uri.substring(schame.length - 1);
+  }
+
+  static String toIpfsV1Uri(String cid) {
+    return "https://ipfs.io/ipfs/$cid";
+  }
+
+  static String substring(String value, {int length = 5, String replace = ''}) {
+    if (value.length > length) {
+      return value.replaceRange(length - 1, value.length, replace);
+    }
+    return value;
+  }
+
+  static bool isValidIPv4WithPort(String ipv4) {
+    // Regular expression to match IPv4 address with optional port
+    final RegExp ipv4WithPortRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}:\d+$');
+
+    // Check if the input matches the pattern
+    return ipv4WithPortRegex.hasMatch(ipv4);
+  }
+
+  static String? isValidTcpAddress(String? url) {
+    if (url == null) return null;
+    if (isValidIPv4WithPort(url)) {
+      return url;
+    }
+    final RegExp regExp = RegExp(r'^[a-zA-Z0-9.-]+:\d+(/[^?#]*)?$');
+    if (regExp.hasMatch(url)) {
+      return url;
+    }
+    return null;
   }
 }
 

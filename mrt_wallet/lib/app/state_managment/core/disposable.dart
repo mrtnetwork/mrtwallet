@@ -45,7 +45,7 @@ abstract class Disposable extends BaseController with ListenableX {
       _deleted = true;
       close();
     } catch (e, s) {
-      WalletLogging.print("Error Disposable: $e $s", prefix: runtimeType);
+      assert(false, "Disposable: $e $s");
     }
   }
 

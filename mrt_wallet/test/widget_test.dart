@@ -31,15 +31,4 @@ BigInt generateRandomBigInt(int bitLength) {
   return randomBigInt;
 }
 
-void main() {
-  // print(AppStringUtility.to3Digits(""));
-  // print(AppStringUtility.to3Digits(".0003212"));
-  // print(AppStringUtility.to3Digits("-0.000"));
-  // print(AppStringUtility.to3Digits("-333.000"));
-  // print(AppStringUtility.to3Digits("-3333.000"));
-  // print(AppStringUtility.to3Digits("-33333.000"));
-  // print(AppStringUtility.to3Digits("-33333333333333333333333.000"));
-  // print(AppStringUtility.to3Digits("-33233333333333.33333"));
-  // 33233333333333.33333
-  // 33233333333333.33333
-}
+void main() {}

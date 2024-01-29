@@ -2,9 +2,10 @@ part of 'package:mrt_wallet/app/state_managment/state_managment.dart';
 
 mixin SafeState<T extends StatefulWidget> on State<T> {
   bool _closed = false;
+  bool _builded = false;
   bool get closed => _closed;
   @override
-  bool get mounted => !_closed && super.mounted;
+  bool get mounted => !_closed && _builded && super.mounted;
   @override
   void setState(VoidCallback fn) {
     if (!mounted) return;
@@ -22,6 +23,7 @@ mixin SafeState<T extends StatefulWidget> on State<T> {
   @override
   void didChangeDependencies() {
     navigatorKey ??= context.navigatorKey;
+    _builded = true;
     super.didChangeDependencies();
   }
 }

@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 3.1.0+4
+version: 4.0.0+5
 
 homepage: "https://github.com/mrtnetwork/mrtwallet"
 repository: "https://github.com/mrtnetwork/mrtwallet"
@@ -46,8 +46,8 @@ dependencies:
     path: ../mrt_native_support
   http: ^1.1.0
   blockchain_utils: ^1.6.0
-  bitcoin_base: ^3.0.3
-  xrp_dart: ^3.0.3
+  bitcoin_base: ^4.0.0
+  xrpl_dart: ^4.0.1
   on_chain: ^1.0.0
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -131,5 +131,5 @@ msix_config:
     display_name: MRT Wallet
     publisher_display_name: MRT NETWORK
     identity_name: com.mrtnetwork.wallet
-    msix_version: 3.1.0.0
+    msix_version: 4.0.0.0
     logo_path: C:\in_work\bitcoin\mrt_wallet\docs\icons\Icon-512.png

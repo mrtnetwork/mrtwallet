@@ -32,7 +32,7 @@ class TronTransactionFieldsView extends StatelessWidget {
               walletProvider: wallet,
               account: chain.account,
               network: chain.network as APPTVMNetwork,
-              apiProvider: chain.provider(),
+              apiProvider: chain.provider()!,
               address: address,
               validator: validator),
           builder: (controller) {
@@ -59,16 +59,17 @@ class TronTransactionFieldsView extends StatelessWidget {
                               duration: AppGlobalConst.animationDuraion,
                               child: AddressDetailsView(
                                   address: controller.owner,
-                                  key:
-                                      ValueKey<ITronAddress?>(controller.owner),
-                                  isSelected: false),
+                                  key: ValueKey<ITronAddress?>(
+                                      controller.owner)),
                             ),
                             onRemove: () {
                               context
                                   .openSliverBottomSheet<ITronAddress>(
                                     "switch_account".tr,
                                     child: SwitchOrSelectAccountView(
-                                        account: controller.account),
+                                      account: controller.account,
+                                      showMultiSig: true,
+                                    ),
                                     minExtent: 0.5,
                                     maxExtend: 0.9,
                                     initialExtend: 0.7,
@@ -234,10 +235,11 @@ class _TronTransactionTransferFields extends StatelessWidget {
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress>("recipient".tr,
-                    maxExtend: 0.8,
-                    minExtent: 0.7,
-                    initialExtend: 0.7,
-                    child: SelectNetworkAddressView(account: account))
+                    maxExtend: 1,
+                    minExtent: 0.8,
+                    initialExtend: 0.9,
+                    bodyBuilder: (c) => SelectRecipientAccountView(
+                        account: account, scrollController: c))
                 .then(
               (value) {
                 field.setValue(field.destination, value);

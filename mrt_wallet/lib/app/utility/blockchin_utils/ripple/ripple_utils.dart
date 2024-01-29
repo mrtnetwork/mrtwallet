@@ -4,7 +4,7 @@ import 'package:mrt_wallet/app/constant/network_constant/ripple_const.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/utility/bytes_utils/quick_bytes.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/xrp_account.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 import '../blockchaain_utils.dart';
 
 class RippleUtils {

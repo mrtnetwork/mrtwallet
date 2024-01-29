@@ -18,7 +18,7 @@ class SetupTronMultiSigAddressView extends StatelessWidget {
           return _SetupTronMultisigAddressView(
             wallet: wallet,
             address: address,
-            provider: account.provider(),
+            provider: account.provider()!,
             account: account.account,
             network: account.network as APPTVMNetwork,
           );
@@ -157,8 +157,19 @@ class __SetupTronMultisigAddressViewState
       if (result.hasError) {
         progressKey.errorText(result.error!.tr);
       } else {
-        progressKey.successText("address_added_to_accounts".tr,
-            backToIdle: false);
+        progressKey.success(
+            backToIdle: false,
+            progressWidget: SuccessWithButtomView(
+              buttomWidget: ContainerWithBorder(
+                  margin: WidgetConstant.paddingVertical8,
+                  child: AddressDetailsView(address: result.result)),
+              buttomText: "close".tr,
+              onPressed: () {
+                if (mounted) {
+                  context.pop();
+                }
+              },
+            ));
       }
     }
     setState(() {});
@@ -359,7 +370,9 @@ class __SetupTronMultisigAddressViewState
                                                                   child: SwitchOrSelectAccountView(
                                                                       account:
                                                                           widget
-                                                                              .account),
+                                                                              .account,
+                                                                      showMultiSig:
+                                                                          false),
                                                                   maxExtend:
                                                                       0.9,
                                                                   initialExtend:
@@ -451,34 +464,31 @@ class __SetupTronMultisigAddressViewState
                                                 onTap: () {
                                                   context
                                                       .openSliverBottomSheet<
-                                                          ReceiptAddress<
-                                                              TronAddress>>(
-                                                        "multi_sig_addr".tr,
-                                                        maxExtend: 0.8,
-                                                        minExtent: 0.7,
-                                                        initialExtend: 0.7,
-                                                        child:
-                                                            SelectNetworkAddressView(
-                                                          account:
-                                                              widget.account,
-                                                          subtitle:
-                                                              PageTitleSubtitle(
-                                                                  title:
-                                                                      "account"
-                                                                          .tr,
-                                                                  body: Column(
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Text(
-                                                                        "tron_multi_sig_desc2"
-                                                                            .tr,
-                                                                      )
-                                                                    ],
-                                                                  )),
-                                                        ),
-                                                      )
+                                                              ReceiptAddress<
+                                                                  TronAddress>>(
+                                                          "multi_sig_addr".tr,
+                                                          bodyBuilder:
+                                                              (controller) =>
+                                                                  SelectRecipientAccountView(
+                                                                    account: widget
+                                                                        .account,
+                                                                    scrollController:
+                                                                        controller,
+                                                                    subtitle: PageTitleSubtitle(
+                                                                        title: "account".tr,
+                                                                        body: Column(
+                                                                          crossAxisAlignment:
+                                                                              CrossAxisAlignment.start,
+                                                                          children: [
+                                                                            Text(
+                                                                              "tron_multi_sig_desc2".tr,
+                                                                            )
+                                                                          ],
+                                                                        )),
+                                                                  ),
+                                                          maxExtend: 1,
+                                                          minExtent: 0.8,
+                                                          initialExtend: 0.9)
                                                       .then(onSelectAddress);
                                                 },
                                                 address: address,

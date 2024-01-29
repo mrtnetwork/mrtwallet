@@ -6,14 +6,14 @@ import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class BitcoinContact with Equatable implements ContactCore<BitcoinAddress> {
+class BitcoinContact with Equatable implements ContactCore<BitcoinBaseAddress> {
   BitcoinContact._(
       {required this.addressObject,
       required this.address,
       required this.created,
       required this.name});
   factory BitcoinContact.newContact(
-      {required BitcoinAddress address,
+      {required BitcoinBaseAddress address,
       required AppBitcoinNetwork network,
       required String name}) {
     return BitcoinContact._(
@@ -50,7 +50,7 @@ class BitcoinContact with Equatable implements ContactCore<BitcoinAddress> {
   }
 
   @override
-  final BitcoinAddress addressObject;
+  final BitcoinBaseAddress addressObject;
   @override
   final String address;
   @override

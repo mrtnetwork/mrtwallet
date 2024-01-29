@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/select_address.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/select_account_or_contact.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/provider/transaction_validator/tron/transaction_validator/account/account_update_contract_permission_validator.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -226,15 +226,15 @@ class _EditPermissionView extends StatelessWidget {
               context
                   .openSliverBottomSheet<ReceiptAddress<TronAddress>>(
                       "update_account_permission".tr,
-                      maxExtend: 0.8,
-                      minExtent: 0.7,
-                      initialExtend: 0.7,
-                      child: SelectNetworkAddressView(
-                        account: account,
-                        subtitle: PageTitleSubtitle(
-                            title: "signer".tr,
-                            body: Text("signer_account_address".tr)),
-                      ))
+                      maxExtend: 1,
+                      minExtent: 0.8,
+                      initialExtend: 0.9,
+                      bodyBuilder: (c) => SelectRecipientAccountView(
+                          account: account,
+                          scrollController: c,
+                          subtitle: PageTitleSubtitle(
+                              title: "signer".tr,
+                              body: Text("signer_account_address".tr))))
                   .then(
                 (value) {
                   validator.addNewSigner(value, () {

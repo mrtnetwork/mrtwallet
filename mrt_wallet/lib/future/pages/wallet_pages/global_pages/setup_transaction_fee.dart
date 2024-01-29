@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/setup_amount.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -35,9 +34,11 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
     type = newType;
     feeRate.updateBalance(customPrice ?? BigInt.zero);
     setState(() {});
+    onSetup();
   }
 
-  void onSetup() {
+  void onSetup() async {
+    await MethodCaller.wait(milliseconds: 200);
     if (mounted) {
       context.pop((type, feeRate.balance));
     }
@@ -111,15 +112,6 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
             },
           ),
         ]),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical20,
-                onPressed: onSetup,
-                child: Text("setup_custom_fee".tr))
-          ],
-        )
       ],
     );
   }

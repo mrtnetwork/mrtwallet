@@ -8,7 +8,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/api/networks/ripple/ripple_api_provider.dart';
 import 'package:mrt_wallet/types/typedef.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 enum _MultiSigPage { account, info }
 
@@ -24,7 +24,7 @@ class SetupRippleMutlisigAddressView extends StatelessWidget {
       childBulder: (wallet, account, address, switchRippleAccount) {
         return _SetupRippleMutlisigAddressView(
           account: account.account,
-          provider: account.provider(),
+          provider: account.provider()!,
           wallet: wallet,
           network: account.network as AppXRPNetwork,
         );
@@ -197,8 +197,19 @@ class _SetupRippleMutlisigAddressViewState
       if (result.hasError) {
         progressKey.errorText(result.error!.tr);
       } else {
-        progressKey.successText("address_added_to_accounts".tr,
-            backToIdle: false);
+        progressKey.success(
+            backToIdle: false,
+            progressWidget: SuccessWithButtomView(
+              buttomWidget: ContainerWithBorder(
+                  margin: WidgetConstant.paddingVertical8,
+                  child: AddressDetailsView(address: result.result)),
+              buttomText: "close".tr,
+              onPressed: () {
+                if (mounted) {
+                  context.pop();
+                }
+              },
+            ));
       }
     }
     setState(() {});
@@ -312,7 +323,9 @@ class _SetupRippleMutlisigAddressViewState
                                                                   child: SwitchOrSelectAccountView(
                                                                       account:
                                                                           widget
-                                                                              .account),
+                                                                              .account,
+                                                                      showMultiSig:
+                                                                          false),
                                                                   maxExtend:
                                                                       0.9,
                                                                   initialExtend:
@@ -348,7 +361,9 @@ class _SetupRippleMutlisigAddressViewState
                                                               minExtent: 0.5,
                                                               child: SwitchOrSelectAccountView(
                                                                   account: widget
-                                                                      .account),
+                                                                      .account,
+                                                                  showMultiSig:
+                                                                      false),
                                                               maxExtend: 0.9,
                                                               initialExtend:
                                                                   0.7,
@@ -382,28 +397,30 @@ class _SetupRippleMutlisigAddressViewState
                                                     .openSliverBottomSheet<
                                                         ReceiptAddress>(
                                                       "multi_sig_addr".tr,
-                                                      maxExtend: 0.8,
-                                                      minExtent: 0.7,
-                                                      initialExtend: 0.7,
-                                                      child:
-                                                          SelectNetworkAddressView(
-                                                        account: widget.account,
-                                                        subtitle:
-                                                            PageTitleSubtitle(
-                                                                title: "account"
-                                                                    .tr,
-                                                                body: Column(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    Text(
-                                                                      "ripple_multi_sig_account_desc"
-                                                                          .tr,
-                                                                    )
-                                                                  ],
-                                                                )),
-                                                      ),
+                                                      maxExtend: 1,
+                                                      minExtent: 0.8,
+                                                      initialExtend: 0.9,
+                                                      bodyBuilder: (c) =>
+                                                          SelectRecipientAccountView(
+                                                              account: widget
+                                                                  .account,
+                                                              scrollController:
+                                                                  c,
+                                                              subtitle:
+                                                                  PageTitleSubtitle(
+                                                                      title:
+                                                                          "account"
+                                                                              .tr,
+                                                                      body:
+                                                                          Column(
+                                                                        crossAxisAlignment:
+                                                                            CrossAxisAlignment.start,
+                                                                        children: [
+                                                                          Text(
+                                                                            "ripple_multi_sig_account_desc".tr,
+                                                                          )
+                                                                        ],
+                                                                      ))),
                                                     )
                                                     .then(onSelectAddress);
                                               },

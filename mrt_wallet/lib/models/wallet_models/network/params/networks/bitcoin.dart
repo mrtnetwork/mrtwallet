@@ -23,12 +23,30 @@ class BitcoinParams implements NetworkCoinParams {
             .map((e) => ApiProviderService.fromCborBytesOrObject(obj: e))
             .toList());
   }
-  const BitcoinParams(
+  BitcoinParams(
       {required this.transactionExplorer,
       required this.addressExplorer,
       required this.transacationNetwork,
-      required this.providers,
-      required this.token});
+      required List<ApiProviderService> providers,
+      required this.token})
+      : providers = List<ApiProviderService>.unmodifiable(providers);
+
+  BitcoinParams copyWith(
+      {List<ApiProviderService>? providers,
+      String? transactionExplorer,
+      String? addressExplorer,
+      Token? token,
+      BasedUtxoNetwork? transacationNetwork}) {
+    return BitcoinParams(
+        transactionExplorer: transactionExplorer ?? this.transactionExplorer,
+        addressExplorer: addressExplorer ?? this.addressExplorer,
+        transacationNetwork: transacationNetwork ?? this.transacationNetwork,
+        providers: providers ?? this.providers,
+        token: token ?? this.token);
+  }
+
+  @override
+  final List<ApiProviderService> providers;
   @override
   final String transactionExplorer;
   @override
@@ -52,9 +70,6 @@ class BitcoinParams implements NetworkCoinParams {
   String getTransactionExplorer(String txId) {
     return transactionExplorer.replaceAll(_txIdArgs, txId);
   }
-
-  @override
-  final List<ApiProviderService> providers;
 
   @override
   CborTagValue toCbor() {

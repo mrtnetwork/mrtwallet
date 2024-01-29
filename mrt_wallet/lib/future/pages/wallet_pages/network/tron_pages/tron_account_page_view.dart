@@ -13,28 +13,11 @@ class TronAccountPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final account = chainAccount.account.address as ITronAddress;
-    return DefaultTabController(
-      length: 3,
-      child: Column(
-        children: [
-          TabBar(tabs: [
-            Tab(text: "services".tr),
-            Tab(
-              text: "trc20_tokens".tr,
-            ),
-            Tab(
-              text: "trc10_tokens".tr,
-            ),
-          ]),
-          Expanded(
-              child: TabBarView(children: [
-            _Services(account: account),
-            _TronTokenView(account: account),
-            _TronTokenView(account: account, isTrc10: true),
-          ]))
-        ],
-      ),
-    );
+    return TabBarView(children: [
+      _Services(account: account),
+      _TronTokenView(account: account),
+      _TronTokenView(account: account, isTrc10: true),
+    ]);
   }
 }
 
@@ -48,104 +31,112 @@ class _TronTokenView extends StatelessWidget {
     final tokens = isTrc10 ? account.trc10Tokens : account.tokens;
 
     if (tokens.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.token, size: AppGlobalConst.double80),
-          WidgetConstant.height8,
-          Text("no_tokens_found".tr),
-          WidgetConstant.height20,
-          FilledButton(
-              onPressed: () {
-                context.to(isTrc10
-                    ? PagePathConst.importTrc10Token
-                    : PagePathConst.importTRC20Token);
-              },
-              child: Text("import_token".tr))
-        ],
+      return Center(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.token, size: AppGlobalConst.double80),
+              WidgetConstant.height8,
+              Text("no_tokens_found".tr),
+              WidgetConstant.height20,
+              FilledButton(
+                  onPressed: () {
+                    context.to(isTrc10
+                        ? PagePathConst.importTrc10Token
+                        : PagePathConst.importTRC20Token);
+                  },
+                  child: Text("import_token".tr))
+            ],
+          ),
+        ),
       );
     }
-    return Column(
-      children: [
-        AppListTile(
-          leading: const Icon(Icons.token),
-          onTap: () {
-            context.to(isTrc10
-                ? PagePathConst.importTrc10Token
-                : PagePathConst.importTRC20Token);
-          },
-          title: Text("manage_tokens".tr),
-          subtitle: Text("add_or_remove_tokens".tr),
-        ),
-        WidgetConstant.divider,
-        ListView.builder(
-          itemBuilder: (context, index) {
-            final TokenCore token = tokens[index];
-            return ContainerWithBorder(
-              onRemove: () {
-                context
-                    .openSliverDialog<TokenAction>(
-                        (ctx) => TokenDetailsModalView(
-                              token: token,
-                              address: account,
-                            ),
-                        content: (ctx) => [
-                              IconButton(
-                                  onPressed: () {
-                                    ctx.pop(TokenAction.delete);
-                                  },
-                                  icon: Icon(Icons.delete,
-                                      color: context.colors.error))
-                            ],
-                        "token_info".tr)
-                    .then((value) {
-                  switch (value) {
-                    case TokenAction.delete:
-                      context.openSliverDialog(
-                          (ctx) => DialogTextView(
-                              buttomWidget: AsyncDialogDoubleButtonView(
-                                firstButtonPressed: () =>
-                                    wallet.removeToken(token, account),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          AppListTile(
+            leading: const Icon(Icons.token),
+            onTap: () {
+              context.to(isTrc10
+                  ? PagePathConst.importTrc10Token
+                  : PagePathConst.importTRC20Token);
+            },
+            title: Text("manage_tokens".tr),
+            subtitle: Text("add_or_remove_tokens".tr),
+          ),
+          WidgetConstant.divider,
+          ListView.builder(
+            physics: WidgetConstant.noScrollPhysics,
+            itemBuilder: (context, index) {
+              final TokenCore token = tokens[index];
+              return ContainerWithBorder(
+                onRemove: () {
+                  context
+                      .openSliverDialog<TokenAction>(
+                          (ctx) => TokenDetailsModalView(
+                                token: token,
+                                address: account,
                               ),
-                              text: "remove_token_from_account".tr),
-                          "remove_token".tr);
-                      break;
-                    case TokenAction.transfer:
-                      context.to(PagePathConst.tronTransfer, argruments: token);
-                      break;
-                    default:
-                  }
-                });
-              },
-              onRemoveWidget: WidgetConstant.sizedBox,
-              child: Row(
-                children: [
-                  CircleTokenImgaeView(token.token, radius: 40),
-                  WidgetConstant.width8,
-                  Expanded(
-                      child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(token.token.name,
-                          style: context.textTheme.labelLarge),
-                      Text(token.issuer!, style: context.textTheme.bodySmall),
-                      CoinPriceView(
-                          liveBalance: token.balance,
-                          token: token.token,
-                          style: context.textTheme.titleLarge),
-                    ],
-                  )),
-                ],
-              ),
-            );
-          },
-          itemCount: tokens.length,
-          addAutomaticKeepAlives: false,
-          addRepaintBoundaries: false,
-          shrinkWrap: true,
-        )
-      ],
+                          content: (ctx) => [
+                                IconButton(
+                                    onPressed: () {
+                                      ctx.pop(TokenAction.delete);
+                                    },
+                                    icon: Icon(Icons.delete,
+                                        color: context.colors.error))
+                              ],
+                          "token_info".tr)
+                      .then((value) {
+                    switch (value) {
+                      case TokenAction.delete:
+                        context.openSliverDialog(
+                            (ctx) => DialogTextView(
+                                buttomWidget: AsyncDialogDoubleButtonView(
+                                  firstButtonPressed: () =>
+                                      wallet.removeToken(token, account),
+                                ),
+                                text: "remove_token_from_account".tr),
+                            "remove_token".tr);
+                        break;
+                      case TokenAction.transfer:
+                        context.to(PagePathConst.tronTransfer,
+                            argruments: token);
+                        break;
+                      default:
+                    }
+                  });
+                },
+                onRemoveWidget: WidgetConstant.sizedBox,
+                child: Row(
+                  children: [
+                    CircleTokenImgaeView(token.token, radius: 40),
+                    WidgetConstant.width8,
+                    Expanded(
+                        child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(token.token.name,
+                            style: context.textTheme.labelLarge),
+                        Text(token.issuer!, style: context.textTheme.bodySmall),
+                        CoinPriceView(
+                            liveBalance: token.balance,
+                            token: token.token,
+                            style: context.textTheme.titleLarge),
+                      ],
+                    )),
+                  ],
+                ),
+              );
+            },
+            itemCount: tokens.length,
+            addAutomaticKeepAlives: false,
+            addRepaintBoundaries: false,
+            shrinkWrap: true,
+          )
+        ],
+      ),
     );
   }
 }

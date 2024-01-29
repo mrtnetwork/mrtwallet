@@ -5,19 +5,48 @@ Ethereum, Tron, Ripple, Dogecoin, Litecoin, and Dash, with a roadmap set to embr
 
 **Networks**
 
-- Bitcoin (mainnet, testnet): Experience enhanced control over your transactions. With MRT Wallet, you can effortlessly create, sign, and send transactions from multiple UTXOs and addresses. Our robust support includes P2TR, P2WPKH, P2WSH, P2SH, P2PKH, and multisignature functionalities, providing you with a versatile and secure platform for managing your Bitcoin transactions.
+### Bitcoin (mainnet, testnet):
+- **Features:** Comprehensive support for Bitcoin transactions.
+- **Highlights:**
+  - Robust support for P2TR, P2WPKH, P2WSH, P2SH, P2PKH, and multisignature functionalities.
+  - Enhanced control over transactions, allowing you to effortlessly create, sign, and send transactions from multiple UTXOs and addresses.
 
-- Dogecoin: Extend your capabilities to the playful realm of Dogecoin. MRT Wallet supports seamless transaction creation and management on the Dogecoin network, ensuring a smooth and secure experience.
+### Bitcoin Cash (mainnet, testnet):
+- **Features:** Comprehensive support for Bitcoin Cash transactions.
+- **Highlights:**
+  - P2SH, P2SH32, P2PKH32 token-aware addresses.
+  - Enhanced control over transactions, supporting the creation, signing, minting and sending of Cash tokens.
 
-- Dash: Explore the fast and efficient world of Dash with MRT Wallet. Easily create, sign, and send transactions, enjoying support for various Dash network functionalities.
+### Dogecoin:
+- **Features:** Seamless transaction creation and management on the Dogecoin network.
+- **Highlights:** Extends capabilities to the playful realm of Dogecoin, ensuring a smooth and secure user experience.
 
-- Litecoin: Dive into the silver to Bitcoin's gold with MRT Wallet's support for Litecoin. Manage your Litecoin transactions effortlessly, creating, signing, and sending with confidence.
+### Dash:
+- **Features:** Exploration of the fast and efficient world of Dash.
+- **Highlights:** Easy creation, signing, and sending of transactions with support for various Dash network functionalities.
 
-- Ripple: Unlock the potential of the Ripple network with MRT Wallet. Our support extends to advanced cryptographic algorithms such as secp256k1 and ed25519. Explore features like NFTs, tokens, multisignature transactions, account settings (AccountSet), trust settings (TrustSet), escrow transactions, regular key settings, and more. MRT Wallet provides a comprehensive platform for managing your assets on the Ripple network.
+### Bitcoin SV:
+- **Features:** Effortless navigation of Bitcoin SV transactions.
+- **Highlights:**
+  - User-friendly interface for smooth and secure transaction creation and management.
+  - Support for handling P2PKH addresses, simplifying the Bitcoin SV experience.
 
-- Ethereum: MRT Wallet now supports Ethereum transactions, offering compatibility with both legacy and EIP-1559 transactions. Import and manage ERC-20 assets effortlessly, and execute ERC-20 token transfers with ease.
+### Litecoin:
+- **Features:** Support for Litecoin transactions.
+- **Highlights:** Dive into the silver to Bitcoin's gold with MRT Wallet, managing Litecoin transactions effortlessly with confidence.
 
-- Tron: Seamlessly interact with the Tron blockchain using MRT Wallet. Send TRX, TRC-20, and TRC-10 tokens with confidence. The wallet also supports native contracts, including multi-signature transactions. Stay in control by updating account permissions, managing accounts, unstaking (v2), delegating resources, and creating and updating witnesses.
+### Ripple:
+- **Features:** Unlocking the potential of the Ripple network.
+- **Highlights:** Comprehensive support for advanced cryptographic algorithms, NFTs, tokens, multisignature transactions, account settings, trust settings, escrow transactions, regular key settings, and more.
+
+### Ethereum:
+- **Features:** Support for Ethereum transactions.
+- **Highlights:** Compatibility with both legacy and EIP-1559 transactions. Import and manage ERC-20 assets effortlessly, and execute ERC-20 token transfers with ease.
+
+### Tron:
+- **Features:** Seamless interaction with the Tron blockchain.
+- **Highlights:** Confidence in sending TRX, TRC-20, and TRC-10 tokens. Support for native contracts, including multi-signature transactions. Control over updating account permissions, managing accounts, unstaking (v2), delegating resources, and creating/updating witnesses.
+
 
 **Decentralized, Secure, and Open Source**
 
@@ -27,7 +56,7 @@ We take pride in being fully open source. You can explore and audit our code on 
 
 **Bitcoin, Dogecoin, Litecoin, Dash, Ripple Support — Mainnet and Testnet**
 
-Whether you're navigating the robust Bitcoin mainnet for your financial transactions or experimenting on the testnet to fine-tune your strategies, MRT Wallet is your reliable companion. Seamlessly switch between the secure environments of Bitcoin mainnet and testnet, and explore additional horizons with support for diverse cryptocurrencies like Ethereum, Tron, Dogecoin, Dash, Litecoin, and Ripple. MRT Wallet empowers you to transact with confidence across a broad spectrum of digital assets.
+Whether you're navigating the robust Bitcoin mainnet for your financial transactions or experimenting on the testnet to fine-tune your strategies, MRT Wallet is your reliable companion. Seamlessly switch between the secure environments of Bitcoin mainnet and testnet, and explore additional horizons with support for diverse cryptocurrencies like Ethereum, Tron, Dogecoin, Dash, Litecoin, BitcoinCash and BitcoinSV. MRT Wallet empowers you to transact with confidence across a broad spectrum of digital assets.
 
 **Platform Support**
 

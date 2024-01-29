@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transa
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/controller/impl/transaction_impl.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/global/memo.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleMemoAndFeeView<T extends RippleTransactionImpl>
     extends StatelessWidget {

@@ -3,10 +3,9 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
-import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
+import 'package:mrt_wallet/models/wallet_models/chain/utils.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
-import 'package:on_chain/on_chain.dart';
 
 class ImportEVMNetwork extends StatelessWidget {
   const ImportEVMNetwork({super.key});
@@ -28,10 +27,14 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
   final GlobalKey<FormState> formKey = GlobalKey();
   final GlobalKey<PageProgressState> pageProgressKey = GlobalKey();
   final GlobalKey<AppTextFieldState> uriFieldKey = GlobalKey();
+  final GlobalKey<AppTextFieldState> explorerFieldKey = GlobalKey();
+  final GlobalKey<AppTextFieldState> transactionFieldKey = GlobalKey();
   late List<APPEVMNetwork> evmNetworks;
   String symbol = "";
   String networkName = "";
   String chainId = "";
+  late String explorerAddressLink = "";
+  late String explorerTransaction = "";
   String rpcUrl = "";
   @override
   void didChangeDependencies() {
@@ -44,6 +47,14 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
     uriFieldKey.currentState?.updateText(v);
   }
 
+  void onPasteExplorerAddres(String v) {
+    explorerFieldKey.currentState?.updateText(v);
+  }
+
+  void onPasteExplorerTransaction(String v) {
+    transactionFieldKey.currentState?.updateText(v);
+  }
+
   void onChangeSymbol(String v) {
     symbol = v;
   }
@@ -54,6 +65,14 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
 
   void onChangeNetworkName(String v) {
     networkName = v;
+  }
+
+  void onChangeExplorerAddress(String v) {
+    explorerAddressLink = v;
+  }
+
+  void onChangeExplorerTransaction(String v) {
+    explorerTransaction = v;
   }
 
   String? chainError;
@@ -87,7 +106,8 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
   }
 
   String? validateRpcUrl(String? v) {
-    final path = AppStringUtility.validateUri(v);
+    final path =
+        AppStringUtility.validateUri(v, schame: ["http", "https", "ws", "wss"]);
     if (path == null) return "rpc_url_validator".tr;
     return null;
   }
@@ -96,6 +116,13 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
     if ((v?.isEmpty ?? true) || v!.isEmpty || v.length > 6) {
       return "symbol_validator".tr;
     }
+    return null;
+  }
+
+  String? validateAddressLink(String? v) {
+    if (v?.trim().isEmpty ?? true) return null;
+    final link = AppStringUtility.validateUri(v);
+    if (link == null) return "validate_link_desc".tr;
     return null;
   }
 
@@ -109,15 +136,14 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
       final uri = Uri.parse(rpcUrl.trim()).normalizePath();
       final serviceProvider = EVMApiProviderService(
           serviceName: uri.toString(),
-          websiteUri: uri.host,
-          httpUri: uri.toString());
-      final provider = ApiProviderTracker(provider: serviceProvider);
-      final nodeProvider = EVMRPC(EthereumRPCService(uri.toString(), provider));
+          websiteUri: AppStringUtility.removeSchame(uri.host),
+          uri: uri.toString());
+      final rpc = ChainUtils.buildEVMProvider(serviceProvider);
       APPEVMNetwork network = APPEVMNetwork(
           0,
           EVMNetworkParams(
-              transactionExplorer: null,
-              addressExplorer: null,
+              transactionExplorer: explorerTransaction.nullOnEmpty,
+              addressExplorer: explorerAddressLink.nullOnEmpty,
               token: Token(
                   name: networkName,
                   symbol: symbol,
@@ -125,9 +151,10 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
               providers: [serviceProvider],
               chainId: chain,
               supportEIP1559: false,
+              defaultNetwork: false,
               mainnet: false));
-      final rpc = EVMApiProvider(provider: nodeProvider);
       final info = await rpc.getNetworkInfo();
+
       if (info.$1 != chain) {
         throw WalletException("invalid_chain_id");
       }
@@ -135,7 +162,7 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
         network = network.copyWith(
             coinParam: network.coinParam.copyWith(supportEIP1559: true));
       }
-      return await wallet.importEVMNetwork(network);
+      return await wallet.updateImportNetwork(network);
     });
     if (result.hasError) {
       pageProgressKey.errorText(result.error!.tr);
@@ -166,14 +193,10 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
                       children: [
                         PageTitleSubtitle(
                             title: "import_new_network".tr,
-                            body: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("import_new_network_desc1".tr),
-                                WidgetConstant.height8,
-                                Text("import_new_network_desc2".tr),
-                              ],
-                            )),
+                            body: LargeTextView([
+                              "import_new_network_desc1".tr,
+                              "import_new_network_desc2".tr
+                            ])),
                         Text("chain_id".tr,
                             style: context.textTheme.titleMedium),
                         Text("chain_id_desc".tr),
@@ -219,6 +242,34 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
                           onChanged: onChangeSymbol,
                           validator: validateSymbol,
                           label: "symbol".tr,
+                        ),
+                        WidgetConstant.height20,
+                        Text("network_explorer_address_link".tr,
+                            style: context.textTheme.titleMedium),
+                        Text("network_evm_explorer_address_desc".tr),
+                        WidgetConstant.height8,
+                        AppTextField(
+                          key: explorerFieldKey,
+                          initialValue: explorerAddressLink,
+                          onChanged: onChangeExplorerAddress,
+                          validator: validateAddressLink,
+                          label: "network_explorer_address_link".tr,
+                          suffixIcon:
+                              PasteTextIcon(onPaste: onPasteExplorerAddres),
+                        ),
+                        WidgetConstant.height20,
+                        Text("network_explorer_transaction_link".tr,
+                            style: context.textTheme.titleMedium),
+                        Text("network_evm_explorer_transaction_desc".tr),
+                        WidgetConstant.height8,
+                        AppTextField(
+                          key: transactionFieldKey,
+                          initialValue: explorerAddressLink,
+                          onChanged: onChangeExplorerTransaction,
+                          validator: validateAddressLink,
+                          label: "network_explorer_transaction_link".tr,
+                          suffixIcon: PasteTextIcon(
+                              onPaste: onPasteExplorerTransaction),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

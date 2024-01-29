@@ -5,6 +5,7 @@ import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/app/material.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class AppSettingView extends StatefulWidget {
   const AppSettingView({super.key});
@@ -125,6 +126,27 @@ class _AppSettingViewState extends State<AppSettingView> {
                 },
               ),
               const Divider(),
+              AppListTile(
+                leading: const Icon(Icons.currency_bitcoin),
+                title: AppDropDownBottom(
+                  items: {
+                    for (final i in Currency.values)
+                      i: RichText(
+                        text: TextSpan(
+                            style: context.textTheme.labelLarge,
+                            text: i.name.toUpperCase(),
+                            children: [
+                              TextSpan(
+                                  text: " (${i.currencyName})",
+                                  style: context.textTheme.bodyMedium)
+                            ]),
+                      )
+                  },
+                  label: "toggle_currency".tr,
+                  value: wallet.appSetting.currency,
+                  onChanged: wallet.changeCurrency,
+                ),
+              ),
               AppListTile(
                 onTap: toggleBrightness,
                 leading: const Icon(Icons.dark_mode),

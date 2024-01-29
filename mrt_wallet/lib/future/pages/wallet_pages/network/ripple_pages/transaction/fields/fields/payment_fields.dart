@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/provider/transaction_validator/transaction_validator.dart';
 
 class RipplePaymentFieldsView extends StatelessWidget {
@@ -41,10 +41,11 @@ class RipplePaymentFieldsView extends StatelessWidget {
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress>("recipient".tr,
-                    maxExtend: 0.8,
-                    minExtent: 0.7,
-                    initialExtend: 0.7,
-                    child: SelectNetworkAddressView(account: account))
+                    maxExtend: 1,
+                    minExtent: 0.8,
+                    initialExtend: 0.9,
+                    bodyBuilder: (c) => SelectRecipientAccountView(
+                        account: account, scrollController: c))
                 .then(
               (value) {
                 validator.setValue(validator.destination, value);

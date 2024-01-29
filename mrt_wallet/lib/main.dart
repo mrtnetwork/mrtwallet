@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mrt_native_support/models/platform.dart';
 import 'package:mrt_native_support/platform_interface.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_cash_pages/transaction/transaction/send_transaction.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/update_provider/import_electrum_provider.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/import_network/edit_network.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/import_network/import_network.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/setup_address.dart';
@@ -27,6 +29,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/security.dar
 import 'package:mrt_wallet/future/pages/wallet_pages/setting/setting.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/setup_pages/setup.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/models/app/app_seting.dart';
 import 'package:mrt_wallet/models/app/material.dart';
 
 import 'future/pages/wallet_pages/account_pages/account_pages.dart';
@@ -42,9 +45,14 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() async {
+  runZonedGuarded(run, (error, stack) {
+    WalletLogging.print("zone error $error $stack");
+  });
+}
+
+void run() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
-
   if (PlatformInterface.appPlatform == AppPlatform.windows) {
     await PlatformInterface.interface.window.init();
     await PlatformInterface.interface.window.waitUntilReadyToShow();
@@ -54,8 +62,9 @@ void main() async {
   }
   final materialData = await PlatformInterface.interface
       .readSecure(StorageKeysConst.appMaterial);
-  AppMaterialController.restoreMaterial(materialData);
-  runApp(Repository(child: const MyBTC()));
+  final setting = AppSetting.fromHex(materialData);
+  AppMaterialController.fromAppSetting(setting);
+  runApp(Repository(child: MyBTC(setting: setting)));
 }
 
 class Repository<T extends StateController> extends InheritedWidget {
@@ -106,12 +115,14 @@ extension Watch on BuildContext {
 }
 
 class MyBTC extends StatelessWidget {
-  const MyBTC({super.key});
+  const MyBTC({super.key, required this.setting});
+  final AppSetting setting;
 
   @override
   Widget build(BuildContext context) {
     return MrtViewBuilder<WalletProvider>(
-      controller: () => WalletProvider(Repository.navigatorKey(context)),
+      controller: () =>
+          WalletProvider(Repository.navigatorKey(context), setting),
       removable: false,
       stateId: StateIdsConst.main,
       builder: (m) {
@@ -152,6 +163,8 @@ class PageRouter {
         return const SetupWallet();
       case PagePathConst.bitcoinTransaction:
         return const SendBitcoinTransactionView();
+      case PagePathConst.bitcoinCashTransaction:
+        return const SendBitcoinCashTransactionView();
       case PagePathConst.setupBitcoinMultsig:
         return const SetupBitcoinMultiSigAddressView();
       case PagePathConst.setupBitcoinAddress:
@@ -210,14 +223,12 @@ class PageRouter {
         return const ImportEVMNetwork();
       case PagePathConst.editEvmNetwork:
         return const EditEVMNetwork();
+      case PagePathConst.updateElectrumProviders:
+        return const ImportElectrumProviderView();
       default:
         return const HomeScreen();
-
-      /// TronTransactionFieldsView
     }
   }
-
-  /// MonitorTronTRC10TokenView
 
   Route<dynamic> onGenerateRoute(RouteSettings settings) {
     return PageRouteBuilder(

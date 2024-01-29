@@ -14,7 +14,7 @@ import 'package:on_chain/ethereum/address/evm_address.dart';
 
 class IEthAddress
     with Equatable
-    implements Bip32AddressCore<BigInt, BigInt, ETHAddress> {
+    implements Bip32AddressCore<BigInt, ETHAddress> {
   IEthAddress._(
       {required this.keyIndex,
       required this.coin,

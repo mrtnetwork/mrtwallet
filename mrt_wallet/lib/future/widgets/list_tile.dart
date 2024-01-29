@@ -148,7 +148,7 @@ class AppSwitchListTile extends StatelessWidget {
               style: context.textTheme.bodyMedium!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              child: subtitle!,
+              child: subtitle!, 
             ),
     );
   }

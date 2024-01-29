@@ -1,8 +1,7 @@
-import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/custom_colors.dart';
 import 'package:mrt_wallet/app/extention/color.dart';
-import 'package:mrt_wallet/models/serializable/serializable.dart';
+import 'package:mrt_wallet/models/app/app_seting.dart';
 
 class AppMaterialController {
   static const List<int> materialSettingCborTag = [100];
@@ -44,23 +43,16 @@ class AppMaterialController {
     _appTheme = _buildTheme();
   }
 
-  static CborTagValue toCbor() {
-    return CborTagValue(
-        CborListValue.fixedLength([_appBrightness.name, _appColor.toHex()]),
-        materialSettingCborTag);
-  }
+  static String get appColorHex => _appColor.toHex();
 
-  static void restoreMaterial(String? cborHex) {
+  static String get appBrightness => _appBrightness.name;
+
+  static void fromAppSetting(AppSetting setting) {
     try {
-      if (cborHex == null) return;
-      final CborObject cborObject = CborObject.fromCborHex(cborHex);
-      final CborListValue cbor = CborSerializable.decodeCborTags(
-          null, cborObject, materialSettingCborTag);
-      final String brightnessName = cbor.value[0].value;
-      final String colorHex = cbor.value[1].value;
-      final color = HexColor.fromHex(colorHex);
+      if (setting.appBrightness == null || setting.appColor == null) return;
+      final color = HexColor.fromHex(setting.appColor!);
       final Brightness brightness = Brightness.values
-          .firstWhere((element) => element.name == brightnessName);
+          .firstWhere((element) => element.name == setting.appBrightness);
       _appColor = color;
       _appBrightness = brightness;
       // ignore: empty_catches

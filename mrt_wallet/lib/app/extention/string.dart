@@ -25,6 +25,6 @@ extension Translate on String {
   }
 
   String get orEmpty => trim().isEmpty ? "value_is_empty".tr : this;
-
+  String? get nullOnEmpty => trim().isEmpty ? null : this;
   String get to3Digits => AppStringUtility.to3Digits(this, separator: ",");
 }

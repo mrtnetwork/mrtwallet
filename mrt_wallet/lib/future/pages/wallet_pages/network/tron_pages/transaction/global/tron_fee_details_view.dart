@@ -101,17 +101,23 @@ class _TronTransactionFeeView extends StatelessWidget {
                                                     context.colors.onTertiary),
                                       ),
                                       RichText(
-                                          text: TextSpan(children: [
-                                        TextSpan(
-                                            text: transaction
-                                                .consumedFee!.consumedBandwidth
-                                                .toString()),
-                                        const TextSpan(text: "/"),
-                                        TextSpan(
-                                            text: transaction
-                                                .consumedFee!.stackedBandWidth
-                                                .toString()),
-                                      ])),
+                                          text: TextSpan(
+                                              style: context
+                                                  .textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                      color: context
+                                                          .colors.onTertiary),
+                                              children: [
+                                            TextSpan(
+                                                text: transaction.consumedFee!
+                                                    .consumedBandwidth
+                                                    .toString()),
+                                            const TextSpan(text: "/"),
+                                            TextSpan(
+                                                text: transaction.consumedFee!
+                                                    .stackedBandWidth
+                                                    .toString()),
+                                          ])),
                                     ],
                                   ),
                                   Row(

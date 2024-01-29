@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class XRPRPCFetchTokens extends XRPLedgerRequest<List<XRPIssueToken>> {
   XRPRPCFetchTokens({

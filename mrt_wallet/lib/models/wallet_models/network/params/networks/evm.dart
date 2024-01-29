@@ -16,26 +16,27 @@ class EVMNetworkParams implements NetworkCoinParams {
       required List<EVMApiProviderService> providers,
       required this.chainId,
       required this.supportEIP1559,
-      required this.mainnet})
+      required this.mainnet,
+      this.defaultNetwork = true})
       : providers = List.unmodifiable(providers);
-  EVMNetworkParams copyWith({
-    String? transactionExplorer,
-    String? addressExplorer,
-    Token? token,
-    List<EVMApiProviderService>? providers,
-    BigInt? chainId,
-    bool? supportEIP1559,
-    bool? mainnet,
-  }) {
+  EVMNetworkParams copyWith(
+      {String? transactionExplorer,
+      String? addressExplorer,
+      Token? token,
+      List<EVMApiProviderService>? providers,
+      BigInt? chainId,
+      bool? supportEIP1559,
+      bool? mainnet,
+      bool? defaultNetwork}) {
     return EVMNetworkParams(
-      transactionExplorer: transactionExplorer ?? this.transactionExplorer,
-      addressExplorer: addressExplorer ?? this.addressExplorer,
-      token: token ?? this.token,
-      providers: providers ?? List.from(this.providers),
-      chainId: chainId ?? this.chainId,
-      supportEIP1559: supportEIP1559 ?? this.supportEIP1559,
-      mainnet: mainnet ?? this.mainnet,
-    );
+        transactionExplorer: transactionExplorer ?? this.transactionExplorer,
+        addressExplorer: addressExplorer ?? this.addressExplorer,
+        token: token ?? this.token,
+        providers: providers ?? List.from(this.providers),
+        chainId: chainId ?? this.chainId,
+        supportEIP1559: supportEIP1559 ?? this.supportEIP1559,
+        mainnet: mainnet ?? this.mainnet,
+        defaultNetwork: defaultNetwork ?? this.defaultNetwork);
   }
 
   final BigInt chainId;
@@ -47,6 +48,8 @@ class EVMNetworkParams implements NetworkCoinParams {
 
   @override
   final String? addressExplorer;
+
+  final bool defaultNetwork;
 
   @override
   int get decimal => token.decimal!;
@@ -73,7 +76,7 @@ class EVMNetworkParams implements NetworkCoinParams {
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.evmNetworkParam);
-
+    final bool? defaultNetwork = cbor.getIndex(7);
     return EVMNetworkParams(
         chainId: cbor.getIndex(0),
         supportEIP1559: cbor.getIndex(1),
@@ -83,7 +86,8 @@ class EVMNetworkParams implements NetworkCoinParams {
         token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(5)),
         providers: (cbor.getIndex(6) as List)
             .map((e) => EVMApiProviderService.fromCborBytesOrObject(obj: e))
-            .toList());
+            .toList(),
+        defaultNetwork: defaultNetwork ?? true);
   }
   @override
   CborTagValue toCbor() {
@@ -95,7 +99,8 @@ class EVMNetworkParams implements NetworkCoinParams {
           transactionExplorer,
           addressExplorer,
           token.toCbor(),
-          CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList())
+          CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
+          defaultNetwork
         ]),
         WalletModelCborTagsConst.evmNetworkParam);
   }

@@ -14,7 +14,7 @@ class EVMApiProvider implements NetworkApiProvider<IEthAddress> {
   final EVMRPC provider;
   @override
   ApiProviderTracker<EVMApiProviderService> get serviceProvider =>
-      (provider.rpc as HttpProvider).provider
+      (provider.rpc as BaseProviderProtocol).provider
           as ApiProviderTracker<EVMApiProviderService>;
 
   @override

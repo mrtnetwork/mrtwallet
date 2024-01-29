@@ -17,7 +17,6 @@ class ShareAccountView extends StatelessWidget {
             dataToCopy: address.address.toAddress,
             widget: AddressDetailsView(
               address: address,
-              isSelected: false,
               showBalance: false,
             )),
         barcodeData: address.address.toAddress,

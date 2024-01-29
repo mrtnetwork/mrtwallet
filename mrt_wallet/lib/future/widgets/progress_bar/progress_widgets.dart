@@ -43,11 +43,15 @@ class SuccessWithTextView extends StatelessWidget {
 class SuccessWithButtomView extends StatelessWidget {
   const SuccessWithButtomView(
       {super.key,
-      required this.text,
+      this.text,
       required this.buttomText,
-      required this.onPressed});
-  final String text;
+      this.buttomWidget,
+      required this.onPressed})
+      : assert(text != null || buttomWidget != null,
+            "use text or buttomWidget for child");
+  final String? text;
   final String buttomText;
+  final Widget? buttomWidget;
   final DynamicVoid onPressed;
 
   @override
@@ -55,7 +59,7 @@ class SuccessWithButtomView extends StatelessWidget {
     return _ProgressWithTextView(
         text: Column(
           children: [
-            Text(text, textAlign: TextAlign.center),
+            buttomWidget ?? Text(text!, textAlign: TextAlign.center),
             WidgetConstant.height8,
             FilledButton(onPressed: onPressed, child: Text(buttomText))
           ],

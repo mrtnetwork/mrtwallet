@@ -1,5 +1,5 @@
 import 'package:mrt_wallet/models/wallet_models/network/custom/ripple/nft.dart';
-import 'package:xrp_dart/xrp_dart.dart';
+import 'package:xrpl_dart/xrpl_dart.dart';
 
 class XRPRPCAccountNFTs extends XRPLedgerRequest<List<XRPNFToken>> {
   XRPRPCAccountNFTs({

@@ -84,18 +84,28 @@ class _AddToContactListViewState extends State<AddToContactListView> {
           Text("address".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           ContainerWithBorder(child: Text(widget.contact.address)),
-          WidgetConstant.height20,
-          AppTextField(
-            key: textFieldKey,
-            label: "name_of_contact".tr,
-            initialValue: name,
-            readOnly: buttomProgressKey.inProgress,
-            minlines: 1,
-            maxLines: 2,
-            error: _error,
-            suffixIcon: PasteTextIcon(onPaste: onPaste),
-            validator: validator,
-            onChanged: onChange,
+          AnimatedSize(
+            duration: AppGlobalConst.animationDuraion,
+            alignment: Alignment.topCenter,
+            child: added
+                ? WidgetConstant.sizedBox
+                : Column(
+                    children: [
+                      WidgetConstant.height20,
+                      AppTextField(
+                        key: textFieldKey,
+                        label: "name_of_contact".tr,
+                        initialValue: name,
+                        readOnly: buttomProgressKey.inProgress,
+                        minlines: 1,
+                        maxLines: 2,
+                        error: _error,
+                        suffixIcon: PasteTextIcon(onPaste: onPaste),
+                        validator: validator,
+                        onChanged: onChange,
+                      ),
+                    ],
+                  ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

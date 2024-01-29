@@ -1,17 +1,14 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/controller/impl/transaction.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
-import 'package:mrt_wallet/provider/api/api_provider.dart';
-
 mixin BitcoinTransactionFeeImpl on BitcoinTransactionImpl {
   int? _trSize;
-  int get trSize => _trSize!;
   BitcoinFeeRateType? _feeRateType = BitcoinFeeRateType.medium;
-
   BitcoinFeeRate? _networkFeeRate;
   BitcoinFeeRate get feeRate => _networkFeeRate!;
+  @override
+  bool get hasFeeRate => _networkFeeRate != null;
   late final NoneDecimalBalance _feeRate =
       NoneDecimalBalance.zero(network.coinParam.decimal);
   @override
@@ -20,74 +17,92 @@ mixin BitcoinTransactionFeeImpl on BitcoinTransactionImpl {
 
   late Map<String, NoneDecimalBalance> _fees;
   Map<String, NoneDecimalBalance> get fees => _fees;
+  String? _feeError;
+
+  String? get feeError => _feeError;
 
   Map<String, NoneDecimalBalance> _buildFeeRate() {
     return {
       BitcoinFeeRateType.medium.name: NoneDecimalBalance(
-          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.medium),
+          feeRate.getEstimate(_trSize!, feeRateType: BitcoinFeeRateType.medium),
           network.coinParam.decimal),
       BitcoinFeeRateType.low.name: NoneDecimalBalance(
-          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.low),
+          feeRate.getEstimate(_trSize!, feeRateType: BitcoinFeeRateType.low),
           network.coinParam.decimal),
       BitcoinFeeRateType.high.name: NoneDecimalBalance(
-          feeRate.getEstimate(trSize, feeRateType: BitcoinFeeRateType.high),
+          feeRate.getEstimate(_trSize!, feeRateType: BitcoinFeeRateType.high),
           network.coinParam.decimal),
     };
   }
 
   @override
-  void setFee(BitcoinFeeRateType? feeType, {BigInt? customFee}) {
+  void setFee(String? feeType, {BigInt? customFee}) {
     if (feeType == null && customFee == null) return;
-    _feeRateType = feeType;
+    _feeRateType = feeType == null
+        ? null
+        : BitcoinFeeRateType.values
+            .firstWhere((element) => element.name == feeType);
     if (_feeRateType == null) {
       _feeRate.updateBalance(customFee!);
     } else {
       _feeRate.updateBalance(
           _networkFeeRate!.getEstimate(_trSize!, feeRateType: _feeRateType!));
     }
+    _checkFeeAlert();
+    super.setFee(feeType, customFee: customFee);
   }
 
   Future<BitcoinFeeRate> _getFeeRate() async {
-    if (network.value == 1) {
-      final BitcoinApiProvider blockCypherApi =
-          chainAccount.providerFromService(ApiProviderService.blockCypher);
-      return blockCypherApi.provider.getNetworkFeeRate();
-    }
-    return apiProvider.provider.getNetworkFeeRate();
+    return apiProvider.getFeeRate();
   }
 
-  Future<(int, BitcoinFeeRate)> _calculateFee({
-    required List<BitcoinUtxoWithBalance> utxos,
-    required Map<String, BitcoinOutputWithBalance> receivers,
+  Future<(int, BitcoinFeeRate)> _getTransactionSize({
+    required List<UtxoWithAddress> utxos,
+    required List<BitcoinBaseOutput> outPuts,
   }) async {
-    _feeRateType ??= BitcoinFeeRateType.medium;
-    final transactionSize = BitcoinTransactionBuilder.estimateTransactionSize(
-        utxos: utxos
-            .map((e) => UtxoWithAddress(utxo: e.utxo, ownerDetails: e.address))
-            .toList(),
-        memo: memo,
-        enableRBF: true,
-        outputs: receivers.values.map((e) => e.address.networkAddress).toList(),
-        network: network.coinParam.transacationNetwork);
-    BitcoinFeeRate? networkFee = _networkFeeRate;
-    if (networkFee == null) {
-      networkFee = await _getFeeRate();
+    int transactionSize;
+    if (isBCHTransaction) {
+      transactionSize = ForkedTransactionBuilder.estimateTransactionSize(
+          utxos: utxos,
+          enableRBF: true,
+          outputs: outPuts,
+          network: network.coinParam.transacationNetwork as BitcoinCashNetwork);
     } else {
-      await MethodCaller.wait();
+      transactionSize = BitcoinTransactionBuilder.estimateTransactionSize(
+          utxos: utxos,
+          enableRBF: true,
+          outputs: outPuts,
+          network: network.coinParam.transacationNetwork);
     }
+    BitcoinFeeRate? networkFee = _networkFeeRate;
+    networkFee ??= await _getFeeRate();
     return (transactionSize, networkFee);
   }
 
-  Future<void> calculateFee(
-      {required Map<String, BitcoinOutputWithBalance> receivers,
-      required List<BitcoinUtxoWithBalance> utxos}) async {
-    _feeRateType ??= BitcoinFeeRateType.medium;
-    final result = await _calculateFee(receivers: receivers, utxos: utxos);
+  @override
+  Future<void> estimateFee({
+    required List<BitcoinBaseOutput> outPuts,
+    required List<UtxoWithAddress> inputs,
+    BCMR? bcmr,
+  }) async {
+    final result = await _getTransactionSize(outPuts: outPuts, utxos: inputs);
     _trSize = result.$1;
     _networkFeeRate ??= result.$2;
-    _feeRate.updateBalance(
-        _networkFeeRate!.getEstimate(_trSize!, feeRateType: _feeRateType!));
-    onCalculateAmount();
+    if (_feeRateType != null) {
+      _feeRate.updateBalance(
+          _networkFeeRate!.getEstimate(_trSize!, feeRateType: _feeRateType!));
+    }
+
     _fees = _buildFeeRate();
+    _checkFeeAlert();
+  }
+
+  void _checkFeeAlert() {
+    _feeError = null;
+    if (_feeRateType == null) {
+      if (_feeRate.balance < _fees[BitcoinFeeRateType.low.name]!.balance) {
+        _feeError = "transaction_fee_warning";
+      }
+    }
   }
 }

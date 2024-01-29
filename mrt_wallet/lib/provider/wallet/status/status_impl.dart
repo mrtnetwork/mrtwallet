@@ -7,6 +7,7 @@ mixin WalletStatusImpl on _WalletCore {
   WalletStatus _status = WalletStatus.setup;
   WalletStatus get status => _status;
   bool get walletIsLock => _status == WalletStatus.lock;
+  @override
   bool get walletIsUnlock => _status == WalletStatus.unlock;
   bool get walletInSetup => _status == WalletStatus.setup;
   GlobalKey<PageProgressState> get pageStatusHandler;
@@ -38,16 +39,16 @@ mixin WalletStatusImpl on _WalletCore {
     _checksum = List<int>.unmodifiable(walletChecksum);
   }
 
-  Future<void> _deriveNewAccount(NewAccountParams newAccountParams) async {
+  Future<CryptoAccountAddress> _deriveNewAccount(
+      NewAccountParams newAccountParams) async {
     if (!network.coins.contains(newAccountParams.coin)) {
       throw WalletExceptionConst.incorrectNetwork;
     }
     if (newAccountParams.isMultiSig) {
-      await _addNewAccountToNetwork(newAccountParams, const []);
-      return;
+      return await _addNewAccountToNetwork(newAccountParams, const []);
     }
     final publicKey = _deriveNewAddress(newAccountParams, _password!);
-    await _addNewAccountToNetwork(newAccountParams, publicKey);
+    return await _addNewAccountToNetwork(newAccountParams, publicKey);
   }
 
   Future<void> _importNewKey(WalletCustomKeys newKey, String password) async {

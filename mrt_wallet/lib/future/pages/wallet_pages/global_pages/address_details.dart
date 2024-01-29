@@ -9,14 +9,15 @@ import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 class AddressDetailsView extends StatelessWidget {
   const AddressDetailsView({
     required this.address,
-    required this.isSelected,
     super.key,
     this.showBalance = true,
+    this.color,
   });
 
   final CryptoAccountAddress address;
-  final bool isSelected;
+
   final bool showBalance;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -24,38 +25,36 @@ class AddressDetailsView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-                child: address.accountName != null
-                    ? RichText(
-                        maxLines: 1,
-                        text: TextSpan(children: [
-                          TextSpan(
-                              text: address.accountName,
-                              style: context.textTheme.labelLarge),
-                          if (address.type != null)
-                            TextSpan(
-                                text: " (${address.type!.tr})",
-                                style: context.textTheme.bodySmall)
-                        ]))
-                    : address.type == null
-                        ? WidgetConstant.sizedBox
-                        : Text(address.type!.tr,
-                            style: context.textTheme.labelLarge)),
-            if (isSelected)
-              Text("selected".tr,
-                  style: context.theme.textTheme.labelLarge
-                      ?.copyWith(color: CustomColors.green)),
-          ],
-        ),
-        OneLineTextWidget(address.address.toAddress),
-        OneLineTextWidget(address.keyIndex.path.tr),
+        if (address.accountName != null || address.type != null)
+          address.accountName != null
+              ? RichText(
+                  maxLines: 1,
+                  text: TextSpan(children: [
+                    TextSpan(
+                        text: address.accountName,
+                        style: context.textTheme.labelLarge
+                            ?.copyWith(color: color)),
+                    if (address.type != null)
+                      TextSpan(
+                          text: " (${address.type!.tr})",
+                          style: context.textTheme.bodySmall
+                              ?.copyWith(color: color))
+                  ]))
+              : address.type == null
+                  ? WidgetConstant.sizedBox
+                  : Text(address.type!.tr,
+                      style:
+                          context.textTheme.labelLarge?.copyWith(color: color)),
+        OneLineTextWidget(address.address.toAddress,
+            style: context.textTheme.bodyMedium?.copyWith(color: color)),
+        OneLineTextWidget(address.keyIndex.path.tr,
+            style: context.textTheme.bodyMedium?.copyWith(color: color)),
         if (showBalance)
           CoinPriceView(
             account: address,
-            style: context.textTheme.titleLarge,
+            style: context.textTheme.titleLarge?.copyWith(color: color),
             token: wallet.network.coinParam.token,
+            symbolColor: color,
           ),
       ],
     );

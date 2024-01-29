@@ -18,6 +18,7 @@ abstract class NetworkAccountCore<N, T, X> with CborSerializable {
   AddressDerivationIndex nextDrive(CryptoCoins coin);
   void removeAccount(CryptoAccountAddress<N, T, X> address);
   bool get haveAddress;
-  void addNewAddress(List<int> publicKey, NewAccountParams accountParams);
+  CryptoAccountAddress<N, T, X> addNewAddress(
+      List<int> publicKey, NewAccountParams accountParams);
   void switchAccount(CryptoAccountAddress<N, T, X> address);
 }
