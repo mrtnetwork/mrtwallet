@@ -158,7 +158,7 @@ class AppStringUtility {
   static bool isValidIPv4WithPort(String ipv4) {
     // Regular expression to match IPv4 address with optional port
     final RegExp ipv4WithPortRegex = RegExp(r'^(\d{1,3}\.){3}\d{1,3}:\d+$');
-
+  
     // Check if the input matches the pattern
     return ipv4WithPortRegex.hasMatch(ipv4);
   }

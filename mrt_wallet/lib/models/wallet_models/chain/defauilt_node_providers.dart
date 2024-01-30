@@ -26,30 +26,18 @@ class DefaultNodeProviders {
       ElectrumApiProviderService(
           serviceName: "aranguren",
           websiteUri: "bitcoin.aranguren.org",
-          url: "ws://bitcoin.aranguren.org:50003",
+          url: "wss://bitcoin.aranguren.org:50004",
           protocol: ProviderProtocol.websocket),
-      //
+      ElectrumApiProviderService(
+          serviceName: "104.198.149.61",
+          websiteUri: "104.198.149.61",
+          url: "wss://104.198.149.61:8443",
+          protocol: ProviderProtocol.websocket),
       ElectrumApiProviderService(
           serviceName: "104.248.139.211:50002",
           websiteUri: "104.248.139.211:50002",
           url: "104.248.139.211:50002",
           protocol: ProviderProtocol.ssl),
-      ElectrumApiProviderService(
-          serviceName: "aranguren",
-          websiteUri: "bitcoin.aranguren.org",
-          url: "ws://bitcoin.aranguren.org:50004",
-          protocol: ProviderProtocol.websocket),
-      ElectrumApiProviderService(
-          serviceName: "1209k",
-          websiteUri: "electrumx-core.1209k.com",
-          url: "wss://electrumx-core.1209k.com:8443",
-          protocol: ProviderProtocol.websocket),
-
-      ElectrumApiProviderService(
-          serviceName: "1209k",
-          websiteUri: "electrumx-core.1209k.com",
-          url: "ws://electrumx-core.1209k.com:8000",
-          protocol: ProviderProtocol.websocket),
       ApiProviderService.mempool,
       ApiProviderService.blockCypher,
     ],
@@ -57,7 +45,7 @@ class DefaultNodeProviders {
       ElectrumApiProviderService(
           serviceName: "testnet.aranguren.org",
           websiteUri: "aranguren.org",
-          url: "ws://testnet.aranguren.org:51003",
+          url: "wss://testnet.aranguren.org:51004",
           protocol: ProviderProtocol.websocket),
       ElectrumApiProviderService(
           serviceName: "testnet.aranguren.org",
@@ -74,14 +62,14 @@ class DefaultNodeProviders {
     ],
     2: <ApiProviderService>[
       ElectrumApiProviderService(
-          serviceName: "46.101.3.154",
-          websiteUri: "46.101.3.154",
-          url: "wss://46.101.3.154:50004",
+          serviceName: "qortal",
+          websiteUri: "electrum.qortal.link",
+          url: "wss://electrum.qortal.link:50004",
           protocol: ProviderProtocol.websocket),
       ElectrumApiProviderService(
           serviceName: "46.101.3.154",
           websiteUri: "46.101.3.154",
-          url: "ws://46.101.3.154:50003",
+          url: "wss://46.101.3.154:50004",
           protocol: ProviderProtocol.websocket),
       ElectrumApiProviderService(
           serviceName: "46.101.3.154",
@@ -113,6 +101,11 @@ class DefaultNodeProviders {
           websiteUri: "electrum.qortal.link",
           url: "electrum.qortal.link:54002",
           protocol: ProviderProtocol.ssl),
+      ElectrumApiProviderService(
+          serviceName: "qortal",
+          websiteUri: "electrum.qortal.link",
+          url: "wss://electrum.qortal.link:54004",
+          protocol: ProviderProtocol.websocket),
       ApiProviderService.blockCypher
     ],
     8: <ApiProviderService>[],

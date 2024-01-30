@@ -11,7 +11,7 @@
 ### Bitcoin Cash (mainnet, testnet):
 - **Features:** Comprehensive support for Bitcoin Cash transactions.
 - **Highlights:**
-  - P2SH, P2SH32, P2PKH32 token-aware addresses.
+  - P2SH, P2SH32, P2PKH and token-aware addresses.
   - Enhanced control over transactions, supporting the creation, signing, minting and sending of Cash tokens.
 
 ### Dogecoin:

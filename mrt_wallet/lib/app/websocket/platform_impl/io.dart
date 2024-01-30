@@ -44,6 +44,8 @@ class WebsocketIO implements PlatformWebScoket {
       return completer.future;
     } on WebSocketException catch (e) {
       throw ApiProviderException(message: e.message);
+    } on HandshakeException catch (e) {
+      throw ApiProviderException(message: e.message);
     }
   }
 

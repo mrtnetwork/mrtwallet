@@ -21,10 +21,7 @@ class CoinGeckoUtils {
   static Map<String, String> get _currencyIds => {
         "BitcoinCash": "bitcoin-cash",
         "Bitcoin": "bitcoin",
-        // "Bitcoin testnet": "bitcoin",
         "Litecoin": "litecoin",
-        // "Litecoin testnet": "litecoin",
-        // "Bitcoin Cash chipnet": "bitcoin-cash",
         "Dogecoin": "dogecoin",
         "BitcoinSV": "bitcoin-cash-sv",
         "Dash": "dash",

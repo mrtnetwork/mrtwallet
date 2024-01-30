@@ -231,6 +231,7 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
       case ProviderProtocol.tcp:
         return _validateTcpSSLUrl(v);
       default:
+        
         return _validateWebsocketAddress(v);
     }
   }
