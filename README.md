@@ -74,7 +74,7 @@ Our journey doesn't end with Bitcoin. The MRT Wallet roadmap is a dynamic chart 
 MRT Wallet is not just a wallet; it's a community-driven project. We welcome collaboration, feedback, and contributions from the community. Together, we're building a decentralized future that prioritizes security, privacy, and inclusivity.
 
 ## Build Instructions
----
+
 
 Clone the repository and build using Flutter:
 
@@ -94,7 +94,7 @@ flutter build web --release
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
 flutter pub get
-flutter build apk --release
+flutter build apk
 ```
 
 **Windows**
@@ -107,7 +107,7 @@ flutter build windows
 
 
 ## Contributing
----
+
 
 Contributions are welcome! Please follow these guidelines:
  - Fork the repository and create a new branch.
@@ -115,12 +115,12 @@ Contributions are welcome! Please follow these guidelines:
  - Submit a pull request with a detailed description of your changes.
 
 ## Feature requests and bugs
----
+
 
 Please file feature requests and bugs in the issue tracker.
 
 ## Get Involved
----
+
 
 Join us on our mission to redefine the landscape of decentralized finance. Contribute to our open-source project on [GitHub](https://github.com/mrtnetwork/mrtwallet) or connect with our community on [Telegram](https://t.me/blockchain_web3_solidity).
 
@@ -128,7 +128,6 @@ Thank you for choosing MRT Wallet as your trusted partner in the world of decent
 
 
 ## Support
----
 1KMRGUzRFCuR9y73gUnjxfC1Dte8Ua3vcp
 
 bc1q92fvc5jm4k8e5wegzmhzdv72gwe43sgfnuspgzfmj7llkd8xhmusgd44qf
