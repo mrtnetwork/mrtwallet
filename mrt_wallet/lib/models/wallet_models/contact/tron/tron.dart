@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/contact/contract_core.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
-import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/tron/src/address/tron_address.dart';
 
 class TronContact with Equatable implements ContactCore<TronAddress> {
   TronContact._(
@@ -18,9 +18,9 @@ class TronContact with Equatable implements ContactCore<TronAddress> {
     try {
       final CborListValue cbor = CborSerializable.decodeCborTags(
           bytes, obj, WalletModelCborTagsConst.tronContact);
-      final String address = cbor.getIndex(0);
-      final DateTime created = cbor.getIndex(1);
-      final String name = cbor.getIndex(2);
+      final String address = cbor.elementAt(0);
+      final DateTime created = cbor.elementAt(1);
+      final String name = cbor.elementAt(2);
       final TronAddress ethAddress = TronAddress(address);
 
       return TronContact._(

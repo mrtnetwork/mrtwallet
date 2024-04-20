@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/transact
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 import 'package:mrt_wallet/provider/transaction_validator/transaction_validator.dart';
-import 'package:on_chain/tron/models/contract/base_contract/transaction_type.dart';
+import 'package:on_chain/tron/src/models/contract/base_contract/transaction_type.dart';
 
 import 'impl/signer_impl.dart';
 

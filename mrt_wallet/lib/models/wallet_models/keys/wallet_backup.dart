@@ -29,7 +29,6 @@ class WalletBackup implements WalletBackupCore {
   static Future<WalletBackup> fromBackup(
       CborTagValue cborTag, String passhphrase) async {
     try {
-      // final obj = CborObject.fromCborHex(cborHex);
       final CborListValue cbor = CborSerializable.decodeCborTags(
           null, cborTag, WalletModelCborTagsConst.backup);
       final WalletMasterKeys backupkey =
@@ -37,7 +36,7 @@ class WalletBackup implements WalletBackupCore {
       final WalletMasterKeys key = await WalletMasterKeys.setup(
           backupkey.mnemonic.toStr(), passhphrase,
           customKeys: backupkey.customKeys);
-      final accountList = cbor.getIndex(1);
+      final accountList = cbor.elementAt(1);
       final List<Bip32NetworkAccount> accs = [];
       for (final i in accountList) {
         i as CborTagValue;
@@ -95,7 +94,7 @@ class WalletBackupV2 implements WalletBackupCore {
       final WalletMasterKeys key = await WalletMasterKeys.setup(
           backupkey.mnemonic.toStr(), passhphrase,
           customKeys: backupkey.customKeys);
-      final List<dynamic> accountList = cbor.getIndex(1);
+      final List<dynamic> accountList = cbor.elementAt(1);
       final List<AppChain> chains = [];
       for (final i in accountList) {
         final appChain = AppChain.fromCborBytesOrObject(obj: i);

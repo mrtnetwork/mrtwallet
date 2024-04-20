@@ -12,19 +12,19 @@ class TVMNetworkParams with CborSerializable implements NetworkCoinParams {
   factory TVMNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
-        bytes, obj, WalletModelCborTagsConst.xrpNetworkParam);
+        bytes, obj, WalletModelCborTagsConst.tvmNetworkParam);
 
     return TVMNetworkParams(
-        transactionExplorer: cbor.getIndex(0),
-        addressExplorer: cbor.getIndex(1),
+        transactionExplorer: cbor.elementAt(0),
+        addressExplorer: cbor.elementAt(1),
         token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        providers: (cbor.getIndex(3) as List)
+        providers: (cbor.elementAt(3) as List)
             .map((e) => TronApiProviderService.fromCborBytesOrObject(obj: e))
             .toList(),
-        ethereumProviders: (cbor.getIndex(4) as List)
+        ethereumProviders: (cbor.elementAt(4) as List)
             .map((e) => EVMApiProviderService.fromCborBytesOrObject(obj: e))
             .toList(),
-        mainnet: cbor.getIndex(5));
+        mainnet: cbor.elementAt(5));
   }
   const TVMNetworkParams(
       {required this.transactionExplorer,
@@ -77,6 +77,6 @@ class TVMNetworkParams with CborSerializable implements NetworkCoinParams {
               ethereumProviders.map((e) => e.toCbor()).toList()),
           mainnet
         ]),
-        WalletModelCborTagsConst.xrpNetworkParam);
+        WalletModelCborTagsConst.tvmNetworkParam);
   }
 }

@@ -21,10 +21,10 @@ class RippleIssueToken with Equatable implements TokenCore<BigRational> {
           bytes, obj, WalletModelCborTagsConst.rippleIssueToken);
 
       final Token token = Token.fromCborBytesOrObject(obj: cbor.getCborTag(0));
-      final String issuer = cbor.getIndex(1);
+      final String issuer = cbor.elementAt(1);
       final Live<DecimalBalance> balance =
-          Live(DecimalBalance.fromString(cbor.getIndex(2)));
-      final DateTime updated = cbor.getIndex(3);
+          Live(DecimalBalance.fromString(cbor.elementAt(2)));
+      final DateTime updated = cbor.elementAt(3);
       return RippleIssueToken._(balance, token, issuer, updated);
     } on WalletException {
       rethrow;

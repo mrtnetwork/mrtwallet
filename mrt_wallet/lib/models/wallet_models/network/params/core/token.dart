@@ -8,10 +8,10 @@ class Token with CborSerializable, Equatable {
     try {
       final CborListValue cbor = CborSerializable.decodeCborTags(
           bytes, obj, WalletModelCborTagsConst.token);
-      final String name = cbor.getIndex(0);
-      final String symbol = cbor.getIndex(1);
-      final int? decimal = cbor.getIndex(2);
-      final String? logo = cbor.getIndex(3);
+      final String name = cbor.elementAt(0);
+      final String symbol = cbor.elementAt(1);
+      final int? decimal = cbor.elementAt(2);
+      final String? logo = cbor.elementAt(3);
       return Token(
           name: name, symbol: symbol, decimal: decimal, assetLogo: logo);
     } catch (e) {

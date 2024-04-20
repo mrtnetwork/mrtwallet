@@ -68,6 +68,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
       keyState.success();
       await Future.delayed(AppGlobalConst.milliseconds100);
       if (context.mounted) {
+        // ignore: use_build_context_synchronously
         context.pop(_password);
       }
     }
@@ -234,8 +235,7 @@ class _KeyIndexDetails extends StatelessWidget {
         return _ImportedKeyDerivationDetails(
             keyIndex: keyIndex as ImportedAddressIndex);
       default:
-        return _HDWalletDerivationDetails(
-            keyIndex: keyIndex as Bip32AddressIndex);
+        return _HDWalletDerivationDetails(keyIndex: keyIndex);
     }
   }
 }
@@ -261,7 +261,7 @@ class _ImportedKeyDerivationDetails extends StatelessWidget {
 
 class _HDWalletDerivationDetails extends StatelessWidget {
   const _HDWalletDerivationDetails({required this.keyIndex});
-  final Bip32AddressIndex keyIndex;
+  final AddressDerivationIndex keyIndex;
   @override
   Widget build(BuildContext context) {
     return Column(

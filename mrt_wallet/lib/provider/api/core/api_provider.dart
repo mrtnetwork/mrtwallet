@@ -56,12 +56,20 @@ class ApiProviderService with Equatable, CborSerializable {
       } else if (bytesEqual(
           cborObj.tags, WalletModelCborTagsConst.electrumApiServiceProvider)) {
         return ElectrumApiProviderService.fromCborBytesOrObject(obj: cborObj);
+      } else if (bytesEqual(
+          cborObj.tags, WalletModelCborTagsConst.solApiServiceProvider)) {
+        return SolanaApiProviderService.fromCborBytesOrObject(obj: cborObj);
+      } else if (bytesEqual(
+          cborObj.tags, WalletModelCborTagsConst.cardanoApiServiceProvider)) {
+        return CardanoAPIProviderService.fromCborBytesOrObject(obj: cborObj);
+      } else if (bytesEqual(
+          cborObj.tags, WalletModelCborTagsConst.cosmosApiServiceProvider)) {
+        return CosmosAPIProviderService.fromCborBytesOrObject(obj: cborObj);
       }
-
       final CborListValue cbor = CborSerializable.decodeCborTags(
           bytes, obj, WalletModelCborTagsConst.apiServiceProvider);
       return ApiProviderService(
-          cbor.getIndex(0), cbor.getIndex(1), ProviderProtocol.http);
+          cbor.elementAt(0), cbor.elementAt(1), ProviderProtocol.http);
     } catch (e) {
       throw WalletExceptionConst.incorrectNetwork;
     }
@@ -75,6 +83,8 @@ class ApiProviderService with Equatable, CborSerializable {
 }
 
 abstract class NetworkApiProvider<T> {
+  const NetworkApiProvider();
+  abstract final AppNetworkImpl network;
   Future<void> updateBalance(T account);
   abstract final ApiProviderTracker serviceProvider;
 }

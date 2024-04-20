@@ -21,10 +21,10 @@ class TronTRC10Token with Equatable implements TokenCore<BigInt> {
           bytes, obj, WalletModelCborTagsConst.trc10Token);
 
       final Token token = Token.fromCborBytesOrObject(obj: cbor.getCborTag(0));
-      final String tokenID = cbor.getIndex(1);
+      final String tokenID = cbor.elementAt(1);
       final Live<NoneDecimalBalance> balance =
-          Live(NoneDecimalBalance(cbor.getIndex(2), token.decimal!));
-      final DateTime updated = cbor.getIndex(3);
+          Live(NoneDecimalBalance(cbor.elementAt(2), token.decimal!));
+      final DateTime updated = cbor.elementAt(3);
       return TronTRC10Token._(balance, token, tokenID, updated);
     } on WalletException {
       rethrow;

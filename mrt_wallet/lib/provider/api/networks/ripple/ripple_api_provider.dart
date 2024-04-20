@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/numbers/big_rational.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -10,8 +11,10 @@ class _RippleApiProviderConst {
 }
 
 class RippleApiProvider implements NetworkApiProvider<IXRPAddress> {
-  RippleApiProvider({required this.provider});
+  RippleApiProvider({required this.provider, required this.network});
   final XRPLRpc provider;
+  @override
+  final AppXRPNetwork network;
   @override
   ApiProviderTracker get serviceProvider =>
       (provider.rpc as BaseProviderProtocol).provider;

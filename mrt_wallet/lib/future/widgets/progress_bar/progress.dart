@@ -21,6 +21,10 @@ extension QuickAccsessStreamButtonStateState on GlobalKey<StreamWidgetState> {
     currentState?.updateStream(StreamWidgetStatus.success);
   }
 
+  void idle() {
+    currentState?.updateStream(StreamWidgetStatus.idle);
+  }
+
   void fromMethodResult(MethodResult result) {
     if (result.hasError) {
       error();
@@ -51,15 +55,22 @@ extension QuickAccsessPageProgressState on GlobalKey<PageProgressState> {
 
   PageProgressStatus? get status => currentState?.status;
   bool get isSuccess => currentState?.status == PageProgressStatus.success;
+  bool get hasError => currentState?.status == PageProgressStatus.error;
+
   bool get inProgress => currentState?.status == PageProgressStatus.progress;
   void error([Widget? progressWidget]) {
     currentState?.updateStream(StreamWidgetStatus.error,
         progressWidget: progressWidget);
   }
 
-  void errorText(String text, {bool backToIdle = true}) {
+  void errorText(String text,
+      {bool backToIdle = true, bool showBackButtom = false}) {
     currentState?.updateStream(StreamWidgetStatus.error,
-        progressWidget: ErrorWithTextView(text: text), backToIdle: backToIdle);
+        progressWidget: ErrorWithTextView(
+          text: text,
+          progressKey: showBackButtom ? this : null,
+        ),
+        backToIdle: backToIdle);
   }
 
   void success({Widget? progressWidget, bool backToIdle = true}) {

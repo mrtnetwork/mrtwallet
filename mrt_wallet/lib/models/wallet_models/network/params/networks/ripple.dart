@@ -17,10 +17,10 @@ class RippleNetworkParams implements NetworkCoinParams {
         bytes, obj, WalletModelCborTagsConst.xrpNetworkParam);
 
     return RippleNetworkParams(
-        transactionExplorer: cbor.getIndex(0),
-        addressExplorer: cbor.getIndex(1),
+        transactionExplorer: cbor.elementAt(0),
+        addressExplorer: cbor.elementAt(1),
         token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        providers: (cbor.getIndex(3) as List)
+        providers: (cbor.elementAt(3) as List)
             .map((e) => ApiProviderService.fromCborBytesOrObject(obj: e))
             .toList());
   }

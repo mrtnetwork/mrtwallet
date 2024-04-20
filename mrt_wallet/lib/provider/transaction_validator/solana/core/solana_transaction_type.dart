@@ -1,0 +1,1 @@
+enum SolanaTransactionType { native, spl }

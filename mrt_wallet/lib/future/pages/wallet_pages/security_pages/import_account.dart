@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-import 'package:xrpl_dart/xrpl_dart.dart';
+// import 'package:xrpl_dart/xrpl_dart.dart';
 
 enum _PrivateKeyTypes {
   extendKey("Extended key"),
@@ -65,25 +65,17 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   }
 
   bool get inRipple => widget.network is AppXRPNetwork;
-  XRPKeyAlgorithm rippleKeyAlgorith = XRPKeyAlgorithm.secp256k1;
-
-  late bool showRippleKeyAlgorithm = _showRippleKeyAlgorithm();
-
-  bool _showRippleKeyAlgorithm() {
-    if (inRipple &&
-        (selected == _PrivateKeyTypes.rippleEntropy ||
-            selected == _PrivateKeyTypes.privateKey ||
-            selected == _PrivateKeyTypes.backup)) {
-      return true;
-    }
-    return false;
-  }
+  late EllipticCurveTypes curve = widget.network.keyTypes.first;
+  List<EllipticCurveTypes> get curves => widget.network.keyTypes;
+  late final bool needSelectCurve = curves.length > 1;
 
   Map<_PrivateKeyTypes, Widget> _buildKeyTypes() {
     Map<_PrivateKeyTypes, Widget> types = {};
-    final coin = widget.network.coins.first;
     for (final i in _PrivateKeyTypes.values) {
-      if (i == _PrivateKeyTypes.wif && coin.conf.wifNetVer == null) continue;
+      if (i == _PrivateKeyTypes.wif &&
+          !widget.network.coins
+              .any((element) => element.conf.wifNetVer != null)) continue;
+
       if (i.forRipple) {
         if (!inRipple) continue;
       }
@@ -102,12 +94,12 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     selected = s ?? selected;
     _account = null;
     _error = null;
-    showRippleKeyAlgorithm = _showRippleKeyAlgorithm();
+    // showRippleKeyAlgorithm = _showRippleKeyAlgorithm();
     setState(() {});
   }
 
-  void onSelectRippleKeyAlgorithm(XRPKeyAlgorithm? alg) {
-    rippleKeyAlgorith = alg ?? rippleKeyAlgorith;
+  void onSelectRippleKeyAlgorithm(EllipticCurveTypes? alg) {
+    curve = alg ?? curve;
     setState(() {});
   }
 
@@ -125,11 +117,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
         return BlockchainUtils.extendedKeyToBip32(_key, coin.conf.type);
       case _PrivateKeyTypes.privateKey:
         if (inRipple) {
-          final alg = RippleUtils.findXRPPrivateKeyAlgorithm(_key);
-          if (alg != null && rippleKeyAlgorith != alg) {
-            throw WalletExceptionConst.invalidRipplePrivateKeyAlgorithm;
-          }
-          return RippleUtils.ripplePrivateKeyToBip32(_key, rippleKeyAlgorith);
+          return RippleUtils.ripplePrivateKeyToBip32(_key, curve);
         }
         return BlockchainUtils.privteKeyToBip32(
             BytesUtils.fromHexString(_key), coin.conf.type);
@@ -139,19 +127,14 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
         final backupResult = BytesUtils.toHexString(
             await model.restoreBackup(_password, _backup, encoding));
         if (inRipple) {
-          final alg = RippleUtils.findXRPPrivateKeyAlgorithm(backupResult);
-          if (alg != null && rippleKeyAlgorith != alg) {
-            throw WalletExceptionConst.invalidRipplePrivateKeyAlgorithm;
-          }
-          return RippleUtils.ripplePrivateKeyToBip32(
-              backupResult, rippleKeyAlgorith);
+          return RippleUtils.ripplePrivateKeyToBip32(backupResult, curve);
         }
         return BlockchainUtils.privteKeyToBip32(
             BytesUtils.fromHexString(backupResult), coin.conf.type);
       case _PrivateKeyTypes.rippleSeed:
         return RippleUtils.rippleSeedToBip32(_key);
       case _PrivateKeyTypes.rippleEntropy:
-        return RippleUtils.rippleEntropyToBip32(_key, rippleKeyAlgorith);
+        return RippleUtils.rippleEntropyToBip32(_key, curve);
       default:
         throw UnimplementedError();
     }
@@ -164,6 +147,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
 
     final createKey = await MethodCaller.call(() async {
       _account = await _getKey(model);
+
       if (_account == null) {
         _error = "private_key_invalid".tr;
         throw WalletExceptionConst.invalidPrivateKey;
@@ -287,17 +271,16 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                       label: "key_type".tr,
                       onChanged: onSelect),
                   WidgetConstant.height20,
-                  if (showRippleKeyAlgorithm) ...[
+                  if (needSelectCurve) ...[
                     Text("ripple_key_type".tr,
                         style: context.textTheme.titleMedium),
                     Text("inidicate_type_of_key".tr),
                     WidgetConstant.height8,
                     AppDropDownBottom(
                         items: {
-                          for (final i in XRPKeyAlgorithm.values)
-                            i: Text(i.curveType.name.camelCase)
+                          for (final i in curves) i: Text(i.name.camelCase)
                         },
-                        value: rippleKeyAlgorith,
+                        value: curve,
                         label: "ripple_key_type".tr,
                         onChanged: onSelectRippleKeyAlgorithm),
                     WidgetConstant.height20,

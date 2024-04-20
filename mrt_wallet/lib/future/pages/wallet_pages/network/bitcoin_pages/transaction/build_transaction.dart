@@ -240,7 +240,9 @@ class BitcoinBuildTransactionView extends StatelessWidget {
         ),
         WidgetConstant.height20,
         Text("setup_memo".tr, style: context.textTheme.titleMedium),
-        Text("memo_desc2".tr),
+        Text("memo_desc2"
+            .tr
+            .replaceOne(controller.network.coinParam.token.name)),
         WidgetConstant.height8,
         ...List.generate(controller.memoScripts.length, (index) {
           return ContainerWithBorder(

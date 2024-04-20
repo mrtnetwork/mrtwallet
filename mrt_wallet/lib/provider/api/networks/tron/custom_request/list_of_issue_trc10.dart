@@ -1,6 +1,5 @@
 import 'package:mrt_wallet/models/wallet_models/network/custom/tron/issue_token.dart';
-import 'package:on_chain/tron/provider/core/request.dart';
-import 'package:on_chain/tron/provider/methods/request_methods.dart';
+import 'package:on_chain/tron/src/provider/provider.dart';
 
 class TronRequestListOfIssueTRC10
     extends TVMRequestParam<List<TronIssueTRC10Token>, Map<String, dynamic>> {

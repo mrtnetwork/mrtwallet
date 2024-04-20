@@ -7,3 +7,5 @@ export 'ethereum/ethereum_account.dart';
 
 export 'tron/tron_account.dart';
 export 'tron/multi_sig_address_details.dart';
+export 'solana/solana_address.dart';
+export 'cosmos/cosmos.dart';

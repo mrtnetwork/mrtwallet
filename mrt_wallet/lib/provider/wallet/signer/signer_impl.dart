@@ -124,4 +124,65 @@ mixin Signer on MasterKeyImpl {
     final tronPrivateKey = TronPrivateKey.fromBytes(bipKey.privateKey.raw);
     return [tronPrivateKey.sign(request.transactionDigest)];
   }
+
+  SolanaTransaction _signSolanaTransaction(
+      {required SolanaSigningRequest request, required List<int> password}) {
+    final bipKey = _getPrivateKey(password, request.signers.first);
+    final solanaPrivateKey = SolanaPrivateKey.fromSeed(bipKey.privateKey.raw);
+    final signature =
+        solanaPrivateKey.sign(request.solanaTransaction.serializeMessage());
+    request.solanaTransaction
+        .addSignature(request.addresses.first.networkAddress, signature);
+    return request.solanaTransaction;
+  }
+
+  List<List<int>> _signCosmosTransaction(
+      {required CosmosSigningRequest request, required List<int> password}) {
+    final List<List<int>> signatures = [];
+    for (int i = 0; i < request.signers.length; i++) {
+      final bipKey = _getPrivateKey(password, request.signers.elementAt(i));
+      final addr = request.addresses.elementAt(i);
+      if (addr.coin.conf.type == EllipticCurveTypes.nist256p1) {
+        final solanaPrivateKey =
+            CosmosNist256p1PrivateKey.fromBytes(bipKey.privateKey.raw);
+        signatures.add(solanaPrivateKey.sign(request.digest));
+        continue;
+      }
+      final solanaPrivateKey =
+          CosmosSecp256K1PrivateKey.fromBytes(bipKey.privateKey.raw);
+      signatures.add(solanaPrivateKey.sign(request.digest));
+    }
+    return signatures;
+  }
+
+  ADATransaction _signCardanoTransaction(
+      {required CardanoSigningRequest request, required List<int> password}) {
+    try {
+      return request.transaction.signAndBuildTransaction(
+        ({required address, required digest}) {
+          final signer = request.addresses.indexWhere(
+              (element) => element.address.toAddress == address.address);
+          if (signer < -1) {
+            throw MessageException("Signer account does not found.",
+                details: {"address": address.address});
+          }
+          final ICardanoAddress addr =
+              request.addresses.elementAt(signer) as ICardanoAddress;
+          final keyIndex = request.signers.elementAt(signer);
+          final bipKey = _getPrivateKey(password, keyIndex,
+              seedType: addr.addressDetails.seedGeneration);
+          final adaPrivateKey = AdaPrivateKey.fromBytes(bipKey.privateKey.raw);
+          if (address.addressType == ADAAddressType.byron) {
+            return adaPrivateKey.createBootstrapWitness(
+                digest: digest,
+                address: address as ADAByronAddress,
+                chainCode: bipKey.chainCode.toBytes());
+          }
+          return adaPrivateKey.createSignatureWitness(digest);
+        },
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

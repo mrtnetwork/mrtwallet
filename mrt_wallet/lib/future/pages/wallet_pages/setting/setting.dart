@@ -132,6 +132,7 @@ class _AppSettingViewState extends State<AppSettingView> {
                   items: {
                     for (final i in Currency.values)
                       i: RichText(
+                        overflow: TextOverflow.ellipsis,
                         text: TextSpan(
                             style: context.textTheme.labelLarge,
                             text: i.name.toUpperCase(),
@@ -145,6 +146,7 @@ class _AppSettingViewState extends State<AppSettingView> {
                   label: "toggle_currency".tr,
                   value: wallet.appSetting.currency,
                   onChanged: wallet.changeCurrency,
+                  isExpanded: true,
                 ),
               ),
               AppListTile(

@@ -64,6 +64,8 @@ class WalletExceptionConst {
       WalletException("contact_already_exist");
   static final WalletException invalidBalance =
       WalletException("invalid_balance");
+  static final WalletException unsuportedFeature =
+      WalletException("unsuported_feature");
 
   static final WalletException condition = WalletException("message");
   static final WalletException emptyThrow = WalletException("");
@@ -76,6 +78,8 @@ class WalletExceptionConst {
       WalletException("invalid_ripple_privatekey_algorithm");
   static final WalletException multiSigDerivationNotSuported =
       WalletException("not_support_multisig_derivation");
+  static final WalletException inaccessibleKeyAlgorithm =
+      WalletException("inaccessible_key_algorithm");
   static final WalletException invalidTokenInformation =
       WalletException("invalid_token_information");
   static final WalletException invalidNftInfromaation =

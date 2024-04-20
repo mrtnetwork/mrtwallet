@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
+import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
@@ -26,7 +27,7 @@ class ImportedAddressIndex with Equatable implements AddressDerivationIndex {
     }
   }
   final String accountId;
-  final Bip32AddressIndex? bip32KeyIndex;
+  final AddressDerivationIndex? bip32KeyIndex;
 
   @override
   CborTagValue toCbor() {
@@ -48,7 +49,7 @@ class ImportedAddressIndex with Equatable implements AddressDerivationIndex {
   List get variabels => [accountId, bip32KeyIndex];
 
   @override
-  T derive<T>(T derivator) {
+  T derive<T>(T derivator, {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
     if (derivator is! Bip32Base) {
       throw WalletException.invalidArgruments(
           ["Bip32Base", derivator.runtimeType.toString()]);
@@ -59,4 +60,22 @@ class ImportedAddressIndex with Equatable implements AddressDerivationIndex {
 
     return derivator;
   }
+
+  @override
+  EllipticCurveTypes get curve => throw UnimplementedError();
+
+  @override
+  CryptoCoins get currencyCoin => throw UnimplementedError();
+
+  @override
+  String storageKey({Bip44Levels maxLevel = Bip44Levels.addressIndex}) =>
+      BytesUtils.toHexString(MD5.hash([
+        ...toCbor().encode(),
+        ...seedGeneration.name.codeUnits,
+        ...maxLevel.name.codeUnits
+      ]));
+
+  @override
+  SeedGenerationType get seedGeneration =>
+      bip32KeyIndex?.seedGeneration ?? SeedGenerationType.none;
 }

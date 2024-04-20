@@ -6,7 +6,9 @@ import 'custom_request/script_hash_balance.dart';
 
 class BitcoinElectrumApiProvider
     implements BasedBitcoinApiProvider<IBitcoinAddress> {
-  BitcoinElectrumApiProvider({required this.provider});
+  BitcoinElectrumApiProvider({required this.provider, required this.network});
+  @override
+  final AppNetworkImpl network;
   @override
   ApiProviderTracker<ElectrumApiProviderService> get serviceProvider =>
       (provider.rpc as BaseProviderProtocol).provider

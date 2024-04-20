@@ -1,11 +1,8 @@
 import 'dart:async';
-
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/error/exception/app_exception.dart';
 import 'package:mrt_wallet/provider/api/excepion/exception.dart';
-import 'package:on_chain/on_chain.dart';
-import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:http/http.dart' as http;
 
 class MethodCaller {
@@ -112,7 +109,8 @@ class MethodCaller {
   static Stream<T> prediocCaller<T>(Future<MethodResult<T>> Function() t,
       {Duration waitOnError = const Duration(seconds: 1),
       Duration waitOnSuccess = const Duration(seconds: 10),
-      required Cancelable canclable}) async* {
+      required Cancelable canclable,
+      bool closeOnSuccess = false}) async* {
     bool run = true;
     while (run) {
       Completer<void> completer = Completer();
@@ -128,14 +126,19 @@ class MethodCaller {
           });
           continue;
         }
+
         yield result.result;
 
-        await completer.future.timeout(waitOnSuccess).catchError((e) {
-          if (e is CancelableExption) {
-            run = false;
-          }
-          return null;
-        });
+        if (closeOnSuccess) {
+          run = false;
+        } else {
+          await completer.future.timeout(waitOnSuccess).catchError((e) {
+            if (e is CancelableExption) {
+              run = false;
+            }
+            return null;
+          });
+        }
       } finally {
         canclable.cancel();
       }
@@ -162,7 +165,6 @@ class MethodResult<T> {
     if (exception is AppException ||
         exception is BlockchainUtilsException ||
         exception is ApiProviderException ||
-        exception is RPCException ||
         exception is RPCError ||
         exception is ArgumentError) {
       return exception!.toString();

@@ -27,7 +27,7 @@ class EthereumTransferValidator extends EthereumTransactionValidator {
         return p0;
       },
       subject: "");
-  late final ValidatorField<NoneDecimalBalance> amount = ValidatorField(
+  final ValidatorField<NoneDecimalBalance> amount = ValidatorField(
     name: "amount",
     subject: "",
     optional: false,

@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
+import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/app/euqatable/equatable.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
@@ -23,25 +23,54 @@ class Bip32AddressIndex extends AddressDerivationIndex
       final int accountLevel = cbor.value[2].value;
       final int changeLevel = cbor.value[3].value;
       final int addressIndex = cbor.value[4].value;
-
-      return Bip32AddressIndex(
+      final String? curve = cbor.elementAt(5);
+      final String? proposal = cbor.elementAt(6);
+      final String? coinName = cbor.elementAt(7);
+      final CryptoCoins? coin = proposal != null && coinName != null
+          ? CryptoCoins.getCoin(coinName, CryptoProposal.fromName(proposal))
+          : null;
+      final String? seedGeneration = cbor.elementAt(8);
+      return Bip32AddressIndex._(
           accountLevel: accountLevel,
           addressIndex: addressIndex,
           changeLevel: changeLevel,
           purpose: purposeLevel,
-          coin: coinLevel);
+          coin: coinLevel,
+          curve: curve == null
+              ? coin == null
+                  ? EllipticCurveTypes.secp256k1
+                  : null
+              : EllipticCurveTypes.fromName(curve),
+          currencyCoin: coin,
+          seedGeneration: seedGeneration == null
+              ? SeedGenerationType.bip39
+              : SeedGenerationType.fromName(seedGeneration));
     } catch (e) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
   }
+  Bip32AddressIndex._(
+      {required this.purpose,
+      required this.coin,
+      required this.accountLevel,
+      required this.changeLevel,
+      required this.addressIndex,
+      required this.curve,
+      required this.currencyCoin,
+      required this.seedGeneration});
   Bip32AddressIndex(
       {required this.purpose,
       required this.coin,
       required this.accountLevel,
       required this.changeLevel,
-      required this.addressIndex});
+      required this.addressIndex,
+      required this.currencyCoin,
+      required this.seedGeneration})
+      : curve = null;
   factory Bip32AddressIndex.fromBip44KeyIndexDetais(
-      List<Bip44LevelsDetails> indexes) {
+      {required List<Bip44LevelsDetails> indexes,
+      required CryptoCoins currencyCoin,
+      required SeedGenerationType seedGeneration}) {
     final int purpose = indexes
         .firstWhere((element) => element.level == Bip44Levels.purpose)
         .index;
@@ -57,12 +86,15 @@ class Bip32AddressIndex extends AddressDerivationIndex
     final int addressIndex = indexes
         .firstWhere((element) => element.level == Bip44Levels.addressIndex)
         .index;
-    return Bip32AddressIndex(
+    return Bip32AddressIndex._(
         purpose: purpose,
         coin: coin,
         accountLevel: accountLevel,
         changeLevel: changeLevel,
-        addressIndex: addressIndex);
+        addressIndex: addressIndex,
+        curve: null,
+        currencyCoin: currencyCoin,
+        seedGeneration: seedGeneration);
   }
 
   @override
@@ -73,20 +105,39 @@ class Bip32AddressIndex extends AddressDerivationIndex
           CborIntValue(coin),
           CborIntValue(accountLevel),
           CborIntValue(changeLevel),
-          CborIntValue(addressIndex)
+          CborIntValue(addressIndex),
+          if (curve == null)
+            const CborNullValue()
+          else
+            CborStringValue(curve!.name),
+          if (currencyCoin != null) ...[
+            CborStringValue(currencyCoin!.proposal.specName),
+            CborStringValue(currencyCoin!.coinName),
+          ] else ...[
+            const CborNullValue(),
+            const CborNullValue()
+          ],
+          seedGeneration.name
         ]),
         WalletModelCborTagsConst.accoutKeyIndex);
   }
 
   @override
-  List get variabels =>
-      [purpose, coin, accountLevel, changeLevel, addressIndex];
+  List get variabels => [
+        purpose,
+        coin,
+        accountLevel,
+        changeLevel,
+        addressIndex,
+        currencyCoin?.conf.type ?? curve,
+        seedGeneration.name
+      ];
 
   String? _cachedPath;
 
   @override
   String get path {
-    _cachedPath ??= _toPath(variabels.cast());
+    _cachedPath ??= _toPath(indexes.map((e) => e.index).toList());
     return _cachedPath!;
   }
 
@@ -110,17 +161,39 @@ class Bip32AddressIndex extends AddressDerivationIndex
   }
 
   @override
-  T derive<T>(T derivator) {
+  T derive<T>(T derivator, {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
     if (derivator is! Bip32Base) {
       throw WalletException.invalidArgruments(
-          ["Bip32Slip10Secp256k1", derivator.runtimeType.toString()]);
+          ["Bip32Base", derivator.runtimeType.toString()]);
     }
-    final deriveToIndex = derivator
-        .childKey(Bip32KeyIndex(purpose))
-        .childKey(Bip32KeyIndex(coin))
-        .childKey(Bip32KeyIndex(accountLevel))
-        .childKey(Bip32KeyIndex(changeLevel))
-        .childKey(Bip32KeyIndex(addressIndex));
+    Bip32Base deriveToIndex = derivator;
+    for (int i = 0; i < maxLevel.value; i++) {
+      deriveToIndex = deriveToIndex.childKey(indexes.elementAt(i));
+    }
     return deriveToIndex as T;
   }
+
+  @override
+  final CryptoCoins? currencyCoin;
+  List<Bip32KeyIndex> get indexes => [
+        Bip32KeyIndex(purpose),
+        Bip32KeyIndex(coin),
+        Bip32KeyIndex(accountLevel),
+        Bip32KeyIndex(changeLevel),
+        Bip32KeyIndex(addressIndex)
+      ];
+
+  @override
+  final EllipticCurveTypes? curve;
+
+  @override
+  String storageKey({Bip44Levels maxLevel = Bip44Levels.addressIndex}) =>
+      BytesUtils.toHexString(MD5.hash([
+        ...toCbor().encode(),
+        ...seedGeneration.name.codeUnits,
+        ...maxLevel.name.codeUnits
+      ]));
+
+  @override
+  final SeedGenerationType seedGeneration;
 }

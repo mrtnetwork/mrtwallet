@@ -85,12 +85,12 @@ class IXRPAddress
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, WalletModelCborTagsConst.rippleAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.getIndex(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.getIndex(1), proposal)!;
+    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final List<int> publicKey = cbor.getIndex(3);
-    final networkId = cbor.getIndex(7);
+    final List<int> publicKey = cbor.elementAt(3);
+    final networkId = cbor.elementAt(7);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
@@ -99,28 +99,28 @@ class IXRPAddress
             network.coinParam.decimal,
             obj: cbor.getCborTag(4));
 
-    final XRPAddress rippleAddress = XRPAddress(cbor.getIndex(5));
-    int? tag = cbor.getIndex(6);
+    final XRPAddress rippleAddress = XRPAddress(cbor.elementAt(5));
+    int? tag = cbor.elementAt(6);
 
     final List<RippleIssueToken> issueTokens = [];
-    final List<dynamic>? tokens = cbor.getIndex(8);
+    final List<dynamic>? tokens = cbor.elementAt(8);
     if (tokens != null) {
       for (final i in tokens) {
         issueTokens.add(RippleIssueToken.fromCborBytesOrObject(obj: i));
       }
     }
     final List<RippleNFToken> accountNfts = [];
-    final List<dynamic>? nfts = cbor.getIndex(9);
+    final List<dynamic>? nfts = cbor.elementAt(9);
     if (nfts != null) {
       for (final i in nfts) {
         accountNfts.add(RippleNFToken.fromCborBytesOrObject(obj: i));
       }
     }
-    final String? curveName = cbor.getIndex(10);
+    final String? curveName = cbor.elementAt(10);
     final curveType = curveName == null
         ? EllipticCurveTypes.secp256k1
         : EllipticCurveTypes.fromName(curveName);
-    final String? accountName = cbor.getIndex(11);
+    final String? accountName = cbor.elementAt(11);
     return IXRPAddress._(
         coin: coin,
         publicKey: publicKey,
@@ -306,7 +306,7 @@ class IXRPMultisigAddress extends IXRPAddress
     final CryptoCoins coin =
         CryptoCoins.getCoin(cbor.value[1].value, proposal)!;
 
-    final int networkId = cbor.getIndex(7);
+    final int networkId = cbor.elementAt(7);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
@@ -321,14 +321,14 @@ class IXRPMultisigAddress extends IXRPAddress
       tag = cbor.value[6].value;
     }
     final List<RippleIssueToken> issueTokens = [];
-    final List<dynamic>? tokens = cbor.getIndex(8);
+    final List<dynamic>? tokens = cbor.elementAt(8);
     if (tokens != null) {
       for (final i in tokens) {
         issueTokens.add(RippleIssueToken.fromCborBytesOrObject(obj: i));
       }
     }
     final List<RippleNFToken> accountNfts = [];
-    final List<dynamic>? nfts = cbor.getIndex(9);
+    final List<dynamic>? nfts = cbor.elementAt(9);
     if (nfts != null) {
       for (final i in nfts) {
         accountNfts.add(RippleNFToken.fromCborBytesOrObject(obj: i));
@@ -337,7 +337,7 @@ class IXRPMultisigAddress extends IXRPAddress
     RippleMultiSignatureAddress multiSigAccount =
         RippleMultiSignatureAddress.fromCborBytesOrObject(
             obj: cbor.getCborTag(11));
-    final String? accountName = cbor.getIndex(12);
+    final String? accountName = cbor.elementAt(12);
     return IXRPMultisigAddress._(
         coin: coin,
         address: address,

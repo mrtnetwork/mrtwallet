@@ -1,7 +1,5 @@
 import 'package:mrt_wallet/models/wallet_models/network/custom/tron/account_resource_info.dart';
-import 'package:on_chain/tron/address/tron_address.dart';
-import 'package:on_chain/tron/provider/core/request.dart';
-import 'package:on_chain/tron/provider/methods/request_methods.dart';
+import 'package:on_chain/tron/tron.dart';
 
 /// Query the resource information of an account(bandwidth,energy,etc).
 /// [developers.tron.network](https://developers.tron.network/reference/getaccountresource).

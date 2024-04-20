@@ -3,6 +3,7 @@ import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/compare/compare.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
+import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/cardano.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
@@ -55,6 +56,12 @@ abstract class CryptoAccountAddress<N, T, X> with CborSerializable {
     } else if (bytesEqual(
         cbor.tags, WalletModelCborTagsConst.tronMultisigAccount)) {
       return ITronMultisigAddress.fromCborBytesOrObject(network, obj: cbor);
+    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.solAccount)) {
+      return ISolanaAddress.fromCborBytesOrObject(network, obj: cbor);
+    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.cardanoAccount)) {
+      return ICardanoAddress.fromCborBytesOrObject(network, obj: cbor);
+    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.cosmosAccount)) {
+      return ICosmosAddress.fromCborBytesOrObject(network, obj: cbor);
     }
     throw WalletExceptionConst.invalidAccountDetails;
   }

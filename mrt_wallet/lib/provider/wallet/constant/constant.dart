@@ -11,11 +11,13 @@ class WalletModelCborTagsConst {
   static const List<int> backupV2 = [170, 2];
   static const List<int> mnemonic = [180];
   static const List<int> walletCustomKey = [180, 0];
+  static const List<int> derivedKeys = [180, 1];
   static const List<int> iAccount = [200];
   static const List<int> address = [200, 80];
   static const List<int> accoutKeyIndex = [200, 81];
   static const List<int> importedAccountKeyIndex = [200, 82];
   static const List<int> multiSigAccountKeyIndex = [200, 83];
+  static const List<int> byronLegacyKeyIndex = [200, 84];
   // bitcoin
   static const List<int> bitcoinCashAccount = [200, 191];
   static const List<int> bitcoinCashMultiSigAccount = [200, 191, 1];
@@ -38,18 +40,33 @@ class WalletModelCborTagsConst {
   static const List<int> tronMultiSigSignerAddress = [200, 195, 1, 0, 0];
   static const List<int> tronAccountInfo = [200, 195, 100];
   static const List<int> tronAccountResource = [200, 195, 101];
+
+  // solana address
+  static const List<int> solAccount = [200, 196];
+  // cardano address
+  static const List<int> cardanoAccount = [200, 197];
+  static const List<int> cardanoAccountDetails = [200, 197, 100];
+
+  // cosmos address
+  static const List<int> cosmosAccount = [200, 198];
+
   // contacts
   static const List<int> bitcoinContact = [100, 0];
   static const List<int> rippleContact = [100, 1];
   static const List<int> ethereumContact = [100, 2];
   static const List<int> tronContact = [100, 3];
+  static const List<int> solanaContact = [100, 4];
+  static const List<int> cardanoContct = [100, 5];
+  static const List<int> cosmosContact = [100, 6];
 
   /// network tokens
   static const List<int> token = [110];
+  static const List<int> cosmosNativeToken = [110, 1];
   static const List<int> rippleIssueToken = [110, 10];
   static const List<int> erc20Token = [110, 20];
   static const List<int> trc20Token = [110, 30];
   static const List<int> trc10Token = [110, 31];
+  static const List<int> spltoken = [110, 32];
 
   /// network nfts
   static const List<int> nft = [120];
@@ -61,16 +78,25 @@ class WalletModelCborTagsConst {
   static const List<int> xrpNetwork = [80, 0, 2];
   static const List<int> evmNetwork = [80, 0, 3];
   static const List<int> tvmNetwork = [80, 0, 4];
+  static const List<int> solanaNetwork = [80, 0, 5];
+  static const List<int> cardanoNetwork = [80, 0, 6];
+  static const List<int> cosmosNetwork = [80, 0, 7];
   static const List<int> bitcoinCashNetwork = [80, 0, 10];
 
   static const List<int> bitconNetworkParam = [80, 1, 1];
   static const List<int> xrpNetworkParam = [80, 1, 2];
   static const List<int> evmNetworkParam = [80, 1, 3];
   static const List<int> tvmNetworkParam = [80, 1, 4];
+  static const List<int> solNetworkParam = [80, 1, 4];
+  static const List<int> cardanoNetworkParams = [80, 1, 5];
+  static const List<int> cosmosNetworkParams = [80, 1, 6];
 
   ///
   static const List<int> apiServiceProvider = [90];
   static const List<int> electrumApiServiceProvider = [90, 0];
-  static const List<int> tronApiServiceProvider = [90, 4];
   static const List<int> evmApiServiceProvider = [90, 3];
+  static const List<int> tronApiServiceProvider = [90, 4];
+  static const List<int> solApiServiceProvider = [90, 5];
+  static const List<int> cardanoApiServiceProvider = [90, 6];
+  static const List<int> cosmosApiServiceProvider = [90, 7];
 }

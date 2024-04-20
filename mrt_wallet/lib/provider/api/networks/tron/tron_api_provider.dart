@@ -1,14 +1,19 @@
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/network_address.dart';
+import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
 import 'package:mrt_wallet/models/wallet_models/network/custom/custom.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:on_chain/on_chain.dart';
 
 class TVMApiProvider implements NetworkApiProvider<ITronAddress> {
-  TVMApiProvider({required this.provider, required this.solidityProvider});
+  TVMApiProvider(
+      {required this.provider,
+      required this.solidityProvider,
+      required this.network});
   final TronProvider provider;
   final EVMApiProvider solidityProvider;
-  
+  @override
+  final APPTVMNetwork network;
 
   @override
   ApiProviderTracker get serviceProvider =>

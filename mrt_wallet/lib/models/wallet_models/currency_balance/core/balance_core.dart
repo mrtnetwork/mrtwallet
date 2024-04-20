@@ -4,5 +4,6 @@ abstract class BalanceCore<T> {
   void updateBalance();
   bool get isZero;
   bool get isNegative;
+  bool get largerThanZero;
   abstract final T balance;
 }

@@ -84,7 +84,9 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
   void onSubmit() {
     if (!(form.currentState?.validate() ?? false)) return;
     final keyIndex = Bip32AddressIndex.fromBip44KeyIndexDetais(
-        levels.values.toList().cast());
+        indexes: levels.values.toList().cast(),
+        currencyCoin: widget.coin,
+        seedGeneration: SeedGenerationType.bip39);
     context.pop(keyIndex);
   }
 
@@ -156,7 +158,7 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
           NumberTextField(
             label: "p_level".tr,
             max: Bip32KeyDataConst.keyIndexMaxVal,
-            defaultValue: (widget.coin.proposal as BipProposal).purpose.index,
+            defaultValue: widget.coin.proposal.purpose.index,
             helperText: helperText(Bip44Levels.purpose),
             suffixIcon: _HardenIconView(
               isHarden: (level) => isHardened(level),

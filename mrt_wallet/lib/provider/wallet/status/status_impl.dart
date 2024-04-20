@@ -47,14 +47,49 @@ mixin WalletStatusImpl on _WalletCore {
     if (newAccountParams.isMultiSig) {
       return await _addNewAccountToNetwork(newAccountParams, const []);
     }
-    final publicKey = _deriveNewAddress(newAccountParams, _password!);
-    return await _addNewAccountToNetwork(newAccountParams, publicKey);
+    WalletMasterKeys keys = _fromMemoryStorage(_password!, _massterKey!);
+    final int derivedKeys = keys.derivedKeys.length;
+    final CryptoAccountAddress newAccount;
+
+    if (newAccountParams is CardanoNewAddressParams) {
+      final cardanoDeriveResult =
+          _deriveCardanoNewAddress(newAccountParams, keys);
+      final cardanoAcc = cardanoDeriveResult.$1;
+      if (cardanoDeriveResult.$2 != null) {
+        keys = keys.addDerivedKey(cardanoDeriveResult.$2!);
+      }
+      if (cardanoDeriveResult.$3 != null) {
+        keys = keys.addDerivedKey(cardanoDeriveResult.$3!);
+      }
+      newAccount = await _addNewAccountToNetwork(
+          cardanoAcc, cardanoAcc.addressDetails!.publicKey);
+    } else {
+      final derivedResult = _getDerivedKey(newAccountParams, keys);
+      final derivedBip = derivedResult.$1;
+      newAccount = await _addNewAccountToNetwork(
+          newAccountParams, derivedBip.publicKey.compressed);
+      if (derivedResult.$2 != null) {
+        keys = keys.addDerivedKey(derivedResult.$2!);
+      }
+    }
+    if (derivedKeys != keys.derivedKeys.length) {
+      await _updateWallet(keys);
+    }
+    return newAccount;
   }
 
   Future<void> _importNewKey(WalletCustomKeys newKey, String password) async {
     final pw = _validatePassword(password);
     final key = _importCustomKey(newKey, pw);
     final encrypt = await _forStorage(key, pw);
+    await _setupMasterKey(encrypt, pw);
+    await _writeWallet(encrypt, _toStorageChecksum());
+  }
+
+  Future<void> _updateWallet(WalletMasterKeys newKey,
+      {String? password}) async {
+    final pw = password == null ? _password! : _validatePassword(password);
+    final encrypt = await _forStorage(newKey, pw);
     await _setupMasterKey(encrypt, pw);
     await _writeWallet(encrypt, _toStorageChecksum());
   }
@@ -147,7 +182,7 @@ mixin WalletStatusImpl on _WalletCore {
       throw WalletExceptionConst.incorrectPassword;
     }
     final encrypWallet = await _readWallet();
-    final walletKey = await _fromStroage(encrypWallet!.$1, pw);
+    final walletKey = await _masterKeyFromStorage(encrypWallet!.$1, pw);
     final newCheckSum = QuickCrypto.generateRandom(16);
     final nPassword = _toWalletPassword(newPassword, newCheckSum);
     final data = await _forStorage(walletKey, nPassword);
@@ -159,7 +194,7 @@ mixin WalletStatusImpl on _WalletCore {
   Future<void> _updateSetting(String password, WalletSetting setting) async {
     final pw = _validatePassword(password);
     final encrypWallet = await _readWallet();
-    final mn = await _fromStroage(encrypWallet!.$1, pw);
+    final mn = await _masterKeyFromStorage(encrypWallet!.$1, pw);
     final updateKeys = mn.updateSetting(setting);
     final data = await _forStorage(updateKeys, pw);
     await _writeWallet(data, _toStorageChecksum());
@@ -187,14 +222,13 @@ mixin WalletStatusImpl on _WalletCore {
     _checksum = null;
     _walletChecksum = null;
     _massterKey = null;
-    // _accounts = null;
   }
 
   Future<String> _getWalletBackupV2(String password,
       {SecretWalletEncoding encoding = SecretWalletEncoding.cbor}) async {
     final pw = _validatePassword(password);
     final encrypWallet = await _readWallet();
-    final masterKeys = await _fromStroage(encrypWallet!.$1, pw);
+    final masterKeys = await _masterKeyFromStorage(encrypWallet!.$1, pw);
     final backup = WalletBackupV2(
       masterKeys: masterKeys,
       chains: _appChains.networks.values.toList(),

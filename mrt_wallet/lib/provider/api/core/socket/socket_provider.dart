@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'package:bitcoin_base/bitcoin_base.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/provider/api/models/request_completer.dart';
-import 'package:on_chain/ethereum/rpc/exception/exception.dart';
-import 'package:xrpl_dart/xrpl_dart.dart';
 
 abstract class BaseSocketProvider implements BaseProviderProtocol {
   @override
@@ -41,25 +39,12 @@ abstract class BaseSocketProvider implements BaseProviderProtocol {
       return response;
     } on ApiProviderException {
       rethrow;
-    } on RPCException catch (e) {
-      throw ApiProviderException(
-          message: e.message,
-          statusCode: e.code,
-          responseData: e.request,
-          code: e.code,
-          requestPayload: e.data);
     } on RPCError catch (e) {
       throw ApiProviderException(
           message: e.message,
           statusCode: e.errorCode,
           responseData: e.request,
           code: e.errorCode,
-          requestPayload: e.data);
-    } on ElectrumRPCException catch (e) {
-      throw ApiProviderException(
-          message: e.message,
-          responseData: e.request,
-          code: e.code,
           requestPayload: e.data);
     } on TimeoutException {
       throw const ApiProviderException(message: "api_http_timeout_error");

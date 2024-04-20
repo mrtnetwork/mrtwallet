@@ -28,9 +28,9 @@ class AppSetting with CborSerializable {
           BytesUtils.fromHexString(cborHex!),
           null,
           WalletModelCborTagsConst.appSetting);
-      final String? colorHex = cbor.getIndex(0);
-      final String? brightnessName = cbor.getIndex(1);
-      final Currency currency = Currency.fromName(cbor.getIndex(2));
+      final String? colorHex = cbor.elementAt(0);
+      final String? brightnessName = cbor.elementAt(1);
+      final Currency currency = Currency.fromName(cbor.elementAt(2));
 
       return AppSetting._(
           appColor: colorHex,

@@ -15,13 +15,46 @@ class ProgressWithTextView extends StatelessWidget {
 }
 
 class ErrorWithTextView extends StatelessWidget {
-  const ErrorWithTextView({super.key, required this.text});
+  const ErrorWithTextView({super.key, required this.text, this.progressKey});
   final String text;
+  final GlobalKey<PageProgressState>? progressKey;
 
   @override
   Widget build(BuildContext context) {
     return _ProgressWithTextView(
-        text: Text(text, textAlign: TextAlign.center),
+        text: Column(
+          children: [
+            ConstraintsBoxView(
+              maxHeight: 120,
+              child: Container(
+                padding: WidgetConstant.padding10,
+                decoration: BoxDecoration(boxShadow: const [
+                  BoxShadow(spreadRadius: 1, blurRadius: 5),
+                ], borderRadius: WidgetConstant.border8),
+                child: SingleChildScrollView(
+                  child: SelectableText(
+                    text,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+            if (progressKey != null) ...[
+              WidgetConstant.height8,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  FilledButton.icon(
+                      onPressed: () {
+                        progressKey?.backToIdle();
+                      },
+                      icon: const Icon(Icons.close),
+                      label: Text("back_to_the_page".tr))
+                ],
+              )
+            ],
+          ],
+        ),
         icon: WidgetConstant.errorIconLarge);
   }
 }

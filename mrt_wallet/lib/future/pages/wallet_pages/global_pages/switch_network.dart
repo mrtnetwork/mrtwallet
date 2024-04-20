@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
-
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/network_with_balances.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class SwitchNetworkView extends StatefulWidget {
@@ -17,7 +15,7 @@ class SwitchNetworkView extends StatefulWidget {
 
 class _SwitchNetworkViewState extends State<SwitchNetworkView>
     with SingleTickerProviderStateMixin {
-  late final tabController = TabController(length: 4, vsync: this);
+  late final tabController = TabController(length: 7, vsync: this);
 
   double? height;
   void onChangeSize(Size size) {
@@ -27,14 +25,17 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
     }
   }
 
-  late List<NetworkWithBalanceDetails> bitcoinNetworks;
-  late List<NetworkWithBalanceDetails> rippleNetworks;
-  late List<NetworkWithBalanceDetails> evmNetworks;
-  late List<NetworkWithBalanceDetails> tvmNetworks;
+  late List<AppChain> bitcoinNetworks;
+  late List<AppChain> rippleNetworks;
+  late List<AppChain> evmNetworks;
+  late List<AppChain> tvmNetworks;
+  late List<AppChain> solNetworks;
+  late List<AppChain> cardanoNetworks;
+  late List<AppChain> cosmosNetworks;
 
   void initNetwork() {
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
-    final networks = wallet.getNetworks();
+    final networks = wallet.getChains();
     int initialIndex = 0;
     bitcoinNetworks = networks
         .where((element) => element.network is AppBitcoinNetwork)
@@ -52,6 +53,18 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         .where((element) => element.network is APPTVMNetwork)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    solNetworks = networks
+        .where((element) => element.network is APPSolanaNetwork)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    cardanoNetworks = networks
+        .where((element) => element.network is APPCardanoNetwork)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    cosmosNetworks = networks
+        .where((element) => element.network is APPCosmosNetwork)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
     final currentNetwork = MethodCaller.nullOnException(() =>
         networks.firstWhere((element) =>
             element.network.value == widget.selectedNetwork.value));
@@ -62,6 +75,12 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         initialIndex = 2;
       } else if (currentNetwork.network is APPTVMNetwork) {
         initialIndex = 3;
+      } else if (currentNetwork.network is APPSolanaNetwork) {
+        initialIndex = 4;
+      } else if (currentNetwork.network is APPCardanoNetwork) {
+        initialIndex = 5;
+      } else if (currentNetwork.network is APPCosmosNetwork) {
+        initialIndex = 6;
       }
     }
     if (initialIndex != 0) {
@@ -128,7 +147,10 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                         Tab(text: "bitcoin_and_forked".tr),
                         Tab(text: "ripple".tr),
                         Tab(text: "evm_networks".tr),
-                        Tab(text: "tvm_networks".tr)
+                        Tab(text: "tvm_networks".tr),
+                        Tab(text: "sol_networks".tr),
+                        Tab(text: "cardano_networks".tr),
+                        Tab(text: "cosmos_networks".tr),
                       ]),
                   pinned: true,
                   actions: [
@@ -152,7 +174,10 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                       _NetworksView(widget.selectedNetwork, bitcoinNetworks),
                       _NetworksView(widget.selectedNetwork, rippleNetworks),
                       _NetworksView(widget.selectedNetwork, evmNetworks),
-                      _NetworksView(widget.selectedNetwork, tvmNetworks)
+                      _NetworksView(widget.selectedNetwork, tvmNetworks),
+                      _NetworksView(widget.selectedNetwork, solNetworks),
+                      _NetworksView(widget.selectedNetwork, cardanoNetworks),
+                      _NetworksView(widget.selectedNetwork, cosmosNetworks)
                     ]),
                   ),
                 ),
@@ -168,7 +193,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
 class _NetworksView extends StatelessWidget {
   const _NetworksView(this.selected, this.networks);
   final AppNetworkImpl selected;
-  final List<NetworkWithBalanceDetails> networks;
+  final List<AppChain> networks;
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -177,7 +202,7 @@ class _NetworksView extends StatelessWidget {
         final len = networks.length;
         final lastIndex = index + 1 == len;
         final net = networks[index].network;
-        final balance = networks[index].totalBalance;
+        final balance = networks[index].account.totalBalance.value;
         return Padding(
           padding: WidgetConstant.paddingHorizontal20,
           child: Column(

@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/utility/blockchin_utils/ethereum/ethereum_abi_constant.dart';
-import 'package:on_chain/address/core.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/solidity/address/core.dart';
 
 class RPCERC20Decimal extends ETHRPCRequest<int?> {
   RPCERC20Decimal(this.contractAddress, {BlockTagOrNumber? blockNumber})
@@ -10,7 +10,7 @@ class RPCERC20Decimal extends ETHRPCRequest<int?> {
   @override
   EthereumMethods get method => EthereumMethods.call;
 
-  final BaseHexAddress contractAddress;
+  final SolidityAddress contractAddress;
 
   final AbiFunctionFragment _function = ETHAbiConstant.erc20Decimal;
 

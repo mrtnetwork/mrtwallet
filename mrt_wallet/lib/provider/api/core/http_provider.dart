@@ -1,18 +1,16 @@
+import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/string/string.dart';
 import 'package:http/http.dart' as http;
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'dart:async';
-
 import 'package:mrt_wallet/provider/api/api_provider.dart';
-import 'package:xrpl_dart/xrpl_dart.dart';
-import "package:on_chain/on_chain.dart";
 
 abstract class HttpProvider implements BaseProviderProtocol {
   static final http.Client _client = http.Client();
   http.Client get client => _client;
   Duration get defaultTimeOut;
 
-  Future<T> providerPOST<T>(String url, String? params,
+  Future<T> providerPOST<T>(String url, Object? params,
       {List<int> allowStatus = const [200],
       Duration? timeout,
       Map<String, String>? headers}) async {
@@ -27,12 +25,13 @@ abstract class HttpProvider implements BaseProviderProtocol {
           allowStatus: allowStatus);
       return response!;
     } on ApiProviderException catch (e) {
-      provider.addRequest(ApiRequest(uri: url, params: params, error: e));
+      provider.addRequest(
+          ApiRequest(uri: url, params: params?.toString(), error: e));
       rethrow;
     } finally {
       if (response != null) {
-        provider.addRequest(
-            ApiRequest(params: params, response: response.toString()));
+        provider.addRequest(ApiRequest(
+            params: params?.toString(), response: response.toString()));
       }
     }
   }
@@ -50,6 +49,7 @@ abstract class HttpProvider implements BaseProviderProtocol {
                   headers: headers ?? {'Content-Type': 'application/json'})
               .timeout(timeout ?? defaultTimeOut),
           allowStatus: allowStatus);
+
       return response!;
     } on ApiProviderException catch (e) {
       provider.addRequest(ApiRequest(uri: url, params: null, error: e));
@@ -70,13 +70,6 @@ abstract class HttpProvider implements BaseProviderProtocol {
         throw ApiProviderException(statusCode: response.statusCode);
       }
       return _readResponse<T>(response);
-    } on RPCException catch (e) {
-      throw ApiProviderException(
-          message: e.message,
-          statusCode: e.code,
-          responseData: e.request,
-          code: e.code,
-          requestPayload: e.data);
     } on RPCError catch (e) {
       throw ApiProviderException(
           message: e.message,

@@ -4,7 +4,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
-import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/tron/tron.dart';
 
 class ITronAddress
     with Equatable
@@ -65,12 +65,12 @@ class ITronAddress
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, WalletModelCborTagsConst.tronAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.getIndex(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.getIndex(1), proposal)!;
+    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final List<int> publicKey = cbor.getIndex(3);
-    final networkId = cbor.getIndex(6);
+    final List<int> publicKey = cbor.elementAt(3);
+    final networkId = cbor.elementAt(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
@@ -79,19 +79,19 @@ class ITronAddress
             network.coinParam.decimal,
             obj: cbor.getCborTag(4));
 
-    final TronAddress ethAddress = TronAddress(cbor.getIndex(5));
+    final TronAddress ethAddress = TronAddress(cbor.elementAt(5));
 
-    final List<TronTRC20Token> trc20Tokens = (cbor.getIndex(7) as List?)
+    final List<TronTRC20Token> trc20Tokens = (cbor.elementAt(7) as List?)
             ?.map((e) => TronTRC20Token.fromCborBytesOrObject(obj: e))
             .toList() ??
         <TronTRC20Token>[];
 
-    final List<TronTRC10Token> trc10Tokens = (cbor.getIndex(8) as List?)
+    final List<TronTRC10Token> trc10Tokens = (cbor.elementAt(8) as List?)
             ?.map((e) => TronTRC10Token.fromCborBytesOrObject(obj: e))
             .toList() ??
         <TronTRC10Token>[];
 
-    final String? accountName = cbor.getIndex(10);
+    final String? accountName = cbor.elementAt(10);
     final account = cbor.getCborTag(11);
     final resource = cbor.getCborTag(12);
     return ITronAddress._(
@@ -300,13 +300,13 @@ class ITronMultisigAddress extends ITronAddress
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, WalletModelCborTagsConst.tronMultisigAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.getIndex(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.getIndex(1), proposal)!;
+    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
 
     final TronMultiSignatureAddress multiSignatureAddress =
         TronMultiSignatureAddress.fromCborBytesOrObject(
             obj: cbor.getCborTag(3));
-    final networkId = cbor.getIndex(6);
+    final networkId = cbor.elementAt(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
@@ -315,19 +315,19 @@ class ITronMultisigAddress extends ITronAddress
             network.coinParam.decimal,
             obj: cbor.getCborTag(4));
 
-    final TronAddress ethAddress = TronAddress(cbor.getIndex(5));
+    final TronAddress ethAddress = TronAddress(cbor.elementAt(5));
 
-    final List<TronTRC20Token> trc20Tokens = (cbor.getIndex(7) as List?)
+    final List<TronTRC20Token> trc20Tokens = (cbor.elementAt(7) as List?)
             ?.map((e) => TronTRC20Token.fromCborBytesOrObject(obj: e))
             .toList() ??
         <TronTRC20Token>[];
 
-    final List<TronTRC10Token> trc10Tokens = (cbor.getIndex(8) as List?)
+    final List<TronTRC10Token> trc10Tokens = (cbor.elementAt(8) as List?)
             ?.map((e) => TronTRC10Token.fromCborBytesOrObject(obj: e))
             .toList() ??
         <TronTRC10Token>[];
 
-    final String? accountName = cbor.getIndex(10);
+    final String? accountName = cbor.elementAt(10);
     final account = cbor.getCborTag(11);
     final resource = cbor.getCborTag(12);
     return ITronMultisigAddress._(

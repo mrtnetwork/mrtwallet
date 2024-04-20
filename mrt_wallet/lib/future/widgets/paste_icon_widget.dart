@@ -26,6 +26,7 @@ class PasteTextIconState extends State<PasteTextIcon> with SafeState {
       if (!mounted) return;
       final String txt = data?.text ?? "";
       if (txt.isEmpty) {
+        // ignore: use_build_context_synchronously
         context.showAlert("clipboard_empty".tr);
         await Future.delayed(AppGlobalConst.milliseconds100);
         return;

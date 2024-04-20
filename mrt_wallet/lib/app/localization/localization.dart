@@ -885,6 +885,7 @@ class Localization {
               "If you wish to remove the account name, please confirm by entering an empty text.",
           "evm_networks": "EVM",
           "tvm_networks": "TVM",
+          "sol_networks": "SOL",
           "disable_standard_derivation":
               "You can manually create a BIP32 path to generate an address by disabling the standard derivation.",
           "transfer": "Transfer",
@@ -1141,7 +1142,7 @@ class Localization {
           "rbf_desc":
               "Allows users to adjust transaction fees after initiation for priority or confirmation speed changes.",
           "memo_desc2":
-              "Additional message or information attached to a Bitcoin transaction.",
+              "Additional message or information attached to a ___1__ transaction.",
           "custom_derivation": "Custom derivation",
           "key_already_exists": "Private key already exists",
           "wallet_deletation_desc":
@@ -1362,7 +1363,68 @@ class Localization {
               "For the time being, the Tron network exclusively supports the Trongrid API.",
           "min": "MIN",
           "bitcoin_rbf_error":
-              "When using RBF, make sure your UTXOs have been confirmed; otherwise, you may encounter a non-final error"
+              "When using RBF, make sure your UTXOs have been confirmed; otherwise, you may encounter a non-final error",
+          "inaccessible_key_algorithm":
+              "Key algorithm inaccessible in multisig account.",
+          "recipient_info": "Recipient info",
+          "executable": "Executable",
+          "import_spl_tokens": "Import SPL Tokens",
+          "unable_to_locate_token":
+              "Unable to locate any SPL tokens in your account",
+          "cardano_networks": "ADA",
+          "select_era_for_generate_addr":
+              "Please select the Cardano era to generate the address.",
+          "shelly": "Shelley",
+          "byron": "Byron",
+          "recommended_address_type":
+              "We recommend using the latest era (Shelley) to access all network features.",
+          "cardano_era": "Cardano Era",
+          "master_key_generation": "Master Key Generation",
+          "cardano_bip32_master_key":
+              "Cardano supports two different methods for generating the BIP32 master key.",
+          "choose_master_key_gen":
+              "Please choose the master key generation method.",
+          "ledger": "Ledger",
+          "icarus": "Icarus",
+          "shelley_address_format": "Shelley address format",
+          "base": "Base",
+          "reward": "Reward",
+          "enterprise": "Enterprise",
+          "use_legacy": "Use legacy",
+          "seed_generation": "Seed Generation",
+          "seed_generation_type":
+              "Please select the method for generating the seed",
+          "byron_legacy_seed": "Byron Legacy Seed",
+          "byron_legacy": "Byron legacy",
+          "first_index": "First index",
+          "second_index": "second index",
+          "invalid_derivation_index": "Invalid derivation index",
+          "basic": "Basic",
+          "n_asset": "___1__ Asset",
+          "remaining_asset_amount": "Remaining asset amount",
+          "remaining_asset_amount_and_receiver":
+              "Remaining asset amount of UTXO and receiver address.",
+          "assets": "Assets",
+          "tap_to_add_assets_for_recipient": "Tap to add assets for recipient",
+          "choose_asset_you_want_to_transfer":
+              "Choose the assets you wish to transfer",
+          "setup_output_asset_amount": "Setup output assets",
+          "a_minimum_a_ada_required": "A minimum of 1 ADA output is required.",
+          "unsuported_feature": "Unsuported feature",
+          "cosmos_networks": "Cosmos and forked",
+          "add_least_one_receipt": "Add at least one recipient",
+          "the_amount_is_unspecified": "The amount is unspecified.",
+          "elliptic_curve_options": "Elliptic Curve Options",
+          "address_generation_algorithm":
+              "Address Generation Algorithm Selection",
+          "amount_must_exceed": "The output amount must exceed ___1__.",
+          "back_to_the_page": "Back to the page",
+          "label": "Label",
+          "metadatum_label": "Metadatum label",
+          "enther_valid_un_label":
+              "Please enter a valid unsigned number for the label.",
+          "label_already_exists": "The label you entered already exists.",
+          "no_account_chosen": "No account has been chosen."
         }
       };
 }

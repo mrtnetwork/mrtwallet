@@ -23,7 +23,7 @@ class AppChain with CborSerializable {
       return ["services", "tokens"];
     } else if (network is APPTVMNetwork) {
       return ["services", "trc20_tokens", "trc10_tokens"];
-    } else if (network is APPEVMNetwork) {
+    } else if (network is APPEVMNetwork || network is APPSolanaNetwork) {
       return ["tokens"];
     }
     return ["services"];
@@ -61,21 +61,16 @@ class AppChain with CborSerializable {
   }
 
   factory AppChain.fromCborBytesOrObject({List<int>? bytes, CborObject? obj}) {
-    try {
-      final CborListValue cbor = CborSerializable.decodeCborTags(
-          bytes, obj, WalletModelCborTagsConst.network);
-      final network =
-          AppNetworkImpl.fromCborBytesOrObject(obj: cbor.getCborTag(0));
-      final provider = cbor.getCborTag(1) == null
-          ? null
-          : ApiProviderService.fromCborBytesOrObject(obj: cbor.getCborTag(1));
-      return AppChain._(
-          network,
-          ChainUtils.buildApiProvider(network, service: provider),
-          ChainUtils.account(network, cbor.getCborTag(2)));
-    } catch (e) {
-      rethrow;
-    }
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.network);
+    final network =
+        AppNetworkImpl.fromCborBytesOrObject(obj: cbor.getCborTag(0));
+    final provider = cbor.getCborTag(1) == null
+        ? null
+        : ApiProviderService.fromCborBytesOrObject(obj: cbor.getCborTag(1));
+    final apiProvider = ChainUtils.buildApiProvider(network, service: provider);
+    return AppChain._(
+        network, apiProvider, ChainUtils.account(network, cbor.getCborTag(2)));
   }
 }
 
@@ -102,7 +97,7 @@ class AppChains {
       final network = ChainUtils.defaultCoins[i]!;
       toMap.addAll({
         network.value: AppChain._(network, ChainUtils.buildApiProvider(network),
-            Bip32NetworkAccount.setup(network))
+            ChainUtils.createNetworkAccount(network))
       });
     }
     if (!toMap.containsKey(currentNetwork)) {

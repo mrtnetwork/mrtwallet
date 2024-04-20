@@ -1,15 +1,16 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
-import 'package:mrt_wallet/models/wallet_models/account/bip32_network_account.dart';
 import 'package:mrt_wallet/models/wallet_models/chain/defauilt_node_providers.dart';
-import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
-import 'package:mrt_wallet/models/wallet_models/network/params/params.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/provider/api/http_services/ethereum_websocket_service.dart';
 import 'package:mrt_wallet/provider/api/http_services/ripple_websocet_service.dart';
-import 'package:on_chain/ethereum/ethereum.dart';
-import 'package:on_chain/tron/tron.dart';
+import 'package:mrt_wallet/provider/api/http_services/thor_node_http_service.dart';
+
+import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/solana/solana.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class _DefaultAppCoins {
@@ -250,6 +251,140 @@ class _DefaultAppCoins {
           assetLogo: "assets/image/trx.png"),
       ethereumProviders: [],
       providers: []);
+
+  static final SolanaNetworkParams solana = SolanaNetworkParams(
+      transactionExplorer: "https://explorer.solana.com/tx/#txid",
+      addressExplorer: "https://explorer.solana.com/address/#address",
+      mainnet: true,
+      token: Token(
+          name: "Solana",
+          symbol: "SOL",
+          decimal: 9,
+          assetLogo: "assets/image/sol.png"),
+      providers: []);
+  static final SolanaNetworkParams solanaTestnet = SolanaNetworkParams(
+      transactionExplorer:
+          "https://explorer.solana.com/tx/#txid?cluster=testnet",
+      addressExplorer:
+          "https://explorer.solana.com/address/#address?cluster=testnet",
+      mainnet: false,
+      token: Token(
+          name: "Solana testnet",
+          symbol: "tSOL",
+          decimal: 9,
+          assetLogo: "assets/image/sol.png"),
+      providers: []);
+
+  static final CardanoNetworkParams cardanoTestnet = CardanoNetworkParams(
+      transactionExplorer:
+          "https://preprod.beta.explorer.cardano.org/en/transaction/#txid",
+      addressExplorer:
+          "https://preprod.beta.explorer.cardano.org/en/address/#address",
+      mainnet: false,
+      token: Token(
+          name: "Cardano preprod",
+          symbol: "tADA",
+          decimal: 6,
+          assetLogo: "assets/image/ada.png"),
+      providers: []);
+  static final CardanoNetworkParams cardano = CardanoNetworkParams(
+      transactionExplorer:
+          "https://beta.explorer.cardano.org/en/transaction/#txid",
+      addressExplorer: "https://beta.explorer.cardano.org/en/address/#address",
+      mainnet: true,
+      token: Token(
+          name: "Cardano",
+          symbol: "ADA",
+          decimal: 6,
+          assetLogo: "assets/image/ada.png"),
+      providers: []);
+  static final CosmosNetworkParams cosmosTestnet = CosmosNetworkParams(
+      transactionExplorer:
+          "https://explorer.polypore.xyz/theta-testnet-001/tx/#txid",
+      addressExplorer:
+          "https://explorer.polypore.xyz/theta-testnet-001/account/#address",
+      networkType: CosmosNetworkTypes.main,
+      mainnet: false,
+      hrp: CosmosAddrConst.accHRP,
+      mainCoin: const CosmosNativeCoin(decimal: 6, denom: 'uatom'),
+      coins: [const CosmosNativeCoin(decimal: 6, denom: 'uatom')],
+      token: Token(
+          name: "Cosmos hub testnet",
+          symbol: "tATOM",
+          decimal: 6,
+          assetLogo: "assets/image/atom.png"),
+      providers: []);
+  static final CosmosNetworkParams cosmos = CosmosNetworkParams(
+      transactionExplorer: "https://ping.pub/cosmos/tx/#txid",
+      addressExplorer: "https://ping.pub/cosmos/account/#address",
+      networkType: CosmosNetworkTypes.main,
+      mainnet: true,
+      hrp: CosmosAddrConst.accHRP,
+      mainCoin: const CosmosNativeCoin(decimal: 6, denom: 'uatom'),
+      coins: [const CosmosNativeCoin(decimal: 6, denom: 'uatom')],
+      token: Token(
+          name: "Cosmos hub",
+          symbol: "ATOM",
+          decimal: 6,
+          assetLogo: "assets/image/atom.png"),
+      providers: []);
+  static final CosmosNetworkParams maya = CosmosNetworkParams(
+      transactionExplorer: "https://www.mayascan.org/tx/#txid",
+      addressExplorer: "https://www.mayascan.org/address/#address",
+      mainnet: true,
+      hrp: CosmosAddrConst.mayaProtocol,
+      mainCoin: const CosmosNativeCoin(decimal: 10, denom: 'cacao'),
+      coins: [const CosmosNativeCoin(decimal: 10, denom: 'cacao')],
+      networkType: CosmosNetworkTypes.thorAndForked,
+      token: Token(
+          name: "Maya Protocol",
+          symbol: "Cacao",
+          decimal: 10,
+          assetLogo: "assets/image/cacao.png"),
+      providers: []);
+  static final CosmosNetworkParams thorchain = CosmosNetworkParams(
+      transactionExplorer: "https://www.thorscanner.org/tx/#txid",
+      addressExplorer: "https://www.thorscanner.org/address/#address",
+      mainnet: true,
+      hrp: CosmosAddrConst.thor,
+      mainCoin: const CosmosNativeCoin(decimal: 8, denom: 'rune'),
+      coins: [const CosmosNativeCoin(decimal: 8, denom: 'rune')],
+      networkType: CosmosNetworkTypes.thorAndForked,
+      token: Token(
+          name: "THORChain",
+          symbol: "Rune",
+          decimal: 8,
+          assetLogo: "assets/image/thor.png"),
+      providers: []);
+  static final CosmosNetworkParams kujiraTestnet = CosmosNetworkParams(
+      transactionExplorer: "https://finder.kujira.network/harpoon-4/tx/#txid",
+      addressExplorer:
+          "https://finder.kujira.network/harpoon-4/address/#address",
+      mainnet: false,
+      hrp: CosmosAddrConst.kujira,
+      mainCoin: const CosmosNativeCoin(decimal: 6, denom: 'ukuji'),
+      coins: [const CosmosNativeCoin(decimal: 6, denom: 'ukuji')],
+      networkType: CosmosNetworkTypes.forked,
+      token: Token(
+          name: "Kujira Testnet",
+          symbol: "tKuji",
+          decimal: 6,
+          assetLogo: "assets/image/kujira.png"),
+      providers: []);
+  static final CosmosNetworkParams kujira = CosmosNetworkParams(
+      transactionExplorer: "https://finder.kujira.network/kaiyo-1/tx/#txid",
+      addressExplorer: "https://finder.kujira.network/kaiyo-1/address/#address",
+      mainnet: true,
+      hrp: CosmosAddrConst.kujira,
+      mainCoin: const CosmosNativeCoin(decimal: 6, denom: 'ukuji'),
+      coins: [const CosmosNativeCoin(decimal: 6, denom: 'ukuji')],
+      networkType: CosmosNetworkTypes.forked,
+      token: Token(
+          name: "Kujira",
+          symbol: "Kuji",
+          decimal: 6,
+          assetLogo: "assets/image/kujira.png"),
+      providers: []);
 }
 
 class ChainUtils {
@@ -262,21 +397,22 @@ class ChainUtils {
             btcNetwork, BitcoinApiService(serviceProvider))
         : ApiProvider.fromBlocCypher(
             btcNetwork, BitcoinApiService(serviceProvider));
-    return BitcoinExplorerApiProvider(provider: api);
+    return BitcoinExplorerApiProvider(provider: api, network: network);
   }
 
   static BitcoinElectrumApiProvider _buildBitcoinElectrumProvider(
-      ElectrumApiProviderService provider) {
+      ElectrumApiProviderService provider, AppNetworkImpl network) {
     final serviceTracker = ApiProviderTracker(provider: provider);
     return BitcoinElectrumApiProvider(
         provider: ElectrumApiProvider(ElectrumService.fromProvider(
-            provider: serviceTracker, service: provider)));
+            provider: serviceTracker, service: provider)),
+        network: network);
   }
 
   static BasedBitcoinApiProvider buildBitcoinApiPorivder(
       AppBitcoinNetwork network, ApiProviderService provider) {
     if (provider is ElectrumApiProviderService) {
-      return _buildBitcoinElectrumProvider(provider);
+      return _buildBitcoinElectrumProvider(provider, network);
     }
     return _buildBlockCypherOrMempolProvider(network, provider);
   }
@@ -290,9 +426,42 @@ class ChainUtils {
     return EVMRPC(EthereumHTTPRPCService(provider.provider.uri, provider));
   }
 
-  static EVMApiProvider buildEVMProvider(EVMApiProviderService provider) {
+  static EVMApiProvider buildEVMProvider(
+      EVMApiProviderService provider, AppNetworkImpl network) {
     final tracker = ApiProviderTracker(provider: provider);
-    return EVMApiProvider(provider: _buildEVMRPC(tracker));
+    return EVMApiProvider(provider: _buildEVMRPC(tracker), network: network);
+  }
+
+  static CardanoApiProvider buildCardanoProvider(
+      CardanoAPIProviderService provider, APPCardanoNetwork network) {
+    final tracker = ApiProviderTracker(provider: provider);
+    return CardanoApiProvider(
+        provider: BlockforestProvider(CardaboHttpProvider(
+            provider: tracker,
+            url: provider.uri,
+            projectId: provider.projectId)),
+        network: network);
+  }
+
+  static CosmosApiProvider buildTendermintProvider(
+      CosmosAPIProviderService provider, APPCosmosNetwork network) {
+    final tracker = ApiProviderTracker(provider: provider);
+    return CosmosApiProvider(
+        provider: TendermintProvider(
+            TendermintHTTPProvider(provider: tracker, url: provider.uri)),
+        network: network,
+        nodeProvider: provider.nodeUri == null
+            ? null
+            : ThorNodeProvider(ThorNodeHTTPProvider(
+                provider: tracker, url: provider.nodeUri!)));
+  }
+
+  static SolanaApiProvider buildSoalanaProvider(
+      SolanaApiProviderService provider, APPSolanaNetwork network) {
+    final tracker = ApiProviderTracker(provider: provider);
+    return SolanaApiProvider(
+        provider: SolanaRPC(RPCHttpService(provider.httpNodeUri, tracker)),
+        network: network);
   }
 
   static TVMApiProvider buildTVMProvider(
@@ -303,9 +472,12 @@ class ChainUtils {
     final httpNode = TronProvider(
         TronHTTPService(httpProviderService.httpNodeUri, httpNodeTracker));
 
-    final solidityApiProvider = buildEVMProvider(solidityProviderService);
+    final solidityApiProvider =
+        buildEVMProvider(solidityProviderService, network);
     return TVMApiProvider(
-        provider: httpNode, solidityProvider: solidityApiProvider);
+        provider: httpNode,
+        solidityProvider: solidityApiProvider,
+        network: network);
   }
 
   static RpcService _xrpHttpService(
@@ -351,7 +523,7 @@ class ChainUtils {
     final service = provider.protocol == ProviderProtocol.http
         ? _xrpHttpService(network, tracker)
         : _xrpWebsocketService(network, tracker);
-    return RippleApiProvider(provider: XRPLRpc(service));
+    return RippleApiProvider(provider: XRPLRpc(service), network: network);
   }
 
   static T? buildApiProvider<T extends NetworkApiProvider>(
@@ -378,12 +550,22 @@ class ChainUtils {
     30: AppXRPNetwork(30, _DefaultAppCoins.xrpMainnet),
     31: AppXRPNetwork(31, _DefaultAppCoins.xrpTestnet),
     32: AppXRPNetwork(32, _DefaultAppCoins.xrpDevnet),
+    33: APPSolanaNetwork(33, _DefaultAppCoins.solana),
+    34: APPSolanaNetwork(34, _DefaultAppCoins.solanaTestnet),
+    50: APPCardanoNetwork(50, _DefaultAppCoins.cardano),
+    51: APPCardanoNetwork(51, _DefaultAppCoins.cardanoTestnet),
     100: APPEVMNetwork(100, _DefaultAppCoins.ethreumMainnet),
     101: APPEVMNetwork(101, _DefaultAppCoins.ethreumTestnet),
     102: APPEVMNetwork(102, _DefaultAppCoins.polygon),
     103: APPEVMNetwork(103, _DefaultAppCoins.polygonTestnet),
     104: APPEVMNetwork(104, _DefaultAppCoins.bnb),
     105: APPEVMNetwork(105, _DefaultAppCoins.bnbTestnet),
+    200: APPCosmosNetwork(200, _DefaultAppCoins.cosmos),
+    201: APPCosmosNetwork(201, _DefaultAppCoins.cosmosTestnet),
+    202: APPCosmosNetwork(202, _DefaultAppCoins.maya),
+    203: APPCosmosNetwork(203, _DefaultAppCoins.thorchain),
+    204: APPCosmosNetwork(204, _DefaultAppCoins.kujiraTestnet),
+    205: APPCosmosNetwork(205, _DefaultAppCoins.kujira),
     1001: APPTVMNetwork(1001, _DefaultAppCoins.tron),
     1002: APPTVMNetwork(1002, _DefaultAppCoins.tronShasta),
     1003: APPTVMNetwork(1003, _DefaultAppCoins.tronNile),
@@ -402,6 +584,17 @@ class ChainUtils {
       case AppXRPNetwork:
         return Bip32NetworkAccount<BigRational,
             XRPAddress>.fromCborBytesOrObject(network, obj: account);
+      case APPSolanaNetwork:
+        return Bip32NetworkAccount<BigInt, SolAddress>.fromCborBytesOrObject(
+            network,
+            obj: account);
+      case APPCardanoNetwork:
+        return Bip32NetworkAccount<BigInt, ADAAddress>.fromCborBytesOrObject(
+            network,
+            obj: account);
+      case APPCosmosNetwork:
+        return Bip32NetworkAccount<BigInt,
+            CosmosBaseAddress>.fromCborBytesOrObject(network, obj: account);
       default:
         return Bip32NetworkAccount<BigInt,
             BitcoinBaseAddress>.fromCborBytesOrObject(network, obj: account);
@@ -416,6 +609,12 @@ class ChainUtils {
         return Bip32NetworkAccount<BigInt, TronAddress>.setup(network);
       case AppXRPNetwork:
         return Bip32NetworkAccount<BigRational, XRPAddress>.setup(network);
+      case APPSolanaNetwork:
+        return Bip32NetworkAccount<BigInt, SolAddress>.setup(network);
+      case APPCardanoNetwork:
+        return Bip32NetworkAccount<BigInt, ADAAddress>.setup(network);
+      case APPCosmosNetwork:
+        return Bip32NetworkAccount<BigInt, CosmosBaseAddress>.setup(network);
       default:
         return Bip32NetworkAccount<BigInt, BitcoinBaseAddress>.setup(network);
     }

@@ -173,6 +173,7 @@ class _AsyncDialogDoubleButtonViewState
     } else {
       pKey.success();
       if (context.mounted) {
+        // ignore: use_build_context_synchronously
         context.pop(result.result);
       }
     }

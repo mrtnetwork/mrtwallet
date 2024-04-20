@@ -48,6 +48,7 @@ class SetupWalletController extends StateController {
         break;
       case SetupWalletPage.mnemonic:
       case SetupWalletPage.enterMnemonic:
+      case SetupWalletPage.backup:
         _page = SetupWalletPage.password;
         break;
       default:

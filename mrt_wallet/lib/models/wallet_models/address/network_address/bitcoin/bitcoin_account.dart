@@ -49,12 +49,12 @@ class IBitcoinAddress
     }
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, WalletModelCborTagsConst.bitcoinAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.getIndex(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.getIndex(1), proposal)!;
+    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final List<int> publicKey = cbor.getIndex(3);
-    final networkId = cbor.getIndex(6);
+    final List<int> publicKey = cbor.elementAt(3);
+    final networkId = cbor.elementAt(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
@@ -63,7 +63,7 @@ class IBitcoinAddress
             network.coinParam.decimal,
             obj: cbor.getCborTag(4));
     final BitcoinAddressType bitcoinAddressType =
-        BitcoinAddressType.fromValue(cbor.getIndex(5));
+        BitcoinAddressType.fromValue(cbor.elementAt(5));
     final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
         publicKey, coin, bitcoinAddressType);
     if (bitcoinAddress.toAddress(
@@ -71,7 +71,7 @@ class IBitcoinAddress
         address.toAddress) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
-    final String? name = cbor.getIndex(7);
+    final String? name = cbor.elementAt(7);
     return IBitcoinAddress(
         coin: coin,
         publicKey: publicKey,
@@ -221,12 +221,12 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.bitcoinMultiSigAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.getIndex(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.getIndex(1), proposal)!;
+    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final BitcoinMultiSignatureAddress multiSignatureAddress =
         BitcoinMultiSignatureAddress.fromCborBytesOrObject(
             obj: cbor.getCborTag(2));
-    final int networkId = cbor.getIndex(5);
+    final int networkId = cbor.elementAt(5);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
@@ -235,10 +235,10 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
             network.coinParam.decimal,
             obj: cbor.getCborTag(3));
     final BitcoinAddressType bitcoinAddressType =
-        BitcoinAddressType.fromValue(cbor.getIndex(4));
+        BitcoinAddressType.fromValue(cbor.elementAt(4));
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(6));
-    final String? name = cbor.getIndex(7);
+    final String? name = cbor.elementAt(7);
 
     return IBitcoinMultiSigAddress._(
         coin: coin,

@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/models/wallet_models/address/core/bip/bip32_address_core.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/network_address.dart';
@@ -6,12 +7,14 @@ import 'package:mrt_wallet/models/wallet_models/token/core/core.dart';
 import 'package:mrt_wallet/models/wallet_models/token/networks/ethereum/erc20_token.dart';
 import 'package:mrt_wallet/models/wallet_models/token/networks/tron/trc20_token.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
-import 'package:on_chain/address/core.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/solidity/address/core.dart';
 
 class EVMApiProvider implements NetworkApiProvider<IEthAddress> {
-  EVMApiProvider({required this.provider});
+  EVMApiProvider({required this.provider, required this.network});
   final EVMRPC provider;
+  @override
+  final AppNetworkImpl network;
   @override
   ApiProviderTracker<EVMApiProviderService> get serviceProvider =>
       (provider.rpc as BaseProviderProtocol).provider
@@ -65,20 +68,20 @@ class EVMApiProvider implements NetworkApiProvider<IEthAddress> {
     return txID;
   }
 
-  Future<Token?> getErc20Details(BaseHexAddress contractAddress) async {
+  Future<Token?> getErc20Details(SolidityAddress contractAddress) async {
     try {
       final symbol = await provider.request(RPCERC20Symbol(contractAddress));
       if (symbol == null) return null;
       final decimal = await provider.request(RPCERC20Decimal(contractAddress));
       if (decimal == null) return null;
       return Token(name: symbol, symbol: symbol, decimal: decimal);
-    } on RPCException {
+    } on RPCError {
       return null;
     }
   }
 
   Future<void> updateTokenBalance(
-      BaseHexAddress account, SolidityToken token) async {
+      SolidityAddress account, SolidityToken token) async {
     final balance =
         await provider.request(RPCERC20TokenBalance(token.toHex(), account));
     token.updateBalance(balance);
@@ -96,7 +99,7 @@ class EVMApiProvider implements NetworkApiProvider<IEthAddress> {
   }
 
   Future<SolidityToken?> getAccountERC20Token(
-      BaseHexAddress account, BaseHexAddress contractAddress) async {
+      SolidityAddress account, SolidityAddress contractAddress) async {
     final token = await getErc20Details(contractAddress);
     if (token == null) return null;
     final balance = await provider

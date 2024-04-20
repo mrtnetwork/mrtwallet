@@ -57,4 +57,32 @@ class NoneDecimalBalance implements BalanceCore<BigInt> {
   String get viewPrice => _viewPrice;
 
   final bool imutable;
+
+  @override
+  bool get largerThanZero => _balance > BigInt.zero;
+
+  NoneDecimalBalance operator -(NoneDecimalBalance other) {
+    return NoneDecimalBalance(_balance - other.balance, currencyDecimal);
+  }
+
+  NoneDecimalBalance operator +(NoneDecimalBalance other) {
+    return NoneDecimalBalance(_balance + other.balance, currencyDecimal);
+  }
+
+  bool operator <=(BigInt other) {
+    return _balance <= other;
+  }
+
+  @override
+  bool operator ==(other) {
+    return identical(this, other) ||
+        (other is NoneDecimalBalance &&
+            other._balance == _balance &&
+            other.currencyDecimal == currencyDecimal &&
+            other.showDecimal == showDecimal);
+  }
+
+  @override
+  int get hashCode =>
+      _balance.hashCode ^ currencyDecimal.hashCode ^ showDecimal.hashCode;
 }

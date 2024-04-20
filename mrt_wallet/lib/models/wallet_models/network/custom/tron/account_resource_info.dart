@@ -25,14 +25,14 @@ class TronAccountResourceInfo with CborSerializable {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.tronAccountResource);
     return TronAccountResourceInfo(
-      freeNetUsed: cbor.getIndex(0),
-      freeNetLimit: cbor.getIndex(1),
-      netLimit: cbor.getIndex(2),
-      netUsed: cbor.getIndex(3),
-      energyLimit: cbor.getIndex(4),
-      energyUsed: cbor.getIndex(5),
-      tronPowerLimit: cbor.getIndex(6),
-      tronPowerUsed: cbor.getIndex(7),
+      freeNetUsed: cbor.elementAt(0),
+      freeNetLimit: cbor.elementAt(1),
+      netLimit: cbor.elementAt(2),
+      netUsed: cbor.elementAt(3),
+      energyLimit: cbor.elementAt(4),
+      energyUsed: cbor.elementAt(5),
+      tronPowerLimit: cbor.elementAt(6),
+      tronPowerUsed: cbor.elementAt(7),
     );
   }
 

@@ -226,11 +226,13 @@ class RippleUtils {
   }
 
   static Bip32Base ripplePrivateKeyToBip32(
-      String privateKey, XRPKeyAlgorithm algorithm) {
+      String privateKey, EllipticCurveTypes curve) {
     try {
       final ripplePrivateKey = XRPPrivateKey.fromBytes(
           BytesUtils.fromHexString(privateKey),
-          algorithm: algorithm);
+          algorithm: curve == EllipticCurveTypes.ed25519
+              ? XRPKeyAlgorithm.ed25519
+              : XRPKeyAlgorithm.secp256k1);
       return BlockchainUtils.privteKeyToBip32(
           ripplePrivateKey.toBytes(), ripplePrivateKey.algorithm.curveType);
     } on WalletException {
@@ -241,10 +243,12 @@ class RippleUtils {
   }
 
   static Bip32Base rippleEntropyToBip32(
-      String entropy, XRPKeyAlgorithm algorithm) {
+      String entropy, EllipticCurveTypes algorithm) {
     try {
-      final ripplePrivateKey =
-          XRPPrivateKey.fromEntropy(entropy, algorithm: algorithm);
+      final ripplePrivateKey = XRPPrivateKey.fromEntropy(entropy,
+          algorithm: algorithm == EllipticCurveTypes.ed25519
+              ? XRPKeyAlgorithm.ed25519
+              : XRPKeyAlgorithm.secp256k1);
       return BlockchainUtils.privteKeyToBip32(
           ripplePrivateKey.toBytes(), ripplePrivateKey.algorithm.curveType);
     } on WalletException {

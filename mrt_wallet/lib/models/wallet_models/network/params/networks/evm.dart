@@ -76,15 +76,15 @@ class EVMNetworkParams implements NetworkCoinParams {
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.evmNetworkParam);
-    final bool? defaultNetwork = cbor.getIndex(7);
+    final bool? defaultNetwork = cbor.elementAt(7);
     return EVMNetworkParams(
-        chainId: cbor.getIndex(0),
-        supportEIP1559: cbor.getIndex(1),
-        mainnet: cbor.getIndex(2),
-        transactionExplorer: cbor.getIndex(3),
-        addressExplorer: cbor.getIndex(4),
+        chainId: cbor.elementAt(0),
+        supportEIP1559: cbor.elementAt(1),
+        mainnet: cbor.elementAt(2),
+        transactionExplorer: cbor.elementAt(3),
+        addressExplorer: cbor.elementAt(4),
         token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(5)),
-        providers: (cbor.getIndex(6) as List)
+        providers: (cbor.elementAt(6) as List)
             .map((e) => EVMApiProviderService.fromCborBytesOrObject(obj: e))
             .toList(),
         defaultNetwork: defaultNetwork ?? true);

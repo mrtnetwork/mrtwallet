@@ -15,7 +15,9 @@ abstract class NetworkAccountCore<N, T, X> with CborSerializable {
   ContactCore<X>? getContact(String address);
   ReceiptAddress<X>? getReceiptAddress(String address);
   abstract final CryptoAccountAddress address;
-  AddressDerivationIndex nextDrive(CryptoCoins coin);
+  AddressDerivationIndex nextDrive(CryptoCoins coin,
+      {SeedGenerationType masterKeyGeneration = SeedGenerationType.bip39,
+      SeedGenerationType seedGeneration = SeedGenerationType.bip39});
   void removeAccount(CryptoAccountAddress<N, T, X> address);
   bool get haveAddress;
   CryptoAccountAddress<N, T, X> addNewAddress(

@@ -5,3 +5,4 @@ export 'derivation/bip32_address_index.dart';
 export 'derivation/imported_address_index.dart';
 export 'derivation/multi_sig_address_index.dart';
 export 'address.dart';
+export 'derivation/byron_legacy_address_index.dart';

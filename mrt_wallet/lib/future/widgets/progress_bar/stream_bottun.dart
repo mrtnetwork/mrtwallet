@@ -20,6 +20,7 @@ class StreamWidget extends StatefulWidget {
     this.backToIdle,
     this.hideAfterError = false,
     this.hideAfterSuccsess = false,
+    this.fixedSize = true,
   }) : super(key: key);
   final StreamWidgetStatus initialStatus;
   final EdgeInsets padding;
@@ -27,6 +28,7 @@ class StreamWidget extends StatefulWidget {
   final Widget buttomWidget;
   final bool hideAfterError;
   final bool hideAfterSuccsess;
+  final bool fixedSize;
 
   @override
   State<StreamWidget> createState() => StreamWidgetState();
@@ -65,6 +67,7 @@ class StreamWidgetState extends State<StreamWidget> with SafeState {
   bool get isProgress => _status == StreamWidgetStatus.progress;
   Size? size;
   void onChangeSize(Size widgetSize) {
+    if (!widget.fixedSize) return;
     if (size != widgetSize && _status == StreamWidgetStatus.idle) {
       size = widgetSize;
       setState(() {});

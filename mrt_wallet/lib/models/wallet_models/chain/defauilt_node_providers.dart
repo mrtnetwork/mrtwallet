@@ -167,6 +167,32 @@ class DefaultNodeProviders {
       ApiProviderService.xrplWebsocket,
       ApiProviderService.xrpl
     ],
+    33: <ApiProviderService>[
+      const SolanaApiProviderService(
+          httpNodeUri: "https://api.mainnet-beta.solana.com",
+          serviceName: "solana",
+          websiteUri: "solana.com")
+    ],
+    34: <ApiProviderService>[
+      const SolanaApiProviderService(
+          httpNodeUri: "https://api.testnet.solana.com",
+          serviceName: "solana",
+          websiteUri: "solana.com")
+    ],
+    50: <ApiProviderService>[
+      CardanoAPIProviderService(
+          uri: "https://cardano-mainnet.blockfrost.io/api/v0/",
+          serviceName: "blockfrost",
+          websiteUri: "blockfrost.io",
+          projectId: "mainnetolePdeWQLX8TrfG9V6RVaAshQi4pWzbU")
+    ],
+    51: <ApiProviderService>[
+      CardanoAPIProviderService(
+          uri: "https://cardano-preprod.blockfrost.io/api/v0/",
+          serviceName: "blockfrost",
+          websiteUri: "blockfrost.io",
+          projectId: "preprodMVwzqm4PuBDBSfEULoMzoj5QZcy5o3z5")
+    ],
     100: <ApiProviderService>[
       EVMApiProviderService(
         serviceName: "publicnode",
@@ -213,6 +239,48 @@ class DefaultNodeProviders {
         websiteUri: "https://bsc-testnet.publicnode.com",
         uri: "https://bsc-testnet.publicnode.com",
       ),
+    ],
+    200: <ApiProviderService>[
+      CosmosAPIProviderService(
+          serviceName: "cosmos-rpc.publicnode.com",
+          websiteUri: "https://cosmos-rpc.publicnode.com:443",
+          uri: "https://cosmos-rpc.publicnode.com:443",
+          nodeUri: null),
+    ],
+    201: <ApiProviderService>[
+      CosmosAPIProviderService(
+          serviceName: "polypore.xyz",
+          websiteUri: "https://rpc.sentry-02.theta-testnet.polypore.xyz",
+          uri: "https://rpc.sentry-02.theta-testnet.polypore.xyz",
+          nodeUri: null),
+    ],
+    202: <ApiProviderService>[
+      CosmosAPIProviderService(
+          serviceName: "mayachain.info",
+          websiteUri: "https://tendermint.mayachain.info",
+          uri: "https://tendermint.mayachain.info",
+          nodeUri: "https://mayanode.mayachain.info/mayachain"),
+    ],
+    203: <ApiProviderService>[
+      CosmosAPIProviderService(
+          serviceName: "liquify.com",
+          websiteUri: "https://rpc.thorchain.liquify.com",
+          uri: "https://rpc.thorchain.liquify.com/",
+          nodeUri: "https://thornode.ninerealms.com/thorchain"),
+    ],
+    204: <ApiProviderService>[
+      CosmosAPIProviderService(
+          serviceName: "polkachu.com",
+          websiteUri: "https://kujira-testnet-rpc.polkachu.com/",
+          uri: "https://kujira-testnet-rpc.polkachu.com/",
+          nodeUri: "https://kujira-testnet-rpc.polkachu.com/"),
+    ],
+    205: <ApiProviderService>[
+      CosmosAPIProviderService(
+          serviceName: "polkachu.com",
+          websiteUri: "https://kujira-rpc.polkachu.com/",
+          uri: "https://kujira-rpc.polkachu.com/",
+          nodeUri: "https://kujira-rpc.polkachu.com/"),
     ],
     1001: <ApiProviderService>[
       const TronApiProviderService(

@@ -28,11 +28,11 @@ class BitcoinContact with Equatable implements ContactCore<BitcoinBaseAddress> {
     try {
       final CborListValue cbor = CborSerializable.decodeCborTags(
           bytes, obj, WalletModelCborTagsConst.bitcoinContact);
-      final String address = cbor.getIndex(0);
+      final String address = cbor.elementAt(0);
       final BitcoinAddressType type =
-          BitcoinAddressType.fromValue(cbor.getIndex(1));
-      final DateTime created = cbor.getIndex(2);
-      final String name = cbor.getIndex(3);
+          BitcoinAddressType.fromValue(cbor.elementAt(1));
+      final DateTime created = cbor.elementAt(2);
+      final String name = cbor.elementAt(3);
       final bitcoinAddress = BlockchainAddressUtils.toBitcoinAddressFromType(
           bitcoinAddress: address, addressType: type, network: network);
       if (bitcoinAddress.toAddress(network.coinParam.transacationNetwork) !=

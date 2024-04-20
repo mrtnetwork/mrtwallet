@@ -397,11 +397,39 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     return result;
   }
 
+  Future<MethodResult<SolanaTransaction>> signSolanaTransaction(
+      {required SolanaSigningRequest request}) async {
+    final result = await _callSynchronized(() async {
+      final password = await _getPassword(request);
+      return _signSolanaTransaction(
+          request: request, password: _validatePassword(password));
+    }, conditionStatus: WalletStatus.unlock);
+    return result;
+  }
+
   Future<MethodResult<void>> signRippleTransaction(
       {required RippleSigningRequest request}) async {
     final result = await _callSynchronized(() async {
       final toPassword = _validatePassword(await _getPassword(request));
       return _signRipple(request: request, password: toPassword);
+    }, conditionStatus: WalletStatus.unlock);
+    return result;
+  }
+
+  Future<MethodResult<ADATransaction>> signCardanoTransaction(
+      {required CardanoSigningRequest request}) async {
+    final result = await _callSynchronized(() async {
+      final toPassword = _validatePassword(await _getPassword(request));
+      return _signCardanoTransaction(request: request, password: toPassword);
+    }, conditionStatus: WalletStatus.unlock);
+    return result;
+  }
+
+  Future<MethodResult<List<List<int>>>> signCosmosTransaction(
+      {required CosmosSigningRequest request}) async {
+    final result = await _callSynchronized(() async {
+      final toPassword = _validatePassword(await _getPassword(request));
+      return _signCosmosTransaction(request: request, password: toPassword);
     }, conditionStatus: WalletStatus.unlock);
     return result;
   }

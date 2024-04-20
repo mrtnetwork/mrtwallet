@@ -40,6 +40,7 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
   void onSetup() async {
     await MethodCaller.wait(milliseconds: 200);
     if (mounted) {
+      // ignore: use_build_context_synchronously
       context.pop((type, feeRate.balance));
     }
   }

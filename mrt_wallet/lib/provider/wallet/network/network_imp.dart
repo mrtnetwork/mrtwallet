@@ -10,11 +10,8 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
     return _appChains.networks.values.map((e) => e.network).toList();
   }
 
-  List<NetworkWithBalanceDetails> getNetworks() {
-    return _appChains.networks.values
-        .map((e) =>
-            NetworkWithBalanceDetails(e.account.totalBalance.value, e.network))
-        .toList();
+  List<AppChain> getChains() {
+    return _appChains.networks.values.toList();
   }
 
   Future<void> _updateImportNetwork(AppNetworkImpl network) async {
@@ -39,11 +36,15 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
     List<int> publicKey,
   ) async {
     final acc = chain;
-    final address = acc.account.addNewAddress(publicKey, accountParams);
-    await _saveAccount(acc);
-    _updateAccountBalance(acc, address: address);
-    await MethodCaller.wait();
-    return address;
+    try {
+      final address = acc.account.addNewAddress(publicKey, accountParams);
+      await _saveAccount(acc);
+      _updateAccountBalance(acc, address: address);
+      await MethodCaller.wait();
+      return address;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> _addNewContact(ContactCore newContact) async {

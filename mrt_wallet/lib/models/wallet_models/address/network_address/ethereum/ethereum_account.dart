@@ -10,7 +10,7 @@ import 'package:mrt_wallet/models/wallet_models/nfts/networks/ripple/ripple_nft_
 import 'package:mrt_wallet/models/wallet_models/token/core/core.dart';
 import 'package:mrt_wallet/models/wallet_models/token/networks/ethereum/erc20_token.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
-import 'package:on_chain/ethereum/address/evm_address.dart';
+import 'package:on_chain/ethereum/src/address/evm_address.dart';
 
 class IEthAddress
     with Equatable
@@ -59,12 +59,12 @@ class IEthAddress
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, WalletModelCborTagsConst.ethAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.getIndex(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.getIndex(1), proposal)!;
+    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final List<int> publicKey = cbor.getIndex(3);
-    final networkId = cbor.getIndex(6);
+    final List<int> publicKey = cbor.elementAt(3);
+    final networkId = cbor.elementAt(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
@@ -73,17 +73,17 @@ class IEthAddress
             network.coinParam.decimal,
             obj: cbor.getCborTag(4));
 
-    final ETHAddress ethAddress = ETHAddress(cbor.getIndex(5));
+    final ETHAddress ethAddress = ETHAddress(cbor.elementAt(5));
 
     final List<ETHERC20Token> erc20Tokens = [];
-    final List<dynamic>? tokens = cbor.getIndex(7);
+    final List<dynamic>? tokens = cbor.elementAt(7);
     if (tokens != null) {
       for (final i in tokens) {
         erc20Tokens.add(ETHERC20Token.fromCborBytesOrObject(obj: i));
       }
     }
 
-    final String? accountName = cbor.getIndex(9);
+    final String? accountName = cbor.elementAt(9);
     return IEthAddress._(
         coin: coin,
         publicKey: publicKey,

@@ -24,9 +24,9 @@ class TronApiProviderService extends ApiProviderService {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.tronApiServiceProvider);
     return TronApiProviderService(
-      serviceName: cbor.getIndex(0),
-      websiteUri: cbor.getIndex(1),
-      httpNodeUri: cbor.getIndex(2),
+      serviceName: cbor.elementAt(0),
+      websiteUri: cbor.elementAt(1),
+      httpNodeUri: cbor.elementAt(2),
     );
   }
 

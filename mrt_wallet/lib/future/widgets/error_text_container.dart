@@ -9,11 +9,13 @@ class ErrorTextContainer extends StatelessWidget {
       required this.error,
       this.padding = WidgetConstant.padding10,
       this.margin = WidgetConstant.padding5,
-      this.verticalMargin = EdgeInsets.zero});
+      this.verticalMargin = EdgeInsets.zero,
+      this.showErrorIcon = true});
   final EdgeInsets margin;
   final EdgeInsets padding;
   final String? error;
   final EdgeInsets verticalMargin;
+  final bool showErrorIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class ErrorTextContainer extends StatelessWidget {
           : Padding(
               padding: verticalMargin,
               child: ContainerWithBorder(
-                onRemove: () {},
+                onRemove: showErrorIcon ? () {} : null,
                 margin: margin,
                 padding: padding,
                 onRemoveIcon: const Icon(Icons.error),

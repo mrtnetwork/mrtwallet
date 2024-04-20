@@ -105,9 +105,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
   bool supported = false;
   void _importCoins() {
     for (final i in widget.network.coins) {
-      final coin = MethodCaller.nullOnException(
-          () => coins.firstWhere((element) => element.proposal == i.proposal));
-      if (coin != null) continue;
+      if (coins.contains(i)) continue;
       coins.add(i);
     }
   }
@@ -117,10 +115,11 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
       if (inited) return;
       inited = true;
       keyName = widget.customKey?.name;
-      coin = widget.network.coins.firstWhere((element) =>
-          element.conf.type ==
-          (widget.account?.coin.conf.type ?? widget.customKey!.type));
-      coins.add(coin);
+      coin = widget.network.coins.firstWhere((element) {
+        return element.conf.type ==
+            (widget.account?.coin.conf.type ?? widget.customKey!.type);
+      });
+
       if (widget.account != null) {
         coin = widget.account!.coin;
         privateKeyHex = widget.privateKey;
@@ -130,6 +129,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
             BlockchainUtils.extendedKeyToPrivateKey(widget.privateKey, coin);
         account = BlockchainUtils.privateKeyToBip44(privateKeyHex, coin);
       }
+      coins.add(coin);
       coinPrivateKey = BlockchainUtils.exportPrivateKey(privateKeyHex, coin);
       _importCoins();
       if (supportWif) {
@@ -266,15 +266,20 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                 ],
               ),
               WidgetConstant.height20,
+              if (supportedCoins.length > 1) ...[
+                Text("key_extended_for".tr,
+                    style: context.textTheme.titleMedium),
+                WidgetConstant.height8,
+                AppDropDownBottom(
+                  items: supportedCoins,
+                  label: "key_extended_for".tr,
+                  onChanged: onChangeExtendedType,
+                  value: coin,
+                ),
+                WidgetConstant.height20
+              ],
               Text("extended_private_key".tr,
                   style: context.textTheme.titleMedium),
-              WidgetConstant.height8,
-              AppDropDownBottom(
-                items: supportedCoins,
-                label: "key_extended_for".tr,
-                onChanged: onChangeExtendedType,
-                value: coin,
-              ),
               WidgetConstant.height8,
               Stack(
                 children: [

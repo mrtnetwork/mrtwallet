@@ -15,11 +15,11 @@ class BitcoinParams implements NetworkCoinParams {
         bytes, obj, WalletModelCborTagsConst.bitconNetworkParam);
 
     return BitcoinParams(
-        transactionExplorer: cbor.getIndex(0),
-        addressExplorer: cbor.getIndex(1),
+        transactionExplorer: cbor.elementAt(0),
+        addressExplorer: cbor.elementAt(1),
         token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        transacationNetwork: BasedUtxoNetwork.fromName(cbor.getIndex(3)),
-        providers: (cbor.getIndex(4) as List)
+        transacationNetwork: BasedUtxoNetwork.fromName(cbor.elementAt(3)),
+        providers: (cbor.elementAt(4) as List)
             .map((e) => ApiProviderService.fromCborBytesOrObject(obj: e))
             .toList());
   }

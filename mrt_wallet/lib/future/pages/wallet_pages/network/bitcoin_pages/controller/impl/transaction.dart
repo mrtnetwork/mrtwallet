@@ -42,6 +42,8 @@ abstract class BitcoinTransactionImpl extends StateController
     required this.walletProvider,
     required this.chainAccount,
   });
+  final WalletProvider walletProvider;
+  final AppChain chainAccount;
   bool get hasFeeRate;
   late IBitcoinAddress _onChangeAddress =
       chainAccount.account.address as IBitcoinAddress;
@@ -106,8 +108,6 @@ abstract class BitcoinTransactionImpl extends StateController
   bool get allUtxosSelected => selectedUtxo.length == _utxosCount;
   bool utxoSelected(BitcoinUtxoWithBalance utxo) => selectedUtxo.contains(utxo);
 
-  final WalletProvider walletProvider;
-  final AppChain chainAccount;
   late final NoneDecimalBalance remindAmount =
       NoneDecimalBalance.zero(network.coinParam.decimal);
   late final NoneDecimalBalance setupAmount =

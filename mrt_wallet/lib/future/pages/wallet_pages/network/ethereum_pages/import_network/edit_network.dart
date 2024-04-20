@@ -73,8 +73,9 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
       uri: "https://",
     );
     final tracker = ApiProviderTracker(provider: evmServiceProvider);
-    selectedProvider =
-        EVMApiProvider(provider: EVMRPC(EthereumHTTPRPCService("", tracker)));
+    selectedProvider = EVMApiProvider(
+        provider: EVMRPC(EthereumHTTPRPCService("", tracker)),
+        network: widget.network);
 
     setState(() {});
   }
@@ -210,7 +211,7 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
               uri.toString()),
           websiteUri: AppStringUtility.removeSchame(uri.host),
           uri: uri.toString());
-      final rpc = ChainUtils.buildEVMProvider(serviceProvider);
+      final rpc = ChainUtils.buildEVMProvider(serviceProvider, widget.network);
       final info = await rpc.getNetworkInfo();
       if (info.$1 != network.coinParam.chainId) {
         throw WalletException("invalid_chain_id");

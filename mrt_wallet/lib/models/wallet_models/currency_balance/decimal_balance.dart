@@ -55,4 +55,6 @@ class DecimalBalance implements BalanceCore<BigRational> {
 
   @override
   String get viewPrice => _viewPrice;
+  @override
+  bool get largerThanZero => !_balance.isZero && !balance.isNegative;
 }

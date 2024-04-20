@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_cash_pages/
 import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/account_page.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/ethereum_account_page_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/account_page.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/account_page.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/tron_account_page_view.dart';
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -301,6 +302,8 @@ class _AccountPageView extends StatelessWidget {
         return BitcoinAccountPageView(chainAccount: chainAccount);
       case AppXRPNetwork:
         return RippleAccountPageView(chainAccount: chainAccount);
+      case APPSolanaNetwork:
+        return SolanaAccountPageView(chainAccount: chainAccount);
       case APPEVMNetwork:
         return ETHAccountPageView(chainAccount: chainAccount);
       case APPTVMNetwork:

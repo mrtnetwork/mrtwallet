@@ -2,6 +2,7 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
+import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/cardano.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
@@ -30,15 +31,15 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.iAccount);
-    final int networkId = cbor.getIndex(0);
+    final int networkId = cbor.elementAt(0);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
-    final List<CborObject> accounts = cbor.getIndex(1) ?? <CborObject>[];
+    final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
     final toAccounts =
         accounts.map((e) => CryptoAccountAddress.fromCbor(network, e)).toList();
     int addressIndex = 0;
-    final String? currentAddress = cbor.getIndex(2);
+    final String? currentAddress = cbor.elementAt(2);
     if (currentAddress != null) {
       final index = MethodCaller.nullOnException(() => toAccounts.indexWhere(
               (element) => element.address.toAddress == currentAddress)) ??
@@ -48,13 +49,13 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
       }
     }
     List<ContactCore> contacts = [];
-    final List? cborContacts = cbor.getIndex(3);
+    final List? cborContacts = cbor.elementAt(3);
     if (cborContacts != null) {
       contacts = cborContacts
           .map((e) => ContactCore.fromCborBytesOrObject(network, obj: e))
           .toList();
     }
-    final BigInt? totalBalance = cbor.getIndex(4);
+    final BigInt? totalBalance = cbor.elementAt(4);
 
     return Bip32NetworkAccount._(
         network: network,
@@ -79,25 +80,15 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
   List<ContactCore<X>> get contacts => _contacts;
 
   @override
-  Bip32AddressIndex nextDrive(CryptoCoins coin) {
-    final List<Bip32AddressIndex> addressIndex = addresses
-        .map((e) => e.keyIndex)
-        .whereType<Bip32AddressIndex>()
-        .toList();
-    final int purposeIndex = (coin.proposal as BipProposal).purpose.index;
-    final int coinIndex = Bip32KeyIndex.hardenIndex(coin.conf.coinIdx).index;
-    for (int i = 0; i < Bip32KeyDataConst.keyIndexMaxVal; i++) {
-      final newKeyIndex = Bip32AddressIndex(
-          purpose: purposeIndex,
-          coin: coinIndex,
-          accountLevel: 0,
-          changeLevel: 0,
-          addressIndex: i);
-      if (!addressIndex.contains(newKeyIndex)) {
-        return newKeyIndex;
-      }
+  AddressDerivationIndex nextDrive(CryptoCoins coin,
+      {SeedGenerationType masterKeyGeneration = SeedGenerationType.bip39,
+      SeedGenerationType seedGeneration = SeedGenerationType.bip39}) {
+    if (masterKeyGeneration == SeedGenerationType.byronLegacySeed) {
+      return BlockchainUtils.findNextByronLegacyIndex(
+          coin: coin, addresses: addresses);
     }
-    throw WalletExceptionConst.tooManyAccounts;
+    return BlockchainUtils.findNextBip32Index(
+        coin: coin, addresses: addresses, seedGenerationType: seedGeneration);
   }
 
   @override
@@ -117,6 +108,12 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
       newAddress = _addEthereumAddress(publicKey, accountParams);
     } else if (accountParams is TronNewAddressParam) {
       newAddress = _addTronAddress(publicKey, accountParams);
+    } else if (accountParams is SolanaNewAddressParam) {
+      newAddress = _addSolanaNetworkAddr(publicKey, accountParams);
+    } else if (accountParams is CardanoNewAddressParams) {
+      newAddress = _addCardanoNetworkAddr(publicKey, accountParams);
+    } else if (accountParams is CosmosNewAddressParams) {
+      newAddress = _addCosmosAddress(publicKey, accountParams);
     } else {
       throw WalletExceptionConst.invalidAccountDetails;
     }
@@ -177,6 +174,30 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
         accountParams: accountParams,
         publicKey: publicKey,
         network: network as APPEVMNetwork);
+  }
+
+  ICosmosAddress _addCosmosAddress(
+      List<int> publicKey, CosmosNewAddressParams accountParams) {
+    return ICosmosAddress.newAccount(
+        accountParams: accountParams,
+        publicKey: publicKey,
+        network: network as APPCosmosNetwork);
+  }
+
+  ISolanaAddress _addSolanaNetworkAddr(
+      List<int> publicKey, SolanaNewAddressParam accountParams) {
+    return ISolanaAddress.newAccount(
+        accountParams: accountParams,
+        publicKey: publicKey,
+        network: network as APPSolanaNetwork);
+  }
+
+  ICardanoAddress _addCardanoNetworkAddr(
+      List<int> publicKey, CardanoNewAddressParams accountParams) {
+    return ICardanoAddress.newAccount(
+        accountParams: accountParams,
+        publicKey: publicKey,
+        network: network as APPCardanoNetwork);
   }
 
   ITronAddress _addTronAddress(

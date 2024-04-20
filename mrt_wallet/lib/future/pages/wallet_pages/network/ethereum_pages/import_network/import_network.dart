@@ -138,7 +138,7 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
           serviceName: uri.toString(),
           websiteUri: AppStringUtility.removeSchame(uri.host),
           uri: uri.toString());
-      final rpc = ChainUtils.buildEVMProvider(serviceProvider);
+
       APPEVMNetwork network = APPEVMNetwork(
           0,
           EVMNetworkParams(
@@ -153,6 +153,7 @@ class __ImportEVMNetworkState extends State<_ImportEVMNetwork> {
               supportEIP1559: false,
               defaultNetwork: false,
               mainnet: false));
+      final rpc = ChainUtils.buildEVMProvider(serviceProvider, network);
       final info = await rpc.getNetworkInfo();
 
       if (info.$1 != chain) {

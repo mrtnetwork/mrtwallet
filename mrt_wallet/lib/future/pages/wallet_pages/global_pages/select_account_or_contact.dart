@@ -1,4 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
+import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/add_to_contact_list.dart';
@@ -7,6 +8,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/types/typedef.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/solana/solana.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class SelectRecipientAccountView extends StatefulWidget {
@@ -70,6 +72,29 @@ class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
     });
   }
 
+  ContactCore? validatorSolAccount(String address) {
+    return MethodCaller.nullOnException(() {
+      final addr = SolAddress(address);
+      return SolanaContact.newContact(address: addr, name: "new_address".tr);
+    });
+  }
+
+  ContactCore? validatorCardanoAddress(String address) {
+    return MethodCaller.nullOnException(() {
+      final addr = ADAAddress.fromAddress(address,
+          network: (network as APPCardanoNetwork).toCardanoNetwork);
+      return CardanoContact.newContact(address: addr, name: "new_address".tr);
+    });
+  }
+
+  ContactCore? validateCosmosAddress(String address) {
+    return MethodCaller.nullOnException(() {
+      final addr = CosmosBaseAddress(address,
+          forceHrp: (network as APPCosmosNetwork).coinParam.hrp);
+      return CosmosContact.newContact(address: addr, name: "new_address".tr);
+    });
+  }
+
   ContactCore? validateBitcoinNetwork(
       String address, AppBitcoinNetwork network) {
     return MethodCaller.nullOnException(() {
@@ -96,6 +121,12 @@ class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
       return validatorEthereumAccount(address);
     } else if (network is APPTVMNetwork) {
       return validatorTronAccount(address);
+    } else if (network is APPSolanaNetwork) {
+      return validatorSolAccount(address);
+    } else if (network is APPCardanoNetwork) {
+      return validatorCardanoAddress(address);
+    } else if (network is APPCosmosNetwork) {
+      return validateCosmosAddress(address);
     }
     return validateBitcoinNetwork(address, network.toNetwork());
   }
@@ -122,7 +153,6 @@ class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
     return null;
   }
 
-  /// bitcoincash:pwxmwq4vrh2jlgw59r8tuvhy0jsx0987jh4en3veadwc77v4vwwzkkvwxrmpa
   void onPaste(String v) {
     textFieldKey.currentState?.updateText(v);
   }
@@ -149,6 +179,21 @@ class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
             networkAddress: addr.addressObject);
       case APPTVMNetwork:
         return ReceiptAddress<TronAddress>(
+            type: addr.type,
+            view: addr.address,
+            networkAddress: addr.addressObject);
+      case APPSolanaNetwork:
+        return ReceiptAddress<SolAddress>(
+            type: addr.type,
+            view: addr.address,
+            networkAddress: addr.addressObject);
+      case APPCardanoNetwork:
+        return ReceiptAddress<ADAAddress>(
+            type: addr.type,
+            view: addr.address,
+            networkAddress: addr.addressObject);
+      case APPCosmosNetwork:
+        return ReceiptAddress<CosmosBaseAddress>(
             type: addr.type,
             view: addr.address,
             networkAddress: addr.addressObject);

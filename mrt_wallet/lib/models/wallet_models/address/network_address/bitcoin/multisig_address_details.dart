@@ -33,8 +33,8 @@ class BitcoinMultiSigSignerDetais
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.bitcoinMultiSigSignerAddress);
 
-    final List<int> publicKey = cbor.getIndex(0);
-    final int weight = cbor.getIndex(1);
+    final List<int> publicKey = cbor.elementAt(0);
+    final int weight = cbor.elementAt(1);
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     return BitcoinMultiSigSignerDetais(
@@ -135,13 +135,13 @@ class BitcoinMultiSignatureAddress
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.bitcoinMultiSignaturAddress);
 
-    final List<dynamic> signersList = cbor.getIndex(0);
+    final List<dynamic> signersList = cbor.elementAt(0);
     final List<BitcoinMultiSigSignerDetais> signers = signersList
         .map<BitcoinMultiSigSignerDetais>(
             (e) => BitcoinMultiSigSignerDetais.fromCborBytesOrObject(obj: e))
         .toList();
-    final int threshHold = cbor.getIndex(1);
-    final List<dynamic> scriptsOpcode = cbor.getIndex(2);
+    final int threshHold = cbor.elementAt(1);
+    final List<dynamic> scriptsOpcode = cbor.elementAt(2);
     final List<String> scriptDetails =
         scriptsOpcode.map<String>((e) => e.value).toList();
 

@@ -63,9 +63,8 @@ mixin WalletCryptoImpl {
     final ChaCha20Poly1305 chacha = ChaCha20Poly1305(key);
     try {
       final toCbor = masaterKey.toCbor();
-      final nonce = toCbor.value[1].value as List<int>;
-      final sealed = toCbor.value[2].value as List<int>;
-
+      final List<int> nonce = toCbor.elementAt(1)!;
+      final List<int> sealed = toCbor.elementAt(2)!;
       final decryptBytes = chacha.decrypt(nonce, sealed);
       return WalletMasterKeys.fromCborBytesOrObject(bytes: decryptBytes);
     } finally {
@@ -74,12 +73,12 @@ mixin WalletCryptoImpl {
   }
 
   Future<String> _forStorage(
-      WalletMasterKeys masterKey, List<int> password) async {
+      CborSerializable masterKey, List<int> password) async {
     final toCbor = _toChaCha(password, masterKey.toCbor().encode());
     return StringUtils.decode(toCbor, StringEncoding.base64);
   }
 
-  Future<WalletMasterKeys> _fromStroage(String encrypted, List<int> key) async {
+  Future<List<int>> _fromStroage(String encrypted, List<int> key) async {
     try {
       final List<int> toCborBytes =
           StringUtils.encode(encrypted, StringEncoding.base64);
@@ -92,9 +91,17 @@ mixin WalletCryptoImpl {
       if (decryptBytes == null) {
         throw WalletExceptionConst.incorrectPassword;
       }
-      final masterKey =
-          WalletMasterKeys.fromCborBytesOrObject(bytes: decryptBytes);
-      return masterKey;
+      return decryptBytes;
+    } catch (e) {
+      throw WalletExceptionConst.incorrectPassword;
+    }
+  }
+
+  Future<WalletMasterKeys> _masterKeyFromStorage(
+      String encrypted, List<int> key) async {
+    try {
+      final decryptBytes = await _fromStroage(encrypted, key);
+      return WalletMasterKeys.fromCborBytesOrObject(bytes: decryptBytes);
     } catch (e) {
       throw WalletExceptionConst.incorrectPassword;
     }

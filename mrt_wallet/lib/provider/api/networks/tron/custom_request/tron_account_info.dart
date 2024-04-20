@@ -1,7 +1,5 @@
 import 'package:mrt_wallet/models/wallet_models/network/custom/tron/tron_account_info.dart';
-import 'package:on_chain/tron/address/tron_address.dart';
-import 'package:on_chain/tron/provider/core/request.dart';
-import 'package:on_chain/tron/provider/methods/request_methods.dart';
+import 'package:on_chain/tron/tron.dart';
 
 /// Query information about an account, including TRX balance, TRC-10 balances, stake information and vote information and permissions etc.
 /// [developers.tron.network](https://developers.tron.network/reference/account-getaccount).

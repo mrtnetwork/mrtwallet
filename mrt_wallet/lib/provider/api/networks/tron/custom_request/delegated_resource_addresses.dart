@@ -1,6 +1,4 @@
-import 'package:on_chain/tron/address/tron_address.dart';
-import 'package:on_chain/tron/provider/core/request.dart';
-import 'package:on_chain/tron/provider/methods/request_methods.dart';
+import 'package:on_chain/tron/tron.dart';
 
 /// In Stake2.0, query the resource delegation index by an account.
 /// Two lists will return, one is the list of addresses the account has delegated its resources(toAddress),

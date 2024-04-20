@@ -3,3 +3,6 @@ export 'ethereum_http_service.dart';
 export 'ripple_service.dart';
 export 'tron_service.dart';
 export 'bitcoin_electrum_services/electrum.dart';
+export 'solana.dart';
+export 'cardano.dart';
+export 'cosmos.dart';

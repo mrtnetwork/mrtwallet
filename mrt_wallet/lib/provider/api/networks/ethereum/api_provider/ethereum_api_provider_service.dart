@@ -33,11 +33,11 @@ class EVMApiProviderService extends ApiProviderService {
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.evmApiServiceProvider);
-    final int? protocolId = cbor.getIndex(3);
+    final int? protocolId = cbor.elementAt(3);
     return EVMApiProviderService._(
-        serviceName: cbor.getIndex(0),
-        websiteUri: cbor.getIndex(1),
-        uri: cbor.getIndex(2),
+        serviceName: cbor.elementAt(0),
+        websiteUri: cbor.elementAt(1),
+        uri: cbor.elementAt(2),
         protocol: ProviderProtocol.fromID(protocolId ?? 0));
   }
 
@@ -53,6 +53,6 @@ class EVMApiProviderService extends ApiProviderService {
 
   @override
   NetworkApiProvider toProvider(AppNetworkImpl network) {
-    return ChainUtils.buildEVMProvider(this);
+    return ChainUtils.buildEVMProvider(this, network.toNetwork());
   }
 }

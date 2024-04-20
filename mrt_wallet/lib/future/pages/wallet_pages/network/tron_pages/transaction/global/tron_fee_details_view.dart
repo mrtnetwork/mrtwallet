@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/setup_amount.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/transaction/controller/impl/fee_impl.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:on_chain/tron/models/contract/base_contract/transaction_type.dart';
+import 'package:on_chain/tron/src/models/contract/base_contract/transaction_type.dart';
 
 class TronFeeDetailsView extends StatelessWidget {
   const TronFeeDetailsView({super.key, required this.transaction});

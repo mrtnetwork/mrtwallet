@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/transaction_validator/tron/transaction_validator/core/tron_field_validator.dart';
 import 'package:mrt_wallet/provider/api/networks/tron/tron_api_provider.dart';
-import 'package:on_chain/tron/provider/models/chain_parameters.dart';
+import 'package:on_chain/tron/src/provider/models/chain_parameters.dart';
 
 abstract class TronTransactionImpl extends StateController {
   TronTransactionImpl(

@@ -22,8 +22,8 @@ class TronMultiSigSignerDetais with Equatable, CborSerializable {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.tronMultiSigSignerAddress);
 
-    final List<int> publicKey = cbor.getIndex(0);
-    final BigInt weight = cbor.getIndex(1);
+    final List<int> publicKey = cbor.elementAt(0);
+    final BigInt weight = cbor.elementAt(1);
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     return TronMultiSigSignerDetais(
@@ -92,13 +92,13 @@ class TronMultiSignatureAddress with Equatable, CborSerializable {
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.tronMultiSignaturAddress);
-    final List<dynamic> signersList = cbor.getIndex(0);
+    final List<dynamic> signersList = cbor.elementAt(0);
     final List<TronMultiSigSignerDetais> signers = signersList
         .map<TronMultiSigSignerDetais>(
             (e) => TronMultiSigSignerDetais.fromCborBytesOrObject(obj: e))
         .toList();
-    final BigInt threshHold = cbor.getIndex(1);
-    final int? permissionID = cbor.getIndex(2);
+    final BigInt threshHold = cbor.elementAt(1);
+    final int? permissionID = cbor.elementAt(2);
     return TronMultiSignatureAddress._(
         signers: signers, threshold: threshHold, permissionID: permissionID);
   }

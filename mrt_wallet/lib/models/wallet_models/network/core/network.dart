@@ -4,6 +4,7 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
+import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/api/core/api_provider.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
@@ -35,6 +36,7 @@ abstract class AppNetworkImpl with Equatable, CborSerializable {
   factory AppNetworkImpl.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
+
     if (bytesEqual(toCborTag.tags, WalletModelCborTagsConst.bitconNetwork)) {
       return AppBitcoinNetwork.fromCborBytesOrObject(obj: toCborTag);
     }
@@ -47,6 +49,15 @@ abstract class AppNetworkImpl with Equatable, CborSerializable {
     } else if (bytesEqual(
         toCborTag.tags, WalletModelCborTagsConst.evmNetwork)) {
       return APPEVMNetwork.fromCborBytesOrObject(obj: toCborTag);
+    } else if (bytesEqual(
+        toCborTag.tags, WalletModelCborTagsConst.solanaNetwork)) {
+      return APPSolanaNetwork.fromCborBytesOrObject(obj: toCborTag);
+    } else if (bytesEqual(
+        toCborTag.tags, WalletModelCborTagsConst.cardanoNetwork)) {
+      return APPCardanoNetwork.fromCborBytesOrObject(obj: toCborTag);
+    } else if (bytesEqual(
+        WalletModelCborTagsConst.cosmosNetwork, toCborTag.tags)) {
+      return APPCosmosNetwork.fromCborBytesOrObject(obj: toCborTag);
     } else {
       return APPTVMNetwork.fromCborBytesOrObject(obj: toCborTag);
     }
@@ -148,7 +159,7 @@ class AppBitcoinNetwork extends AppNetworkImpl {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.bitconNetwork);
     return AppBitcoinNetwork(
-      cbor.getIndex(0),
+      cbor.elementAt(0),
       BitcoinParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
@@ -176,7 +187,7 @@ class AppBitcoinCashNetwork extends AppBitcoinNetwork {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.bitcoinCashNetwork);
     return AppBitcoinCashNetwork(
-      cbor.getIndex(0),
+      cbor.elementAt(0),
       BitcoinParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
@@ -195,7 +206,7 @@ class AppXRPNetwork extends AppNetworkImpl {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.xrpNetwork);
     return AppXRPNetwork(
-      cbor.getIndex(0),
+      cbor.elementAt(0),
       RippleNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
@@ -235,9 +246,9 @@ class APPEVMNetwork extends AppNetworkImpl {
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.evmNetwork);
-    return APPEVMNetwork(cbor.getIndex(0),
+    return APPEVMNetwork(cbor.elementAt(0),
         EVMNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
-        slip44: cbor.getIndex(2));
+        slip44: cbor.elementAt(2));
   }
   @override
   final int value;
@@ -292,8 +303,131 @@ class APPTVMNetwork extends AppNetworkImpl {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.tvmNetwork);
     return APPTVMNetwork(
-      cbor.getIndex(0),
+      cbor.elementAt(0),
       TVMNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
+  }
+}
+
+class APPSolanaNetwork extends AppNetworkImpl {
+  const APPSolanaNetwork(this.value, this.coinParam);
+  @override
+  final int value;
+  @override
+  final SolanaNetworkParams coinParam;
+
+  @override
+  List<CryptoCoins> get coins {
+    if (coinParam.mainnet) {
+      return [Bip44Coins.solana];
+    }
+    return [Bip44Coins.solanaTestnet];
+  }
+
+  @override
+  List get variabels => [value];
+  @override
+  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.ed25519];
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        WalletModelCborTagsConst.solanaNetwork);
+  }
+
+  factory APPSolanaNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.solanaNetwork);
+    return APPSolanaNetwork(
+      cbor.elementAt(0),
+      SolanaNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
+  }
+}
+
+class APPCardanoNetwork extends AppNetworkImpl {
+  const APPCardanoNetwork(this.value, this.coinParam);
+  @override
+  final int value;
+  @override
+  final CardanoNetworkParams coinParam;
+
+  ADANetwork get toCardanoNetwork =>
+      coinParam.mainnet ? ADANetwork.mainnet : ADANetwork.testnetPreprod;
+
+  @override
+  List<CryptoCoins> get coins {
+    return [
+      if (coinParam.mainnet) ...[
+        Bip44Coins.cardanoByronLedger,
+        Bip44Coins.cardanoByronIcarus,
+        Cip1852Coins.cardanoIcarus,
+        Cip1852Coins.cardanoLedger,
+      ] else ...[
+        Bip44Coins.cardanoByronIcarusTestnet,
+        Bip44Coins.cardanoByronLedgerTestnet,
+        Cip1852Coins.cardanoIcarusTestnet,
+        Cip1852Coins.cardanoLedgerTestnet,
+      ]
+    ];
+  }
+
+  @override
+  List get variabels => [value];
+  @override
+  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.ed25519Kholaw];
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        WalletModelCborTagsConst.cardanoNetwork);
+  }
+
+  factory APPCardanoNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.cardanoNetwork);
+    return APPCardanoNetwork(
+      cbor.elementAt(0),
+      CardanoNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
+  }
+}
+
+class APPCosmosNetwork extends AppNetworkImpl {
+  const APPCosmosNetwork(this.value, this.coinParam);
+  @override
+  final int value;
+  @override
+  final CosmosNetworkParams coinParam;
+
+  @override
+  List<CryptoCoins> get coins {
+    if (coinParam.mainnet) {
+      return [Bip44Coins.cosmos];
+    }
+    return [Bip44Coins.cosmosTestnet];
+  }
+
+  @override
+  List get variabels => [value];
+  @override
+  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        WalletModelCborTagsConst.cosmosNetwork);
+  }
+
+  factory APPCosmosNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.cosmosNetwork);
+    return APPCosmosNetwork(
+      cbor.elementAt(0),
+      CosmosNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
 }

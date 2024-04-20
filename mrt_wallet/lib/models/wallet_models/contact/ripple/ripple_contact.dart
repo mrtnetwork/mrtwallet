@@ -30,10 +30,10 @@ class RippleContact with Equatable implements ContactCore<XRPAddress> {
     try {
       final CborListValue cbor = CborSerializable.decodeCborTags(
           bytes, obj, WalletModelCborTagsConst.rippleContact);
-      final String address = cbor.getIndex(0);
-      final int? tag = cbor.getIndex(1);
-      final DateTime created = cbor.getIndex(2);
-      final String name = cbor.getIndex(3);
+      final String address = cbor.elementAt(0);
+      final int? tag = cbor.elementAt(1);
+      final DateTime created = cbor.elementAt(2);
+      final String name = cbor.elementAt(3);
       final rippleAddress =
           BlockchainAddressUtils.toRippleAddress(address, network);
       if (rippleAddress.tag != tag) {

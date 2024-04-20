@@ -72,9 +72,9 @@ class ElectrumApiProviderService extends ApiProviderService {
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.electrumApiServiceProvider);
-    final websocket = cbor.getIndex(2);
-    final tcp = cbor.getIndex(3);
-    final ssl = cbor.getIndex(4);
+    final websocket = cbor.elementAt(2);
+    final tcp = cbor.elementAt(3);
+    final ssl = cbor.elementAt(4);
     ProviderProtocol protocol;
     if (websocket != null) {
       protocol = ProviderProtocol.websocket;
@@ -84,8 +84,8 @@ class ElectrumApiProviderService extends ApiProviderService {
       protocol = ProviderProtocol.ssl;
     }
     return ElectrumApiProviderService._(
-        serviceName: cbor.getIndex(0),
-        websiteUri: cbor.getIndex(1),
+        serviceName: cbor.elementAt(0),
+        websiteUri: cbor.elementAt(1),
         websocket: websocket,
         tcp: tcp,
         ssl: ssl,

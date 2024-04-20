@@ -166,7 +166,8 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
     final tracker = ApiProviderTracker(provider: service);
     return BitcoinElectrumApiProvider(
         provider: ElectrumApiProvider(
-            ElectrumService.fromProvider(provider: tracker, service: service)));
+            ElectrumService.fromProvider(provider: tracker, service: service)),
+        network: widget.network);
   }
 
   void createNewRPC() {
@@ -231,7 +232,6 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
       case ProviderProtocol.tcp:
         return _validateTcpSSLUrl(v);
       default:
-        
         return _validateWebsocketAddress(v);
     }
   }

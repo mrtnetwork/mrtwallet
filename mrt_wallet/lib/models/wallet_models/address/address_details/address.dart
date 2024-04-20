@@ -19,9 +19,9 @@ class NoneDecimalNetworkAddressDetails
       CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.address);
-    final String address = cbor.getIndex(0);
-    final BigInt balance = cbor.getIndex(1);
-    final DateTime updated = cbor.getIndex(2);
+    final String address = cbor.elementAt(0);
+    final BigInt balance = cbor.elementAt(1);
+    final DateTime updated = cbor.elementAt(2);
     return NoneDecimalNetworkAddressDetails(
         address: address,
         balance: NoneDecimalBalance(balance, currencyDecimal),

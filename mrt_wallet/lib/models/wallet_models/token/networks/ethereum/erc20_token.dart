@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
-import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/ethereum/src/address/evm_address.dart';
 
 class ETHERC20Token with Equatable implements SolidityToken {
   ETHERC20Token._(
@@ -23,10 +23,10 @@ class ETHERC20Token with Equatable implements SolidityToken {
           bytes, obj, WalletModelCborTagsConst.erc20Token);
 
       final Token token = Token.fromCborBytesOrObject(obj: cbor.getCborTag(0));
-      final ETHAddress contractAddress = ETHAddress(cbor.getIndex(1));
+      final ETHAddress contractAddress = ETHAddress(cbor.elementAt(1));
       final Live<NoneDecimalBalance> balance =
-          Live(NoneDecimalBalance(cbor.getIndex(2), token.decimal!));
-      final DateTime updated = cbor.getIndex(3);
+          Live(NoneDecimalBalance(cbor.elementAt(2), token.decimal!));
+      final DateTime updated = cbor.elementAt(3);
       return ETHERC20Token._(balance, token, contractAddress, updated);
     } on WalletException {
       rethrow;

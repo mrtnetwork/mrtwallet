@@ -5,7 +5,9 @@ import 'package:mrt_wallet/provider/api/api_provider.dart';
 
 class BitcoinExplorerApiProvider
     implements BasedBitcoinApiProvider<IBitcoinAddress> {
-  BitcoinExplorerApiProvider({required this.provider});
+  BitcoinExplorerApiProvider({required this.provider, required this.network});
+  @override
+  final AppBitcoinNetwork network;
   @override
   ApiProviderTracker get serviceProvider =>
       (provider.service as HttpProvider).provider;

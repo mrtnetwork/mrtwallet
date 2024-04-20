@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/utility/blockchin_utils/ethereum/ethereum_abi_constant.dart';
-import 'package:on_chain/address/core.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/solidity/address/core.dart';
 
 class RPCERC20TokenBalance extends ETHRPCRequest<BigInt> {
   RPCERC20TokenBalance(
@@ -14,7 +14,7 @@ class RPCERC20TokenBalance extends ETHRPCRequest<BigInt> {
   EthereumMethods get method => EthereumMethods.call;
 
   final String contractAddress;
-  final BaseHexAddress accountAddress;
+  final SolidityAddress accountAddress;
 
   final AbiFunctionFragment _function = ETHAbiConstant.erc20Balance;
 
