@@ -5,15 +5,20 @@ import 'package:flutter/material.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 
+// await PlatformInterface.interface.window.init();
+// await PlatformInterface.interface.window.waitUntilReadyToShow();
+// await PlatformInterface.interface.window
+//     .setBounds(null, size: const Size(500, 700));
+// await PlatformInterface.interface.window.setResizable(false);
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  if (PlatformInterface.appPlatform == AppPlatform.windows) {
-    await PlatformInterface.interface.window.init();
-    await PlatformInterface.interface.window.waitUntilReadyToShow();
-    await PlatformInterface.interface.window
+  if (PlatformInterface.appPlatform.isDesktop) {
+    await PlatformInterface.interface.desktop.init();
+    await PlatformInterface.interface.desktop.waitUntilReadyToShow();
+    await PlatformInterface.interface.desktop
         .setBounds(null, size: const Size(400, 600));
-    await PlatformInterface.interface.window.setResizable(false);
+    await PlatformInterface.interface.desktop.setResizable(false);
   }
 
   runApp(const MaterialApp(home: MyWidget()));
@@ -35,17 +40,17 @@ class _MyWidgetState extends State<MyWidget> with WindowListener {
   void write() async {
     final plat = PlatformInterface.interface;
     final path = await plat.path();
-    final naame = "${path.support}" +
-        r"\" +
-        DateTime.now().microsecond.toString() +
-        ".txt";
+    final naame = "${path.support}${DateTime.now().microsecond}.txt";
     final f = File(naame);
 
     await f.create(recursive: true);
     final v = List.generate(1000, (index) => "m").join();
     await f.writeAsString(v);
-    print(f.path);
     plat.launchUri(f.path);
+    print("wrote done ${f.absolute.path}");
+
+    await plat.share(Share.file(f.absolute.path, "ssds",
+        text: "hasheddm", subject: "jafar2"));
   }
 
   @override
@@ -58,9 +63,11 @@ class _MyWidgetState extends State<MyWidget> with WindowListener {
               child: Center(
             child: InkWell(
               onTap: () async {
-                final p = await PlatformInterface.interface.path();
-                write();
-                print(p);
+                // write();
+                // return;
+                final p = await PlatformInterface.interface.getDeviceInfo();
+                print("g $p");
+                // print("paths: $p");
               },
               child: const Icon(
                 Icons.abc,

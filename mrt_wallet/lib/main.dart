@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:mrt_native_support/models/platform.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
@@ -60,12 +59,12 @@ void main() async {
 void run() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
-  if (PlatformInterface.appPlatform == AppPlatform.windows) {
-    await PlatformInterface.interface.window.init();
-    await PlatformInterface.interface.window.waitUntilReadyToShow();
-    await PlatformInterface.interface.window
+  if (PlatformInterface.appPlatform.isDesktop) {
+    await PlatformInterface.interface.desktop.init();
+    await PlatformInterface.interface.desktop.waitUntilReadyToShow();
+    await PlatformInterface.interface.desktop
         .setBounds(null, size: const Size(500, 700));
-    await PlatformInterface.interface.window.setResizable(false);
+    await PlatformInterface.interface.desktop.setResizable(false);
   }
   final materialData = await PlatformInterface.interface
       .readSecure(StorageKeysConst.appMaterial);
@@ -138,7 +137,8 @@ class MyBTC extends StatelessWidget {
           title: AppGlobalConst.name,
           scrollBehavior: AppScrollBehavior(PlatformInterface.appPlatform),
           builder: (context, child) {
-            if (PlatformInterface.isWindows || PlatformInterface.isWeb) {
+            if (PlatformInterface.appPlatform.isDesktop ||
+                PlatformInterface.isWeb) {
               return ConstraintsBoxView(child: child!);
             }
             return child!;

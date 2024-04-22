@@ -48,7 +48,7 @@ flutter:
       linux:
         pluginClass: MrtNativeSupport
       macos:
-        pluginClass: MrtNativeSupport
+        pluginClass: MrtNativeSupportPlugin
       windows:
         pluginClass: MrtNativeSupportPluginCApi
   

@@ -173,5 +173,11 @@ class MrtNativeWeb extends MrtPlatformInterface {
   }
 
   @override
-  SpecificPlatfromMethods get window => throw UnimplementedError();
+  SpecificPlatfromMethods get desktop => throw UnimplementedError(
+      "only available in desktop platforms (windows, macos)");
+
+  @override
+  Future<void> test() {
+    throw UnimplementedError();
+  }
 }

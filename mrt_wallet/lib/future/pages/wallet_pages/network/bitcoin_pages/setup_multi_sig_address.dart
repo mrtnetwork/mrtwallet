@@ -251,8 +251,11 @@ class _SetupBitcoinMultiSigAddressViewState
       final name =
           "credentials_${_multiSigViewAddress}_${DateTime.now().toFileName()}.txt";
       final toFile = await CrossFileWriter.writeString(toText, name);
-      return await ShareUtility.shareFile(toFile, name,
-          subject: "account credentials");
+      return await ShareUtility.shareFile(
+        toFile,
+        name,
+        subject: "account credentials",
+      );
     });
 
     if (result.hasError || !result.result) {

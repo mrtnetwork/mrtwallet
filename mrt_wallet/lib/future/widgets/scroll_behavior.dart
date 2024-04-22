@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:mrt_native_support/models/models.dart';
 
 class AppScrollBehavior extends MaterialScrollBehavior {
-  const AppScrollBehavior(this.platform);
+  AppScrollBehavior(this.platform);
   final AppPlatform platform;
-  bool get isWindowsOrWeb =>
-      platform == AppPlatform.windows || platform == AppPlatform.web;
+  late final bool isWindowsOrWeb = platform == AppPlatform.windows ||
+      platform == AppPlatform.web ||
+      platform == AppPlatform.macos;
   @override
-  Set<PointerDeviceKind> get dragDevices => isWindowsOrWeb
+  late final Set<PointerDeviceKind> dragDevices = isWindowsOrWeb
       ? {
           PointerDeviceKind.touch,
           PointerDeviceKind.mouse,

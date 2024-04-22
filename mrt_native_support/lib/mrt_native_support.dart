@@ -43,7 +43,8 @@ abstract class MrtPlatformInterface extends PlatformInterface {
   Future<NetworkEvent> deviceConnectionStatus();
   void addNetworkListener(NetworkStatusListener listener);
   void removeNetworkListener(NetworkStatusListener listener);
-  abstract final SpecificPlatfromMethods window;
+  abstract final SpecificPlatfromMethods desktop;
+  Future<void> test();
 }
 
 abstract class SpecificPlatfromMethods {
@@ -75,6 +76,7 @@ abstract class SpecificPlatfromMethods {
   Future<bool> isResizable();
   Future<bool> setResizable(bool isResizable);
   Future<Rect> getBounds();
+
   void addListener(WindowListener listener);
 
   void removeListener(WindowListener listener);

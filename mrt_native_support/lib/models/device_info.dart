@@ -10,10 +10,28 @@ class DeviceInfo {
         androidSdkVersion = json["sdk_version"];
   final String brand;
   final String device;
-  final String display;
-  final String id;
+  final String? display;
+  final String? id;
   final String model;
-  final String product;
+  final String? product;
   final String appVersion;
   final int? androidSdkVersion;
+
+  Map<String, dynamic> toJson() {
+    return {
+      "brand": brand,
+      "device": device,
+      "display": display,
+      "id": id,
+      "model": model,
+      "product": product,
+      "app_version": appVersion,
+      "sdk_version": androidSdkVersion
+    };
+  }
+
+  @override
+  String toString() {
+    return "DeviceInfo{${toJson()}}";
+  }
 }

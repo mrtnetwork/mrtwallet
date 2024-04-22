@@ -8,12 +8,12 @@ class WindowsLifeCycleListener extends AppLifecycleListener
   WindowsLifeCycleListener({required this.onFocus, required this.onHide});
   @override
   void dispose() {
-    PlatformInterface.interface.window.removeListener(this);
+    PlatformInterface.interface.desktop.removeListener(this);
   }
 
   @override
   void init() {
-    PlatformInterface.interface.window.addListener(this);
+    PlatformInterface.interface.desktop.addListener(this);
   }
 
   @override

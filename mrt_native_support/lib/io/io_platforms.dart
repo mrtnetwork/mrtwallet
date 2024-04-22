@@ -8,8 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/mrt_native_support.dart';
 import 'package:mrt_native_support/constant/constant.dart';
-part 'android_impl.dart';
-part 'windows_impl.dart';
+part 'io_impl.dart';
+part 'desktop_impl.dart';
 
 MrtPlatformInterface getPlatformInterface() => IoPlatformInterface();
 AppPlatform getPlatform() {
@@ -19,6 +19,8 @@ AppPlatform getPlatform() {
     return AppPlatform.ios;
   } else if (Platform.isWindows) {
     return AppPlatform.windows;
+  } else if (Platform.isMacOS) {
+    return AppPlatform.macos;
   }
   throw UnimplementedError("app does not support");
 }
