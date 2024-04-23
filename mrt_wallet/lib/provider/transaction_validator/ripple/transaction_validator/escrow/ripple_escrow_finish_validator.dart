@@ -51,8 +51,6 @@ class RippleEscrowFinishValidator implements RippleTransactionValidator {
       }
     },
   );
-  @override
-  bool get isValid => validateError() == null;
 
   @override
   String? validateError({IXRPAddress? account}) {
@@ -103,7 +101,7 @@ class RippleEscrowFinishValidator implements RippleTransactionValidator {
   String get name => "EscrowFinish";
 
   @override
-  String get fieldsName => "ripple_escrow_finish_fields";
+  String get validatorName => "ripple_escrow_finish_fields";
   @override
   String get helperUri => RippleConst.aboutScrowfinish;
 
@@ -112,9 +110,10 @@ class RippleEscrowFinishValidator implements RippleTransactionValidator {
 
   @override
   void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
+
   @override
   XRPLTransactionType get transactionType => XRPLTransactionType.escrowFinish;
 
   @override
-  String get subject => "ripple_escrow_finish_desc";
+  String get validatorDescription => "ripple_escrow_finish_desc";
 }

@@ -28,9 +28,6 @@ class RippleSignerListValidator implements RippleTransactionValidator {
   );
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -83,7 +80,7 @@ class RippleSignerListValidator implements RippleTransactionValidator {
   @override
   String get helperUri => RippleConst.aboutSignerList;
   @override
-  String get fieldsName => "ripple_signer_list_fields";
+  String get validatorName => "ripple_signer_list_fields";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {
@@ -105,7 +102,7 @@ class RippleSignerListValidator implements RippleTransactionValidator {
   }
 
   @override
-  String get subject => "ripple_set_signer_list_desc";
+  String get validatorDescription => "ripple_set_signer_list_desc";
 
   @override
   XRPLTransactionType get transactionType => XRPLTransactionType.signerListSet;

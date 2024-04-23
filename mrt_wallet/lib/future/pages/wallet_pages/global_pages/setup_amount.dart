@@ -28,11 +28,16 @@ class SetupNetworkAmount extends StatefulWidget {
 
 class _SetupNetworkAmountState extends State<SetupNetworkAmount>
     with SafeState {
+  late final BigInt? maxValue = widget.max == null
+      ? null
+      : widget.max!.isNegative
+          ? BigInt.zero
+          : widget.max;
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "SetupNetworkAmount");
   final GlobalKey<AppTextFieldState> textFieldKey = GlobalKey();
   late final String? maxString =
-      PriceUtils.tryEncodePrice(widget.max, widget.token.decimal!);
+      PriceUtils.tryEncodePrice(maxValue, widget.token.decimal!);
   late final String? minString =
       PriceUtils.tryEncodePrice(widget.min, widget.token.decimal!);
   late final bool enableMin = (widget.min ?? BigInt.zero) > BigInt.zero;
@@ -50,7 +55,7 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
       }
       return "decimal_int_validator".tr;
     }
-    if (widget.max != null && toBigit > widget.max!) {
+    if (maxValue != null && toBigit > maxValue!) {
       return "price_less_than".tr.replaceOne(
           PriceUtils.priceWithCoinName(maxString!, widget.token.symbolView));
     } else if (widget.min != null && toBigit < widget.min!) {
@@ -65,10 +70,10 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
   bool isMin = false;
   void onChanged(String v) {
     price = v;
-    if (widget.max == null && !enableMin) return;
+    if (maxValue == null && !enableMin) return;
     final toBigit =
         PriceUtils.tryDecodePrice<BigInt?>(price, widget.token.decimal!);
-    final equal = toBigit == widget.max;
+    final equal = toBigit == maxValue;
     if (equal != isMax) {
       setState(() {
         isMax = equal;
@@ -85,7 +90,7 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
   }
 
   void onTapMax() {
-    final p = PriceUtils.tryEncodePrice(widget.max, widget.token.decimal!);
+    final p = PriceUtils.tryEncodePrice(maxValue, widget.token.decimal!);
     if (p != null) {
       textFieldKey.currentState?.updateText(p);
     }
@@ -171,7 +176,7 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
                         ],
                       ),
                     ),
-                    if (widget.max != null || enableMin) ...[
+                    if (maxValue != null || enableMin) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
@@ -189,9 +194,9 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
                                       borderRadius: WidgetConstant.border8)),
                               child: Text("min".tr),
                             ),
-                            if (widget.max != null) WidgetConstant.width8,
+                            if (maxValue != null) WidgetConstant.width8,
                           ],
-                          if (widget.max != null)
+                          if (maxValue != null)
                             FilledButton(
                               onPressed: onTapMax,
                               style: TextButton.styleFrom(

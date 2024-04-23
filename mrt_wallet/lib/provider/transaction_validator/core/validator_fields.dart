@@ -1,20 +1,18 @@
 import 'package:mrt_wallet/types/typedef.dart';
 
 class ValidatorField<T> {
-  ValidatorField(
-      {required this.name,
-      required this.id,
-      required this.subject,
-      required this.onChangeValidator,
-      T? value,
-      this.optional = true,
-      this.show = true})
-      : _value = value;
+  ValidatorField({
+    required this.name,
+    this.id,
+    this.subject,
+    required this.onChangeValidator,
+    T? value,
+    this.optional = true,
+  }) : _value = value;
   final String name;
-  final String id;
-  final String subject;
+  final String? id;
+  final String? subject;
   final bool optional;
-  final bool show;
   T? _value;
   T? get value => _value;
   bool get hasValue => _value != null;

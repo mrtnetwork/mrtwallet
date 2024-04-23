@@ -41,7 +41,7 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
             onTap: () {
               context
                   .openSliverBottomSheet<XRPSignerEntries>(
-                    validator.fieldsName.tr,
+                    validator.validatorName.tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
@@ -54,7 +54,7 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
           WidgetConstant.height20,
           Text(validator.signerQuorum.name.tr,
               style: context.textTheme.titleMedium),
-          Text(validator.signerQuorum.subject.tr),
+          Text(validator.signerQuorum.subject!.tr),
           WidgetConstant.height8,
           ContainerWithBorder(
             validate: validator.signerQuorum.isCompleted,
@@ -64,7 +64,7 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
             onRemove: () {
               context
                   .openSliverBottomSheet<BigRational>(
-                    validator.fieldsName.tr,
+                    validator.validatorName.tr,
                     child: NumberWriteView(
                       defaultValue: validator.signerQuorum.value,
                       min: BigRational.zero,
@@ -77,7 +77,7 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               TextAndLinkView(
-                                  text: validator.signerQuorum.subject.tr,
+                                  text: validator.signerQuorum.subject!.tr,
                                   url: validator.helperUri),
                             ],
                           )),

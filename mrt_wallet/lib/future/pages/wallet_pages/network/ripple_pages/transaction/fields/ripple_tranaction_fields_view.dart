@@ -76,7 +76,8 @@ class RippleTransactionFieldsView extends StatelessWidget {
                           PageTitleSubtitle(
                               title: validator.validator.name.tr,
                               body: TextAndLinkView(
-                                  text: validator.validator.subject.tr,
+                                  text: validator
+                                      .validator.validatorDescription.tr,
                                   url: validator.validator.helperUri)),
                           _RippleValidatorFields(
                               validator: controller.validator,
@@ -161,7 +162,7 @@ class _RippleValidatorFields extends StatelessWidget {
                 children: [
                   Text(fields.fields[index].name.tr,
                       style: context.textTheme.titleMedium),
-                  Text(fields.fields[index].subject.tr),
+                  Text(fields.fields[index].subject!.tr),
                   WidgetConstant.height8,
                   RippleGlobalTransactionFieldsView(
                     field: field,

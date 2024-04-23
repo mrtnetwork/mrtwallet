@@ -155,10 +155,12 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     super.didChangeDependencies();
   }
 
-  AddressDerivationIndex? derivationkey() {
+  AddressDerivationIndex? derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
       return ImportedAddressIndex(
-          accountId: selectedCustomKey!.id, bip32KeyIndex: customKeyIndex);
+          accountId: selectedCustomKey!.id,
+          bip32KeyIndex: customKeyIndex,
+          currencyCoin: coin);
     }
     return customKeyIndex;
   }
@@ -180,7 +182,8 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     } else {
       selectedType = selected.first;
     }
-    final keyIndex = derivationkey() ?? chainAccount.account.nextDrive(coin);
+    final keyIndex =
+        derivationkey(coin) ?? chainAccount.account.nextDrive(coin);
     NewAccountParams newAccount;
     if (network is AppBitcoinCashNetwork) {
       newAccount = BitcoinCashNewAddressParams(
@@ -200,8 +203,7 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
             buttomText: "generate_new_address".tr,
             buttomWidget: ContainerWithBorder(
                 margin: WidgetConstant.paddingVertical8,
-                child: AddressDetailsView(
-                    address: result.result)),
+                child: AddressDetailsView(address: result.result)),
             onPressed: () {
               if (mounted) {
                 pageProgressKey.backToIdle();

@@ -15,10 +15,22 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
           if (memo != null) memo!,
         ],
         recentBlockhash: bl.blockhash);
+    final signersAddresses = transaction.message.accountKeys
+        .sublist(0, transaction.message.header.numRequiredSignatures)
+        .map((e) => e.address)
+        .toList();
+    final signerAccounts = account.addresses
+        .where((element) =>
+            signersAddresses.contains(element.networkAddress.address))
+        .toList();
+
+    if (signersAddresses.length != signerAccounts.length) {
+      throw WalletException("required_signer_account_missing".tr);
+    }
     final signedTr = await walletProvider.signSolanaTransaction(
         request: SolanaSigningRequest(
             network: network,
-            addresses: [owner],
+            addresses: signerAccounts,
             solanaTransaction: transaction));
     if (signedTr.hasError) {
       throw signedTr.exception!;
@@ -40,7 +52,8 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
       return await _buildAndSigneTransaction();
     });
     if (result.hasError) {
-      progressKey.errorText(result.error!.tr);
+      progressKey.errorText(result.error!.tr,
+          showBackButtom: true, backToIdle: false);
     } else {
       progressKey.success(
           progressWidget:

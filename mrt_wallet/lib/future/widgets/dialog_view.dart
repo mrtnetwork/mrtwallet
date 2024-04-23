@@ -5,12 +5,14 @@ import 'package:mrt_wallet/types/typedef.dart';
 
 class DialogView extends StatelessWidget {
   const DialogView(
-      {required this.child,
+      {this.widget,
       this.title,
       this.titleWidget,
       this.content = const [],
+      this.child,
       super.key});
-  final Widget child;
+  final Widget? widget;
+  final Widget? child;
   final String? title;
   final Widget? titleWidget;
   final List<Widget> content;
@@ -25,27 +27,28 @@ class DialogView extends StatelessWidget {
           borderRadius: WidgetConstant.border8,
           child: Material(
             color: context.colors.background,
-            child: CustomScrollView(
-              shrinkWrap: true,
-              slivers: [
-                SliverAppBar(
-                  title: titleWidget ?? Text(title ?? ""),
-                  leading: WidgetConstant.sizedBox,
-                  leadingWidth: 0,
-                  pinned: true,
-                  actions: [
-                    ...content,
-                    const CloseButton(),
+            child: child ??
+                CustomScrollView(
+                  shrinkWrap: true,
+                  slivers: [
+                    SliverAppBar(
+                      title: titleWidget ?? Text(title ?? ""),
+                      leading: WidgetConstant.sizedBox,
+                      leadingWidth: 0,
+                      pinned: true,
+                      actions: [
+                        ...content,
+                        const CloseButton(),
+                      ],
+                    ),
+                    SliverToBoxAdapter(
+                      child: ConstraintsBoxView(
+                        padding: WidgetConstant.padding20,
+                        child: widget ?? WidgetConstant.sizedBox,
+                      ),
+                    ),
                   ],
                 ),
-                SliverToBoxAdapter(
-                  child: ConstraintsBoxView(
-                    padding: WidgetConstant.padding20,
-                    child: child,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),

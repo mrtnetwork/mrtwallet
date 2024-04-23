@@ -32,9 +32,6 @@ class RippeBurnTokenValidator implements RippleTransactionValidator {
   );
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -76,11 +73,11 @@ class RippeBurnTokenValidator implements RippleTransactionValidator {
   String get name => "NFTokenBurn";
 
   @override
-  String get fieldsName => "ripple_nftoken_burn_fields";
+  String get validatorName => "ripple_nftoken_burn_fields";
   @override
   String get helperUri => RippleConst.aboutNftokenBurn;
   @override
-  String get subject => "ripple_nftoken_burn_desc";
+  String get validatorDescription => "ripple_nftoken_burn_desc";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}

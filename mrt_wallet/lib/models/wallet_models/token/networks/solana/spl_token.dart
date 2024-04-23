@@ -48,6 +48,11 @@ class SolanaSPLToken with Equatable implements TokenCore<BigInt> {
     }
   }
 
+  SolanaSPLToken updateToken(Token updateToken) {
+    return SolanaSPLToken._(
+        balance, updateToken, mint, tokenAccount, _updated, tokenOwner);
+  }
+
   @override
   final Live<NoneDecimalBalance> balance;
 
@@ -83,7 +88,7 @@ class SolanaSPLToken with Equatable implements TokenCore<BigInt> {
   }
 
   @override
-  List get variabels => [token, mint.address, tokenAccount.address];
+  List get variabels => [mint.address, tokenAccount.address];
 
   @override
   final Token token;

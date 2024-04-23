@@ -74,8 +74,6 @@ class RippleEscrowCreateValidator implements RippleTransactionValidator {
       }
     },
   );
-  @override
-  bool get isValid => validateError() == null;
 
   @override
   String? validateError({IXRPAddress? account}) {
@@ -132,15 +130,16 @@ class RippleEscrowCreateValidator implements RippleTransactionValidator {
   String get name => "EscrowCreate";
 
   @override
-  String get fieldsName => "ripple_escrow_create_fields";
+  String get validatorName => "ripple_escrow_create_fields";
   @override
-  String get subject => "ripple_escrow_create_desc";
+  String get validatorDescription => "ripple_escrow_create_desc";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
 
   @override
   void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
+
   @override
   XRPLTransactionType get transactionType => XRPLTransactionType.escrowCreate;
 }

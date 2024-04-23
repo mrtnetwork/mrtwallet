@@ -54,9 +54,6 @@ class RipplePaymentValidator implements RippleTransactionValidator {
   );
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -113,11 +110,11 @@ class RipplePaymentValidator implements RippleTransactionValidator {
   String get name => "Payment";
 
   @override
-  String get fieldsName => "ripple_payment_fields";
+  String get validatorName => "ripple_payment_fields";
   @override
   String get helperUri => RippleConst.aboutRipplePayment;
   @override
-  String get subject => "ripple_payment_desc";
+  String get validatorDescription => "ripple_payment_desc";
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
 

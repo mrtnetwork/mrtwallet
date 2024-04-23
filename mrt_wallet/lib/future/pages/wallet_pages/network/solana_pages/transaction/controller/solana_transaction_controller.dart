@@ -14,10 +14,6 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
       required super.address,
       required super.apiProvider,
       required super.validator});
-
-  @override
-  String get repositoryId => "solana/transaction";
-
   NoneDecimalBalance? _remindTokenAmount;
   late final NoneDecimalBalance _remindAmount =
       NoneDecimalBalance.zero(network.coinParam.decimal);
@@ -26,12 +22,15 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
   String? get error => _error;
   bool _trReady = false;
   bool get transactionIsReady => _trReady;
+
   bool _checkTransaction() {
     _error = validator.validator.validateError();
-    final transactionValue = validator.validator.transferValue + fee.balance;
     _remindAmount.updateBalance(
-        account.address.address.balance.value.balance - transactionValue);
+        account.address.address.balance.value.balance - fee.balance);
     if (validator.validator.mode != SolanaTransactionType.spl) {
+      final transactionValue = validator.validator.transferValue + fee.balance;
+      _remindAmount.updateBalance(
+          account.address.address.balance.value.balance - transactionValue);
       remindAmount = (_remindAmount, network.coinParam.token);
     } else {
       final tokenTransferFiled = validator.validator as SolanaTransferValidator;
@@ -99,4 +98,7 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
     validator.validator.setProvider(null);
     super.close();
   }
+
+  @override
+  String get repositoryId => "solana/transaction";
 }

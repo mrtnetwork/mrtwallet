@@ -54,8 +54,6 @@ class RippleMintTokenValidator implements RippleTransactionValidator {
       return v;
     },
   );
-  @override
-  bool get isValid => validateError() == null;
 
   @override
   String? validateError({IXRPAddress? account}) {
@@ -102,11 +100,11 @@ class RippleMintTokenValidator implements RippleTransactionValidator {
   @override
   String get name => "NFTokenMint";
   @override
-  String get fieldsName => "ripple_nfttoken_fields";
+  String get validatorName => "ripple_nfttoken_fields";
   @override
   String get helperUri => RippleConst.aboutNftoken;
   @override
-  String get subject => "ripple_mint_nftoken_desc";
+  String get validatorDescription => "ripple_mint_nftoken_desc";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}

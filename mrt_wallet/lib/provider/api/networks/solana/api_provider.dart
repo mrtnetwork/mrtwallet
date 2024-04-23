@@ -48,6 +48,16 @@ class SolanaApiProvider implements NetworkApiProvider<ISolanaAddress> {
     return blockHash.blockhash;
   }
 
+  Future<String> getGenesisHash() async {
+    final gnesisHash = await provider.request(SolanaRPCGetGenesisHash());
+    return gnesisHash;
+  }
+
+  Future<List<ContactInfo>> clusterNodes() async {
+    final gnesisHash = await provider.request(SolanaRPCGetClusterNodes());
+    return gnesisHash;
+  }
+
   Future<void> updateAccounts(ISolanaAddress address) async {
     for (final i in address.tokens) {
       try {

@@ -26,6 +26,7 @@ abstract class CryptoAccountAddress<N, T, X> with CborSerializable {
   void removeNFT(NFTCore nft);
   void addToken(TokenCore<T> newToken);
   void removeToken(TokenCore<T> token);
+  void updateToken(TokenCore<T> token, Token updatedToken);
 
   static CryptoAccountAddress fromCbor(
       AppNetworkImpl network, CborObject cbor) {

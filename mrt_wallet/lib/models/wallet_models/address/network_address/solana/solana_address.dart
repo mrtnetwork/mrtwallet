@@ -168,6 +168,19 @@ class ISolanaAddress
   }
 
   @override
+  void updateToken(TokenCore<BigInt> token, Token updatedToken) {
+    if (!tokens.contains(token)) return;
+    if (token is! SolanaSPLToken) {
+      throw WalletExceptionConst.invalidArgruments(
+          "SolanaSPLToken", "${token.runtimeType}");
+    }
+    List<SolanaSPLToken> existTokens = List<SolanaSPLToken>.from(_tokens);
+    existTokens.removeWhere((element) => element == token);
+    existTokens = [token.updateToken(updatedToken), ...existTokens];
+    _tokens = List.unmodifiable(existTokens);
+  }
+
+  @override
   void removeToken(TokenCore<BigInt> token) {
     if (!tokens.contains(token)) return;
     final existTokens = List.from(_tokens);

@@ -28,27 +28,29 @@ class ErrorWithTextView extends StatelessWidget {
               maxHeight: 120,
               child: Container(
                 padding: WidgetConstant.padding10,
-                decoration: BoxDecoration(boxShadow: const [
-                  BoxShadow(spreadRadius: 1, blurRadius: 5),
-                ], borderRadius: WidgetConstant.border8),
+                decoration: BoxDecoration(
+                    borderRadius: WidgetConstant.border8,
+                    color: context.colors.errorContainer),
                 child: SingleChildScrollView(
                   child: SelectableText(
                     text,
                     textAlign: TextAlign.center,
+                    style: context.textTheme.bodyMedium
+                        ?.copyWith(color: context.colors.onErrorContainer),
                   ),
                 ),
               ),
             ),
             if (progressKey != null) ...[
-              WidgetConstant.height8,
+              WidgetConstant.height20,
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   FilledButton.icon(
                       onPressed: () {
                         progressKey?.backToIdle();
                       },
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(Icons.arrow_back),
                       label: Text("back_to_the_page".tr))
                 ],
               )

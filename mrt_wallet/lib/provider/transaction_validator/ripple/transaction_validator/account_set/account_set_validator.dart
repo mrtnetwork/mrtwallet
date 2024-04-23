@@ -108,9 +108,6 @@ class RippleAccountSetValidator implements RippleTransactionValidator {
   }
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -174,7 +171,7 @@ class RippleAccountSetValidator implements RippleTransactionValidator {
   String get name => "account_set";
 
   @override
-  String get fieldsName => "account_set_fields";
+  String get validatorName => "account_set_fields";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
@@ -186,5 +183,5 @@ class RippleAccountSetValidator implements RippleTransactionValidator {
   XRPLTransactionType get transactionType => XRPLTransactionType.accountSet;
 
   @override
-  String get subject => "account_set_desc";
+  String get validatorDescription => "account_set_desc";
 }

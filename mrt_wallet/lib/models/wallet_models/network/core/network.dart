@@ -13,6 +13,8 @@ abstract class AppNetworkImpl with Equatable, CborSerializable {
   const AppNetworkImpl();
   abstract final int value;
   abstract final NetworkCoinParams coinParam;
+  bool get supportCustomNode;
+
   List<CryptoCoins> get coins;
 
   List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
@@ -163,6 +165,9 @@ class AppBitcoinNetwork extends AppNetworkImpl {
       BitcoinParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
+
+  @override
+  bool get supportCustomNode => true;
 }
 
 class AppBitcoinCashNetwork extends AppBitcoinNetwork {
@@ -231,6 +236,9 @@ class AppXRPNetwork extends AppNetworkImpl {
 
   @override
   List get variabels => [value];
+
+  @override
+  bool get supportCustomNode => false;
 }
 //
 
@@ -273,6 +281,9 @@ class APPEVMNetwork extends AppNetworkImpl {
         CborListValue.fixedLength([value, coinParam.toCbor(), slip44]),
         WalletModelCborTagsConst.evmNetwork);
   }
+
+  @override
+  bool get supportCustomNode => true;
 }
 
 class APPTVMNetwork extends AppNetworkImpl {
@@ -307,10 +318,17 @@ class APPTVMNetwork extends AppNetworkImpl {
       TVMNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
+
+  @override
+  bool get supportCustomNode => false;
 }
 
 class APPSolanaNetwork extends AppNetworkImpl {
   const APPSolanaNetwork(this.value, this.coinParam);
+  APPSolanaNetwork copyWith({int? value, SolanaNetworkParams? coinParam}) {
+    return APPSolanaNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
+
   @override
   final int value;
   @override
@@ -344,6 +362,9 @@ class APPSolanaNetwork extends AppNetworkImpl {
       SolanaNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
+
+  @override
+  bool get supportCustomNode => true;
 }
 
 class APPCardanoNetwork extends AppNetworkImpl {
@@ -393,6 +414,9 @@ class APPCardanoNetwork extends AppNetworkImpl {
       CardanoNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
+
+  @override
+  bool get supportCustomNode => false;
 }
 
 class APPCosmosNetwork extends AppNetworkImpl {
@@ -430,4 +454,6 @@ class APPCosmosNetwork extends AppNetworkImpl {
       CosmosNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
+  @override
+  bool get supportCustomNode => false;
 }

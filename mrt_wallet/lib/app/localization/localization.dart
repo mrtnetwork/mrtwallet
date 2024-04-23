@@ -1312,9 +1312,9 @@ class Localization {
               "The header of the current block chain tip.",
           "network_update_node_provider": "Update node provider",
           "network_security_title":
-              "Ensuring wallet security: tips for adding Electrum servers",
+              "Ensuring wallet security: tips for adding node providers",
           "network_security_desc":
-              "Ensuring the security of your wallet is paramount. When adding a new Electrum server, it's crucial to verify the RPC endpoint's accuracy to prevent potential security compromises. Before integration, double-check the RPC URL for correctness. Take an additional layer of caution by cross-referencing the current server header with a trusted block explorer or other reliable sources. These measures enhance security, providing confidence that the Electrum server added to your wallet is secure and free from any malicious intent.",
+              "Ensuring the security of your wallet is paramount. When adding a new provider, it's crucial to verify the RPC endpoint's accuracy to prevent potential security compromises. Before integration, double-check the RPC URL for correctness. Take an additional layer of caution by cross-referencing the current server header with a trusted block explorer or other reliable sources. These measures enhance security, providing confidence that the provider added to your wallet is secure and free from any malicious intent.",
           "network_add_to_providers": "Add to providers.",
           "network_update_network_providers": "Update network providers.",
           "network": "Network",
@@ -1366,7 +1366,8 @@ class Localization {
               "When using RBF, make sure your UTXOs have been confirmed; otherwise, you may encounter a non-final error",
           "inaccessible_key_algorithm":
               "Key algorithm inaccessible in multisig account.",
-          "recipient_info": "Recipient info",
+          "destination_info": "Destination info",
+          "destination_info_desc": "The information about destination account",
           "executable": "Executable",
           "import_spl_tokens": "Import SPL Tokens",
           "unable_to_locate_token":
@@ -1424,7 +1425,69 @@ class Localization {
           "enther_valid_un_label":
               "Please enter a valid unsigned number for the label.",
           "label_already_exists": "The label you entered already exists.",
-          "no_account_chosen": "No account has been chosen."
+          "no_account_chosen": "No account has been chosen.",
+          "associated_token_program": "Associated Token Program",
+          "create_associated_token_account": "Create Associated Token Account",
+          "mint": "Mint",
+          "token_program": "Token Program",
+          "owner_address": "Owner address",
+          "mint_address": "Mint address",
+          "mint_address_desc": "The mint account address",
+          "program_address": "Program address",
+          "program_address_desc": "The address of token program",
+          "associated_token_address": "Associated token address",
+          "new_account_address": "New Account address",
+          "solana_new_account_desc":
+              "Please provide the address for the account you wish to create, the account should be imported to your wallet before creation",
+          "owner_of_account": "The owner of account",
+          "account_size": "Account size",
+          "lamports": "Lamports",
+          "create_account": "Create Account",
+          "solana_create_account_desc":
+              "A created account is initialized to be owned by a built-in program called the System program.",
+          "setup_account_size": "Setup account size",
+          "solana_create_account_lamports_desc":
+              "Amount of lamports to transfer to the created account",
+          "required_signer_account_missing":
+              "Required signer account is missing",
+          "solana_account_size_desc":
+              "the amount of memory allocated to store data associated with the account on the blockchain",
+          "mint_authority": "Mint authority",
+          "decimals": "Decimals",
+          "solana_mint_decimal_desc":
+              "Number of base 10 digits to the right of the decimal place",
+          "mint_authority_desc": "The authority of mint tokens.",
+          "freeze_authority": "Freeze authority",
+          "freeze_authority_desc": "The freeze authority of the mint.",
+          "program_id": "Program ID",
+          "solana_program_id_desc": "The unique identifier of the application",
+          "mint_address_to_initialize": "The mint address to initialize.",
+          "setup_token_decimal": "Setup token decimals",
+          "initialize_mint": "Initialize mint",
+          "initiailize_mint_desc":
+              "Initializing a mint in Solana creates a new token type.",
+          "transfer_symbol": "Transfer ___1__",
+          "mint_to": "Mint to",
+          "mint_address_mint_desc": "The mint address",
+          "mint_to_desc": "Mints new tokens to an account.",
+          "authority": "Authority",
+          "mint_to_authority_desc": "The mint's minting authority.",
+          "mint_to_destination_desc": "The account to mint tokens to.",
+          "unknown_token": "Unknown token",
+          "mint_to_amount_desc": "The amount of new tokens to mint.",
+          "use_owner_account_instead_pda_desc":
+              "The account to mint tokens to. Utilize owner account. application automatically locates current PDA account.",
+          "name": "Name",
+          "update_token": "Update token",
+          "update_token_information": "Update token information",
+          "update_token_desc": "Update the name and symbol of the token",
+          "token_symbol_validator":
+              "The token symbol must be at least 2 characters long",
+          "token_name_validator":
+              "The token name must be at least 3 characters long",
+          "create_new_provider": "Create New Provider",
+          "gnesis_hash_desc":
+              "The genesis hash is the unique identifier for the initial block in a blockchain network, often used for network bootstrapping and verifying network state"
         }
       };
 }

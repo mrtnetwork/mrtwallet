@@ -1,1 +1,8 @@
-enum SolanaTransactionType { native, spl }
+enum SolanaTransactionType {
+  native,
+  spl,
+  createAssociatedTokenAccount,
+  createAccount,
+  initializeMint,
+  mintTo;
+}

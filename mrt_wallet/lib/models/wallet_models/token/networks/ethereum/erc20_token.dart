@@ -35,6 +35,10 @@ class ETHERC20Token with Equatable implements SolidityToken {
     }
   }
 
+  ETHERC20Token updateToken(Token updateToken) {
+    return ETHERC20Token._(balance, updateToken, contractAddress, _updated);
+  }
+
   @override
   final Live<NoneDecimalBalance> balance;
 
@@ -66,7 +70,7 @@ class ETHERC20Token with Equatable implements SolidityToken {
   }
 
   @override
-  List get variabels => [token, contractAddress.address];
+  List get variabels => [contractAddress.address];
 
   @override
   final Token token;
@@ -75,7 +79,7 @@ class ETHERC20Token with Equatable implements SolidityToken {
   String? get issuer => contractAddress.address;
 
   @override
-  String toHex() {
+  String toHexAddress() {
     return contractAddress.toHex();
   }
 

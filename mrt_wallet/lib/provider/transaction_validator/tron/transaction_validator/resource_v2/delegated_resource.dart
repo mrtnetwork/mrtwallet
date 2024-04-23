@@ -18,9 +18,7 @@ class TronDelegatedResourceV2Validator extends TronTransactionValidator {
 
   final ValidatorField<NoneDecimalBalance> amount = ValidatorField(
     name: "delegatable_amount",
-    subject: "",
     optional: false,
-    id: "",
     onChangeValidator: (v) {
       try {
         if (v!.isZero || v.isNegative) return null;
@@ -32,18 +30,14 @@ class TronDelegatedResourceV2Validator extends TronTransactionValidator {
   );
   final ValidatorField<ReceiptAddress<TronAddress>> destination =
       ValidatorField(
-          id: "",
           name: "receiver_address",
           optional: false,
           onChangeValidator: (p0) {
             return p0;
-          },
-          subject: "");
+          });
   late final ValidatorField<ResourceCode> resource = ValidatorField(
     name: "resource",
-    subject: "",
     optional: false,
-    id: "",
     onChangeValidator: (v) {
       try {
         if (v == ResourceCode.tronPower) return null;
@@ -55,17 +49,13 @@ class TronDelegatedResourceV2Validator extends TronTransactionValidator {
   );
   final ValidatorField<bool> lock = ValidatorField(
     name: "lock",
-    subject: "",
     optional: true,
-    id: "",
     onChangeValidator: (v) {
       return v;
     },
   );
   final ValidatorField<BigRational> lockPeriod = ValidatorField(
     name: "lock_period",
-    subject: "",
-    id: "",
     onChangeValidator: (v) {
       try {
         if (v!.isNegative || v.isZero || v.isDecimal) return null;
@@ -91,22 +81,7 @@ class TronDelegatedResourceV2Validator extends TronTransactionValidator {
   List<ValidatorField> get fields => [amount, destination, resource];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => validateError() == null;
-
-  @override
   late final String name = "delegated_resource";
-
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
-  void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
 
   void setLockPerid(bool? value) {
     if (lock.setValue(value ?? false)) {
@@ -126,13 +101,10 @@ class TronDelegatedResourceV2Validator extends TronTransactionValidator {
   }
 
   void _checkEstimate() {
-    if (isValid) {
+    if (validateError() == null) {
       onStimateChanged?.call();
     }
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   String? validateError({ITronAddress? account}) {

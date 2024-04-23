@@ -16,23 +16,26 @@ enum CosmosFeeTypes {
 }
 
 mixin CosmosTransactionFeeImpl on CosmosTransactiomImpl {
-  final Cancelable _cancelable = Cancelable();
-  CosmosFeeTypes _feeType = CosmosFeeTypes.basic;
-  CosmosFeeTypes get feeType => _feeType;
-  Fee? _fee;
   late final NoneDecimalBalance _feeAmount =
       NoneDecimalBalance.zero(network.coinParam.decimal);
   late final NoneDecimalBalance _networkFeeRate =
       NoneDecimalBalance.zero(network.coinParam.decimal);
-  NoneDecimalBalance get feeAmount => _feeAmount;
-  final GlobalKey<StreamWidgetState> feeProgressKey =
-      GlobalKey<StreamWidgetState>(debugLabel: "CosmosTransactionFeeImpl");
-  String? _feeError;
-  String? get feeError => _feeError;
+
+  CosmosFeeTypes _feeType = CosmosFeeTypes.basic;
+  CosmosFeeTypes get feeType => _feeType;
+  Fee? _fee;
   @override
   Fee? get fee => _fee;
-
   bool get hasFee => _fee != null;
+  NoneDecimalBalance get feeAmount => _feeAmount;
+
+  final GlobalKey<StreamWidgetState> feeProgressKey =
+      GlobalKey<StreamWidgetState>(debugLabel: "CosmosTransactionFeeImpl");
+
+  String? _feeError;
+  String? get feeError => _feeError;
+
+  final Cancelable _cancelable = Cancelable();
 
   Future<Fee> _simulateTr() async {
     final messages = validator.validator.messages(address.networkAddress);

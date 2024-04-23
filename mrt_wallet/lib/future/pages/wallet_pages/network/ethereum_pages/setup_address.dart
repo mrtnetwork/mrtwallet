@@ -101,10 +101,12 @@ class _SetupEthereumAddressViewState extends State<SetupEthereumAddressView>
     super.didChangeDependencies();
   }
 
-  AddressDerivationIndex? derivationkey() {
+  AddressDerivationIndex? derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
       return ImportedAddressIndex(
-          accountId: selectedCustomKey!.id, bip32KeyIndex: customKeyIndex);
+          accountId: selectedCustomKey!.id,
+          bip32KeyIndex: customKeyIndex,
+          currencyCoin: coin);
     }
     return customKeyIndex;
   }
@@ -120,7 +122,8 @@ class _SetupEthereumAddressViewState extends State<SetupEthereumAddressView>
     final curve = selectedCustomKey?.type ?? EllipticCurveTypes.secp256k1;
     final coin = coins.firstWhere((element) => element.conf.type == curve);
 
-    final keyIndex = derivationkey() ?? chainAccount.account.nextDrive(coin);
+    final keyIndex =
+        derivationkey(coin) ?? chainAccount.account.nextDrive(coin);
     final newAccount =
         EthereumNewAddressParam(coin: coin, deriveIndex: keyIndex);
 

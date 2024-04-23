@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
-
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/transaction_validator/core/validator.dart';
 import 'package:mrt_wallet/provider/transaction_validator/ripple/ripple.dart';
@@ -185,7 +182,6 @@ class _RippleTokensView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     final tokens = account.tokens;
     if (tokens.isEmpty) {
       return Center(
@@ -226,40 +222,13 @@ class _RippleTokensView extends StatelessWidget {
               final RippleIssueToken token = account.tokens[index];
               return ContainerWithBorder(
                 onRemove: () {
-                  context
-                      .openSliverDialog<TokenAction>(
-                          (ctx) => TokenDetailsModalView(
-                                token: token,
-                                address: account,
-                              ),
-                          content: (ctx) => [
-                                IconButton(
-                                    onPressed: () {
-                                      ctx.pop(TokenAction.delete);
-                                    },
-                                    icon: Icon(Icons.delete,
-                                        color: context.colors.error))
-                              ],
-                          "token_info".tr)
-                      .then((value) {
-                    switch (value) {
-                      case TokenAction.delete:
-                        context.openSliverDialog(
-                            (ctx) => DialogTextView(
-                                buttomWidget: AsyncDialogDoubleButtonView(
-                                  firstButtonPressed: () =>
-                                      wallet.removeToken(token, account),
-                                ),
-                                text: "remove_token_from_account".tr),
-                            "remove_token".tr);
-                        break;
-                      case TokenAction.transfer:
-                        context.to(PagePathConst.rippleTransfer,
-                            argruments: token);
-                        break;
-                      default:
-                    }
-                  });
+                  context.openDialogPage<TokenAction>(
+                      (ctx) => TokenDetailsModalView(
+                            token: token,
+                            address: account,
+                            transferPath: PagePathConst.rippleTransfer,
+                          ),
+                      "token_info".tr);
                 },
                 onRemoveWidget: WidgetConstant.sizedBox,
                 backgroundColor: Colors.transparent,

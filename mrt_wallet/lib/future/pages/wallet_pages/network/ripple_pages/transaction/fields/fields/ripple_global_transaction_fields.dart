@@ -32,7 +32,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
           onRemove: () {
             context
                 .openSliverBottomSheet<String>(
-                  validator.fieldsName.tr,
+                  validator.validatorName.tr,
                   child: StringWriterView(
                     defaultValue: field.value,
                     maxLength: RippleConst.rippleTranactionHashLength,
@@ -42,7 +42,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                         body: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(field.subject.tr),
+                            Text(field.subject!.tr),
                           ],
                         )),
                     buttomText: "setup_input".tr,
@@ -71,7 +71,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress>(
-                  validator.fieldsName.tr,
+                  validator.validatorName.tr,
                   maxExtend: 1,
                   minExtent: 0.8,
                   initialExtend: 0.9,
@@ -83,7 +83,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                         body: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(field.subject.tr),
+                            Text(field.subject!.tr),
                           ],
                         )),
                   ),
@@ -99,7 +99,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
           onRemove: () {
             context
                 .openSliverBottomSheet<BigRational>(
-                  validator.fieldsName.tr,
+                  validator.validatorName.tr,
                   child: NumberWriteView(
                     defaultValue: field.value,
                     max: RippleConst.max32UnsignedRational,
@@ -110,7 +110,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                         body: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(field.subject.tr),
+                            Text(field.subject!.tr),
                           ],
                         )),
                     buttomText: "setup_input".tr,
@@ -145,7 +145,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
             }
             context
                 .openSliverBottomSheet<BigRational>(
-                  validator.fieldsName.tr,
+                  validator.validatorName.tr,
                   child: NumberWriteView(
                     defaultValue: field.value,
                     max: max,
@@ -156,7 +156,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                         body: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(field.subject.tr),
+                            Text(field.subject!.tr),
                           ],
                         )),
                     buttomText: "setup_input".tr,
@@ -179,7 +179,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
             }
             context
                 .openSliverBottomSheet<String>(
-                  validator.fieldsName.tr,
+                  validator.validatorName.tr,
                   child: StringWriterView(
                     defaultValue: field.value,
                     maxLength: maxLength,
@@ -188,7 +188,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                         body: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(field.subject.tr),
+                            Text(field.subject!.tr),
                           ],
                         )),
                     buttomText: "setup_input".tr,
@@ -303,7 +303,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                   bodyBuilder: (controller) => BuildRippleCurrencyAmountView(
                     account: account,
                     scrollController: controller,
-                    title: validator.fieldsName.tr,
+                    title: validator.validatorName.tr,
                     acceptZero: true,
                     supportXRP: field.id != "trust_set_limit_amount",
                   ),
@@ -383,7 +383,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                 onRemove: () {
                   context
                       .openSliverBottomSheet<String>(
-                        validator.fieldsName.tr,
+                        validator.validatorName.tr,
                         child: StringWriterView(
                           defaultValue: null,
                           maxLength: RippleConst.rippleTranactionHashLength,
@@ -393,7 +393,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                               body: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(field.subject.tr),
+                                  Text(field.subject!.tr),
                                 ],
                               )),
                           buttomText: "setup_input".tr,
@@ -415,13 +415,13 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
             onRemove: () {
               context
                   .openSliverBottomSheet<BigInt>(
-                validator.fieldsName.tr,
+                validator.validatorName.tr,
                 child: SetupNetworkAmount(
                   token: account.network.coinParam.token,
                   max: account.address.address.balance.value.balance,
                   min: BigInt.zero,
                   subtitle: PageTitleSubtitle(
-                      title: field.name.tr, body: Text(field.subject.tr)),
+                      title: field.name.tr, body: Text(field.subject!.tr)),
                 ),
               )
                   .then(

@@ -15,7 +15,7 @@ class SolanaTransferTransactionView extends StatelessWidget {
     final SolanaSPLToken? splToken = context.getNullArgruments();
 
     return SolanaTransactionFieldsView(
-        validator: LiveTransactionValidator(
+        field: LiveTransactionValidator(
             validator: SolanaTransferValidator(
                 token: chain?.network.coinParam.token ?? splToken!.token,
                 splToken: splToken)));

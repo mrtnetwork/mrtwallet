@@ -18,9 +18,7 @@ class TronUnDelegatedResourceV2Validator extends TronTransactionValidator {
 
   final ValidatorField<NoneDecimalBalance> balance = ValidatorField(
     name: "balance",
-    subject: "",
     optional: false,
-    id: "",
     onChangeValidator: (v) {
       try {
         if (v!.isZero || v.isNegative) return null;
@@ -33,13 +31,11 @@ class TronUnDelegatedResourceV2Validator extends TronTransactionValidator {
   );
   final ValidatorField<ReceiptAddress<TronAddress>> destination =
       ValidatorField(
-          id: "",
           name: "resource_receiver_address",
           optional: false,
           onChangeValidator: (p0) {
             return p0;
-          },
-          subject: "");
+          });
 
   void onChangeResource(ReceiptAddress<TronAddress>? resource) {
     if (resource == null) return;
@@ -109,22 +105,7 @@ class TronUnDelegatedResourceV2Validator extends TronTransactionValidator {
   List<ValidatorField> get fields => [balance, destination];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => validateError() == null;
-
-  @override
   late final String name = "undelegated_resource";
-
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
-  void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
 
   @override
   void setValue<T>(ValidatorField<T>? field, T? value) {
@@ -136,13 +117,10 @@ class TronUnDelegatedResourceV2Validator extends TronTransactionValidator {
   }
 
   void _checkEstimate() {
-    if (isValid) {
+    if (validateError() == null) {
       onStimateChanged?.call();
     }
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   String? validateError({ITronAddress? account}) {

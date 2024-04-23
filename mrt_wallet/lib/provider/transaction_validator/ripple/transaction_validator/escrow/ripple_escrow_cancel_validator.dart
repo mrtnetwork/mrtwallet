@@ -28,9 +28,6 @@ class RippleEscrowCancelValidator implements RippleTransactionValidator {
   );
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -73,15 +70,16 @@ class RippleEscrowCancelValidator implements RippleTransactionValidator {
   @override
   String get helperUri => RippleConst.aboutScrowCancel;
   @override
-  String get fieldsName => "ripple_escrow_cancel_fields";
+  String get validatorName => "ripple_escrow_cancel_fields";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
 
   @override
   void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
+
   @override
-  String get subject => "ripple_escrow_cancel_desc";
+  String get validatorDescription => "ripple_escrow_cancel_desc";
 
   @override
   XRPLTransactionType get transactionType => XRPLTransactionType.escrowCancel;

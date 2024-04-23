@@ -23,8 +23,10 @@ class AppChain with CborSerializable {
       return ["services", "tokens"];
     } else if (network is APPTVMNetwork) {
       return ["services", "trc20_tokens", "trc10_tokens"];
-    } else if (network is APPEVMNetwork || network is APPSolanaNetwork) {
+    } else if (network is APPEVMNetwork) {
       return ["tokens"];
+    } else if (network is APPSolanaNetwork) {
+      return ["services", "tokens"];
     }
     return ["services"];
   }

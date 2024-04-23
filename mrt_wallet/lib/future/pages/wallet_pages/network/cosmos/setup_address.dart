@@ -32,12 +32,6 @@ class _SetupCosmosAddressViewState extends State<SetupCosmosAddressView>
   final GlobalKey visibleXAddressDetails =
       GlobalKey(debugLabel: "visibleContinue");
 
-  // EllipticCurveTypes algorithm = EllipticCurveTypes.secp256k1;
-  // void onChangeAlgorithm(EllipticCurveTypes algo) {
-  //   algorithm = algo;
-  //   setState(() {});
-  // }
-
   AddressDerivationMode? selectedDerivationMode;
   EncryptedCustomKey? selectedCustomKey;
   bool inAddressPage = false;
@@ -103,10 +97,12 @@ class _SetupCosmosAddressViewState extends State<SetupCosmosAddressView>
     super.didChangeDependencies();
   }
 
-  AddressDerivationIndex? derivationkey() {
+  AddressDerivationIndex? derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
       return ImportedAddressIndex(
-          accountId: selectedCustomKey!.id, bip32KeyIndex: customKeyIndex);
+          accountId: selectedCustomKey!.id,
+          bip32KeyIndex: customKeyIndex,
+          currencyCoin: coin);
     }
     return customKeyIndex;
   }
@@ -120,7 +116,8 @@ class _SetupCosmosAddressViewState extends State<SetupCosmosAddressView>
     pageProgressKey.progressText("generating_new_addr".tr);
     final model = context.watch<WalletProvider>(StateIdsConst.main);
 
-    final keyIndex = derivationkey() ?? chainAccount.account.nextDrive(coin);
+    final keyIndex =
+        derivationkey(coin) ?? chainAccount.account.nextDrive(coin);
     final newAccount =
         CosmosNewAddressParams(coin: coin, deriveIndex: keyIndex);
 
@@ -319,47 +316,3 @@ class _GenerateAddress extends StatelessWidget {
     );
   }
 }
-
-// class _ChooseAddressGenerationAlgorithm extends StatelessWidget {
-//   const _ChooseAddressGenerationAlgorithm(
-//       {required this.onChageAlgorithm,
-//       required this.algo,
-//       required this.onChange});
-//   final _OnAddressAlgorithm onChageAlgorithm;
-//   final EllipticCurveTypes algo;
-//   final _OnChangePage onChange;
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text("elliptic_curve_options".tr, style: context.textTheme.titleMedium),
-//         Text("address_generation_algorithm".tr),
-//         WidgetConstant.height20,
-//         AppRadioListTile(
-//           title: const Text("Secp256k1"),
-//           groupValue: algo,
-//           value: EllipticCurveTypes.secp256k1,
-//           onChanged: (value) => onChageAlgorithm(EllipticCurveTypes.secp256k1),
-//         ),
-//         AppRadioListTile(
-//           title: const Text("Nist256p1"),
-//           groupValue: algo,
-//           value: EllipticCurveTypes.nist256p1,
-//           onChanged: (value) => onChageAlgorithm(EllipticCurveTypes.nist256p1),
-//         ),
-//         Row(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             FixedElevatedButton(
-//                 padding: WidgetConstant.paddingVertical20,
-//                 child: Text("continue".tr),
-//                 onPressed: () {
-//                   onChange(_Page.generationAddress);
-//                 }),
-//           ],
-//         )
-//       ],
-//     );
-//   }
-// }

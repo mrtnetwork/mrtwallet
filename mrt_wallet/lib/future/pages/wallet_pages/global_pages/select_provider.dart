@@ -18,8 +18,7 @@ class SelectProviderIcon extends StatelessWidget {
     return LiveWidget(() {
       final ApiProviderTracker<ApiProviderService>? provider =
           wallet.chain.provider()?.serviceProvider;
-      final bool supportCustomNode =
-          wallet.network is! AppXRPNetwork && wallet.network is! APPTVMNetwork;
+
       return IconButton(
         tooltip: provider.message().tr,
         onPressed: () {
@@ -27,9 +26,8 @@ class SelectProviderIcon extends StatelessWidget {
               (ctx) => _SelectProviderView(
                     network: wallet.network,
                     selectedProvider: provider,
-                    supportCustomNode: supportCustomNode,
                   ), content: (context) {
-            return supportCustomNode
+            return wallet.network.supportCustomNode
                 ? [
                     WidgetConstant.width8,
                     IconButton(
@@ -74,18 +72,16 @@ class ProviderTrackerStatusView extends StatelessWidget {
 
 class _SelectProviderView extends StatelessWidget {
   const _SelectProviderView(
-      {required this.selectedProvider,
-      required this.network,
-      this.supportCustomNode = false});
+      {required this.selectedProvider, required this.network});
   final ApiProviderTracker<ApiProviderService>? selectedProvider;
   final AppNetworkImpl network;
-  final bool supportCustomNode;
   bool get isTVM => network is APPTVMNetwork;
   @override
   Widget build(BuildContext context) {
     Set<ApiProviderService> providers = {
       ...DefaultNodeProviders.getDefaultServices(network),
-      ...network.coinParam.providers.where((element) => element.protocol.platforms.contains(PlatformInterface.appPlatform)),
+      ...network.coinParam.providers.where((element) =>
+          element.protocol.platforms.contains(PlatformInterface.appPlatform)),
     };
 
     return SingleChildScrollView(
@@ -153,7 +149,7 @@ class _SelectProviderView extends StatelessWidget {
               },
               itemCount: providers.length,
             ),
-          ] else if (supportCustomNode)
+          ] else if (network.supportCustomNode)
             Row(
               children: [
                 Expanded(
@@ -290,8 +286,11 @@ class _ProviderLogsViewState extends State<_ProviderLogsView> with SafeState {
                           Text("url".tr, style: context.textTheme.titleSmall),
                           ContainerWithBorder(
                             backgroundColor: context.colors.secondary,
-                            onRemoveIcon:
-                                CopyTextIcon(dataToCopy: request.uri!),
+                            onRemove: () {},
+                            onRemoveIcon: CopyTextIcon(
+                              dataToCopy: request.uri!,
+                              color: context.colors.onSecondary,
+                            ),
                             onTapWhenOnRemove: false,
                             child: Text(
                               request.uri!,
@@ -307,8 +306,10 @@ class _ProviderLogsViewState extends State<_ProviderLogsView> with SafeState {
                           ContainerWithBorder(
                             backgroundColor: context.colors.secondary,
                             onRemove: () {},
-                            onRemoveIcon:
-                                CopyTextIcon(dataToCopy: request.params!),
+                            onRemoveIcon: CopyTextIcon(
+                              dataToCopy: request.params!,
+                              color: context.colors.onSecondary,
+                            ),
                             onTapWhenOnRemove: false,
                             child: Text(
                               request.params!,
@@ -336,8 +337,10 @@ class _ProviderLogsViewState extends State<_ProviderLogsView> with SafeState {
                           ContainerWithBorder(
                             backgroundColor: context.colors.secondary,
                             onRemove: () {},
-                            onRemoveIcon:
-                                CopyTextIcon(dataToCopy: request.response!),
+                            onRemoveIcon: CopyTextIcon(
+                              dataToCopy: request.response!,
+                              color: context.colors.onSecondary,
+                            ),
                             onTapWhenOnRemove: false,
                             child: Text(
                               request.response!,

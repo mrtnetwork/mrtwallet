@@ -34,9 +34,6 @@ class RippleAcceptNFTOfferValidator implements RippleTransactionValidator {
   );
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -79,12 +76,12 @@ class RippleAcceptNFTOfferValidator implements RippleTransactionValidator {
   @override
   String get name => "NFTokenAcceptOffer";
   @override
-  String get fieldsName => "ripple_nftoken_accept_offer_fields";
+  String get validatorName => "ripple_nftoken_accept_offer_fields";
   @override
   String get helperUri => RippleConst.aboutNftAcceptOffer;
 
   @override
-  String get subject => "ripple_accept_offer_desc";
+  String get validatorDescription => "ripple_accept_offer_desc";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}

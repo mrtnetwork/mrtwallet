@@ -18,5 +18,6 @@ class SolanaSigningRequest implements SigningRequest {
   AppNetworkImpl network;
 
   @override
-  List<AddressDerivationIndex> get signers => [addresses.first.keyIndex];
+  List<AddressDerivationIndex> get signers =>
+      addresses.map((e) => e.keyIndex).toList();
 }

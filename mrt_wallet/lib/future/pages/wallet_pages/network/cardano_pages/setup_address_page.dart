@@ -226,10 +226,12 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     super.didChangeDependencies();
   }
 
-  AddressDerivationIndex? derivationkey() {
+  AddressDerivationIndex? derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
       return ImportedAddressIndex(
-          accountId: selectedCustomKey!.id, bip32KeyIndex: customKeyIndex);
+          accountId: selectedCustomKey!.id,
+          bip32KeyIndex: customKeyIndex,
+          currencyCoin: coin);
     }
     return customKeyIndex;
   }
@@ -238,7 +240,7 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     if (!(form.currentState?.validate() ?? false)) return;
     pageProgressKey.progressText("generating_new_addr".tr);
     final model = context.watch<WalletProvider>(StateIdsConst.main);
-    final keyIndex = derivationkey() ??
+    final keyIndex = derivationkey(coin) ??
         chainAccount.account.nextDrive(coin,
             seedGeneration: seedGenerationType,
             masterKeyGeneration:

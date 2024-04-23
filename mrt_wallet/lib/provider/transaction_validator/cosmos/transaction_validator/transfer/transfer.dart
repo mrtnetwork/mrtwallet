@@ -19,13 +19,11 @@ class CosmosTransferValidator extends CosmosTransactionValidator {
   final APPCosmosNetwork network;
   final ValidatorField<List<CosmosOutputWithBalance>> destination =
       ValidatorField(
-          id: "receiver",
           name: "destination",
           optional: false,
           onChangeValidator: (p0) {
             return p0;
-          },
-          subject: "");
+          });
 
   @override
   OnChangeValidator? onChanged;
@@ -34,21 +32,8 @@ class CosmosTransferValidator extends CosmosTransactionValidator {
   List<ValidatorField> get fields => [destination];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => validateError() == null;
-
-  @override
   String get name => "transfer";
 
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
   void setListValue<T>(ValidatorField<List<T>> field, T? value,
       {DynamicVoid? onExists}) {
     if (value == null) return;
@@ -131,9 +116,6 @@ class CosmosTransferValidator extends CosmosTransactionValidator {
       onChanged?.call();
     }
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   String? validateError({ICosmosAddress? account}) {

@@ -10,6 +10,7 @@ class TransactionAmountView extends StatelessWidget {
       required this.amount,
       required this.token,
       required this.onTap,
+      this.onRemoveIcon,
       this.title,
       this.subtitle,
       this.validate = true,
@@ -21,6 +22,7 @@ class TransactionAmountView extends StatelessWidget {
   final String? validateError;
   final String? subtitle;
   final String? title;
+  final Widget? onRemoveIcon;
   @override
   Widget build(BuildContext context) {
     bool hasAmount = amount != null && !amount!.isZero;
@@ -35,8 +37,8 @@ class TransactionAmountView extends StatelessWidget {
             validate: hasAmount && validate,
             onRemove: onTap,
             validateText: validateError,
-            onRemoveIcon:
-                hasAmount ? const Icon(Icons.edit) : const Icon(Icons.add),
+            onRemoveIcon: onRemoveIcon ??
+                (hasAmount ? const Icon(Icons.edit) : const Icon(Icons.add)),
             child: hasAmount
                 ? CoinPriceView(
                     token: token,

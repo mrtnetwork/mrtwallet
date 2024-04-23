@@ -16,28 +16,13 @@ import 'package:on_chain/on_chain.dart';
 enum CardanoTransactionPages { account, utxo, send }
 
 abstract class CardanoTransactionImpl extends StateController {
-  Future<void> calculateFee();
-  GeneralTransactionMetadata? get transactionMemo;
-  NoneDecimalBalance get transactionFee;
-  int get coinsPerUtxoSize;
-  final WalletProvider walletProvider;
-  final AppChain chainAccount;
-  NetworkAccountCore get account => chainAccount.account;
-  APPCardanoNetwork get network => chainAccount.network.toNetwork();
-  CardanoApiProvider get providers => chainAccount.provider()!;
-  ICardanoAddress get address =>
-      chainAccount.account.address as ICardanoAddress;
-  final GlobalKey<PageProgressState> progressKey =
-      GlobalKey(debugLabel: "CardanoTransactionImpl");
-  List<ICardanoAddress> get addresses => chainAccount.account.addresses.cast();
-  CardanoTransactionImpl(
-      {required this.walletProvider, required this.chainAccount});
   late final NoneDecimalBalance spendableAmount =
       NoneDecimalBalance.zero(network.coinParam.decimal);
   late final NoneDecimalBalance setupAmount =
       NoneDecimalBalance.zero(network.coinParam.decimal);
   late final NoneDecimalBalance sumOfSelectedUtxo =
       NoneDecimalBalance.zero(network.coinParam.decimal);
+
   late final CardanoOutputWithBalance _changeADAOutput =
       CardanoOutputWithBalance(
           address: ReceiptAddress<ADAAddress>(
@@ -46,6 +31,8 @@ abstract class CardanoTransactionImpl extends StateController {
               networkAddress: address.networkAddress),
           network: network);
   CardanoOutputWithBalance get changeADAOutput => _changeADAOutput;
+  NoneDecimalBalance get remindAmount => changeADAOutput.balance;
+
   late final CardanoOutputWithBalance _changeAssetOutput =
       CardanoOutputWithBalance(
           address: ReceiptAddress<ADAAddress>(
@@ -55,8 +42,61 @@ abstract class CardanoTransactionImpl extends StateController {
           network: network);
   CardanoOutputWithBalance get changeAssetOutput => _changeAssetOutput;
 
+  final GlobalKey<PageProgressState> progressKey =
+      GlobalKey(debugLabel: "CardanoTransactionImpl");
+  final WalletProvider walletProvider;
+
+  final AppChain chainAccount;
+  NetworkAccountCore get account => chainAccount.account;
+  APPCardanoNetwork get network => chainAccount.network.toNetwork();
+  CardanoApiProvider get providers => chainAccount.provider()!;
+  ICardanoAddress get address =>
+      chainAccount.account.address as ICardanoAddress;
+  List<ICardanoAddress> get addresses => chainAccount.account.addresses.cast();
+
+  GeneralTransactionMetadata? get transactionMemo;
+  NoneDecimalBalance get transactionFee;
+  int get coinsPerUtxoSize;
+  Future<void> calculateFee();
+
+  CardanoTransactionImpl(
+      {required this.walletProvider, required this.chainAccount});
+
   bool _trReady = false;
   bool get trReady => _trReady;
+
+  CardanoTransactionPages _page = CardanoTransactionPages.account;
+  CardanoTransactionPages get page => _page;
+  bool get inUtxoPage => _page == CardanoTransactionPages.utxo;
+  bool get inSendPage => _page == CardanoTransactionPages.send;
+
+  UtxoMultiAsset _totalAsset = UtxoMultiAsset.empty;
+  UtxoMultiAsset get totalAssets => _totalAsset;
+  bool get hasAsset => _totalAsset.hasAsset;
+
+  final Map<String, List<ADAAccountUTXOs>> _fetchedUtxos = {};
+
+  final Map<String, CardanoUtxoWithOwner> _accountUtxos = {};
+  List<CardanoUtxoWithOwner> get utxos => _accountUtxos.values.toList();
+
+  final List<CardanoUtxo> _selectedUtxos = [];
+  List<CardanoUtxo> get selectedUtxos => _selectedUtxos;
+  bool get allUtxosSelected => _selectedUtxos.length == _utxosCount;
+  bool utxoSelected(CardanoUtxo utxo) => _selectedUtxos.contains(utxo);
+  bool get canBuildTransaction => _selectedUtxos.isNotEmpty;
+
+  int _utxosCount = 0;
+
+  bool get haveUtxos => _utxosCount > 0;
+
+  final List<ADAAddress> _addresses = [];
+  bool addressSelected(ICardanoAddress addr) =>
+      _addresses.contains(addr.networkAddress);
+  List<ADAAddress> get spenders => _addresses;
+  bool get hasSpender => spenders.isNotEmpty;
+
+  final Map<String, CardanoOutputWithBalance> _receivers = {};
+  List<CardanoOutputWithBalance> get receivers => _receivers.values.toList();
 
   void changeOutputAddress(ICardanoAddress? changeAddr) {
     if (changeAddr == null ||
@@ -78,11 +118,6 @@ abstract class CardanoTransactionImpl extends StateController {
     notify();
   }
 
-  CardanoTransactionPages _page = CardanoTransactionPages.account;
-  CardanoTransactionPages get page => _page;
-  UtxoMultiAsset _totalAsset = UtxoMultiAsset.empty;
-  UtxoMultiAsset get totalAssets => _totalAsset;
-  bool get hasAsset => _totalAsset.hasAsset;
   void onSetupUtxo() {
     _totalAsset = selectedUtxos.fold(UtxoMultiAsset({}),
         (previousValue, element) => previousValue + element.utxo.multiAsset);
@@ -98,16 +133,6 @@ abstract class CardanoTransactionImpl extends StateController {
     notify();
   }
 
-  bool get inUtxoPage => _page == CardanoTransactionPages.utxo;
-  bool get inSendPage => _page == CardanoTransactionPages.send;
-
-  final Map<String, List<ADAAccountUTXOs>> _fetchedUtxos = {};
-  final Map<String, CardanoUtxoWithOwner> _accountUtxos = {};
-  final List<CardanoUtxo> _selectedUtxos = [];
-  List<CardanoUtxo> get selectedUtxos => _selectedUtxos;
-  bool get canBuildTransaction => _selectedUtxos.isNotEmpty;
-
-  int _utxosCount = 0;
   void _countUtxos() {
     _utxosCount = 0;
     for (final i in _accountUtxos.values) {
@@ -115,13 +140,6 @@ abstract class CardanoTransactionImpl extends StateController {
     }
   }
 
-  bool get allUtxosSelected => _selectedUtxos.length == _utxosCount;
-  bool get haveUtxos => _utxosCount > 0;
-
-  List<CardanoUtxoWithOwner> get utxos => _accountUtxos.values.toList();
-  final List<ADAAddress> _addresses = [];
-  List<ADAAddress> get spenders => _addresses;
-  bool get hasSpender => spenders.isNotEmpty;
   void addSpender(ICardanoAddress address) {
     final r = _addresses.remove(address.networkAddress);
     if (!r) {
@@ -161,11 +179,6 @@ abstract class CardanoTransactionImpl extends StateController {
     }
   }
 
-  bool utxoSelected(CardanoUtxo utxo) => _selectedUtxos.contains(utxo);
-
-  bool addressSelected(ICardanoAddress addr) =>
-      _addresses.contains(addr.networkAddress);
-
   Future<void> fetchUtxos() async {
     if (_addresses.isEmpty) return;
     progressKey.progressText("retreiving_account_utxos".tr);
@@ -199,10 +212,6 @@ abstract class CardanoTransactionImpl extends StateController {
     _countUtxos();
     progressKey.success();
   }
-
-  final Map<String, CardanoOutputWithBalance> _receivers = {};
-  List<CardanoOutputWithBalance> get receivers => _receivers.values.toList();
-  NoneDecimalBalance get remindAmount => changeADAOutput.balance;
 
   void removeReceiver(ReceiptAddress<ADAAddress>? addr) {
     if (addr == null) return;

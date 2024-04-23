@@ -21,9 +21,6 @@ class RippleCancelOfferValidator implements RippleTransactionValidator {
   );
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -65,10 +62,10 @@ class RippleCancelOfferValidator implements RippleTransactionValidator {
   @override
   String get helperUri => RippleConst.abountNftokenCancelOffer;
   @override
-  String get fieldsName => "ripple_nftoken_cancel_offer_fields";
+  String get validatorName => "ripple_nftoken_cancel_offer_fields";
 
   @override
-  String get subject => "ripple_nftoken_cancel_offer_desc";
+  String get validatorDescription => "ripple_nftoken_cancel_offer_desc";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {

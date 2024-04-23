@@ -171,6 +171,7 @@ class IEthAddress
   @override
   void removeToken(TokenCore<BigInt> token) {
     if (!tokens.contains(token)) return;
+
     final existTokens = List.from(_tokens);
     existTokens.removeWhere((element) => element == token);
     _tokens = List.unmodifiable(existTokens);
@@ -181,6 +182,19 @@ class IEthAddress
 
   @override
   void removeNFT(NFTCore nft) {}
+  @override
+  @override
+  void updateToken(TokenCore<BigInt> token, Token updatedToken) {
+    if (!tokens.contains(token)) return;
+    if (token is! ETHERC20Token) {
+      throw WalletExceptionConst.invalidArgruments(
+          "ETHERC20Token", "${token.runtimeType}");
+    }
+    List<ETHERC20Token> existTokens = List<ETHERC20Token>.from(_tokens);
+    existTokens.removeWhere((element) => element == token);
+    existTokens = [token.updateToken(updatedToken), ...existTokens];
+    _tokens = List.unmodifiable(existTokens);
+  }
 
   @override
   bool get multiSigAccount => false;

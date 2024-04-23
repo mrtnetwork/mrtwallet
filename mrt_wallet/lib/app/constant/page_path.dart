@@ -21,6 +21,7 @@ class PagePathConst {
   static const String tronMultiSigAddress = "/tron/setup_multisig_address";
   // solana transfer
   static const String solanaTransfer = "/solana/transfer";
+  static const String solanaTransaction = "/solana/transaction";
 
   /// cardano
   static const String cardanoTransaction = "/cardano/transaction";
@@ -58,9 +59,10 @@ class PagePathConst {
   static const String importEVMNetwork = "/networks/import";
   static const String editEvmNetwork = "/networks/edit";
   static const String updateElectrumProviders = "/networks/bitcoin/providers";
-
+  static const String editSolanaNetwork = "/networks/solana/providers";
   static String providerDetails(AppNetworkImpl network) {
     if (network is APPEVMNetwork) return editEvmNetwork;
+    if (network is APPSolanaNetwork) return editSolanaNetwork;
     return updateElectrumProviders;
   }
 

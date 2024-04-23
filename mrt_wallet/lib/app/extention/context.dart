@@ -36,6 +36,15 @@ extension QuickContextAccsess on BuildContext {
     return null;
   }
 
+  Future<T?> offTo<T>(String path, {dynamic argruments}) async {
+    if (mounted) {
+      final push =
+          Navigator.popAndPushNamed<T, T>(this, path, arguments: argruments);
+      return push;
+    }
+    return null;
+  }
+
   void showAlert(String message) {
     if (mounted) {
       final sc = Repository.messengerKey(this);
@@ -88,7 +97,22 @@ extension QuickContextAccsess on BuildContext {
         return DialogView(
           title: label,
           content: content?.call(context) ?? const [],
-          child: widget(context),
+          widget: widget(context),
+        );
+      },
+    );
+  }
+
+  Future<T?> openDialogPage<T>(WidgetContext child, String label,
+      {List<Widget> Function(BuildContext)? content}) async {
+    return await showAdaptiveDialog(
+      context: this,
+      useRootNavigator: true,
+      builder: (context) {
+        return DialogView(
+          title: label,
+          content: content?.call(context) ?? const [],
+          child: child(context),
         );
       },
     );

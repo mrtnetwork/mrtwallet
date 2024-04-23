@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
@@ -7,10 +8,11 @@ import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
 abstract class AddressDerivationIndex with CborSerializable, Equatable {
-  const AddressDerivationIndex();
   String get path;
   EllipticCurveTypes? get curve;
   CryptoCoins? get currencyCoin;
+  const AddressDerivationIndex();
+
   static AddressDerivationIndex fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final cbor = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
@@ -30,7 +32,8 @@ abstract class AddressDerivationIndex with CborSerializable, Equatable {
     }
   }
 
-  T derive<T>(T derivator, {Bip44Levels maxLevel = Bip44Levels.addressIndex});
+  T derive<T extends Bip32Base>(T derivator,
+      {Bip44Levels maxLevel = Bip44Levels.addressIndex});
 
   String storageKey({Bip44Levels maxLevel = Bip44Levels.addressIndex});
 

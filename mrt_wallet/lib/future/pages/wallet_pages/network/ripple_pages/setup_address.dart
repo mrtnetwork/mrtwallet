@@ -125,10 +125,12 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
     super.didChangeDependencies();
   }
 
-  AddressDerivationIndex? derivationkey() {
+  AddressDerivationIndex? derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
       return ImportedAddressIndex(
-          accountId: selectedCustomKey!.id, bip32KeyIndex: customKeyIndex);
+          accountId: selectedCustomKey!.id,
+          bip32KeyIndex: customKeyIndex,
+          currencyCoin: coin);
     }
     return customKeyIndex;
   }
@@ -140,7 +142,8 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
     final curve = selectedCustomKey?.type ?? EllipticCurveTypes.secp256k1;
     final coin = coins.firstWhere((element) => element.conf.type == curve);
 
-    final keyIndex = derivationkey() ?? chainAccount.account.nextDrive(coin);
+    final keyIndex =
+        derivationkey(coin) ?? chainAccount.account.nextDrive(coin);
     final newAccount = RippleNewAddressParam(
         coin: coin,
         deriveIndex: keyIndex,

@@ -183,7 +183,7 @@ class ITronAddress
   void addToken(TokenCore<BigInt> newToken) {
     if (newToken is! TronTRC20Token && newToken is! TronTRC10Token) {
       throw WalletExceptionConst.invalidArgruments(
-          "ETHERC20Token", "${newToken.runtimeType}");
+          "TronTRC20Token, TronTRC10Token", "${newToken.runtimeType}");
     }
     if (_trc20Token.contains(newToken)) {
       throw WalletExceptionConst.tokenAlreadyExist;
@@ -195,6 +195,28 @@ class ITronAddress
       _trc20Token = List.unmodifiable([newToken, ..._trc20Token]);
     } else {
       _trc10Tokens = List.unmodifiable([newToken, ..._trc10Tokens]);
+    }
+  }
+
+  @override
+  void updateToken(TokenCore<BigInt> token, Token updatedToken) {
+    if (token is! TronTRC20Token && token is! TronTRC10Token) {
+      throw WalletExceptionConst.invalidArgruments(
+          "TronTRC20Token, TronTRC10Token", "${token.runtimeType}");
+    }
+    if (tokens.contains(token)) {
+      token as TronTRC20Token;
+      List<TronTRC20Token> existTokens = List<TronTRC20Token>.from(_trc20Token);
+      existTokens.removeWhere((element) => element == token);
+      existTokens = [token.updateToken(updatedToken), ...existTokens];
+      _trc20Token = List.unmodifiable(existTokens);
+    } else if (_trc10Tokens.contains(token)) {
+      token as TronTRC10Token;
+      List<TronTRC10Token> existTokens =
+          List<TronTRC10Token>.from(_trc10Tokens);
+      existTokens.removeWhere((element) => element == token);
+      existTokens = [token.updateToken(updatedToken), ...existTokens];
+      _trc10Tokens = List.unmodifiable(existTokens);
     }
   }
 

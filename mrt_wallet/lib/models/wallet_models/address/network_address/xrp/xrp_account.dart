@@ -213,6 +213,19 @@ class IXRPAddress
   }
 
   @override
+  void updateToken(TokenCore<BigRational> token, Token updatedToken) {
+    if (!tokens.contains(token)) return;
+    if (token is! RippleIssueToken) {
+      throw WalletExceptionConst.invalidArgruments(
+          "RippleIssueToken", "${token.runtimeType}");
+    }
+    List<RippleIssueToken> existTokens = List<RippleIssueToken>.from(_tokens);
+    existTokens.removeWhere((element) => element == token);
+    existTokens = [token.updateToken(updatedToken), ...existTokens];
+    _tokens = List.unmodifiable(existTokens);
+  }
+
+  @override
   void removeToken(TokenCore<BigRational> token) {
     if (!tokens.contains(token)) return;
     final existTokens = List.from(_tokens);

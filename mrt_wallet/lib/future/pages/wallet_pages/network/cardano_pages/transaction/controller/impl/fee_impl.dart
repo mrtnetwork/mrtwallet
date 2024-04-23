@@ -17,18 +17,17 @@ mixin CardanoTransactionFeeImpl on CardanoTransactionImpl {
       NoneDecimalBalance.zero(network.coinParam.decimal);
   late final NoneDecimalBalance _networkRequiredFee =
       NoneDecimalBalance.zero(network.coinParam.decimal);
-  NoneDecimalBalance get networkRequiredFee => _networkRequiredFee;
-  @override
-  NoneDecimalBalance get transactionFee => _feeRate;
   CardanoFeeRateType _feeRateType = CardanoFeeRateType.basic;
-  CardanoFeeRateType get feeRateType => _feeRateType;
-  bool get hasFee => !transactionFee.isZero;
-
   String? _feeError;
-  String? get feeError => _feeError;
 
   @override
   int get coinsPerUtxoSize => _protocolParams!.coinsPerUtxoSize;
+  String? get feeError => _feeError;
+  CardanoFeeRateType get feeRateType => _feeRateType;
+  bool get hasFee => !transactionFee.isZero;
+  NoneDecimalBalance get networkRequiredFee => _networkRequiredFee;
+  @override
+  NoneDecimalBalance get transactionFee => _feeRate;
 
   @override
   Future<void> calculateFee() async {

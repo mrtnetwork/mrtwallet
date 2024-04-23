@@ -106,10 +106,12 @@ class _SetupSolanaAddressViewState extends State<SetupSolanaAddressView>
     super.didChangeDependencies();
   }
 
-  AddressDerivationIndex? derivationkey() {
+  AddressDerivationIndex? derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
       return ImportedAddressIndex(
-          accountId: selectedCustomKey!.id, bip32KeyIndex: customKeyIndex);
+          accountId: selectedCustomKey!.id,
+          bip32KeyIndex: customKeyIndex,
+          currencyCoin: coin);
     }
     return customKeyIndex;
   }
@@ -121,7 +123,8 @@ class _SetupSolanaAddressViewState extends State<SetupSolanaAddressView>
     final curve = selectedCustomKey?.type ?? EllipticCurveTypes.ed25519;
     final coin = coins.firstWhere((element) => element.conf.type == curve);
 
-    final keyIndex = derivationkey() ?? chainAccount.account.nextDrive(coin);
+    final keyIndex =
+        derivationkey(coin) ?? chainAccount.account.nextDrive(coin);
     final newAccount = SolanaNewAddressParam(coin: coin, deriveIndex: keyIndex);
 
     final result = await model.deriveNewAccount(newAccount);

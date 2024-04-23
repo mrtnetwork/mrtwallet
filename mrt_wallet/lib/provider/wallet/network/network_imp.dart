@@ -75,6 +75,20 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
     await _saveAccount(acc);
   }
 
+  Future<void> _updateToken({
+    required TokenCore token,
+    required Token updatedToken,
+    required CryptoAccountAddress address,
+  }) async {
+    final acc = chain;
+    final currentAccount = acc.account;
+    if (!currentAccount.addresses.contains(address)) {
+      throw WalletExceptionConst.accountDoesNotFound;
+    }
+    address.updateToken(token, updatedToken);
+    await _saveAccount(acc);
+  }
+
   Future<void> _addNewNFT(NFTCore nft, CryptoAccountAddress address) async {
     final acc = chain;
     final currentAccount = acc.account;

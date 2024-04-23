@@ -32,6 +32,9 @@ class TronTRC10Token with Equatable implements TokenCore<BigInt> {
       throw WalletExceptionConst.invalidTokenInformation;
     }
   }
+  TronTRC10Token updateToken(Token updateToken) {
+    return TronTRC10Token._(balance, updateToken, tokenID, _updated);
+  }
 
   @override
   final Live<NoneDecimalBalance> balance;
@@ -64,7 +67,7 @@ class TronTRC10Token with Equatable implements TokenCore<BigInt> {
   }
 
   @override
-  List get variabels => [token, tokenID];
+  List get variabels => [tokenID];
 
   @override
   final Token token;

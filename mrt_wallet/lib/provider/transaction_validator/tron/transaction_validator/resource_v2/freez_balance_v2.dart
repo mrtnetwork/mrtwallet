@@ -16,9 +16,7 @@ class TronFreezBalanceV2Validator extends TronTransactionValidator {
 
   late final ValidatorField<NoneDecimalBalance> amount = ValidatorField(
     name: "frozen_balance",
-    subject: "trx_stake_amount",
     optional: false,
-    id: "frozen_balance",
     onChangeValidator: (v) {
       try {
         if (v!.isZero || v.isNegative) return null;
@@ -30,9 +28,7 @@ class TronFreezBalanceV2Validator extends TronTransactionValidator {
   );
   late final ValidatorField<ResourceCode> resource = ValidatorField(
     name: "resource",
-    subject: "",
     optional: false,
-    id: "",
     onChangeValidator: (v) {
       try {
         if (v == ResourceCode.tronPower) return null;
@@ -50,22 +46,7 @@ class TronFreezBalanceV2Validator extends TronTransactionValidator {
   List<ValidatorField> get fields => [amount, resource];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => validateError() == null;
-
-  @override
   late final String name = "tron_stack_v2";
-
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
-  void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
 
   @override
   void setValue<T>(ValidatorField<T>? field, T? value) {
@@ -77,13 +58,10 @@ class TronFreezBalanceV2Validator extends TronTransactionValidator {
   }
 
   void _checkEstimate() {
-    if (isValid) {
+    if (validateError() == null) {
       onStimateChanged?.call();
     }
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   String? validateError({ITronAddress? account}) {

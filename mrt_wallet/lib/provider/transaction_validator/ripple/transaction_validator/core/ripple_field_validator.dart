@@ -7,8 +7,12 @@ abstract class RippleTransactionValidator implements TransactionValidator {
       {List<XRPLMemo> memos = const [],
       String signerPublicKey = "",
       BigInt? fee});
-
+  String get helperUri;
   XRPLTransactionType get transactionType;
   @override
   String? validateError({IXRPAddress? account});
+  String get validatorName;
+  String get validatorDescription;
+  void removeIndex<T>(ValidatorField<List<T>> field, int index);
+  void setListValue<T>(ValidatorField<List<T>> field, T? value);
 }

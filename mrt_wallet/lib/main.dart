@@ -24,7 +24,9 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transa
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/fields/transfer.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/setup_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/spl_token/account_spl_tokens_view.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/transaction/fields/transaction.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/transaction/fields/transfer.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/update_provider.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/setup_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/setup_multisig_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/token/import_trc10_tokens.dart';
@@ -246,6 +248,10 @@ class PageRouter {
         return const SetupCosmosAddressView();
       case PagePathConst.cosmosTransaction:
         return const CosmosTransferTransactionView();
+      case PagePathConst.solanaTransaction:
+        return const SolanaTransactionFieldsView();
+      case PagePathConst.editSolanaNetwork:
+        return const ImportSolanaProviderView();
       default:
         return const HomeScreen();
     }

@@ -144,6 +144,22 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     }
   }
 
+  Future<MethodResult<void>> updateToken({
+    required TokenCore<dynamic> token,
+    required Token updatedToken,
+    required CryptoAccountAddress<dynamic, dynamic, dynamic> address,
+  }) async {
+    try {
+      final result = await _callSynchronized(
+          () async => await _updateToken(
+              token: token, address: address, updatedToken: updatedToken),
+          conditionStatus: WalletStatus.unlock);
+      return result;
+    } finally {
+      notify();
+    }
+  }
+
   Future<MethodResult<void>> addNewNFT(
       NFTCore nft, CryptoAccountAddress address) async {
     try {

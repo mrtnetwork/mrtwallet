@@ -13,5 +13,5 @@ abstract class TokenCore<T> with CborSerializable {
 }
 
 abstract class SolidityToken implements TokenCore<BigInt> {
-  String toHex();
+  String toHexAddress();
 }

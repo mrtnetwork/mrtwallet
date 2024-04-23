@@ -135,11 +135,13 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                     key: ValueKey(showAllAddresses),
                     child: showAllAddresses
                         ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: List.generate(addresses.length, (index) {
                               final address = addresses.elementAt(index);
                               final bool isLastIndex =
                                   index == addresses.length - 1;
                               return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   AddressDetailsView(address: address),
                                   if (!isLastIndex)

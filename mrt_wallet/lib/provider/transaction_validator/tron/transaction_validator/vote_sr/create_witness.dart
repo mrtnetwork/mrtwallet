@@ -16,9 +16,7 @@ class TronCreateWitnessValidator extends TronTransactionValidator {
 
   late final ValidatorField<String> url = ValidatorField(
     name: "url",
-    subject: "",
     optional: false,
-    id: "",
     onChangeValidator: (v) {
       try {
         return v;
@@ -35,22 +33,7 @@ class TronCreateWitnessValidator extends TronTransactionValidator {
   List<ValidatorField> get fields => [url];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => validateError() == null;
-
-  @override
   late final String name = "create_witness";
-
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
-  void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
 
   @override
   void setValue<T>(ValidatorField<T>? field, T? value) {
@@ -62,13 +45,10 @@ class TronCreateWitnessValidator extends TronTransactionValidator {
   }
 
   void _checkEstimate() {
-    if (isValid) {
+    if (validateError() == null) {
       onStimateChanged?.call();
     }
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   String? validateError({ITronAddress? account}) {

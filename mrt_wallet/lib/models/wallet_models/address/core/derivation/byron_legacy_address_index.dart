@@ -11,6 +11,18 @@ class ByronLegacyAddressIndex extends AddressDerivationIndex
   final int firstIndex;
   final int secondIndex;
 
+  @override
+  final CryptoCoins? currencyCoin;
+  @override
+  final EllipticCurveTypes? curve = null;
+  @override
+  SeedGenerationType get seedGeneration => SeedGenerationType.byronLegacySeed;
+
+  const ByronLegacyAddressIndex(
+      {required this.firstIndex,
+      required this.secondIndex,
+      required this.currencyCoin});
+
   factory ByronLegacyAddressIndex.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     try {
@@ -22,22 +34,12 @@ class ByronLegacyAddressIndex extends AddressDerivationIndex
       final String coinName = cbor.elementAt(3);
       final CryptoCoins? coin =
           CryptoCoins.getCoin(coinName, CryptoProposal.fromName(proposal));
-      return ByronLegacyAddressIndex._(
+      return ByronLegacyAddressIndex(
           firstIndex: firstIndex, secondIndex: secondIndex, currencyCoin: coin);
     } catch (e) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
   }
-  ByronLegacyAddressIndex._(
-      {required this.firstIndex,
-      required this.secondIndex,
-      required this.currencyCoin})
-      : curve = null;
-  ByronLegacyAddressIndex(
-      {required this.firstIndex,
-      required this.secondIndex,
-      required this.currencyCoin})
-      : curve = null;
 
   @override
   CborTagValue toCbor() {
@@ -61,24 +63,11 @@ class ByronLegacyAddressIndex extends AddressDerivationIndex
   }
 
   @override
-  String toString() {
-    return path;
-  }
-
-  @override
-  T derive<T>(T derivator, {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
-    if (derivator is! Bip32Base) {
-      throw WalletException.invalidArgruments(
-          ["Bip32Base", derivator.runtimeType.toString()]);
-    }
+  T derive<T extends Bip32Base>(T derivator,
+      {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
     return derivator.derivePath(path) as T;
   }
 
-  @override
-  final CryptoCoins? currencyCoin;
-
-  @override
-  final EllipticCurveTypes? curve;
   @override
   String storageKey({Bip44Levels maxLevel = Bip44Levels.addressIndex}) =>
       BytesUtils.toHexString(MD5.hash([
@@ -88,5 +77,7 @@ class ByronLegacyAddressIndex extends AddressDerivationIndex
       ]));
 
   @override
-  SeedGenerationType get seedGeneration => SeedGenerationType.byronLegacySeed;
+  String toString() {
+    return path;
+  }
 }

@@ -125,6 +125,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                                   ? null
                                   : const SizedBox(),
                               title: Text(widget.label),
+                              centerTitle: false,
                             ),
                             body: Column(
                               children: [

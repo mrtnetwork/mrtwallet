@@ -16,6 +16,7 @@ abstract class CosmosTransactiomImpl extends StateController {
       required this.address,
       required this.apiProvider,
       required this.validator});
+
   final WalletProvider walletProvider;
   final NetworkAccountCore account;
   final APPCosmosNetwork network;
@@ -26,6 +27,7 @@ abstract class CosmosTransactiomImpl extends StateController {
       GlobalKey<PageProgressState>(debugLabel: "CosmosTransactiomImpl");
   late final NoneDecimalBalance remindAmount =
       NoneDecimalBalance.zero(network.coinParam.decimal);
+
   BaseAccount get ownerAccount;
   GetLatestBlockResponse get latestBlock;
   ThorNodeNetworkConstants get thorNodeNetworkConstants;

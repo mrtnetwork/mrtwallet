@@ -82,8 +82,8 @@ class EVMApiProvider implements NetworkApiProvider<IEthAddress> {
 
   Future<void> updateTokenBalance(
       SolidityAddress account, SolidityToken token) async {
-    final balance =
-        await provider.request(RPCERC20TokenBalance(token.toHex(), account));
+    final balance = await provider
+        .request(RPCERC20TokenBalance(token.toHexAddress(), account));
     token.updateBalance(balance);
   }
 

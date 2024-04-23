@@ -224,22 +224,7 @@ class TronAccountUpdatePermissionValidator extends TronTransactionValidator {
   List<ValidatorField> get fields => [];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => validateError() == null;
-
-  @override
   late final String name = "update_account_permission";
-
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
-  void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
 
   @override
   void setValue<T>(ValidatorField<T>? field, T? value) {
@@ -251,13 +236,10 @@ class TronAccountUpdatePermissionValidator extends TronTransactionValidator {
   }
 
   void _checkEstimate() {
-    if (isValid) {
+    if (validateError() == null) {
       onStimateChanged?.call();
     }
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   String? validateError({ITronAddress? account}) {

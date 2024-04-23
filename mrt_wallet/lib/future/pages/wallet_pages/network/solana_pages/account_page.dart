@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/token_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+import 'package:mrt_wallet/provider/transaction_validator/core/validator.dart';
+import 'package:mrt_wallet/provider/transaction_validator/solana/solana.dart';
 
 class SolanaAccountPageView extends StatelessWidget {
   const SolanaAccountPageView({required this.chainAccount, super.key});
@@ -12,6 +12,7 @@ class SolanaAccountPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TabBarView(children: [
+      const _SolanaServices(),
       _SolanaTokenView(account: chainAccount.account.address as ISolanaAddress),
     ]);
   }
@@ -23,7 +24,6 @@ class _SolanaTokenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     final tokens = account.tokens;
 
     if (tokens.isEmpty) {
@@ -65,40 +65,13 @@ class _SolanaTokenView extends StatelessWidget {
               final SolanaSPLToken token = account.tokens[index];
               return ContainerWithBorder(
                 onRemove: () {
-                  context
-                      .openSliverDialog<TokenAction>(
-                          (ctx) => TokenDetailsModalView(
-                                token: token,
-                                address: account,
-                              ),
-                          content: (ctx) => [
-                                IconButton(
-                                    onPressed: () {
-                                      ctx.pop(TokenAction.delete);
-                                    },
-                                    icon: Icon(Icons.delete,
-                                        color: context.colors.error))
-                              ],
-                          "token_info".tr)
-                      .then((value) {
-                    switch (value) {
-                      case TokenAction.delete:
-                        context.openSliverDialog(
-                            (ctx) => DialogTextView(
-                                buttomWidget: AsyncDialogDoubleButtonView(
-                                  firstButtonPressed: () =>
-                                      wallet.removeToken(token, account),
-                                ),
-                                text: "remove_token_from_account".tr),
-                            "remove_token".tr);
-                        break;
-                      case TokenAction.transfer:
-                        context.to(PagePathConst.solanaTransfer,
-                            argruments: token);
-                        break;
-                      default:
-                    }
-                  });
+                  context.openDialogPage<TokenAction>(
+                      (ctx) => TokenDetailsModalView(
+                            token: token,
+                            address: account,
+                            transferPath: PagePathConst.solanaTransfer,
+                          ),
+                      "token_info".tr);
                 },
                 onRemoveWidget: WidgetConstant.sizedBox,
                 child: Row(
@@ -127,6 +100,63 @@ class _SolanaTokenView extends StatelessWidget {
             addRepaintBoundaries: false,
             shrinkWrap: true,
           )
+        ],
+      ),
+    );
+  }
+}
+
+class _SolanaServices extends StatelessWidget {
+  const _SolanaServices();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          AppListTile(
+            title: Text("associated_token_program".tr),
+            subtitle: Text("create_associated_token_account".tr),
+            onTap: () {
+              final validator = LiveTransactionValidator<
+                      SolanaCreateAssociatedTokenAccountValidator>(
+                  validator: SolanaCreateAssociatedTokenAccountValidator());
+              context.to(PagePathConst.solanaTransaction,
+                  argruments: validator);
+            },
+          ),
+          AppListTile(
+            title: Text("create_account".tr),
+            subtitle: Text("solana_create_account_desc".tr),
+            onTap: () {
+              final validator =
+                  LiveTransactionValidator<SolanaCreateAccountValidator>(
+                      validator: SolanaCreateAccountValidator());
+              context.to(PagePathConst.solanaTransaction,
+                  argruments: validator);
+            },
+          ),
+          AppListTile(
+            title: Text("initialize_mint".tr),
+            subtitle: Text("initiailize_mint_desc".tr),
+            onTap: () {
+              final validator =
+                  LiveTransactionValidator<SolanaInitializeMintValidator>(
+                      validator: SolanaInitializeMintValidator());
+              context.to(PagePathConst.solanaTransaction,
+                  argruments: validator);
+            },
+          ),
+          AppListTile(
+            title: Text("mint_to".tr),
+            subtitle: Text("mint_to_desc".tr),
+            onTap: () {
+              final validator = LiveTransactionValidator<SolanaMintToValidator>(
+                  validator: SolanaMintToValidator());
+              context.to(PagePathConst.solanaTransaction,
+                  argruments: validator);
+            },
+          ),
         ],
       ),
     );

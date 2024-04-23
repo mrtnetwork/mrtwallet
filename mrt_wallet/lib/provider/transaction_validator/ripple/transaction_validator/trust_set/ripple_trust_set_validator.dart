@@ -48,9 +48,6 @@ class RippleTrustSetValidator implements RippleTransactionValidator {
   );
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -94,9 +91,9 @@ class RippleTrustSetValidator implements RippleTransactionValidator {
   String get name => "trust_set";
 
   @override
-  String get fieldsName => "trust_set_fields";
+  String get validatorName => "trust_set_fields";
   @override
-  String get subject => "ripple_trust_set_desc";
+  String get validatorDescription => "ripple_trust_set_desc";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}

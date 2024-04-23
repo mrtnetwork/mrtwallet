@@ -116,7 +116,7 @@ class RipplePaymentFieldsView extends StatelessWidget {
           onRemove: () {
             context
                 .openSliverBottomSheet<String>(
-                  validator.fieldsName.tr,
+                  validator.validatorName.tr,
                   child: StringWriterView(
                     defaultValue: validator.invoiceId.value,
                     maxLength: RippleConst.rippleTranactionHashLength,

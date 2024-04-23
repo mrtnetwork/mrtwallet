@@ -20,18 +20,14 @@ class EthereumTransferValidator extends EthereumTransactionValidator {
   final Token token;
   final ETHERC20Token? erc20Token;
   final ValidatorField<ReceiptAddress<ETHAddress>> destination = ValidatorField(
-      id: "receiver",
       name: "destination",
       optional: false,
       onChangeValidator: (p0) {
         return p0;
-      },
-      subject: "");
+      });
   final ValidatorField<NoneDecimalBalance> amount = ValidatorField(
     name: "amount",
-    subject: "",
     optional: false,
-    id: "",
     onChangeValidator: (v) {
       try {
         if (v!.isZero || v.isNegative) return null;
@@ -49,22 +45,7 @@ class EthereumTransferValidator extends EthereumTransactionValidator {
   List<ValidatorField> get fields => [destination, amount];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => validateError() == null;
-
-  @override
   String get name => erc20Token != null ? "transfer_erc20" : "transfer";
-
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
-  void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
 
   @override
   void setValue<T>(ValidatorField<T>? field, T? value) {
@@ -76,13 +57,10 @@ class EthereumTransferValidator extends EthereumTransactionValidator {
   }
 
   void _checkEstimate() {
-    if (isValid && erc20Token != null) {
+    if (validateError() == null && erc20Token != null) {
       onStimateChanged?.call();
     }
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   String? validateError({IEthAddress? account}) {

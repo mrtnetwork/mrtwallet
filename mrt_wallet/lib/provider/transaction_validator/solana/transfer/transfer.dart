@@ -27,18 +27,14 @@ class SolanaTransferValidator extends SolanaTransactionValidator {
           amount.value!.balance < SolanaConstants.systemProgramRent.balance);
 
   final ValidatorField<ReceiptAddress<SolAddress>> destination = ValidatorField(
-      id: "receiver",
       name: "destination",
       optional: false,
       onChangeValidator: (p0) {
         return p0;
-      },
-      subject: "");
+      });
   final ValidatorField<NoneDecimalBalance> amount = ValidatorField(
     name: "amount",
-    subject: "",
     optional: false,
-    id: "",
     onChangeValidator: (v) {
       try {
         if (v!.isZero || v.isNegative) return null;
@@ -57,22 +53,7 @@ class SolanaTransferValidator extends SolanaTransactionValidator {
   List<ValidatorField> get fields => [destination, amount];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => throw UnimplementedError();
-
-  @override
-  String get name => throw UnimplementedError();
-
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
-  void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
+  String get name => "transfer_symbol".tr.replaceOne(token.symbol);
 
   @override
   void setValue<T>(ValidatorField<T>? field, T? value) {
@@ -109,9 +90,6 @@ class SolanaTransferValidator extends SolanaTransactionValidator {
     accountKey.updateStream(StreamWidgetStatus.idle);
     onChanged?.call();
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   BigInt get transferValue => amount.value?.balance ?? BigInt.zero;

@@ -182,6 +182,9 @@ class IBitcoinAddress
 
   @override
   String get orginalAddress => address.toAddress;
+
+  @override
+  void updateToken(TokenCore<BigInt> token, Token updatedToken) {}
 }
 
 class IBitcoinMultiSigAddress extends IBitcoinAddress

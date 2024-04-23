@@ -127,12 +127,17 @@ mixin Signer on MasterKeyImpl {
 
   SolanaTransaction _signSolanaTransaction(
       {required SolanaSigningRequest request, required List<int> password}) {
-    final bipKey = _getPrivateKey(password, request.signers.first);
-    final solanaPrivateKey = SolanaPrivateKey.fromSeed(bipKey.privateKey.raw);
-    final signature =
-        solanaPrivateKey.sign(request.solanaTransaction.serializeMessage());
-    request.solanaTransaction
-        .addSignature(request.addresses.first.networkAddress, signature);
+    WalletLogging.print("signers len ${request.signers.length}");
+    for (int i = 0; i < request.signers.length; i++) {
+      final signier = request.signers.elementAt(i);
+      final addr = request.addresses.elementAt(i).networkAddress;
+      final bipKey = _getPrivateKey(password, signier);
+      final solanaPrivateKey = SolanaPrivateKey.fromSeed(bipKey.privateKey.raw);
+      final signature =
+          solanaPrivateKey.sign(request.solanaTransaction.serializeMessage());
+      request.solanaTransaction.addSignature(addr, signature);
+    }
+
     return request.solanaTransaction;
   }
 

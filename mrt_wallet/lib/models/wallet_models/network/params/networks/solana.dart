@@ -19,7 +19,7 @@ class SolanaNetworkParams with CborSerializable implements NetworkCoinParams {
         addressExplorer: cbor.elementAt(1),
         token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
         providers: (cbor.elementAt(3) as List)
-            .map((e) => TronApiProviderService.fromCborBytesOrObject(obj: e))
+            .map((e) => SolanaApiProviderService.fromCborBytesOrObject(obj: e))
             .toList(),
         mainnet: cbor.elementAt(4));
   }
@@ -29,6 +29,22 @@ class SolanaNetworkParams with CborSerializable implements NetworkCoinParams {
       required this.token,
       required this.providers,
       required this.mainnet});
+
+  SolanaNetworkParams copyWith({
+    bool? mainnet,
+    String? transactionExplorer,
+    String? addressExplorer,
+    Token? token,
+    List<SolanaApiProviderService>? providers,
+  }) {
+    return SolanaNetworkParams(
+      mainnet: mainnet ?? this.mainnet,
+      transactionExplorer: transactionExplorer ?? this.transactionExplorer,
+      addressExplorer: addressExplorer ?? this.addressExplorer,
+      token: token ?? this.token,
+      providers: providers ?? this.providers,
+    );
+  }
 
   final bool mainnet;
 
@@ -46,6 +62,8 @@ class SolanaNetworkParams with CborSerializable implements NetworkCoinParams {
 
   @override
   final Token token;
+  @override
+  final List<SolanaApiProviderService> providers;
 
   @override
   String? getAccountExplorer(String address) {
@@ -56,9 +74,6 @@ class SolanaNetworkParams with CborSerializable implements NetworkCoinParams {
   String? getTransactionExplorer(String txId) {
     return transactionExplorer?.replaceAll(_txIdArgs, txId);
   }
-
-  @override
-  final List<TronApiProviderService> providers;
 
   @override
   CborTagValue toCbor() {

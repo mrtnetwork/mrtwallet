@@ -32,6 +32,9 @@ class RippleIssueToken with Equatable implements TokenCore<BigRational> {
       throw WalletExceptionConst.invalidTokenInformation;
     }
   }
+  RippleIssueToken updateToken(Token updateToken) {
+    return RippleIssueToken._(balance, updateToken, issuer, _updated);
+  }
 
   @override
   final Live<DecimalBalance> balance;
@@ -65,7 +68,7 @@ class RippleIssueToken with Equatable implements TokenCore<BigRational> {
   }
 
   @override
-  List get variabels => [token, issuer];
+  List get variabels => [issuer];
 
   @override
   final Token token;

@@ -13,6 +13,28 @@ class Bip32AddressIndex extends AddressDerivationIndex
   final int accountLevel;
   final int changeLevel;
   final int addressIndex;
+
+  @override
+  final String path;
+
+  @override
+  final EllipticCurveTypes? curve;
+  @override
+  final SeedGenerationType seedGeneration;
+  @override
+  final CryptoCoins? currencyCoin;
+
+  const Bip32AddressIndex._(
+      {required this.purpose,
+      required this.coin,
+      required this.accountLevel,
+      required this.changeLevel,
+      required this.addressIndex,
+      required this.curve,
+      required this.currencyCoin,
+      required this.seedGeneration,
+      required this.path});
+
   factory Bip32AddressIndex.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     try {
@@ -36,6 +58,13 @@ class Bip32AddressIndex extends AddressDerivationIndex
           changeLevel: changeLevel,
           purpose: purposeLevel,
           coin: coinLevel,
+          path: _toPath([
+            purposeLevel,
+            coinLevel,
+            accountLevel,
+            changeLevel,
+            addressIndex
+          ]),
           curve: curve == null
               ? coin == null
                   ? EllipticCurveTypes.secp256k1
@@ -49,24 +78,27 @@ class Bip32AddressIndex extends AddressDerivationIndex
       throw WalletExceptionConst.invalidAccountDetails;
     }
   }
-  Bip32AddressIndex._(
-      {required this.purpose,
-      required this.coin,
-      required this.accountLevel,
-      required this.changeLevel,
-      required this.addressIndex,
-      required this.curve,
-      required this.currencyCoin,
-      required this.seedGeneration});
-  Bip32AddressIndex(
-      {required this.purpose,
-      required this.coin,
-      required this.accountLevel,
-      required this.changeLevel,
-      required this.addressIndex,
-      required this.currencyCoin,
-      required this.seedGeneration})
-      : curve = null;
+
+  factory Bip32AddressIndex(
+      {required int purpose,
+      required int coin,
+      required int accountLevel,
+      required int changeLevel,
+      required int addressIndex,
+      required CryptoCoins currencyCoin,
+      required SeedGenerationType seedGeneration}) {
+    return Bip32AddressIndex._(
+        purpose: purpose,
+        coin: coin,
+        path: _toPath([purpose, coin, accountLevel, changeLevel, addressIndex]),
+        curve: null,
+        accountLevel: accountLevel,
+        changeLevel: changeLevel,
+        addressIndex: addressIndex,
+        currencyCoin: currencyCoin,
+        seedGeneration: seedGeneration);
+  }
+
   factory Bip32AddressIndex.fromBip44KeyIndexDetais(
       {required List<Bip44LevelsDetails> indexes,
       required CryptoCoins currencyCoin,
@@ -86,13 +118,12 @@ class Bip32AddressIndex extends AddressDerivationIndex
     final int addressIndex = indexes
         .firstWhere((element) => element.level == Bip44Levels.addressIndex)
         .index;
-    return Bip32AddressIndex._(
+    return Bip32AddressIndex(
         purpose: purpose,
         coin: coin,
         accountLevel: accountLevel,
         changeLevel: changeLevel,
         addressIndex: addressIndex,
-        curve: null,
         currencyCoin: currencyCoin,
         seedGeneration: seedGeneration);
   }
@@ -133,14 +164,6 @@ class Bip32AddressIndex extends AddressDerivationIndex
         seedGeneration.name
       ];
 
-  String? _cachedPath;
-
-  @override
-  String get path {
-    _cachedPath ??= _toPath(indexes.map((e) => e.index).toList());
-    return _cachedPath!;
-  }
-
   static String _toPath(List<int> indexses) {
     String path = "m/";
     for (final i in indexses) {
@@ -156,16 +179,8 @@ class Bip32AddressIndex extends AddressDerivationIndex
   }
 
   @override
-  String toString() {
-    return path;
-  }
-
-  @override
-  T derive<T>(T derivator, {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
-    if (derivator is! Bip32Base) {
-      throw WalletException.invalidArgruments(
-          ["Bip32Base", derivator.runtimeType.toString()]);
-    }
+  T derive<T extends Bip32Base>(T derivator,
+      {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
     Bip32Base deriveToIndex = derivator;
     for (int i = 0; i < maxLevel.value; i++) {
       deriveToIndex = deriveToIndex.childKey(indexes.elementAt(i));
@@ -173,8 +188,6 @@ class Bip32AddressIndex extends AddressDerivationIndex
     return deriveToIndex as T;
   }
 
-  @override
-  final CryptoCoins? currencyCoin;
   List<Bip32KeyIndex> get indexes => [
         Bip32KeyIndex(purpose),
         Bip32KeyIndex(coin),
@@ -182,9 +195,6 @@ class Bip32AddressIndex extends AddressDerivationIndex
         Bip32KeyIndex(changeLevel),
         Bip32KeyIndex(addressIndex)
       ];
-
-  @override
-  final EllipticCurveTypes? curve;
 
   @override
   String storageKey({Bip44Levels maxLevel = Bip44Levels.addressIndex}) =>
@@ -195,5 +205,7 @@ class Bip32AddressIndex extends AddressDerivationIndex
       ]));
 
   @override
-  final SeedGenerationType seedGeneration;
+  String toString() {
+    return path;
+  }
 }

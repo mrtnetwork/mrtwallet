@@ -173,6 +173,8 @@ class ICardanoAddress
   }
 
   @override
+  void updateToken(TokenCore<BigInt> token, Token updatedToken) {}
+  @override
   void addNFT(NFTCore newNft) {}
 
   @override

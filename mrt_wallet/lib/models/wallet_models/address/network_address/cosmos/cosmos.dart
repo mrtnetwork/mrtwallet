@@ -170,7 +170,8 @@ class ICosmosAddress
 
   @override
   void removeNFT(NFTCore nft) {}
-
+  @override
+  void updateToken(TokenCore<BigInt> token, Token updatedToken) {}
   SignerInfo get signerInfo => SignerInfo(
       publicKey: coin.conf.type == EllipticCurveTypes.nist256p1
           ? CosmosSecp256R1PublicKey.fromBytes(publicKey)

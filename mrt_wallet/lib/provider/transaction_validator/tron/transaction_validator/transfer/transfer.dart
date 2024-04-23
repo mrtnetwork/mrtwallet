@@ -34,18 +34,15 @@ class TronTransferValidator extends TronTransactionValidator {
 
   final ValidatorField<ReceiptAddress<TronAddress>> destination =
       ValidatorField(
-          id: "receiver",
-          name: "destination",
-          optional: false,
-          onChangeValidator: (p0) {
-            return p0;
-          },
-          subject: "");
+    name: "destination",
+    optional: false,
+    onChangeValidator: (p0) {
+      return p0;
+    },
+  );
   late final ValidatorField<NoneDecimalBalance> amount = ValidatorField(
     name: "amount",
-    subject: "",
     optional: false,
-    id: "",
     onChangeValidator: (v) {
       try {
         if (v!.isZero || v.isNegative) return null;
@@ -63,26 +60,11 @@ class TronTransferValidator extends TronTransactionValidator {
   List<ValidatorField> get fields => [destination, amount];
 
   @override
-  String get fieldsName => throw UnimplementedError();
-
-  @override
-  String get helperUri => throw UnimplementedError();
-
-  @override
-  bool get isValid => validateError() == null;
-
-  @override
   late final String name = _trc10Token != null
       ? "transfer_trc10"
       : _trc20Token != null
           ? "transfer_trc20"
           : "transfer";
-
-  @override
-  void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
-
-  @override
-  void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
 
   @override
   void setValue<T>(ValidatorField<T>? field, T? value) {
@@ -94,13 +76,10 @@ class TronTransferValidator extends TronTransactionValidator {
   }
 
   void _checkEstimate() {
-    if (isValid) {
+    if (validateError() == null) {
       onStimateChanged?.call();
     }
   }
-
-  @override
-  String get subject => throw UnimplementedError();
 
   @override
   String? validateError({ITronAddress? account}) {

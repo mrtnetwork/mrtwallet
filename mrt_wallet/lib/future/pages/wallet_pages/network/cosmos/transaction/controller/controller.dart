@@ -17,10 +17,15 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
       required super.address,
       required super.apiProvider,
       required super.validator});
+
   bool _trIsReady = false;
   bool get trIsReady => _trIsReady;
+
   String? _error;
   String? get error => _error;
+
+  String? _lastestUpdateHashCode;
+
   @override
   Future<void> onTapMemo(OnAddCosmosMemo onAddMemo) async {
     final String? currentMemo = memo;
@@ -33,8 +38,6 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
   void sendTransaction() {
     buildTransaction();
   }
-
-  String? _lastestUpdateHashCode;
 
   void _onReadyValidator(String hashCode) {
     if (_lastestUpdateHashCode == hashCode && hasFee) return;

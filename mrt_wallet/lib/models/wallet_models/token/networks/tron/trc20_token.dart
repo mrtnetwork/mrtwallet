@@ -35,6 +35,9 @@ class TronTRC20Token with Equatable implements SolidityToken {
       throw WalletExceptionConst.invalidTokenInformation;
     }
   }
+  TronTRC20Token updateToken(Token updateToken) {
+    return TronTRC20Token._(balance, updateToken, contractAddress, _updated);
+  }
 
   @override
   final Live<NoneDecimalBalance> balance;
@@ -67,7 +70,7 @@ class TronTRC20Token with Equatable implements SolidityToken {
   }
 
   @override
-  List get variabels => [token, contractAddress.toAddress()];
+  List get variabels => [contractAddress.toAddress()];
 
   @override
   final Token token;
@@ -76,7 +79,7 @@ class TronTRC20Token with Equatable implements SolidityToken {
   String? get issuer => contractAddress.toAddress();
 
   @override
-  String toHex() {
+  String toHexAddress() {
     return contractAddress.toAddress(false);
   }
 

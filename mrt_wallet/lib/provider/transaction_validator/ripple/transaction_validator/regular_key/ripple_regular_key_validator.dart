@@ -17,9 +17,6 @@ class RippleRegularKeyValidator implements RippleTransactionValidator {
   );
 
   @override
-  bool get isValid => validateError() == null;
-
-  @override
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
@@ -61,7 +58,7 @@ class RippleRegularKeyValidator implements RippleTransactionValidator {
   @override
   String get helperUri => RippleConst.aboutRegularKey;
   @override
-  String get fieldsName => "ripple_set_regular_key_fields";
+  String get validatorName => "ripple_set_regular_key_fields";
 
   @override
   void removeIndex<T>(ValidatorField<List<T>> field, int index) {}
@@ -69,7 +66,7 @@ class RippleRegularKeyValidator implements RippleTransactionValidator {
   @override
   void setListValue<T>(ValidatorField<List<T>> field, T? value) {}
   @override
-  String get subject => "ripple_regular_key_desc";
+  String get validatorDescription => "ripple_regular_key_desc";
 
   @override
   XRPLTransactionType get transactionType => XRPLTransactionType.setRegularKey;
