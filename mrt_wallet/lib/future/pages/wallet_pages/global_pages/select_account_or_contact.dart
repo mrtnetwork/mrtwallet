@@ -16,10 +16,12 @@ class SelectRecipientAccountView extends StatefulWidget {
       {super.key,
       required this.account,
       required this.scrollController,
-      this.subtitle});
+      this.subtitle,
+      this.multipleSelect = true});
   final NetworkAccountCore account;
   final ScrollController scrollController;
   final Widget? subtitle;
+  final bool multipleSelect;
 
   @override
   State<SelectRecipientAccountView> createState() =>

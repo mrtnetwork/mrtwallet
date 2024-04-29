@@ -67,7 +67,7 @@ mixin TronTransactionFeeIMpl on TronTransactionImpl {
     if (address.multiSigAccount) {
       final multiSigAccount = address as ITronMultisigAddress;
       permissionId = multiSigAccount.multiSignatureAccount.permissionID;
-      signer = multiSigAccount.signers.length;
+      signer = multiSigAccount.keyDetails.length;
     }
     final smartContractAddr = field.smartContractAddress;
     final raw = _buildFeeTr(permissionId);

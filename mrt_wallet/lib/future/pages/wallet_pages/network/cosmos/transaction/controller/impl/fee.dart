@@ -72,6 +72,7 @@ mixin CosmosTransactionFeeImpl on CosmosTransactiomImpl {
     _feeError = null;
     _cancelable.cancel();
     feeProgressKey.process();
+    notify();
     try {
       final result = await MethodCaller.call(() async {
         return await _simulateTr();

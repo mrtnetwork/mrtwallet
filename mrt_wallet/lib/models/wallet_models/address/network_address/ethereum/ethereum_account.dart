@@ -117,9 +117,6 @@ class IEthAddress
   final List<int> publicKey;
 
   @override
-  List<String> get signers => [BytesUtils.toHexString(publicKey)];
-
-  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -210,4 +207,7 @@ class IEthAddress
 
   @override
   String get orginalAddress => networkAddress.address;
+
+  @override
+  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 }

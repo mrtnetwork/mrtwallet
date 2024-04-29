@@ -36,10 +36,7 @@ class DialogView extends StatelessWidget {
                       leading: WidgetConstant.sizedBox,
                       leadingWidth: 0,
                       pinned: true,
-                      actions: [
-                        ...content,
-                        const CloseButton(),
-                      ],
+                      actions: [...content, const CloseButton()],
                     ),
                     SliverToBoxAdapter(
                       child: ConstraintsBoxView(

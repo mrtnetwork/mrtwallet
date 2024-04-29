@@ -6,36 +6,37 @@ import 'package:mrt_wallet/models/wallet_models/address/network_address/xrp/mutl
 import 'package:mrt_wallet/models/wallet_models/address/new_address_params/core.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
-class RippleNewAddressParam implements NewAccountParams {
-  const RippleNewAddressParam(
-      {required this.coin,
-      required this.deriveIndex,
-      this.tag,
-      required this.type});
+class RippleNewAddressParam implements NewAccountParams<RippleNewAddressParam> {
   @override
   bool get isMultiSig => false;
-  @override
-  final CryptoCoins coin;
+
   final EllipticCurveTypes type;
   @override
   final AddressDerivationIndex deriveIndex;
 
   final int? tag;
+  @override
+  CryptoCoins get coin => deriveIndex.currencyCoin;
+
+  RippleNewAddressParam({
+    required this.deriveIndex,
+    this.tag,
+    required this.type,
+  });
 }
 
 class RippleMultisigNewAddressParam implements RippleNewAddressParam {
   const RippleMultisigNewAddressParam(
-      {required this.coin,
-      required this.multiSigAccount,
+      {required this.multiSigAccount,
       required this.masterAddress,
+      required this.coin,
       this.tag,
       this.deriveIndex = const MultiSigAddressIndex()});
   @override
   bool get isMultiSig => true;
 
   final XRPAddress masterAddress;
-  @override
-  final CryptoCoins coin;
+
   @override
   final AddressDerivationIndex deriveIndex;
 
@@ -46,4 +47,7 @@ class RippleMultisigNewAddressParam implements RippleNewAddressParam {
 
   @override
   EllipticCurveTypes get type => throw UnimplementedError();
+
+  @override
+  final CryptoCoins coin;
 }

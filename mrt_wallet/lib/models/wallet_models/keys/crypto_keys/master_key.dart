@@ -3,10 +3,10 @@ import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
+import 'package:mrt_wallet/models/wallet_models/address/core/derivation/address_derivation.dart';
+import 'package:mrt_wallet/models/wallet_models/address/core/derivation/bip32_address_index.dart';
+import 'package:mrt_wallet/models/wallet_models/keys/keys.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
-
-import 'derived_key.dart';
-import 'setting.dart';
 
 enum SeedGenerationType {
   bip39("Bip39"),
@@ -173,66 +173,22 @@ class WalletMasterKeys with CborSerializable {
       return null;
     }
   }
-}
 
-class WalletCustomKeys with CborSerializable, Equatable {
-  WalletCustomKeys(
-      {required this.checksum,
-      required this.extendedPrivateKey,
-      required this.type,
-      required this.publicKey,
-      required this.name,
-      DateTime? created})
-      : created = created ?? DateTime.now();
-  final String checksum;
-  final String extendedPrivateKey;
-  final String publicKey;
-  final String? name;
-  final DateTime created;
-
-  final EllipticCurveTypes type;
-  factory WalletCustomKeys.fromCborBytesOrObject(
-      {List<int>? bytes, CborObject? obj}) {
-    try {
-      final CborListValue cbor = CborSerializable.decodeCborTags(
-          bytes, obj, WalletModelCborTagsConst.walletCustomKey);
-      final String checksum = cbor.elementAt(0);
-      final String extendedPrivateKey = cbor.elementAt(1);
-      final String publicKey = cbor.elementAt(2);
-      final String curveName = cbor.elementAt(3);
-      final curve = EllipticCurveTypes.fromName(curveName);
-      final DateTime created = cbor.elementAt(4);
-      final String? name = cbor.elementAt(5);
-      return WalletCustomKeys(
-          checksum: checksum,
-          extendedPrivateKey: extendedPrivateKey,
-          type: curve,
-          publicKey: publicKey,
-          created: created,
-          name: name);
-    } catch (e) {
-      throw WalletExceptionConst.invalidMnemonic;
+  Bip32Base toKey(AddressDerivationIndex key,
+      {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
+    if (key is! Bip32AddressIndex) {
+      throw WalletExceptionConst.multiSigDerivationNotSuported;
     }
-  }
-
-  @override
-  CborTagValue toCbor() {
-    return CborTagValue(
-        CborListValue.fixedLength([
-          checksum,
-          extendedPrivateKey,
-          publicKey,
-          type.name,
-          CborEpochIntValue(created),
-          name
-        ]),
-        WalletModelCborTagsConst.walletCustomKey);
-  }
-
-  @override
-  List get variabels => [checksum, extendedPrivateKey, type, publicKey];
-
-  Bip32Base toBip32() {
-    return BlockchainUtils.extendedKeyToBip32(extendedPrivateKey, type);
+    if (key.isImportedKey) {
+      final customKey = getKeyById(key.importedKeyId!);
+      if (customKey == null) {
+        throw WalletExceptionConst.privateKeyIsNotAvailable;
+      }
+      return customKey.toKey(key, maxLevel: maxLevel);
+    }
+    final seedBytes = getSeed(type: key.seedGeneration);
+    final bip32Key = BlockchainUtils.seedToBip32(
+        seedBytes: seedBytes, coin: key.currencyCoin);
+    return key.derive(bip32Key, maxLevel: maxLevel);
   }
 }

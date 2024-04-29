@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/transaction/controller/controller.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/transaction/pages/cardano_transaction_asset_selector.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/transaction/pages/asset_info.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/transaction/pages/mint_token_view.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/transaction/pages/transaction_asset_selector.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/transaction/pages/memo_write_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/cardano.dart';
 import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/cardano.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxo_multi_asset.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:on_chain/on_chain.dart';
+
+import 'transaction_certificate_view.dart';
 
 class CardanoBuildTransactionView extends StatelessWidget {
   const CardanoBuildTransactionView({super.key, required this.controller});
@@ -38,6 +41,73 @@ class CardanoBuildTransactionView extends StatelessWidget {
           ),
         ),
         WidgetConstant.height20,
+        Text("mint".tr, style: context.textTheme.titleMedium),
+        Text("create_a_new_token".tr),
+        WidgetConstant.height8,
+        ...List.generate(controller.mints.length, (index) {
+          final assets = controller.mints[index].toUtxoAssets;
+          return Column(
+            children: List.generate(assets.assets.length, (pos) {
+              final assetName = assets.assets.keys.toList()[pos];
+              final balance = assets.assets[assetName]!;
+              final toToken =
+                  Token(name: assetName.name, symbol: assetName.name);
+              return ContainerWithBorder(
+                  onRemove: () =>
+                      controller.removeMint(controller.mints[index]),
+                  child: CoinPriceView(
+                      token: toToken,
+                      balance: balance,
+                      style: context.textTheme.titleMedium));
+            }),
+          );
+        }),
+        ContainerWithBorder(
+          onRemoveIcon: const Icon(Icons.edit),
+          child: Text("tap_to_create_token".tr),
+          onRemove: () {
+            context
+                .openSliverBottomSheet<ADAMintInfo>("mint".tr,
+                    child: CardanoMintTokenView(controller.account))
+                .then(controller.setupMint);
+          },
+        ),
+        WidgetConstant.height20,
+        Text("certificates".tr, style: context.textTheme.titleMedium),
+        Text("add_certificate_to_transaction".tr),
+        WidgetConstant.height8,
+        ...List.generate(controller.certificates.length, (index) {
+          final certificate = controller.certificates[index];
+          return ContainerWithBorder(
+              onRemove: () {
+                controller.removeCertificate(certificate);
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ADD
+                  Text(certificate.type.viewName.tr,
+                      style: context.textTheme.titleMedium),
+                  Divider(
+                    color: context.colors.onPrimaryContainer,
+                  ),
+                  ReceiptAddressDetailsView(address: certificate.rewardAccount)
+                ],
+              ));
+        }),
+        ContainerWithBorder(
+          onRemoveIcon: const Icon(Icons.edit),
+          child: Text("tap_to_add_certificate".tr),
+          onRemove: () {
+            context
+                .openSliverBottomSheet<ADATransactionCertificate>(
+                  "certificate".tr,
+                  child: CardanoTransactionCertificateView(controller.account),
+                )
+                .then(controller.addCertificate);
+          },
+        ),
+        WidgetConstant.height20,
         Text("list_of_recipients".tr, style: context.textTheme.titleMedium),
         Text("amount_for_each_output".tr),
         WidgetConstant.height8,
@@ -57,6 +127,8 @@ class CardanoBuildTransactionView extends StatelessWidget {
                 children: [
                   ContainerWithBorder(
                       backgroundColor: context.colors.secondary,
+                      validate: !receiver.isRewardAddress,
+                      validateText: "cannot_send_ada_to_stake_address".tr,
                       child: ReceiptAddressDetailsView(
                         address: receiver.address,
                         color: context.colors.onSecondary,
@@ -142,11 +214,27 @@ class CardanoBuildTransactionView extends StatelessWidget {
                           ? Text("tap_to_add_assets_for_recipient".tr,
                               style: context.textTheme.bodyMedium
                                   ?.copyWith(color: context.colors.onSecondary))
-                          : Text(
-                              "n_asset".tr.replaceOne(
-                                  receiver.asset.totalAssets.toString()),
-                              style: context.textTheme.bodyMedium
-                                  ?.copyWith(color: context.colors.onSecondary),
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  "n_asset".tr.replaceOne(
+                                      receiver.asset.totalAssets.toString()),
+                                  style: context.textTheme.bodyMedium?.copyWith(
+                                      color: context.colors.onSecondary),
+                                ),
+                                IconButton(
+                                    onPressed: () {
+                                      context.openSliverDialog(
+                                          (p0) => CardanoAssetsInfoView(
+                                              asset: receiver.asset),
+                                          "assets".tr);
+                                    },
+                                    icon: Icon(
+                                      Icons.remove_red_eye,
+                                      color: context.colors.onSecondary,
+                                    ))
+                              ],
                             ),
                     )
                 ],
@@ -155,7 +243,6 @@ class CardanoBuildTransactionView extends StatelessWidget {
           }),
         ),
         ContainerWithBorder(
-          validate: controller.receivers.isNotEmpty,
           onRemove: () {
             context
                 .openSliverBottomSheet<ReceiptAddress<ADAAddress>>(
@@ -167,8 +254,8 @@ class CardanoBuildTransactionView extends StatelessWidget {
                     initialExtend: 0.9)
                 .then(
               (value) {
-                controller.onAddRecever(value, () {
-                  context.showAlert("address_already_exist".tr);
+                controller.onAddRecever(value, (s) {
+                  context.showAlert(s.tr);
                 });
               },
             );
@@ -185,40 +272,34 @@ class CardanoBuildTransactionView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ContainerWithBorder(
-              validate: !controller.remindAmount.isNegative,
-              onRemoveIcon: Icon(Icons.edit, color: context.colors.onSecondary),
-              backgroundColor: context.colors.secondary,
-              validateText: "transaction_Insufficient_balance".tr,
-              onRemove: () {
-                context
-                    .openSliverBottomSheet<ICardanoAddress>(
-                      "select_account".tr,
-                      child: SwitchOrSelectAccountView(
-                        account: controller.account,
-                        showMultiSig: true,
-                      ),
-                      minExtent: 0.5,
-                      maxExtend: 0.9,
-                      initialExtend: 0.7,
-                      centerContent: false,
-                    )
-                    .then(controller.changeOutputAddress);
-              },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(controller.changeADAOutput.address.type ?? "",
-                      style: context.textTheme.labelLarge
-                          ?.copyWith(color: context.colors.onSecondary)),
-                  OneLineTextWidget(
-                    controller.changeADAOutput.address.view,
-                    style: context.textTheme.bodyMedium
-                        ?.copyWith(color: context.colors.onSecondary),
-                  )
-                ],
-              ),
-            ),
+                // validate: !controller.remindAmount.isNegative,
+                onRemoveIcon:
+                    Icon(Icons.edit, color: context.colors.onSecondary),
+                backgroundColor: context.colors.secondary,
+                validate: !controller.changeADAOutput.isRewardAddress,
+                validateText: "cannot_send_ada_to_stake_address".tr,
+                onRemove: () {
+                  context
+                      .openSliverBottomSheet<ICardanoAddress>(
+                        "select_account".tr,
+                        child: SwitchOrSelectAccountView(
+                          account: controller.account,
+                          showMultiSig: true,
+                        ),
+                        minExtent: 0.5,
+                        maxExtend: 0.9,
+                        initialExtend: 0.7,
+                        centerContent: false,
+                      )
+                      .then(controller.changeOutputAddress);
+                },
+                child: ReceiptAddressDetailsView(
+                  address: controller.changeADAOutput.address,
+                  color: context.colors.onSecondary,
+                )),
             ContainerWithBorder(
+                validate: !controller.remindAmount.isNegative,
+                validateText: "transaction_Insufficient_balance".tr,
                 backgroundColor: context.colors.secondary,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,160 +323,140 @@ class CardanoBuildTransactionView extends StatelessWidget {
           ],
         )),
         if (controller.hasAsset) ...[
-          WidgetConstant.height20,
-          Text("remaining_asset_amount".tr,
-              style: context.textTheme.titleMedium),
-          Text("remaining_asset_amount_and_receiver".tr),
-          WidgetConstant.height8,
-          ContainerWithBorder(
-              child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ContainerWithBorder(
-                validate: !controller.remindAmount.isNegative,
-                onRemoveIcon:
-                    Icon(Icons.edit, color: context.colors.onSecondary),
-                backgroundColor: context.colors.secondary,
-                validateText: "transaction_Insufficient_balance".tr,
-                onRemove: () {
-                  context
-                      .openSliverBottomSheet<ICardanoAddress>(
-                        "select_account".tr,
-                        child: SwitchOrSelectAccountView(
-                          account: controller.account,
-                          showMultiSig: true,
-                        ),
-                        minExtent: 0.5,
-                        maxExtend: 0.9,
-                        initialExtend: 0.7,
-                        centerContent: false,
-                      )
-                      .then(controller.changeAssetOutputAddress);
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(controller.changeAssetOutput.address.type ?? "",
-                        style: context.textTheme.labelLarge
-                            ?.copyWith(color: context.colors.onSecondary)),
-                    OneLineTextWidget(
-                      controller.changeAssetOutput.address.view,
-                      style: context.textTheme.bodyMedium
-                          ?.copyWith(color: context.colors.onSecondary),
-                    )
-                  ],
-                ),
-              ),
-              ContainerWithBorder(
-                  backgroundColor: context.colors.secondary,
-                  validate: controller.changeAssetOutput.hasAmount,
-                  onRemoveIcon:
-                      Icon(Icons.edit, color: context.colors.onSecondary),
-                  onRemove: () {
-                    context
-                        .openSliverBottomSheet<BigInt>(
-                      "setup_output_amount".tr,
-                      child: SetupNetworkAmount(
-                        token: controller.network.coinParam.token,
-                        max: controller.remindAmount.balance +
-                            controller.changeAssetOutput.balance.balance,
-                        min: BigInt.zero,
-                        subtitle: PageTitleSubtitle(
-                            title: "receiver".tr,
-                            body: ContainerWithBorder(
-                                child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                    controller.changeAssetOutput.address
-                                        .networkAddress.addressType.name,
-                                    style: context.textTheme.labelLarge),
-                                OneLineTextWidget(
-                                    controller.changeAssetOutput.address.view)
-                              ],
-                            ))),
-                      ),
-                    )
-                        .then((amount) {
-                      controller.changeAssetAdaAmount(amount);
-                    });
-                  },
-                  child: Column(
+          AnimatedSize(
+            duration: AppGlobalConst.animationDuraion,
+            alignment: Alignment.topCenter,
+            child: controller.changeAssetOutput.hasAssets
+                ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CoinPriceView(
-                        balance: controller.changeAssetOutput.balance,
-                        token: controller.network.coinParam.token,
-                        symbolColor: context.colors.onSecondary,
-                        style: context.textTheme.titleLarge
-                            ?.copyWith(color: context.colors.onSecondary),
-                      ),
-                      if (controller.changeAssetOutput.minAdaRequired)
-                        ErrorTextContainer(
-                            showErrorIcon: false,
-                            error: "amount_must_exceed".tr.replaceOne(
-                                PriceUtils.priceWithCoinName(
-                                    controller
-                                        .changeAssetOutput.minAdaValue.price,
-                                    controller.network.coinParam.token.symbol)))
+                      WidgetConstant.height20,
+                      Text("remaining_asset_amount".tr,
+                          style: context.textTheme.titleMedium),
+                      Text("remaining_asset_amount_and_receiver".tr),
+                      WidgetConstant.height8,
+                      ContainerWithBorder(
+                          child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ContainerWithBorder(
+                              validate:
+                                  !controller.changeAssetOutput.isRewardAddress,
+                              validateText:
+                                  "cannot_send_ada_to_stake_address".tr,
+                              onRemoveIcon: Icon(Icons.edit,
+                                  color: context.colors.onSecondary),
+                              backgroundColor: context.colors.secondary,
+                              onRemove: () {
+                                context
+                                    .openSliverBottomSheet<ICardanoAddress>(
+                                      "select_account".tr,
+                                      child: SwitchOrSelectAccountView(
+                                        account: controller.account,
+                                        showMultiSig: true,
+                                      ),
+                                      minExtent: 0.5,
+                                      maxExtend: 0.9,
+                                      initialExtend: 0.7,
+                                      centerContent: false,
+                                    )
+                                    .then(controller.changeAssetOutputAddress);
+                              },
+                              child: ReceiptAddressDetailsView(
+                                address: controller.changeAssetOutput.address,
+                                color: context.colors.onSecondary,
+                              )),
+                          ContainerWithBorder(
+                              backgroundColor: context.colors.secondary,
+                              validate: controller.changeAssetOutput.hasAmount,
+                              onRemoveIcon: Icon(Icons.edit,
+                                  color: context.colors.onSecondary),
+                              onRemove: () {
+                                context
+                                    .openSliverBottomSheet<BigInt>(
+                                  "setup_output_amount".tr,
+                                  child: SetupNetworkAmount(
+                                    token: controller.network.coinParam.token,
+                                    max: controller.remindAmount.balance +
+                                        controller
+                                            .changeAssetOutput.balance.balance,
+                                    min: BigInt.zero,
+                                    subtitle: PageTitleSubtitle(
+                                        title: "receiver".tr,
+                                        body: ContainerWithBorder(
+                                            child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                controller
+                                                    .changeAssetOutput
+                                                    .address
+                                                    .networkAddress
+                                                    .addressType
+                                                    .name,
+                                                style: context
+                                                    .textTheme.labelLarge),
+                                            OneLineTextWidget(controller
+                                                .changeAssetOutput.address.view)
+                                          ],
+                                        ))),
+                                  ),
+                                )
+                                    .then((amount) {
+                                  controller.changeAssetAdaAmount(amount);
+                                });
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CoinPriceView(
+                                    balance:
+                                        controller.changeAssetOutput.balance,
+                                    token: controller.network.coinParam.token,
+                                    symbolColor: context.colors.onSecondary,
+                                    style: context.textTheme.titleLarge
+                                        ?.copyWith(
+                                            color: context.colors.onSecondary),
+                                  ),
+                                  if (controller
+                                      .changeAssetOutput.minAdaRequired)
+                                    ErrorTextContainer(
+                                        showErrorIcon: false,
+                                        error: "amount_must_exceed"
+                                            .tr
+                                            .replaceOne(
+                                                PriceUtils.priceWithCoinName(
+                                                    controller.changeAssetOutput
+                                                        .minAdaValue.price,
+                                                    controller.network.coinParam
+                                                        .token.symbol)))
+                                ],
+                              )),
+                          ContainerWithBorder(
+                              backgroundColor: context.colors.secondary,
+                              onRemove: () {
+                                context.openSliverDialog(
+                                    (p0) => CardanoAssetsInfoView(
+                                        asset:
+                                            controller.changeAssetOutput.asset),
+                                    "assets".tr);
+                              },
+                              onRemoveIcon: Icon(Icons.remove_red_eye,
+                                  color: context.colors.onSecondary),
+                              child: Text(
+                                "n_asset".tr.replaceOne(controller
+                                    .changeAssetOutput.asset.totalAssets
+                                    .toString()),
+                                style: context.textTheme.bodyMedium?.copyWith(
+                                    color: context.colors.onSecondary),
+                              )),
+                        ],
+                      ))
                     ],
-                  )),
-              ContainerWithBorder(
-                  backgroundColor: context.colors.secondary,
-                  onRemove: () {
-                    context.openSliverDialog(
-                        (p0) => Column(
-                              children: List.generate(
-                                  controller.changeAssetOutput.asset.assets
-                                      .length, (index) {
-                                final pl = controller
-                                    .changeAssetOutput.asset.assets.keys
-                                    .toList()[index];
-                                final assets = controller
-                                    .changeAssetOutput.asset.assets[pl]!;
-                                return Column(
-                                  children: [
-                                    Text(pl.toHex(), maxLines: 1),
-                                    const Divider(),
-                                    ...List.generate(assets.assets.length,
-                                        (pos) {
-                                      final assetName =
-                                          assets.assets.keys.toList()[pos];
-                                      return Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            assetName.name(),
-                                            style: context.textTheme.labelLarge,
-                                          ),
-                                          Flexible(
-                                              child: CoinPriceView(
-                                            token: Token(
-                                                name: assetName.name(),
-                                                symbol: assetName.name()),
-                                            balance: assets.assets[assetName],
-                                          ))
-                                        ],
-                                      );
-                                    })
-                                  ],
-                                );
-                              }),
-                            ),
-                        "assets".tr);
-                  },
-                  onRemoveIcon:
-                      Icon(Icons.help, color: context.colors.onSecondary),
-                  child: Text(
-                    "n_asset".tr.replaceOne(controller
-                        .changeAssetOutput.asset.totalAssets
-                        .toString()),
-                    style: context.textTheme.bodyMedium
-                        ?.copyWith(color: context.colors.onSecondary),
-                  )),
-            ],
-          )),
+                  )
+                : WidgetConstant.sizedBox,
+          ),
         ],
         WidgetConstant.height20,
         Text("setup_memo".tr, style: context.textTheme.titleMedium),
@@ -450,6 +511,58 @@ class CardanoBuildTransactionView extends StatelessWidget {
             },
             child: Text("tap_to_add_memo".tr,
                 style: context.textTheme.labelLarge)),
+
+        /// deposit
+        AnimatedSize(
+          duration: AppGlobalConst.animationDuraion,
+          alignment: Alignment.topCenter,
+          child: controller.hasDeposit
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    WidgetConstant.height20,
+                    Text("deposit".tr, style: context.textTheme.titleMedium),
+                    Text("transaction_deposits_list".tr),
+                    WidgetConstant.height8,
+                    ...List.generate(controller.deposits.length, (index) {
+                      final deposit = controller.deposits[index];
+                      return ContainerWithBorder(
+                          child: CoinPriceView(
+                              token: controller.network.coinParam.token,
+                              balance: deposit.fee,
+                              style: context.textTheme.titleMedium));
+                    }),
+                  ],
+                )
+              : null,
+        ),
+
+        /// deposit
+        AnimatedSize(
+          duration: AppGlobalConst.animationDuraion,
+          alignment: Alignment.topCenter,
+          child: controller.hasRefundDeposit
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    WidgetConstant.height20,
+                    Text("refund_deposit".tr,
+                        style: context.textTheme.titleMedium),
+                    Text("transaction_deposits_list".tr),
+                    WidgetConstant.height8,
+                    ...List.generate(controller.refundDeposit.length, (index) {
+                      final deposit = controller.refundDeposit[index];
+                      return ContainerWithBorder(
+                          child: CoinPriceView(
+                              token: controller.network.coinParam.token,
+                              balance: deposit.fee,
+                              style: context.textTheme.titleMedium));
+                    }),
+                  ],
+                )
+              : null,
+        ),
+
         WidgetConstant.height20,
         Text("transaction_fee".tr, style: context.textTheme.titleMedium),
         Text("cost_for_transaction".tr),
@@ -495,8 +608,9 @@ class CardanoBuildTransactionView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
-                onPressed:
-                    controller.trReady ? controller.sendTransaction : null,
+                onPressed: controller.trReady
+                    ? controller.buildAndBroadcastTransaction
+                    : null,
                 child: Text("send_transaction".tr)),
           ],
         )

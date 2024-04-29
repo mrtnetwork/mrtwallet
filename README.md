@@ -1,59 +1,99 @@
 # About MRT Wallet
 
-Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as 
-Ethereum, Tron, Ripple, Dogecoin, Litecoin, and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
+Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as
+Ethereum, Tron, Ripple, Dogecoin, Litecoin, Solana, Cardano, Cosmos and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
 
 ## Networks
 
-### Bitcoin (mainnet, testnet):
+### Bitcoin (mainnet, testnet)
+
 - **Features:** Comprehensive support for Bitcoin transactions.
 - **Highlights:**
   - Robust support for P2TR, P2WPKH, P2WSH, P2SH, P2PKH, and multisignature functionalities.
   - Enhanced control over transactions, allowing you to effortlessly create, sign, and send transactions from multiple UTXOs and addresses.
+  - Allows for multiple account transactions.
 
-### Bitcoin Cash (mainnet, testnet):
+### Bitcoin Cash (mainnet, testnet)
+
 - **Features:** Comprehensive support for Bitcoin Cash transactions.
 - **Highlights:**
   - P2SH, P2SH32, P2PKH and token-aware addresses.
   - Enhanced control over transactions, supporting the creation, signing, minting and sending of Cash tokens.
+  - Allows for multiple account transactions.
 
-### Dogecoin:
+### Dogecoin
+
 - **Features:** Seamless transaction creation and management on the Dogecoin network.
 - **Highlights:** Extends capabilities to the playful realm of Dogecoin, ensuring a smooth and secure user experience.
+- Allows for multiple account transactions.
 
-### Dash:
+### Dash
+
 - **Features:** Exploration of the fast and efficient world of Dash.
 - **Highlights:** Easy creation, signing, and sending of transactions with support for various Dash network functionalities.
+- Allows for multiple account transactions.
 
-### Bitcoin SV:
+### Bitcoin SV
+
 - **Features:** Effortless navigation of Bitcoin SV transactions.
 - **Highlights:**
   - User-friendly interface for smooth and secure transaction creation and management.
   - Support for handling P2PKH addresses, simplifying the Bitcoin SV experience.
+  - Allows for multiple account transactions.
 
-### Litecoin:
+### Litecoin
+
 - **Features:** Support for Litecoin transactions.
 - **Highlights:** Dive into the silver to Bitcoin's gold with MRT Wallet, managing Litecoin transactions effortlessly with confidence.
+- Allows for multiple account transactions.
 
-### Ripple:
+### Ripple
+
 - **Features:** Unlocking the potential of the Ripple network.
 - **Highlights:** Comprehensive support for advanced cryptographic algorithms, NFTs, tokens, multisignature transactions, account settings, trust settings, escrow transactions, regular key settings, and more.
 
-### Ethereum:
+### Solana (Mainnet, Testnet)
+
+- **Features:** Seamless support for Solana transactions.
+- **Highlights:**
+  - SPLToken transfer, account creation and token minting.
+
+### Cardano (Mainnet, Preproad)
+
+- **Features:** Streamlined support for Cardano transactions.
+- **Highlights:**
+  - Full compatibility with Shelley and Byron addresses and transactions.
+  - Facilitates minting and transfer of assets.
+  - Integration for stake certificates.
+  - Allows for multiple account transactions.
+
+### Ethereum
+
 - **Features:** Support for Ethereum transactions.
 - **Highlights:** Compatibility with both legacy and EIP-1559 transactions. Import and manage ERC-20 assets effortlessly, and execute ERC-20 token transfers with ease.
 
-### Tron:
+### Tron
+
 - **Features:** Seamless interaction with the Tron blockchain.
 - **Highlights:** Confidence in sending TRX, TRC-20, and TRC-10 tokens. Support for native contracts, including multi-signature transactions. Control over updating account permissions, managing accounts, unstaking (v2), delegating resources, and creating/updating witnesses.
 
+### Cosmos (Mainnet)
+
+- **Features:** Seamless support for Cosmos transactions.
+
+### Thor (Mainnet)
+
+- **Features:** Seamless support for Thor transactions.
+
+### Maya (Mainnet)
+
+- **Features:** Seamless support for Maya transactions.
 
 ## Decentralized, Secure, and Open Source
 
 At MRT Wallet, we believe in the power of decentralization. Our commitment to decentralization is at the core of our design philosophy, providing you with full control over your assets. Your private keys remain in your hands, ensuring the highest level of security.
 
 We take pride in being fully open source. You can explore and audit our code on [GitHub](https://github.com/mrtnetwork/mrtwallet) under the Apache License 2.0. This commitment to transparency means that every line of code is accessible, empowering the community to verify the security and integrity of our wallet.
-
 
 ## Platform Support
 
@@ -62,6 +102,8 @@ MRT Wallet is available on multiple platforms to provide a seamless experience:
 - **Android:** Take your wallet on the go with our Android app, ensuring you have secure access to your funds anytime, anywhere.
 
 - **Windows:** Enjoy the convenience of MRT Wallet on your desktop. Our Windows version brings the power of decentralized finance to your fingertips.
+
+- **Macos:** Enjoy the convenience of MRT Wallet on your desktop. Our Mac version brings the power of decentralized finance to your fingertips.
 
 - **Web:** Access your wallet from any web browser with our web platform. Manage your assets with ease, all while enjoying the security and privacy MRT Wallet provides.
 
@@ -75,59 +117,66 @@ MRT Wallet is not just a wallet; it's a community-driven project. We welcome col
 
 ## Build Instructions
 
-
 Clone the repository and build using Flutter:
 
-**WEB**
+- **WEB**
 
- you can view the web version of MRT Wallet at https://mrtnetwork.github.io/mrtwallet/.
+ you can view the web version of MRT Wallet at <https://mrtnetwork.github.io/mrtwallet/>.
 
-```
+```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
 flutter pub get
 flutter build web --release
 ```
 
-**Android**
-```
+- **Android**
+
+```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
 flutter pub get
-flutter build apk
+flutter build apk 
 ```
 
-**Windows**
-```
+- **Windows**
+
+```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
 flutter pub get
-flutter build windows
+flutter build windows --release
 ```
 
+- **Macos**
+
+```shell
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+flutter pub get
+flutter build macos --release
+```
 
 ## Contributing
 
-
 Contributions are welcome! Please follow these guidelines:
- - Fork the repository and create a new branch.
- - Make your changes and ensure tests pass.
- - Submit a pull request with a detailed description of your changes.
+
+- Fork the repository and create a new branch.
+- Make your changes and ensure tests pass.
+- Submit a pull request with a detailed description of your changes.
 
 ## Feature requests and bugs
-
 
 Please file feature requests and bugs in the issue tracker.
 
 ## Get Involved
 
-
 Join us on our mission to redefine the landscape of decentralized finance. Contribute to our open-source project on [GitHub](https://github.com/mrtnetwork/mrtwallet) or connect with our community on [Telegram](https://t.me/blockchain_web3_solidity).
 
 Thank you for choosing MRT Wallet as your trusted partner in the world of decentralized finance.
 
-
 ## Support
+
 1KMRGUzRFCuR9y73gUnjxfC1Dte8Ua3vcp
 
 bc1q92fvc5jm4k8e5wegzmhzdv72gwe43sgfnuspgzfmj7llkd8xhmusgd44qf

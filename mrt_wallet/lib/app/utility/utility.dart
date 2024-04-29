@@ -13,3 +13,4 @@ export 'numeric_utils/numeric_utils.dart';
 export 'lifecycle_listener/core.dart';
 export 'file/file.dart';
 export 'bytes_utils/quick_bytes.dart';
+export 'blockchain_constant/constant.dart';

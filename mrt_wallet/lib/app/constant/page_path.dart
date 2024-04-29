@@ -27,13 +27,10 @@ class PagePathConst {
   static const String cardanoTransaction = "/cardano/transaction";
   static const String cosmosTransaction = "/cosmos/transaction";
 
-  static const String setupRippleAddress = "/ripple/setup_address";
+  // static const String setupRippleAddress = "/ripple/setup_address";
   static const String setupBitcoinAddress = "/bitcoin/setup_address";
-  static const String setupEthAddress = "/ethereum/setup_address";
-  static const String setupTronAddress = "/tron/setup_address";
-  static const String setupSolanaAddress = "/solana/setup_address";
+  static const String setupGenericAddress = "/networks/setup_address";
   static const String setupCardanoAddress = "/cardano/setup_address";
-  static const String setupCosmosAddress = "/cosmos/setup_address";
 
   static const String setupBitcoinMultsig = "/bitcoin/setup_multisig_address";
 
@@ -78,17 +75,12 @@ class PagePathConst {
 
   static String setupAddressPage(AppNetworkImpl network) {
     if (network is AppBitcoinNetwork) return setupBitcoinAddress;
-    if (network is APPEVMNetwork) return setupEthAddress;
-    if (network is APPTVMNetwork) return setupTronAddress;
-    if (network is APPSolanaNetwork) return setupSolanaAddress;
     if (network is APPCardanoNetwork) return setupCardanoAddress;
-    if (network is APPCosmosNetwork) return setupCosmosAddress;
-    return setupRippleAddress;
+    return setupGenericAddress;
   }
 
   static const String importERC20Token = "ethereum/import_token";
   static const String importTRC20Token = "tron/import_token";
   static const String importTrc10Token = "tron/import_trc10_token";
-
   static const String importSPLTokens = "solana/import_spl_tokens";
 }

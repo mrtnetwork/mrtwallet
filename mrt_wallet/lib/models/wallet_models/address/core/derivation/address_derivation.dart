@@ -7,12 +7,23 @@ import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-abstract class AddressDerivationIndex with CborSerializable, Equatable {
-  String get path;
-  EllipticCurveTypes? get curve;
-  CryptoCoins? get currencyCoin;
-  const AddressDerivationIndex();
+enum AddressDerivationType {
+  bip32,
+  multisig;
 
+  bool get isMultiSig => this == AddressDerivationType.multisig;
+}
+
+abstract class AddressDerivationIndex with CborSerializable, Equatable {
+  String? get hdPath;
+  // String get hdPath;
+  CryptoCoins get currencyCoin;
+  AddressDerivationType get derivationType;
+  bool get isImportedKey;
+  String get name;
+  // bool get is;
+
+  const AddressDerivationIndex();
   static AddressDerivationIndex fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final cbor = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
@@ -21,12 +32,6 @@ abstract class AddressDerivationIndex with CborSerializable, Equatable {
     } else if (bytesEqual(
         cbor.tags, WalletModelCborTagsConst.multiSigAccountKeyIndex)) {
       return const MultiSigAddressIndex();
-    } else if (bytesEqual(
-        cbor.tags, WalletModelCborTagsConst.importedAccountKeyIndex)) {
-      return ImportedAddressIndex.fromCborBytesOrObject(obj: cbor);
-    } else if (bytesEqual(
-        cbor.tags, WalletModelCborTagsConst.byronLegacyKeyIndex)) {
-      return ByronLegacyAddressIndex.fromCborBytesOrObject(obj: cbor);
     } else {
       throw WalletExceptionConst.invalidAccountDetails;
     }
@@ -34,8 +39,6 @@ abstract class AddressDerivationIndex with CborSerializable, Equatable {
 
   T derive<T extends Bip32Base>(T derivator,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex});
-
-  String storageKey({Bip44Levels maxLevel = Bip44Levels.addressIndex});
 
   SeedGenerationType get seedGeneration;
 }

@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
+import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
@@ -22,6 +23,16 @@ enum _PrivateKeyTypes {
   bool get forRipple =>
       this == _PrivateKeyTypes.rippleEntropy ||
       this == _PrivateKeyTypes.rippleSeed;
+  bool get isExtendedKey => this == _PrivateKeyTypes.extendKey;
+  CustomKeyType toCustomKeyType() {
+    if (this == _PrivateKeyTypes.extendKey) return CustomKeyType.extendedKey;
+    return CustomKeyType.privateKey;
+  }
+
+  String toKey(Bip32Base key) {
+    if (isExtendedKey) return key.privateKey.toExtended;
+    return key.privateKey.toHex();
+  }
 }
 
 class ImportAccountView extends StatelessWidget {
@@ -57,24 +68,33 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   final GlobalKey<FormState> form =
       GlobalKey(debugLabel: "_ImportAccountState_2");
   late Map<_PrivateKeyTypes, Widget> keyTypes = _buildKeyTypes();
+
+  bool get inRipple => widget.network is AppXRPNetwork;
+
+  List<CryptoCoins> get coins => widget.network.coins;
+  late CryptoCoins coin = coins.first;
+  bool get needSelectCoins => selected.isExtendedKey && coins.length > 1;
+
+  _PrivateKeyTypes selected = _PrivateKeyTypes.privateKey;
+  Bip32Base? _account;
+  bool get isBackup => selected == _PrivateKeyTypes.backup;
+
   String? keyName;
+  String _backup = "";
+  String _password = "";
+  String _key = "";
+  SecretWalletEncoding encoding = SecretWalletEncoding.json;
+
   void setKeyName(String? name) {
     setState(() {
       keyName = name;
     });
   }
 
-  bool get inRipple => widget.network is AppXRPNetwork;
-  late EllipticCurveTypes curve = widget.network.keyTypes.first;
-  List<EllipticCurveTypes> get curves => widget.network.keyTypes;
-  late final bool needSelectCurve = curves.length > 1;
-
   Map<_PrivateKeyTypes, Widget> _buildKeyTypes() {
     Map<_PrivateKeyTypes, Widget> types = {};
     for (final i in _PrivateKeyTypes.values) {
-      if (i == _PrivateKeyTypes.wif &&
-          !widget.network.coins
-              .any((element) => element.conf.wifNetVer != null)) continue;
+      if (i == _PrivateKeyTypes.wif && coin.conf.wifNetVer == null) continue;
 
       if (i.forRipple) {
         if (!inRipple) continue;
@@ -84,22 +104,18 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     return types;
   }
 
-  _PrivateKeyTypes selected = _PrivateKeyTypes.privateKey;
-
-  Bip32Base? _account;
-
-  bool get isBackup => selected == _PrivateKeyTypes.backup;
-
   void onSelect(_PrivateKeyTypes? s) {
     selected = s ?? selected;
     _account = null;
     _error = null;
-    // showRippleKeyAlgorithm = _showRippleKeyAlgorithm();
     setState(() {});
   }
 
-  void onSelectRippleKeyAlgorithm(EllipticCurveTypes? alg) {
-    curve = alg ?? curve;
+  void onChangeKeyAlogrithm(CryptoCoins? mewCoin) {
+    if (mewCoin == null) return;
+    coin = mewCoin;
+    keyTypes = _buildKeyTypes();
+    selected = _PrivateKeyTypes.privateKey;
     setState(() {});
   }
 
@@ -110,33 +126,34 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   String? _error;
 
   Future<Bip32Base> _getKey(WalletProvider model) async {
-    final coin = widget.network.coins.first;
-
-    switch (selected) {
-      case _PrivateKeyTypes.extendKey:
-        return BlockchainUtils.extendedKeyToBip32(_key, coin.conf.type);
-      case _PrivateKeyTypes.privateKey:
-        if (inRipple) {
-          return RippleUtils.ripplePrivateKeyToBip32(_key, curve);
-        }
-        return BlockchainUtils.privteKeyToBip32(
-            BytesUtils.fromHexString(_key), coin.conf.type);
-      case _PrivateKeyTypes.wif:
-        return BlockchainUtils.wifToBip32(_key, coin);
-      case _PrivateKeyTypes.backup:
-        final backupResult = BytesUtils.toHexString(
-            await model.restoreBackup(_password, _backup, encoding));
-        if (inRipple) {
-          return RippleUtils.ripplePrivateKeyToBip32(backupResult, curve);
-        }
-        return BlockchainUtils.privteKeyToBip32(
-            BytesUtils.fromHexString(backupResult), coin.conf.type);
-      case _PrivateKeyTypes.rippleSeed:
-        return RippleUtils.rippleSeedToBip32(_key);
-      case _PrivateKeyTypes.rippleEntropy:
-        return RippleUtils.rippleEntropyToBip32(_key, curve);
-      default:
-        throw UnimplementedError();
+    try {
+      switch (selected) {
+        case _PrivateKeyTypes.extendKey:
+          return BlockchainUtils.extendedKeyToBip32(
+              extendedKey: _key, coin: coin);
+        case _PrivateKeyTypes.privateKey:
+          if (inRipple) {
+            return RippleUtils.ripplePrivateKeyToBip32(_key, coin);
+          }
+          return BlockchainUtils.privteKeyToBip32(
+              BytesUtils.fromHexString(_key), coin);
+        case _PrivateKeyTypes.wif:
+          return BlockchainUtils.wifToBip32(_key, coin);
+        case _PrivateKeyTypes.backup:
+          final backupResult = BytesUtils.toHexString(
+              await model.restoreBackup(_password, _backup, encoding));
+          if (inRipple) {
+            return RippleUtils.ripplePrivateKeyToBip32(backupResult, coin);
+          }
+          return BlockchainUtils.privteKeyToBip32(
+              BytesUtils.fromHexString(backupResult), coin);
+        case _PrivateKeyTypes.rippleSeed:
+          return RippleUtils.rippleSeedToBip32(_key, widget.network);
+        case _PrivateKeyTypes.rippleEntropy:
+          return RippleUtils.rippleEntropyToBip32(_key, coin);
+      }
+    } catch (e) {
+      rethrow;
     }
   }
 
@@ -147,17 +164,17 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
 
     final createKey = await MethodCaller.call(() async {
       _account = await _getKey(model);
-
       if (_account == null) {
         _error = "private_key_invalid".tr;
         throw WalletExceptionConst.invalidPrivateKey;
       }
       final customKey = WalletCustomKeys(
-          checksum: _account!.publicKey.fingerPrint.toHex(),
-          extendedPrivateKey: _account!.privateKey.toExtended,
-          type: _account!.curveType,
+          checksum: BlockchainUtils.createCustomKeyChecksum(_account!),
+          extendedPrivateKey: selected.toKey(_account!),
+          coin: coin,
           publicKey: _account!.publicKey.toHex(),
-          name: keyName);
+          name: keyName,
+          keyType: selected.toCustomKeyType());
       return customKey;
     });
     if (createKey.hasError) {
@@ -181,8 +198,6 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     return null;
   }
 
-  String _key = "";
-
   void onChangeKey(String key) {
     _key = key;
     if (_error != null) {
@@ -191,15 +206,12 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     }
   }
 
-  SecretWalletEncoding encoding = SecretWalletEncoding.json;
-
   void onChangeEncoding(SecretWalletEncoding? updateEncoding) {
     encoding = updateEncoding ?? encoding;
 
     setState(() {});
   }
 
-  String _password = "";
   void onChangePassword(String password) {
     _password = password;
   }
@@ -227,7 +239,6 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     return "bcakup_validator".tr;
   }
 
-  String _backup = "";
   void onChange(String v) {
     _backup = v;
     if (_error != null) {
@@ -262,6 +273,20 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                           Text("import_account_desc1".tr),
                         ],
                       )),
+                  if (needSelectCoins) ...[
+                    Text("key_algorithm".tr,
+                        style: context.textTheme.titleMedium),
+                    Text("inidicate_type_of_key".tr),
+                    WidgetConstant.height8,
+                    AppDropDownBottom(
+                        items: {
+                          for (final i in coins) i: Text(i.coinName.camelCase)
+                        },
+                        value: coin,
+                        label: "key_algorithm".tr,
+                        onChanged: onChangeKeyAlogrithm),
+                    WidgetConstant.height20,
+                  ],
                   Text("key_type".tr, style: context.textTheme.titleMedium),
                   Text("inidicate_type_of_key".tr),
                   WidgetConstant.height8,
@@ -271,20 +296,6 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                       label: "key_type".tr,
                       onChanged: onSelect),
                   WidgetConstant.height20,
-                  if (needSelectCurve) ...[
-                    Text("ripple_key_type".tr,
-                        style: context.textTheme.titleMedium),
-                    Text("inidicate_type_of_key".tr),
-                    WidgetConstant.height8,
-                    AppDropDownBottom(
-                        items: {
-                          for (final i in curves) i: Text(i.name.camelCase)
-                        },
-                        value: curve,
-                        label: "ripple_key_type".tr,
-                        onChanged: onSelectRippleKeyAlgorithm),
-                    WidgetConstant.height20,
-                  ],
                   Text(selected.value, style: context.textTheme.titleMedium),
                   WidgetConstant.height8,
                   if (isBackup) ...[

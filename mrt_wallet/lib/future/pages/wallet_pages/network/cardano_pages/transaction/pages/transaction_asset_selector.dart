@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/setup_amount.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/cardano_output.dart';
+import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/output.dart';
 import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxo_asset.dart';
 import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxo_multi_asset.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
@@ -138,10 +138,13 @@ class _CardanoTransactionAssetSelectorViewState
                             ))),
                         WidgetConstant.height20,
                         Text("choose_asset_you_want_to_transfer".tr,
-                            style: context.textTheme.titleLarge),
+                            style: context.textTheme.titleMedium),
+                        WidgetConstant.height8,
                         ListView.builder(
                           shrinkWrap: true,
                           itemCount: assets.length,
+                          physics: WidgetConstant.noScrollPhysics,
+                          // controller: widget.controller,
                           itemBuilder: (c, index) {
                             final asset = assets[index];
                             return ContainerWithCheckBoxAndBorder(
@@ -188,7 +191,7 @@ class _CardanoTransactionAssetSelectorViewState
                                     children: [
                                       Flexible(
                                         child: Text(
-                                          asset.name.name(),
+                                          asset.name.name,
                                           maxLines: 1,
                                           style: context.textTheme.bodySmall,
                                         ),
@@ -240,7 +243,7 @@ class _AssetWithPolicyId {
   final PolicyID policyID;
   final int decimal;
   late final Token token =
-      Token(name: name.name(), symbol: name.name(), decimal: decimal);
+      Token(name: name.name, symbol: name.name, decimal: decimal);
   _AssetWithPolicyId(
       {required this.name,
       required this.policyID,

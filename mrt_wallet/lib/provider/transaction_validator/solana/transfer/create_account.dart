@@ -135,7 +135,6 @@ class SolanaCreateAccountValidator extends SolanaTransactionValidator {
 
   @override
   String? validateError({ISolanaAddress? account}) {
-    WalletLogging.print(lamports.hasValue);
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
         return "field_is_req".tr.replaceOne(i.name.tr);

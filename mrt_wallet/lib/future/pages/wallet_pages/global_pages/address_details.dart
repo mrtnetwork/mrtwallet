@@ -15,7 +15,6 @@ class AddressDetailsView extends StatelessWidget {
   });
 
   final CryptoAccountAddress address;
-
   final bool showBalance;
   final Color? color;
 
@@ -47,7 +46,7 @@ class AddressDetailsView extends StatelessWidget {
                           context.textTheme.labelLarge?.copyWith(color: color)),
         OneLineTextWidget(address.address.toAddress,
             style: context.textTheme.bodyMedium?.copyWith(color: color)),
-        OneLineTextWidget(address.keyIndex.path.tr,
+        OneLineTextWidget(address.keyIndex.toString(),
             style: context.textTheme.bodyMedium?.copyWith(color: color)),
         if (showBalance)
           CoinPriceView(

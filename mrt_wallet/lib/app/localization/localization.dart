@@ -77,7 +77,7 @@ class Localization {
           "unlock": "Unlock",
           "derive_network_address": "Deriving ___1__ Addresses",
           "generate_from_hd_wallet":
-              "Generating an address based on your HD wallet seed.",
+              "Creating an address from your HD wallet seed or imported keys.",
           "generate_from_imported_keys":
               "Generating an address based on your imported keys",
           "generate_from_imported_key_desc1":
@@ -133,6 +133,7 @@ class Localization {
           "hardened_index": "Hardened key with an index of ___1__.",
           "path": "Path",
           "setup_derivation_path": "Setup Derivation path",
+          "setup_derivation": "Setup Derivation",
           "generate_address": "Generate address",
           "invalid_argruments":
               "Invalid arguments expected ___1__ but got ___2__",
@@ -805,7 +806,7 @@ class Localization {
           "apply_for_condition": "Apply for condition.",
           "saved_fulfillment_desc":
               "Are you certain that the fulfillment and conditions have been securely saved?",
-          "ripple_key_type": "Ripple key type",
+          "key_algorithm": "Key algorithm",
           "invalid_ripple_privatekey_algorithm":
               "Invalid Ripple private key encryption algorithm.",
           "ed25519_support_derivation_desc":
@@ -1422,8 +1423,7 @@ class Localization {
           "back_to_the_page": "Back to the page",
           "label": "Label",
           "metadatum_label": "Metadatum label",
-          "enther_valid_un_label":
-              "Please enter a valid unsigned number for the label.",
+          "enther_valid_un_label": "Please enter a valid unsigned number.",
           "label_already_exists": "The label you entered already exists.",
           "no_account_chosen": "No account has been chosen.",
           "associated_token_program": "Associated Token Program",
@@ -1487,7 +1487,93 @@ class Localization {
               "The token name must be at least 3 characters long",
           "create_new_provider": "Create New Provider",
           "gnesis_hash_desc":
-              "The genesis hash is the unique identifier for the initial block in a blockchain network, often used for network bootstrapping and verifying network state"
+              "The genesis hash is the unique identifier for the initial block in a blockchain network, often used for network bootstrapping and verifying network state",
+          "policy_id": "Policy ID",
+          "utxos_amount": "UTXOs amount",
+          "create_a_new_token": "Create a new token",
+          "ada_asset_name_validator": "Please provide a name for the asset.",
+          "ada_create_new_token_desc":
+              "Kindly specify the asset name and total supply for your new token.",
+          "asset_name": "Asset name",
+          "name_of_token": "Name of token",
+          "total_supply_desc":
+              "Please specify the initial token supply amount.",
+          "setup_supply": "Setup supply",
+          "tap_to_input_total_supply": "Tap to input total supply",
+          "owner_of_token": "The owner of token",
+          "tap_to_select_owner": "Tap to select accout",
+          "setup_mint": "Setup mint",
+          "byron_does_not_support_minting_token":
+              "The Byron address does not support the initialization of minting tokens.",
+          "certificates": "Certificates",
+          "add_certificate_to_transaction":
+              "Add certificates to the transaction",
+          "tap_to_add_certificate": "Tap to add certificate",
+          "deregistration": "Deregistration",
+          "registration": "Registration",
+          "delegation": "Delegation",
+          "certificate_type": "Certificate type",
+          "add_certificate_to_transaction_desc":
+              "Please choose the certificate you would like to include in the transaction.",
+          "certificate": "Certificate",
+          "stake_address": "Stake address",
+          "setup_certificate": "Setup certificate",
+          "stake_registration": "Stake Registration",
+          "stake_address_validator":
+              "The account does not possess a stake address",
+          "stake_deregistration": "Stake Deregistration",
+          "stake_delegation": "Stake Delegation",
+          "deposit": "Deposit",
+          "transaction_deposits_list": "List of required transaction deposits",
+          "refund_deposit": "Refund deposit",
+          "unable_to_spend_from_stake_address":
+              "Unable to spend from a stake address.",
+          "cannot_send_ada_to_stake_address":
+              "Sending ADA or assets to a stake address is not allowed.",
+          "stake_key_derivation": "Stake key derivation",
+          "ada_base_stake_key_same_error":
+              "ensure that the base key and stake key are not generated using the same key.",
+          "feature__unavailable_for_multi_signature":
+              "The feature is unavailable for multi-signature addresses.",
+          "select_creation_type": "Select creation type",
+          "setup_address_derivation_keys_desc":
+              "In the setup derivation, you can select imported keys if they exist.",
+          "please_following_steps_to_generate_address":
+              "Please follow these steps to generate an address.",
+          "stake_key": "Stake key",
+          "main_key": "Main key",
+          "base_key": "Base key",
+          "switch_between_keys":
+              "Please switch between keys to view information about each one.",
+          "retrieve_the_public":
+              "Please wait while we retrieve the public key of the account.",
+          "public_keys": "Public keys",
+          "Invalid_coin_default_path": "Invalid coin default path",
+          "invalid_hd_wallet_derivation_path":
+              "Invalid HD wallet derivation path",
+          "derivation_path": "Derivation path",
+          "hd_wallet_path_max_indeqxes":
+              "only supports up to ___1__ HD wallet indexes.",
+          "hd_wallet_hardened_desc":
+              "For hardened indices, append ' or h to the end of the index.",
+          "imported_": "Imported(___1__)",
+          "hd_path": "HD Path",
+          "hd_path_key": "HD Path key",
+          "byron_legacy_hd_path_desc":
+              "Please set up the HD Path and HD Path key, or disable manual configuration to generate them automatically from the key.",
+          "invalid_byron_legacy_hd_path_key":
+              "Invalid byron legacy HD path key",
+          "byron_legacy_hd_wallet_length_desc":
+              "Byron Legacy only supports the first two HD wallet indexes, such as m/1/2.",
+          "byron_legacy_hd_path_key_desc":
+              "Invalid HD Path key bytes. Please provide the HD path key in hexadecimal format.",
+          "byron_legacy_hd_path_key_length_desc":
+              "The HD path key should be 32 bytes in length.",
+          "byron_legacy_hd_path_key_desc2":
+              "Please provide the HD path key in hexadecimal format.",
+          "manually_set_hd_path": "Manually set HD path details.",
+          "byron_legacy_hd_path_generate_from_master_key_desc":
+              "Do not toggle on for generating from master key.",
         }
       };
 }

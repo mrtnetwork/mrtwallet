@@ -11,7 +11,7 @@ class CardanoTransactionUtxoView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("spendable_amount".tr, style: context.textTheme.titleMedium),
+        Text("utxos_amount".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
           child: AnimatedSwitcher(

@@ -4,12 +4,12 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/address/address.dart';
 import 'package:mrt_wallet/models/wallet_models/currency_balance/balance.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/cardano_address_details.dart';
+import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/address_details.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/models/wallet_models/nfts/core/nft_core.dart';
 import 'package:mrt_wallet/models/wallet_models/token/core/core.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
-import 'package:on_chain/ada/src/address/address.dart';
+import 'package:on_chain/on_chain.dart';
 
 class ICardanoAddress
     with Equatable
@@ -24,11 +24,14 @@ class ICardanoAddress
       required List<TokenCore> tokens,
       required List<NFTCore> nfts,
       required this.addressDetails,
+      AddressDerivationIndex? rewardKeyIndex,
       String? accountName})
       : publicKey = List.unmodifiable(publicKey),
         _tokens = List.unmodifiable(tokens),
         _nfts = List.unmodifiable(nfts),
-        _accountName = accountName;
+        _accountName = accountName,
+        _rewardKeyIndex = rewardKeyIndex,
+        rewardAddress = CardanoUtils.extractRewardAddress(networkAddress);
 
   factory ICardanoAddress.newAccount(
       {required CardanoNewAddressParams accountParams,
@@ -39,16 +42,16 @@ class ICardanoAddress
         address: cardanoAddr.address,
         balance: NoneDecimalBalance.zero(network.coinParam.decimal));
     return ICardanoAddress._(
-      coin: accountParams.coin,
-      publicKey: publicKey,
-      address: addressDetauls,
-      keyIndex: accountParams.deriveIndex,
-      networkAddress: cardanoAddr,
-      network: network.value,
-      tokens: const [],
-      nfts: const [],
-      addressDetails: accountParams.addressDetails!,
-    );
+        coin: accountParams.coin,
+        publicKey: publicKey,
+        address: addressDetauls,
+        keyIndex: accountParams.deriveIndex,
+        networkAddress: cardanoAddr,
+        network: network.value,
+        tokens: const [],
+        nfts: const [],
+        addressDetails: accountParams.addressDetails!,
+        rewardKeyIndex: accountParams.rewardKeyIndex);
   }
   factory ICardanoAddress.fromCbsorHex(String hex, AppNetworkImpl network) {
     return ICardanoAddress.fromCborBytesOrObject(network,
@@ -60,8 +63,8 @@ class ICardanoAddress
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, WalletModelCborTagsConst.cardanoAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
+    final CryptoProposal proposal = CustomProposal.fromName(cbor.elementAt(0));
+    final CryptoCoins coin = CustomCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     final List<int> publicKey = cbor.elementAt(3);
@@ -85,6 +88,13 @@ class ICardanoAddress
     }
 
     final String? accountName = cbor.elementAt(10);
+    final CborTagValue? rewardIndexCbor = cbor.getCborTag(11);
+    final rewardIndex = rewardIndexCbor == null
+        ? null
+        : AddressDerivationIndex.fromCborBytesOrObject(obj: rewardIndexCbor);
+    if (adaAddress.addressType == ADAAddressType.base && rewardIndex == null) {
+      throw WalletExceptionConst.invalidAccountDetails;
+    }
     return ICardanoAddress._(
         coin: coin,
         publicKey: publicKey,
@@ -95,7 +105,8 @@ class ICardanoAddress
         addressDetails: addrDetails,
         tokens: [],
         nfts: [],
-        accountName: accountName);
+        accountName: accountName,
+        rewardKeyIndex: rewardIndex);
   }
 
   @override
@@ -119,9 +130,6 @@ class ICardanoAddress
   final List<int> publicKey;
 
   @override
-  List<String> get signers => [BytesUtils.toHexString(publicKey)];
-
-  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -135,7 +143,8 @@ class ICardanoAddress
           addressDetails.toCbor(),
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
-          accountName ?? const CborNullValue()
+          accountName ?? const CborNullValue(),
+          rewardKeyIndex?.toCbor() ?? const CborNullValue()
         ]),
         WalletModelCborTagsConst.cardanoAccount);
   }
@@ -149,6 +158,14 @@ class ICardanoAddress
 
   @override
   final ADAAddress networkAddress;
+
+  final ADARewardAddress? rewardAddress;
+
+  final AddressDerivationIndex? _rewardKeyIndex;
+
+  AddressDerivationIndex? get rewardKeyIndex => _rewardKeyIndex;
+
+  bool get isBaseAddress => networkAddress.addressType == ADAAddressType.base;
 
   @override
   String? get type => networkAddress.addressType.name;
@@ -194,4 +211,8 @@ class ICardanoAddress
 
   @override
   String get orginalAddress => networkAddress.address;
+
+  @override
+  List<AddressDerivationIndex> get keyIndexes =>
+      [keyIndex, if (rewardKeyIndex != null) rewardKeyIndex!];
 }

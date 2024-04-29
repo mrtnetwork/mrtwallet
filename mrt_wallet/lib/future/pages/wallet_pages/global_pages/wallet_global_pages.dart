@@ -7,7 +7,6 @@ export 'switch_network.dart';
 export 'wallet_signing_password.dart';
 export 'select_provider.dart';
 export 'add_to_contact_list.dart';
-export 'address_derivation_type.dart';
 export 'bip32_derivation.dart';
 export 'receipt_address_view.dart';
 export 'select_account_or_contact.dart';

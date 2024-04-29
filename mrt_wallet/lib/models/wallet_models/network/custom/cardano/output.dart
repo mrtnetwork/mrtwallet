@@ -6,7 +6,7 @@ import 'package:on_chain/on_chain.dart';
 import 'utxo_multi_asset.dart';
 
 class CardanoOutputWithBalance {
-  CardanoOutputWithBalance(
+  CardanoOutputWithBalance._(
       {required ReceiptAddress<ADAAddress> address,
       required APPCardanoNetwork network,
       UtxoMultiAsset? asset})
@@ -14,6 +14,14 @@ class CardanoOutputWithBalance {
         _asset = asset ?? UtxoMultiAsset({}),
         _address = address,
         minAdaValue = NoneDecimalBalance.zero(network.coinParam.decimal);
+  factory CardanoOutputWithBalance(
+      {required ReceiptAddress<ADAAddress> address,
+      required APPCardanoNetwork network}) {
+    final output =
+        CardanoOutputWithBalance._(address: address, network: network);
+    output._checkOutput();
+    return output;
+  }
 
   final NoneDecimalBalance balance;
   final NoneDecimalBalance minAdaValue;
@@ -23,16 +31,36 @@ class CardanoOutputWithBalance {
   UtxoMultiAsset get asset => _asset;
   bool get hasAssets => asset.assets.isNotEmpty;
   bool get hasAmount => !balance.isZero;
-  bool get isValid => balance.balance >= minAdaValue.balance;
+  bool get addressEraSupported =>
+      address.networkAddress.addressType != ADAAddressType.byron;
+  bool get isRewardAddress =>
+      _address.networkAddress.addressType == ADAAddressType.reward;
+  bool _isReady = false;
+  bool get isReady => _isReady;
+  bool _minAdaRequired = false;
+  bool get minAdaRequired => _minAdaRequired;
 
-  bool get minAdaRequired => hasAmount && !isValid;
+  void _checkOutput() {
+    _minAdaRequired = hasAmount && balance.balance < minAdaValue.balance;
+    _isReady = hasAmount && !isRewardAddress && !minAdaRequired;
+  }
 
   void setAsset(UtxoMultiAsset? updateAsset) {
     _asset = updateAsset ?? UtxoMultiAsset.empty;
+    if (!hasAssets) {
+      updateBalance(BigInt.zero);
+      return;
+    }
+    _checkOutput();
   }
 
-  void setAddress(ReceiptAddress<ADAAddress>? updateAddress) {
+  void setAddress(ReceiptAddress<ADAAddress>? updateAddress,
+      {int? coinsPerUtxoSize}) {
     _address = updateAddress ?? _address;
+    if (coinsPerUtxoSize != null) {
+      minAdaValue.updateBalance(minValue(coinsPerUtxoSize));
+    }
+    _checkOutput();
   }
 
   void updateBalance(BigInt val, {int? coinsPerUtxoSize}) {
@@ -40,6 +68,7 @@ class CardanoOutputWithBalance {
     if (coinsPerUtxoSize != null) {
       minAdaValue.updateBalance(minValue(coinsPerUtxoSize));
     }
+    _checkOutput();
   }
 
   TransactionOutput toOutput() {

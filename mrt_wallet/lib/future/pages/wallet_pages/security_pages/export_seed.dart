@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class ExportSeedView extends StatelessWidget {
   const ExportSeedView({super.key});
@@ -11,7 +12,8 @@ class ExportSeedView extends StatelessWidget {
     return PasswordCheckerView(
         accsess: WalletAccsessType.seed,
         onAccsess: (p0, p1) {
-          return _ExportSeedView(mnemonic: p0, password: p1);
+          return _ExportSeedView(
+              mnemonic: p0.first as AccessMnemonicResponse, password: p1);
         },
         title: "export_mnemonic".tr,
         subtitle: PageTitleSubtitle(
@@ -22,7 +24,7 @@ class ExportSeedView extends StatelessWidget {
 
 class _ExportSeedView extends StatefulWidget {
   const _ExportSeedView({required this.mnemonic, required this.password});
-  final String mnemonic;
+  final AccessMnemonicResponse mnemonic;
   final String password;
 
   @override
@@ -34,7 +36,7 @@ class _ExportSeedViewState extends State<_ExportSeedView>
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "ExportSeedView");
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
-  late final Mnemonic _mnemonic = Mnemonic.fromString(widget.mnemonic);
+  late final Mnemonic _mnemonic = widget.mnemonic.mnemonic;
   bool _showMnemonic = false;
 
   void onChangeShowMnemonic() {

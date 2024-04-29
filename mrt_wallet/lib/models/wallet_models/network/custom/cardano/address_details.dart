@@ -2,9 +2,10 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
-import 'package:mrt_wallet/models/wallet_models/keys/master_key.dart';
+import 'package:mrt_wallet/models/wallet_models/keys/crypto_keys/master_key.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 import 'package:on_chain/ada/src/address/address.dart';
+import 'package:on_chain/ada/src/models/ada_models.dart';
 
 class CardanoAddrDetails with CborSerializable {
   final List<int> publicKey;
@@ -12,8 +13,20 @@ class CardanoAddrDetails with CborSerializable {
   final List<int>? chainCode;
   final List<int>? hdPathKey;
   final String? hdPath;
+  late final String? hdPathKeyHex = BytesUtils.tryToHexString(hdPathKey);
   final ADAAddressType addressType;
-  final SeedGenerationType seedGeneration;
+  bool get isLegacy => hdPath != null;
+
+  PolicyID policyId() {
+    final keyHash = Ed25519KeyHash.fromPubkey(publicKey);
+    final mintScript = NativeScriptScriptPubkey(keyHash);
+    return PolicyID(mintScript.toHash().data);
+  }
+
+  NativeScript toNativeScript() {
+    final keyHash = Ed25519KeyHash.fromPubkey(publicKey);
+    return NativeScriptScriptPubkey(keyHash);
+  }
 
   factory CardanoAddrDetails.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
@@ -25,13 +38,11 @@ class CardanoAddrDetails with CborSerializable {
         stakePubkey: cbor.elementAt(2),
         chainCode: cbor.elementAt(3),
         hdPathKey: cbor.elementAt(4),
-        hdPath: cbor.elementAt(5),
-        seedGeneration: SeedGenerationType.fromName(cbor.elementAt<String>(6)));
+        hdPath: cbor.elementAt(5));
   }
   CardanoAddrDetails._({
     required List<int> publicKey,
     required this.addressType,
-    required this.seedGeneration,
     List<int>? stakePubkey,
     List<int>? chainCode,
     List<int>? hdPathKey,
@@ -61,8 +72,7 @@ class CardanoAddrDetails with CborSerializable {
     return CardanoAddrDetails._(
         publicKey: publicKey,
         addressType: addressType,
-        stakePubkey: stakePubkey,
-        seedGeneration: seedGeneration);
+        stakePubkey: stakePubkey);
   }
   factory CardanoAddrDetails.byron(
       {required List<int> publicKey,
@@ -80,8 +90,7 @@ class CardanoAddrDetails with CborSerializable {
         addressType: ADAAddressType.byron,
         hdPathKey: hdPathKey,
         chainCode: chainCode,
-        hdPath: hdPath,
-        seedGeneration: seedGeneration);
+        hdPath: hdPath);
   }
 
   ADAAddress toAddress(CryptoCoins coin) {
@@ -127,7 +136,6 @@ class CardanoAddrDetails with CborSerializable {
               ? const CborNullValue()
               : CborBytesValue(hdPathKey!),
           hdPath == null ? const CborNullValue() : CborStringValue(hdPath!),
-          CborStringValue(seedGeneration.name)
         ]),
         WalletModelCborTagsConst.cardanoAccountDetails);
   }

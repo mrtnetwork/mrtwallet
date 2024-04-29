@@ -27,13 +27,4 @@ class Secp256k1SigningRequest implements SigningRequest {
     }
     return [addresses.first.keyIndex];
   }
-
-  List<String> get publicKeys {
-    if (isMultiSig) {
-      final MultiSigCryptoAccountAddress addr =
-          addresses.first as MultiSigCryptoAccountAddress;
-      return addr.keyDetails.map((e) => e.$1).toList();
-    }
-    return addresses.first.signers;
-  }
 }

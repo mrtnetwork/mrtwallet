@@ -1,9 +1,9 @@
+import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/wallet_models/keys/encrypted_derived_key.dart';
+import 'package:mrt_wallet/models/wallet_models/keys/keys.dart';
 import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
-
-import 'setting.dart';
 
 class EncryptedMasterKey {
   EncryptedMasterKey(
@@ -37,18 +37,20 @@ class EncryptedMasterKey {
 class EncryptedCustomKey with Equatable {
   final String publicKey;
   final String id;
-  final EllipticCurveTypes type;
+  final CryptoCoins coin;
   final DateTime created;
   final String? name;
+  final CustomKeyType keyType;
   const EncryptedCustomKey(
       {required this.publicKey,
-      required this.type,
+      required this.coin,
       required this.id,
       required this.created,
-      required this.name});
+      required this.name,
+      required this.keyType});
 
   @override
-  List get variabels => [publicKey, id, type];
+  List get variabels => [publicKey, id, coin, keyType.name];
 
   String networkPubKey(AppNetworkImpl network) {
     if (network is AppXRPNetwork) {

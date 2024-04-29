@@ -26,8 +26,7 @@ mixin SolanaTransactionFeeImpl on SolanaTransactionImpl {
               await validator.validator.instructions(address.networkAddress),
           recentBlockhash: _blockHash!);
       return await apiProvider.getFee(transaction);
-    } catch (e, s) {
-      WalletLogging.print("has error $e $s");
+    } catch (e) {
       rethrow;
     }
   }
@@ -45,7 +44,6 @@ mixin SolanaTransactionFeeImpl on SolanaTransactionImpl {
           return result;
         },
       );
-      WalletLogging.print("called $call");
       return call;
     }, canclable: _cancelable, closeOnSuccess: true)
         .listen(

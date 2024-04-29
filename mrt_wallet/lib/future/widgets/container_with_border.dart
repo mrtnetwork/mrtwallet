@@ -18,7 +18,8 @@ class ContainerWithBorder extends StatelessWidget {
       this.validateText,
       this.shadow = false,
       this.onTapWhenOnRemove = true,
-      this.iconAlginment = CrossAxisAlignment.center});
+      this.iconAlginment = CrossAxisAlignment.center,
+      this.onTapError});
   final Widget child;
   final EdgeInsets padding;
   final EdgeInsets margin;
@@ -32,6 +33,7 @@ class ContainerWithBorder extends StatelessWidget {
   final bool shadow;
   final bool onTapWhenOnRemove;
   final CrossAxisAlignment iconAlginment;
+  final DynamicVoid? onTapError;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -83,9 +85,11 @@ class ContainerWithBorder extends StatelessWidget {
                 ),
                 if (!validate && validateText != null)
                   ErrorTextContainer(
-                      error: validateText ?? "",
-                      margin: WidgetConstant.padding5,
-                      padding: WidgetConstant.padding5)
+                    error: validateText ?? "",
+                    margin: WidgetConstant.padding5,
+                    padding: WidgetConstant.padding5,
+                    oTapError: onTapError,
+                  )
               ],
             ),
           ),

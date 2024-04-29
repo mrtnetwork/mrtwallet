@@ -9,25 +9,20 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_cash_pages/
 import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/update_provider/import_electrum_provider.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/setup_address_page.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/transaction/pages/build_transaction.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/network/cosmos/setup_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/cosmos/transaction/fields/transfer.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/import_network/edit_network.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/import_network/import_network.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/setup_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/token/import_tokens.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/transaction/fields/ethereum_transfer_field_view.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/setup_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/setup_multi_sig_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/token/import_nfts.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/token/import_token.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/fields/ripple_tranaction_fields_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/transaction/fields/transfer.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/setup_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/spl_token/account_spl_tokens_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/transaction/fields/transaction.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/transaction/fields/transfer.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/update_provider.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/setup_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/setup_multisig_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/token/import_trc10_tokens.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/transaction/fields/tron_transaction_fields.dart';
@@ -41,6 +36,7 @@ import 'package:mrt_wallet/models/app/app_seting.dart';
 import 'package:mrt_wallet/models/app/material.dart';
 
 import 'future/pages/wallet_pages/account_pages/account_pages.dart';
+import 'future/pages/wallet_pages/global_pages/address_derivation/address_derivation_view.dart';
 import 'future/pages/wallet_pages/network/bitcoin_pages/bitcoin.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -200,12 +196,9 @@ class PageRouter {
         return const BackupWalletView();
       case PagePathConst.manageImportedKey:
         return const ManageImportedKeysView();
-      case PagePathConst.setupRippleAddress:
-        return const SetupRippleAddressView();
-      case PagePathConst.setupEthAddress:
-        return const SetupEthereumAddressView();
-      case PagePathConst.setupTronAddress:
-        return const SetupTronAddressView();
+
+      case PagePathConst.setupGenericAddress:
+        return const NetworkGenericAddressDerivationView();
       case PagePathConst.rippleTransfer:
         return const RippleTransferTransactionView();
       case PagePathConst.ethereumTransaction:
@@ -236,16 +229,12 @@ class PageRouter {
         return const EditEVMNetwork();
       case PagePathConst.updateElectrumProviders:
         return const ImportElectrumProviderView();
-      case PagePathConst.setupSolanaAddress:
-        return const SetupSolanaAddressView();
       case PagePathConst.importSPLTokens:
         return const SolanaImportSPLTokensView();
       case PagePathConst.setupCardanoAddress:
         return const SetupCardanoAddressView();
       case PagePathConst.cardanoTransaction:
         return const SendCardanoTransactionView();
-      case PagePathConst.setupCosmosAddress:
-        return const SetupCosmosAddressView();
       case PagePathConst.cosmosTransaction:
         return const CosmosTransferTransactionView();
       case PagePathConst.solanaTransaction:

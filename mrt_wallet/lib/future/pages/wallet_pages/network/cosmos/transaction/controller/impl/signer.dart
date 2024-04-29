@@ -23,9 +23,11 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
         .where((element) => element != null)
         .toList()
         .cast();
+
     final signers = account.addresses
         .where((element) => signersAddr.contains(element.address.toAddress))
         .toList();
+
     final signRequest = CosmosSigningRequest(
         addresses: signers, network: network, digest: signDoc.toBuffer());
     final signatures =

@@ -11,6 +11,7 @@ abstract class CryptoAccountAddress<N, T, X> with CborSerializable {
   abstract final CryptoCoins coin;
   abstract final NetworkAddressDetailsCore<N> address;
   abstract final AddressDerivationIndex keyIndex;
+  abstract final List<AddressDerivationIndex> keyIndexes;
   abstract final List<TokenCore<T>> tokens;
   abstract final List<NFTCore> nfts;
   abstract final int network;
@@ -19,7 +20,6 @@ abstract class CryptoAccountAddress<N, T, X> with CborSerializable {
   abstract final String? accountName;
   abstract final String orginalAddress;
   void setAccountName(String? name);
-  List<String> get signers;
   bool get multiSigAccount;
   String accountToString();
   void addNFT(NFTCore newNft);

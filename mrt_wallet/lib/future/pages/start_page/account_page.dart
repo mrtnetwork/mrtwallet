@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_cash_pages/account_page.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/bitcoin_pages/account_page.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/account_page.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/ethereum_account_page_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/account_page.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/account_page.dart';
@@ -308,6 +309,8 @@ class _AccountPageView extends StatelessWidget {
         return ETHAccountPageView(chainAccount: chainAccount);
       case APPTVMNetwork:
         return TronAccountPageView(chainAccount: chainAccount);
+      case APPCardanoNetwork:
+        return CardanoAccountPage(chainAccount: chainAccount);
       default:
         return const SizedBox();
     }

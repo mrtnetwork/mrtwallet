@@ -34,7 +34,7 @@ class TronMultiSigSignerDetais with Equatable, CborSerializable {
   final BigInt weight;
 
   final AddressDerivationIndex keyIndex;
-  String get path => keyIndex.path;
+  String get path => keyIndex.toString();
 
   @override
   CborTagValue toCbor() {

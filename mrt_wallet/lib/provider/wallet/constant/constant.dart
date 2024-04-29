@@ -15,10 +15,8 @@ class WalletModelCborTagsConst {
   static const List<int> iAccount = [200];
   static const List<int> address = [200, 80];
   static const List<int> accoutKeyIndex = [200, 81];
-  static const List<int> importedAccountKeyIndex = [200, 82];
   static const List<int> multiSigAccountKeyIndex = [200, 83];
-  static const List<int> byronLegacyKeyIndex = [200, 84];
-  // bitcoin
+
   static const List<int> bitcoinCashAccount = [200, 191];
   static const List<int> bitcoinCashMultiSigAccount = [200, 191, 1];
   static const List<int> bitcoinAccount = [200, 192];

@@ -34,7 +34,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
       WalletBackupCore backup, String password) async {
     try {
       final result = await _callSynchronized(
-          () async => await _setupBackupV2(backup, password),
+          () async => await _setupBackup(backup, password),
           conditionStatus: WalletStatus.setup,
           onSuccessStatus: WalletStatus.lock);
 
@@ -203,7 +203,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
       String password) {
     final result = _callSynchronized(() async {
       _validatePassword(password);
-      return _massterKey!.customKeys;
+      return List<EncryptedCustomKey>.from(_massterKey!.customKeys);
     }, conditionStatus: WalletStatus.unlock);
     return result;
   }
@@ -250,35 +250,21 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     notify();
   }
 
-  Future<MethodResult<String>> accsess(
+  Future<MethodResult<List<AccessPubliKeyResponse>>> getAccountPubKys(
+      {required CryptoAccountAddress account}) async {
+    final result = await _callSynchronized(
+        () async => _getAccountPubKys(account: account),
+        conditionStatus: WalletStatus.unlock);
+    return result;
+  }
+
+  Future<MethodResult<List<AccessKeyResponse>>> accsess(
       WalletAccsessType accsessType, String password,
       {CryptoAccountAddress? account, String? accountId}) async {
-    final result = await _callSynchronized(() async {
-      if (accsessType == WalletAccsessType.privateKey &&
-          account == null &&
-          accountId == null) {
-        throw WalletException.invalidArgruments(
-            ["CryptoAccountAddress", "null"]);
-      }
-
-      if (accsessType == WalletAccsessType.privateKey) {
-        if (account != null) {
-          final privateKey =
-              _getPrivateKey(_validatePassword(password), account.keyIndex);
-          return BytesUtils.toHexString(privateKey.privateKey.raw);
-        } else {
-          final extendedKey =
-              _getImportedKeyFromId(_validatePassword(password), accountId!);
-          return extendedKey;
-        }
-      } else if (accsessType == WalletAccsessType.seed) {
-        final mnemoic = await _unlockMnemonic(password);
-        return mnemoic.toStr();
-      } else {
-        _validatePassword(password);
-        return "";
-      }
-    }, conditionStatus: WalletStatus.unlock);
+    final result = await _callSynchronized(
+        () async => await _accsess(accsessType, password,
+            account: account, accountId: accountId),
+        conditionStatus: WalletStatus.unlock);
     return result;
   }
 
@@ -489,11 +475,14 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     });
   }
 
-  List<EncryptedCustomKey> getNetworkImportedKeys() {
+  List<EncryptedCustomKey> getCustomKeysForCoin(CryptoCoins coin) {
     if (walletIsUnlock) {
-      return _massterKey!.customKeys
-          .where((element) => network.keyTypes.contains(element.type))
-          .toList();
+      return List<EncryptedCustomKey>.from(
+          _massterKey!.customKeys.where((element) {
+        return (element.coin == coin) ||
+            (element.coin.conf.type == coin.conf.type &&
+                element.keyType.isPrivateKey);
+      }));
     }
     return [];
   }

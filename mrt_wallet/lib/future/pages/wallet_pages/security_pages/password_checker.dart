@@ -5,9 +5,20 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
-enum WalletAccsessType { privateKey, seed, verify }
+enum WalletAccsessType {
+  privateKey,
+  seed,
+  verify,
+  extendedKey;
 
-typedef FuncWidgetStringPaagePrgoressKey = Widget Function(String, String);
+  bool get isAccsessKey =>
+      this == WalletAccsessType.privateKey ||
+      this == WalletAccsessType.extendedKey;
+  bool get isExtendedKey => this == WalletAccsessType.extendedKey;
+}
+
+typedef FuncWidgetStringPaagePrgoressKey = Widget Function(
+    List<AccessKeyResponse>, String);
 
 class PasswordCheckerView extends StatefulWidget {
   const PasswordCheckerView(
@@ -41,7 +52,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
       GlobalKey<AppTextFieldState>(debugLabel: "AppTextFieldState");
   String _password = "";
 
-  String? credentials;
+  List<AccessKeyResponse>? credentials;
   String? error;
   String? psaswordValidator(String? v) {
     if (AppStringUtility.isStrongPassword(v)) return null;

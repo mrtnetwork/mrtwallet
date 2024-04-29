@@ -65,13 +65,12 @@ class _SolanaTokenView extends StatelessWidget {
               final SolanaSPLToken token = account.tokens[index];
               return ContainerWithBorder(
                 onRemove: () {
-                  context.openDialogPage<TokenAction>(
-                      (ctx) => TokenDetailsModalView(
+                  context.openDialogPage<TokenAction>("token_info".tr,
+                      child: (ctx) => TokenDetailsModalView(
                             token: token,
                             address: account,
                             transferPath: PagePathConst.solanaTransfer,
-                          ),
-                      "token_info".tr);
+                          ));
                 },
                 onRemoveWidget: WidgetConstant.sizedBox,
                 child: Row(

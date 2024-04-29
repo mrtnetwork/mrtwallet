@@ -36,15 +36,11 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
     List<int> publicKey,
   ) async {
     final acc = chain;
-    try {
-      final address = acc.account.addNewAddress(publicKey, accountParams);
-      await _saveAccount(acc);
-      _updateAccountBalance(acc, address: address);
-      await MethodCaller.wait();
-      return address;
-    } catch (e) {
-      rethrow;
-    }
+    final address = acc.account.addNewAddress(publicKey, accountParams);
+    await _saveAccount(acc);
+    _updateAccountBalance(acc, address: address);
+    await MethodCaller.wait();
+    return address;
   }
 
   Future<void> _addNewContact(ContactCore newContact) async {
@@ -161,39 +157,40 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
     await _saveNetwork(currentNetwork);
   }
 
-  Future<NetworkAccountCore> _clenCustomKeysAccount(
-      NetworkAccountCore account, List<EncryptedCustomKey> existKeys) async {
-    final signers = existKeys.map((e) => e.publicKey).toList();
+  List<CryptoAccountAddress> _notAccessAddresses(
+      NetworkAccountCore account, List<EncryptedCustomKey> existKeys) {
+    final signers =
+        List<String>.unmodifiable(existKeys.map((e) => e.id).toList());
     List<CryptoAccountAddress> removeList = [];
-    for (final a in account.addresses) {
-      if (a.keyIndex is Bip32AddressIndex) continue;
-      List<String> pubKyes = [];
-      if (a.multiSigAccount) {
-        final multiSigAccount = a as MultiSigCryptoAccountAddress;
-        bool hasImportedKey = multiSigAccount.keyDetails
-            .where((element) => element.$2 is ImportedAddressIndex)
-            .isEmpty;
-        if (hasImportedKey) continue;
+    for (final address in account.addresses) {
+      if (address.multiSigAccount) {
+        final multiSigAccount = address as MultiSigCryptoAccountAddress;
+        for (final i in multiSigAccount.keyDetails) {
+          final key = i.$2 as Bip32AddressIndex;
+          if (!key.isImportedKey) continue;
+          if (signers.contains(key.importedKeyId)) continue;
+          removeList.add(address);
+          break;
+        }
       } else {
-        pubKyes.addAll(a.signers);
-      }
-      for (final s in pubKyes) {
-        if (signers.contains(s)) continue;
-        removeList.add(a);
-        break;
+        final key = address.keyIndexes as Bip32AddressIndex;
+        if (!key.isImportedKey) continue;
+        if (signers.contains(key.importedKeyId)) continue;
+        removeList.add(address);
       }
     }
-    for (final r in removeList) {
-      try {
-        account.removeAccount(r);
-      } on WalletException {
-        continue;
-      }
+    return removeList;
+  }
+
+  Future<void> _cleanUpAccount(
+      {required NetworkAccountCore account,
+      required List<EncryptedCustomKey> existKeys}) async {
+    final removedAddresses = _notAccessAddresses(account, existKeys);
+    if (removedAddresses.isEmpty) return;
+    for (final address in removedAddresses) {
+      MethodCaller.nullOnException(() => account.removeAccount(address));
     }
-    if (removeList.isNotEmpty) {
-      await _saveAccount(_appChains.fromAccount(account));
-    }
-    return account;
+    await _saveAccount(_appChains.fromAccount(account));
   }
 
   final Cancelable _balanceUpdaterCancelable = Cancelable();

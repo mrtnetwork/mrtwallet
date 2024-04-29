@@ -227,7 +227,7 @@ class AppXRPNetwork extends AppNetworkImpl {
     if (isMainnet) {
       return [Bip44Coins.ripple, Bip44Coins.rippleEd25519];
     }
-    return [Bip44Coins.rippleTestnet, Bip44Coins.rippleEd25519];
+    return [Bip44Coins.rippleTestnet, Bip44Coins.rippleTestnetED25519];
   }
 
   @override
@@ -296,9 +296,9 @@ class APPTVMNetwork extends AppNetworkImpl {
   @override
   List<CryptoCoins> get coins {
     if (coinParam.mainnet) {
-      return [Bip44Coins.ethereum];
+      return [Bip44Coins.tron];
     }
-    return [Bip44Coins.ethereumTestnet];
+    return [Bip44Coins.tronTestnet];
   }
 
   @override
@@ -385,11 +385,13 @@ class APPCardanoNetwork extends AppNetworkImpl {
         Bip44Coins.cardanoByronIcarus,
         Cip1852Coins.cardanoIcarus,
         Cip1852Coins.cardanoLedger,
+        CustomCoins.byronLegacy
       ] else ...[
         Bip44Coins.cardanoByronIcarusTestnet,
         Bip44Coins.cardanoByronLedgerTestnet,
         Cip1852Coins.cardanoIcarusTestnet,
         Cip1852Coins.cardanoLedgerTestnet,
+        CustomCoins.byronLegacyTestnet
       ]
     ];
   }

@@ -3,6 +3,7 @@ library wallet_provier;
 import 'dart:async';
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
+import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
@@ -13,9 +14,8 @@ import 'package:mrt_wallet/future/pages/wallet_pages/security_pages/security.dar
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/bitcoin/bitcoin_multi_sig_core.dart';
-import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/cardano.dart';
 import 'package:mrt_wallet/models/wallet_models/keys/encrypted_derived_key.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/cardano_address_details.dart';
+import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/address_details.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/app/utility/lifecycle_listener/life_cycle_tracker.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';

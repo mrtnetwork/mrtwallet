@@ -3,16 +3,24 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
-import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/byron_legacy_derivation.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_derivation/setup_address_derivation_mode.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/types/typedef.dart';
 
-typedef _OnChangeDerivation = void Function(bool? val, DynamicVoid onFalse);
-typedef _SetupKeyIndex = void Function(AddressDerivationIndex? newKeyIndex);
 typedef _OnChangeShellyAddrType = void Function(ADAAddressType? addrType);
+
+enum _Bip32DerivationMode {
+  customDerivation("custom_derivation"),
+  standardDerivation("standard_derivation");
+
+  const _Bip32DerivationMode(this.viewName);
+  final String viewName;
+  bool get isStandard => this == _Bip32DerivationMode.standardDerivation;
+  bool get isCustom => this == _Bip32DerivationMode.customDerivation;
+}
 
 enum _AdaEra {
   shelly("shelly"),
@@ -21,6 +29,48 @@ enum _AdaEra {
   final String name;
   const _AdaEra(this.name);
   bool get isShelly => this == _AdaEra.shelly;
+  CryptoCoins getRelatedIcarusCardanoCoin(APPCardanoNetwork network) {
+    if (isShelly) {
+      if (network.coinParam.mainnet) {
+        return Cip1852Coins.cardanoIcarus;
+      } else {
+        return Cip1852Coins.cardanoIcarusTestnet;
+      }
+    } else {
+      if (network.coinParam.mainnet) {
+        return Bip44Coins.cardanoByronIcarus;
+      } else {
+        return Bip44Coins.cardanoByronIcarusTestnet;
+      }
+    }
+  }
+
+  CryptoCoins getRelatedLedgerCardanoCoin(APPCardanoNetwork network) {
+    if (isShelly) {
+      if (network.coinParam.mainnet) {
+        return Cip1852Coins.cardanoLedger;
+      } else {
+        return Cip1852Coins.cardanoLedgerTestnet;
+      }
+    } else {
+      if (network.coinParam.mainnet) {
+        return Bip44Coins.cardanoByronLedger;
+      } else {
+        return Bip44Coins.cardanoByronLedgerTestnet;
+      }
+    }
+  }
+
+  CryptoCoins getRelatedByronLegacy(APPCardanoNetwork network) {
+    if (isShelly) {
+      throw WalletException.invalidArgruments(["byron", "shelly"]);
+    }
+    if (network.coinParam.mainnet) {
+      return CustomCoins.byronLegacy;
+    } else {
+      return CustomCoins.byronLegacyTestnet;
+    }
+  }
 }
 
 enum _CardanoMasterKeyGenerationType {
@@ -40,7 +90,6 @@ enum _GenerateAddressPage {
   generateAddress
 }
 
-/// add testnet coin
 class SetupCardanoAddressView extends StatefulWidget {
   const SetupCardanoAddressView({super.key});
 
@@ -53,30 +102,79 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     with SafeState {
   final GlobalKey<PageProgressState> pageProgressKey =
       GlobalKey<PageProgressState>(debugLabel: "SetupEthereumAddressView");
-  final GlobalKey<FormState> form = GlobalKey<FormState>();
-  late final AppChain chainAccount;
-  AddressDerivationIndex get standardDerivation {
-    return chainAccount.account.nextDrive(coin,
-        masterKeyGeneration:
-            keyGenerationType == _CardanoMasterKeyGenerationType.byronLegacy
-                ? SeedGenerationType.byronLegacySeed
-                : SeedGenerationType.bip39,
-        seedGeneration: seedGenerationType);
-  }
-
-  NetworkAccountCore get networkAccounts => chainAccount.account;
   final GlobalKey visibleGenerateAddress =
       GlobalKey(debugLabel: "visibleContinue");
   final GlobalKey visibleXAddressDetails =
       GlobalKey(debugLabel: "visibleContinue");
-  AddressDerivationMode? selectedDerivationMode;
-  EncryptedCustomKey? selectedCustomKey;
+  final GlobalKey<FormState> form = GlobalKey<FormState>();
+  final GlobalKey<AppTextFieldState> hdPathKeyKey =
+      GlobalKey<AppTextFieldState>(debugLabel: "hdPathKey");
+  final GlobalKey<AppTextFieldState> hdPathKey =
+      GlobalKey<AppTextFieldState>(debugLabel: "hdPath");
+
+  late final AppChain chainAccount;
+  NetworkAccountCore get networkAccounts => chainAccount.account;
+  APPCardanoNetwork get network => networkAccounts.network as APPCardanoNetwork;
+  List<CryptoCoins> get coins => network.coins;
+  late CryptoCoins coin = coins.first;
+
+  bool inited = false;
+
   _AdaEra era = _AdaEra.shelly;
   _GenerateAddressPage page = _GenerateAddressPage.seedGeneration;
-  bool byronLegacy = false;
-  void changeByronLegacy(bool? change) {
-    byronLegacy = !byronLegacy;
+  _CardanoMasterKeyGenerationType keyGenerationType =
+      _CardanoMasterKeyGenerationType.icarus;
+  SeedGenerationType seedGenerationType = SeedGenerationType.icarus;
+
+  ADAAddressType addrType = ADAAddressType.base;
+
+  String? manuallyHdPath;
+  String? manuallyHdPathKey;
+  bool manuallySetLegacyHdPathKey = false;
+
+  void onChangeManuallySetHdPathKey() {
+    manuallySetLegacyHdPathKey = !manuallySetLegacyHdPathKey;
+    if (!manuallySetLegacyHdPathKey) {
+      manuallyHdPath = null;
+      manuallyHdPathKey = null;
+    }
     setState(() {});
+  }
+
+  void onChageHdPath(String path) {
+    manuallyHdPath = path;
+  }
+
+  void onChangeHdPathKey(String v) {
+    manuallyHdPathKey = v;
+  }
+
+  String? onValidateHdPath(String? v) {
+    try {
+      final parse = Bip32PathParser.parse(manuallyHdPath!);
+      if (parse.elems.length !=
+          BlockchainConstant.maxByronLegacyBip32LevelIndex) {
+        return "byron_legacy_hd_wallet_length_desc".tr;
+      }
+    } catch (e) {
+      return "invalid_byron_legacy_hd_path_key".tr;
+    }
+    return null;
+  }
+
+  String? onValidateHdPathKey(String? v) {
+    try {
+      final inBytes = BytesUtils.tryFromHexString(manuallyHdPathKey);
+      if (inBytes == null) {
+        return "byron_legacy_hd_path_key_desc".tr;
+      }
+      if (inBytes.length != CardanoUtils.byronAddressHdPathKeyLengthBytes) {
+        return "byron_legacy_hd_path_key_length_desc".tr;
+      }
+    } catch (e) {
+      return "byron_legacy_hd_path_key_desc".tr;
+    }
+    return null;
   }
 
   void onChangeEra(_AdaEra? e) {
@@ -100,58 +198,39 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     setState(() {});
   }
 
-  _CardanoMasterKeyGenerationType keyGenerationType =
-      _CardanoMasterKeyGenerationType.icarus;
-  void onChangeMasterKeyGeneration(_CardanoMasterKeyGenerationType? e) {
-    keyGenerationType = e ?? keyGenerationType;
+  bool get showLegacy =>
+      !era.isShelly &&
+      (seedGenerationType == SeedGenerationType.byronLegacySeed ||
+          seedGenerationType == SeedGenerationType.none);
+  void onChangeMasterKeyGeneration(
+      _CardanoMasterKeyGenerationType? masterKeyGeneration) {
+    if (masterKeyGeneration == null) return;
+    if (era.isShelly && masterKeyGeneration.isLegacy) return;
+    keyGenerationType = masterKeyGeneration;
     setState(() {});
   }
 
-  SeedGenerationType seedGenerationType = SeedGenerationType.icarus;
-  void onChangeSeedGeneration(SeedGenerationType? e) {
-    if (e == SeedGenerationType.bip39) return;
-    seedGenerationType = e ?? seedGenerationType;
+  void onChangeSeedGeneration(SeedGenerationType? seedType) {
+    if (seedType == SeedGenerationType.bip39) return;
+    seedGenerationType = seedType ?? seedGenerationType;
     setState(() {});
   }
 
   void onContinueFromMasterkeyGeneration() {
-    page = _GenerateAddressPage.generateAddress;
     switch (keyGenerationType) {
       case _CardanoMasterKeyGenerationType.icarus:
-        if (era.isShelly) {
-          if (network.coinParam.mainnet) {
-            coin = Cip1852Coins.cardanoIcarus;
-          } else {
-            coin = Cip1852Coins.cardanoIcarusTestnet;
-          }
-        } else {
-          if (network.coinParam.mainnet) {
-            coin = Bip44Coins.cardanoByronIcarus;
-          } else {
-            coin = Bip44Coins.cardanoByronIcarusTestnet;
-          }
-        }
+        coin = era.getRelatedIcarusCardanoCoin(network);
+        break;
+      case _CardanoMasterKeyGenerationType.byronLegacy:
+        coin = era.getRelatedByronLegacy(network);
         break;
       default:
-        if (era.isShelly) {
-          if (network.coinParam.mainnet) {
-            coin = Cip1852Coins.cardanoLedger;
-          } else {
-            coin = Cip1852Coins.cardanoLedgerTestnet;
-          }
-        } else {
-          if (network.coinParam.mainnet) {
-            coin = Bip44Coins.cardanoByronLedger;
-          } else {
-            coin = Bip44Coins.cardanoByronLedgerTestnet;
-          }
-        }
+        coin = era.getRelatedLedgerCardanoCoin(network);
         break;
     }
+    page = _GenerateAddressPage.generateAddress;
     setState(() {});
   }
-
-  ADAAddressType addrType = ADAAddressType.base;
 
   void onChangeShellyddrType(ADAAddressType? type) {
     if (type == null) return;
@@ -161,109 +240,98 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     setState(() {});
   }
 
-  bool inAddressPage = false;
-
-  void goToAddressPage(
-      AddressDerivationMode derivationMode, EncryptedCustomKey? customKey) {
-    if (derivationMode == AddressDerivationMode.importedKey &&
-        customKey == null) return;
-    selectedDerivationMode = derivationMode;
-    selectedCustomKey = customKey;
-    inAddressPage = true;
-    setState(() {});
-    ensureKeyVisible(key: visibleGenerateAddress);
-  }
-
-  void _onBackButton() {
-    if (pageProgressKey.isSuccess) return;
-    if (inAddressPage) {
-      selectedDerivationMode = null;
-      selectedCustomKey = null;
-      inAddressPage = false;
-      customKeyIndex = null;
-      page = _GenerateAddressPage.seedGeneration;
-      keyGenerationType = _CardanoMasterKeyGenerationType.icarus;
-      addrType = ADAAddressType.base;
-      era = _AdaEra.shelly;
-    }
-    setState(() {});
-  }
-
-  APPCardanoNetwork get network => networkAccounts.network as APPCardanoNetwork;
-  List<CryptoCoins> get coins => network.coins;
-  late CryptoCoins coin = coins.firstWhere((element) =>
-      element.conf.type ==
-      (selectedCustomKey?.type ?? EllipticCurveTypes.ed25519Kholaw));
-  bool inited = false;
-  AddressDerivationIndex? customKeyIndex;
-
   void _setupIAccount() {
     if (inited) return;
     final model = context.watch<WalletProvider>(StateIdsConst.main);
     chainAccount = model.chain;
   }
 
-  bool get derivationStandard => customKeyIndex == null;
-  void onChangeDerivation(bool? val, DynamicVoid onFalse) {
-    if (val == null) return;
-    if (derivationStandard) {
-      onFalse();
-      return;
-    } else {
-      customKeyIndex = null;
-      setState(() {});
-    }
-  }
-
-  void setupKeyIndex(AddressDerivationIndex? newKeyIndex) {
-    customKeyIndex = newKeyIndex;
-    setState(() {});
-  }
-
-  @override
-  void didChangeDependencies() {
-    _setupIAccount();
-    super.didChangeDependencies();
-  }
-
-  AddressDerivationIndex? derivationkey(CryptoCoins coin) {
-    if (selectedCustomKey != null) {
-      return ImportedAddressIndex(
-          accountId: selectedCustomKey!.id,
-          bip32KeyIndex: customKeyIndex,
-          currencyCoin: coin);
-    }
-    return customKeyIndex;
-  }
-
   void generateAddress() async {
     if (!(form.currentState?.validate() ?? false)) return;
-    pageProgressKey.progressText("generating_new_addr".tr);
-    final model = context.watch<WalletProvider>(StateIdsConst.main);
-    final keyIndex = derivationkey(coin) ??
-        chainAccount.account.nextDrive(coin,
-            seedGeneration: seedGenerationType,
-            masterKeyGeneration:
-                keyGenerationType == _CardanoMasterKeyGenerationType.byronLegacy
-                    ? SeedGenerationType.byronLegacySeed
-                    : SeedGenerationType.bip39);
+    final result = await MethodCaller.call(() async {
+      pageProgressKey.progressText("generating_new_addr".tr);
+      final model = context.watch<WalletProvider>(StateIdsConst.main);
+      Bip32AddressIndex? keyIndex = await context
+          .openSliverBottomSheet<Bip32AddressIndex>("setup_derivation".tr,
+              child: SetupDerivationModeView(
+                coin: coin,
+                chainAccout: chainAccount,
+              ));
+      if (keyIndex == null) {
+        return null;
+      }
+      keyIndex = keyIndex.copyWith(keyName: "base_key");
+      Bip32AddressIndex? stakeDerivation;
+      if (addrType == ADAAddressType.base) {
+        final defaultStakeKey = keyIndex.copyWith(
+            changeLevel: CardanoUtils.bip32StakeChangeLevel,
+            addressIndex: CardanoUtils.bip32StakeAddressLevel);
+        // ignore: use_build_context_synchronously
+        stakeDerivation = await context
+            .openSliverBottomSheet<Bip32AddressIndex>("setup_derivation".tr,
+                child: SetupDerivationModeView(
+                  coin: coin,
+                  chainAccout: chainAccount,
+                  defaultDerivation: defaultStakeKey,
+                  title: PageTitleSubtitle(
+                      title: "derive_network_address"
+                          .tr
+                          .replaceOne(network.coinParam.token.name),
+                      body: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("disable_standard_derivation".tr),
+                          WidgetConstant.height8,
+                          Text("stake_key_derivation".tr),
+                          WidgetConstant.height8,
+                          Text("ada_base_stake_key_same_error".tr)
+                        ],
+                      )),
+                ));
+        if (stakeDerivation == null) return null;
+        stakeDerivation = stakeDerivation.copyWith(keyName: "stake_key");
+      }
+      if (addrType == ADAAddressType.base && keyIndex == stakeDerivation) {
+        throw WalletException("ada_base_stake_key_same_error");
+      }
+      String? hdPath;
+      List<int>? hdPathKey;
+      if (keyGenerationType.isLegacy) {
+        if (manuallySetLegacyHdPathKey) {
+          hdPath = BlockchainUtils.validateHdPathKey(manuallyHdPath!,
+              maxIndex: BlockchainConstant.maxByronLegacyBip32LevelIndex);
+          hdPathKey = BytesUtils.tryFromHexString(manuallyHdPathKey!);
+        } else {
+          if (keyIndex.hdPath == null) {
+            hdPath = "";
+            hdPathKey = List<int>.filled(32, 0);
+          }
+        }
+      }
 
-    final newAccount = CardanoNewAddressParams(
-        coin: coin,
+      final newAccount = CardanoNewAddressParams(
         deriveIndex: keyIndex,
         addressType: addrType,
-        byronLegacy: era.isShelly ? null : byronLegacy);
+        rewardKeyIndex: stakeDerivation,
+        customHdPath: hdPath,
+        customHdPathKey: hdPathKey,
+      );
+      final result = await model.deriveNewAccount(newAccount);
+      if (result.hasError) throw result.exception!;
+      return result.result;
+    });
 
-    final result = await model.deriveNewAccount(newAccount);
     if (result.hasError) {
       pageProgressKey.errorText(result.error!.tr);
+    } else if (result.result == null) {
+      pageProgressKey.backToIdle();
     } else {
       pageProgressKey.success(
           backToIdle: false,
           progressWidget: SuccessWithButtomView(
             buttomWidget: ContainerWithBorder(
                 margin: WidgetConstant.paddingVertical8,
-                child: AddressDetailsView(address: result.result)),
+                child: AddressDetailsView(address: result.result!)),
             buttomText: "generate_new_address".tr,
             onPressed: () {
               if (mounted) {
@@ -275,29 +343,22 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     setState(() {});
   }
 
-  String? byronLegacyDerivationValidator(String? v, int index) {
-    final int? parse = int.tryParse(v ?? "");
-    if (parse == null) return "invalid_derivation_index".tr;
-    if (parse.isNegative || parse > Bip32KeyDataConst.keyIndexMaxVal) {
-      return "invalid_derivation_index".tr;
-    }
-    return null;
+  @override
+  void didChangeDependencies() {
+    _setupIAccount();
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: !inAddressPage || pageProgressKey.isSuccess,
-      onPopInvoked: (didPop) {
-        if (!didPop) {
-          _onBackButton();
-        }
-      },
+      canPop: true,
+      onPopInvoked: (didPop) {},
       child: Scaffold(
         appBar: AppBar(title: Text("setup_address".tr)),
         body: PageProgress(
           key: pageProgressKey,
-          backToIdle: AppGlobalConst.oneSecoundDuration,
+          backToIdle: AppGlobalConst.twoSecoundDuration,
           initialStatus: PageProgressStatus.idle,
           child: () => UnfocusableChild(
             child: Center(
@@ -307,85 +368,81 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
                   SliverToBoxAdapter(
                       child: ConstraintsBoxView(
                     padding: WidgetConstant.paddingHorizontal20,
-                    child: AnimatedSwitcher(
-                      duration: AppGlobalConst.animationDuraion,
-                      child: inAddressPage
-                          ? Form(
-                              key: form,
-                              child: Column(
+                    child: Form(
+                      key: form,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        key: const ValueKey<bool>(true),
+                        children: [
+                          PageTitleSubtitle(
+                              title: "setup_network_address"
+                                  .tr
+                                  .replaceOne(network.coinParam.token.name),
+                              body: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                key: const ValueKey<bool>(true),
                                 children: [
-                                  AnimatedSwitcher(
-                                    duration: AppGlobalConst.animationDuraion,
-                                    child: page ==
-                                            _GenerateAddressPage.seedGeneration
-                                        ? _SelectSeedGenerationType(
-                                            seedGenerationType:
-                                                seedGenerationType,
-                                            onChageSeedGeneration:
-                                                onChangeSeedGeneration,
-                                            onContinue:
-                                                onContinueFromSeedGeneration)
-                                        : page == _GenerateAddressPage.era
-                                            ? _SelectEra(
-                                                era: era,
-                                                onChangeEra: onChangeEra,
-                                                onContinue: onContinueFromEra)
-                                            : page ==
-                                                    _GenerateAddressPage
-                                                        .masterKeyGeneration
-                                                ? _SelectMasterKeyGeneration(
-                                                    keyGenerationType:
-                                                        keyGenerationType,
-                                                    era: era,
-                                                    onChangeKeyGeneration:
-                                                        onChangeMasterKeyGeneration,
-                                                    onContinue:
-                                                        onContinueFromMasterkeyGeneration,
-                                                    seedGeneration:
-                                                        seedGenerationType,
-                                                  )
-                                                : _GenerateAddress(
-                                                    network: network,
-                                                    addrType: addrType,
-                                                    generateAddress:
-                                                        generateAddress,
-                                                    coin: coin,
-                                                    derivationStandard:
-                                                        derivationStandard,
-                                                    era: era,
-                                                    onChangeDerivation:
-                                                        onChangeDerivation,
-                                                    onChangeShellyddrType:
-                                                        onChangeShellyddrType,
-                                                    setupKeyIndex:
-                                                        setupKeyIndex,
-                                                    standardDerivation:
-                                                        standardDerivation,
-                                                    customKeyIndex:
-                                                        customKeyIndex,
-                                                    selectedCustomKey:
-                                                        selectedCustomKey,
-                                                    masterKeyGenerationType:
-                                                        keyGenerationType),
-                                  ),
+                                  Text("disable_standard_derivation".tr),
+                                  WidgetConstant.height8,
+                                  Text("setup_address_derivation_keys_desc".tr),
+                                  WidgetConstant.height8,
+                                  Text(
+                                      "please_following_steps_to_generate_address"
+                                          .tr),
                                 ],
-                              ),
-                            )
-                          : Column(
-                              children: [
-                                WidgetConstant.height20,
-                                PageTitleSubtitle(
-                                  title: "derive_network_address"
-                                      .tr
-                                      .replaceOne(network.coinParam.token.name),
-                                  body: LargeTextView(
-                                      ["bip44_derivation_desc".tr]),
-                                ),
-                                SetupAddressDerivation(goToAddressPage)
-                              ],
-                            ),
+                              )),
+                          AnimatedSwitcher(
+                            duration: AppGlobalConst.animationDuraion,
+                            child: page == _GenerateAddressPage.seedGeneration
+                                ? _SelectSeedGenerationType(
+                                    seedGenerationType: seedGenerationType,
+                                    onChageSeedGeneration:
+                                        onChangeSeedGeneration,
+                                    onContinue: onContinueFromSeedGeneration)
+                                : page == _GenerateAddressPage.era
+                                    ? _SelectEra(
+                                        era: era,
+                                        onChangeEra: onChangeEra,
+                                        onContinue: onContinueFromEra)
+                                    : page ==
+                                            _GenerateAddressPage
+                                                .masterKeyGeneration
+                                        ? _SelectMasterKeyGeneration(
+                                            keyGenerationType:
+                                                keyGenerationType,
+                                            era: era,
+                                            onChangeKeyGeneration:
+                                                onChangeMasterKeyGeneration,
+                                            onContinue:
+                                                onContinueFromMasterkeyGeneration,
+                                            seedGeneration: seedGenerationType,
+                                          )
+                                        : _GenerateAddress(
+                                            network: network,
+                                            addrType: addrType,
+                                            generateAddress: generateAddress,
+                                            coin: coin,
+                                            era: era,
+                                            hdPathKeyKey: hdPathKeyKey,
+                                            keyGeneratorType: keyGenerationType,
+                                            hdpathKey: hdPathKey,
+                                            onChangedHdPath: onChageHdPath,
+                                            onChangedHdPathKey:
+                                                onChangeHdPathKey,
+                                            validatorHdPath: onValidateHdPath,
+                                            validatorHdPathKey:
+                                                onValidateHdPathKey,
+                                            onChangeShellyddrType:
+                                                onChangeShellyddrType,
+                                            hdPath: manuallyHdPath,
+                                            hdPathKey: manuallyHdPathKey,
+                                            manuallySetHdPathKey:
+                                                manuallySetLegacyHdPathKey,
+                                            onChangeManuallySetHdPathKey:
+                                                onChangeManuallySetHdPathKey,
+                                          ),
+                          ),
+                        ],
+                      ),
                     ),
                   ))
                 ],
@@ -410,10 +467,12 @@ class _SelectEra extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PageTitleSubtitle(
             title: "cardano_era".tr,
             body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("select_era_for_generate_addr".tr),
                 WidgetConstant.height8,
@@ -433,7 +492,13 @@ class _SelectEra extends StatelessWidget {
           onChanged: onChangeEra,
         ),
         WidgetConstant.height20,
-        ElevatedButton(onPressed: onContinue, child: Text("continue".tr))
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FixedElevatedButton(
+                onPressed: onContinue, child: Text("continue".tr)),
+          ],
+        )
       ],
     );
   }
@@ -454,14 +519,20 @@ class _SelectMasterKeyGeneration extends StatelessWidget {
   final DynamicVoid onContinue;
   final _AdaEra era;
   final SeedGenerationType seedGeneration;
+  bool get showLegacy =>
+      !era.isShelly &&
+      (seedGeneration == SeedGenerationType.byronLegacySeed ||
+          seedGeneration == SeedGenerationType.none);
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PageTitleSubtitle(
             title: "master_key_generation".tr,
             body: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("cardano_bip32_master_key".tr),
                 WidgetConstant.height8,
@@ -480,8 +551,7 @@ class _SelectMasterKeyGeneration extends StatelessWidget {
           title: Text("icarus".tr),
           onChanged: onChangeKeyGeneration,
         ),
-        if (!era.isShelly &&
-            seedGeneration == SeedGenerationType.byronLegacySeed)
+        if (showLegacy)
           AppRadioListTile(
             groupValue: keyGenerationType,
             value: _CardanoMasterKeyGenerationType.byronLegacy,
@@ -489,7 +559,13 @@ class _SelectMasterKeyGeneration extends StatelessWidget {
             onChanged: onChangeKeyGeneration,
           ),
         WidgetConstant.height20,
-        ElevatedButton(onPressed: onContinue, child: Text("continue".tr))
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FixedElevatedButton(
+                onPressed: onContinue, child: Text("continue".tr)),
+          ],
+        )
       ],
     );
   }
@@ -509,6 +585,7 @@ class _SelectSeedGenerationType extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PageTitleSubtitle(
             title: "seed_generation".tr,
@@ -530,132 +607,113 @@ class _SelectSeedGenerationType extends StatelessWidget {
           onChanged: onChageSeedGeneration,
         ),
         WidgetConstant.height20,
-        ElevatedButton(onPressed: onContinue, child: Text("continue".tr))
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FixedElevatedButton(
+                onPressed: onContinue, child: Text("continue".tr)),
+          ],
+        )
       ],
     );
   }
 }
 
 class _GenerateAddress extends StatelessWidget {
-  const _GenerateAddress({
-    required this.network,
-    required this.addrType,
-    required this.generateAddress,
-    required this.coin,
-    required this.derivationStandard,
-    required this.era,
-    required this.onChangeDerivation,
-    required this.onChangeShellyddrType,
-    required this.setupKeyIndex,
-    required this.standardDerivation,
-    required this.masterKeyGenerationType,
-    this.selectedCustomKey,
-    this.customKeyIndex,
-  });
+  const _GenerateAddress(
+      {required this.network,
+      required this.addrType,
+      required this.generateAddress,
+      required this.coin,
+      required this.era,
+      required this.onChangeShellyddrType,
+      required this.hdpathKey,
+      required this.hdPathKeyKey,
+      required this.onChangedHdPath,
+      required this.validatorHdPath,
+      required this.onChangedHdPathKey,
+      required this.validatorHdPathKey,
+      required this.keyGeneratorType,
+      required this.hdPath,
+      required this.hdPathKey,
+      required this.manuallySetHdPathKey,
+      required this.onChangeManuallySetHdPathKey});
   final APPCardanoNetwork network;
-  final EncryptedCustomKey? selectedCustomKey;
-  final AddressDerivationIndex? customKeyIndex;
-  final bool derivationStandard;
   final _AdaEra era;
   final ADAAddressType addrType;
-  final AddressDerivationIndex standardDerivation;
   final CryptoCoins coin;
   final _OnChangeShellyAddrType onChangeShellyddrType;
   final DynamicVoid generateAddress;
-  final _OnChangeDerivation onChangeDerivation;
-  final _SetupKeyIndex setupKeyIndex;
-  final _CardanoMasterKeyGenerationType masterKeyGenerationType;
+  final GlobalKey<AppTextFieldState> hdpathKey;
+  final GlobalKey<AppTextFieldState> hdPathKeyKey;
+  final StringVoid onChangedHdPath;
+  final NullStringString validatorHdPath;
+  final StringVoid onChangedHdPathKey;
+  final NullStringString validatorHdPathKey;
+  final _CardanoMasterKeyGenerationType keyGeneratorType;
+  final String? hdPath;
+  final String? hdPathKey;
+  final bool manuallySetHdPathKey;
+  final DynamicVoid onChangeManuallySetHdPathKey;
+  bool get isBaseAddress => addrType == ADAAddressType.base;
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PageTitleSubtitle(
-            title: "derive_network_address"
-                .tr
-                .replaceOne(network.coinParam.token.name),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("disable_standard_derivation".tr),
-                WidgetConstant.height8,
-                if (selectedCustomKey != null)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("generate_from_imported_keys".tr),
-                      WidgetConstant.height8,
-                      Text("generate_from_imported_key_desc1".tr)
-                    ],
-                  )
-                else
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("generate_from_hd_wallet".tr),
-                    ],
-                  )
-              ],
-            )),
-        if (era.isShelly)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              WidgetConstant.height20,
-              Text("shelley_address_format".tr,
-                  style: context.textTheme.titleMedium),
-              WidgetConstant.height8,
-              AppDropDownBottom(
-                  items: {
-                    ADAAddressType.base: Text("base".tr),
-                    ADAAddressType.reward: Text("reward".tr),
-                    ADAAddressType.enterprise: Text("enterprise".tr),
-                  },
-                  value: addrType,
-                  onChanged: onChangeShellyddrType,
-                  label: "shelley_address_format".tr),
-              WidgetConstant.height20,
-            ],
-          ),
-        AppSwitchListTile(
-          value: derivationStandard,
-          onChanged: (p0) {
-            onChangeDerivation(
-              p0,
-              () {
-                if (masterKeyGenerationType.isLegacy) {
-                  context
-                      .openSliverBottomSheet<ByronLegacyAddressIndex>(
-                          "key_derivation".tr,
-                          child: ByronLegacyKeyDerivationView(
-                            coin: coin,
-                            curve: coin.conf.type,
-                          ))
-                      .then(setupKeyIndex);
-                  return;
-                }
-                context
-                    .openSliverBottomSheet<Bip32AddressIndex>(
-                        "key_derivation".tr,
-                        child: Bip32KeyDerivationView(
-                          coin: coin,
-                          curve: coin.conf.type,
-                        ))
-                    .then(setupKeyIndex);
+        if (era.isShelly) ...[
+          WidgetConstant.height20,
+          Text("shelley_address_format".tr,
+              style: context.textTheme.titleMedium),
+          WidgetConstant.height8,
+          AppDropDownBottom(
+              items: {
+                ADAAddressType.base: Text("base".tr),
+                ADAAddressType.reward: Text("reward".tr),
+                ADAAddressType.enterprise: Text("enterprise".tr),
               },
-            );
-          },
-          title: selectedCustomKey == null
-              ? Text(derivationStandard
-                  ? "standard_derivation".tr
-                  : "custom_derivation".tr)
-              : Text(customKeyIndex == null
-                  ? "non_derivation".tr
-                  : "custom_derivation".tr),
-          subtitle: selectedCustomKey == null
-              ? Text(customKeyIndex?.path ?? standardDerivation.path)
-              : Text(customKeyIndex?.path ?? "import_key_derivation_desc2".tr),
-        ),
+              value: addrType,
+              onChanged: onChangeShellyddrType,
+              label: "shelley_address_format".tr),
+          WidgetConstant.height20,
+        ] else if (keyGeneratorType.isLegacy) ...[
+          AppSwitchListTile(
+            value: manuallySetHdPathKey,
+            title: Text("manually_set_hd_path".tr),
+            subtitle:
+                Text("byron_legacy_hd_path_generate_from_master_key_desc".tr),
+            onChanged: (p0) => onChangeManuallySetHdPathKey(),
+          ),
+          AnimatedSize(
+            duration: AppGlobalConst.animationDuraion,
+            alignment: Alignment.topCenter,
+            child: manuallySetHdPathKey
+                ? Column(
+                    children: [
+                      WidgetConstant.height8,
+                      AppTextField(
+                        label: "hd_path".tr,
+                        key: hdpathKey,
+                        onChanged: onChangedHdPath,
+                        validator: validatorHdPath,
+                        hint: CardanoUtils.hdPathHint,
+                        initialValue: hdPath,
+                      ),
+                      AppTextField(
+                        label: "hd_path_key".tr,
+                        key: hdPathKeyKey,
+                        onChanged: onChangedHdPathKey,
+                        validator: validatorHdPathKey,
+                        helperText: "byron_legacy_hd_path_key_desc2".tr,
+                        hint: "0x950163...",
+                        initialValue: hdPathKey,
+                      ),
+                    ],
+                  )
+                : WidgetConstant.sizedBox,
+          )
+        ],
         WidgetConstant.height20,
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -663,7 +721,7 @@ class _GenerateAddress extends StatelessWidget {
             FixedElevatedButton(
               padding: WidgetConstant.paddingVertical20,
               onPressed: generateAddress,
-              child: Text("generate_address".tr),
+              child: Text("setup_derivation".tr),
             ),
           ],
         )

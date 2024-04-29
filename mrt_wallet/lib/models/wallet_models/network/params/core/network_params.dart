@@ -11,5 +11,4 @@ abstract class NetworkCoinParams with CborSerializable {
   abstract final List<ApiProviderService> providers;
   String? getAccountExplorer(String address);
   String? getTransactionExplorer(String txId);
-
 }

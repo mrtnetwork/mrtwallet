@@ -7,3 +7,5 @@ export 'blockchain_addr_utils.dart';
 export 'bitcoin/bitcoin.dart';
 export 'bitcoin_cash/bitcoin_cash_utils.dart';
 export 'solana/solana.dart';
+export 'cardano/cardano_utils.dart';
+export 'coins/coins.dart';

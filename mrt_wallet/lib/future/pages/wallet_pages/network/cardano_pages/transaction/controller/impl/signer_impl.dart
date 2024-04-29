@@ -6,48 +6,31 @@ import 'package:on_chain/ada/ada.dart';
 import 'transaction.dart';
 
 mixin CardanoSignerImpl on CardanoTransactionImpl {
-  Future<ADATransaction> _sendTransaction() async {
-    TransactionOutput? output;
-    if (remindAmount.largerThanZero) {
-      output = changeADAOutput.toOutput();
-      output = output.copyWith(
-          amount: output.amount.copyWith(coin: remindAmount.balance));
+  Future<ADATransaction> _signTransaction() async {
+    try {
+      final builder = buildTransaction(transactionFee.balance);
+      final signers = getTransactionSignerAccounts();
+      final signerKeyIndexes = getTransactionSignersKeysIndex();
+      final tr = await walletProvider.signCardanoTransaction(
+          request: CardanoSigningRequest(
+              addresses: signers,
+              network: network,
+              transaction: builder,
+              signers: signerKeyIndexes));
+      if (tr.hasError) {
+        throw tr.exception!;
+      }
+      return tr.result;
+    } catch (e) {
+      rethrow;
     }
-    TransactionOutput? assetOutput;
-    if (changeAssetOutput.hasAssets) {
-      assetOutput = changeAssetOutput.toOutput();
-    }
-
-    final builder = ADATransactionBuilder(
-        outputs: [
-          ...receivers.map((e) => e.toOutput()).toList(),
-          if (output != null) output,
-          if (assetOutput != null) assetOutput
-        ],
-        utxos: selectedUtxos.map((e) => e.utxo.toUtxoResponse()).toList(),
-        metadata: transactionMemo);
-    builder.setFee(transactionFee.balance);
-    final signerAddrs =
-        selectedUtxos.map((e) => e.utxo.address).toList().toSet();
-    final signers = addresses
-        .where(
-            (element) => signerAddrs.contains(element.networkAddress.address))
-        .toList();
-
-    final tr = await walletProvider.signCardanoTransaction(
-        request: CardanoSigningRequest(
-            addresses: signers, network: network, transaction: builder));
-    if (tr.hasError) {
-      throw tr.exception!;
-    }
-    return tr.result;
   }
 
-  void sendTransaction() async {
+  void buildAndBroadcastTransaction() async {
     progressKey.progressText(
         "create_send_transaction".tr.replaceOne(network.coinParam.token.name));
     final result = await MethodCaller.call(() async {
-      final result = await _sendTransaction();
+      final result = await _signTransaction();
       final ser = result.serialize();
       final broadcast = await providers.broadcastTransaction(ser);
       return broadcast;

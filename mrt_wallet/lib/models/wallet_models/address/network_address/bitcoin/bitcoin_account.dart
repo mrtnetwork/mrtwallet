@@ -133,7 +133,6 @@ class IBitcoinAddress
   @override
   List get variabels => [addressType, keyIndex, network];
 
-  @override
   List<String> get signers => [BytesUtils.toHexString(publicKey)];
 
   @override
@@ -185,6 +184,9 @@ class IBitcoinAddress
 
   @override
   void updateToken(TokenCore<BigInt> token, Token updatedToken) {}
+
+  @override
+  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 }
 
 class IBitcoinMultiSigAddress extends IBitcoinAddress

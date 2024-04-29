@@ -41,9 +41,10 @@ mixin Signer on MasterKeyImpl {
       {required RippleSigningRequest request, required List<int> password}) {
     if (!request.needMultiSignature) {
       final keyIndex = request.signers.first;
-      request.transaction.signingPubKey =
-          RippleUtils.toRipplePublicKey(request.publicKeys.first);
       final prv = _getPrivateKey(password, keyIndex);
+      request.transaction.signingPubKey = RippleUtils.toRipplePublicKey(
+          BytesUtils.toHexString(prv.publicKey.compressed));
+
       final xrpPrivateKey = XRPPrivateKey.fromBytes(prv.privateKey.raw,
           algorithm: XRPKeyAlgorithm.values
               .firstWhere((element) => element.curveType == prv.curveType));
@@ -127,7 +128,6 @@ mixin Signer on MasterKeyImpl {
 
   SolanaTransaction _signSolanaTransaction(
       {required SolanaSigningRequest request, required List<int> password}) {
-    WalletLogging.print("signers len ${request.signers.length}");
     for (int i = 0; i < request.signers.length; i++) {
       final signier = request.signers.elementAt(i);
       final addr = request.addresses.elementAt(i).networkAddress;
@@ -162,32 +162,29 @@ mixin Signer on MasterKeyImpl {
 
   ADATransaction _signCardanoTransaction(
       {required CardanoSigningRequest request, required List<int> password}) {
-    try {
-      return request.transaction.signAndBuildTransaction(
-        ({required address, required digest}) {
-          final signer = request.addresses.indexWhere(
-              (element) => element.address.toAddress == address.address);
-          if (signer < -1) {
-            throw MessageException("Signer account does not found.",
-                details: {"address": address.address});
-          }
-          final ICardanoAddress addr =
-              request.addresses.elementAt(signer) as ICardanoAddress;
-          final keyIndex = request.signers.elementAt(signer);
-          final bipKey = _getPrivateKey(password, keyIndex,
-              seedType: addr.addressDetails.seedGeneration);
-          final adaPrivateKey = AdaPrivateKey.fromBytes(bipKey.privateKey.raw);
-          if (address.addressType == ADAAddressType.byron) {
-            return adaPrivateKey.createBootstrapWitness(
-                digest: digest,
-                address: address as ADAByronAddress,
-                chainCode: bipKey.chainCode.toBytes());
-          }
-          return adaPrivateKey.createSignatureWitness(digest);
-        },
-      );
-    } catch (e) {
-      rethrow;
-    }
+    return request.transaction.signAndBuildTransaction(
+      ({required address, required digest}) {
+        final int addressIndex = request.addresses.indexWhere((element) =>
+            element.networkAddress == address ||
+            element.rewardAddress == address);
+        if (addressIndex < 0) {
+          throw MessageException("Signer account does not found.",
+              details: {"address": address.address});
+        }
+        final keyIndex = request.signers.elementAt(addressIndex);
+        final signerAddress = request.addresses.elementAt(addressIndex);
+        final bipKey = _getPrivateKey(password, keyIndex,
+            seedType: signerAddress.keyIndex.seedGeneration);
+        final adaPrivateKey = AdaPrivateKey.fromBytes(bipKey.privateKey.raw);
+        if (address.addressType == ADAAddressType.byron) {
+          return adaPrivateKey.createBootstrapWitness(
+              digest: digest,
+              address: address as ADAByronAddress,
+              chainCode: bipKey.chainCode.toBytes());
+        }
+
+        return adaPrivateKey.createSignatureWitness(digest);
+      },
+    );
   }
 }

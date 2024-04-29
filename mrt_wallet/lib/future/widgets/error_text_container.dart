@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+import 'package:mrt_wallet/types/typedef.dart';
 
 class ErrorTextContainer extends StatelessWidget {
   const ErrorTextContainer(
@@ -10,12 +11,14 @@ class ErrorTextContainer extends StatelessWidget {
       this.padding = WidgetConstant.padding10,
       this.margin = WidgetConstant.padding5,
       this.verticalMargin = EdgeInsets.zero,
-      this.showErrorIcon = true});
+      this.showErrorIcon = true,
+      this.oTapError});
   final EdgeInsets margin;
   final EdgeInsets padding;
   final String? error;
   final EdgeInsets verticalMargin;
   final bool showErrorIcon;
+  final DynamicVoid? oTapError;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +29,11 @@ class ErrorTextContainer extends StatelessWidget {
           : Padding(
               padding: verticalMargin,
               child: ContainerWithBorder(
-                onRemove: showErrorIcon ? () {} : null,
+                onRemove: showErrorIcon
+                    ? () {
+                        oTapError?.call();
+                      }
+                    : null,
                 margin: margin,
                 padding: padding,
                 onRemoveIcon: const Icon(Icons.error),

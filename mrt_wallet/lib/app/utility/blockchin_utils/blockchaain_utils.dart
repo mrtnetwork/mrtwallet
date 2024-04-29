@@ -3,33 +3,38 @@ import 'package:blockchain_utils/bip/bip/bip44/base/bip44_base_ex.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/app/utility/blockchin_utils/ripple/ripple_utils.dart';
-import 'package:mrt_wallet/app/utility/compute/compute.dart';
-import 'package:mrt_wallet/models/wallet_models/address/core/core.dart';
-import 'package:mrt_wallet/models/wallet_models/keys/keys.dart';
-import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
-import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class BlockchainUtils {
-  static Bip32Base privteKeyToBip32(
-      List<int> privateKeyBytes, EllipticCurveTypes curve,
-      {bool icarus = false}) {
+  static Bip32Base privteKeyToBip32(List<int> privateKeyBytes, CryptoCoins coin,
+      {Bip32KeyNetVersions? keyNetVar}) {
     try {
-      switch (curve) {
+      if (coin.proposal == CustomProposal.cip0019) {
+        return CardanoByronLegacyBip32.fromPrivateKey(
+            privateKeyBytes, null, keyNetVar);
+      }
+      switch (coin.conf.type) {
         case EllipticCurveTypes.secp256k1:
-          return Bip32Slip10Secp256k1.fromPrivateKey(privateKeyBytes);
+          return Bip32Slip10Secp256k1.fromPrivateKey(privateKeyBytes,
+              keyNetVer: keyNetVar);
         case EllipticCurveTypes.ed25519:
-          return Bip32Slip10Ed25519.fromPrivateKey(privateKeyBytes);
+          return Bip32Slip10Ed25519.fromPrivateKey(privateKeyBytes,
+              keyNetVer: keyNetVar);
         case EllipticCurveTypes.ed25519Kholaw:
+          final bool icarus = coin.conf.addrParams["is_icarus"] ?? false;
           if (icarus) {
-            return CardanoIcarusBip32.fromPrivateKey(privateKeyBytes);
+            return CardanoIcarusBip32.fromPrivateKey(privateKeyBytes,
+                keyNetVer: keyNetVar);
           }
-          return Bip32KholawEd25519.fromPrivateKey(privateKeyBytes);
+          return Bip32KholawEd25519.fromPrivateKey(privateKeyBytes,
+              keyNetVer: keyNetVar);
         case EllipticCurveTypes.ed25519Blake2b:
-          return Bip32Slip10Ed25519Blake2b.fromPrivateKey(privateKeyBytes);
+          return Bip32Slip10Ed25519Blake2b.fromPrivateKey(privateKeyBytes,
+              keyNetVer: keyNetVar);
         case EllipticCurveTypes.nist256p1:
-          return Bip32Slip10Nist256p1.fromPrivateKey(privateKeyBytes);
+          return Bip32Slip10Nist256p1.fromPrivateKey(privateKeyBytes,
+              keyNetVer: keyNetVar);
         default:
           throw WalletExceptionConst.invalidPrivateKey;
       }
@@ -39,23 +44,32 @@ class BlockchainUtils {
   }
 
   static Bip32Base extendedKeyToBip32(
-      String extendedKey, EllipticCurveTypes curve,
-      {bool icarus = false}) {
+      {required String extendedKey, required CryptoCoins coin}) {
     try {
-      switch (curve) {
+      if (coin.proposal == CustomProposal.cip0019) {
+        return CardanoByronLegacyBip32.fromExtendedKey(
+            extendedKey, coin.conf.keyNetVer);
+      }
+      switch (coin.conf.type) {
         case EllipticCurveTypes.secp256k1:
-          return Bip32Slip10Secp256k1.fromExtendedKey(extendedKey);
+          return Bip32Slip10Secp256k1.fromExtendedKey(
+              extendedKey, coin.conf.keyNetVer);
         case EllipticCurveTypes.ed25519:
-          return Bip32Slip10Ed25519.fromExtendedKey(extendedKey);
+          return Bip32Slip10Ed25519.fromExtendedKey(
+              extendedKey, coin.conf.keyNetVer);
         case EllipticCurveTypes.ed25519Kholaw:
-          if (icarus) {
-            return CardanoIcarusBip32.fromExtendedKey(extendedKey);
+          if (coin.conf.addrParams["is_icarus"] == true) {
+            return CardanoIcarusBip32.fromExtendedKey(
+                extendedKey, coin.conf.keyNetVer);
           }
-          return Bip32KholawEd25519.fromExtendedKey(extendedKey);
+          return Bip32KholawEd25519.fromExtendedKey(
+              extendedKey, coin.conf.keyNetVer);
         case EllipticCurveTypes.ed25519Blake2b:
-          return Bip32Slip10Ed25519Blake2b.fromExtendedKey(extendedKey);
+          return Bip32Slip10Ed25519Blake2b.fromExtendedKey(
+              extendedKey, coin.conf.keyNetVer);
         case EllipticCurveTypes.nist256p1:
-          return Bip32Slip10Nist256p1.fromExtendedKey(extendedKey);
+          return Bip32Slip10Nist256p1.fromExtendedKey(
+              extendedKey, coin.conf.keyNetVer);
         default:
           throw WalletExceptionConst.invalidPrivateKey;
       }
@@ -68,7 +82,7 @@ class BlockchainUtils {
     try {
       final keyBytes =
           WifDecoder.decode(wifKey, netVer: coin.conf.wifNetVer!).item1;
-      return privteKeyToBip32(keyBytes, coin.conf.type);
+      return privteKeyToBip32(keyBytes, coin);
     } on WalletException {
       rethrow;
     } catch (e) {
@@ -95,109 +109,9 @@ class BlockchainUtils {
     return seed;
   }
 
-  static Bip44Base privateKeyToBip44(String key, CryptoCoins coin) {
-    final privateKey = BytesUtils.fromHexString(key);
-    switch (coin.proposal) {
-      case BipProposal.bip44:
-        return Bip44.fromPrivateKey(privateKey, coin as Bip44Coins);
-      case BipProposal.bip49:
-        return Bip49.fromPrivateKey(privateKey, coin as Bip49Coins);
-      case BipProposal.bip84:
-        return Bip84.fromPrivateKey(privateKey, coin as Bip84Coins);
-      case BipProposal.bip86:
-        return Bip86.fromPrivateKey(privateKey, coin as Bip86Coins);
-      case CipProposal.cip1852:
-        return Cip1852.fromPrivateKey(privateKey, coin as Cip1852Coins);
-      default:
-        throw WalletExceptionConst.invalidPrivateKey;
-    }
-  }
-
-  static Bip44Base extendedKeyToBip44(String key, CryptoCoins coin) {
-    switch (coin.proposal) {
-      case BipProposal.bip44:
-        return Bip44.fromExtendedKey(key, coin as Bip44Coins);
-      case BipProposal.bip49:
-        return Bip49.fromExtendedKey(key, coin as Bip49Coins);
-      case BipProposal.bip84:
-        return Bip84.fromExtendedKey(key, coin as Bip84Coins);
-      case BipProposal.bip86:
-        return Bip86.fromExtendedKey(key, coin as Bip86Coins);
-      default:
-        throw WalletExceptionConst.invalidPrivateKey;
-    }
-  }
-
-  static String exportPrivateKey(String privateKey, CryptoCoins coin) {
-    switch (coin) {
-      case Bip44Coins.rippleEd25519:
-      case Bip44Coins.ripple:
-      case Bip44Coins.rippleTestnet:
-      case Bip44Coins.rippleTestnetED25519:
-        final prv = XRPPrivateKey.fromHex(privateKey,
-            algorithm: XRPKeyAlgorithm.values
-                .firstWhere((element) => element.curveType == coin.conf.type));
-        return prv.toHex();
-      default:
-        return privateKey;
-    }
-  }
-
-  static String extendedKeyToPrivateKey(String privateKey, CryptoCoins coin) {
-    final bip32 = extendedKeyToBip32(privateKey, coin.conf.type);
-    return BytesUtils.toHexString(bip32.privateKey.raw);
-  }
-
-  static ExportedPublicKey? exportPublicKey(
-      List<int> pubkeyBytes, CryptoCoins coin, AppNetworkImpl network) {
-    final Bip44Base account;
-    try {
-      switch (coin.proposal) {
-        case BipProposal.bip44:
-          account = Bip44.fromPublicKey(pubkeyBytes, coin as Bip44Coins);
-          break;
-        case BipProposal.bip49:
-          account = Bip49.fromPublicKey(pubkeyBytes, coin as Bip49Coins);
-          break;
-        case BipProposal.bip84:
-          account = Bip84.fromPublicKey(pubkeyBytes, coin as Bip84Coins);
-          break;
-        case BipProposal.bip86:
-          account = Bip86.fromPublicKey(pubkeyBytes, coin as Bip86Coins);
-          break;
-        case CipProposal.cip1852:
-          account = Cip1852.fromPublicKey(pubkeyBytes, coin as Cip1852Coins);
-          break;
-        default:
-          return null;
-      }
-    } catch (e) {
-      return null;
-    }
-    String extendedKey = account.publicKey.toExtended;
-    List<int> comprossed = account.publicKey.compressed;
-    List<int>? unComprossed = account.publicKey.uncompressed;
-    String pubKey;
-    String? unComprossedPubKey;
-    if (network is AppXRPNetwork) {
-      pubKey =
-          RippleUtils.toRipplePublicKey(BytesUtils.toHexString(comprossed));
-    } else {
-      pubKey = BytesUtils.toHexString(comprossed);
-    }
-    if (!bytesEqual(unComprossed, comprossed)) {
-      unComprossedPubKey = BytesUtils.toHexString(unComprossed);
-    }
-    return ExportedPublicKey(
-        extendedKey: extendedKey,
-        comprossed: pubKey,
-        uncomprossed: unComprossedPubKey);
-  }
-
-  static Bip32Base extendedToBip32(
-    String exKeyStr, {
-    CryptoCoins? coin,
-    EllipticCurveTypes? type,
+  static Bip32Base seedToBip32({
+    required List<int> seedBytes,
+    required CryptoCoins coin,
   }) {
     Bip32Base validate(Bip32Base bip32Obj) {
       int depth = bip32Obj.depth.depth;
@@ -219,110 +133,106 @@ class BlockchainUtils {
     }
 
     Bip32Base bip;
-    final conf = coin?.conf;
-    switch (conf?.type ?? type) {
+    final conf = coin.conf;
+    switch (conf.type) {
       case EllipticCurveTypes.secp256k1:
-        bip = Bip32Slip10Secp256k1.fromExtendedKey(exKeyStr, conf?.keyNetVer);
+        bip = Bip32Slip10Secp256k1.fromSeed(seedBytes, conf.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519:
-        bip = Bip32Slip10Ed25519.fromExtendedKey(exKeyStr, conf?.keyNetVer);
+        bip = Bip32Slip10Ed25519.fromSeed(seedBytes, conf.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519Kholaw:
-        if (conf?.addrParams["is_icarus"] == true) {
-          bip = CardanoIcarusBip32.fromExtendedKey(exKeyStr, conf?.keyNetVer);
+        if (coin.proposal == CustomProposal.cip0019) {
+          bip =
+              CardanoByronLegacyBip32.fromSeed(seedBytes, coin.conf.keyNetVer);
           break;
         }
-        bip = Bip32KholawEd25519.fromExtendedKey(exKeyStr, conf?.keyNetVer);
+        if (conf.addrParams["is_icarus"] == true) {
+          bip = CardanoIcarusBip32.fromSeed(seedBytes, conf.keyNetVer);
+          break;
+        }
+        bip = Bip32KholawEd25519.fromSeed(seedBytes, conf.keyNetVer);
         break;
       case EllipticCurveTypes.ed25519Blake2b:
-        bip = Bip32Slip10Ed25519Blake2b.fromExtendedKey(
-            exKeyStr, conf?.keyNetVer);
+        bip = Bip32Slip10Ed25519Blake2b.fromSeed(seedBytes, conf.keyNetVer);
         break;
       case EllipticCurveTypes.nist256p1:
-        bip = Bip32Slip10Nist256p1.fromExtendedKey(exKeyStr, conf?.keyNetVer);
+        bip = Bip32Slip10Nist256p1.fromSeed(seedBytes, conf.keyNetVer);
         break;
       default:
         throw const ArgumentException("invaid type");
     }
+
     return validate(bip);
   }
 
-  static Bip32Base seedToBip32(
-    List<int> seedBytes, {
-    CryptoCoins? coin,
-    EllipticCurveTypes? type,
-  }) {
-    Bip32Base validate(Bip32Base bip32Obj) {
-      int depth = bip32Obj.depth.depth;
-
-      if (bip32Obj.isPublicOnly) {
-        if (depth < Bip44Levels.account.value ||
-            depth > Bip44Levels.addressIndex.value) {
-          throw Bip44DepthError(
-              "Depth of the public-only Bip object ($depth) is below account level or beyond address index level");
-        }
-      } else {
-        if (depth < 0 || depth > Bip44Levels.addressIndex.value) {
-          throw Bip44DepthError(
-              "Depth of the Bip object ($depth) is invalid or beyond address index level");
-        }
-      }
-
-      return bip32Obj;
+  static Bip32AddressIndex generateAccountNextKeyIndex(
+      {required CryptoCoins coin,
+      required List<Bip32AddressCore> addresses,
+      required SeedGenerationType seedGenerationType}) {
+    if (coin.proposal == CustomProposal.cip0019) {
+      return findNextByronLegacyIndex(coin: coin, addresses: addresses);
     }
-
-    Bip32Base bip;
-    final conf = coin?.conf;
-    switch (conf?.type ?? type) {
-      case EllipticCurveTypes.secp256k1:
-        bip = Bip32Slip10Secp256k1.fromSeed(seedBytes, conf?.keyNetVer);
-        break;
-      case EllipticCurveTypes.ed25519:
-        bip = Bip32Slip10Ed25519.fromSeed(seedBytes, conf?.keyNetVer);
-        break;
-      case EllipticCurveTypes.ed25519Kholaw:
-        if (conf?.addrParams["is_icarus"] == true) {
-          bip = CardanoIcarusBip32.fromSeed(seedBytes, conf?.keyNetVer);
-          break;
-        }
-        bip = Bip32KholawEd25519.fromSeed(seedBytes, conf?.keyNetVer);
-        break;
-      case EllipticCurveTypes.ed25519Blake2b:
-        bip = Bip32Slip10Ed25519Blake2b.fromSeed(seedBytes, conf?.keyNetVer);
-        break;
-      case EllipticCurveTypes.nist256p1:
-        bip = Bip32Slip10Nist256p1.fromSeed(seedBytes, conf?.keyNetVer);
-        break;
-      default:
-        throw const ArgumentException("invaid type");
-    }
-
-    return validate(bip);
+    return findNextBip32Index(
+        coin: coin,
+        addresses: addresses,
+        seedGenerationType: seedGenerationType);
   }
 
   static Bip32AddressIndex findNextBip32Index(
       {required CryptoCoins coin,
       required List<Bip32AddressCore> addresses,
       required SeedGenerationType seedGenerationType}) {
-    final List<Bip32AddressIndex> addressIndex = addresses
+    final List<Bip32AddressIndex> existsIndexes = addresses
         .map((e) => e.keyIndex)
         .whereType<Bip32AddressIndex>()
         .toList();
     final int purposeIndex = coin.proposal.purpose.index;
     final int coinIndex = Bip32KeyIndex.hardenIndex(coin.conf.coinIdx).index;
-    final int accountLevel = coin.conf.type == EllipticCurveTypes.ed25519
-        ? Bip32KeyIndex.hardenIndex(0).index
-        : 0;
+    final def = Bip32PathParser.parse(coin.conf.defPath);
+    if (def.elems.isEmpty) {
+      throw WalletException("Invalid_coin_default_path");
+    }
 
-    for (int i = accountLevel; i < Bip32KeyDataConst.keyIndexMaxVal; i++) {
+    List<int?> indexKeyes = List.from([
+      def.elems.elementAtOrNull(0)!.index,
+      def.elems.elementAtOrNull(1)?.index,
+      def.elems.elementAtOrNull(2)?.index,
+    ], growable: false);
+    int? getCorrectIndex(int elemIndex, int elemValidIndex, int index) {
+      if (elemIndex == elemValidIndex) return index;
+      return indexKeyes[elemIndex];
+    }
+
+    final validIndex = indexKeyes.lastIndexWhere((element) => element != null);
+    final startIndex = def.elems.elementAt(validIndex).index;
+    for (int i = startIndex; i < Bip32KeyDataConst.keyIndexMaxVal; i++) {
       final newKeyIndex = Bip32AddressIndex(
-          purpose: purposeIndex,
-          coin: coinIndex,
-          accountLevel: accountLevel,
-          changeLevel: accountLevel,
-          addressIndex: i,
-          currencyCoin: coin,
-          seedGeneration: seedGenerationType);
+        purpose: purposeIndex,
+        coin: coinIndex,
+        accountLevel: getCorrectIndex(0, validIndex, i),
+        changeLevel: getCorrectIndex(1, validIndex, i),
+        addressIndex: getCorrectIndex(2, validIndex, i),
+        currencyCoin: coin,
+        seedGeneration: seedGenerationType,
+      );
+      if (!existsIndexes.contains(newKeyIndex)) {
+        return newKeyIndex;
+      }
+    }
+    throw WalletExceptionConst.tooManyAccounts;
+  }
+
+  static Bip32AddressIndex findNextByronLegacyIndex(
+      {required CryptoCoins coin, required List<Bip32AddressCore> addresses}) {
+    final List<Bip32AddressIndex> addressIndex = addresses
+        .map((e) => e.keyIndex)
+        .whereType<Bip32AddressIndex>()
+        .toList();
+
+    for (int i = 0; i < Bip32KeyDataConst.keyIndexMaxVal; i++) {
+      final newKeyIndex = Bip32AddressIndex.byronLegacy(
+          firstIndex: 0, secoundIndex: i, currencyCoin: coin);
       if (!addressIndex.contains(newKeyIndex)) {
         return newKeyIndex;
       }
@@ -330,20 +240,23 @@ class BlockchainUtils {
     throw WalletExceptionConst.tooManyAccounts;
   }
 
-  static ByronLegacyAddressIndex findNextByronLegacyIndex(
-      {required CryptoCoins coin, required List<Bip32AddressCore> addresses}) {
-    final List<ByronLegacyAddressIndex> addressIndex = addresses
-        .map((e) => e.keyIndex)
-        .whereType<ByronLegacyAddressIndex>()
-        .toList();
+  static String createCustomKeyChecksum(Bip32Base bip32) {
+    return BytesUtils.toHexString(MD5.hash(<int>[
+      ...bip32.publicKey.compressed,
+      ...bip32.chainCode.toBytes()
+    ]).sublist(0, 8));
+  }
 
-    for (int i = 0; i < Bip32KeyDataConst.keyIndexMaxVal; i++) {
-      final newKeyIndex = ByronLegacyAddressIndex(
-          firstIndex: 0, secondIndex: i, currencyCoin: coin);
-      if (!addressIndex.contains(newKeyIndex)) {
-        return newKeyIndex;
+  static String validateHdPathKey(String path, {int? maxIndex}) {
+    try {
+      final parser = Bip32PathParser.parse(path);
+      if (maxIndex != null && parser.length() != maxIndex) {
+        throw WalletException(
+            "hd_wallet_path_max_indeqxes".tr.replaceOne(maxIndex.toString()));
       }
+      return path;
+    } catch (e) {
+      throw WalletException("invalid_hd_wallet_derivation_path");
     }
-    throw WalletExceptionConst.tooManyAccounts;
   }
 }

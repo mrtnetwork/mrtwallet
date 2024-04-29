@@ -223,12 +223,13 @@ class _RippleTokensView extends StatelessWidget {
               return ContainerWithBorder(
                 onRemove: () {
                   context.openDialogPage<TokenAction>(
-                      (ctx) => TokenDetailsModalView(
-                            token: token,
-                            address: account,
-                            transferPath: PagePathConst.rippleTransfer,
-                          ),
-                      "token_info".tr);
+                    "token_info".tr,
+                    child: (ctx) => TokenDetailsModalView(
+                      token: token,
+                      address: account,
+                      transferPath: PagePathConst.rippleTransfer,
+                    ),
+                  );
                 },
                 onRemoveWidget: WidgetConstant.sizedBox,
                 backgroundColor: Colors.transparent,

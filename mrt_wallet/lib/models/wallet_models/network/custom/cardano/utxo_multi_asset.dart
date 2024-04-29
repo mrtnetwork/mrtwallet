@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/binary/binary.dart';
 import 'package:mrt_wallet/models/wallet_models/currency_balance/currency_balance.dart';
 import 'package:on_chain/on_chain.dart';
-import 'account_utxos.dart';
+import 'utxos.dart';
 import 'utxo_asset.dart';
 
 /// Represents a collection of multiple assets associated with policy IDs.

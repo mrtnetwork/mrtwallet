@@ -25,15 +25,6 @@ class RippleSigningRequest implements SigningRequest {
     return [addresses.first.keyIndex];
   }
 
-  List<String> get publicKeys {
-    if (isMultiSig) {
-      final MultiSigCryptoAccountAddress addr =
-          addresses.first as MultiSigCryptoAccountAddress;
-      return addr.keyDetails.map((e) => e.$1).toList();
-    }
-    return addresses.first.signers;
-  }
-
   bool get needMultiSignature {
     if (isMultiSig) {
       final IXRPMultisigAddress addr = addresses.first as IXRPMultisigAddress;

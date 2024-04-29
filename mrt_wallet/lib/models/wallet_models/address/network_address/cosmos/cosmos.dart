@@ -114,9 +114,6 @@ class ICosmosAddress
   final String hrp;
 
   @override
-  List<String> get signers => [BytesUtils.toHexString(publicKey)];
-
-  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -193,4 +190,6 @@ class ICosmosAddress
 
   @override
   String get orginalAddress => networkAddress.address;
+  @override
+  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 }

@@ -64,7 +64,6 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
       setState(() {});
     }
     buttomState.process();
-    WalletLogging.print("come here?!");
     final result = await MethodCaller.call(() async {
       final name = "credentials_${DateTime.now().toFileName()}.txt";
       final toFile = await CrossFileWriter.writeString(backup!, name);
@@ -75,7 +74,6 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
         mimeType: FileMimeTypes.textPlain,
       );
     });
-    WalletLogging.print("result $result");
     if (result.hasError || !result.result) {
       buttomState.error();
       _shareError = result.error?.tr;

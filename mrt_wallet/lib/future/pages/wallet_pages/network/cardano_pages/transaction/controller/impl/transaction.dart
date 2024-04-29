@@ -3,11 +3,8 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/cardano.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/account_utxos.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/cardano_output.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxo.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxo_multi_asset.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxo_with_owner.dart';
+import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxos.dart';
+import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/cardano.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/types/typedef.dart';
@@ -16,10 +13,35 @@ import 'package:on_chain/on_chain.dart';
 enum CardanoTransactionPages { account, utxo, send }
 
 abstract class CardanoTransactionImpl extends StateController {
+  List<ADAMintInfo> get mints;
+  List<ADATransactionCertificate> get certificates;
+  List<ADATransactionDeposit> _deposits = [];
+  List<ADATransactionDeposit> get deposits => _deposits;
+  bool get hasDeposit => deposits.isNotEmpty;
+  List<ADATransactionDeposit> _refundDepsit = [];
+  List<ADATransactionDeposit> get refundDeposit => _refundDepsit;
+  bool get hasRefundDeposit => refundDeposit.isNotEmpty;
+  void _findDeposits() {
+    List<ADATransactionDeposit> depositsValues = [];
+    List<ADATransactionDeposit> refund = [];
+    for (final i in certificates) {
+      if (i.type == ADATransactionCertificateType.registraction) {
+        depositsValues.add(ADATransactionDeposit.amount(
+            type: ADACustomFeeTypes.stakeRegistration,
+            fee: protocolParams.keyDeposit));
+      } else if (i.type == ADATransactionCertificateType.deregistration) {
+        refund.add(ADATransactionDeposit.amount(
+            type: ADACustomFeeTypes.stakeRegistration,
+            fee: protocolParams.keyDeposit));
+      }
+    }
+    _deposits = List<ADATransactionDeposit>.unmodifiable(depositsValues);
+    _refundDepsit = List<ADATransactionDeposit>.unmodifiable(refund);
+  }
+
   late final NoneDecimalBalance spendableAmount =
       NoneDecimalBalance.zero(network.coinParam.decimal);
-  late final NoneDecimalBalance setupAmount =
-      NoneDecimalBalance.zero(network.coinParam.decimal);
+
   late final NoneDecimalBalance sumOfSelectedUtxo =
       NoneDecimalBalance.zero(network.coinParam.decimal);
 
@@ -28,7 +50,8 @@ abstract class CardanoTransactionImpl extends StateController {
           address: ReceiptAddress<ADAAddress>(
               view: address.address.toAddress,
               type: address.type,
-              networkAddress: address.networkAddress),
+              networkAddress: address.networkAddress,
+              account: address),
           network: network);
   CardanoOutputWithBalance get changeADAOutput => _changeADAOutput;
   NoneDecimalBalance get remindAmount => changeADAOutput.balance;
@@ -38,7 +61,8 @@ abstract class CardanoTransactionImpl extends StateController {
           address: ReceiptAddress<ADAAddress>(
               view: address.address.toAddress,
               type: address.type,
-              networkAddress: address.networkAddress),
+              networkAddress: address.networkAddress,
+              account: address),
           network: network);
   CardanoOutputWithBalance get changeAssetOutput => _changeAssetOutput;
 
@@ -56,8 +80,10 @@ abstract class CardanoTransactionImpl extends StateController {
 
   GeneralTransactionMetadata? get transactionMemo;
   NoneDecimalBalance get transactionFee;
-  int get coinsPerUtxoSize;
-  Future<void> calculateFee();
+  ADAEpochParametersResponse get protocolParams;
+  Future<void> calculateFee() async {
+    _findDeposits();
+  }
 
   CardanoTransactionImpl(
       {required this.walletProvider, required this.chainAccount});
@@ -98,35 +124,56 @@ abstract class CardanoTransactionImpl extends StateController {
   final Map<String, CardanoOutputWithBalance> _receivers = {};
   List<CardanoOutputWithBalance> get receivers => _receivers.values.toList();
 
+  void setTotalAssets(UtxoMultiAsset? assets) {
+    _totalAsset = assets ?? UtxoMultiAsset(const {});
+  }
+
   void changeOutputAddress(ICardanoAddress? changeAddr) {
     if (changeAddr == null ||
         changeAddr.address.toAddress == _changeADAOutput.address.view) return;
-    _changeADAOutput.setAddress(ReceiptAddress<ADAAddress>(
-        view: changeAddr.address.toAddress,
-        type: changeAddr.type,
-        networkAddress: changeAddr.networkAddress));
+    final bool needRecalculationFee = changeAddr.networkAddress.addressType !=
+        _changeADAOutput.address.networkAddress.addressType;
+    final ReceiptAddress<ADAAddress> changeReceiptAddr =
+        ReceiptAddress<ADAAddress>(
+            view: changeAddr.address.toAddress,
+            type: changeAddr.type,
+            networkAddress: changeAddr.networkAddress,
+            account: changeAddr);
+    _changeADAOutput.setAddress(changeReceiptAddr,
+        coinsPerUtxoSize: protocolParams.coinsPerUtxoSize);
+    if (needRecalculationFee) {
+      calculateFee();
+    }
     notify();
   }
 
   void changeAssetOutputAddress(ICardanoAddress? changeAddr) {
     if (changeAddr == null ||
         changeAddr.address.toAddress == _changeAssetOutput.address.view) return;
-    _changeAssetOutput.setAddress(ReceiptAddress<ADAAddress>(
-        view: changeAddr.address.toAddress,
-        type: changeAddr.type,
-        networkAddress: changeAddr.networkAddress));
+    final bool needRecalculationFee = changeAddr.networkAddress.addressType !=
+        _changeAssetOutput.address.networkAddress.addressType;
+    _changeAssetOutput.setAddress(
+        ReceiptAddress<ADAAddress>(
+            view: changeAddr.address.toAddress,
+            type: changeAddr.type,
+            networkAddress: changeAddr.networkAddress,
+            account: changeAddr),
+        coinsPerUtxoSize: protocolParams.coinsPerUtxoSize);
+    if (needRecalculationFee) {
+      calculateFee();
+    }
     notify();
   }
 
   void onSetupUtxo() {
-    _totalAsset = selectedUtxos.fold(UtxoMultiAsset({}),
+    final totalUtxosAsset = selectedUtxos.fold(UtxoMultiAsset({}),
         (previousValue, element) => previousValue + element.utxo.multiAsset);
-
+    setTotalAssets(totalUtxosAsset);
     onCalculateAmount();
     if (hasAsset) {
       changeAssetOutput.updateBalance(
-          changeAssetOutput.minValue(coinsPerUtxoSize),
-          coinsPerUtxoSize: coinsPerUtxoSize);
+          changeAssetOutput.minValue(protocolParams.coinsPerUtxoSize),
+          coinsPerUtxoSize: protocolParams.coinsPerUtxoSize);
       onCalculateAmount();
     }
     _page = CardanoTransactionPages.send;
@@ -140,7 +187,11 @@ abstract class CardanoTransactionImpl extends StateController {
     }
   }
 
-  void addSpender(ICardanoAddress address) {
+  void addSpender(ICardanoAddress address, StringVoid onError) {
+    if (address.networkAddress.isRewardAddress) {
+      onError("unable_to_spend_from_stake_address");
+      return;
+    }
     final r = _addresses.remove(address.networkAddress);
     if (!r) {
       _addresses.add(address.networkAddress);
@@ -148,15 +199,20 @@ abstract class CardanoTransactionImpl extends StateController {
     notify();
   }
 
+  void _updateSelectedUtxosBalance() {
+    final BigInt totalUtxosBalances = _selectedUtxos.fold<BigInt>(
+        BigInt.zero,
+        (previousValue, element) =>
+            previousValue + element.utxoBalance.balance);
+    sumOfSelectedUtxo.updateBalance(totalUtxosBalances);
+  }
+
   void addUtxo(CardanoUtxo utxo) {
     final r = _selectedUtxos.remove(utxo);
     if (!r) {
       _selectedUtxos.add(utxo);
     }
-    sumOfSelectedUtxo.updateBalance(_selectedUtxos.fold<BigInt>(
-        BigInt.zero,
-        (previousValue, element) =>
-            previousValue + element.utxoBalance.balance));
+    _updateSelectedUtxosBalance();
     notify();
   }
 
@@ -170,10 +226,7 @@ abstract class CardanoTransactionImpl extends StateController {
       for (final i in _accountUtxos.values) {
         _selectedUtxos.addAll(i.utxos ?? <CardanoUtxo>[]);
       }
-      sumOfSelectedUtxo.updateBalance(_selectedUtxos.fold<BigInt>(
-          BigInt.zero,
-          (previousValue, element) =>
-              previousValue + element.utxoBalance.balance));
+      _updateSelectedUtxosBalance();
     } finally {
       notify();
     }
@@ -225,24 +278,24 @@ abstract class CardanoTransactionImpl extends StateController {
 
   void setupAccountAmount(String address, BigInt? amount) async {
     if (amount == null) return;
-    _receivers[address]
-        ?.updateBalance(amount, coinsPerUtxoSize: coinsPerUtxoSize);
+    _receivers[address]?.updateBalance(amount,
+        coinsPerUtxoSize: protocolParams.coinsPerUtxoSize);
     bool isMax = amount == remindAmount.balance;
     onCalculateAmount();
     if (isMax) {
       await calculateFee();
       final fixedAmount = amount + remindAmount.balance;
-      _receivers[address]
-          ?.updateBalance(fixedAmount, coinsPerUtxoSize: coinsPerUtxoSize);
+      _receivers[address]?.updateBalance(fixedAmount,
+          coinsPerUtxoSize: protocolParams.coinsPerUtxoSize);
       onCalculateAmount();
     }
     notify();
   }
 
   void changeAssetAdaAmount(BigInt? amount) async {
-    if (amount == null || !hasAsset) return;
+    if (amount == null || !hasAsset || !_changeAssetOutput.hasAssets) return;
     _changeAssetOutput.updateBalance(amount,
-        coinsPerUtxoSize: coinsPerUtxoSize);
+        coinsPerUtxoSize: protocolParams.coinsPerUtxoSize);
     onCalculateAmount();
     notify();
   }
@@ -256,35 +309,45 @@ abstract class CardanoTransactionImpl extends StateController {
   }
 
   bool _isReady() {
-    final zeroOutput = receivers.any((element) => !element.hasAmount);
-    return receivers.isNotEmpty &&
-        !zeroOutput &&
+    final hasNotReadyOutput = receivers.any((element) => !element.isReady);
+    return !hasNotReadyOutput &&
         !remindAmount.isNegative &&
-        !setupAmount.isZero &&
         transactionFee.largerThanZero;
   }
 
   void onCalculateAmount() {
-    final totalAmounts = receivers.fold(BigInt.zero,
-        (previousValue, element) => previousValue + element.balance.balance);
-    setupAmount.updateBalance(totalAmounts + changeAssetOutput.balance.balance);
-    final remind = sumOfSelectedUtxo.balance -
-        totalAmounts -
-        changeAssetOutput.balance.balance -
-        transactionFee.balance;
-    remindAmount.updateBalance(remind);
     final filledAsset = _receivers.values.fold(UtxoMultiAsset({}),
         (previousValue, element) => previousValue + element.asset);
     _changeAssetOutput.setAsset(_totalAsset - filledAsset);
+    final totalAmounts = receivers.fold(BigInt.zero,
+        (previousValue, element) => previousValue + element.balance.balance);
+    _findDeposits();
+
+    final BigInt depositsAmounts = deposits.fold(BigInt.zero,
+        (previousValue, element) => previousValue + element.fee.balance);
+    final BigInt refaunds = refundDeposit.fold(BigInt.zero,
+        (previousValue, element) => previousValue + element.fee.balance);
+    final remind = sumOfSelectedUtxo.balance +
+        refaunds -
+        totalAmounts -
+        changeAssetOutput.balance.balance -
+        transactionFee.balance -
+        depositsAmounts;
+    remindAmount.updateBalance(remind);
+
     _trReady = _isReady();
     notify();
   }
 
   void onAddRecever(
-      ReceiptAddress<ADAAddress>? addr, DynamicVoid onAccountExists) {
+      ReceiptAddress<ADAAddress>? addr, StringVoid onAccountExists) {
     if (addr == null) return;
+    if (addr.networkAddress.isRewardAddress) {
+      onAccountExists("cannot_send_ada_to_stake_address");
+      return;
+    }
     if (_receivers.containsKey(addr.networkAddress.address)) {
-      onAccountExists();
+      onAccountExists("address_already_exist");
       return;
     } else {
       _receivers[addr.networkAddress.address] =
@@ -292,5 +355,75 @@ abstract class CardanoTransactionImpl extends StateController {
     }
     notify();
     calculateFee();
+  }
+
+  List<TransactionOutput> _getRemindOutputs() {
+    final List<TransactionOutput> remindOutputs = [];
+    if (remindAmount.largerThanZero) {
+      TransactionOutput output = changeADAOutput.toOutput();
+      output = output.copyWith(
+          amount: output.amount.copyWith(coin: remindAmount.balance));
+      remindOutputs.add(output);
+    }
+    if (changeAssetOutput.hasAssets) {
+      TransactionOutput assetOutput = changeAssetOutput.toOutput();
+      remindOutputs.add(assetOutput);
+    }
+    return remindOutputs;
+  }
+
+  ADATransactionBuilder buildTransaction(BigInt fee) {
+    final transaction = ADATransactionBuilder(
+        outputs: [
+          ...receivers.map((e) => e.toOutput()).toList(),
+          ..._getRemindOutputs()
+        ],
+        utxos: selectedUtxos.map((e) => e.utxo.toUtxoResponse()).toList(),
+        metadata: transactionMemo,
+        certificates: certificates.map((e) => e.certificate).toList(),
+        deposits: deposits.map((e) => e.toDepositBuilder()).toList(),
+        refundDeposits: refundDeposit.map((e) => e.toDepositBuilder()).toList(),
+        mints: mints.map((e) => e.toMintBuilder()).toList())
+      ..setFee(fee);
+    return transaction;
+  }
+
+  Set<ADAAddress> _signerAddresses() {
+    return {
+      ...selectedUtxos.map((e) => e.utxo.toAdddress),
+      ...mints.map((e) => e.owner),
+      ...certificates
+          .where((element) => element.certificate.signer != null)
+          .map((e) => e.certificate.signer!)
+    };
+  }
+
+  List<ICardanoAddress> getTransactionSignerAccounts() {
+    final Set<ADAAddress> signerAddrs = _signerAddresses();
+    List<ICardanoAddress> signers = [];
+    for (final i in signerAddrs) {
+      final signer = addresses.firstWhere((element) {
+        return element.networkAddress == i || element.rewardAddress == i;
+      }, orElse: () => throw WalletExceptionConst.accountDoesNotFound);
+      signers.add(signer);
+    }
+    return signers;
+  }
+
+  List<AddressDerivationIndex> getTransactionSignersKeysIndex() {
+    final Set<ADAAddress> signerAddrs = _signerAddresses();
+    List<AddressDerivationIndex> signers = [];
+    for (final i in signerAddrs) {
+      final signer = addresses.firstWhere(
+          (element) =>
+              element.networkAddress == i || element.rewardAddress == i,
+          orElse: () => throw WalletExceptionConst.accountDoesNotFound);
+      if (signer.rewardAddress == i) {
+        signers.add(signer.rewardKeyIndex ?? signer.keyIndex);
+      } else {
+        signers.add(signer.keyIndex);
+      }
+    }
+    return signers;
   }
 }

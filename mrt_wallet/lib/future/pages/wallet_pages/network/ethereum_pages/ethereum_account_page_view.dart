@@ -63,12 +63,13 @@ class _EthereumTokenView extends StatelessWidget {
               return ContainerWithBorder(
                 onRemove: () {
                   context.openDialogPage<TokenAction>(
-                      (ctx) => TokenDetailsModalView(
-                            token: token,
-                            address: account,
-                            transferPath: PagePathConst.ethereumTransaction,
-                          ),
-                      "token_info".tr);
+                    "token_info".tr,
+                    child: (ctx) => TokenDetailsModalView(
+                      token: token,
+                      address: account,
+                      transferPath: PagePathConst.ethereumTransaction,
+                    ),
+                  );
                 },
                 onRemoveWidget: WidgetConstant.sizedBox,
                 child: Row(

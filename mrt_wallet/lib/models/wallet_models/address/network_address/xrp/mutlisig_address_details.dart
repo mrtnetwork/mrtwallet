@@ -34,7 +34,7 @@ class RippleMultiSigSignerDetais with Equatable, CborSerializable {
   final int weight;
 
   final AddressDerivationIndex keyIndex;
-  String get path => keyIndex.path;
+  String get path => keyIndex.toString();
 
   @override
   CborTagValue toCbor() {

@@ -80,14 +80,9 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
   List<ContactCore<X>> get contacts => _contacts;
 
   @override
-  AddressDerivationIndex nextDrive(CryptoCoins coin,
-      {SeedGenerationType masterKeyGeneration = SeedGenerationType.bip39,
-      SeedGenerationType seedGeneration = SeedGenerationType.bip39}) {
-    if (masterKeyGeneration == SeedGenerationType.byronLegacySeed) {
-      return BlockchainUtils.findNextByronLegacyIndex(
-          coin: coin, addresses: addresses);
-    }
-    return BlockchainUtils.findNextBip32Index(
+  Bip32AddressIndex nextDerive(CryptoCoins coin,
+      {SeedGenerationType seedGeneration = SeedGenerationType.bip39}) {
+    return BlockchainUtils.generateAccountNextKeyIndex(
         coin: coin, addresses: addresses, seedGenerationType: seedGeneration);
   }
 
@@ -117,9 +112,11 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
     } else {
       throw WalletExceptionConst.invalidAccountDetails;
     }
+
     if (addresses.contains(newAddress)) {
       throw WalletExceptionConst.addressAlreadyExist;
     }
+
     _addresses = List.unmodifiable([newAddress, ..._addresses]);
     return newAddress as CryptoAccountAddress<BigInt, T, X>;
   }

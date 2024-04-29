@@ -38,11 +38,15 @@ class EVMApiProvider implements NetworkApiProvider<IEthAddress> {
 
   Future<(BigInt, bool)> getNetworkInfo() async {
     final BigInt chainId = await provider.request(RPCGetChainId());
-    final eip = await provider.request(RPCGetFeeHistory(
-        blockCount: 25,
-        newestBlock: BlockTagOrNumber.pending,
-        rewardPercentiles: [25, 50, 90]));
-    return (chainId, eip != null);
+    try {
+      final eip = await provider.request(RPCGetFeeHistory(
+          blockCount: 25,
+          newestBlock: BlockTagOrNumber.pending,
+          rewardPercentiles: [25, 50, 90]));
+      return (chainId, eip != null);
+    } on RPCError {
+      return (chainId, false);
+    }
   }
 
   Future<BigInt> gasPrice() async {

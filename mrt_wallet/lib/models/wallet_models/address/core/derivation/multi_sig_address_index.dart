@@ -1,18 +1,19 @@
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
 class MultiSigAddressIndex implements AddressDerivationIndex {
   @override
-  String get path => "multi_signature";
-  const MultiSigAddressIndex();
+  final String? hdPath = null;
+  final String? keyName;
+  const MultiSigAddressIndex({this.keyName});
 
   @override
   CborTagValue toCbor() {
-    return CborTagValue(CborListValue.fixedLength([]),
+    return CborTagValue(CborListValue.fixedLength([keyName]),
         WalletModelCborTagsConst.multiSigAccountKeyIndex);
   }
 
@@ -26,20 +27,24 @@ class MultiSigAddressIndex implements AddressDerivationIndex {
   List get variabels => [];
 
   @override
-  EllipticCurveTypes get curve =>
-      throw WalletExceptionConst.inaccessibleKeyAlgorithm;
-
-  @override
   CryptoCoins get currencyCoin =>
       throw WalletExceptionConst.inaccessibleKeyAlgorithm;
 
   @override
-  String storageKey(
-          {SeedGenerationType seedGenerationType = SeedGenerationType.bip39,
-          Bip44Levels maxLevel = Bip44Levels.addressIndex}) =>
+  SeedGenerationType get seedGeneration =>
       throw WalletExceptionConst.unsuportedFeature;
 
   @override
-  SeedGenerationType get seedGeneration =>
-      throw WalletExceptionConst.unsuportedFeature;
+  AddressDerivationType get derivationType => AddressDerivationType.multisig;
+
+  @override
+  bool get isImportedKey => false;
+
+  @override
+  String get name => "multi_signature".tr;
+
+  @override
+  String toString() {
+    return name;
+  }
 }

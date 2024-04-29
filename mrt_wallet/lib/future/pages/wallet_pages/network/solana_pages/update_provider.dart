@@ -110,7 +110,6 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
   }
 
   void onAddProvider() async {
-    WalletLogging.print((providers.isEmpty && defaultProviders.isEmpty));
     if ((providers.isEmpty && defaultProviders.isEmpty) ||
         selectedProvider != null) return;
     if (!(formKey.currentState?.validate() ?? false)) return;

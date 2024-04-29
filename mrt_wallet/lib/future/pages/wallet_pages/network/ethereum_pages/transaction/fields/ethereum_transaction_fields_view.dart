@@ -54,8 +54,7 @@ class EthereumTransactionFieldsView extends StatelessWidget {
                             onRemoveIcon: const Icon(Icons.edit),
                             child: AddressDetailsView(
                                 address: controller.owner,
-                                key: ValueKey<IEthAddress?>(
-                                    controller.owner)),
+                                key: ValueKey<IEthAddress?>(controller.owner)),
                             onRemove: () {
                               context
                                   .openSliverBottomSheet<IEthAddress>(

@@ -59,7 +59,7 @@ class SendCardanoTransactionView extends StatelessWidget {
                                         )
                                       ],
                                     )
-                                  : SelectAccountUtxo(controller: controller),
+                                  : _SelectAccountUtxo(controller: controller),
                         ),
                       ),
                     ),
@@ -73,15 +73,15 @@ class SendCardanoTransactionView extends StatelessWidget {
   }
 }
 
-class SelectAccountUtxo extends StatefulWidget {
-  const SelectAccountUtxo({super.key, required this.controller});
+class _SelectAccountUtxo extends StatefulWidget {
+  const _SelectAccountUtxo({required this.controller});
   final CardanoTransactionImpl controller;
 
   @override
-  State<SelectAccountUtxo> createState() => _SelectAccountUtxoState();
+  State<_SelectAccountUtxo> createState() => _SelectAccountUtxoState();
 }
 
-class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
+class _SelectAccountUtxoState extends State<_SelectAccountUtxo> {
   late final List<ICardanoAddress> addresses =
       List.from(widget.controller.addresses)
         ..sort(
@@ -97,9 +97,14 @@ class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
     if (!showAll) {
       bool alert = false;
       for (final i in addresses) {
-        if (i == currentAccount) continue;
+        if (i == currentAccount || i.networkAddress.isRewardAddress) continue;
         if (widget.controller.addressSelected(i)) {
-          widget.controller.addSpender(i);
+          widget.controller.addSpender(
+            i,
+            (p0) {
+              context.showAlert(p0.tr);
+            },
+          );
           alert = true;
         }
       }
@@ -159,17 +164,17 @@ class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
                 checkColor: context.colors.secondary,
                 activeColor: context.colors.secondary,
                 value: widget.controller.addressSelected(currentAccount),
-                onChanged:
-                    currentAccount.address.balance.value.balance > BigInt.zero
-                        ? (v) {
-                            widget.controller.addressSelected(currentAccount);
-                          }
-                        : null),
-            onRemove: currentAccount.address.balance.value.balance > BigInt.zero
-                ? () {
-                    widget.controller.addSpender(currentAccount);
-                  }
-                : null,
+                onChanged: (v) {
+                  widget.controller.addressSelected(currentAccount);
+                }),
+            onRemove: () {
+              widget.controller.addSpender(
+                currentAccount,
+                (p0) {
+                  context.showAlert(p0.tr);
+                },
+              );
+            },
             child: AddressDetailsView(
               address: currentAccount,
               color: context.colors.onSecondary,
@@ -192,11 +197,21 @@ class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
                           value: widget.controller
                               .addressSelected(addresses[index]),
                           onChanged: (value) {
-                            widget.controller.addSpender(addresses[index]);
+                            widget.controller.addSpender(
+                              addresses[index],
+                              (p0) {
+                                context.showAlert(p0.tr);
+                              },
+                            );
                           },
                         ),
                         onRemove: () {
-                          widget.controller.addSpender(addresses[index]);
+                          widget.controller.addSpender(
+                            addresses[index],
+                            (p0) {
+                              context.showAlert(p0.tr);
+                            },
+                          );
                         },
                         child: AddressDetailsView(address: addresses[index]));
                   }),

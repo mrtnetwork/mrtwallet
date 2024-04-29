@@ -1,7 +1,7 @@
 import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxo.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:on_chain/ada/src/address/address.dart';
-import 'account_utxos.dart';
+import 'utxos.dart';
 
 class CardanoUtxoWithOwner {
   final ADAAddress owner;

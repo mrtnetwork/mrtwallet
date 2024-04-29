@@ -66,6 +66,8 @@ class WalletExceptionConst {
       WalletException("invalid_balance");
   static final WalletException unsuportedFeature =
       WalletException("unsuported_feature");
+  static final WalletException featureUnavailableForMultiSignature =
+      WalletException("feature__unavailable_for_multi_signature");
 
   static final WalletException condition = WalletException("message");
   static final WalletException emptyThrow = WalletException("");

@@ -186,7 +186,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _KeyIndexDetails(keyIndex: keyIndex),
+                                _HDWalletDerivationDetails(keyIndex: keyIndex),
                                 if (!isLastIndex)
                                   Divider(
                                       color: context.colors.onPrimaryContainer)
@@ -223,40 +223,6 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
           )
         ],
       ),
-    );
-  }
-}
-
-class _KeyIndexDetails extends StatelessWidget {
-  const _KeyIndexDetails({required this.keyIndex});
-  final AddressDerivationIndex keyIndex;
-  @override
-  Widget build(BuildContext context) {
-    switch (keyIndex.runtimeType) {
-      case ImportedAddressIndex:
-        return _ImportedKeyDerivationDetails(
-            keyIndex: keyIndex as ImportedAddressIndex);
-      default:
-        return _HDWalletDerivationDetails(keyIndex: keyIndex);
-    }
-  }
-}
-
-class _ImportedKeyDerivationDetails extends StatelessWidget {
-  const _ImportedKeyDerivationDetails({required this.keyIndex});
-  final ImportedAddressIndex keyIndex;
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("imported".tr, style: context.textTheme.labelLarge),
-        Text(keyIndex.accountId),
-        if (keyIndex.bip32KeyIndex != null) ...[
-          Text(keyIndex.bip32KeyIndex!.toString(),
-              style: context.textTheme.bodySmall)
-        ]
-      ],
     );
   }
 }

@@ -116,9 +116,6 @@ class ISolanaAddress
   final List<int> publicKey;
 
   @override
-  List<String> get signers => [BytesUtils.toHexString(publicKey)];
-
-  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -215,4 +212,7 @@ class ISolanaAddress
       AssociatedTokenAccountProgramUtils.associatedTokenAccount(
               mint: mint, owner: networkAddress, tokenProgramId: tokenProgramId)
           .address;
+
+  @override
+  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 }

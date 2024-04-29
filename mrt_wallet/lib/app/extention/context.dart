@@ -68,6 +68,7 @@ extension QuickContextAccsess on BuildContext {
       BodyBuilder? bodyBuilder,
       List<Widget> appbarActions = const [],
       bool centerContent = true}) async {
+    if (!mounted) return null;
     return await showModalBottomSheet<T>(
       context: this,
       constraints: const BoxConstraints(maxWidth: 900),
@@ -93,6 +94,7 @@ extension QuickContextAccsess on BuildContext {
     return await showAdaptiveDialog(
       context: this,
       useRootNavigator: true,
+      barrierDismissible: true,
       builder: (context) {
         return DialogView(
           title: label,
@@ -103,17 +105,22 @@ extension QuickContextAccsess on BuildContext {
     );
   }
 
-  Future<T?> openDialogPage<T>(WidgetContext child, String label,
-      {List<Widget> Function(BuildContext)? content}) async {
+  Future<T?> openDialogPage<T>(
+    String label, {
+    WidgetContext? child,
+    List<Widget> Function(BuildContext)? content,
+    Widget? fullWidget,
+  }) async {
     return await showAdaptiveDialog(
       context: this,
       useRootNavigator: true,
+      barrierDismissible: true,
       builder: (context) {
-        return DialogView(
-          title: label,
-          content: content?.call(context) ?? const [],
-          child: child(context),
-        );
+        return fullWidget ??
+            DialogView(
+                title: label,
+                content: content?.call(context) ?? const [],
+                child: child?.call(context) ?? WidgetConstant.sizedBox);
       },
     );
   }

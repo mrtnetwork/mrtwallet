@@ -196,15 +196,14 @@ class _BottomAppBar extends StatelessWidget {
                 IconButton(
                     tooltip: "switch_network".tr,
                     onPressed: () async {
-                      await showAdaptiveDialog<int>(
-                        context: context,
-                        useRootNavigator: false,
-                        builder: (context) {
-                          return SwitchNetworkView(
-                            selectedNetwork: model.network,
-                          );
-                        },
-                      ).then(
+                      context
+                          .openDialogPage<int>(
+                        "switch_network".tr,
+                        fullWidget: SwitchNetworkView(
+                          selectedNetwork: model.network,
+                        ),
+                      )
+                          .then(
                         (value) {
                           if (value == null) return;
                           if (value.isNegative) {

@@ -1,7 +1,7 @@
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/cardano.dart';
 import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/account_utxos.dart';
+import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxos.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:on_chain/on_chain.dart';
 
@@ -35,11 +35,7 @@ class CardanoApiProvider implements NetworkApiProvider<ICardanoAddress> {
   }
 
   Future<String> broadcastTransaction(List<int> txCborBytes) async {
-    try {
-      return await provider.request(BlockfrostRequestSubmitTransaction(
-          transactionCborBytes: txCborBytes));
-    } catch (e) {
-      rethrow;
-    }
+    return await provider.request(
+        BlockfrostRequestSubmitTransaction(transactionCborBytes: txCborBytes));
   }
 }

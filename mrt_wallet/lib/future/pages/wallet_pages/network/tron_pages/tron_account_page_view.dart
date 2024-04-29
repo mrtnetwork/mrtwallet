@@ -71,12 +71,13 @@ class _TronTokenView extends StatelessWidget {
               return ContainerWithBorder(
                 onRemove: () {
                   context.openDialogPage<TokenAction>(
-                      (ctx) => TokenDetailsModalView(
-                            token: token,
-                            address: account,
-                            transferPath: PagePathConst.tronTransfer,
-                          ),
-                      "token_info".tr);
+                    "token_info".tr,
+                    child: (ctx) => TokenDetailsModalView(
+                      token: token,
+                      address: account,
+                      transferPath: PagePathConst.tronTransfer,
+                    ),
+                  );
                 },
                 onRemoveWidget: WidgetConstant.sizedBox,
                 child: Row(

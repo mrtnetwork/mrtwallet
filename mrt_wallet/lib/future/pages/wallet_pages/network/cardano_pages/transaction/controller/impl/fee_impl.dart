@@ -21,7 +21,8 @@ mixin CardanoTransactionFeeImpl on CardanoTransactionImpl {
   String? _feeError;
 
   @override
-  int get coinsPerUtxoSize => _protocolParams!.coinsPerUtxoSize;
+  ADAEpochParametersResponse get protocolParams => _protocolParams!;
+
   String? get feeError => _feeError;
   CardanoFeeRateType get feeRateType => _feeRateType;
   bool get hasFee => !transactionFee.isZero;
@@ -31,14 +32,8 @@ mixin CardanoTransactionFeeImpl on CardanoTransactionImpl {
 
   @override
   Future<void> calculateFee() async {
-    final builder = ADATransactionBuilder(
-        outputs: [
-          ...receivers.map((e) => e.toOutput()).toList(),
-          if (remindAmount.largerThanZero) changeADAOutput.toOutput(),
-          if (changeAssetOutput.hasAssets) changeAssetOutput.toOutput()
-        ],
-        utxos: selectedUtxos.map((e) => e.utxo.toUtxoResponse()).toList(),
-        metadata: transactionMemo);
+    super.calculateFee();
+    final builder = buildTransaction(transactionFee.balance);
     final size = builder.estimateSize(
         onChangeAddress: changeADAOutput.address.networkAddress);
     final calcFee = _protocolParams!.calculateFee(size);

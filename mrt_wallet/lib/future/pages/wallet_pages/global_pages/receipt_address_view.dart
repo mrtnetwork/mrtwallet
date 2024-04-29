@@ -12,13 +12,15 @@ class ReceiptAddressView extends StatelessWidget {
       super.key,
       this.subtitle,
       this.validate,
-      this.onEditIcon});
+      this.onEditIcon,
+      this.onTapWhenOnRemove = true});
   final ReceiptAddress? address;
   final DynamicVoid? onTap;
   final String? title;
   final String? subtitle;
   final bool? validate;
   final Icon? onEditIcon;
+  final bool onTapWhenOnRemove;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -33,6 +35,7 @@ class ReceiptAddressView extends StatelessWidget {
         ContainerWithBorder(
             validate: validate ?? (address != null),
             onRemove: onTap,
+            onTapWhenOnRemove: onTapWhenOnRemove,
             onRemoveIcon: address == null
                 ? const Icon(Icons.add)
                 : onEditIcon ?? const Icon(Icons.edit),
@@ -61,7 +64,7 @@ class ReceiptAddressDetailsView extends StatelessWidget {
           Text(address.contact!.name,
               style: context.textTheme.labelSmall?.copyWith(color: color))
         else if (address.isAccount)
-          Text(address.account!.keyIndex.path.tr,
+          Text(address.account!.keyIndex.toString(),
               style: context.textTheme.labelSmall?.copyWith(color: color)),
         OneLineTextWidget(
           address.view,

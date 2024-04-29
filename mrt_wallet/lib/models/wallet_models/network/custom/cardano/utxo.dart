@@ -1,5 +1,5 @@
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-import 'account_utxos.dart';
+import 'utxos.dart';
 
 class CardanoUtxo {
   final ADAAccountUTXOs utxo;

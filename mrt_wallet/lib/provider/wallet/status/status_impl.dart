@@ -41,11 +41,11 @@ mixin WalletStatusImpl on _WalletCore {
 
   Future<CryptoAccountAddress> _deriveNewAccount(
       NewAccountParams newAccountParams) async {
-    if (!network.coins.contains(newAccountParams.coin)) {
-      throw WalletExceptionConst.incorrectNetwork;
-    }
     if (newAccountParams.isMultiSig) {
       return await _addNewAccountToNetwork(newAccountParams, const []);
+    }
+    if (!network.coins.contains(newAccountParams.coin)) {
+      throw WalletExceptionConst.incorrectNetwork;
     }
     WalletMasterKeys keys = _fromMemoryStorage(_password!, _massterKey!);
     final int derivedKeys = keys.derivedKeys.length;
@@ -54,22 +54,17 @@ mixin WalletStatusImpl on _WalletCore {
     if (newAccountParams is CardanoNewAddressParams) {
       final cardanoDeriveResult =
           _deriveCardanoNewAddress(newAccountParams, keys);
-      final cardanoAcc = cardanoDeriveResult.$1;
-      if (cardanoDeriveResult.$2 != null) {
-        keys = keys.addDerivedKey(cardanoDeriveResult.$2!);
-      }
-      if (cardanoDeriveResult.$3 != null) {
-        keys = keys.addDerivedKey(cardanoDeriveResult.$3!);
-      }
       newAccount = await _addNewAccountToNetwork(
-          cardanoAcc, cardanoAcc.addressDetails!.publicKey);
+        cardanoDeriveResult,
+        cardanoDeriveResult.addressDetails!.publicKey,
+      );
     } else {
-      final derivedResult = _getDerivedKey(newAccountParams, keys);
-      final derivedBip = derivedResult.$1;
-      newAccount = await _addNewAccountToNetwork(
-          newAccountParams, derivedBip.publicKey.compressed);
-      if (derivedResult.$2 != null) {
-        keys = keys.addDerivedKey(derivedResult.$2!);
+      try {
+        final derivedResult = keys.toKey(newAccountParams.deriveIndex);
+        newAccount = await _addNewAccountToNetwork(
+            newAccountParams, derivedResult.publicKey.compressed);
+      } catch (e) {
+        rethrow;
       }
     }
     if (derivedKeys != keys.derivedKeys.length) {
@@ -103,7 +98,8 @@ mixin WalletStatusImpl on _WalletCore {
     final encrypt = await _forStorage(key, pw);
     await _setupMasterKey(encrypt, pw);
     for (final i in _appChains.networks.values) {
-      await _clenCustomKeysAccount(i.account, _massterKey!.customKeys);
+      await _cleanUpAccount(
+          account: i.account, existKeys: _massterKey!.customKeys);
     }
 
     await _writeWallet(encrypt, _toStorageChecksum());
@@ -117,18 +113,11 @@ mixin WalletStatusImpl on _WalletCore {
     await _login(password);
   }
 
-  Future<void> _setupBackupV2(WalletBackupCore backup, String password) async {
+  Future<void> _setupBackup(WalletBackupCore backup, String password) async {
     try {
       backup as WalletBackupV2;
       BlockchainUtils.validateMnemonic(backup.masterKeys.mnemonic.toStr());
-      for (final i in backup.chains) {
-        for (final b in i.account.addresses) {
-          final validate = _validateBcakupAccounts(backup.masterKeys, b);
-          if (!validate) {
-            throw WalletExceptionConst.invalidBackup;
-          }
-        }
-      }
+
       await _setup(backup.masterKeys, password);
       for (final i in backup.chains) {
         await _saveAccount(i);
@@ -235,5 +224,46 @@ mixin WalletStatusImpl on _WalletCore {
     );
     return SecretStorageCompute.encrypt(backup.toCbor().toCborHex(), password,
         encoding: encoding);
+  }
+
+  Future<List<AccessKeyResponse>> _accsess(
+      WalletAccsessType accsessType, String password,
+      {CryptoAccountAddress? account, String? accountId}) async {
+    if (accsessType.isAccsessKey && account == null && accountId == null) {
+      throw WalletException.invalidArgruments(["CryptoAccountAddress", "null"]);
+    }
+
+    if (accsessType.isAccsessKey) {
+      if (account != null) {
+        final accountKeys = account.keyIndexes.map((e) {
+          final key = _getPrivateKey(_validatePassword(password), e);
+          return AccessPrivateKeyResponse.fromBip32(
+              account: key,
+              coin: account.keyIndex.currencyCoin,
+              keyName: e.name);
+        }).toList();
+        _getPrivateKey(_validatePassword(password), account.keyIndex);
+        return accountKeys;
+      } else {
+        final importedKey =
+            _getImportedKeyFromId(_validatePassword(password), accountId!);
+        return [importedKey];
+      }
+    } else if (accsessType == WalletAccsessType.seed) {
+      final mnemoic = await _unlockMnemonic(password);
+      return [AccessMnemonicResponse(mnemoic)];
+    } else {
+      _validatePassword(password);
+      return [AccessFakeResponse()];
+    }
+  }
+
+  List<AccessPubliKeyResponse> _getAccountPubKys(
+      {required CryptoAccountAddress account}) {
+    return account.keyIndexes.map((e) {
+      final key = _getPrivateKey(_password!, e);
+      return AccessPubliKeyResponse.fromBip32(
+          account: key, coin: account.keyIndex.currencyCoin, keyName: e.name);
+    }).toList();
   }
 }

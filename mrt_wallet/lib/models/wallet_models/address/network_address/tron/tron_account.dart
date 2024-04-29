@@ -134,9 +134,6 @@ class ITronAddress
   final List<int> publicKey;
 
   @override
-  List<String> get signers => [BytesUtils.toHexString(publicKey)];
-
-  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -275,6 +272,9 @@ class ITronAddress
 
   @override
   String get orginalAddress => networkAddress.toAddress();
+
+  @override
+  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 }
 
 class ITronMultisigAddress extends ITronAddress
@@ -373,9 +373,6 @@ class ITronMultisigAddress extends ITronAddress
   @override
   List<int> get publicKey => throw UnimplementedError();
 
-  @override
-  List<String> get signers =>
-      multiSignatureAccount.signers.map((e) => e.publicKey).toList();
   @override
   List get variabels {
     return [keyIndex, network, multiSignatureAccount];

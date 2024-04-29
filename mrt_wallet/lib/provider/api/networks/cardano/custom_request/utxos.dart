@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/account_utxos.dart';
+import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/utxos.dart';
 import 'package:on_chain/ada/src/address/era/core/address.dart';
 import 'package:on_chain/ada/src/provider/blockfrost/core/blockfrost.dart';
 import 'package:on_chain/ada/src/provider/blockfrost/core/core.dart';

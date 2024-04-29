@@ -1,4 +1,3 @@
-
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/numbers/bigint_utils.dart';
 

@@ -79,6 +79,9 @@ class CosmosTransactionFieldsView extends StatelessWidget {
                                 validateText: controller.feeError?.tr,
                                 validate: controller.feeError == null &&
                                     controller.hasFee,
+                                onTapError: () {
+                                  controller.simulateTr();
+                                },
                                 onRemove: () {
                                   if (controller.isThorChain) {
                                     return;
@@ -188,6 +191,7 @@ class CosmosTransactionFieldsView extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   FixedElevatedButton(
+                                    padding: WidgetConstant.paddingVertical20,
                                     onPressed: controller.trIsReady
                                         ? controller.sendTransaction
                                         : null,

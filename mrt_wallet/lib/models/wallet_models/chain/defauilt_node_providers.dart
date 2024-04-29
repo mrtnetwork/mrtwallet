@@ -1,5 +1,4 @@
 import 'package:mrt_native_support/platform_interface.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 
@@ -359,7 +358,6 @@ class DefaultNodeProviders {
   }
 
   static String? getGnesisHash(AppNetworkImpl network) {
-    WalletLogging.print("come ${network.value}");
     return gnesisHash[network.value];
   }
 }

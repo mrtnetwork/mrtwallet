@@ -76,10 +76,11 @@ class _ByronLegacyKeyDerivationViewState
 
   void onSubmit() {
     if (!(form.currentState?.validate() ?? false)) return;
-    final keyIndex = ByronLegacyAddressIndex(
-        firstIndex: levels[Bip44Levels.change]!.index,
-        secondIndex: levels[Bip44Levels.addressIndex]!.index,
-        currencyCoin: widget.coin);
+    final keyIndex = Bip32AddressIndex.byronLegacy(
+      firstIndex: levels[Bip44Levels.change]!.index,
+      secoundIndex: levels[Bip44Levels.addressIndex]!.index,
+      currencyCoin: widget.coin,
+    );
     context.pop(keyIndex);
   }
 

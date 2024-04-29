@@ -8,147 +8,149 @@ import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
 class Bip32AddressIndex extends AddressDerivationIndex
     with Equatable, CborSerializable {
-  final int purpose;
-  final int coin;
-  final int accountLevel;
-  final int changeLevel;
-  final int addressIndex;
-
+  final int? purpose;
+  final int? coin;
+  final int? accountLevel;
+  final int? changeLevel;
+  final int? addressIndex;
+  final String? importedKeyId;
+  final String? keyName;
   @override
-  final String path;
-
+  bool get isImportedKey => importedKeyId != null;
   @override
-  final EllipticCurveTypes? curve;
+  final String? hdPath;
+
   @override
   final SeedGenerationType seedGeneration;
   @override
-  final CryptoCoins? currencyCoin;
+  final CryptoCoins currencyCoin;
 
-  const Bip32AddressIndex._(
-      {required this.purpose,
-      required this.coin,
-      required this.accountLevel,
-      required this.changeLevel,
-      required this.addressIndex,
-      required this.curve,
-      required this.currencyCoin,
-      required this.seedGeneration,
-      required this.path});
+  Bip32AddressIndex._({
+    required this.purpose,
+    required this.coin,
+    required this.accountLevel,
+    required this.changeLevel,
+    required this.addressIndex,
+    required this.currencyCoin,
+    required this.seedGeneration,
+    this.importedKeyId,
+    this.keyName,
+  }) : hdPath = _toPath(
+            [purpose, coin, accountLevel, changeLevel, addressIndex],
+            importedKeyId: importedKeyId);
 
   factory Bip32AddressIndex.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    try {
-      final CborListValue cbor = CborSerializable.decodeCborTags(
-          bytes, obj, WalletModelCborTagsConst.accoutKeyIndex);
-      final int purposeLevel = cbor.value[0].value;
-      final int coinLevel = cbor.value[1].value;
-      final int accountLevel = cbor.value[2].value;
-      final int changeLevel = cbor.value[3].value;
-      final int addressIndex = cbor.value[4].value;
-      final String? curve = cbor.elementAt(5);
-      final String? proposal = cbor.elementAt(6);
-      final String? coinName = cbor.elementAt(7);
-      final CryptoCoins? coin = proposal != null && coinName != null
-          ? CryptoCoins.getCoin(coinName, CryptoProposal.fromName(proposal))
-          : null;
-      final String? seedGeneration = cbor.elementAt(8);
-      return Bip32AddressIndex._(
-          accountLevel: accountLevel,
-          addressIndex: addressIndex,
-          changeLevel: changeLevel,
-          purpose: purposeLevel,
-          coin: coinLevel,
-          path: _toPath([
-            purposeLevel,
-            coinLevel,
-            accountLevel,
-            changeLevel,
-            addressIndex
-          ]),
-          curve: curve == null
-              ? coin == null
-                  ? EllipticCurveTypes.secp256k1
-                  : null
-              : EllipticCurveTypes.fromName(curve),
-          currencyCoin: coin,
-          seedGeneration: seedGeneration == null
-              ? SeedGenerationType.bip39
-              : SeedGenerationType.fromName(seedGeneration));
-    } catch (e) {
-      throw WalletExceptionConst.invalidAccountDetails;
-    }
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.accoutKeyIndex);
+    final String? seedGeneration = cbor.elementAt(7);
+    return Bip32AddressIndex._(
+        accountLevel: cbor.elementAt(2),
+        addressIndex: cbor.elementAt(4),
+        changeLevel: cbor.elementAt(3),
+        purpose: cbor.elementAt(0),
+        coin: cbor.elementAt(1),
+        currencyCoin: CustomCoins.getCoin(
+            cbor.elementAt(6), CustomProposal.fromName(cbor.elementAt(5)))!,
+        seedGeneration: seedGeneration == null
+            ? SeedGenerationType.bip39
+            : SeedGenerationType.fromName(seedGeneration),
+        importedKeyId: cbor.elementAt(8),
+        keyName: cbor.elementAt(9));
   }
-
-  factory Bip32AddressIndex(
-      {required int purpose,
-      required int coin,
-      required int accountLevel,
-      required int changeLevel,
-      required int addressIndex,
+  factory Bip32AddressIndex.byronLegacy(
+      {required int firstIndex,
+      required int secoundIndex,
       required CryptoCoins currencyCoin,
-      required SeedGenerationType seedGeneration}) {
+      String? keyName}) {
+    return Bip32AddressIndex._(
+        purpose: firstIndex,
+        coin: secoundIndex,
+        accountLevel: null,
+        changeLevel: null,
+        addressIndex: null,
+        currencyCoin: currencyCoin,
+        seedGeneration: SeedGenerationType.byronLegacySeed,
+        keyName: keyName);
+  }
+  factory Bip32AddressIndex(
+      {int? purpose,
+      int? coin,
+      int? accountLevel,
+      int? changeLevel,
+      int? addressIndex,
+      required CryptoCoins currencyCoin,
+      SeedGenerationType seedGeneration = SeedGenerationType.bip39,
+      String? keyName}) {
     return Bip32AddressIndex._(
         purpose: purpose,
         coin: coin,
-        path: _toPath([purpose, coin, accountLevel, changeLevel, addressIndex]),
-        curve: null,
         accountLevel: accountLevel,
         changeLevel: changeLevel,
         addressIndex: addressIndex,
         currencyCoin: currencyCoin,
-        seedGeneration: seedGeneration);
+        seedGeneration: seedGeneration,
+        keyName: keyName);
   }
 
-  factory Bip32AddressIndex.fromBip44KeyIndexDetais(
-      {required List<Bip44LevelsDetails> indexes,
+  Bip32AddressIndex copyWith(
+      {int? purpose,
+      int? coin,
+      int? accountLevel,
+      int? changeLevel,
+      int? addressIndex,
+      String? path,
+      SeedGenerationType? seedGeneration,
+      CryptoCoins? currencyCoin,
+      String? importedKeyId,
+      String? keyName}) {
+    return Bip32AddressIndex._(
+        purpose: purpose ?? this.purpose,
+        coin: coin ?? this.coin,
+        accountLevel: accountLevel ?? this.accountLevel,
+        changeLevel: changeLevel ?? this.changeLevel,
+        addressIndex: addressIndex ?? this.addressIndex,
+        seedGeneration: seedGeneration ?? this.seedGeneration,
+        currencyCoin: currencyCoin ?? this.currencyCoin,
+        importedKeyId: importedKeyId ?? this.importedKeyId,
+        keyName: keyName ?? this.keyName);
+  }
+
+  factory Bip32AddressIndex.fromPath(
+      {required String path,
       required CryptoCoins currencyCoin,
       required SeedGenerationType seedGeneration}) {
-    final int purpose = indexes
-        .firstWhere((element) => element.level == Bip44Levels.purpose)
-        .index;
-    final int coin = indexes
-        .firstWhere((element) => element.level == Bip44Levels.coin)
-        .index;
-    final int accountLevel = indexes
-        .firstWhere((element) => element.level == Bip44Levels.account)
-        .index;
-    final int changeLevel = indexes
-        .firstWhere((element) => element.level == Bip44Levels.change)
-        .index;
-    final int addressIndex = indexes
-        .firstWhere((element) => element.level == Bip44Levels.addressIndex)
-        .index;
+    final indexes = Bip32PathParser.parse(path).elems;
+    if (indexes.length > 5) {
+      throw WalletException("hd_wallet_path_max_indeqxes"
+          .tr
+          .replaceOne(BlockchainConstant.maxBip32LevelIndex.toString()));
+    }
     return Bip32AddressIndex(
-        purpose: purpose,
-        coin: coin,
-        accountLevel: accountLevel,
-        changeLevel: changeLevel,
-        addressIndex: addressIndex,
+        purpose: indexes.elementAtOrNull(0)?.index,
+        coin: indexes.elementAtOrNull(1)?.index,
+        accountLevel: indexes.elementAtOrNull(2)?.index,
+        changeLevel: indexes.elementAtOrNull(3)?.index,
+        addressIndex: indexes.elementAtOrNull(4)?.index,
         currencyCoin: currencyCoin,
-        seedGeneration: seedGeneration);
+        seedGeneration: seedGeneration,
+        keyName: null);
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.dynamicLength([
-          CborIntValue(purpose),
-          CborIntValue(coin),
-          CborIntValue(accountLevel),
-          CborIntValue(changeLevel),
-          CborIntValue(addressIndex),
-          if (curve == null)
-            const CborNullValue()
-          else
-            CborStringValue(curve!.name),
-          if (currencyCoin != null) ...[
-            CborStringValue(currencyCoin!.proposal.specName),
-            CborStringValue(currencyCoin!.coinName),
-          ] else ...[
-            const CborNullValue(),
-            const CborNullValue()
-          ],
-          seedGeneration.name
+          purpose,
+          coin,
+          accountLevel,
+          changeLevel,
+          addressIndex,
+          CborStringValue(currencyCoin.proposal.specName),
+          CborStringValue(currencyCoin.coinName),
+          seedGeneration.name,
+          importedKeyId,
+          keyName
         ]),
         WalletModelCborTagsConst.accoutKeyIndex);
   }
@@ -160,52 +162,69 @@ class Bip32AddressIndex extends AddressDerivationIndex
         accountLevel,
         changeLevel,
         addressIndex,
-        currencyCoin?.conf.type ?? curve,
-        seedGeneration.name
+        currencyCoin.conf.type,
+        seedGeneration.name,
+        importedKeyId
       ];
 
-  static String _toPath(List<int> indexses) {
-    String path = "m/";
-    for (final i in indexses) {
-      final toBip32KeyIndex = Bip32KeyIndex(i);
-      if (toBip32KeyIndex.isHardened) {
-        path += "${toBip32KeyIndex.unharden().index}'/";
+  static String? _toPath(List<int?> indexses, {String? importedKeyId}) {
+    if (indexses.isEmpty) return null;
+    final bipIndexes = indexses
+        .where((element) => element != null)
+        .map((e) => Bip32KeyIndex(e!))
+        .toList();
+    if (bipIndexes.isEmpty) return null;
+    String pathStr = "${Bip32PathConst.masterChar}/";
+    for (final elem in bipIndexes) {
+      if (!elem.isHardened) {
+        pathStr += "${elem.toInt()}/";
       } else {
-        path += "${toBip32KeyIndex.index}/";
+        pathStr += "${elem.unharden().toInt()}'/";
       }
     }
-    path = path.substring(0, path.length - 1);
-    return path;
+    return pathStr.substring(0, pathStr.length - 1);
+  }
+
+  Bip32Base _derive(Bip32Base key,
+      {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
+    if (maxLevel == Bip44Levels.master || indexes.isEmpty) return key;
+    List<Bip32KeyIndex> bip32KeyIndexes = List.unmodifiable(indexes);
+    final maxIndex = maxLevel.value;
+    if (bip32KeyIndexes.length > maxIndex) {
+      bip32KeyIndexes = List.unmodifiable(bip32KeyIndexes.sublist(0, maxIndex));
+    }
+    Bip32Base deriveToIndex = key;
+    for (final i in bip32KeyIndexes) {
+      deriveToIndex = deriveToIndex.childKey(i);
+    }
+    return deriveToIndex;
   }
 
   @override
   T derive<T extends Bip32Base>(T derivator,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
-    Bip32Base deriveToIndex = derivator;
-    for (int i = 0; i < maxLevel.value; i++) {
-      deriveToIndex = deriveToIndex.childKey(indexes.elementAt(i));
-    }
-    return deriveToIndex as T;
+    return _derive(derivator, maxLevel: maxLevel) as T;
   }
 
-  List<Bip32KeyIndex> get indexes => [
-        Bip32KeyIndex(purpose),
-        Bip32KeyIndex(coin),
-        Bip32KeyIndex(accountLevel),
-        Bip32KeyIndex(changeLevel),
-        Bip32KeyIndex(addressIndex)
-      ];
-
-  @override
-  String storageKey({Bip44Levels maxLevel = Bip44Levels.addressIndex}) =>
-      BytesUtils.toHexString(MD5.hash([
-        ...toCbor().encode(),
-        ...seedGeneration.name.codeUnits,
-        ...maxLevel.name.codeUnits
-      ]));
+  List<Bip32KeyIndex> get indexes =>
+      <int?>[purpose, coin, accountLevel, changeLevel, addressIndex]
+          .where((element) => element != null)
+          .map((e) => Bip32KeyIndex(e!))
+          .toList();
 
   @override
   String toString() {
-    return path;
+    if (importedKeyId != null) {
+      return "imported_".tr.replaceOne(hdPath ?? "non_derivation".tr);
+    }
+    return hdPath ?? "non_derivation".tr;
   }
+
+  @override
+  AddressDerivationType get derivationType {
+    return AddressDerivationType.bip32;
+  }
+
+  @override
+  String get name => keyName ?? "main_key";
 }

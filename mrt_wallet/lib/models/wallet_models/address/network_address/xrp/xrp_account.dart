@@ -156,9 +156,6 @@ class IXRPAddress
   final List<int> publicKey;
 
   @override
-  List<String> get signers => [BytesUtils.toHexString(publicKey)];
-
-  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -267,6 +264,9 @@ class IXRPAddress
 
   @override
   String get orginalAddress => networkAddress.address;
+
+  @override
+  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 }
 
 class IXRPMultisigAddress extends IXRPAddress
@@ -369,9 +369,6 @@ class IXRPMultisigAddress extends IXRPAddress
   @override
   EllipticCurveTypes get curveType => throw UnimplementedError();
 
-  @override
-  List<String> get signers =>
-      multiSignatureAccount.signers.map((e) => e.publicKey).toList();
   @override
   List get variabels {
     return [tag, keyIndex, network, multiSignatureAccount];

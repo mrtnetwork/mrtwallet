@@ -42,8 +42,9 @@ class EthereumGasFeeView extends StatelessWidget {
             child: AnimatedSwitcher(
               duration: AppGlobalConst.animationDuraion,
               child: Row(
-                key: ValueKey<String>(
-                    "${transaction.gasInited}/${transaction.updatingGas}"),
+                key: UniqueKey(),
+                // key: ValueKey<String>(
+                //     "${transaction.gasInited}/${transaction.updatingGas}"),
                 children: [
                   Expanded(
                     child: transaction.gasInited
