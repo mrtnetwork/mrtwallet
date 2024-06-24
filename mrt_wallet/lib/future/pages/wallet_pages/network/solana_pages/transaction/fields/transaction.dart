@@ -237,11 +237,12 @@ class _SolanaTransferFields extends StatelessWidget {
           subtitle: "receiver_address_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("recipient".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "recipient".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
               (value) {
@@ -356,11 +357,12 @@ class _CreateAssociatedTokenAccountFields extends StatelessWidget {
           subtitle: "owner_of_account".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("owner_address".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "owner_address".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
                           subtitle: PageTitleSubtitle(
@@ -381,11 +383,12 @@ class _CreateAssociatedTokenAccountFields extends StatelessWidget {
           subtitle: "mint_address_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("mint_address".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "mint_address".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
                           subtitle: PageTitleSubtitle(
@@ -406,11 +409,12 @@ class _CreateAssociatedTokenAccountFields extends StatelessWidget {
           title: "program_address".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("program_address".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "program_address".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
                           subtitle: PageTitleSubtitle(
@@ -482,11 +486,11 @@ class _CreateAccountFields extends StatelessWidget {
           subtitle: "owner_of_account".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("owner".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>("owner".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
                           subtitle: PageTitleSubtitle(
@@ -580,11 +584,12 @@ class _InitializeMintFields extends StatelessWidget {
           subtitle: "solana_program_id_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("program_id".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "program_id".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
               (value) {
@@ -601,11 +606,11 @@ class _InitializeMintFields extends StatelessWidget {
           subtitle: "mint_address_to_initialize".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("mint".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>("mint".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
               (value) {
@@ -622,11 +627,12 @@ class _InitializeMintFields extends StatelessWidget {
           subtitle: "mint_authority_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("mint_authority".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "mint_authority".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
               (value) {
@@ -644,11 +650,12 @@ class _InitializeMintFields extends StatelessWidget {
           subtitle: "freeze_authority_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("freeze_authority".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "freeze_authority".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
               (value) {
@@ -713,11 +720,12 @@ class _MintToFields extends StatelessWidget {
           subtitle: "solana_program_id_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("program_id".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "program_id".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
               (value) {
@@ -734,11 +742,11 @@ class _MintToFields extends StatelessWidget {
           subtitle: "mint_address_mint_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("mint".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>("mint".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
                           subtitle: PageTitleSubtitle(
@@ -760,11 +768,12 @@ class _MintToFields extends StatelessWidget {
           subtitle: "mint_to_authority_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("authority".tr,
+                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
+                    "authority".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
                           subtitle: PageTitleSubtitle(
@@ -792,7 +801,7 @@ class _MintToFields extends StatelessWidget {
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView(
+                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
                           subtitle: PageTitleSubtitle(

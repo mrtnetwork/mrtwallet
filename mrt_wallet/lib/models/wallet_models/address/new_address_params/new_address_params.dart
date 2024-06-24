@@ -7,3 +7,4 @@ export 'bitcoin_cash/address_param.dart';
 export 'solana/address_param.dart';
 export 'cardano/cardano_params.dart';
 export 'cosmos/cosmos_params.dart';
+export 'ton/ton_address_params.dart';

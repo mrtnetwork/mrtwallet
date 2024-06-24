@@ -19,16 +19,20 @@ class AppChain with CborSerializable {
   NetworkApiProvider? _networkApiProvider;
   late final List<String> services = List.unmodifiable(_services(network));
   static List<String> _services(AppNetworkImpl network) {
-    if (network is AppXRPNetwork) {
-      return ["services", "tokens"];
-    } else if (network is APPTVMNetwork) {
-      return ["services", "trc20_tokens", "trc10_tokens"];
-    } else if (network is APPEVMNetwork) {
-      return ["tokens"];
-    } else if (network is APPSolanaNetwork) {
-      return ["services", "tokens"];
+    switch (network.type) {
+      case NetworkType.xrpl:
+        return ["services", "tokens"];
+      case NetworkType.tron:
+        return ["services", "trc20_tokens", "trc10_tokens"];
+      case NetworkType.ethereum:
+        return ["tokens"];
+      case NetworkType.solana:
+        return ["services", "tokens"];
+      case NetworkType.ton:
+        return ["services", "jettons"];
+      default:
+        return ["services"];
     }
-    return ["services"];
   }
 
   factory AppChain.fromAccount(NetworkAccountCore account) {

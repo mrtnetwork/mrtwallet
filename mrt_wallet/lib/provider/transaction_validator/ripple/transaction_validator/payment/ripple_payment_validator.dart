@@ -66,33 +66,33 @@ class RipplePaymentValidator implements RippleTransactionValidator {
         return "ripple_payment_send_to_self_desc";
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
   List<ValidatorField> get fields => [amount, destination, flag];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return Payment(
-        destination: destination.value!.view,
-        invoiceId: invoiceId.value == null
-            ? null
-            : QuickBytesUtils.ensureIsHex(invoiceId.value!),
-        amount: issueToken != null
-            ? CurrencyAmount.issue(IssuedCurrencyAmount(
-                currency: issueToken!.token.name,
-                issuer: issueToken!.issuer,
-                value: (amount.value!.balance as BigRational).toDecimal()))
-            : CurrencyAmount.xrp(amount.value!.balance as BigInt),
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        flags: flag.value,
-        signingPubKey: signerPublicKey);
+      destination: destination.value!.view,
+      destinationTag: destination.value?.networkAddress.tag,
+      invoiceId: invoiceId.value == null
+          ? null
+          : QuickBytesUtils.ensureIsHex(invoiceId.value!),
+      amount: issueToken != null
+          ? CurrencyAmount.issue(IssuedCurrencyAmount(
+              currency: issueToken!.token.name,
+              issuer: issueToken!.issuer,
+              value: (amount.value!.balance as BigRational).toDecimal()))
+          : CurrencyAmount.xrp(amount.value!.balance as BigInt),
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+      flags: flag.value?.id,
+    );
   }
 
   @override

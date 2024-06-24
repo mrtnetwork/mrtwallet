@@ -251,12 +251,13 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     final result = await MethodCaller.call(() async {
       pageProgressKey.progressText("generating_new_addr".tr);
       final model = context.watch<WalletProvider>(StateIdsConst.main);
+      final customKeys = model.getCustomKeysForCoin([coin]);
       Bip32AddressIndex? keyIndex = await context
           .openSliverBottomSheet<Bip32AddressIndex>("setup_derivation".tr,
               child: SetupDerivationModeView(
-                coin: coin,
-                chainAccout: chainAccount,
-              ));
+                  coin: coin,
+                  chainAccout: chainAccount,
+                  customKeys: customKeys));
       if (keyIndex == null) {
         return null;
       }
@@ -272,6 +273,7 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
                 child: SetupDerivationModeView(
                   coin: coin,
                   chainAccout: chainAccount,
+                  customKeys: customKeys,
                   defaultDerivation: defaultStakeKey,
                   title: PageTitleSubtitle(
                       title: "derive_network_address"
@@ -310,12 +312,12 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
       }
 
       final newAccount = CardanoNewAddressParams(
-        deriveIndex: keyIndex,
-        addressType: addrType,
-        rewardKeyIndex: stakeDerivation,
-        customHdPath: hdPath,
-        customHdPathKey: hdPathKey,
-      );
+          deriveIndex: keyIndex,
+          addressType: addrType,
+          rewardKeyIndex: stakeDerivation,
+          customHdPath: hdPath,
+          customHdPathKey: hdPathKey,
+          coin: coin);
       final result = await model.deriveNewAccount(newAccount);
       if (result.hasError) throw result.exception!;
       return result.result;

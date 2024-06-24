@@ -38,24 +38,23 @@ class RippeBurnTokenValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
   List<ValidatorField> get fields => [nftokenId, owner];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return NFTokenBurn(
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        nfTokenId: nftokenId.value!,
-        owner: owner.value?.view,
-        signingPubKey: signerPublicKey);
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+      nfTokenId: nftokenId.value!,
+      owner: owner.value?.view,
+    );
   }
 
   @override

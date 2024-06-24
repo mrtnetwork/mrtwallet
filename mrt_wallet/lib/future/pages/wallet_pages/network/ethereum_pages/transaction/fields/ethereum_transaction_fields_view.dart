@@ -16,6 +16,7 @@ import 'package:mrt_wallet/future/widgets/widget_constant.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 import 'package:mrt_wallet/provider/transaction_validator/transaction_validator.dart';
+import 'package:on_chain/ethereum/src/address/evm_address.dart';
 
 class EthereumTransactionFieldsView extends StatelessWidget {
   const EthereumTransactionFieldsView({super.key, this.field});
@@ -200,11 +201,12 @@ class _ETHTransactionTransferFields extends StatelessWidget {
           subtitle: "receiver_address_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("recipient".tr,
+                .openSliverBottomSheet<ReceiptAddress<ETHAddress>>(
+                    "recipient".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (c) => SelectRecipientAccountView(
+                    bodyBuilder: (c) => SelectRecipientAccountView<ETHAddress>(
                         account: account, scrollController: c))
                 .then(
               (value) {

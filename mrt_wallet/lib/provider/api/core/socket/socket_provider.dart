@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
-import 'package:mrt_wallet/provider/api/models/request_completer.dart';
 
 abstract class BaseSocketProvider implements BaseProviderProtocol {
   @override

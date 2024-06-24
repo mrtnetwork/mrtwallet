@@ -175,7 +175,8 @@ class _SetupRippleMutlisigAddressViewState
     progressKey.progressText("setup_address".tr);
 
     final accountParams = await MethodCaller.call(() async {
-      final rippleAddress = XRPAddress(address!.view);
+      final rippleAddress = XRPAddress(address!.view,
+          isTestnet: !widget.network.coinParam.mainnet);
       final newAccountParams = RippleMultisigNewAddressParam(
         coin: widget.network.coins.first,
         masterAddress: rippleAddress,
@@ -395,13 +396,15 @@ class _SetupRippleMutlisigAddressViewState
                                               onTap: () {
                                                 context
                                                     .openSliverBottomSheet<
-                                                        ReceiptAddress>(
+                                                        ReceiptAddress<
+                                                            XRPAddress>>(
                                                       "multi_sig_addr".tr,
                                                       maxExtend: 1,
                                                       minExtent: 0.8,
                                                       initialExtend: 0.9,
                                                       bodyBuilder: (c) =>
-                                                          SelectRecipientAccountView(
+                                                          SelectRecipientAccountView<
+                                                                  XRPAddress>(
                                                               account: widget
                                                                   .account,
                                                               scrollController:

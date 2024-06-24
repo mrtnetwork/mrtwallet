@@ -31,7 +31,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
     final signRequest = CosmosSigningRequest(
         addresses: signers, network: network, digest: signDoc.toBuffer());
     final signatures =
-        await walletProvider.signCosmosTransaction(request: signRequest);
+        await walletProvider.signTransaction(request: signRequest);
     if (signatures.hasError) {
       throw signatures.exception!;
     }

@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/exception/exceptions.dart';
-import 'package:blockchain_utils/string/string.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
 import 'dart:async';

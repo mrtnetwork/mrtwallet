@@ -1,13 +1,14 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:mrt_wallet/models/wallet_models/address/address.dart';
+import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
 
 class BitcoinCashNewAddressParams
     implements NewAccountParams<BitcoinCashNewAddressParams> {
-  BitcoinCashNewAddressParams({
-    required this.deriveIndex,
-    required this.bitcoinAddressType,
-  });
+  BitcoinCashNewAddressParams(
+      {required this.deriveIndex,
+      required this.bitcoinAddressType,
+      required this.coin});
   @override
   bool get isMultiSig => false;
 
@@ -15,7 +16,15 @@ class BitcoinCashNewAddressParams
   final AddressDerivationIndex deriveIndex;
   final BitcoinAddressType bitcoinAddressType;
   @override
-  CryptoCoins get coin => deriveIndex.currencyCoin;
+  final CryptoCoins coin;
+
+  @override
+  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+    return IBitcoinCashAddress.newAccount(
+        accountParams: this,
+        publicKey: publicKey,
+        network: network as AppBitcoinNetwork);
+  }
 }
 
 class BitcoinCashMultiSigNewAddressParams
@@ -37,4 +46,10 @@ class BitcoinCashMultiSigNewAddressParams
 
   @override
   final CryptoCoins coin;
+
+  @override
+  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+    return IBitcoinCashMultiSigAddress.newAccount(
+        accountParam: this, network: network as AppBitcoinNetwork);
+  }
 }

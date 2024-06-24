@@ -12,22 +12,22 @@ mixin RippleSignTransactionImpl on RippleTransactionImpl {
     final result = await MethodCaller.call(() async {
       await XRPHelper.autoFill(apiProvider.provider, request.transaction,
           calculateFee: false);
-      final signature =
-          await walletProvider.signRippleTransaction(request: request);
+      final signature = await walletProvider.signTransaction(request: request);
       if (signature.hasError) {
         throw signature.exception!;
       }
-      final trBlob = request.transaction.toBlob(forSigning: false);
+      final trBlob = signature.result.toBlob(forSigning: false);
       final send =
           await apiProvider.provider.request(RPCSubmitOnly(txBlob: trBlob));
       return send;
     });
     if (result.hasError) {
-      progressKey.errorText(result.error!.tr);
+      progressKey.errorText(result.error!.tr,
+          showBackButtom: true, backToIdle: false);
     } else {
       if (!result.result.isSuccess) {
         progressKey.errorText(result.result.engineResultMessage,
-            backToIdle: false);
+            backToIdle: false, showBackButtom: true);
       } else {
         progressKey.success(
             progressWidget: SuccessTransactionTextView(

@@ -50,7 +50,12 @@ class SolanaSPLToken with Equatable implements TokenCore<BigInt> {
 
   SolanaSPLToken updateToken(Token updateToken) {
     return SolanaSPLToken._(
-        balance, updateToken, mint, tokenAccount, _updated, tokenOwner);
+        Live(NoneDecimalBalance(balance.value.balance, updateToken.decimal!)),
+        updateToken,
+        mint,
+        tokenAccount,
+        _updated,
+        tokenOwner);
   }
 
   @override

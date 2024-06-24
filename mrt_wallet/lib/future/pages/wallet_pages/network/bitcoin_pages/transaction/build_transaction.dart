@@ -106,27 +106,27 @@ class BitcoinBuildTransactionView extends StatelessWidget {
           }),
         ),
         ContainerWithBorder(
-          validate: controller.receivers.isNotEmpty,
-          onRemove: () {
-            context
-                .openSliverBottomSheet<ReceiptAddress<BitcoinBaseAddress>>(
-                    "receiver_address".tr,
-                    bodyBuilder: (c) => SelectRecipientAccountView(
-                        account: controller.account, scrollController: c),
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9)
-                .then(
-              (value) {
-                controller.onAddRecever(value, () {
-                  context.showAlert("address_already_exist".tr);
-                });
-              },
-            );
-          },
-          onRemoveIcon: const Icon(Icons.add_box),
-          child: Text("tap_to_add_new_receipment".tr),
-        ),
+            validate: controller.receivers.isNotEmpty,
+            onRemove: () {
+              context
+                  .openSliverBottomSheet<ReceiptAddress<BitcoinBaseAddress>>(
+                      "receiver_address".tr,
+                      bodyBuilder: (c) =>
+                          SelectRecipientAccountView<BitcoinBaseAddress>(
+                              account: controller.account, scrollController: c),
+                      maxExtend: 1,
+                      minExtent: 0.8,
+                      initialExtend: 0.9)
+                  .then(
+                (value) {
+                  controller.onAddRecever(value, () {
+                    context.showAlert("address_already_exist".tr);
+                  });
+                },
+              );
+            },
+            onRemoveIcon: const Icon(Icons.add_box),
+            child: Text("tap_to_add_new_receipment".tr)),
         WidgetConstant.height20,
         Text("remaining_amount".tr, style: context.textTheme.titleMedium),
         Text("remaining_amount_and_receiver".tr),

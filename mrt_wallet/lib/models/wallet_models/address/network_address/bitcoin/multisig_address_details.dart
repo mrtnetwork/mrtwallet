@@ -16,7 +16,7 @@ class BitcoinMultiSigSignerDetais
       {required List<int> publicKey,
       required AddressDerivationIndex keyIndex,
       int weight = 1}) {
-    if (!bytesEqual(
+    if (!BytesUtils.bytesEqual(
         ECPublic.fromBytes(publicKey).toCompressedBytes(), publicKey)) {
       throw WalletExceptionConst.invalidAccountDetails;
     }

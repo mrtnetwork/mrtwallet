@@ -17,7 +17,12 @@ enum ProviderProtocol {
       case ProviderProtocol.websocket:
         return AppPlatform.values;
       default:
-        return [AppPlatform.android, AppPlatform.windows, AppPlatform.ios];
+        return [
+          AppPlatform.android,
+          AppPlatform.windows,
+          AppPlatform.ios,
+          AppPlatform.macos
+        ];
     }
   }
 

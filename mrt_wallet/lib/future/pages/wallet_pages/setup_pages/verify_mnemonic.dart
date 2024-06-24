@@ -1,15 +1,22 @@
-import 'package:blockchain_utils/compare/compare.dart';
+import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
+typedef OnValidateMnemonic = void Function(List<String>);
+
 class VerifyMnemonicView extends StatefulWidget {
-  const VerifyMnemonicView({required this.mnemonic, super.key});
+  const VerifyMnemonicView(
+      {required this.mnemonic,
+      required this.onValidate,
+      this.submitText,
+      super.key});
   final List<String> mnemonic;
+  final OnValidateMnemonic onValidate;
+  final String? submitText;
   @override
   State<VerifyMnemonicView> createState() => _VerifyMnemonicViewState();
 }
@@ -27,7 +34,7 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
   bool get wrongFilled => compelte && !equal;
 
   void isEqual() {
-    equal = iterableIsEqual(selectedMnemonic, widget.mnemonic);
+    equal = CompareUtils.iterableIsEqual(selectedMnemonic, widget.mnemonic);
     compelte = inSelectMnemonic.where((element) => element.selected).length ==
         inSelectMnemonic.length;
   }
@@ -82,6 +89,11 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
     }
   }
 
+  void validate() {
+    if (!equal) return;
+    widget.onValidate(selectedMnemonic);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -111,12 +123,8 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
                         ),
                         FixedElevatedButton(
                             padding: WidgetConstant.paddingVertical20,
-                            onPressed: () {
-                              context
-                                  .watch<SetupWalletController>("setup_wallet")
-                                  .toExtra(selectedMnemonic);
-                            },
-                            child: Text("passphrase".tr)),
+                            onPressed: validate,
+                            child: Text(widget.submitText ?? "passphrase".tr)),
                       ],
                     ),
                   ],
@@ -138,7 +146,10 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
                           children:
                               List.generate(shuffleMnemonic.length, (index) {
                             return Card(
-                              elevation: selectedIndex.contains(index) ? 0 : 6,
+                              surfaceTintColor: Colors.transparent,
+                              color: selectedIndex.contains(index)
+                                  ? context.colors.primaryFixed
+                                  : null,
                               shape: RoundedRectangleBorder(
                                   borderRadius: WidgetConstant.border4,
                                   side: const BorderSide(width: 1)),
@@ -148,7 +159,16 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
                                 },
                                 child: Padding(
                                     padding: WidgetConstant.padding20,
-                                    child: Text(shuffleMnemonic[index])),
+                                    child: Text(
+                                      shuffleMnemonic[index],
+                                      style: context.textTheme.bodyMedium
+                                          ?.copyWith(
+                                              color:
+                                                  selectedIndex.contains(index)
+                                                      ? context
+                                                          .colors.onPrimaryFixed
+                                                      : null),
+                                    )),
                               ),
                             );
                           }),
@@ -163,7 +183,9 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         FixedElevatedButton(
-                            onPressed: clear, child: Text("reset".tr))
+                            padding: WidgetConstant.padding10,
+                            onPressed: clear,
+                            child: Text("reset".tr))
                       ],
                     )
                   ],

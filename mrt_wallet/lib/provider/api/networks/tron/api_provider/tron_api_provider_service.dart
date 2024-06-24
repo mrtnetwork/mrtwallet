@@ -13,7 +13,8 @@ class TronApiProviderService extends ApiProviderService {
     required String serviceName,
     required String websiteUri,
     required this.httpNodeUri,
-  }) : super(serviceName, websiteUri, ProviderProtocol.http);
+    ProviderAuth? auth,
+  }) : super(serviceName, websiteUri, ProviderProtocol.http, auth);
   final String httpNodeUri;
 
   @override
@@ -24,16 +25,18 @@ class TronApiProviderService extends ApiProviderService {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.tronApiServiceProvider);
     return TronApiProviderService(
-      serviceName: cbor.elementAt(0),
-      websiteUri: cbor.elementAt(1),
-      httpNodeUri: cbor.elementAt(2),
-    );
+        serviceName: cbor.elementAt(0),
+        websiteUri: cbor.elementAt(1),
+        httpNodeUri: cbor.elementAt(2),
+        auth: cbor.getCborTag(3)?.to<ProviderAuth, CborTagValue>(
+            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength([serviceName, websiteUri, httpNodeUri]),
+        CborListValue.fixedLength(
+            [serviceName, websiteUri, httpNodeUri, auth?.toCbor()]),
         WalletModelCborTagsConst.tronApiServiceProvider);
   }
 

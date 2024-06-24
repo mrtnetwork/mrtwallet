@@ -1,6 +1,45 @@
 part of 'package:mrt_wallet/provider/wallet/wallet_provider.dart';
 
 mixin Signer on MasterKeyImpl {
+  T _sign<T>(
+      {required SigningRequest<T> request, required List<int> password}) {
+    Object sign;
+    switch (request.network.type) {
+      case NetworkType.bitcoinAndForked:
+        sign = _signBitcoin(
+            request: MethodCaller.safeCast(request), password: password);
+        break;
+      case NetworkType.ethereum:
+        sign = _signEthTransaction(
+            request: MethodCaller.safeCast(request), password: password);
+        break;
+      case NetworkType.tron:
+        sign = _signTronTransaction(
+            request: MethodCaller.safeCast(request), password: password);
+        break;
+      case NetworkType.solana:
+        sign = _signSolanaTransaction(
+            request: MethodCaller.safeCast(request), password: password);
+        break;
+      case NetworkType.cosmos:
+        sign = _signCosmosTransaction(
+            request: MethodCaller.safeCast(request), password: password);
+        break;
+      case NetworkType.cardano:
+        sign = _signCardanoTransaction(
+            request: MethodCaller.safeCast(request), password: password);
+        break;
+      case NetworkType.xrpl:
+        sign = _signRipple(
+            request: MethodCaller.safeCast(request), password: password);
+        break;
+      default:
+        sign = _signTonTransaction(
+            request: MethodCaller.safeCast(request), password: password);
+    }
+    return MethodCaller.safeCast(sign);
+  }
+
   BtcTransaction _signBitcoin(
       {required BitcoinSigningRequest request, required List<int> password}) {
     try {
@@ -37,25 +76,20 @@ mixin Signer on MasterKeyImpl {
     }
   }
 
-  void _signRipple(
+  XRPTransaction _signRipple(
       {required RippleSigningRequest request, required List<int> password}) {
     if (!request.needMultiSignature) {
       final keyIndex = request.signers.first;
       final prv = _getPrivateKey(password, keyIndex);
-      request.transaction.signingPubKey = RippleUtils.toRipplePublicKey(
-          BytesUtils.toHexString(prv.publicKey.compressed));
-
       final xrpPrivateKey = XRPPrivateKey.fromBytes(prv.privateKey.raw,
           algorithm: XRPKeyAlgorithm.values
               .firstWhere((element) => element.curveType == prv.curveType));
+      request.transaction.setSignature(
+          XRPLSignature.signer(xrpPrivateKey.getPublic().toHex()));
       final sig = xrpPrivateKey.sign(request.transaction.toBlob());
       request.transaction.setSignature(sig);
     } else {
       final multiSigAddress = request.addresses.first as IXRPMultisigAddress;
-      final List<String> addressSigners = multiSigAddress.keyDetails
-          .map((e) => RippleUtils.strPublicKeyToRippleAddress(e.$1).address)
-          .toList();
-      request.transaction.multiSigSigners = addressSigners;
       final List<XRPLSigners> signerSignatures = [];
       int threshHold = 0;
       for (final i in multiSigAddress.multiSignatureAccount.signers) {
@@ -71,7 +105,7 @@ mixin Signer on MasterKeyImpl {
           signerSignatures.add(XRPLSigners(
               account: address,
               signingPubKey: xrpPrivateKey.getPublic().toHex(),
-              txnSignature: sig));
+              txnSignature: sig.signature));
           threshHold += i.weight;
           if (threshHold >= multiSigAddress.multiSignatureAccount.threshold) {
             break;
@@ -86,6 +120,7 @@ mixin Signer on MasterKeyImpl {
 
       request.transaction.setMultiSigSignature(signerSignatures);
     }
+    return request.transaction;
   }
 
   ETHSignature _signEthTransaction(
@@ -186,5 +221,12 @@ mixin Signer on MasterKeyImpl {
         return adaPrivateKey.createSignatureWitness(digest);
       },
     );
+  }
+
+  List<int> _signTonTransaction(
+      {required TonSigningRequest request, required List<int> password}) {
+    final bipKey = _getPrivateKey(password, request.signers[0]);
+    final tonPrivateKey = TonPrivateKey.fromBytes(bipKey.privateKey.raw);
+    return tonPrivateKey.sign(request.digest);
   }
 }

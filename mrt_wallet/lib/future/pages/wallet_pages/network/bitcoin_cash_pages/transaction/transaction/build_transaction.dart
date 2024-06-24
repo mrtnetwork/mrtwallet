@@ -214,7 +214,8 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<BitcoinBaseAddress>>(
                     "receiver_address".tr,
-                    bodyBuilder: (c) => SelectRecipientAccountView(
+                    bodyBuilder: (c) =>
+                        SelectRecipientAccountView<BitcoinBaseAddress>(
                           account: controller.account,
                           scrollController: c,
                         ),

@@ -12,10 +12,12 @@ mixin ETHSignerImpl on EthTransactionImpl {
     final result = await MethodCaller.call(() async {
       final nonce = await apiProvider.getAccountNonce(address.networkAddress);
       final tr = transaction.copyWith(nonce: nonce);
-      final Secp256k1SigningRequest request = Secp256k1SigningRequest(
-          address: address, network: network, transactionDigest: tr.serialized);
-      final signature =
-          await walletProvider.signETHTransaction(request: request);
+      final Secp256k1SigningRequest<ETHSignature> request =
+          Secp256k1SigningRequest<ETHSignature>(
+              address: address,
+              network: network,
+              transactionDigest: tr.serialized);
+      final signature = await walletProvider.signTransaction(request: request);
       if (signature.hasError) {
         throw signature.exception!;
       }

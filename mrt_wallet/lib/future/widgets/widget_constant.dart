@@ -18,6 +18,8 @@ class WidgetConstant {
   static const EdgeInsets paddingOnlyTop20 = EdgeInsets.only(top: 20);
   static const EdgeInsets paddingVertical20 =
       EdgeInsets.symmetric(vertical: 20);
+  static const EdgeInsets paddingVertical40 =
+      EdgeInsets.symmetric(vertical: 40);
   static const EdgeInsets paddingVertical10 =
       EdgeInsets.symmetric(vertical: 10);
   static const EdgeInsets paddingVertical8 = EdgeInsets.symmetric(vertical: 8);

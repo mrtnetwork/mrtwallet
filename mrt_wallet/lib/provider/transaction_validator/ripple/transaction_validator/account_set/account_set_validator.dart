@@ -114,7 +114,7 @@ class RippleAccountSetValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
@@ -130,15 +130,12 @@ class RippleAccountSetValidator implements RippleTransactionValidator {
       ];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return AccountSet(
-      account: account,
+      account: account.address,
       setFlag: setFlag.value,
       clearFlag: clearFlag.value,
-      signingPubKey: signerPublicKey,
       domain:
           domain.hasValue ? QuickBytesUtils.ensureIsHex(domain.value!) : null,
       emailHash: email.hasValue

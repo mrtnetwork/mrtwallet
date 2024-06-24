@@ -1,5 +1,4 @@
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
-import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
@@ -17,11 +16,9 @@ enum SeedGenerationType {
   final String name;
   const SeedGenerationType(this.name);
   static SeedGenerationType fromName(String? name) {
-    return values.firstWhere(
-      (e) => e.name == name,
-      orElse: () =>
-          throw const MessageException("Invalid seed generation type."),
-    );
+    return values.firstWhere((e) => e.name == name,
+        orElse: () =>
+            throw const MessageException("Invalid seed generation type."));
   }
 }
 

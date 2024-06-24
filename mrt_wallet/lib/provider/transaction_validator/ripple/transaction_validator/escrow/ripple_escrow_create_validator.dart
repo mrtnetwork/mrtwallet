@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/transaction_validator/ripple/transaction_validator/core/ripple_field_validator.dart';
@@ -15,7 +14,7 @@ class RippleEscrowCreateValidator implements RippleTransactionValidator {
       return v;
     },
   );
-  final ValidatorField<ReceiptAddress> destination = ValidatorField(
+  final ValidatorField<ReceiptAddress<XRPAddress>> destination = ValidatorField(
     name: "destination",
     subject: "ripple_escrow_create_destionation",
     optional: false,
@@ -62,18 +61,6 @@ class RippleEscrowCreateValidator implements RippleTransactionValidator {
       }
     },
   );
-  final ValidatorField<BigRational> destinationTag = ValidatorField(
-    name: "DestinationTag",
-    subject: "ripple_escrow_create_destination_tag",
-    id: "escrow_create_destination_tag",
-    onChangeValidator: (v) {
-      try {
-        return v;
-      } catch (e) {
-        return null;
-      }
-    },
-  );
 
   @override
   String? validateError({IXRPAddress? account}) {
@@ -82,7 +69,7 @@ class RippleEscrowCreateValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
@@ -92,25 +79,23 @@ class RippleEscrowCreateValidator implements RippleTransactionValidator {
         cancelAfter,
         finishAfter,
         condition,
-        destinationTag
       ];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return EscrowCreate(
-        amount: amount.value!.balance,
-        destination: destination.value!.view,
-        cancelAfterTime: cancelAfter.value,
-        finishAfterTime: finishAfter.value,
-        condition: condition.value,
-        destinationTag: destinationTag.value?.toBigInt().toInt().toString(),
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        signingPubKey: signerPublicKey);
+      amount: amount.value!.balance,
+      destination: destination.value!.networkAddress.toAddress(),
+      cancelAfterTime: cancelAfter.value,
+      finishAfterTime: finishAfter.value,
+      condition: condition.value,
+      destinationTag: destination.value!.networkAddress.tag?.toString(),
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+    );
   }
 
   @override

@@ -306,7 +306,7 @@ class __SetupTronMultisigAddressViewState
                                                                             TransactionContractType.values.length,
                                                                             (index) => Container(
                                                                                   padding: WidgetConstant.padding5,
-                                                                                  decoration: BoxDecoration(color: context.colors.background, borderRadius: WidgetConstant.border8),
+                                                                                  decoration: BoxDecoration(color: context.colors.surface, borderRadius: WidgetConstant.border8),
                                                                                   width: 120,
                                                                                   child: Row(
                                                                                     children: [
@@ -467,16 +467,19 @@ class __SetupTronMultisigAddressViewState
                                                               ReceiptAddress<
                                                                   TronAddress>>(
                                                           "multi_sig_addr".tr,
-                                                          bodyBuilder:
-                                                              (controller) =>
-                                                                  SelectRecipientAccountView(
-                                                                    account: widget
-                                                                        .account,
-                                                                    scrollController:
-                                                                        controller,
-                                                                    subtitle: PageTitleSubtitle(
-                                                                        title: "account".tr,
-                                                                        body: Column(
+                                                          bodyBuilder: (controller) =>
+                                                              SelectRecipientAccountView<
+                                                                  TronAddress>(
+                                                                account: widget
+                                                                    .account,
+                                                                scrollController:
+                                                                    controller,
+                                                                subtitle:
+                                                                    PageTitleSubtitle(
+                                                                        title: "account"
+                                                                            .tr,
+                                                                        body:
+                                                                            Column(
                                                                           crossAxisAlignment:
                                                                               CrossAxisAlignment.start,
                                                                           children: [
@@ -485,7 +488,7 @@ class __SetupTronMultisigAddressViewState
                                                                             )
                                                                           ],
                                                                         )),
-                                                                  ),
+                                                              ),
                                                           maxExtend: 1,
                                                           minExtent: 0.8,
                                                           initialExtend: 0.9)

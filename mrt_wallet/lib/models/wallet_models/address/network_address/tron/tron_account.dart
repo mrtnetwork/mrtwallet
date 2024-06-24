@@ -57,7 +57,7 @@ class ITronAddress
   factory ITronAddress.fromCborBytesOrObject(AppNetworkImpl network,
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-    if (bytesEqual(
+    if (BytesUtils.bytesEqual(
         toCborTag.tags, WalletModelCborTagsConst.tronMultisigAccount)) {
       return ITronMultisigAddress.fromCborBytesOrObject(network,
           obj: toCborTag);

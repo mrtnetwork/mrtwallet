@@ -1,8 +1,13 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/utility/method_caller.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
+import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/solana/solana.dart';
+import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class BlockchainAddressUtils {
@@ -33,6 +38,8 @@ class BlockchainAddressUtils {
         addr = DashAddress(address, network: network).baseAddress;
       } else if (network is LitecoinNetwork) {
         addr = LitecoinAddress(address, network: network).baseAddress;
+      } else if (network is PepeNetwork) {
+        addr = PepeAddress(address, network: network).baseAddress;
       } else {
         throw UnimplementedError();
       }
@@ -160,5 +167,79 @@ class BlockchainAddressUtils {
         throw UnimplementedError("invalid address types");
     }
     return address;
+  }
+
+  static ETHAddress? validatorEthereumAccount(String address) {
+    return MethodCaller.nullOnException(() {
+      return ETHAddress(address);
+    });
+  }
+
+  static TronAddress? validatorTronAccount(String address) {
+    return MethodCaller.nullOnException(() {
+      return TronAddress(address);
+    });
+  }
+
+  static SolAddress? validatorSolAccount(String address) {
+    return MethodCaller.nullOnException(() {
+      return SolAddress(address);
+    });
+  }
+
+  static ADAAddress? validatorCardanoAddress(
+      String address, APPCardanoNetwork network) {
+    return MethodCaller.nullOnException(() {
+      return ADAAddress.fromAddress(address, network: network.toCardanoNetwork);
+    });
+  }
+
+  static CosmosBaseAddress? validateCosmosAddress(
+      String address, APPCosmosNetwork network) {
+    return MethodCaller.nullOnException(() {
+      return CosmosBaseAddress(address, forceHrp: network.coinParam.hrp);
+    });
+  }
+
+  static TonAddress? validateTonAddress(String address, APPTonNetwork network) {
+    return MethodCaller.nullOnException(() {
+      return TonAddress(address, forceWorkchain: network.coinParam.workchain);
+    });
+  }
+
+  static BitcoinBaseAddress? validateBitcoinNetwork(
+      String address, AppBitcoinNetwork network) {
+    return MethodCaller.nullOnException(() {
+      return toBitcoinAddress(address, network.coinParam.transacationNetwork);
+    });
+  }
+
+  static XRPAddress? validateXRPAddress(String address, AppXRPNetwork network) {
+    return MethodCaller.nullOnException(() {
+      return BlockchainAddressUtils.toRippleAddress(address, network);
+    });
+  }
+
+  static Object? validateNetworkAddress(
+      String? address, AppNetworkImpl network) {
+    if (address == null) return null;
+    switch (network.type) {
+      case NetworkType.xrpl:
+        return validateXRPAddress(address, network.toNetwork());
+      case NetworkType.ethereum:
+        return validatorEthereumAccount(address);
+      case NetworkType.tron:
+        return validatorTronAccount(address);
+      case NetworkType.solana:
+        return validatorSolAccount(address);
+      case NetworkType.cardano:
+        return validatorCardanoAddress(address, network.toNetwork());
+      case NetworkType.cosmos:
+        return validateCosmosAddress(address, network.toNetwork());
+      case NetworkType.ton:
+        return validateTonAddress(address, network.toNetwork());
+      default:
+        return validateBitcoinNetwork(address, network.toNetwork());
+    }
   }
 }

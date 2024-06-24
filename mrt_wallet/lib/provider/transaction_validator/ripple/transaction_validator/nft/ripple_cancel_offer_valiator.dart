@@ -27,23 +27,22 @@ class RippleCancelOfferValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
   List<ValidatorField> get fields => [nftokenOffers];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return NFTokenCancelOffer(
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        nftokenOffers: nftokenOffers.value!,
-        signingPubKey: signerPublicKey);
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+      nftokenOffers: nftokenOffers.value!,
+    );
   }
 
   @override

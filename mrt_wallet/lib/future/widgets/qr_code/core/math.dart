@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/binary/binary_operation.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 
 final List<int> _logTable = _createLogTable();
 final List<int> _expTable = _createExpTable();

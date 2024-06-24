@@ -5,8 +5,8 @@ import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:on_chain/on_chain.dart';
 
-class CardanoAccountPage extends StatelessWidget {
-  const CardanoAccountPage({required this.chainAccount, super.key});
+class CardanoAccountPageView extends StatelessWidget {
+  const CardanoAccountPageView({required this.chainAccount, super.key});
   final AppChain chainAccount;
   @override
   Widget build(BuildContext context) {

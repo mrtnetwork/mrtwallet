@@ -3,14 +3,23 @@ import 'package:http/http.dart' as http;
 import 'package:mrt_wallet/app/core.dart';
 
 class HttpCaller {
-  static Future<MethodResult<T>> get<T>(
-    String uri, {
-    Map<String, String>? header,
-  }) async {
+  static const Map<String, String> applicationJson = {
+    "Accept": "application/json"
+  };
+  static Future<MethodResult<T>> get<T>(String uri,
+      {Map<String, String>? header,
+      Duration timeout = const Duration(seconds: 30)}) async {
     final client = http.Client();
     try {
-      return MethodCaller.httpCaller<T>(
-          () async => await client.get(Uri.parse(uri), headers: header));
+      return MethodCaller.httpCaller<T>(() async {
+        try {
+          return await client
+              .get(Uri.parse(uri), headers: header)
+              .timeout(timeout);
+        } catch (e) {
+          rethrow;
+        }
+      });
     } finally {
       client.close();
     }

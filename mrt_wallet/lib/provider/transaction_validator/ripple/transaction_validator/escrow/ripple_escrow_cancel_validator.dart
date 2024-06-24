@@ -34,24 +34,23 @@ class RippleEscrowCancelValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
   List<ValidatorField> get fields => [owner, offerSequence];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return EscrowCancel(
-        offerSequence: offerSequence.value!.toBigInt().toInt(),
-        owner: owner.value!.view,
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        signingPubKey: signerPublicKey);
+      offerSequence: offerSequence.value!.toBigInt().toInt(),
+      owner: owner.value!.view,
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+    );
   }
 
   @override

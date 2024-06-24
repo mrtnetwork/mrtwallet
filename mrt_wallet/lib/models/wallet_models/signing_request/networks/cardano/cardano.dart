@@ -4,8 +4,9 @@ import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/
 import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
 import 'package:mrt_wallet/models/wallet_models/signing_request/core/signing_request.dart';
 import 'package:on_chain/ada/src/builder/builder/transaction_builder.dart';
+import 'package:on_chain/ada/src/models/transaction/transaction/transaction.dart';
 
-class CardanoSigningRequest implements SigningRequest {
+class CardanoSigningRequest extends SigningRequest<ADATransaction> {
   CardanoSigningRequest(
       {required List<CryptoAccountAddress> addresses,
       required this.network,

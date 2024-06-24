@@ -39,12 +39,12 @@ mixin TronSignerImpl on TronTransactionImpl {
           ],
           timestamp: block.blockHeader.rawData.timestamp);
 
-      final Secp256k1SigningRequest request = Secp256k1SigningRequest(
-          address: address,
-          network: network,
-          transactionDigest: raw.toBuffer());
-      final signature =
-          await walletProvider.signTronTransaction(request: request);
+      final Secp256k1SigningRequest<List<List<int>>> request =
+          Secp256k1SigningRequest<List<List<int>>>(
+              address: address,
+              network: network,
+              transactionDigest: raw.toBuffer());
+      final signature = await walletProvider.signTransaction(request: request);
       if (signature.hasError) {
         throw signature.exception!;
       }

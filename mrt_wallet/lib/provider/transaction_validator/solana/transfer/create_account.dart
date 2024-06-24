@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/numbers/big_rational.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/progress_bar/progress.dart';

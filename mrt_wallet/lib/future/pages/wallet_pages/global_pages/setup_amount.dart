@@ -189,7 +189,7 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
                                       : Colors.transparent,
                                   foregroundColor: isMin
                                       ? context.colors.onErrorContainer
-                                      : context.colors.onBackground,
+                                      : context.colors.onSurface,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: WidgetConstant.border8)),
                               child: Text("min".tr),
@@ -205,7 +205,7 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
                                       : Colors.transparent,
                                   foregroundColor: isMax
                                       ? context.colors.onErrorContainer
-                                      : context.colors.onBackground,
+                                      : context.colors.onSurface,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: WidgetConstant.border8)),
                               child: Text("max".tr),

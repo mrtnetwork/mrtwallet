@@ -17,7 +17,7 @@ mixin CborSerializable {
     if (cbor is! CborTagValue) {
       throw FormatException("invalid cbor types ${cbor.runtimeType}");
     }
-    if (!bytesEqual(cbor.tags, tags)) {
+    if (!BytesUtils.bytesEqual(cbor.tags, tags)) {
       throw FormatException(
           "invalid cbor tags got ${cbor.tags} excepted $tags");
     }

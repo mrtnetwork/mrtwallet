@@ -26,7 +26,7 @@ class DialogView extends StatelessWidget {
         child: ClipRRect(
           borderRadius: WidgetConstant.border8,
           child: Material(
-            color: context.colors.background,
+            color: context.colors.surface,
             child: child ??
                 CustomScrollView(
                   shrinkWrap: true,
@@ -85,9 +85,9 @@ class DialogDoubleButtonView extends StatelessWidget {
           WidgetConstant.width8,
           FilledButton(
               style: ButtonStyle(
-                  backgroundColor: MaterialStatePropertyAll(
-                      context.colors.tertiaryContainer),
-                  foregroundColor: MaterialStatePropertyAll(
+                  backgroundColor:
+                      WidgetStatePropertyAll(context.colors.tertiaryContainer),
+                  foregroundColor: WidgetStatePropertyAll(
                       context.colors.onTertiaryContainer)),
               onPressed: () {
                 if (secountButtonPressed != null) {
@@ -197,9 +197,9 @@ class _AsyncDialogDoubleButtonViewState
           StreamWidget(
               buttomWidget: FilledButton(
                   style: ButtonStyle(
-                      backgroundColor: MaterialStatePropertyAll(
+                      backgroundColor: WidgetStatePropertyAll(
                           context.colors.tertiaryContainer),
-                      foregroundColor: MaterialStatePropertyAll(
+                      foregroundColor: WidgetStatePropertyAll(
                           context.colors.onTertiaryContainer)),
                   onPressed: () {
                     onTap(false);

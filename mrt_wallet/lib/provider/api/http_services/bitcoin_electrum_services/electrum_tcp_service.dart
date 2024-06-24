@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:blockchain_utils/string/string.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';
-import 'package:mrt_wallet/provider/api/api_provider.dart';
+import 'package:mrt_wallet/provider/api/core/core.dart';
 import 'package:mrt_wallet/provider/api/models/request_completer.dart';
+import 'package:mrt_wallet/provider/api/networks/bitcoin/core/electrum_api_provider_service.dart';
+
+import 'electrum_service.dart';
 
 class ElectrumSocketService extends TCPProvider implements ElectrumService {
   ElectrumSocketService({

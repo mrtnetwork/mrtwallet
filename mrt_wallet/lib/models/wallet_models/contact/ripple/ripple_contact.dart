@@ -21,7 +21,7 @@ class RippleContact with Equatable implements ContactCore<XRPAddress> {
         address: address.tag == null
             ? address.toString()
             : address.toXAddress(
-                tag: address.tag, forTestnet: !network.isMainnet),
+                tag: address.tag, isTestnet: !network.coinParam.mainnet),
         created: DateTime.now(),
         name: name);
   }

@@ -9,10 +9,18 @@ class EthereumNewAddressParam
   @override
   final AddressDerivationIndex deriveIndex;
   @override
-  CryptoCoins get coin => deriveIndex.currencyCoin;
-
-  EthereumNewAddressParam({
+  final CryptoCoins coin;
+  const EthereumNewAddressParam({
     required this.deriveIndex,
+    required this.coin,
     List<int>? publicKey,
   });
+
+  @override
+  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+    return IEthAddress.newAccount(
+        accountParams: this,
+        publicKey: publicKey,
+        network: network as APPEVMNetwork);
+  }
 }

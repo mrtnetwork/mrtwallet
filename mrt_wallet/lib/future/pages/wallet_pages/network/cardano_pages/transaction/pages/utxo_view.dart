@@ -95,9 +95,9 @@ class CardanoTransactionUtxoView extends StatelessWidget {
                               data: context.theme.copyWith(
                                   checkboxTheme: context.theme.checkboxTheme
                                       .copyWith(
-                                          fillColor: MaterialStatePropertyAll(
+                                          fillColor: WidgetStatePropertyAll(
                                               context.colors.onSecondary),
-                                          checkColor: MaterialStatePropertyAll(
+                                          checkColor: WidgetStatePropertyAll(
                                               context.colors.secondary))),
                               child: ContainerWithCheckBoxAndBorder(
                                 value: controller.utxoSelected(accoutUtxo),

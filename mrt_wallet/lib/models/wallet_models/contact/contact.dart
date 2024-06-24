@@ -6,3 +6,4 @@ export 'contract_core.dart';
 export 'solana/solana.dart';
 export 'cardano/cardano.dart';
 export 'cosmos/cosmos.dart';
+export 'ton/ton.dart';

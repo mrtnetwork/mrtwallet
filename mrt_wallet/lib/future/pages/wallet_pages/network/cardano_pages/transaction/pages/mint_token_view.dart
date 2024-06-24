@@ -18,7 +18,6 @@ class CardanoMintTokenView extends StatefulWidget {
 
 class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
     with SafeState {
-  static BigRational maxSupply = BigRational(maxU64);
   final GlobalKey<AppTextFieldState> textFieldKey =
       GlobalKey(debugLabel: "CardanoMintTokenView");
   final GlobalKey<FormState> formKey =
@@ -62,7 +61,7 @@ class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
     if (supply == null ||
         supply.isNegative ||
         supply.isZero ||
-        supply > maxSupply) return;
+        supply > BlockchainConstant.maxSupply) return;
     totalSupply = supply;
     checkFildsReady();
   }
@@ -166,7 +165,7 @@ class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
                     "create_a_new_token".tr,
                     child: NumberWriteView(
                       allowDecimal: false,
-                      max: _CardanoMintTokenViewState.maxSupply,
+                      max: BlockchainConstant.maxSupply,
                       min: BigRational.one,
                       allowSign: false,
                       title: PageTitleSubtitle(

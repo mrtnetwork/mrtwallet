@@ -29,18 +29,18 @@ packages:
     dependency: "direct main"
     description:
       name: bitcoin_base
-      sha256: d672d416be18c84173f3a29a7f936063df41d1f3d68e6f5785018a5fa71823f4
+      sha256: "2d4d301803b364c430444b93346ea543b5788358de44a9ee35f0d18fedf765d8"
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.1"
+    version: "4.5.0"
   blockchain_utils:
     dependency: "direct main"
     description:
       name: blockchain_utils
-      sha256: b0d73432f145ba6f9299c362ea6d8ea9804d5422c34180abee7854b7adcb869d
+      sha256: f78783b522b5247faab0a811bfa83bf121fccdbfbbae0c3488543a690d3de480
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "3.2.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -101,10 +101,10 @@ packages:
     dependency: "direct main"
     description:
       name: cosmos_sdk
-      sha256: d0edde91fbc5c2771bd4b3f95122e81583385b659b96d7bf757ac59670357a86
+      sha256: "117f0186406bace74fa93d2945d469eab8b28dcf8595aee4c1d5a7d991d31eb5"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.5"
+    version: "0.4.0"
   crypto:
     dependency: transitive
     description:
@@ -188,10 +188,10 @@ packages:
     dependency: transitive
     description:
       name: intl
-      sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
       url: "https://pub.dev"
     source: hosted
-    version: "0.18.1"
+    version: "0.19.0"
   js:
     dependency: transitive
     description:
@@ -204,26 +204,26 @@ packages:
     dependency: transitive
     description:
       name: leak_tracker
-      sha256: "78eb209deea09858f5269f5a5b02be4049535f568c07b275096836f01ea323fa"
+      sha256: "7f0df31977cb2c0b88585095d168e689669a2cc9b97c309665e3386f3e9d341a"
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.0"
+    version: "10.0.4"
   leak_tracker_flutter_testing:
     dependency: transitive
     description:
       name: leak_tracker_flutter_testing
-      sha256: b46c5e37c19120a8a01918cfaf293547f47269f7cb4b0058f21531c2465d6ef0
+      sha256: "06e98f569d004c1315b991ded39924b21af84cf14cc94791b8aea337d25b57f8"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "3.0.3"
   leak_tracker_testing:
     dependency: transitive
     description:
       name: leak_tracker_testing
-      sha256: a597f72a664dbd293f3bfc51f9ba69816f84dcd403cdac7066cb3f6003f3ab47
+      sha256: "6ba465d5d76e67ddf503e1161d1f4a6bc42306f9d66ca1e8f079a47290fb06d3"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.1"
+    version: "3.0.1"
   lints:
     dependency: transitive
     description:
@@ -252,10 +252,10 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: d584fa6707a52763a52446f02cc621b077888fb63b93bbcb1143a7be5a0c0c04
+      sha256: "7687075e408b093f36e6bbf6c91878cc0d4cd10f409506f7bc996f68220b9136"
       url: "https://pub.dev"
     source: hosted
-    version: "1.11.0"
+    version: "1.12.0"
   mrt_native_support:
     dependency: "direct main"
     description:
@@ -275,10 +275,10 @@ packages:
     dependency: "direct main"
     description:
       name: on_chain
-      sha256: ccfd3f2ddd4e41db6f833c31bebf3100bd685827d6d81ca7c8c68f1af673aae2
+      sha256: f95d914c3a20f6f4e320f37007e2d37258549037c3ef8f9741bf72897a8da376
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.0"
+    version: "3.5.0"
   package_config:
     dependency: transitive
     description:
@@ -376,10 +376,18 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: "5c2f730018264d276c20e4f1503fd1308dfbbae39ec8ee63c5236311ac06954b"
+      sha256: "9955ae474176f7ac8ee4e989dadfb411a58c30415bcfb648fa04b2b8a03afa7f"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.1"
+    version: "0.7.0"
+  ton_dart:
+    dependency: "direct main"
+    description:
+      name: ton_dart
+      sha256: "6b0b3d4cf0bdda5c6aa712b956e1f931f6b3c07ce23a64964eb3e67bfb911704"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.3"
   typed_data:
     dependency: transitive
     description:
@@ -400,10 +408,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: b3d56ff4341b8f182b96aceb2fa20e3dcb336b9f867bc0eafc0de10f1048e957
+      sha256: "3923c89304b715fb1eb6423f017651664a03bf5f4b29983627c4da791f74a4ec"
       url: "https://pub.dev"
     source: hosted
-    version: "13.0.0"
+    version: "14.2.1"
   web:
     dependency: transitive
     description:
@@ -424,10 +432,10 @@ packages:
     dependency: "direct main"
     description:
       name: xrpl_dart
-      sha256: "76ada0817ab0f494ff332d202b5b608ddc67cc3e1e1a356d99524e7477442583"
+      sha256: "39cc1b6891c0070144f4a4899a866be4b3e61d738faad9f6478ef401a109ed92"
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.2"
+    version: "4.4.0"
   yaml:
     dependency: transitive
     description:
@@ -438,4 +446,4 @@ packages:
     version: "3.1.2"
 sdks:
   dart: ">=3.3.0 <4.0.0"
-  flutter: ">=2.5.0"
+  flutter: ">=3.18.0-18.0.pre.54"

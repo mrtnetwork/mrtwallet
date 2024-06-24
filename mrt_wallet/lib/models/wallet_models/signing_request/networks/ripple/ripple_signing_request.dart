@@ -3,7 +3,7 @@ import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/models/wallet_models/signing_request/core/signing_request.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
-class RippleSigningRequest implements SigningRequest {
+class RippleSigningRequest extends SigningRequest<XRPTransaction> {
   RippleSigningRequest(
       {required this.addresses,
       required this.network,

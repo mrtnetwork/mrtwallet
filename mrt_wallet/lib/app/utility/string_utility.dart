@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/types/typedef.dart';
@@ -173,6 +174,12 @@ class AppStringUtility {
       return url;
     }
     return null;
+  }
+
+  static bool isHex(String? v) {
+    if (v == null) return false;
+    if (v.isEmpty) return false;
+    return StringUtils.isHexBytes(v);
   }
 }
 

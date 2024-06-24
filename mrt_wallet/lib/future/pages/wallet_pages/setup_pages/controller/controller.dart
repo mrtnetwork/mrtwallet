@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/bip/bip/bip39/bip39.dart';
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
-import 'package:blockchain_utils/compare/compare.dart';
+import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
@@ -102,7 +102,7 @@ class SetupWalletController extends StateController {
   }
 
   void toExtra(List<String> selectedMnemonic) {
-    if (!iterableIsEqual(selectedMnemonic, _mnemonic?.toList())) {
+    if (!CompareUtils.iterableIsEqual(selectedMnemonic, _mnemonic?.toList())) {
       return;
     }
     _page = SetupWalletPage.extraOption;

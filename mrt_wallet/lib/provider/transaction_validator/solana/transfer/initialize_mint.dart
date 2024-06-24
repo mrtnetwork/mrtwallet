@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/numbers/big_rational.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/extention/extention.dart';
 import 'package:mrt_wallet/models/wallet_models/address/address/crypto_address.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/solana/solana_address.dart';

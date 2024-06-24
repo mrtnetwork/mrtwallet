@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:blockchain_utils/compare/compare.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/cardano.dart';
@@ -33,36 +33,46 @@ abstract class CryptoAccountAddress<N, T, X> with CborSerializable {
     if (cbor is! CborTagValue) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
-    if (bytesEqual(
+    if (BytesUtils.bytesEqual(
         cbor.tags, WalletModelCborTagsConst.bitcoinMultiSigAccount)) {
       return IBitcoinMultiSigAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.bitcoinAccount)) {
+    } else if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.bitcoinAccount)) {
       return IBitcoinAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(
+    } else if (BytesUtils.bytesEqual(
         cbor.tags, WalletModelCborTagsConst.bitcoinCashAccount)) {
       return IBitcoinCashAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(
+    } else if (BytesUtils.bytesEqual(
         cbor.tags, WalletModelCborTagsConst.bitcoinCashMultiSigAccount)) {
       return IBitcoinCashMultiSigAddress.fromCborBytesOrObject(network,
           obj: cbor);
-    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.rippleAccount)) {
+    } else if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.rippleAccount)) {
       return IXRPAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(
+    } else if (BytesUtils.bytesEqual(
         cbor.tags, WalletModelCborTagsConst.rippleMultisigAccount)) {
       return IXRPMultisigAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.ethAccount)) {
+    } else if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.ethAccount)) {
       return IEthAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.tronAccount)) {
+    } else if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.tronAccount)) {
       return ITronAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(
+    } else if (BytesUtils.bytesEqual(
         cbor.tags, WalletModelCborTagsConst.tronMultisigAccount)) {
       return ITronMultisigAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.solAccount)) {
+    } else if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.solAccount)) {
       return ISolanaAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.cardanoAccount)) {
+    } else if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.cardanoAccount)) {
       return ICardanoAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (bytesEqual(cbor.tags, WalletModelCborTagsConst.cosmosAccount)) {
+    } else if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.cosmosAccount)) {
       return ICosmosAddress.fromCborBytesOrObject(network, obj: cbor);
+    } else if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.tonAccount)) {
+      return ITonAddress.fromCborBytesOrObject(network, obj: cbor);
     }
     throw WalletExceptionConst.invalidAccountDetails;
   }

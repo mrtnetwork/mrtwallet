@@ -6,6 +6,7 @@ class WalletProviderConst {
 
 class WalletModelCborTagsConst {
   static const List<int> appSetting = [44];
+  static const List<int> image = [50, 1];
   static const List<int> setting = [160];
   static const List<int> backup = [170];
   static const List<int> backupV2 = [170, 2];
@@ -48,6 +49,9 @@ class WalletModelCborTagsConst {
   // cosmos address
   static const List<int> cosmosAccount = [200, 198];
 
+  ///
+  static const List<int> tonAccount = [200, 199];
+
   // contacts
   static const List<int> bitcoinContact = [100, 0];
   static const List<int> rippleContact = [100, 1];
@@ -56,6 +60,7 @@ class WalletModelCborTagsConst {
   static const List<int> solanaContact = [100, 4];
   static const List<int> cardanoContct = [100, 5];
   static const List<int> cosmosContact = [100, 6];
+  static const List<int> tonContact = [100, 7];
 
   /// network tokens
   static const List<int> token = [110];
@@ -65,6 +70,7 @@ class WalletModelCborTagsConst {
   static const List<int> trc20Token = [110, 30];
   static const List<int> trc10Token = [110, 31];
   static const List<int> spltoken = [110, 32];
+  static const List<int> jettonToken = [110, 33];
 
   /// network nfts
   static const List<int> nft = [120];
@@ -80,21 +86,28 @@ class WalletModelCborTagsConst {
   static const List<int> cardanoNetwork = [80, 0, 6];
   static const List<int> cosmosNetwork = [80, 0, 7];
   static const List<int> bitcoinCashNetwork = [80, 0, 10];
+  static const List<int> tonNetwork = [80, 0, 11];
 
   static const List<int> bitconNetworkParam = [80, 1, 1];
   static const List<int> xrpNetworkParam = [80, 1, 2];
   static const List<int> evmNetworkParam = [80, 1, 3];
   static const List<int> tvmNetworkParam = [80, 1, 4];
-  static const List<int> solNetworkParam = [80, 1, 4];
   static const List<int> cardanoNetworkParams = [80, 1, 5];
   static const List<int> cosmosNetworkParams = [80, 1, 6];
+  static const List<int> solNetworkParam = [80, 1, 7];
+  static const List<int> tonNetworkParam = [80, 1, 8];
 
   ///
   static const List<int> apiServiceProvider = [90];
+
   static const List<int> electrumApiServiceProvider = [90, 0];
   static const List<int> evmApiServiceProvider = [90, 3];
   static const List<int> tronApiServiceProvider = [90, 4];
   static const List<int> solApiServiceProvider = [90, 5];
   static const List<int> cardanoApiServiceProvider = [90, 6];
   static const List<int> cosmosApiServiceProvider = [90, 7];
+  static const List<int> tonApiServiceProvider = [90, 8];
+
+  /// provider auth
+  static const List<int> apiServiceAuthSettings = [90, 1];
 }

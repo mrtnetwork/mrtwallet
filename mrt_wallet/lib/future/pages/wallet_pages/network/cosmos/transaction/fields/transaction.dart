@@ -221,7 +221,7 @@ class _CosmosTransactionsFields extends StatelessWidget {
   Widget build(BuildContext context) {
     return LiveWidget(() {
       final field = validator.value as CosmosTransferValidator;
-      return _ETHTransactionTransferFields(
+      return _CosmosTransactionTransferFields(
         controller: controller,
         field: field,
       );
@@ -229,8 +229,8 @@ class _CosmosTransactionsFields extends StatelessWidget {
   }
 }
 
-class _ETHTransactionTransferFields extends StatelessWidget {
-  const _ETHTransactionTransferFields(
+class _CosmosTransactionTransferFields extends StatelessWidget {
+  const _CosmosTransactionTransferFields(
       {required this.controller, required this.field});
   final CosomosTransactionStateController controller;
   final CosmosTransferValidator field;
@@ -313,8 +313,9 @@ class _ETHTransactionTransferFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<CosmosBaseAddress>>(
                     "receiver_address".tr,
-                    bodyBuilder: (c) => SelectRecipientAccountView(
-                        account: controller.account, scrollController: c),
+                    bodyBuilder: (c) =>
+                        SelectRecipientAccountView<CosmosBaseAddress>(
+                            account: controller.account, scrollController: c),
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9)

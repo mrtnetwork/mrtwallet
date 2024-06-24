@@ -15,13 +15,15 @@ class WalletException implements AppException {
       return "invalid_request";
     }
     if (_argruments != null) {
-      return "invalid data excepted ${_argruments![0]} got ${_argruments![1]}";
+      return "invalid data excepted: ${_argruments![0]} got ${_argruments![1]}";
     }
     return message;
   }
 }
 
 class WalletExceptionConst {
+  static final WalletException dataVerificationFailed =
+      WalletException("data_verification_failed");
   static final WalletException invalidAccountDetails =
       WalletException("invalid_account_details");
   static final WalletException invalidBitcoinAddressType =
@@ -30,6 +32,8 @@ class WalletExceptionConst {
       WalletException("invalid_passphrase");
   static final WalletException invalidMnemonic =
       WalletException("invalid_mnemonic");
+  static final WalletException invalidBip39MnemonicWords =
+      WalletException("invalid_bip39_mnemonic_words");
   static final WalletException invalidBackup =
       WalletException("invalid_wallet_backup");
   static final WalletException incorrectPassword =
@@ -40,6 +44,8 @@ class WalletExceptionConst {
       WalletException("to_many_accounts");
   static final WalletException incorrectNetwork =
       WalletException("incorrect_network");
+  static final WalletException invalidProviderInformation =
+      WalletException("invalid_provider_infomarion");
   static final WalletException invalidBipKeyIndex =
       WalletException("invalid_bip_key_index");
   static final WalletException addressAlreadyExist =

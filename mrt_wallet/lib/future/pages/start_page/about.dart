@@ -153,7 +153,7 @@ class AbountWalletView extends StatelessWidget {
               },
               child: Container(
                 decoration: BoxDecoration(
-                    color: context.colors.onBackground, shape: BoxShape.circle),
+                    color: context.colors.onSurface, shape: BoxShape.circle),
                 child: const CircleAssetsImgaeView(
                   AppGlobalConst.telegramLogo,
                   radius: 15,
@@ -168,7 +168,7 @@ class AbountWalletView extends StatelessWidget {
               },
               child: Container(
                 decoration: BoxDecoration(
-                    color: context.colors.onBackground, shape: BoxShape.circle),
+                    color: context.colors.onSurface, shape: BoxShape.circle),
                 child: const CircleAssetsImgaeView(
                   AppGlobalConst.githubLogo,
                   radius: 15,

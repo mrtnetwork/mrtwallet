@@ -4,25 +4,19 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/home.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/restore_backup.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/wallet_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
-// import 'package:xrpl_dart/xrpl_dart.dart';
 
 enum _PrivateKeyTypes {
   extendKey("Extended key"),
   privateKey("Private key"),
-  wif("Wif"),
-  rippleSeed("Ripple seed"),
-  rippleEntropy("Ripple entropy"),
-  backup("Backup");
+  wif("Wif");
 
   const _PrivateKeyTypes(this.value);
   final String value;
-  bool get forRipple =>
-      this == _PrivateKeyTypes.rippleEntropy ||
-      this == _PrivateKeyTypes.rippleSeed;
   bool get isExtendedKey => this == _PrivateKeyTypes.extendKey;
   CustomKeyType toCustomKeyType() {
     if (this == _PrivateKeyTypes.extendKey) return CustomKeyType.extendedKey;
@@ -33,6 +27,17 @@ enum _PrivateKeyTypes {
     if (isExtendedKey) return key.privateKey.toExtended;
     return key.privateKey.toHex();
   }
+
+  String get helper {
+    switch (this) {
+      case _PrivateKeyTypes.extendKey:
+        return "enter_extended_key_desc";
+      case _PrivateKeyTypes.wif:
+        return "enter_wif_key_desc";
+      default:
+        return "enter_private_key_desc";
+    }
+  }
 }
 
 class ImportAccountView extends StatelessWidget {
@@ -40,11 +45,11 @@ class ImportAccountView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppNetworkImpl network = context.getArgruments();
+    final ImportCustomKeys? importKey = context.getNullArgruments();
     return PasswordCheckerView(
         accsess: WalletAccsessType.verify,
         onAccsess: (p0, p1) {
-          return _ImportAccount(password: p1, network: network);
+          return _ImportAccount(password: p1, customKey: importKey);
         },
         title: "import_account".tr,
         subtitle: PageTitleSubtitle(
@@ -53,37 +58,34 @@ class ImportAccountView extends StatelessWidget {
 }
 
 class _ImportAccount extends StatefulWidget {
-  const _ImportAccount({required this.password, required this.network});
+  const _ImportAccount({required this.password, required this.customKey});
   final String password;
-  final AppNetworkImpl network;
+  final ImportCustomKeys? customKey;
   @override
   State<_ImportAccount> createState() => _ImportAccountState();
 }
 
 class _ImportAccountState extends State<_ImportAccount> with SafeState {
+  late final AppNetworkImpl network;
   final GlobalKey<AppTextFieldState> textFieldState =
       GlobalKey<AppTextFieldState>(debugLabel: "_ImportAccountState");
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>(debugLabel: "_ImportAccountState_1");
+  final GlobalKey<AppTextFieldState> backupTextField =
+      GlobalKey<AppTextFieldState>(debugLabel: "_ImportAccountState_3");
   final GlobalKey<FormState> form =
       GlobalKey(debugLabel: "_ImportAccountState_2");
-  late Map<_PrivateKeyTypes, Widget> keyTypes = _buildKeyTypes();
 
-  bool get inRipple => widget.network is AppXRPNetwork;
-
-  List<CryptoCoins> get coins => widget.network.coins;
-  late CryptoCoins coin = coins.first;
-  bool get needSelectCoins => selected.isExtendedKey && coins.length > 1;
+  Map<_PrivateKeyTypes, Widget> keyTypes = {};
+  bool get inRipple => network.type == NetworkType.xrpl;
+  List<CryptoCoins> get coins => network.coins;
+  CryptoCoins? coin;
+  bool get needSelectCoins => coins.length > 1;
 
   _PrivateKeyTypes selected = _PrivateKeyTypes.privateKey;
   Bip32Base? _account;
-  bool get isBackup => selected == _PrivateKeyTypes.backup;
-
   String? keyName;
-  String _backup = "";
-  String _password = "";
   String _key = "";
-  SecretWalletEncoding encoding = SecretWalletEncoding.json;
 
   void setKeyName(String? name) {
     setState(() {
@@ -94,17 +96,13 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   Map<_PrivateKeyTypes, Widget> _buildKeyTypes() {
     Map<_PrivateKeyTypes, Widget> types = {};
     for (final i in _PrivateKeyTypes.values) {
-      if (i == _PrivateKeyTypes.wif && coin.conf.wifNetVer == null) continue;
-
-      if (i.forRipple) {
-        if (!inRipple) continue;
-      }
+      if (i == _PrivateKeyTypes.wif && coin!.conf.wifNetVer == null) continue;
       types[i] = OneLineTextWidget(i.value);
     }
     return types;
   }
 
-  void onSelect(_PrivateKeyTypes? s) {
+  void onSelectKeyType(_PrivateKeyTypes? s) {
     selected = s ?? selected;
     _account = null;
     _error = null;
@@ -115,7 +113,6 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     if (mewCoin == null) return;
     coin = mewCoin;
     keyTypes = _buildKeyTypes();
-    selected = _PrivateKeyTypes.privateKey;
     setState(() {});
   }
 
@@ -126,39 +123,69 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   String? _error;
 
   Future<Bip32Base> _getKey(WalletProvider model) async {
-    try {
-      switch (selected) {
-        case _PrivateKeyTypes.extendKey:
-          return BlockchainUtils.extendedKeyToBip32(
-              extendedKey: _key, coin: coin);
-        case _PrivateKeyTypes.privateKey:
-          if (inRipple) {
-            return RippleUtils.ripplePrivateKeyToBip32(_key, coin);
-          }
-          return BlockchainUtils.privteKeyToBip32(
-              BytesUtils.fromHexString(_key), coin);
-        case _PrivateKeyTypes.wif:
-          return BlockchainUtils.wifToBip32(_key, coin);
-        case _PrivateKeyTypes.backup:
-          final backupResult = BytesUtils.toHexString(
-              await model.restoreBackup(_password, _backup, encoding));
-          if (inRipple) {
-            return RippleUtils.ripplePrivateKeyToBip32(backupResult, coin);
-          }
-          return BlockchainUtils.privteKeyToBip32(
-              BytesUtils.fromHexString(backupResult), coin);
-        case _PrivateKeyTypes.rippleSeed:
-          return RippleUtils.rippleSeedToBip32(_key, widget.network);
-        case _PrivateKeyTypes.rippleEntropy:
-          return RippleUtils.rippleEntropyToBip32(_key, coin);
-      }
-    } catch (e) {
-      rethrow;
+    switch (selected) {
+      case _PrivateKeyTypes.extendKey:
+        return BlockchainUtils.extendedKeyToBip32(
+            extendedKey: _key, coin: coin!);
+      case _PrivateKeyTypes.privateKey:
+        if (inRipple) {
+          return RippleUtils.ripplePrivateKeyToBip32(_key, coin!);
+        }
+        return BlockchainUtils.privteKeyToBip32(
+            BytesUtils.fromHexString(_key), coin!);
+      case _PrivateKeyTypes.wif:
+        return BlockchainUtils.wifToBip32(_key, coin!);
+      default:
+        throw WalletExceptionConst.dataVerificationFailed;
     }
   }
 
-  void onSetup() async {
-    if (!(form.currentState?.validate() ?? false)) return;
+  String? validate(String? v) {
+    if (v == null || v.length < BlockchainConstant.minimumKeysLength) {
+      return "invalid_key".tr;
+    }
+    return null;
+  }
+
+  void onChangeKey(String key) {
+    _key = key;
+    if (_error != null) {
+      _error = null;
+      setState(() {});
+    }
+  }
+
+  void _init() {
+    network = context.watch<WalletProvider>(StateIdsConst.main).network;
+    if (!needSelectCoins) {
+      coin = coins.first;
+      keyTypes = _buildKeyTypes();
+    }
+    if (widget.customKey != null) {
+      final ImportCustomKeys customKey = widget.customKey!;
+      if (!coins.contains(customKey.coin)) {
+        progressKey.errorText(
+            "wrong_network_key_error".tr.replaceOne(network.token.name),
+            backToIdle: false);
+        return;
+      }
+      selected = _PrivateKeyTypes.privateKey;
+      coin = customKey.coin;
+      _key = customKey.privateKey;
+    }
+    progressKey.success();
+  }
+
+  void onRestoreBackup(String? v) {
+    if (v == null) return;
+    textFieldState.currentState?.updateText(v);
+  }
+
+  void onSetup({bool custumKey = false}) async {
+    if (!custumKey) {
+      if (!(form.currentState?.validate() ?? false)) return;
+    }
+
     progressKey.progressText("importing_key_pls_wait".tr);
     final model = context.watch<WalletProvider>(StateIdsConst.main);
 
@@ -171,7 +198,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       final customKey = WalletCustomKeys(
           checksum: BlockchainUtils.createCustomKeyChecksum(_account!),
           extendedPrivateKey: selected.toKey(_account!),
-          coin: coin,
+          coin: coin!,
           publicKey: _account!.publicKey.toHex(),
           name: keyName,
           keyType: selected.toCustomKeyType());
@@ -191,61 +218,10 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     }
   }
 
-  String? validate(String? v) {
-    if (v == null || v.length < EcdsaKeysConst.privKeyByteLen) {
-      return "private_key_invalid".tr;
-    }
-    return null;
-  }
-
-  void onChangeKey(String key) {
-    _key = key;
-    if (_error != null) {
-      _error = null;
-      setState(() {});
-    }
-  }
-
-  void onChangeEncoding(SecretWalletEncoding? updateEncoding) {
-    encoding = updateEncoding ?? encoding;
-
-    setState(() {});
-  }
-
-  void onChangePassword(String password) {
-    _password = password;
-  }
-
-  final GlobalKey<AppTextFieldState> backupTextField =
-      GlobalKey<AppTextFieldState>(debugLabel: "EnterMnemonicBackupView_2");
-  String? passwordValidator(String? v) {
-    if (v?.isEmpty ?? true) {
-      return "backup_password_validator".tr;
-    }
-    return null;
-  }
-
-  void onPaseBackupText(String v) {
-    backupTextField.currentState?.updateText(v);
-  }
-
-  bool isValid(String? v) {
-    if (v == null) return false;
-    return v.trim().length > 100;
-  }
-
-  String? bcakupValidator(String? v) {
-    if (isValid(v)) return null;
-    return "bcakup_validator".tr;
-  }
-
-  void onChange(String v) {
-    _backup = v;
-    if (_error != null) {
-      setState(() {
-        _error = null;
-      });
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MethodCaller.after(() async => _init());
   }
 
   @override
@@ -253,6 +229,8 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: AppGlobalConst.oneSecoundDuration,
+      initialStatus: StreamWidgetStatus.progress,
+      initialWidget: ProgressWithTextView(text: "retrieving_resources".tr),
       child: () => UnfocusableChild(
         child: ConstraintsBoxView(
           alignment: Alignment.center,
@@ -274,122 +252,127 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                         ],
                       )),
                   if (needSelectCoins) ...[
-                    Text("key_algorithm".tr,
-                        style: context.textTheme.titleMedium),
-                    Text("inidicate_type_of_key".tr),
+                    Text("coin_type".tr, style: context.textTheme.titleMedium),
+                    Text("choose_key_coin_desc".tr),
                     WidgetConstant.height8,
                     AppDropDownBottom(
                         items: {
                           for (final i in coins) i: Text(i.coinName.camelCase)
                         },
                         value: coin,
-                        label: "key_algorithm".tr,
+                        label: "coin_type".tr,
                         onChanged: onChangeKeyAlogrithm),
                     WidgetConstant.height20,
                   ],
-                  Text("key_type".tr, style: context.textTheme.titleMedium),
-                  Text("inidicate_type_of_key".tr),
-                  WidgetConstant.height8,
-                  AppDropDownBottom(
-                      items: keyTypes,
-                      value: selected,
-                      label: "key_type".tr,
-                      onChanged: onSelect),
-                  WidgetConstant.height20,
-                  Text(selected.value, style: context.textTheme.titleMedium),
-                  WidgetConstant.height8,
-                  if (isBackup) ...[
-                    DropdownButtonFormField<SecretWalletEncoding>(
-                      value: encoding,
-                      decoration: InputDecoration(
-                          label: Text("decoding_type".tr),
-                          helperText: _error,
-                          helperStyle: context.textTheme.bodySmall
-                              ?.copyWith(color: context.colors.error),
-                          helperMaxLines: 3),
-                      items: SecretWalletEncoding.values.map((enc) {
-                        return DropdownMenuItem<SecretWalletEncoding>(
-                          value: enc,
-                          child: Text(enc.name.camelCase),
-                        );
-                      }).toList(),
-                      onChanged: onChangeEncoding,
-                    ),
-                    WidgetConstant.height20,
-                    AppTextField(
-                      label: "enter_backup".tr,
-                      validator: bcakupValidator,
-                      onChanged: onChange,
-                      key: backupTextField,
-                      minlines: 3,
-                      maxLines: 5,
-                      initialValue: _backup,
-                      suffixIcon: PasteTextIcon(onPaste: onPaseBackupText),
-                    ),
-                    AppTextField(
-                      label: "input_backup_password".tr,
-                      validator: passwordValidator,
-                      onChanged: onChangePassword,
-                      initialValue: _password,
-                      error: _error,
-                      obscureText: true,
-                    ),
-                  ] else
-                    AppTextField(
-                      key: textFieldState,
-                      label: selected.value,
-                      onChanged: onChangeKey,
-                      initialValue: _key,
-                      validator: validate,
-                      minlines: 2,
-                      suffixIcon: PasteTextIcon(onPaste: onPaste),
-                      error: _error,
-                      helperText: "import_account_desc2".tr,
-                    ),
-                  WidgetConstant.height20,
-                  Text("key_name".tr, style: context.textTheme.titleMedium),
-                  Text("import_private_key_key_name_desc".tr),
-                  WidgetConstant.height8,
-                  ContainerWithBorder(
-                    onRemove: () {
-                      context
-                          .openSliverBottomSheet<String>(
-                            "import_account".tr,
-                            child: StringWriterView(
-                              defaultValue: keyName,
-                              regExp: AppGlobalConst.keyNameRegex,
-                              title: PageTitleSubtitle(
-                                  title: "key_name".tr,
-                                  body: Text(
-                                      "import_private_key_key_name_desc".tr)),
-                              buttomText: "setup_input".tr,
-                              label: "key_name".tr,
-                            ),
-                          )
-                          .then(setKeyName);
-                    },
-                    onRemoveIcon: keyName == null
-                        ? const Icon(Icons.edit)
-                        : const Icon(Icons.add),
-                    child: Text(keyName?.orEmpty ?? "tap_to_input_value".tr,
-                        maxLines: 3),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      FixedElevatedButton(
-                        padding: WidgetConstant.paddingVertical20,
-                        onPressed: onSetup,
-                        child: Text("import_account".tr),
-                      ),
-                    ],
-                  )
+                  APPAnimatedSize(
+                      isActive: coin != null,
+                      onActive: (c) => _ImportAccountStateKeyType(this),
+                      onDeactive: (c) => WidgetConstant.sizedBox)
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ImportAccountStateKeyType extends StatelessWidget {
+  const _ImportAccountStateKeyType(this.state, {Key? key}) : super(key: key);
+  final _ImportAccountState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text("key_type".tr, style: context.textTheme.titleMedium),
+      Text("inidicate_type_of_key".tr),
+      WidgetConstant.height8,
+      AppDropDownBottom(
+          items: state.keyTypes,
+          value: state.selected,
+          label: "key_type".tr,
+          onChanged: state.onSelectKeyType),
+      WidgetConstant.height20,
+      _ImportAccountStateKey(state: state)
+    ]);
+  }
+}
+
+class _ImportAccountStateKey extends StatelessWidget {
+  const _ImportAccountStateKey({required this.state, Key? key})
+      : super(key: key);
+  final _ImportAccountState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(state.selected.value, style: context.textTheme.titleMedium),
+        Text(state.selected.helper.tr),
+        WidgetConstant.height8,
+        AppTextField(
+            key: state.textFieldState,
+            label: state.selected.value,
+            onChanged: state.onChangeKey,
+            initialValue: state._key,
+            validator: state.validate,
+            suffixIcon: PasteTextIcon(onPaste: state.onPaste),
+            error: state._error,
+            obscureText: true),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            TextButton.icon(
+                onPressed: () {
+                  context
+                      .openSliverBottomSheet<String>("restore_backup".tr,
+                          child: const RestoreBackupView())
+                      .then(state.onRestoreBackup);
+                },
+                icon: const Icon(Icons.restore),
+                label: Text("restore_backup".tr))
+          ],
+        ),
+        WidgetConstant.height20,
+        Text("key_name".tr, style: context.textTheme.titleMedium),
+        Text("import_private_key_key_name_desc".tr),
+        WidgetConstant.height8,
+        ContainerWithBorder(
+          onRemove: () {
+            context
+                .openSliverBottomSheet<String>(
+                  "import_account".tr,
+                  child: StringWriterView(
+                    defaultValue: state.keyName,
+                    regExp: AppGlobalConst.keyNameRegex,
+                    title: PageTitleSubtitle(
+                        title: "key_name".tr,
+                        body: Text("import_private_key_key_name_desc".tr)),
+                    buttomText: "setup_input".tr,
+                    label: "key_name".tr,
+                  ),
+                )
+                .then(state.setKeyName);
+          },
+          onRemoveIcon: state.keyName == null
+              ? const Icon(Icons.edit)
+              : const Icon(Icons.add),
+          child: Text(state.keyName?.orEmpty ?? "tap_to_input_value".tr,
+              maxLines: 3),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FixedElevatedButton(
+              padding: WidgetConstant.paddingVertical40,
+              onPressed: state.onSetup,
+              child: Text("import_account".tr),
+            ),
+          ],
+        )
+      ],
     );
   }
 }

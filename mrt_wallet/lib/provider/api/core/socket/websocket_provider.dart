@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:blockchain_utils/string/string.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/websocket/core/core.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';

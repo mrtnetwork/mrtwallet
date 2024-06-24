@@ -66,6 +66,7 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
               child: QrImageView(
                 data: widget.barcodeData,
                 backgroundColor: context.colors.secondary,
+                errorStateBuilder: (context, error) => WidgetConstant.errorIcon,
                 eyeStyle: QrEyeStyle(
                   eyeShape: QrEyeShape.square,
                   color: context.theme.colorScheme.onSecondary,

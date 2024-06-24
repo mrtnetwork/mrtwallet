@@ -1,6 +1,7 @@
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
+import 'package:ton_dart/ton_dart.dart';
 
 class DefaultNodeProviders {
   static const Map<int, String> gnesisHash = {
@@ -14,6 +15,7 @@ class DefaultNodeProviders {
     4: "00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6",
     10: "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
     11: "000000001dd410c49a788668ce26751718cc797474d3152a5fc073dd44fd9f7b",
+    12: "37981c0c48b8d48965376c8a42ece9a0838daadb93ff975cb091f57f8c2a5faa",
     33: "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
     34: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
   };
@@ -157,6 +159,18 @@ class DefaultNodeProviders {
           url: "chipnet.imaginary.cash:50002",
           protocol: ProviderProtocol.ssl)
     ],
+    12: <ApiProviderService>[
+      ElectrumApiProviderService(
+          serviceName: "pepeblocks-ssl",
+          websiteUri: "https://mainnet.pepeblocks.com",
+          url: "mainnet.pepeblocks.com:50002",
+          protocol: ProviderProtocol.ssl),
+      ElectrumApiProviderService(
+          serviceName: "pepeblocks-ssl",
+          websiteUri: "https://mainnet.pepeblocks.com",
+          url: "mainnet.pepeblocks.com:50001",
+          protocol: ProviderProtocol.tcp)
+    ],
     30: <ApiProviderService>[
       ApiProviderService.xrplWebsocket,
       ApiProviderService.xrpl
@@ -183,17 +197,24 @@ class DefaultNodeProviders {
     ],
     50: <ApiProviderService>[
       CardanoAPIProviderService(
-          uri: "https://cardano-mainnet.blockfrost.io/api/v0/",
-          serviceName: "blockfrost",
-          websiteUri: "blockfrost.io",
-          projectId: "mainnetolePdeWQLX8TrfG9V6RVaAshQi4pWzbU")
+        uri: "https://cardano-mainnet.blockfrost.io/api/v0/",
+        serviceName: "blockfrost",
+        websiteUri: "blockfrost.io",
+        auth: const ProviderAuth(
+            type: ProviderAuthType.header,
+            key: "project_id",
+            value: "mainnetolePdeWQLX8TrfG9V6RVaAshQi4pWzbU"),
+      )
     ],
     51: <ApiProviderService>[
       CardanoAPIProviderService(
           uri: "https://cardano-preprod.blockfrost.io/api/v0/",
           serviceName: "blockfrost",
           websiteUri: "blockfrost.io",
-          projectId: "preprodMVwzqm4PuBDBSfEULoMzoj5QZcy5o3z5")
+          auth: const ProviderAuth(
+              type: ProviderAuthType.header,
+              key: "project_id",
+              value: "preprodMVwzqm4PuBDBSfEULoMzoj5QZcy5o3z5"))
     ],
     100: <ApiProviderService>[
       EVMApiProviderService(
@@ -249,6 +270,13 @@ class DefaultNodeProviders {
           uri: "https://cosmos-rpc.publicnode.com:443",
           nodeUri: null),
     ],
+    206: <ApiProviderService>[
+      CosmosAPIProviderService(
+          serviceName: "rpc.testnet.osmosis.zone",
+          websiteUri: "https://rpc.testnet.osmosis.zone/",
+          uri: "https://rpc.testnet.osmosis.zone/",
+          nodeUri: null),
+    ],
     201: <ApiProviderService>[
       CosmosAPIProviderService(
           serviceName: "polypore.xyz",
@@ -283,6 +311,40 @@ class DefaultNodeProviders {
           websiteUri: "https://kujira-rpc.polkachu.com/",
           uri: "https://kujira-rpc.polkachu.com/",
           nodeUri: "https://kujira-rpc.polkachu.com/"),
+    ],
+    300: <ApiProviderService>[
+      TonAPIProviderService(
+          serviceName: "TonAPI",
+          websiteUri: "https://tonapi.io",
+          uri: "https://tonapi.io",
+          apiType: TonApiType.tonApi),
+      TonAPIProviderService(
+          serviceName: "TonCenter",
+          websiteUri: "https://toncenter.io",
+          uri: "https://toncenter.com",
+          apiType: TonApiType.tonCenter,
+          auth: const ProviderAuth(
+              type: ProviderAuthType.header,
+              key: "X-API-Key",
+              value:
+                  "cc8597229bb486a012f29743732b56c2331aff7f87c3d2cb84d456a04213b3ac")),
+    ],
+    301: <ApiProviderService>[
+      TonAPIProviderService(
+          serviceName: "TonAPI",
+          websiteUri: "https://tonapi.io",
+          uri: "https://testnet.tonapi.io",
+          apiType: TonApiType.tonApi),
+      TonAPIProviderService(
+          serviceName: "TonCenter",
+          websiteUri: "https://toncenter.io",
+          uri: "https://testnet.toncenter.com",
+          apiType: TonApiType.tonCenter,
+          auth: const ProviderAuth(
+              type: ProviderAuthType.header,
+              key: "X-API-Key",
+              value:
+                  "d3800f756738ac7b39599914b8a84465960ff869f555c2317664c9a62529baf3")),
     ],
     1001: <ApiProviderService>[
       const TronApiProviderService(
@@ -350,6 +412,13 @@ class DefaultNodeProviders {
   }
 
   static List<ApiProviderService> getDefaultServices(AppNetworkImpl network) {
+    if (network.value == 12) {
+      _providers[network.value]?.where((element) {
+            return element.protocol.platforms
+                .contains(PlatformInterface.appPlatform);
+          }).toList() ??
+          <ApiProviderService>[];
+    }
     return _providers[network.value]
             ?.where((element) => element.protocol.platforms
                 .contains(PlatformInterface.appPlatform))

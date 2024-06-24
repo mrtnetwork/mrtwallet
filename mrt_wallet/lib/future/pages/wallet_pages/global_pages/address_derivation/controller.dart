@@ -66,9 +66,11 @@ class AddressDerivationController extends StateController {
 
   Future<Bip32AddressIndex?> getCoin(BuildContext context) async {
     if (!(form.currentState?.validate() ?? true)) return null;
+    final customKeys = wallet.getCustomKeysForCoin(coins);
     return await context.openSliverBottomSheet<Bip32AddressIndex>(
         "setup_derivation".tr,
-        child: SetupDerivationModeView(coin: coin, chainAccout: chainAccount));
+        child: SetupDerivationModeView(
+            coin: coin, chainAccout: chainAccount, customKeys: customKeys));
   }
 
   void generateAddress(NewAccountParams newAccount) async {

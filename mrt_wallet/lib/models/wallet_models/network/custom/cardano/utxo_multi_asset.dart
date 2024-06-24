@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/binary/binary.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/models/wallet_models/currency_balance/currency_balance.dart';
 import 'package:on_chain/on_chain.dart';
 import 'utxos.dart';

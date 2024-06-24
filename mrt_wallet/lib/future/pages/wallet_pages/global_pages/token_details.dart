@@ -14,10 +14,12 @@ class TokenDetailsModalView extends StatelessWidget {
       {super.key,
       required this.token,
       required this.address,
-      required this.transferPath});
+      required this.transferPath,
+      this.transferArgruments});
   final TokenCore token;
   final CryptoAccountAddress address;
   final String transferPath;
+  final Object? transferArgruments;
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
@@ -80,6 +82,7 @@ class TokenDetailsModalView extends StatelessWidget {
               address: address,
               wallet: wallet,
               transferPath: transferPath,
+              transferArgruments: transferArgruments,
             ),
           ),
         ),
@@ -93,11 +96,13 @@ class _TokenDetailsView extends StatelessWidget {
       {required this.token,
       required this.address,
       required this.wallet,
-      required this.transferPath});
+      required this.transferPath,
+      this.transferArgruments});
   final TokenCore token;
   final CryptoAccountAddress address;
   final WalletProvider wallet;
   final String transferPath;
+  final Object? transferArgruments;
 
   @override
   Widget build(BuildContext context) {
@@ -113,10 +118,16 @@ class _TokenDetailsView extends StatelessWidget {
             if (token.type != null)
               TextSpan(
                   text: " (${token.type!.tr}) ",
-                  style: context.textTheme.bodySmall)
+                  style: context.textTheme.bodySmall),
+            if (token.issuer != null)
+              WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: LaunchBrowserIcon(
+                      url: wallet.network.coinParam
+                          .getAccountExplorer(token.issuer!),
+                      size: AppGlobalConst.double20)),
           ], style: context.textTheme.labelLarge),
         ),
-        if (token.issuer != null) SelectableText(token.issuer!),
         WidgetConstant.height8,
         CoinPriceView(
             liveBalance: token.balance,
@@ -128,7 +139,8 @@ class _TokenDetailsView extends StatelessWidget {
           children: [
             FloatingActionButton(
               onPressed: () {
-                context.offTo(transferPath, argruments: token);
+                context.offTo(transferPath,
+                    argruments: transferArgruments ?? token);
               },
               child: const Icon(Icons.upload),
             ),

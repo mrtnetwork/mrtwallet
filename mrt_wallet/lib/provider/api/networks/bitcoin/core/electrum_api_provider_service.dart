@@ -3,7 +3,7 @@ import 'package:blockchain_utils/cbor/types/cbor_tag.dart';
 import 'package:blockchain_utils/cbor/types/list.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
-import 'package:mrt_wallet/provider/api/api_provider.dart';
+import 'package:mrt_wallet/provider/api/core/core.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
 class ElectrumApiProviderService extends ApiProviderService {
@@ -11,10 +11,11 @@ class ElectrumApiProviderService extends ApiProviderService {
       {required String serviceName,
       required String websiteUri,
       required ProviderProtocol protocol,
+      required ProviderAuth? auth,
       this.websocket,
       this.tcp,
       this.ssl})
-      : super(serviceName, websiteUri, protocol);
+      : super(serviceName, websiteUri, protocol, auth);
   final String? websocket;
   final String? tcp;
   final String? ssl;
@@ -41,30 +42,35 @@ class ElectrumApiProviderService extends ApiProviderService {
   @override
   String get callUrl => endpoint;
 
-  factory ElectrumApiProviderService(
-      {required String serviceName,
-      required String websiteUri,
-      required String url,
-      required ProviderProtocol protocol}) {
+  factory ElectrumApiProviderService({
+    required String serviceName,
+    required String websiteUri,
+    required String url,
+    required ProviderProtocol protocol,
+    ProviderAuth? auth,
+  }) {
     switch (protocol) {
       case ProviderProtocol.tcp:
         return ElectrumApiProviderService._(
             serviceName: serviceName,
             websiteUri: websiteUri,
             tcp: url,
-            protocol: protocol);
+            protocol: protocol,
+            auth: auth);
       case ProviderProtocol.ssl:
         return ElectrumApiProviderService._(
             serviceName: serviceName,
             websiteUri: websiteUri,
             ssl: url,
-            protocol: protocol);
+            protocol: protocol,
+            auth: auth);
       default:
         return ElectrumApiProviderService._(
             serviceName: serviceName,
             websiteUri: websiteUri,
             websocket: url,
-            protocol: protocol);
+            protocol: protocol,
+            auth: auth);
     }
   }
 
@@ -89,14 +95,16 @@ class ElectrumApiProviderService extends ApiProviderService {
         websocket: websocket,
         tcp: tcp,
         ssl: ssl,
-        protocol: protocol);
+        protocol: protocol,
+        auth: cbor.getCborTag(5)?.to<ProviderAuth, CborTagValue>(
+            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength(
-            [serviceName, websiteUri, websocket, tcp, ssl]),
+            [serviceName, websiteUri, websocket, tcp, ssl, auth?.toCbor()]),
         WalletModelCborTagsConst.electrumApiServiceProvider);
   }
 }

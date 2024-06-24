@@ -3,10 +3,8 @@ import 'package:mrt_wallet/provider/transaction_validator/core/validator.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 abstract class RippleTransactionValidator implements TransactionValidator {
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee});
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee});
   String get helperUri;
   XRPLTransactionType get transactionType;
   @override

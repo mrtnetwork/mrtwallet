@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/numbers/big_rational.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
@@ -40,11 +40,12 @@ class RipplePaymentFieldsView extends StatelessWidget {
           address: validator.destination.value,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("recipient".tr,
+                .openSliverBottomSheet<ReceiptAddress<XRPAddress>>(
+                    "recipient".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (c) => SelectRecipientAccountView(
+                    bodyBuilder: (c) => SelectRecipientAccountView<XRPAddress>(
                         account: account, scrollController: c))
                 .then(
               (value) {

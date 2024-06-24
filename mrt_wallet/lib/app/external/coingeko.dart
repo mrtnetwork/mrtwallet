@@ -1,9 +1,11 @@
+import 'package:mrt_wallet/models/app/app_image.dart';
+
 class CoinGeckoUtils {
   static const String _coingeckoPublicCurrenciesAPI =
       "https://api.coingecko.com/api/v3/simple/price?ids=#ids&vs_currencies=#currencies";
   static const String _coinGeckoCoinURL =
       "https://www.coingecko.com/en/coins/#id";
-  static const String logo = "assets/image/coingeko.png";
+  static const AppImage logo = AppImage.local("assets/image/coingeko.png");
   static String? getTokenCoinGeckoURL(String tokenName) {
     final currencyId = getCoinGeckoCurrencyId(tokenName);
     if (currencyId == null) return null;

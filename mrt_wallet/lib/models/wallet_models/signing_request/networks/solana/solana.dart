@@ -4,7 +4,7 @@ import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
 import 'package:mrt_wallet/models/wallet_models/signing_request/signing_reguest.dart';
 import 'package:on_chain/solana/solana.dart';
 
-class SolanaSigningRequest implements SigningRequest {
+class SolanaSigningRequest extends SigningRequest<SolanaTransaction> {
   SolanaSigningRequest(
       {required this.network,
       required List<CryptoAccountAddress> addresses,

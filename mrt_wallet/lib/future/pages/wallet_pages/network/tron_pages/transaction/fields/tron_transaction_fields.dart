@@ -234,11 +234,12 @@ class _TronTransactionTransferFields extends StatelessWidget {
           subtitle: "receiver_address_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("recipient".tr,
+                .openSliverBottomSheet<ReceiptAddress<TronAddress>>(
+                    "recipient".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (c) => SelectRecipientAccountView(
+                    bodyBuilder: (c) => SelectRecipientAccountView<TronAddress>(
                         account: account, scrollController: c))
                 .then(
               (value) {

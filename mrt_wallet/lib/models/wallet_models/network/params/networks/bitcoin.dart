@@ -1,6 +1,7 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/provider/api/core/api_provider.dart';
@@ -59,7 +60,7 @@ class BitcoinParams implements NetworkCoinParams {
   int get decimal => token.decimal!;
 
   @override
-  String get logo => token.assetLogo!;
+  AppImage get logo => token.assetLogo!;
 
   @override
   String getAccountExplorer(String address) {
@@ -83,4 +84,7 @@ class BitcoinParams implements NetworkCoinParams {
         ]),
         WalletModelCborTagsConst.bitconNetworkParam);
   }
+
+  @override
+  bool get mainnet => transacationNetwork.isMainnet;
 }

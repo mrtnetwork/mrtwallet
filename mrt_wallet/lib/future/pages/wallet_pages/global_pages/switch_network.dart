@@ -15,7 +15,7 @@ class SwitchNetworkView extends StatefulWidget {
 
 class _SwitchNetworkViewState extends State<SwitchNetworkView>
     with SingleTickerProviderStateMixin {
-  late final tabController = TabController(length: 7, vsync: this);
+  late final tabController = TabController(length: 8, vsync: this);
 
   double? height;
   void onChangeSize(Size size) {
@@ -32,56 +32,73 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
   late List<AppChain> solNetworks;
   late List<AppChain> cardanoNetworks;
   late List<AppChain> cosmosNetworks;
+  late List<AppChain> tonNetworks;
 
   void initNetwork() {
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
     final networks = wallet.getChains();
-    int initialIndex = 0;
+    int initialIndex;
     bitcoinNetworks = networks
-        .where((element) => element.network is AppBitcoinNetwork)
+        .where(
+            (element) => element.network.type == NetworkType.bitcoinAndForked)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
     rippleNetworks = networks
-        .where((element) => element.network is AppXRPNetwork)
+        .where((element) => element.network.type == NetworkType.xrpl)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
     evmNetworks = networks
-        .where((element) => element.network is APPEVMNetwork)
+        .where((element) => element.network.type == NetworkType.ethereum)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
     tvmNetworks = networks
-        .where((element) => element.network is APPTVMNetwork)
+        .where((element) => element.network.type == NetworkType.tron)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
     solNetworks = networks
-        .where((element) => element.network is APPSolanaNetwork)
+        .where((element) => element.network.type == NetworkType.solana)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
     cardanoNetworks = networks
-        .where((element) => element.network is APPCardanoNetwork)
+        .where((element) => element.network.type == NetworkType.cardano)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
     cosmosNetworks = networks
-        .where((element) => element.network is APPCosmosNetwork)
+        .where((element) => element.network.type == NetworkType.cosmos)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    tonNetworks = networks
+        .where((element) => element.network.type == NetworkType.ton)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
     final currentNetwork = MethodCaller.nullOnException(() =>
         networks.firstWhere((element) =>
             element.network.value == widget.selectedNetwork.value));
-    if (currentNetwork != null) {
-      if (currentNetwork.network is AppXRPNetwork) {
+    switch (currentNetwork?.network.type) {
+      case NetworkType.xrpl:
         initialIndex = 1;
-      } else if (currentNetwork.network is APPEVMNetwork) {
+        break;
+      case NetworkType.ethereum:
         initialIndex = 2;
-      } else if (currentNetwork.network is APPTVMNetwork) {
+        break;
+      case NetworkType.tron:
         initialIndex = 3;
-      } else if (currentNetwork.network is APPSolanaNetwork) {
+        break;
+      case NetworkType.solana:
         initialIndex = 4;
-      } else if (currentNetwork.network is APPCardanoNetwork) {
+        break;
+      case NetworkType.cardano:
         initialIndex = 5;
-      } else if (currentNetwork.network is APPCosmosNetwork) {
+        break;
+      case NetworkType.cosmos:
         initialIndex = 6;
-      }
+        break;
+      case NetworkType.ton:
+        initialIndex = 7;
+        break;
+      default:
+        initialIndex = 0;
+        break;
     }
     if (initialIndex != 0) {
       tabController.animateTo(initialIndex);
@@ -131,7 +148,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         child: ClipRRect(
           borderRadius: WidgetConstant.border8,
           child: Material(
-            color: context.colors.background,
+            color: context.colors.surface,
             child: CustomScrollView(
               shrinkWrap: true,
               slivers: [
@@ -151,6 +168,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                         Tab(text: "sol_networks".tr),
                         Tab(text: "cardano_networks".tr),
                         Tab(text: "cosmos_networks".tr),
+                        Tab(text: "ton_networks".tr),
                       ]),
                   pinned: true,
                   actions: [
@@ -177,7 +195,8 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                       _NetworksView(widget.selectedNetwork, tvmNetworks),
                       _NetworksView(widget.selectedNetwork, solNetworks),
                       _NetworksView(widget.selectedNetwork, cardanoNetworks),
-                      _NetworksView(widget.selectedNetwork, cosmosNetworks)
+                      _NetworksView(widget.selectedNetwork, cosmosNetworks),
+                      _NetworksView(widget.selectedNetwork, tonNetworks)
                     ]),
                   ),
                 ),

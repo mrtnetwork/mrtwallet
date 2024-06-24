@@ -54,6 +54,7 @@ class _AppSettingViewState extends State<AppSettingView> {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateIdsConst.main);
+    final setting = PagePathConst.networkSettings(wallet.network);
     return ScaffolPageView(
       appBar: AppBar(
         title: Text("wallet_preferences".tr),
@@ -63,6 +64,15 @@ class _AppSettingViewState extends State<AppSettingView> {
         child: SingleChildScrollView(
           child: Column(
             children: [
+              if (setting != null)
+                AppListTile(
+                  leading: const Icon(Icons.settings),
+                  title: Text("network_settings".tr),
+                  subtitle: Text(wallet.network.coinParam.token.name),
+                  onTap: () {
+                    context.to(setting);
+                  },
+                ),
               AppListTile(
                 leading: const Icon(Icons.delete),
                 title: Text("erase_wallet".tr),
@@ -92,8 +102,7 @@ class _AppSettingViewState extends State<AppSettingView> {
                 title: Text("private_key".tr),
                 subtitle: Text("import_private_key".tr),
                 onTap: () {
-                  context.to(PagePathConst.importAccount,
-                      argruments: wallet.network);
+                  context.to(PagePathConst.importAccount);
                 },
               ),
               if (wallet.hasCustomKeys)

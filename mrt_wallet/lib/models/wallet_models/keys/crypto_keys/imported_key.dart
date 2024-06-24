@@ -11,10 +11,8 @@ enum CustomKeyType {
   extendedKey;
 
   static CustomKeyType fromName(String? name) {
-    return values.firstWhere(
-      (e) => e.name == name,
-      orElse: () => throw const MessageException("Invalid CustomKeyType."),
-    );
+    return values.firstWhere((e) => e.name == name,
+        orElse: () => throw const MessageException("Invalid CustomKeyType."));
   }
 
   bool get isPrivateKey => this == CustomKeyType.privateKey;

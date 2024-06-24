@@ -59,7 +59,7 @@ class RippleEscrowFinishValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
@@ -71,19 +71,18 @@ class RippleEscrowFinishValidator implements RippleTransactionValidator {
       ];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return EscrowFinish(
-        offerSequence: offerSequence.value!.toBigInt().toInt(),
-        owner: owner.value!.view,
-        fulfillment: fulfillment.value,
-        condition: condition.value,
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        signingPubKey: signerPublicKey);
+      offerSequence: offerSequence.value!.toBigInt().toInt(),
+      owner: owner.value!.view,
+      fulfillment: fulfillment.value,
+      condition: condition.value,
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+    );
   }
 
   @override

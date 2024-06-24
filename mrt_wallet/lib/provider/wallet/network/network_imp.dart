@@ -173,7 +173,7 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
           break;
         }
       } else {
-        final key = address.keyIndexes as Bip32AddressIndex;
+        final key = address.keyIndex as Bip32AddressIndex;
         if (!key.isImportedKey) continue;
         if (signers.contains(key.importedKeyId)) continue;
         removeList.add(address);

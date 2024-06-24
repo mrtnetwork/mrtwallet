@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 
 class CircleAssetsImgaeView extends StatelessWidget {
@@ -8,13 +9,13 @@ class CircleAssetsImgaeView extends StatelessWidget {
       {this.radius = 120,
       this.backgroundColor = Colors.transparent,
       super.key});
-  final String assetPath;
+  final AppImage assetPath;
   final double radius;
   final Color backgroundColor;
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      backgroundImage: AssetImage(assetPath),
+      backgroundImage: AssetImage(assetPath.uri),
       radius: radius,
       backgroundColor: backgroundColor,
     );
@@ -37,10 +38,10 @@ class CircleTokenImgaeView extends StatelessWidget {
               token.assetLogo != null ? [] : [WidgetConstant.circleShadow]),
       child: CircleAvatar(
         backgroundImage:
-            token.assetLogo != null ? AssetImage(token.assetLogo!) : null,
+            token.assetLogo != null ? AssetImage(token.assetLogo!.uri) : null,
         radius: radius,
         backgroundColor: token.assetLogo != null
-            ? context.colors.background
+            ? context.colors.surface
             : context.colors.primaryContainer,
         child: token.assetLogo != null
             ? null

@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/numbers/big_rational.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 
 class RetionalDecimalConst {
   static BigRational bigR8 = BigRational(BigInt.from(10).pow(8));

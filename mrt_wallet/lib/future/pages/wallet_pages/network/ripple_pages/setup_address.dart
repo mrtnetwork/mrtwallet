@@ -14,8 +14,8 @@ class SetupRippleAddressView extends StatefulWidget {
 
 class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
     with SafeState {
-  Set<XrpAddressType> addressTyoe = {XrpAddressType.classic};
-  bool get isXAddress => addressTyoe.first == XrpAddressType.xAddress;
+  XrpAddressType addressTyoe = XrpAddressType.classic;
+  bool get isXAddress => addressTyoe == XrpAddressType.xAddress;
   int tag = 0;
   void onChangeTag(String v) {
     final newTag = int.tryParse(v);
@@ -32,18 +32,21 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
     return null;
   }
 
-  void onSelectAddressType(Set<XrpAddressType> selectType) {
-    addressTyoe = selectType;
+  void onSelectAddressType() {
+    addressTyoe = isXAddress ? XrpAddressType.classic : XrpAddressType.xAddress;
     setState(() {});
   }
 
   void generateAddress() async {
     final keyIndex = await widget.controller.getCoin(context);
     if (keyIndex == null) return;
+
     final newAccount = RippleNewAddressParam(
-        deriveIndex: keyIndex,
-        type: keyIndex.currencyCoin.conf.type,
-        tag: addressTyoe.first == XrpAddressType.classic ? null : tag);
+      deriveIndex: keyIndex,
+      tag: isXAddress ? tag : null,
+      coin: widget.controller.network.coins.firstWhere(
+          (element) => element.conf.type == keyIndex.currencyCoin.conf.type),
+    );
     widget.controller.generateAddress(newAccount);
   }
 
@@ -51,50 +54,43 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Flexible(
-              child: AppSegmentedButton<XrpAddressType>(
-                items: {
-                  XrpAddressType.classic: XrpAddressType.classic.value.tr,
-                  XrpAddressType.xAddress: XrpAddressType.xAddress.value.tr
-                },
-                selected: addressTyoe,
-                onChangeSelected: onSelectAddressType,
-              ),
-            ),
-          ],
+        AppCheckListTile(
+          title: Text("x_address".tr, style: context.textTheme.titleMedium),
+          contentPadding: EdgeInsets.zero,
+          subtitle: TextAndLinkView(
+            text: "x_address_desc".tr,
+            url: AppLinkConst.reviewRippleXAddress,
+            linkDesc: "read_more".tr,
+          ),
+          value: isXAddress,
+          onChanged: (v) {
+            onSelectAddressType();
+          },
         ),
         WidgetConstant.height20,
-        AnimatedSize(
-            duration: AppGlobalConst.animationDuraion,
-            child: isXAddress
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PageTitleSubtitle(
-                          title: "x_address_desc2".tr,
-                          body: LargeTextView(["x_address_desc3".tr])),
-                      Text("assigning_tag".tr,
-                          style: context.textTheme.titleMedium),
-                      Text("enter_tag_desc".tr),
-                      WidgetConstant.height8,
-                      NumberTextField(
-                          label: "tag".tr,
-                          onChange: onChangeTag,
-                          validator: validateTag,
-                          defaultValue: tag,
-                          max: mask32 - 1,
-                          min: 0),
-                    ],
-                  )
-                : const SizedBox()),
+        APPAnimatedSwitcher(widgets: {
+          XrpAddressType.classic: (c) => WidgetConstant.sizedBox,
+          XrpAddressType.xAddress: (c) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("tag".tr, style: context.textTheme.titleMedium),
+                  Text("enter_tag_desc".tr),
+                  WidgetConstant.height8,
+                  NumberTextField(
+                      label: "tag".tr,
+                      onChange: onChangeTag,
+                      validator: validateTag,
+                      defaultValue: tag,
+                      max: mask32 - 1,
+                      min: 0),
+                ],
+              )
+        }, enable: addressTyoe),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
-              padding: WidgetConstant.paddingVertical20,
+              padding: WidgetConstant.paddingVertical40,
               onPressed: generateAddress,
               child: Text("generate_address".tr),
             ),

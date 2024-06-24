@@ -116,7 +116,7 @@ class RippleTransactionStateController extends RippleTransactionImpl
       _fieldError = validator.validator.validateError(account: address);
       if (_fieldError != null) throw WalletException(_fieldError!);
       final transaction = validator.validator.toTransaction(
-          address.address.toAddress,
+          address.networkAddress,
           memos: memos,
           fee: fee.balance);
       await super.signAndSendTransaction(RippleSigningRequest(

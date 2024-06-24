@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:blockchain_utils/crypto/crypto/crc32/crc32.dart';
-import 'package:blockchain_utils/string/string.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/native_impl/path_provider.dart';
 

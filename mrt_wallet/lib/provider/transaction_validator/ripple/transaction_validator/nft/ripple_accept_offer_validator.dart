@@ -40,7 +40,7 @@ class RippleAcceptNFTOfferValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
@@ -48,18 +48,17 @@ class RippleAcceptNFTOfferValidator implements RippleTransactionValidator {
       [nftokenBrokerFee, nftokenBuyOffer, nftokenSellOffer];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return NFTokenAcceptOffer(
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        nfTokenBrokerFee: nftokenBrokerFee.value?.amount,
-        nfTokenBuyOffer: nftokenBuyOffer.value,
-        nfTokenSellOffer: nftokenSellOffer.value,
-        signingPubKey: signerPublicKey);
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+      nfTokenBrokerFee: nftokenBrokerFee.value?.amount,
+      nfTokenBuyOffer: nftokenBuyOffer.value,
+      nfTokenSellOffer: nftokenSellOffer.value,
+    );
   }
 
   @override

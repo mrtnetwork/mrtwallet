@@ -1,10 +1,11 @@
-import 'package:blockchain_utils/numbers/big_rational.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/provider/transaction_validator/tron/transaction_validator/resource_v2/delegated_resource.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+import 'package:on_chain/tron/src/address/tron_address.dart';
 
 class TronDelegatedResourceFieldsView extends StatelessWidget {
   const TronDelegatedResourceFieldsView(
@@ -58,15 +59,17 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                       title: "receiver_address".tr,
                       onTap: () {
                         context
-                            .openSliverBottomSheet<ReceiptAddress>(
+                            .openSliverBottomSheet<ReceiptAddress<TronAddress>>(
                           "receiver_address".tr,
                           maxExtend: 1,
                           minExtent: 0.8,
                           initialExtend: 0.9,
-                          bodyBuilder: (c) => SelectRecipientAccountView(
-                              account: account,
-                              scrollController: c,
-                              subtitle: Text("resource_receiver_address".tr)),
+                          bodyBuilder: (c) =>
+                              SelectRecipientAccountView<TronAddress>(
+                                  account: account,
+                                  scrollController: c,
+                                  subtitle:
+                                      Text("resource_receiver_address".tr)),
                         )
                             .then(
                           (value) {

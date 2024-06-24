@@ -79,7 +79,7 @@ class RippleCreateOfferValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
@@ -87,23 +87,22 @@ class RippleCreateOfferValidator implements RippleTransactionValidator {
       [nftokenId, owner, expiration, destination, amount, flags];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return NFTokenCreateOffer(
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        flags: flags.value,
-        amount: amount.value!.amount,
-        nftokenId: nftokenId.value!,
-        destination: destination.value?.view,
-        expiration: expiration.hasValue
-            ? XRPHelper.datetimeToRippleTime(expiration.value!)
-            : null,
-        owner: owner.value?.view,
-        signingPubKey: signerPublicKey);
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+      flags: flags.value?.value,
+      amount: amount.value!.amount,
+      nftokenId: nftokenId.value!,
+      destination: destination.value?.view,
+      expiration: expiration.hasValue
+          ? XRPHelper.datetimeToRippleTime(expiration.value!)
+          : null,
+      owner: owner.value?.view,
+    );
   }
 
   @override

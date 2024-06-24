@@ -9,7 +9,7 @@ class ToolTipView extends StatelessWidget {
       required this.child,
       this.toolTipKey,
       this.verticalOffset = 0,
-      this.mode = TooltipTriggerMode.tap,
+      this.mode,
       this.onTriggered,
       this.duration = const Duration(seconds: 5),
       this.margin = const EdgeInsets.all(15),
@@ -21,7 +21,7 @@ class ToolTipView extends StatelessWidget {
   final Widget child;
   final GlobalKey? toolTipKey;
   final double verticalOffset;
-  final TooltipTriggerMode mode;
+  final TooltipTriggerMode? mode;
   final Duration duration;
   final Widget? tooltipWidget;
   final void Function()? onTriggered;

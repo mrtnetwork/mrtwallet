@@ -62,7 +62,7 @@ class RippleMintTokenValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
@@ -70,20 +70,19 @@ class RippleMintTokenValidator implements RippleTransactionValidator {
       [nftokenTaxon, issuer, transferFee, uri, flags];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return NFTokenMint(
-        nftokenTaxon: nftokenTaxon.value!.toBigInt().toInt(),
-        account: account,
-        issuer: issuer.value?.networkAddress.address,
-        flags: flags.value,
-        uri: uri.value == null ? null : QuickBytesUtils.ensureIsHex(uri.value!),
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        transferFee: transferFee.value?.toBigInt().toInt(),
-        signingPubKey: signerPublicKey);
+      nftokenTaxon: nftokenTaxon.value!.toBigInt().toInt(),
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      issuer: issuer.value?.networkAddress.address,
+      flags: flags.value?.value,
+      uri: uri.value == null ? null : QuickBytesUtils.ensureIsHex(uri.value!),
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+      transferFee: transferFee.value?.toBigInt().toInt(),
+    );
   }
 
   @override

@@ -12,6 +12,8 @@ class PagePathConst {
   static const String rippleAddNfts = "/ripple/import_nfts";
   static const String rippleTransaction = "/ripple/transaction";
   static const String rippleMultisigAddress = "/ripple/setup_multisig_address";
+  static const String rippleSettingPage = "setting/ripple";
+  static const String rippleKeyConversion = "setting/ripple/key_conversion";
 
   static const String ethereumTransaction = "/ethereum/transfer";
 
@@ -22,6 +24,9 @@ class PagePathConst {
   // solana transfer
   static const String solanaTransfer = "/solana/transfer";
   static const String solanaTransaction = "/solana/transaction";
+
+  // ton transfer
+  static const String tonTransfer = "/ton/transfer";
 
   /// cardano
   static const String cardanoTransaction = "/cardano/transaction";
@@ -58,29 +63,65 @@ class PagePathConst {
   static const String updateElectrumProviders = "/networks/bitcoin/providers";
   static const String editSolanaNetwork = "/networks/solana/providers";
   static String providerDetails(AppNetworkImpl network) {
-    if (network is APPEVMNetwork) return editEvmNetwork;
-    if (network is APPSolanaNetwork) return editSolanaNetwork;
-    return updateElectrumProviders;
+    switch (network.type) {
+      case NetworkType.ethereum:
+        return editEvmNetwork;
+      case NetworkType.solana:
+        return editSolanaNetwork;
+      default:
+        return updateElectrumProviders;
+    }
   }
 
   static String transactionPage(AppNetworkImpl network) {
-    if (network is AppBitcoinNetwork) return bitcoinTransaction;
-    if (network is APPEVMNetwork) return ethereumTransaction;
-    if (network is APPTVMNetwork) return tronTransfer;
-    if (network is APPSolanaNetwork) return solanaTransfer;
-    if (network is APPCardanoNetwork) return cardanoTransaction;
-    if (network is APPCosmosNetwork) return cosmosTransaction;
-    return rippleTransfer;
+    switch (network.type) {
+      case NetworkType.bitcoinAndForked:
+        return bitcoinTransaction;
+      case NetworkType.ethereum:
+        return ethereumTransaction;
+      case NetworkType.tron:
+        return tronTransfer;
+      case NetworkType.solana:
+        return solanaTransfer;
+      case NetworkType.ton:
+        return tonTransfer;
+      case NetworkType.cardano:
+        return cardanoTransaction;
+      case NetworkType.cosmos:
+        return cosmosTransaction;
+      default:
+        return rippleTransfer;
+    }
   }
 
   static String setupAddressPage(AppNetworkImpl network) {
-    if (network is AppBitcoinNetwork) return setupBitcoinAddress;
-    if (network is APPCardanoNetwork) return setupCardanoAddress;
-    return setupGenericAddress;
+    switch (network.type) {
+      case NetworkType.bitcoinAndForked:
+        return setupBitcoinAddress;
+      case NetworkType.cardano:
+        return setupCardanoAddress;
+      default:
+        return setupGenericAddress;
+    }
+  }
+
+  static String? networkSettings(AppNetworkImpl network) {
+    switch (network.type) {
+      case NetworkType.ton:
+        return tonSettings;
+      case NetworkType.xrpl:
+        return rippleSettingPage;
+      default:
+        return null;
+    }
   }
 
   static const String importERC20Token = "ethereum/import_token";
   static const String importTRC20Token = "tron/import_token";
   static const String importTrc10Token = "tron/import_trc10_token";
   static const String importSPLTokens = "solana/import_spl_tokens";
+
+  static const String tonSettings = "setting/ton";
+  static const String tonMnemonic = "setting/ton/mnemonic";
+  static const String importJettons = "ton/import_jettons";
 }

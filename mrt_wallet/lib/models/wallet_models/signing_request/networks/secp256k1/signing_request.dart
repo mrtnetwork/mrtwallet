@@ -2,7 +2,7 @@ import 'package:mrt_wallet/models/wallet_models/address/address.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/models/wallet_models/signing_request/core/signing_request.dart';
 
-class Secp256k1SigningRequest implements SigningRequest {
+class Secp256k1SigningRequest<T> extends SigningRequest<T> {
   Secp256k1SigningRequest(
       {required this.address,
       required this.network,

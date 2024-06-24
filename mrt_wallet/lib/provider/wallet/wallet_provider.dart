@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
-import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:flutter/material.dart';
@@ -21,6 +20,7 @@ import 'package:mrt_wallet/app/utility/lifecycle_listener/life_cycle_tracker.dar
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solana/solana.dart';
+import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 part 'crypto/crypto_impl.dart';

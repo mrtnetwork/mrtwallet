@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/numbers/big_rational.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
@@ -174,11 +174,12 @@ class RippleAccountSetFieldsView extends StatelessWidget {
           subtitle: "ripple_nft_token_minter_desc".tr,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>("account_set_fields".tr,
+                .openSliverBottomSheet<ReceiptAddress<XRPAddress>>(
+                    "account_set_fields".tr,
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9,
-                    bodyBuilder: (c) => SelectRecipientAccountView(
+                    bodyBuilder: (c) => SelectRecipientAccountView<XRPAddress>(
                         account: account,
                         scrollController: c,
                         subtitle: PageTitleSubtitle(

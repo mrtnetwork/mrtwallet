@@ -105,7 +105,7 @@ class Localization {
           "choose_bitcoin_address_type_desc":
               "Please select the address type to create an address.",
           "bitcoin_type_recomended":
-              "We recommend creating a P2TR or P2WPKH address due to their enhanced security features and lower cost fees.",
+              "We recommend creating a ___1__ address due to their enhanced security features and lower cost fees.",
           "standard_derivation": "Standard Derivation",
           "standard_deravation_for": "Derivation Standard for ___1__",
           "p2sh_nested_segwit": "P2SH Nested SegWit",
@@ -141,6 +141,7 @@ class Localization {
           "to_many_accounts":
               "Too many accounts, please use custom path derivation",
           "incorrect_network": "Incorrect network",
+          "invalid_provider_infomarion": "Invalid provider information.",
           "invalid_bip_key_index": "invalid bip proposal derivation index",
           "address_already_exist": "Address already exist",
           "generating_new_addr": "Generating new address",
@@ -513,16 +514,9 @@ class Localization {
           "classic_address": "Classic address",
           "x_address": "X-Address",
           "x_address_desc":
-              "X-address: The X-address is a more user-friendly and interoperable format for Ripple addresses. It includes an additional destination tag and an optional invoice ID, allowing for smoother transactions. The X-address is designed to simplify the process of sending and receiving Ripple payments while reducing errors often associated with using classic addresses.",
-          "classic_address_desc":
-              "Classic address: The classic address is the traditional format for identifying Ripple accounts. It consists of a series of letters and numbers that uniquely represent a Ripple account. Classic addresses can also include a destination tag, which is used to associate incoming payments with a specific account, particularly in cases where multiple users share the same receiving address.",
+              "The new 𝗫-address format aims to replace the use of a separate destination tag.",
           "tag": "Tag",
-          "x_address_desc2": "Understanding Ripple X-Address Tags",
-          "x_address_desc3":
-              "In the context of Ripple X-addresses, a tag is a supplementary identifier used to associate incoming payments with a specific account. This feature is especially useful for scenarios where multiple users share the same receiving address. By including a tag along with the X-address, the sender can specify which account the payment is intended for, ensuring that the funds are correctly attributed to the intended recipient within the target account. This is particularly important for exchanges and services that manage large volumes of transactions for numerous users using a single address. Therefore, the tag plays a crucial role in facilitating accurate and efficient routing of incoming payments within the Ripple network.",
-          "assigning_tag": "Assigning a Tag to Your Ripple X-Address",
-          "enter_tag_desc":
-              "Please enter the desired tag for your account. The tag must be a value between 0 and 2^32-1.",
+          "enter_tag_desc": "The tag must be a value between 0 and 2^32-1.",
           "tag_validator": "The tag must be a value between 0 and 2^32-1.",
           "tap_to_choose_address": "Tap to choose address",
           "invalid_contact_details": "Contact details are invalid",
@@ -1414,6 +1408,7 @@ class Localization {
           "a_minimum_a_ada_required": "A minimum of 1 ADA output is required.",
           "unsuported_feature": "Unsuported feature",
           "cosmos_networks": "Cosmos and forked",
+          "ton_networks": "Ton",
           "add_least_one_receipt": "Add at least one recipient",
           "the_amount_is_unspecified": "The amount is unspecified.",
           "elliptic_curve_options": "Elliptic Curve Options",
@@ -1574,6 +1569,174 @@ class Localization {
           "manually_set_hd_path": "Manually set HD path details.",
           "byron_legacy_hd_path_generate_from_master_key_desc":
               "Do not toggle on for generating from master key.",
+          "wallet_type": "Wallet type",
+          "types_of_wallet_contracts": "Types of Wallet Contracts",
+          "ton_wallet_contract_desc":
+              "Wallet Contracts on TON (V1, V2, V3, V4) are smart contracts designed to manage cryptocurrency transactions with increasing levels of security, functionality, and customization.",
+          "sub_wallet_id_validator":
+              "The sub wallet id must be a value between 0 and 2^32-1.",
+          "sub_wallet_id": "Sub wallet id",
+          "sub_wallet_id_desc":
+              "which allows you to create multiple wallets using the same public key (so you can have only one seed phrase and lots of wallets)",
+          "ton_mnemonic_feature_desc":
+              "We are using standard BIP-39 seed generation for the TON network. To use the Ton Mnemonic feature, generate a private key from your mnemonic in the settings (import key feature).",
+          "ton_mnemonic": "Ton Mnemonic",
+          "generate_ton_private_key":
+              "Generate a private key from your TON mnemonic.",
+          "network_settings": "Network settings",
+          "ton_mnemonic_desc":
+              "The TON network uses its algorithm to generate private keys from BIP-39 mnemonics. You can create or import a TON mnemonic, convert it to a private key, and import it into your wallet.",
+          "ton_mnemonic_desc2":
+              "We don't store your TON mnemonic or mnemonic password in the wallet. Instead, we generate a private key for you to import into the wallet if desired",
+          "mnemonic_password": "Mnemonic password.",
+          "mnemonic_password_desc":
+              "If your mnemonic has a password or you want to generate a mnemonic with a password, enable it.",
+          "password_empty_validator": "Password must not be empty.",
+          "create_import_mnemonic": "Create/Import Mnemonic",
+          "choose_an_action": "Choose an Action",
+          "enter_mnemonic_desc3":
+              "Please enter your BIP39 mnemonic phrase below, consisting of 8 to 48 words, separated by spaces.",
+          "generate_private_key": "Generate private key",
+          "invalid_bip39_mnemonic_words": "Invalid BIP39 mnemonic words.",
+          "validating_mnemonic": "Validating mnemonic",
+          "validate_ton_mnemonic": "Validate Ton mnemonic",
+          "validate_ton_mnemonic_desc":
+              "Ensure the entered mnemonic is a valid TON mnemonic.",
+          "generating_private_key": "Generating private key. Please wait.",
+          "import_to_wallet": "Import to wallet.",
+          "wrong_network_key_error":
+              "The private key is not associated with the ___1__ network",
+          "generate_ton_mnemonic": "Generate Ton mnemonic",
+          "ton_mnemonic_words_desc":
+              "You can generate a mnemonic phrase with 8 to 48 words, though most wallets support only 24-word mnemonics.",
+          "ton_mnemonic_words_length_validator":
+              "The TON mnemonic supports 8 to 48 words.",
+          "generating_mnemonic": "Generating mnemonic. Please wait.",
+          "transaction_is_not_ready": "Transaction is not ready.",
+          "estimating_fee_please_wait": "Estimating fee. Please wait.",
+          "bounce": "Bounce",
+          "ton_bounce_desc":
+              "Bounce: If the destination smart contract doesn't exist or throws an unhandled exception while processing the message, it will be bounced back with the remaining original value, minus transfer and gas fees.",
+          "ton_bounce_desc2":
+              "If the destination contract is missing or errors, the message returns with remaining value, minus fees.",
+          "message_body": "Message body",
+          "comment": "Comment",
+          "binary_comment": "Binary comment",
+          "cell": "Cell",
+          "body_message_desc":
+              "The body of the message can be embedded into the message itself, or be stored in a separate cell referred to from the message",
+          "type_of_message_body": "Type of message body",
+          "choose_the_type": "Choose the type",
+          "ton_message_body_comment_validator":
+              "Please enter a comment for your message body.",
+          "invalid_hex_bytes_string": "Invalid hexadecimal byte string.",
+          "ton_invalid_cell_string_data":
+              "Invalid cell data. Please enter a valid string in base64 or hexadecimal format.",
+          "enter_binary_message_as_hex":
+              "Please enter the binary message in hexadecimal format.",
+          "enter_comment_as_string_or_hex":
+              "Please enter the comment in plain text or hexadecimal format.",
+          "enter_cell_as_hex_or_base64":
+              "Please enter a valid string in base64 or hexadecimal format.",
+          "update_messsage": "Update message.",
+          "internal_message_settings": "Internal message settings",
+          "message_options": "Message options",
+          "ton_bounceable_vs_non_bounceable":
+              "Bounceable vs Non-Bounceable Addresses",
+          "ton_address_type_desc":
+              "We recommend using a stable, non-bounceable address for the wallet contract.",
+          "bouncable": "Bounceable",
+          "jettons": "Jettons",
+          "no_jettons_found": "No jettons found in the account.",
+          "import_jettons": "Import Jettons",
+          "data_verification_failed": "Data verification failed.",
+          "unable_to_retrieve_token_metadata":
+              "Unable to retrieve token metadata.",
+          "import_token_alert": "Warning: Fake Token Scam Alert",
+          "import_token_desc":
+              "Be cautious of fake token scams. Importing unverified tokens can compromise your blockchain account security. Always verify token authenticity to protect your digital assets.",
+          "token_decimals_desc":
+              "We can't detect token metadata. Token decimals have been set to zero.",
+          "select_token": "Select Token",
+          "jetton_transfer": "Jetton transfer",
+          "select_jetton_desc": "Please select the jetton you want to transfer",
+          "jetton_amount": "Jetton amount",
+          "forward_amount": "Forward Ton amount",
+          "ton_forward_amount_desc":
+              "the amount of Ton to be sent to the destination address.",
+          "total_amount": "Total amount",
+          "setup_forward_amount": "Setup forward amount",
+          "setup_jetton_amount": "Setup jetton amount",
+          "setup_total_amount": "Setup total amount",
+          "jetton_total_amount_desc":
+              "Amount of transferred jettons in elementary units.",
+          "the_jetton_amount_is_unspecified":
+              "The jetton amount is unspecified.",
+          "ton_total_amount_validator":
+              "The total amount must be greater than the forward amount. (Forward amount + message fee = total amount)",
+          "ton_jetton_transfer_desc":
+              "Please make sure you understand the jetton transfer fields. If not, read this link before making a transaction.",
+          "ton_total_amount_desc_2":
+              "If the Forward amount is zero, the total minus the fee will be transferred to the destination. Otherwise, the total amount minus the Message fees and Forward fees will be returned to your account.",
+          "remove_recipient": "Remove recipient",
+          "remove_recipient_desc": "Remove the recipient?",
+          "ton_transaction_error_desc": "Internal transaction failed: ___1__ .",
+          "unknown_error": "Unknown error",
+          "some_action_failed":
+              "Some actions failed during the processing:  ___1__ .",
+          "other_fees": "Other fees",
+          "transaction_fees": "Transaction fees",
+          "ton_transaction_fee_desc":
+              "This is an estimated minimum fee and may not be exact.",
+          "ton_transaction_fee_desc2":
+              "Internal fees apply for smart contracts such as Jetton, NFS, etc.",
+          "total_fees": "Total fees",
+          "estimate_fee_error_desc":
+              "Unable to process the estimate fee. Please ensure you have sufficient Balance to complete the transaction.",
+          "arbitrary_request_number": "Arbitrary request number.",
+          "query_id": "Query ID",
+          "jetton_transfer_fields": "Jetton transfer fields.",
+          "ton_query_id_validator": "Invalid Query Id",
+          "jetton_destination_address_desc":
+              "For transferring Jetton ensure the destination address is the owner of the Jetton, not the Jetton wallet address.",
+          "url_does_not_exists": "URL does not exist.",
+          "featuees": "Features",
+          "ripple_key_conversion": "Ripple key conversion",
+          "ripple_key_conversion_desc":
+              "Generate private key from ripple seed or enteropy",
+          "ripple_key_conversion_desc2":
+              "You can convert your Ripple seed or entropy into a private key, which can then be imported into a wallet to manage addresses, transactions, and other network operations.",
+          "ripple_key": "Ripple key",
+          "select_ripple_seed_or_entropy": "Please enter your Ripple key.",
+          "example_s": "Example: ___1__ .",
+          "ripple_seed_entropy_validator":
+              "Please enter a valid ripple ___1__ .",
+          "seed": "Seed",
+          "entropy": "Entropy",
+          "inidicate_type_of_ripple_key":
+              "Indicate the type of your ripple key.",
+          "ripple_key_type": "Ripple key type",
+          "choose_key_algorithm_desc":
+              "Which type of algorithm would you like to use to create the private key?",
+          "import_private_key_desc":
+              "Your private key has been successfully generated. click the 'Import to Wallet' button which can then be imported into a wallet to manage addresses, transactions, and other network operations.",
+          "coin_type": "Coin type",
+          "choose_key_coin_desc": "To which coin is your key-related?",
+          "invalid_key": "The provided key is invalid.",
+          "enter_extended_key_desc":
+              "Please enter your extended key in Base58 format.",
+          "enter_wif_key_desc": "Please enter your WIF key in Base58 format.",
+          "enter_private_key_desc":
+              "Please enter your private key in Hexadecimal format.",
+          // "restore_from_backup": "Restore from backup.",
+          "restore_backup_desc":
+              "Restore your mnemonic, private key, or other information you generated with the app backup option.",
+          "restore_encrypted_backup": "Restore encrypted backup",
+          "restoring_backup_please_wait": "Restoring backup. please wait. ",
+          "show_content": "Show content.",
+          "backup_restored_desc": "Your backup has been successfully restored.",
+          "qr_code": "QR Barcode",
+          "submit": "Submit"
         }
       };
 }

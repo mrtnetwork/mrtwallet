@@ -59,10 +59,9 @@ class ContainerWithBorder extends StatelessWidget {
                 border: validate
                     ? null
                     : Border.all(
-                        color: context.colors.error,
+                        color: context.colors.errorContainer,
                         width: 2,
-                        strokeAlign: 0,
-                      )),
+                        strokeAlign: 1)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -130,7 +129,7 @@ class ContainerWithCheckBoxAndBorder extends StatelessWidget {
         padding: padding,
         margin: margin,
         decoration: BoxDecoration(
-          color: backgroundColor ?? context.colors.background,
+          color: backgroundColor ?? context.colors.surface,
           borderRadius: borderRadius ?? WidgetConstant.border8,
         ),
         child: Row(

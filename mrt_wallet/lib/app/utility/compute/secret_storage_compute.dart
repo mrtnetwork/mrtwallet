@@ -7,8 +7,8 @@ abstract class SecretStorageCompute {
       int p = 1,
       SecretWalletEncoding encoding = SecretWalletEncoding.cbor}) {
     String encrypt(SecretWalletEncoding enc) {
-      final secureStorage =
-          SecretWallet.encode(StringUtils.toBytes(credentials), password);
+      final secureStorage = Web3SecretStorageDefinationV3.encode(
+          StringUtils.toBytes(credentials), password);
       return secureStorage.encrypt(encoding: enc);
     }
 
@@ -21,7 +21,7 @@ abstract class SecretStorageCompute {
       SecretWalletEncoding encoding = SecretWalletEncoding.cbor}) {
     List<int> encrypt(SecretWalletEncoding enc) {
       final secureStorage =
-          SecretWallet.decode(backup, password, encoding: enc);
+          Web3SecretStorageDefinationV3.decode(backup, password, encoding: enc);
       return secureStorage.data;
     }
 

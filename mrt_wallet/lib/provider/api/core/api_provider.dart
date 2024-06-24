@@ -17,27 +17,23 @@ class ApiProviderService with Equatable, CborSerializable {
   }
 
   static const ApiProviderService blockCypher = ApiProviderService(
-    "BlockCypher",
-    "https://www.blockcypher.com/",
-    ProviderProtocol.http,
-  );
+      "BlockCypher",
+      "https://www.blockcypher.com/",
+      ProviderProtocol.http,
+      null);
   static const ApiProviderService mempool = ApiProviderService(
-      "Mempool", "https://mempool.space/", ProviderProtocol.http);
+      "Mempool", "https://mempool.space/", ProviderProtocol.http, null);
   static const ApiProviderService xrpl = ApiProviderService(
-    "XRPL",
-    "https://xrpl.org",
-    ProviderProtocol.http,
-  );
+      "XRPL", "https://xrpl.org", ProviderProtocol.http, null);
   static const ApiProviderService xrplWebsocket = ApiProviderService(
-    "XRPL",
-    "https://xrpl.org",
-    ProviderProtocol.websocket,
-  );
+      "XRPL", "https://xrpl.org", ProviderProtocol.websocket, null);
 
-  const ApiProviderService(this.serviceName, this.websiteUri, this.protocol);
+  const ApiProviderService(
+      this.serviceName, this.websiteUri, this.protocol, this.auth);
   final ProviderProtocol protocol;
   final String serviceName;
   final String websiteUri;
+  final ProviderAuth? auth;
   @override
   List get variabels => [serviceName, websiteUri, protocol];
 
@@ -47,29 +43,36 @@ class ApiProviderService with Equatable, CborSerializable {
       {List<int>? bytes, CborObject? obj}) {
     try {
       final cborObj = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-      if (bytesEqual(
+      if (BytesUtils.bytesEqual(
           cborObj.tags, WalletModelCborTagsConst.evmApiServiceProvider)) {
         return EVMApiProviderService.fromCborBytesOrObject(obj: cborObj);
-      } else if (bytesEqual(
+      } else if (BytesUtils.bytesEqual(
           cborObj.tags, WalletModelCborTagsConst.tronApiServiceProvider)) {
         return TronApiProviderService.fromCborBytesOrObject(obj: cborObj);
-      } else if (bytesEqual(
+      } else if (BytesUtils.bytesEqual(
           cborObj.tags, WalletModelCborTagsConst.electrumApiServiceProvider)) {
         return ElectrumApiProviderService.fromCborBytesOrObject(obj: cborObj);
-      } else if (bytesEqual(
+      } else if (BytesUtils.bytesEqual(
           cborObj.tags, WalletModelCborTagsConst.solApiServiceProvider)) {
         return SolanaApiProviderService.fromCborBytesOrObject(obj: cborObj);
-      } else if (bytesEqual(
+      } else if (BytesUtils.bytesEqual(
           cborObj.tags, WalletModelCborTagsConst.cardanoApiServiceProvider)) {
         return CardanoAPIProviderService.fromCborBytesOrObject(obj: cborObj);
-      } else if (bytesEqual(
+      } else if (BytesUtils.bytesEqual(
           cborObj.tags, WalletModelCborTagsConst.cosmosApiServiceProvider)) {
         return CosmosAPIProviderService.fromCborBytesOrObject(obj: cborObj);
+      } else if (BytesUtils.bytesEqual(
+          cborObj.tags, WalletModelCborTagsConst.tonApiServiceProvider)) {
+        return TonAPIProviderService.fromCborBytesOrObject(obj: cborObj);
       }
       final CborListValue cbor = CborSerializable.decodeCborTags(
           bytes, obj, WalletModelCborTagsConst.apiServiceProvider);
       return ApiProviderService(
-          cbor.elementAt(0), cbor.elementAt(1), ProviderProtocol.http);
+          cbor.elementAt(0),
+          cbor.elementAt(1),
+          ProviderProtocol.http,
+          cbor.getCborTag(4)?.to<ProviderAuth, CborTagValue>(
+              (e) => ProviderAuth.fromCborBytesOrObject(obj: e)));
     } catch (e) {
       throw WalletExceptionConst.incorrectNetwork;
     }

@@ -43,7 +43,7 @@ class RippleUtils {
       destination: destination,
       account: account.networkAddress.toString(),
       memos: memos.isEmpty ? null : toXrplMemos(memos),
-      signingPubKey: BytesUtils.toHexString(account.publicKey),
+      signer: XRPLSignature.signer(BytesUtils.toHexString(account.publicKey)),
       fee: fee,
     );
   }
@@ -59,7 +59,7 @@ class RippleUtils {
     return TrustSet(
         account: account.networkAddress.toString(),
         flags: flag?.value ?? 0,
-        signingPubKey: BytesUtils.toHexString(account.publicKey),
+        signer: XRPLSignature.signer(BytesUtils.toHexString(account.publicKey)),
         limitAmount: limitAmount,
         fee: fee,
         memos: memos.isEmpty ? null : toXrplMemos(memos),
@@ -84,7 +84,7 @@ class RippleUtils {
       account: account.networkAddress.toString(),
       setFlag: setFlag,
       clearFlag: clearFlag,
-      signingPubKey: BytesUtils.toHexString(account.publicKey),
+      signer: XRPLSignature.signer(BytesUtils.toHexString(account.publicKey)),
       domain: domain == null ? null : QuickBytesUtils.ensureIsHex(domain),
       emailHash: emailHash == null
           ? null
@@ -224,6 +224,23 @@ class RippleUtils {
               element.conf.type == ripplePrivateKey.algorithm.curveType));
     } on WalletException {
       rethrow;
+    } catch (e) {
+      throw WalletExceptionConst.invalidPrivateKey;
+    }
+  }
+
+  static XRPPrivateKey seedToPrivateKey(String seed) {
+    try {
+      return XRPPrivateKey.fromSeed(seed);
+    } catch (e) {
+      throw WalletExceptionConst.invalidPrivateKey;
+    }
+  }
+
+  static XRPPrivateKey entropyToPrivateKey(
+      String entropy, XRPKeyAlgorithm algorithm) {
+    try {
+      return XRPPrivateKey.fromEntropy(entropy, algorithm: algorithm);
     } catch (e) {
       throw WalletExceptionConst.invalidPrivateKey;
     }

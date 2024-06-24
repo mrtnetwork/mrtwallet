@@ -100,13 +100,11 @@ class HomeScreen extends StatelessWidget {
                                       FilledButton(
                                           style: ButtonStyle(
                                               foregroundColor:
-                                                  MaterialStatePropertyAll(
-                                                      context
-                                                          .colors.onBackground),
+                                                  WidgetStatePropertyAll(
+                                                      context.colors.onSurface),
                                               backgroundColor:
-                                                  MaterialStatePropertyAll(
-                                                      context
-                                                          .colors.background)),
+                                                  WidgetStatePropertyAll(
+                                                      context.colors.surface)),
                                           onPressed: () {
                                             context.openSliverDialog(
                                                 (ctx) =>

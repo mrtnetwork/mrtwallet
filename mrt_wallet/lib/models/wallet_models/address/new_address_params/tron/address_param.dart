@@ -3,7 +3,7 @@ import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:on_chain/on_chain.dart';
 
 class TronNewAddressParam implements NewAccountParams<SolanaNewAddressParam> {
-  TronNewAddressParam({required this.deriveIndex, List<int>? publicKey});
+  TronNewAddressParam({required this.deriveIndex, required this.coin});
 
   @override
   bool get isMultiSig => false;
@@ -11,7 +11,15 @@ class TronNewAddressParam implements NewAccountParams<SolanaNewAddressParam> {
   @override
   final AddressDerivationIndex deriveIndex;
   @override
-  CryptoCoins get coin => deriveIndex.currencyCoin;
+  final CryptoCoins coin;
+
+  @override
+  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+    return ITronAddress.newAccount(
+        accountParams: this,
+        publicKey: publicKey,
+        network: network as APPTVMNetwork);
+  }
 }
 
 class TronMultisigNewAddressParam implements TronNewAddressParam {
@@ -31,4 +39,10 @@ class TronMultisigNewAddressParam implements TronNewAddressParam {
   final TronMultiSignatureAddress multiSigAccount;
   @override
   final CryptoCoins coin;
+
+  @override
+  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+    return ITronMultisigAddress.newAccount(
+        accountParams: this, network: network as APPTVMNetwork);
+  }
 }

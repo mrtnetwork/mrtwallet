@@ -16,11 +16,11 @@ class FileUtility {
         version: QrVersions.auto,
         eyeStyle: QrEyeStyle(
           eyeShape: QrEyeShape.square,
-          color: color.onBackground,
+          color: color.onSurface,
         ),
         dataModuleStyle: QrDataModuleStyle(
           dataModuleShape: QrDataModuleShape.square,
-          color: color.onBackground,
+          color: color.onSurface,
         ),
       ).toImage(500);
       final ByteData? bufferBytes = await _QrCodeMarkerPainter(
@@ -28,8 +28,8 @@ class FileUtility {
               margin: 10,
               imageSize: 500,
               data: uderImage,
-              textColor: color.onBackground,
-              backgroundColor: color.background)
+              textColor: color.onSurface,
+              backgroundColor: color.surface)
           .toImageData();
       final List<int> bufferData = bufferBytes!.buffer.asUint8List();
       final write = await CrossFileWriter.writeBytes(

@@ -229,12 +229,13 @@ class _EditPermissionView extends StatelessWidget {
                       maxExtend: 1,
                       minExtent: 0.8,
                       initialExtend: 0.9,
-                      bodyBuilder: (c) => SelectRecipientAccountView(
-                          account: account,
-                          scrollController: c,
-                          subtitle: PageTitleSubtitle(
-                              title: "signer".tr,
-                              body: Text("signer_account_address".tr))))
+                      bodyBuilder: (c) =>
+                          SelectRecipientAccountView<TronAddress>(
+                              account: account,
+                              scrollController: c,
+                              subtitle: PageTitleSubtitle(
+                                  title: "signer".tr,
+                                  body: Text("signer_account_address".tr))))
                   .then(
                 (value) {
                   validator.addNewSigner(value, () {

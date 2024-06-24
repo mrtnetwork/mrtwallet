@@ -1,5 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:blockchain_utils/binary/utils.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
@@ -414,7 +414,7 @@ abstract class BitcoinTransactionImpl extends StateController
         }
       }
       final tr = _buildTransaction();
-      final signedTr = await walletProvider.signBitcoinTransaction(
+      final signedTr = await walletProvider.signTransaction(
           request: BitcoinSigningRequest(
               addresses: signers, network: network, transaction: tr));
       if (signedTr.hasError) {

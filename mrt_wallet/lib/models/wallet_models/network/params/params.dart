@@ -7,3 +7,4 @@ export 'networks/tvm.dart';
 export 'networks/solana.dart';
 export 'networks/cardano.dart';
 export 'networks/cosmos.dart';
+export 'networks/ton.dart';

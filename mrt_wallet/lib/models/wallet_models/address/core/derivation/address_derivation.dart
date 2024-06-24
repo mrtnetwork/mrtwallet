@@ -16,20 +16,19 @@ enum AddressDerivationType {
 
 abstract class AddressDerivationIndex with CborSerializable, Equatable {
   String? get hdPath;
-  // String get hdPath;
   CryptoCoins get currencyCoin;
   AddressDerivationType get derivationType;
   bool get isImportedKey;
   String get name;
-  // bool get is;
 
   const AddressDerivationIndex();
   static AddressDerivationIndex fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final cbor = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-    if (bytesEqual(cbor.tags, WalletModelCborTagsConst.accoutKeyIndex)) {
+    if (BytesUtils.bytesEqual(
+        cbor.tags, WalletModelCborTagsConst.accoutKeyIndex)) {
       return Bip32AddressIndex.fromCborBytesOrObject(obj: cbor);
-    } else if (bytesEqual(
+    } else if (BytesUtils.bytesEqual(
         cbor.tags, WalletModelCborTagsConst.multiSigAccountKeyIndex)) {
       return const MultiSigAddressIndex();
     } else {

@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/network/custom/custom.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/network_params.dart';
@@ -43,6 +44,7 @@ class CosmosNetworkParams with CborSerializable implements NetworkCoinParams {
       required this.networkType})
       : nativeCoins = List<CosmosNativeCoin>.unmodifiable(coins);
 
+  @override
   final bool mainnet;
 
   @override
@@ -55,7 +57,7 @@ class CosmosNetworkParams with CborSerializable implements NetworkCoinParams {
   int get decimal => token.decimal!;
 
   @override
-  String get logo => token.assetLogo!;
+  AppImage get logo => token.assetLogo!;
 
   @override
   final Token token;

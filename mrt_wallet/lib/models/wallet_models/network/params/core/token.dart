@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
@@ -12,19 +13,39 @@ class Token with CborSerializable, Equatable {
       final String symbol = cbor.elementAt(1);
       final int? decimal = cbor.elementAt(2);
       final String? logo = cbor.elementAt(3);
+      final CborTagValue? logoCbor = cbor.getCborTag(3);
+      AppImage? image;
+      if (logo != null) {
+        image = AppImage.local(logo);
+      } else if (logoCbor != null) {
+        image = AppImage.fromCborBytesOrObject(obj: logoCbor);
+      }
       return Token(
-          name: name, symbol: symbol, decimal: decimal, assetLogo: logo);
+          name: name, symbol: symbol, decimal: decimal, assetLogo: image);
     } catch (e) {
       throw WalletExceptionConst.invalidTokenInformation;
     }
   }
-  Token(
+  Token._(
       {required this.name, required this.symbol, this.assetLogo, this.decimal});
+  factory Token(
+      {required String name,
+      required String symbol,
+      AppImage? assetLogo,
+      int? decimal}) {
+    if (decimal != null) {
+      if (decimal < 0 || decimal > 255) {
+        throw WalletExceptionConst.invalidTokenInformation;
+      }
+    }
+    return Token._(
+        name: name, symbol: symbol, assetLogo: assetLogo, decimal: decimal);
+  }
   Token copyWith({
     String? name,
     String? symbol,
     int? decimal,
-    String? assetLogo,
+    AppImage? assetLogo,
   }) {
     return Token(
       name: name ?? this.name,
@@ -38,7 +59,7 @@ class Token with CborSerializable, Equatable {
   final String symbol;
 
   final int? decimal;
-  final String? assetLogo;
+  final AppImage? assetLogo;
 
   late final String nameView = AppStringUtility.substring(name, length: 20);
   late final String symbolView = AppStringUtility.substring(symbol, length: 5);
@@ -49,7 +70,7 @@ class Token with CborSerializable, Equatable {
           name,
           symbol,
           decimal ?? const CborNullValue(),
-          assetLogo ?? const CborNullValue(),
+          assetLogo?.toCbor() ?? const CborNullValue(),
         ]),
         WalletModelCborTagsConst.token);
   }

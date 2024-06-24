@@ -2,7 +2,6 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
-import 'package:mrt_wallet/models/wallet_models/address/network_address/cardano/cardano.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
@@ -92,122 +91,14 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
     if (!network.coins.contains(accountParams.coin)) {
       throw WalletExceptionConst.invalidCoin;
     }
-    Bip32AddressCore newAddress;
-    if (accountParams is RippleNewAddressParam) {
-      newAddress = _addXrpAddress(publicKey, accountParams);
-    } else if (accountParams is BitcoinCashNewAddressParams) {
-      newAddress = _addBitcoinCashAddress(publicKey, accountParams);
-    } else if (accountParams is BitcoinNewAddressParams) {
-      newAddress = _addBitcoinAddress(publicKey, accountParams);
-    } else if (accountParams is EthereumNewAddressParam) {
-      newAddress = _addEthereumAddress(publicKey, accountParams);
-    } else if (accountParams is TronNewAddressParam) {
-      newAddress = _addTronAddress(publicKey, accountParams);
-    } else if (accountParams is SolanaNewAddressParam) {
-      newAddress = _addSolanaNetworkAddr(publicKey, accountParams);
-    } else if (accountParams is CardanoNewAddressParams) {
-      newAddress = _addCardanoNetworkAddr(publicKey, accountParams);
-    } else if (accountParams is CosmosNewAddressParams) {
-      newAddress = _addCosmosAddress(publicKey, accountParams);
-    } else {
-      throw WalletExceptionConst.invalidAccountDetails;
-    }
-
+    final Bip32AddressCore newAddress =
+        accountParams.toAccount(network, publicKey);
     if (addresses.contains(newAddress)) {
       throw WalletExceptionConst.addressAlreadyExist;
     }
 
     _addresses = List.unmodifiable([newAddress, ..._addresses]);
     return newAddress as CryptoAccountAddress<BigInt, T, X>;
-  }
-
-  IBitcoinAddress _addBitcoinAddress(
-      List<int> publicKey, BitcoinNewAddressParams accountParams) {
-    IBitcoinAddress newAddress;
-    if (accountParams.isMultiSig) {
-      newAddress = IBitcoinMultiSigAddress.newAccount(
-          accountParam: accountParams as BitcoinMultiSigNewAddressParams,
-          network: network as AppBitcoinNetwork);
-    } else {
-      newAddress = IBitcoinAddress.newAccount(
-          accountParams: accountParams,
-          publicKey: publicKey,
-          network: network as AppBitcoinNetwork);
-    }
-
-    return newAddress;
-  }
-
-  IBitcoinAddress _addBitcoinCashAddress(
-      List<int> publicKey, BitcoinCashNewAddressParams accountParams) {
-    if (accountParams.isMultiSig) {
-      return IBitcoinCashMultiSigAddress.newAccount(
-          accountParam: accountParams as BitcoinCashMultiSigNewAddressParams,
-          network: network as AppBitcoinNetwork);
-    }
-    return IBitcoinCashAddress.newAccount(
-        accountParams: accountParams,
-        publicKey: publicKey,
-        network: network as AppBitcoinNetwork);
-  }
-
-  IXRPAddress _addXrpAddress(
-      List<int> publicKey, RippleNewAddressParam accountParams) {
-    IXRPAddress newAddress = accountParams.isMultiSig
-        ? IXRPMultisigAddress.newAccount(
-            accountParams: accountParams as RippleMultisigNewAddressParam,
-            network: network as AppXRPNetwork)
-        : IXRPAddress.newAccount(
-            accountParams: accountParams,
-            publicKey: publicKey,
-            network: network as AppXRPNetwork);
-
-    return newAddress;
-  }
-
-  IEthAddress _addEthereumAddress(
-      List<int> publicKey, EthereumNewAddressParam accountParams) {
-    return IEthAddress.newAccount(
-        accountParams: accountParams,
-        publicKey: publicKey,
-        network: network as APPEVMNetwork);
-  }
-
-  ICosmosAddress _addCosmosAddress(
-      List<int> publicKey, CosmosNewAddressParams accountParams) {
-    return ICosmosAddress.newAccount(
-        accountParams: accountParams,
-        publicKey: publicKey,
-        network: network as APPCosmosNetwork);
-  }
-
-  ISolanaAddress _addSolanaNetworkAddr(
-      List<int> publicKey, SolanaNewAddressParam accountParams) {
-    return ISolanaAddress.newAccount(
-        accountParams: accountParams,
-        publicKey: publicKey,
-        network: network as APPSolanaNetwork);
-  }
-
-  ICardanoAddress _addCardanoNetworkAddr(
-      List<int> publicKey, CardanoNewAddressParams accountParams) {
-    return ICardanoAddress.newAccount(
-        accountParams: accountParams,
-        publicKey: publicKey,
-        network: network as APPCardanoNetwork);
-  }
-
-  ITronAddress _addTronAddress(
-      List<int> publicKey, TronNewAddressParam accountParams) {
-    if (accountParams.isMultiSig) {
-      return ITronMultisigAddress.newAccount(
-          accountParams: accountParams as TronMultisigNewAddressParam,
-          network: network as APPTVMNetwork);
-    }
-    return ITronAddress.newAccount(
-        accountParams: accountParams,
-        publicKey: publicKey,
-        network: network as APPTVMNetwork);
   }
 
   int _addressIndex;

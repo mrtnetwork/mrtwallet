@@ -1,12 +1,20 @@
 import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/bip/bip/bip44/base/bip44_base_ex.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
-import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 class BlockchainUtils {
+  static Future<String> restoreBackup(
+      {required String backup,
+      required String password,
+      required SecretWalletEncoding encoding}) async {
+    return BytesUtils.toHexString(await SecretStorageCompute.decrypt(
+        backup, password,
+        encoding: encoding));
+  }
+
   static Bip32Base privteKeyToBip32(List<int> privateKeyBytes, CryptoCoins coin,
       {Bip32KeyNetVersions? keyNetVar}) {
     try {
@@ -99,6 +107,25 @@ class BlockchainUtils {
     } catch (e) {
       throw WalletExceptionConst.invalidMnemonic;
     }
+  }
+
+  static void validateMnemonicWords(List<String> mnemonic) {
+    try {
+      final isValid = Bip39MnemonicValidator();
+      if (!isValid.validateWords(mnemonic.join(" "))) {
+        throw WalletExceptionConst.invalidBip39MnemonicWords;
+      }
+    } catch (e) {
+      throw WalletExceptionConst.invalidBip39MnemonicWords;
+    }
+  }
+
+  static List<String> normalizeMnemonic(String mnemonic) {
+    return mnemonic
+        .replaceAll(RegExp(r'\s+'), " ")
+        .split(" ")
+        .where((element) => element.isNotEmpty)
+        .toList();
   }
 
   static Future<List<int>> mnemonicToSeed(String mnemonic,

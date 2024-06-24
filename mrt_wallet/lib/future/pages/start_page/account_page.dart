@@ -8,6 +8,7 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/cardano_pages/accou
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/ethereum_account_page_view.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/account_page.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/account_page.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ton/account_pages.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/tron_account_page_view.dart';
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -296,21 +297,25 @@ class _AccountPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    switch (chainAccount.network.runtimeType) {
-      case AppBitcoinCashNetwork:
-        return BitcoinCashAccountPageView(chainAccount: chainAccount);
-      case AppBitcoinNetwork:
+    final network = chainAccount.network;
+    switch (network.type) {
+      case NetworkType.bitcoinAndForked:
+        if (network is AppBitcoinCashNetwork) {
+          return BitcoinCashAccountPageView(chainAccount: chainAccount);
+        }
         return BitcoinAccountPageView(chainAccount: chainAccount);
-      case AppXRPNetwork:
+      case NetworkType.xrpl:
         return RippleAccountPageView(chainAccount: chainAccount);
-      case APPSolanaNetwork:
+      case NetworkType.solana:
         return SolanaAccountPageView(chainAccount: chainAccount);
-      case APPEVMNetwork:
+      case NetworkType.ethereum:
         return ETHAccountPageView(chainAccount: chainAccount);
-      case APPTVMNetwork:
+      case NetworkType.tron:
         return TronAccountPageView(chainAccount: chainAccount);
-      case APPCardanoNetwork:
-        return CardanoAccountPage(chainAccount: chainAccount);
+      case NetworkType.cardano:
+        return CardanoAccountPageView(chainAccount: chainAccount);
+      case NetworkType.ton:
+        return TonAccountPageView(chainAccount: chainAccount);
       default:
         return const SizedBox();
     }
@@ -414,7 +419,7 @@ class _AddressDetailsView extends StatelessWidget {
                 ],
                 style: ButtonStyle(
                     iconColor:
-                        MaterialStatePropertyAll(context.colors.onPrimary)),
+                        WidgetStatePropertyAll(context.colors.onPrimary)),
                 child: const SizedBox(
                   width: AppGlobalConst.double40,
                   child: Row(

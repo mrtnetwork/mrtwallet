@@ -50,7 +50,7 @@ class IBitcoinCashAddress extends IBitcoinAddress {
       {List<int>? bytes, CborObject? obj}) {
     network as AppBitcoinCashNetwork;
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-    if (bytesEqual(
+    if (BytesUtils.bytesEqual(
         toCborTag.tags, WalletModelCborTagsConst.bitcoinCashMultiSigAccount)) {
       return IBitcoinCashMultiSigAddress.fromCborBytesOrObject(network,
           obj: toCborTag);

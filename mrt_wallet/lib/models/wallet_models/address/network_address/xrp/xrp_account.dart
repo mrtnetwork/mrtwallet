@@ -55,15 +55,14 @@ class IXRPAddress
             ? rippleAddress.toString()
             : rippleAddress.toXAddress(
                 tag: accountParams.tag,
-                forTestnet: accountParams.coin.conf.isTestnet),
+                isTestnet: accountParams.coin.conf.isTestnet),
         balance: NoneDecimalBalance.zero(network.coinParam.decimal));
-
     return IXRPAddress._(
       coin: accountParams.coin,
       publicKey: publicKey,
       address: addressDetauls,
       keyIndex: accountParams.deriveIndex,
-      networkAddress: rippleAddress,
+      networkAddress: XRPAddress(addressDetauls.address),
       network: network.value,
       tag: accountParams.tag,
       curveType: accountParams.type,
@@ -78,7 +77,7 @@ class IXRPAddress
   factory IXRPAddress.fromCborBytesOrObject(AppNetworkImpl network,
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-    if (bytesEqual(
+    if (BytesUtils.bytesEqual(
         toCborTag.tags, WalletModelCborTagsConst.rippleMultisigAccount)) {
       return IXRPMultisigAddress.fromCborBytesOrObject(network, obj: toCborTag);
     }
@@ -290,19 +289,19 @@ class IXRPMultisigAddress extends IXRPAddress
   factory IXRPMultisigAddress.newAccount(
       {required RippleMultisigNewAddressParam accountParams,
       required AppXRPNetwork network}) {
-    final addressDetauls = NoneDecimalNetworkAddressDetails(
+    final addressDetails = NoneDecimalNetworkAddressDetails(
         address: accountParams.tag == null
             ? accountParams.masterAddress.toString()
             : accountParams.masterAddress.toXAddress(
                 tag: accountParams.tag,
-                forTestnet: accountParams.coin.conf.isTestnet),
+                isTestnet: accountParams.coin.conf.isTestnet),
         balance: NoneDecimalBalance.zero(network.coinParam.decimal));
 
     return IXRPMultisigAddress._(
         coin: accountParams.coin,
         multiSignatureAccount: accountParams.multiSigAccount,
-        address: addressDetauls,
-        networkAddress: accountParams.masterAddress,
+        address: addressDetails,
+        networkAddress: XRPAddress(addressDetails.address),
         network: network.value,
         tag: accountParams.tag,
         tokens: const [],

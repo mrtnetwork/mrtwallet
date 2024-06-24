@@ -112,6 +112,14 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
     }
   }
 
+  void clear() {
+    if (mounted) {
+      controller.clear();
+    }
+  }
+
+  String getValue() => controller.text;
+
   @override
   void initState() {
     super.initState();
@@ -153,11 +161,12 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
             ? null
             : (context, editableTextState) =>
                 AdaptiveTextSelectionToolbar.editableText(
-                  editableTextState: editableTextState,
-                ),
+                    editableTextState: editableTextState),
         decoration: InputDecoration(
             filled: widget.filled,
-            suffix: widget.suffix,
+            suffix: (widget.obscureText
+                ? ObscureIcon(show: obscureText, onTap: onChaangeObscureText)
+                : null),
             prefix: widget.prefix,
             prefixIcon: widget.prefixIcon,
             helperStyle: widget.helperStyle,
@@ -168,11 +177,7 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
             border: OutlineInputBorder(
                 borderRadius: WidgetConstant.border8,
                 borderSide: BorderSide.none),
-            suffixIcon: widget.suffixIcon ??
-                (widget.obscureText
-                    ? ObscureIcon(
-                        show: obscureText, onTap: onChaangeObscureText)
-                    : null),
+            suffixIcon: widget.suffixIcon,
             hintText: widget.hint,
             errorText: widget.error),
       ),

@@ -10,6 +10,16 @@ class MethodCaller {
     return await Future.delayed(Duration(milliseconds: milliseconds));
   }
 
+  static T safeCast<T>(Object v, {String? onError}) {
+    if (v is T) return v as T;
+    throw WalletException.invalidArgruments(["$T", "${v.runtimeType}"]);
+  }
+
+  static Future<T> after<T>(Future<T> Function() t,
+      {int milliseconds = 0}) async {
+    return await Future.delayed(Duration(milliseconds: milliseconds), t);
+  }
+
   static Future<void> _callWithCanclable<T>(
     Future<T> Function() t,
     Cancelable canclable,
@@ -91,6 +101,7 @@ class MethodCaller {
         final toJson = StringUtils.toJson(response.body);
         return MethodResult.succsess(toJson as T);
       }
+
       final errorJson =
           nullOnException(() => StringUtils.toJson(response.body));
       throw ApiProviderException(
@@ -178,7 +189,11 @@ class MethodResult<T> {
   bool get hasError => error != null;
   bool get hasResult => error == null;
   bool get isCancel => exception is CancelableExption;
-  T get result => hasError ? throw WalletException(error!) : _result;
+  T get result {
+    rethrowIfError();
+    return _result;
+  }
+
   bool get isBadCondition => exception is BadCondition;
   @override
   String toString() {

@@ -5,7 +5,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/chain/utils.dart';
 import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
-import 'package:mrt_wallet/provider/api/api_provider.dart';
+import 'package:mrt_wallet/provider/api/core/core.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
 class EVMApiProviderService extends ApiProviderService {
@@ -13,17 +13,20 @@ class EVMApiProviderService extends ApiProviderService {
       {required String serviceName,
       required String websiteUri,
       required ProviderProtocol protocol,
+      required ProviderAuth? auth,
       required this.uri})
-      : super(serviceName, websiteUri, protocol);
+      : super(serviceName, websiteUri, protocol, auth);
   factory EVMApiProviderService(
       {required String serviceName,
       required String websiteUri,
-      required String uri}) {
+      required String uri,
+      ProviderAuth? auth}) {
     return EVMApiProviderService._(
         serviceName: serviceName,
         websiteUri: websiteUri,
         protocol: ProviderProtocol.fromURI(uri),
-        uri: uri);
+        uri: uri,
+        auth: auth);
   }
   final String uri;
   @override
@@ -38,13 +41,16 @@ class EVMApiProviderService extends ApiProviderService {
         serviceName: cbor.elementAt(0),
         websiteUri: cbor.elementAt(1),
         uri: cbor.elementAt(2),
-        protocol: ProviderProtocol.fromID(protocolId ?? 0));
+        protocol: ProviderProtocol.fromID(protocolId ?? 0),
+        auth: cbor.getCborTag(4)?.to<ProviderAuth, CborTagValue>(
+            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength([serviceName, websiteUri, uri, protocol.id]),
+        CborListValue.fixedLength(
+            [serviceName, websiteUri, uri, protocol.id, auth?.toCbor()]),
         WalletModelCborTagsConst.evmApiServiceProvider);
   }
 

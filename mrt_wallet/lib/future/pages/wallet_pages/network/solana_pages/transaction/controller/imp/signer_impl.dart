@@ -27,7 +27,7 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
     if (signersAddresses.length != signerAccounts.length) {
       throw WalletException("required_signer_account_missing".tr);
     }
-    final signedTr = await walletProvider.signSolanaTransaction(
+    final signedTr = await walletProvider.signTransaction(
         request: SolanaSigningRequest(
             network: network,
             addresses: signerAccounts,

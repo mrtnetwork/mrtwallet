@@ -26,4 +26,8 @@ mixin SafeState<T extends StatefulWidget> on State<T> {
     _builded = true;
     super.didChangeDependencies();
   }
+
+  void updateState([VoidCallback? fn]) {
+    setState(fn ?? () {});
+  }
 }

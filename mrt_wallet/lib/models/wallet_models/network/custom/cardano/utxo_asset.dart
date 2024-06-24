@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/binary/binary.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:on_chain/ada/src/models/ada_models.dart';
 

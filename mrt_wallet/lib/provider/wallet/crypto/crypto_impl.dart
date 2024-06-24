@@ -75,13 +75,13 @@ mixin WalletCryptoImpl {
   Future<String> _forStorage(
       CborSerializable masterKey, List<int> password) async {
     final toCbor = _toChaCha(password, masterKey.toCbor().encode());
-    return StringUtils.decode(toCbor, StringEncoding.base64);
+    return StringUtils.decode(toCbor, type: StringEncoding.base64);
   }
 
   Future<List<int>> _fromStroage(String encrypted, List<int> key) async {
     try {
       final List<int> toCborBytes =
-          StringUtils.encode(encrypted, StringEncoding.base64);
+          StringUtils.encode(encrypted, type: StringEncoding.base64);
       final data = _validateStorageCbor(toCborBytes);
 
       if (data == null) {

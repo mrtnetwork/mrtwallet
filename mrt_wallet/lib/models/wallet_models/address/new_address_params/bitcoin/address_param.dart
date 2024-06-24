@@ -10,12 +10,21 @@ class BitcoinNewAddressParams
   final AddressDerivationIndex deriveIndex;
   final BitcoinAddressType bitcoinAddressType;
   @override
-  CryptoCoins get coin => deriveIndex.currencyCoin;
+  final CryptoCoins coin;
 
-  BitcoinNewAddressParams({
+  const BitcoinNewAddressParams({
     required this.deriveIndex,
     required this.bitcoinAddressType,
+    required this.coin,
   });
+
+  @override
+  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+    return IBitcoinAddress.newAccount(
+        accountParams: this,
+        publicKey: publicKey,
+        network: network as AppBitcoinNetwork);
+  }
 }
 
 class BitcoinMultiSigNewAddressParams implements BitcoinNewAddressParams {
@@ -34,4 +43,10 @@ class BitcoinMultiSigNewAddressParams implements BitcoinNewAddressParams {
   bool get isMultiSig => true;
   @override
   final CryptoCoins coin;
+
+  @override
+  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+    return IBitcoinMultiSigAddress.newAccount(
+        accountParam: this, network: network as AppBitcoinNetwork);
+  }
 }

@@ -122,6 +122,7 @@ class __SolanaImportSPLTokensViewState
                 child: ConstraintsBoxView(
                   padding: WidgetConstant.padding20,
                   child: ListView.builder(
+                    physics: WidgetConstant.noScrollPhysics,
                     itemBuilder: (context, index) {
                       final token = tokens.elementAt(index);
                       final bool exist = widget.account.tokens.contains(token);

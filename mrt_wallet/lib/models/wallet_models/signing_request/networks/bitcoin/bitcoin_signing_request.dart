@@ -4,7 +4,7 @@ import 'package:mrt_wallet/models/wallet_models/address/network_address/bitcoin/
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/models/wallet_models/signing_request/core/signing_request.dart';
 
-class BitcoinSigningRequest implements SigningRequest {
+class BitcoinSigningRequest extends SigningRequest<BtcTransaction> {
   BitcoinSigningRequest({
     required this.addresses,
     required this.network,

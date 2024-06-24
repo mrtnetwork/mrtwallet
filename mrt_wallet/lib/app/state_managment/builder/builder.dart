@@ -6,7 +6,7 @@ typedef ControllerBuilder<T extends StateController> = T Function();
 class MrtViewBuilder<T extends StateController> extends StatefulWidget {
   final StateBulder<T> builder;
 
-  final ControllerBuilder controller;
+  final ControllerBuilder<T> controller;
   final String? stateId;
   final bool removable;
 
@@ -24,7 +24,7 @@ class MrtViewBuilder<T extends StateController> extends StatefulWidget {
 
 class MrtViewBuilderState<T extends StateController>
     extends State<MrtViewBuilder<T>> with SafeState {
-  late final T stateController = widget.controller() as T;
+  late final T stateController = widget.controller();
   void update() {
     setState(() {});
   }
@@ -56,8 +56,8 @@ class MrtViewBuilderState<T extends StateController>
   }
 
   @override
-  void didUpdateWidget(MrtViewBuilder oldWidget) {
-    super.didUpdateWidget(oldWidget as MrtViewBuilder<T>);
+  void didUpdateWidget(MrtViewBuilder<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
   }
 
   @override

@@ -1,5 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:blockchain_utils/string/string.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/wallet_global_pages.dart';
@@ -623,7 +623,8 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
                                       ReceiptAddress<BitcoinBaseAddress>>(
                                   "receiver_address".tr,
                                   bodyBuilder: (c) =>
-                                      SelectRecipientAccountView(
+                                      SelectRecipientAccountView<
+                                              BitcoinBaseAddress>(
                                           account: widget.account,
                                           scrollController: c),
                                   maxExtend: 1,

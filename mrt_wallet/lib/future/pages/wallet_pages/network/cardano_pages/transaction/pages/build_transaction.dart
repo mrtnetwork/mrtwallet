@@ -160,7 +160,7 @@ class _SelectAccountUtxoState extends State<_SelectAccountUtxo> {
             backgroundColor: context.colors.secondary,
             validateText: "lacks_an_utxos".tr,
             onRemoveIcon: Checkbox(
-                fillColor: MaterialStatePropertyAll(context.colors.onSecondary),
+                fillColor: WidgetStatePropertyAll(context.colors.onSecondary),
                 checkColor: context.colors.secondary,
                 activeColor: context.colors.secondary,
                 value: widget.controller.addressSelected(currentAccount),

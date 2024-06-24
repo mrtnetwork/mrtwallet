@@ -21,7 +21,7 @@ SnackBar createSnackAlert(
             child: Container(
               padding: WidgetConstant.padding10,
               decoration: BoxDecoration(
-                  color: theme.colorScheme.background,
+                  color: theme.colorScheme.surface,
                   borderRadius: WidgetConstant.border8),
               child: Stack(
                 children: [

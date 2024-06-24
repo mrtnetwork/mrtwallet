@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/pages/start_page/home.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_derivation/generic.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/main.dart';
+import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
 import 'controller.dart';
 
 class NetworkGenericAddressDerivationView extends StatelessWidget {
@@ -54,6 +55,11 @@ class NetworkGenericAddressDerivationView extends StatelessWidget {
                                       Text(
                                           "please_following_steps_to_generate_address"
                                               .tr),
+                                      if (controller.network.type ==
+                                          NetworkType.ton) ...[
+                                        WidgetConstant.height8,
+                                        Text("ton_mnemonic_feature_desc".tr),
+                                      ]
                                     ],
                                   )),
                               SetupGenericAddressView(controller: controller)

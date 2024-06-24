@@ -38,8 +38,8 @@ class SolanaApiProvider implements NetworkApiProvider<ISolanaAddress> {
 
   Future<BigInt?> getFee(SolanaTransaction transaction) async {
     return await provider.request(SolanaRPCGetFeeForMessage(
-        encodedMessage: StringUtils.decode(
-            transaction.message.serialize(), StringEncoding.base64)));
+        encodedMessage: StringUtils.decode(transaction.message.serialize(),
+            type: StringEncoding.base64)));
   }
 
   Future<SolAddress> getBlockHash() async {

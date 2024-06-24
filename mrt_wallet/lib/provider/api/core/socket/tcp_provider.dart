@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:blockchain_utils/string/string.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/synchronized/basic_lock.dart';
 import 'package:mrt_wallet/app/utility/method_caller.dart';
 import 'package:mrt_wallet/models/api/api_provider_tracker.dart';

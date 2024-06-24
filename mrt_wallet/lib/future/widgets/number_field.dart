@@ -109,6 +109,10 @@ class NumberTextFieldState extends State<NumberTextField> {
     controller.text = "$newIndex";
   }
 
+  int? getValue() {
+    return int.tryParse(controller.text);
+  }
+
   @override
   void initState() {
     super.initState();

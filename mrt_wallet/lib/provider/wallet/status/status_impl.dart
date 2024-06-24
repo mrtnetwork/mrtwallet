@@ -44,9 +44,11 @@ mixin WalletStatusImpl on _WalletCore {
     if (newAccountParams.isMultiSig) {
       return await _addNewAccountToNetwork(newAccountParams, const []);
     }
+
     if (!network.coins.contains(newAccountParams.coin)) {
       throw WalletExceptionConst.incorrectNetwork;
     }
+
     WalletMasterKeys keys = _fromMemoryStorage(_password!, _massterKey!);
     final int derivedKeys = keys.derivedKeys.length;
     final CryptoAccountAddress newAccount;
@@ -94,14 +96,14 @@ mixin WalletStatusImpl on _WalletCore {
     if (!_massterKey!.customKeys.contains(newKey)) {
       throw WalletExceptionConst.accountDoesNotFound;
     }
+    List<EncryptedCustomKey> keys = List.unmodifiable(
+        _massterKey!.customKeys.where((element) => element != newKey).toList());
+    for (final i in _appChains.networks.values) {
+      await _cleanUpAccount(account: i.account, existKeys: keys);
+    }
     final key = _removeCustomKey(newKey, pw);
     final encrypt = await _forStorage(key, pw);
     await _setupMasterKey(encrypt, pw);
-    for (final i in _appChains.networks.values) {
-      await _cleanUpAccount(
-          account: i.account, existKeys: _massterKey!.customKeys);
-    }
-
     await _writeWallet(encrypt, _toStorageChecksum());
   }
 
@@ -151,7 +153,7 @@ mixin WalletStatusImpl on _WalletCore {
     }
 
     final toPw = _toWalletPassword(password, _checksum!);
-    if (!bytesEqual(toPw, _password)) {
+    if (!BytesUtils.bytesEqual(toPw, _password)) {
       throw WalletExceptionConst.incorrectPassword;
     }
     return toPw;

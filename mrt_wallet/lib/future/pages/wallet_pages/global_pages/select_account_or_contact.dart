@@ -1,5 +1,3 @@
-import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/add_to_contact_list.dart';
@@ -7,11 +5,8 @@ import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/address_detail
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 import 'package:mrt_wallet/types/typedef.dart';
-import 'package:on_chain/on_chain.dart';
-import 'package:on_chain/solana/solana.dart';
-import 'package:xrpl_dart/xrpl_dart.dart';
 
-class SelectRecipientAccountView extends StatefulWidget {
+class SelectRecipientAccountView<NETWORKADDRESS> extends StatefulWidget {
   const SelectRecipientAccountView(
       {super.key,
       required this.account,
@@ -25,10 +20,11 @@ class SelectRecipientAccountView extends StatefulWidget {
 
   @override
   State<SelectRecipientAccountView> createState() =>
-      _SelectRecipientAccountViewState();
+      _SelectRecipientAccountViewState<NETWORKADDRESS>();
 }
 
-class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
+class _SelectRecipientAccountViewState<NETWORKADDRESS>
+    extends State<SelectRecipientAccountView>
     with SingleTickerProviderStateMixin, SafeState {
   late final TabController controller = TabController(length: 3, vsync: this);
   void _listener() {
@@ -48,7 +44,6 @@ class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
     super.dispose();
   }
 
-////
   final GlobalKey<AppTextFieldState> textFieldKey =
       GlobalKey(debugLabel: "SelectAddress");
   final GlobalKey<FormState> formKey = GlobalKey(debugLabel: "SelectAddress_1");
@@ -60,77 +55,13 @@ class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
     _address = v;
   }
 
-  ContactCore? validatorEthereumAccount(String address) {
-    return MethodCaller.nullOnException(() {
-      final addr = ETHAddress(address);
-      return EthereumContract.newContact(address: addr, name: "new_address".tr);
-    });
-  }
-
-  ContactCore? validatorTronAccount(String address) {
-    return MethodCaller.nullOnException(() {
-      final addr = TronAddress(address);
-      return TronContact.newContact(address: addr, name: "new_address".tr);
-    });
-  }
-
-  ContactCore? validatorSolAccount(String address) {
-    return MethodCaller.nullOnException(() {
-      final addr = SolAddress(address);
-      return SolanaContact.newContact(address: addr, name: "new_address".tr);
-    });
-  }
-
-  ContactCore? validatorCardanoAddress(String address) {
-    return MethodCaller.nullOnException(() {
-      final addr = ADAAddress.fromAddress(address,
-          network: (network as APPCardanoNetwork).toCardanoNetwork);
-      return CardanoContact.newContact(address: addr, name: "new_address".tr);
-    });
-  }
-
-  ContactCore? validateCosmosAddress(String address) {
-    return MethodCaller.nullOnException(() {
-      final addr = CosmosBaseAddress(address,
-          forceHrp: (network as APPCosmosNetwork).coinParam.hrp);
-      return CosmosContact.newContact(address: addr, name: "new_address".tr);
-    });
-  }
-
-  ContactCore? validateBitcoinNetwork(
-      String address, AppBitcoinNetwork network) {
-    return MethodCaller.nullOnException(() {
-      final addr = BlockchainAddressUtils.toBitcoinAddress(
-          address, network.coinParam.transacationNetwork);
-      return BitcoinContact.newContact(
-          network: network, address: addr, name: "new_address".tr);
-    });
-  }
-
-  RippleContact? validateXRPAddress(String address, AppXRPNetwork network) {
-    return MethodCaller.nullOnException(() {
-      final toRipple = BlockchainAddressUtils.toRippleAddress(address, network);
-      return RippleContact.newContact(
-          network: network, address: toRipple, name: "new_address".tr);
-    });
-  }
-
-  ContactCore? validate(String? address) {
-    if (address == null) return null;
-    if (network is AppXRPNetwork) {
-      return validateXRPAddress(address, network.toNetwork());
-    } else if (network is APPEVMNetwork) {
-      return validatorEthereumAccount(address);
-    } else if (network is APPTVMNetwork) {
-      return validatorTronAccount(address);
-    } else if (network is APPSolanaNetwork) {
-      return validatorSolAccount(address);
-    } else if (network is APPCardanoNetwork) {
-      return validatorCardanoAddress(address);
-    } else if (network is APPCosmosNetwork) {
-      return validateCosmosAddress(address);
-    }
-    return validateBitcoinNetwork(address, network.toNetwork());
+  ContactCore<NETWORKADDRESS>? validate(String? address) {
+    final addr =
+        BlockchainAddressUtils.validateNetworkAddress(address, network);
+    if (addr == null) return null;
+    final contact = ContactCore.newContact<NETWORKADDRESS>(
+        network: network, address: addr, name: "new_address".tr);
+    return contact as ContactCore<NETWORKADDRESS>;
   }
 
   void _setValidate(ContactCore? contact) {
@@ -162,49 +93,18 @@ class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
   void onAccountOrContact(String address) {
     final addr = validate(address);
     if (addr == null) return;
-    ReceiptAddress? receipt = widget.account.getReceiptAddress(addr.address) ??
-        _buildReceiptAddress(addr);
+    ReceiptAddress<NETWORKADDRESS>? receipt =
+        widget.account.getReceiptAddress(addr.address)
+                as ReceiptAddress<NETWORKADDRESS>? ??
+            _buildReceiptAddress(addr);
     context.pop(receipt);
   }
 
-  ReceiptAddress _buildReceiptAddress(ContactCore addr) {
-    switch (widget.account.network.runtimeType) {
-      case AppXRPNetwork:
-        return ReceiptAddress<XRPAddress>(
-            type: addr.type,
-            view: addr.address,
-            networkAddress: addr.addressObject);
-      case APPEVMNetwork:
-        return ReceiptAddress<ETHAddress>(
-            type: addr.type,
-            view: addr.address,
-            networkAddress: addr.addressObject);
-      case APPTVMNetwork:
-        return ReceiptAddress<TronAddress>(
-            type: addr.type,
-            view: addr.address,
-            networkAddress: addr.addressObject);
-      case APPSolanaNetwork:
-        return ReceiptAddress<SolAddress>(
-            type: addr.type,
-            view: addr.address,
-            networkAddress: addr.addressObject);
-      case APPCardanoNetwork:
-        return ReceiptAddress<ADAAddress>(
-            type: addr.type,
-            view: addr.address,
-            networkAddress: addr.addressObject);
-      case APPCosmosNetwork:
-        return ReceiptAddress<CosmosBaseAddress>(
-            type: addr.type,
-            view: addr.address,
-            networkAddress: addr.addressObject);
-      default:
-        return ReceiptAddress<BitcoinBaseAddress>(
-            type: addr.type,
-            view: addr.address,
-            networkAddress: addr.addressObject);
-    }
+  ReceiptAddress<NETWORKADDRESS> _buildReceiptAddress(ContactCore addr) {
+    return ReceiptAddress<NETWORKADDRESS>(
+        view: addr.address,
+        type: addr.type,
+        networkAddress: addr.addressObject);
   }
 
   void onSetup() {
@@ -244,19 +144,7 @@ class _SelectRecipientAccountViewState extends State<SelectRecipientAccountView>
       body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [],
           body: TabBarView(controller: controller, children: [
-            _WriteAddress(
-              formKey: formKey,
-              onPaste: onPaste,
-              onChanged: onChange,
-              onSetup: onSetup,
-              defaultValue: _address,
-              showAddContact: newContact,
-              textFieldKey: textFieldKey,
-              subtitle: widget.subtitle,
-              validator: validator,
-              controller: widget.scrollController,
-              onTappAddContact: onTapContact,
-            ),
+            _WriteAddress(state: this),
             _SelectFromAccounts(
                 addresses: widget.account.addresses,
                 controller: widget.scrollController,
@@ -363,78 +251,57 @@ class _SelectFromContacts extends StatelessWidget {
 }
 
 class _WriteAddress extends StatelessWidget {
-  const _WriteAddress(
-      {required this.formKey,
-      this.subtitle,
-      required this.textFieldKey,
-      this.onChanged,
-      this.validator,
-      required this.onPaste,
-      required this.onSetup,
-      required this.showAddContact,
-      required this.controller,
-      required this.defaultValue,
-      required this.onTappAddContact});
-  final ScrollController controller;
-  final GlobalKey<FormState> formKey;
-  final Widget? subtitle;
-  final GlobalKey textFieldKey;
-  final StringVoid? onChanged;
-  final NullStringString? validator;
-  final StringVoid onPaste;
-  final DynamicVoid onSetup;
-  final Live<ContactCore?> showAddContact;
-  final String defaultValue;
-  final DynamicVoid onTappAddContact;
+  const _WriteAddress({required this.state});
+  final _SelectRecipientAccountViewState state;
   @override
   Widget build(BuildContext context) {
     return ConstraintsBoxView(
       padding: WidgetConstant.padding20,
       child: SingleChildScrollView(
-        controller: controller,
+        controller: state.widget.scrollController,
         primary: false,
         child: Form(
-          key: formKey,
+          key: state.formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              subtitle ??
+              state.widget.subtitle ??
                   PageTitleSubtitle(
                       title: "address_recipient_funds".tr,
                       body: Text("receiver_address_desc".tr)),
               AppTextField(
-                key: textFieldKey,
+                key: state.textFieldKey,
                 label: "address".tr,
                 minlines: 1,
-                initialValue: defaultValue,
+                initialValue: state._address,
                 maxLines: 2,
                 suffixIcon: Column(
                   children: [
                     LiveWidget(() {
-                      final contact = showAddContact.value;
+                      final contact = state.newContact.value;
                       return AnimatedSize(
                         duration: AppGlobalConst.animationDuraion,
                         child: contact != null
                             ? IconButton(
                                 onPressed: () {
-                                  onTappAddContact();
+                                  state.onTapContact();
                                 },
                                 icon: const Icon(Icons.account_circle),
                               )
-                            : PasteTextIcon(onPaste: onPaste),
+                            : PasteTextIcon(onPaste: state.onPaste),
                       );
                     }),
                   ],
                 ),
-                validator: validator,
-                onChanged: onChanged,
+                validator: state.validator,
+                onChanged: state.onChange,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   FixedElevatedButton(
                       padding: WidgetConstant.paddingVertical20,
-                      onPressed: onSetup,
+                      onPressed: state.onSetup,
                       child: Text("setup_address".tr))
                 ],
               ),

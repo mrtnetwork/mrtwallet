@@ -54,26 +54,25 @@ class RippleTrustSetValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
   List<ValidatorField> get fields => [amount, qualityIn, qualityOut, flag];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return TrustSet(
-        limitAmount: amount.value!.amount.isseAmount!,
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        qualityIn: qualityIn.value?.toBigInt().toInt(),
-        qualityOut: qualityOut.value?.toBigInt().toInt(),
-        flags: flag.value,
-        signingPubKey: signerPublicKey);
+      limitAmount: amount.value!.amount.isseAmount!,
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+      qualityIn: qualityIn.value?.toBigInt().toInt(),
+      qualityOut: qualityOut.value?.toBigInt().toInt(),
+      flags: flag.value?.value,
+    );
   }
 
   @override

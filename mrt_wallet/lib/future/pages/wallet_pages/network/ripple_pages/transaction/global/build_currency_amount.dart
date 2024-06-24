@@ -213,13 +213,14 @@ class _BuildRippleCurrencyAmountViewState
                           subtitle: "token_issuer".tr,
                           onTap: () {
                             context
-                                .openSliverBottomSheet<ReceiptAddress>(
+                                .openSliverBottomSheet<
+                                        ReceiptAddress<XRPAddress>>(
                                     "token_amount".tr,
                                     maxExtend: 1,
                                     minExtent: 0.8,
                                     initialExtend: 0.9,
                                     bodyBuilder: (c) =>
-                                        SelectRecipientAccountView(
+                                        SelectRecipientAccountView<XRPAddress>(
                                           account: widget.account,
                                           scrollController: c,
                                           subtitle: PageTitleSubtitle(

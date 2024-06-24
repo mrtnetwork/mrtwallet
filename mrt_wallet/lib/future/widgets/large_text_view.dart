@@ -3,9 +3,10 @@ import 'package:mrt_wallet/app/core.dart';
 import 'dart:ui' as ui;
 
 class LargeTextView extends StatefulWidget {
-  const LargeTextView(this.text, {super.key, this.style});
+  const LargeTextView(this.text, {super.key, this.style, this.maxLine = 3});
   final List<String> text;
   final TextStyle? style;
+  final int maxLine;
   @override
   State<LargeTextView> createState() => _LargeTextViewState();
 }
@@ -36,7 +37,7 @@ class _LargeTextViewState extends State<LargeTextView> {
               runAlignment: WrapAlignment.end,
               crossAxisAlignment: WrapCrossAlignment.end,
               children: [
-                Text(text, maxLines: 3),
+                Text(text, maxLines: widget.maxLine),
                 GestureDetector(
                   onTap: onTap,
                   child: Text(
@@ -49,7 +50,8 @@ class _LargeTextViewState extends State<LargeTextView> {
             );
           }
           return GestureDetector(
-              onTap: lines.length > 3 ? onTap : null, child: Text(text));
+              onTap: lines.length > widget.maxLine ? onTap : null,
+              child: Text(text));
         },
       ),
     );

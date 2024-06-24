@@ -50,6 +50,7 @@ class CoinPriceView extends StatelessWidget {
     this.style,
     this.symbolColor,
     this.disableTooltip = false,
+    this.showTokenImage = false,
   })  : assert(
             (account != null) ||
                 (account == null && (balance != null || liveBalance != null)),
@@ -63,6 +64,7 @@ class CoinPriceView extends StatelessWidget {
   final TextStyle? style;
   final Color? symbolColor;
   final bool disableTooltip;
+  final bool showTokenImage;
   @override
   Widget build(BuildContext context) {
     final Token coin = token;
@@ -90,6 +92,10 @@ class CoinPriceView extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (showTokenImage) ...[
+                    CircleTokenImgaeView(token, radius: 10),
+                    WidgetConstant.width8,
+                  ],
                   Flexible(
                     child: RichText(
                         textDirection: TextDirection.ltr,
@@ -106,14 +112,14 @@ class CoinPriceView extends StatelessWidget {
                     coin.symbolView,
                     style: context.textTheme.labelSmall?.copyWith(
                         color: symbolColor ?? context.colors.primary),
-                  )
+                  ),
                 ],
               ),
               CoinStringPriceView(
                 balance: ta,
                 token: wallet.currencyToken,
                 symbolColor: symbolColor,
-              )
+              ),
             ],
           ),
         ),

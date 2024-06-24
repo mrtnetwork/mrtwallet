@@ -11,7 +11,7 @@ mixin CardanoSignerImpl on CardanoTransactionImpl {
       final builder = buildTransaction(transactionFee.balance);
       final signers = getTransactionSignerAccounts();
       final signerKeyIndexes = getTransactionSignersKeysIndex();
-      final tr = await walletProvider.signCardanoTransaction(
+      final tr = await walletProvider.signTransaction(
           request: CardanoSigningRequest(
               addresses: signers,
               network: network,

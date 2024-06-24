@@ -14,6 +14,8 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/impo
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/import_network/import_network.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/token/import_tokens.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ethereum_pages/transaction/fields/ethereum_transfer_field_view.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/settings/key_convertion/ripple_key_convertion.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/settings/ripple_feature_page.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/setup_multi_sig_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/token/import_nfts.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/ripple_pages/token/import_token.dart';
@@ -23,6 +25,10 @@ import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/spl_to
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/transaction/fields/transaction.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/transaction/fields/transfer.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/solana_pages/update_provider.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ton/jettons/import_jettons.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ton/setting/generate_ton_mnemonic.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ton/setting/ton_setting_page.dart';
+import 'package:mrt_wallet/future/pages/wallet_pages/network/ton/transaction/fields/transfer.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/setup_multisig_address.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/token/import_trc10_tokens.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/network/tron_pages/transaction/fields/tron_transaction_fields.dart';
@@ -168,6 +174,8 @@ class PageRouter {
         return const SetupWallet();
       case PagePathConst.solanaTransfer:
         return const SolanaTransferTransactionView();
+      case PagePathConst.tonTransfer:
+        return const TonTransferTransactionView();
       case PagePathConst.bitcoinTransaction:
         return const SendBitcoinTransactionView();
       case PagePathConst.bitcoinCashTransaction:
@@ -231,6 +239,8 @@ class PageRouter {
         return const ImportElectrumProviderView();
       case PagePathConst.importSPLTokens:
         return const SolanaImportSPLTokensView();
+      case PagePathConst.importJettons:
+        return const TonImportJettonsView();
       case PagePathConst.setupCardanoAddress:
         return const SetupCardanoAddressView();
       case PagePathConst.cardanoTransaction:
@@ -241,12 +251,20 @@ class PageRouter {
         return const SolanaTransactionFieldsView();
       case PagePathConst.editSolanaNetwork:
         return const ImportSolanaProviderView();
+      case PagePathConst.tonSettings:
+        return const TonSettingsView();
+      case PagePathConst.tonMnemonic:
+        return const GenerateTonMnemonicView();
+      case PagePathConst.rippleSettingPage:
+        return const RippleFeaturePageView();
+      case PagePathConst.rippleKeyConversion:
+        return const RippleKeyConversionView();
       default:
         return const HomeScreen();
     }
   }
 
-  /// SetupCosmosAddressView
+  /// RippleFeaturePageView
 
   /// SendCardanoTransactionView
   Route<dynamic> onGenerateRoute(RouteSettings settings) {

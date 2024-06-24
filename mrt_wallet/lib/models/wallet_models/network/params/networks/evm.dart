@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/network_params.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/token.dart';
@@ -41,6 +42,7 @@ class EVMNetworkParams implements NetworkCoinParams {
 
   final BigInt chainId;
   final bool supportEIP1559;
+  @override
   final bool mainnet;
 
   @override
@@ -55,7 +57,7 @@ class EVMNetworkParams implements NetworkCoinParams {
   int get decimal => token.decimal!;
 
   @override
-  String get logo => token.assetLogo!;
+  AppImage get logo => token.assetLogo!;
 
   @override
   final Token token;

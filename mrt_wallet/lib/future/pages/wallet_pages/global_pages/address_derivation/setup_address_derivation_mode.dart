@@ -1,11 +1,9 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/pages/start_page/controller/wallet_provider.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/bip32_derivation.dart';
 import 'package:mrt_wallet/future/pages/wallet_pages/global_pages/byron_legacy_derivation.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/main.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
 
 typedef _OnGenerateDerivation = Future<Bip32AddressIndex?> Function();
@@ -15,10 +13,12 @@ class SetupDerivationModeView extends StatefulWidget {
   final AppChain chainAccout;
   final AddressDerivationIndex? defaultDerivation;
   final Widget? title;
+  final List<EncryptedCustomKey> customKeys;
   const SetupDerivationModeView(
       {super.key,
       required this.coin,
       required this.chainAccout,
+      required this.customKeys,
       this.defaultDerivation,
       this.title});
 
@@ -37,15 +37,20 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
 
   AddressDerivationIndex derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
-      return (customKeyIndex ?? Bip32AddressIndex(currencyCoin: coin))
+      return (customKeyIndex ??
+              Bip32AddressIndex(currencyCoin: selectedCustomKey?.coin ?? coin))
           .copyWith(importedKeyId: selectedCustomKey!.id);
     }
     return customKeyIndex ?? nextDerivation;
   }
 
   AddressDerivationIndex get nextDerivation {
-    return widget.defaultDerivation ??
-        chainAccount.account.nextDerive(widget.coin);
+    if (widget.defaultDerivation != null) {
+      return widget.defaultDerivation!;
+    }
+    final nextDerive =
+        chainAccount.account.nextDerive(selectedCustomKey?.coin ?? widget.coin);
+    return nextDerive;
   }
 
   void onChangeCustomKey(EncryptedCustomKey? newSelected) {
@@ -53,16 +58,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     setState(() {});
   }
 
-  List<EncryptedCustomKey> customKeys = [];
-  bool _inited = false;
-  void _setupIAccount() {
-    if (!_inited) {
-      _inited = true;
-      final model = context.watch<WalletProvider>(StateIdsConst.main);
-      customKeys = model.getCustomKeysForCoin(widget.coin);
-    }
-  }
-
+  List<EncryptedCustomKey> get customKeys => widget.customKeys;
   bool get derivationStandard => customKeyIndex == null;
   Bip32AddressIndex? customKeyIndex;
 
@@ -73,12 +69,6 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
       customKeyIndex = null;
     }
     setState(() {});
-  }
-
-  @override
-  void didChangeDependencies() {
-    _setupIAccount();
-    super.didChangeDependencies();
   }
 
   void onSubmit() {
@@ -120,8 +110,9 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
                   return context.openSliverBottomSheet<Bip32AddressIndex>(
                       "key_derivation".tr,
                       child: Bip32KeyDerivationView(
-                        coin: widget.coin,
-                        curve: widget.coin.conf.type,
+                        coin: selectedCustomKey?.coin ?? widget.coin,
+                        curve: selectedCustomKey?.coin.conf.type ??
+                            widget.coin.conf.type,
                         network: network,
                         defaultPath: nextDerivation.hdPath,
                       ));

@@ -138,7 +138,7 @@ class __ImportTrc20TokenViewState extends State<_ImportTrc20TokenView> {
                                   minExtent: 0.8,
                                   initialExtend: 0.9,
                                   bodyBuilder: (c) =>
-                                      SelectRecipientAccountView(
+                                      SelectRecipientAccountView<TronAddress>(
                                           account: widget.account,
                                           scrollController: c,
                                           subtitle: PageTitleSubtitle(

@@ -56,17 +56,24 @@ class AppListTile extends StatelessWidget {
 
 class AppCheckListTile extends StatelessWidget {
   const AppCheckListTile(
-      {Key? key, this.onChanged, this.value, this.title, this.subtitle})
+      {Key? key,
+      this.onChanged,
+      this.value,
+      this.title,
+      this.subtitle,
+      this.contentPadding})
       : super(key: key);
   final NullBoolVoid? onChanged;
   final bool? value;
   final Widget? title;
   final Widget? subtitle;
+  final EdgeInsets? contentPadding;
   @override
   Widget build(BuildContext context) {
     return CheckboxListTile(
       onChanged: onChanged,
       value: value,
+      contentPadding: contentPadding,
       title: title == null
           ? null
           : DefaultTextStyle(
@@ -125,16 +132,21 @@ class AppSwitchListTile extends StatelessWidget {
       this.onChanged,
       required this.value,
       this.title,
-      this.subtitle})
+      this.subtitle,
+      this.maxLine = 2,
+      this.contentPadding})
       : super(key: key);
   final NullBoolVoid? onChanged;
   final bool value;
   final Widget? title;
   final Widget? subtitle;
+  final int? maxLine;
+  final EdgeInsets? contentPadding;
   @override
   Widget build(BuildContext context) {
     return SwitchListTile(
       onChanged: onChanged,
+      contentPadding: contentPadding,
       value: value,
       title: title == null
           ? null
@@ -146,7 +158,7 @@ class AppSwitchListTile extends StatelessWidget {
           ? null
           : DefaultTextStyle(
               style: context.textTheme.bodyMedium!,
-              maxLines: 2,
+              maxLines: maxLine,
               overflow: TextOverflow.ellipsis,
               child: subtitle!,
             ),

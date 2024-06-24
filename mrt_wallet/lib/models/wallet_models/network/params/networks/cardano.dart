@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/network_params.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/token.dart';
@@ -30,6 +31,7 @@ class CardanoNetworkParams with CborSerializable implements NetworkCoinParams {
       required this.providers,
       required this.mainnet});
 
+  @override
   final bool mainnet;
 
   @override
@@ -42,7 +44,7 @@ class CardanoNetworkParams with CborSerializable implements NetworkCoinParams {
   int get decimal => token.decimal!;
 
   @override
-  String get logo => token.assetLogo!;
+  AppImage get logo => token.assetLogo!;
 
   @override
   final Token token;

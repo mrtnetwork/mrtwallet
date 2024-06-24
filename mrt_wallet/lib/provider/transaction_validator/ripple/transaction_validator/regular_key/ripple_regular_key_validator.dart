@@ -23,23 +23,22 @@ class RippleRegularKeyValidator implements RippleTransactionValidator {
         return "field_is_req".tr.replaceOne(i.name);
       }
     }
-    return toTransaction("").validate;
+    return toTransaction(XRPAddressConst.accountZero).validate;
   }
 
   @override
   List<ValidatorField> get fields => [regularKey];
 
   @override
-  XRPTransaction toTransaction(String account,
-      {List<XRPLMemo> memos = const [],
-      String signerPublicKey = "",
-      BigInt? fee}) {
+  XRPTransaction toTransaction(XRPAddress account,
+      {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return SetRegularKey(
-        regularKey: regularKey.value!.networkAddress.address,
-        account: account,
-        memos: RippleUtils.toXrplMemos(memos),
-        fee: fee,
-        signingPubKey: signerPublicKey);
+      regularKey: regularKey.value!.networkAddress.address,
+      account: account.toAddress(),
+      sourceTag: account.tag,
+      memos: RippleUtils.toXrplMemos(memos),
+      fee: fee,
+    );
   }
 
   @override

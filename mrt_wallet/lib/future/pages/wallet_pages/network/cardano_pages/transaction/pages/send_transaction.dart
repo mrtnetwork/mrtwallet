@@ -247,7 +247,7 @@ class CardanoBuildTransactionView extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<ADAAddress>>(
                     "receiver_address".tr,
-                    bodyBuilder: (c) => SelectRecipientAccountView(
+                    bodyBuilder: (c) => SelectRecipientAccountView<ADAAddress>(
                         account: controller.account, scrollController: c),
                     maxExtend: 1,
                     minExtent: 0.8,

@@ -4,7 +4,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/chain/utils.dart';
 import 'package:mrt_wallet/models/wallet_models/network/core/network.dart';
-import 'package:mrt_wallet/provider/api/api_provider.dart';
+import 'package:mrt_wallet/provider/api/core/core.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
 class CosmosAPIProviderService extends ApiProviderService {
@@ -12,21 +12,23 @@ class CosmosAPIProviderService extends ApiProviderService {
       {required String serviceName,
       required String websiteUri,
       required ProviderProtocol protocol,
+      required ProviderAuth? auth,
       required this.uri,
       required this.nodeUri})
-      : super(serviceName, websiteUri, protocol);
+      : super(serviceName, websiteUri, protocol, auth);
   factory CosmosAPIProviderService(
       {required String serviceName,
       required String websiteUri,
       required String uri,
       String? nodeUri,
-      String? projectId}) {
+      ProviderAuth? auth}) {
     return CosmosAPIProviderService._(
         serviceName: serviceName,
         websiteUri: websiteUri,
         protocol: ProviderProtocol.fromURI(uri),
         uri: uri,
-        nodeUri: nodeUri);
+        nodeUri: nodeUri,
+        auth: auth);
   }
   final String uri;
   final String? nodeUri;
@@ -43,7 +45,9 @@ class CosmosAPIProviderService extends ApiProviderService {
         websiteUri: cbor.elementAt(1),
         uri: cbor.elementAt(2),
         protocol: ProviderProtocol.fromID(protocolId ?? 0),
-        nodeUri: cbor.elementAt(4));
+        nodeUri: cbor.elementAt(4),
+        auth: cbor.getCborTag(5)?.to<ProviderAuth, CborTagValue>(
+            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)));
   }
 
   @override
@@ -54,7 +58,8 @@ class CosmosAPIProviderService extends ApiProviderService {
           websiteUri,
           uri,
           protocol.id,
-          nodeUri == null ? const CborNullValue() : CborStringValue(nodeUri!)
+          nodeUri ?? const CborNullValue(),
+          auth?.toCbor()
         ]),
         WalletModelCborTagsConst.cosmosApiServiceProvider);
   }

@@ -39,6 +39,7 @@ class SetupWallet extends StatelessWidget {
                           child: _SetupWalletPages(
                             model.page,
                             model.mnemonic?.toList(),
+                            model.toExtra,
                             key: ValueKey<SetupWalletPage>(model.page),
                           ),
                         ),
@@ -56,16 +57,18 @@ class SetupWallet extends StatelessWidget {
 }
 
 class _SetupWalletPages extends StatelessWidget {
-  const _SetupWalletPages(this.page, this.mnemonic, {super.key});
+  const _SetupWalletPages(this.page, this.mnemonic, this.onValidate,
+      {super.key});
   final List<String>? mnemonic;
   final SetupWalletPage page;
+  final OnValidateMnemonic onValidate;
   @override
   Widget build(BuildContext context) {
     switch (page) {
       case SetupWalletPage.password:
         return const SetupWalletPassword();
       case SetupWalletPage.confirm:
-        return VerifyMnemonicView(mnemonic: mnemonic!);
+        return VerifyMnemonicView(mnemonic: mnemonic!, onValidate: onValidate);
       case SetupWalletPage.mnemonic:
         return const GenerateMnemonicView();
       case SetupWalletPage.extraOption:

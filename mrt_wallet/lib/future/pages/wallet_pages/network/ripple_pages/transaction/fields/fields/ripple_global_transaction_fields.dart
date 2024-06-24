@@ -70,12 +70,12 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
           title: null,
           onTap: () {
             context
-                .openSliverBottomSheet<ReceiptAddress>(
+                .openSliverBottomSheet<ReceiptAddress<XRPAddress>>(
                   validator.validatorName.tr,
                   maxExtend: 1,
                   minExtent: 0.8,
                   initialExtend: 0.9,
-                  bodyBuilder: (c) => SelectRecipientAccountView(
+                  bodyBuilder: (c) => SelectRecipientAccountView<XRPAddress>(
                     account: account,
                     scrollController: c,
                     subtitle: PageTitleSubtitle(

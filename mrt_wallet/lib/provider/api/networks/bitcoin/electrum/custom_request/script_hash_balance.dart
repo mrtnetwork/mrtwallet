@@ -1,5 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:blockchain_utils/numbers/bigint_utils.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 
 /// Return the confirmed and unconfirmed balances of a script hash.
 /// https://electrumx-spesmilo.readthedocs.io/en/latest/protocol-methods.html

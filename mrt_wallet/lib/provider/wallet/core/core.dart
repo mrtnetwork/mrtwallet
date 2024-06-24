@@ -369,69 +369,11 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     return pw;
   }
 
-  Future<MethodResult<BtcTransaction>> signBitcoinTransaction(
-      {required BitcoinSigningRequest request}) async {
+  Future<MethodResult<T>> signTransaction<T>(
+      {required SigningRequest<T> request}) async {
     final result = await _callSynchronized(() async {
       final password = await _getPassword(request);
-      return _signBitcoin(
-          request: request, password: _validatePassword(password));
-    }, conditionStatus: WalletStatus.unlock);
-    return result;
-  }
-
-  Future<MethodResult<ETHSignature>> signETHTransaction(
-      {required Secp256k1SigningRequest request}) async {
-    final result = await _callSynchronized(() async {
-      final password = await _getPassword(request);
-      return _signEthTransaction(
-          request: request, password: _validatePassword(password));
-    }, conditionStatus: WalletStatus.unlock);
-    return result;
-  }
-
-  Future<MethodResult<List<List<int>>>> signTronTransaction(
-      {required Secp256k1SigningRequest request}) async {
-    final result = await _callSynchronized(() async {
-      final password = await _getPassword(request);
-      return _signTronTransaction(
-          request: request, password: _validatePassword(password));
-    }, conditionStatus: WalletStatus.unlock);
-    return result;
-  }
-
-  Future<MethodResult<SolanaTransaction>> signSolanaTransaction(
-      {required SolanaSigningRequest request}) async {
-    final result = await _callSynchronized(() async {
-      final password = await _getPassword(request);
-      return _signSolanaTransaction(
-          request: request, password: _validatePassword(password));
-    }, conditionStatus: WalletStatus.unlock);
-    return result;
-  }
-
-  Future<MethodResult<void>> signRippleTransaction(
-      {required RippleSigningRequest request}) async {
-    final result = await _callSynchronized(() async {
-      final toPassword = _validatePassword(await _getPassword(request));
-      return _signRipple(request: request, password: toPassword);
-    }, conditionStatus: WalletStatus.unlock);
-    return result;
-  }
-
-  Future<MethodResult<ADATransaction>> signCardanoTransaction(
-      {required CardanoSigningRequest request}) async {
-    final result = await _callSynchronized(() async {
-      final toPassword = _validatePassword(await _getPassword(request));
-      return _signCardanoTransaction(request: request, password: toPassword);
-    }, conditionStatus: WalletStatus.unlock);
-    return result;
-  }
-
-  Future<MethodResult<List<List<int>>>> signCosmosTransaction(
-      {required CosmosSigningRequest request}) async {
-    final result = await _callSynchronized(() async {
-      final toPassword = _validatePassword(await _getPassword(request));
-      return _signCosmosTransaction(request: request, password: toPassword);
+      return _sign(request: request, password: _validatePassword(password));
     }, conditionStatus: WalletStatus.unlock);
     return result;
   }
@@ -475,14 +417,16 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
     });
   }
 
-  List<EncryptedCustomKey> getCustomKeysForCoin(CryptoCoins coin) {
+  List<EncryptedCustomKey> getCustomKeysForCoin(List<CryptoCoins> coin) {
     if (walletIsUnlock) {
-      return List<EncryptedCustomKey>.from(
-          _massterKey!.customKeys.where((element) {
-        return (element.coin == coin) ||
-            (element.coin.conf.type == coin.conf.type &&
-                element.keyType.isPrivateKey);
-      }));
+      final curves = coin.map((e) => e.conf.type).toList();
+      return List<EncryptedCustomKey>.unmodifiable(
+        _massterKey!.customKeys.where((element) {
+          return coin.contains(element.coin) ||
+              (element.keyType.isPrivateKey &&
+                  curves.contains(element.coin.conf.type));
+        }),
+      );
     }
     return [];
   }
@@ -511,7 +455,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
   @override
   void init() {
     _initWallet();
-    _lifeCycleTracker.init();
+    // _lifeCycleTracker.init();
     super.init();
   }
 
