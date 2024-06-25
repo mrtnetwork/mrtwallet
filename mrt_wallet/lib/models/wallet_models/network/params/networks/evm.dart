@@ -1,25 +1,27 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/network_params.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/token.dart';
+import 'package:mrt_wallet/provider/api/core/api_provider.dart';
 import 'package:mrt_wallet/provider/api/networks/ethereum/api_provider/ethereum_api_provider_service.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class EVMNetworkParams implements NetworkCoinParams {
-  static const String _txIdArgs = "#txid";
-  static const String _addrArgs = "#address";
+class EVMNetworkParams extends NetworkCoinParams<EVMApiProviderService> {
+  final BigInt chainId;
+  final bool supportEIP1559;
+
+  final bool defaultNetwork;
+
   EVMNetworkParams(
-      {required this.transactionExplorer,
-      required this.addressExplorer,
-      required this.token,
-      required List<EVMApiProviderService> providers,
+      {required super.transactionExplorer,
+      required super.addressExplorer,
+      required super.token,
+      required super.providers,
       required this.chainId,
       required this.supportEIP1559,
-      required this.mainnet,
-      this.defaultNetwork = true})
-      : providers = List.unmodifiable(providers);
+      required super.mainnet,
+      this.defaultNetwork = true});
   EVMNetworkParams copyWith(
       {String? transactionExplorer,
       String? addressExplorer,
@@ -40,40 +42,6 @@ class EVMNetworkParams implements NetworkCoinParams {
         defaultNetwork: defaultNetwork ?? this.defaultNetwork);
   }
 
-  final BigInt chainId;
-  final bool supportEIP1559;
-  @override
-  final bool mainnet;
-
-  @override
-  final String? transactionExplorer;
-
-  @override
-  final String? addressExplorer;
-
-  final bool defaultNetwork;
-
-  @override
-  int get decimal => token.decimal!;
-
-  @override
-  AppImage get logo => token.assetLogo!;
-
-  @override
-  final Token token;
-
-  @override
-  String? getAccountExplorer(String address) {
-    return addressExplorer?.replaceAll(_addrArgs, address);
-  }
-
-  @override
-  String? getTransactionExplorer(String txId) {
-    return transactionExplorer?.replaceAll(_txIdArgs, txId);
-  }
-
-  @override
-  final List<EVMApiProviderService> providers;
   factory EVMNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
@@ -105,5 +73,19 @@ class EVMNetworkParams implements NetworkCoinParams {
           defaultNetwork
         ]),
         WalletModelCborTagsConst.evmNetworkParam);
+  }
+
+  @override
+  NetworkCoinParams<ApiProviderService> updateProviders(
+      List<EVMApiProviderService> updateProviders) {
+    return EVMNetworkParams(
+        transactionExplorer: transactionExplorer,
+        addressExplorer: addressExplorer,
+        token: token,
+        providers: updateProviders,
+        chainId: chainId,
+        supportEIP1559: supportEIP1559,
+        mainnet: mainnet,
+        defaultNetwork: defaultNetwork);
   }
 }

@@ -138,7 +138,7 @@ class CoinStringPriceView extends StatelessWidget {
     this.disableTooltip = false,
   }) : super(key: key);
 
-  final Token token;
+  final Currency token;
   final NoneDecimalBalance? balance;
   final TextStyle? style;
   final Color? symbolColor;
@@ -152,7 +152,7 @@ class CoinStringPriceView extends StatelessWidget {
           : PriceTooltipWidget(
               currencyName: token.name,
               price: balance!.price,
-              symbol: token.symbol,
+              symbol: token.name,
             ),
       child: Directionality(
         textDirection: TextDirection.ltr,
@@ -177,7 +177,7 @@ class CoinStringPriceView extends StatelessWidget {
                           ])),
                 ),
                 Text(
-                  token.symbolView,
+                  token.name,
                   style: context.textTheme.labelSmall
                       ?.copyWith(color: symbolColor ?? context.colors.primary),
                 )

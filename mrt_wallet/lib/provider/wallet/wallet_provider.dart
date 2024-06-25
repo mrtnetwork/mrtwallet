@@ -17,6 +17,7 @@ import 'package:mrt_wallet/models/wallet_models/keys/encrypted_derived_key.dart'
 import 'package:mrt_wallet/models/wallet_models/network/custom/cardano/address_details.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/app/utility/lifecycle_listener/life_cycle_tracker.dart';
+import 'package:mrt_wallet/provider/repository/repository.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solana/solana.dart';

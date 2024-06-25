@@ -18,7 +18,13 @@ abstract class CryptoAccountAddress<N, T, X> with CborSerializable {
   abstract final String? type;
   abstract final X networkAddress;
   abstract final String? accountName;
+
+  /// its only for checking duplicate account
   abstract final String orginalAddress;
+
+  ///
+  bool isEqual(Bip32AddressCore<T, X> other);
+
   void setAccountName(String? name);
   bool get multiSigAccount;
   String accountToString();

@@ -89,6 +89,12 @@ Ethereum, Tron, Ripple, Dogecoin, Litecoin, Solana, Cardano, Cosmos and Dash, wi
 
 - **Features:** Seamless support for Maya transactions.
 
+### Ton (Mainnet, Testnet)
+
+- **Features:** Seamless support for Ton transactions.
+- **Highlights:** Jetton transfer, multiple message transfer.
+
+
 ## Decentralized, Secure, and Open Source
 
 At MRT Wallet, we believe in the power of decentralization. Our commitment to decentralization is at the core of our design philosophy, providing you with full control over your assets. Your private keys remain in your hands, ensuring the highest level of security.

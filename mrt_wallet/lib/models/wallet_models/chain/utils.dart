@@ -19,6 +19,8 @@ class _DefaultAppCoins {
       transacationNetwork: BitcoinCashNetwork.mainnet,
       token: Token(
         name: "BitcoinCash",
+        market: const CoingeckoCoin(
+            apiId: "bitcoin-cash", coinName: "bitcoin-cash"),
         symbol: "BCH",
         decimal: 8,
         assetLogo: const AppImage.local("assets/image/bch.png"),
@@ -31,6 +33,8 @@ class _DefaultAppCoins {
       token: Token(
           name: "BitcoinCash chipnet",
           symbol: "tBCH",
+          market: const CoingeckoCoin(
+              apiId: "bitcoin-cash", coinName: "bitcoin-cash"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/bch.png")),
       providers: []);
@@ -41,6 +45,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Bitcoin",
           symbol: "BTC",
+          market: const CoingeckoCoin(apiId: "bitcoin", coinName: "bitcoin"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/btc.png")),
       providers: []);
@@ -52,6 +57,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Bitcoin testnet",
           symbol: "tBTC",
+          market: const CoingeckoCoin(apiId: "bitcoin", coinName: "bitcoin"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/btc.png")),
       providers: []);
@@ -62,6 +68,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Litecoin",
           symbol: "LTC",
+          market: const CoingeckoCoin(apiId: "litecoin", coinName: "litecoin"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/ltc.png")),
       providers: []);
@@ -72,6 +79,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Litecoin testnet",
           symbol: "tLTC",
+          market: const CoingeckoCoin(apiId: "litecoin", coinName: "litecoin"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/ltc.png")),
       providers: []);
@@ -81,6 +89,7 @@ class _DefaultAppCoins {
       transacationNetwork: DogecoinNetwork.mainnet,
       token: Token(
           name: "Dogecoin",
+          market: const CoingeckoCoin(apiId: "dogecoin", coinName: "dogecoin"),
           symbol: "Ɖ",
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/doge.png")),
@@ -93,6 +102,8 @@ class _DefaultAppCoins {
           name: "Pepecoin",
           symbol: "₱",
           decimal: 8,
+          market: const CoingeckoCoin(
+              apiId: "pepecoin-network", coinName: "pepecoin-network"),
           assetLogo: const AppImage.local("assets/image/pepecoin.png")),
       providers: []);
   static final BitcoinParams dogeTestnet = BitcoinParams(
@@ -102,6 +113,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Dogecoin testnet",
           symbol: "tƉ",
+          market: const CoingeckoCoin(apiId: "dogecoin", coinName: "dogecoin"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/doge.png")),
       providers: []);
@@ -112,6 +124,8 @@ class _DefaultAppCoins {
       token: Token(
           name: "BitcoinSV",
           symbol: "BSV",
+          market: const CoingeckoCoin(
+              apiId: "bitcoin-cash-sv", coinName: "bitcoin-sv"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/bsv.png")),
       providers: []);
@@ -121,6 +135,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Dash",
           symbol: "DASH",
+          market: const CoingeckoCoin(apiId: "dash", coinName: "dash"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/dash.png")),
       transacationNetwork: DashNetwork.mainnet,
@@ -132,6 +147,7 @@ class _DefaultAppCoins {
           name: "Ripple",
           symbol: "XRP",
           decimal: 6,
+          market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
           assetLogo: const AppImage.local("assets/image/xrp.png")),
       providers: [],
       mainnet: true);
@@ -142,6 +158,7 @@ class _DefaultAppCoins {
           name: "Ripple testnet",
           symbol: "tXRP",
           decimal: 6,
+          market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
           assetLogo: const AppImage.local("assets/image/xrp.png")),
       providers: [],
       mainnet: false);
@@ -152,6 +169,7 @@ class _DefaultAppCoins {
           name: "Ripple devnet",
           symbol: "tXRP",
           decimal: 6,
+          market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
           assetLogo: const AppImage.local("assets/image/xrp.png")),
       providers: [],
       mainnet: false);
@@ -165,6 +183,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Ethereum",
           symbol: "ETH",
+          market: const CoingeckoCoin(apiId: "ethereum", coinName: "ethereum"),
           decimal: 18,
           assetLogo: const AppImage.local("assets/image/eth.png")),
       providers: []);
@@ -177,6 +196,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Ethereum Sepolia testnet",
           symbol: "tETH",
+          market: const CoingeckoCoin(apiId: "ethereum", coinName: "ethereum"),
           decimal: 18,
           assetLogo: const AppImage.local("assets/image/eth.png")),
       providers: []);
@@ -189,6 +209,8 @@ class _DefaultAppCoins {
       token: Token(
           name: "Polygon",
           symbol: "MATIC",
+          market:
+              const CoingeckoCoin(apiId: "matic-network", coinName: "polygon"),
           decimal: 18,
           assetLogo: const AppImage.local("assets/image/matic.png")),
       providers: []);
@@ -201,6 +223,8 @@ class _DefaultAppCoins {
       token: Token(
           name: "Polygon mumbai testnet",
           symbol: "tMATIC",
+          market:
+              const CoingeckoCoin(apiId: "matic-network", coinName: "polygon"),
           decimal: 18,
           assetLogo: const AppImage.local("assets/image/matic.png")),
       providers: []);
@@ -213,6 +237,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "BNB Smart Chain",
           symbol: "BNB",
+          market: const CoingeckoCoin(apiId: "binancecoin", coinName: "bnb"),
           decimal: 18,
           assetLogo: const AppImage.local("assets/image/bnb.png")),
       providers: []);
@@ -225,6 +250,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "BNB Smart chain testnet",
           symbol: "tBNB",
+          market: const CoingeckoCoin(apiId: "binancecoin", coinName: "bnb"),
           decimal: 18,
           assetLogo: const AppImage.local("assets/image/bnb.png")),
       providers: []);
@@ -237,6 +263,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Tron shasta testnet",
           symbol: "tTRX",
+          market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
           decimal: 6,
           assetLogo: const AppImage.local("assets/image/trx.png")),
       providers: [],
@@ -248,6 +275,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Tron nile testnet",
           symbol: "tTRX",
+          market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
           decimal: 6,
           assetLogo: const AppImage.local("assets/image/trx.png")),
       ethereumProviders: [],
@@ -260,6 +288,7 @@ class _DefaultAppCoins {
           name: "Tron",
           symbol: "TRX",
           decimal: 6,
+          market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
           assetLogo: const AppImage.local("assets/image/trx.png")),
       ethereumProviders: [],
       providers: []);
@@ -271,6 +300,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Solana",
           symbol: "SOL",
+          market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
           decimal: 9,
           assetLogo: const AppImage.local("assets/image/sol.png")),
       providers: []);
@@ -283,6 +313,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Solana testnet",
           symbol: "tSOL",
+          market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
           decimal: 9,
           assetLogo: const AppImage.local("assets/image/sol.png")),
       providers: []);
@@ -296,6 +327,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Cardano preprod",
           symbol: "tADA",
+          market: const CoingeckoCoin(apiId: "cardano", coinName: "cardano"),
           decimal: 6,
           assetLogo: const AppImage.local("assets/image/ada.png")),
       providers: []);
@@ -307,6 +339,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Cardano",
           symbol: "ADA",
+          market: const CoingeckoCoin(apiId: "cardano", coinName: "cardano"),
           decimal: 6,
           assetLogo: const AppImage.local("assets/image/ada.png")),
       providers: []);
@@ -323,6 +356,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Cosmos hub testnet",
           symbol: "tATOM",
+          market: const CoingeckoCoin(apiId: "cosmos", coinName: "cosmos-hub"),
           decimal: 6,
           assetLogo: const AppImage.local("assets/image/atom.png")),
       providers: []);
@@ -337,6 +371,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Cosmos hub",
           symbol: "ATOM",
+          market: const CoingeckoCoin(apiId: "cosmos", coinName: "cosmos-hub"),
           decimal: 6,
           assetLogo: const AppImage.local("assets/image/atom.png")),
       providers: []);
@@ -351,6 +386,8 @@ class _DefaultAppCoins {
       token: Token(
           name: "Maya Protocol",
           symbol: "Cacao",
+          market:
+              const CoingeckoCoin(apiId: "cacao", coinName: "maya-protocol"),
           decimal: 10,
           assetLogo: const AppImage.local("assets/image/cacao.png")),
       providers: []);
@@ -365,6 +402,8 @@ class _DefaultAppCoins {
       token: Token(
           name: "THORChain",
           symbol: "Rune",
+          market:
+              const CoingeckoCoin(apiId: "thorchain", coinName: "thorchain"),
           decimal: 8,
           assetLogo: const AppImage.local("assets/image/thor.png")),
       providers: []);
@@ -380,6 +419,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Kujira Testnet",
           symbol: "tKuji",
+          market: const CoingeckoCoin(apiId: "kujira", coinName: "kujira"),
           decimal: 6,
           assetLogo: const AppImage.local("assets/image/kujira.png")),
       providers: []);
@@ -394,6 +434,7 @@ class _DefaultAppCoins {
       token: Token(
           name: "Kujira",
           symbol: "Kuji",
+          market: const CoingeckoCoin(apiId: "kujira", coinName: "kujira"),
           decimal: 6,
           assetLogo: const AppImage.local("assets/image/kujira.png")),
       providers: []);
@@ -412,6 +453,7 @@ class _DefaultAppCoins {
           name: "Osmo testnet",
           symbol: "tOsmo",
           decimal: 6,
+          market: const CoingeckoCoin(apiId: "osmosis", coinName: "osmosis"),
           assetLogo: const AppImage.local("assets/image/osmo.png")),
       providers: []);
   static final TonNetworkParams tonTestnet = TonNetworkParams(
@@ -423,6 +465,8 @@ class _DefaultAppCoins {
           name: "TonCoin testnet",
           symbol: "tTon",
           decimal: 9,
+          market: const CoingeckoCoin(
+              apiId: "the-open-network", coinName: "toncoin"),
           assetLogo: const AppImage.local("assets/image/ton.png")),
       providers: []);
 
@@ -434,6 +478,8 @@ class _DefaultAppCoins {
       token: Token(
           name: "TonCoin",
           symbol: "Ton",
+          market: const CoingeckoCoin(
+              apiId: "the-open-network", coinName: "toncoin"),
           decimal: 9,
           assetLogo: const AppImage.local("assets/image/ton.png")),
       providers: []);
@@ -695,5 +741,23 @@ class ChainUtils {
     } catch (e) {
       return createNetworkAccount(network);
     }
+  }
+
+  static AppNetworkImpl updateNetwork(
+      {int? networkId, AppNetworkImpl? network}) {
+    if (networkId == null || network != null && networkId != network.value) {
+      throw WalletExceptionConst.dataVerificationFailed;
+    }
+    if (!defaultCoins.containsKey(networkId)) {
+      if (network == null) {
+        throw WalletExceptionConst.dataVerificationFailed;
+      }
+      return network;
+    }
+    final AppNetworkImpl defaultNetwork = defaultCoins[networkId]!;
+    return defaultNetwork.copyWith(
+        coinParam: defaultNetwork.coinParam
+            .updateProviders(network?.coinParam.providers ?? []),
+        value: defaultNetwork.value);
   }
 }

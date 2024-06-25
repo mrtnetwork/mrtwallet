@@ -215,4 +215,9 @@ class ISolanaAddress
 
   @override
   List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+
+  @override
+  bool isEqual(Bip32AddressCore<BigInt, SolAddress> other) {
+    return other.networkAddress.address == networkAddress.address;
+  }
 }

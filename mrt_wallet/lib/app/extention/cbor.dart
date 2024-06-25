@@ -87,3 +87,15 @@ extension QuickCbor on CborObject {
     return toe(value as T);
   }
 }
+
+extension QuickCborTag on CborTagValue {
+  CborListValue get getList {
+    if (value is! CborListValue) {
+      throw MessageException("Failed to cast value.", details: {
+        "Value": "$value",
+        "Type": "CborListValue",
+      });
+    }
+    return value;
+  }
+}

@@ -1,15 +1,13 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/network_params.dart';
 import 'package:mrt_wallet/models/wallet_models/network/params/core/token.dart';
 import 'package:mrt_wallet/provider/api/api_provider.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class TVMNetworkParams with CborSerializable implements NetworkCoinParams {
-  static const String _txIdArgs = "#txid";
-  static const String _addrArgs = "#address";
+class TVMNetworkParams extends NetworkCoinParams<TronApiProviderService> {
+  final List<EVMApiProviderService> ethereumProviders;
   factory TVMNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
@@ -27,46 +25,14 @@ class TVMNetworkParams with CborSerializable implements NetworkCoinParams {
             .toList(),
         mainnet: cbor.elementAt(5));
   }
-  const TVMNetworkParams(
-      {required this.transactionExplorer,
-      required this.addressExplorer,
-      required this.token,
-      required this.providers,
+  TVMNetworkParams(
+      {required super.transactionExplorer,
+      required super.addressExplorer,
+      required super.token,
+      required super.providers,
       required this.ethereumProviders,
-      required this.mainnet});
+      required super.mainnet});
 
-  @override
-  final bool mainnet;
-
-  @override
-  final String? transactionExplorer;
-
-  @override
-  final String? addressExplorer;
-
-  @override
-  int get decimal => token.decimal!;
-
-  @override
-  AppImage get logo => token.assetLogo!;
-
-  @override
-  final Token token;
-
-  @override
-  String? getAccountExplorer(String address) {
-    return addressExplorer?.replaceAll(_addrArgs, address);
-  }
-
-  @override
-  String? getTransactionExplorer(String txId) {
-    return transactionExplorer?.replaceAll(_txIdArgs, txId);
-  }
-
-  @override
-  final List<TronApiProviderService> providers;
-
-  final List<EVMApiProviderService> ethereumProviders;
   @override
   CborTagValue toCbor() {
     return CborTagValue(
@@ -80,5 +46,17 @@ class TVMNetworkParams with CborSerializable implements NetworkCoinParams {
           mainnet
         ]),
         WalletModelCborTagsConst.tvmNetworkParam);
+  }
+
+  @override
+  NetworkCoinParams<TronApiProviderService> updateProviders(
+      List<TronApiProviderService> updateProviders) {
+    return TVMNetworkParams(
+        transactionExplorer: transactionExplorer,
+        addressExplorer: addressExplorer,
+        token: token,
+        providers: updateProviders,
+        ethereumProviders: ethereumProviders,
+        mainnet: mainnet);
   }
 }

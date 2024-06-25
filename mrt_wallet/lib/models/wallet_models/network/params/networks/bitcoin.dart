@@ -1,15 +1,17 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/models/app/app_image.dart';
 import 'package:mrt_wallet/models/serializable/serializable.dart';
 import 'package:mrt_wallet/models/wallet_models/network/network_models.dart';
 import 'package:mrt_wallet/provider/api/core/api_provider.dart';
 import 'package:mrt_wallet/provider/wallet/constant/constant.dart';
 
-class BitcoinParams implements NetworkCoinParams {
-  static const String _txIdArgs = "#txid";
-  static const String _addrArgs = "#address";
+class BitcoinParams extends NetworkCoinParams {
+  final BasedUtxoNetwork transacationNetwork;
+
+  @override
+  bool get mainnet => transacationNetwork.isMainnet;
+
   factory BitcoinParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
@@ -24,13 +26,13 @@ class BitcoinParams implements NetworkCoinParams {
             .map((e) => ApiProviderService.fromCborBytesOrObject(obj: e))
             .toList());
   }
-  BitcoinParams(
-      {required this.transactionExplorer,
-      required this.addressExplorer,
-      required this.transacationNetwork,
-      required List<ApiProviderService> providers,
-      required this.token})
-      : providers = List<ApiProviderService>.unmodifiable(providers);
+  BitcoinParams({
+    required super.transactionExplorer,
+    required super.addressExplorer,
+    required super.providers,
+    required super.token,
+    required this.transacationNetwork,
+  }) : super(mainnet: transacationNetwork.isMainnet);
 
   BitcoinParams copyWith(
       {List<ApiProviderService>? providers,
@@ -47,32 +49,6 @@ class BitcoinParams implements NetworkCoinParams {
   }
 
   @override
-  final List<ApiProviderService> providers;
-  @override
-  final String transactionExplorer;
-  @override
-  final String addressExplorer;
-  @override
-  final Token token;
-  final BasedUtxoNetwork transacationNetwork;
-
-  @override
-  int get decimal => token.decimal!;
-
-  @override
-  AppImage get logo => token.assetLogo!;
-
-  @override
-  String getAccountExplorer(String address) {
-    return addressExplorer.replaceAll(_addrArgs, address);
-  }
-
-  @override
-  String getTransactionExplorer(String txId) {
-    return transactionExplorer.replaceAll(_txIdArgs, txId);
-  }
-
-  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -86,5 +62,12 @@ class BitcoinParams implements NetworkCoinParams {
   }
 
   @override
-  bool get mainnet => transacationNetwork.isMainnet;
+  BitcoinParams updateProviders(List<ApiProviderService> updateProviders) {
+    return BitcoinParams(
+        transactionExplorer: transactionExplorer,
+        addressExplorer: addressExplorer,
+        transacationNetwork: transacationNetwork,
+        providers: providers,
+        token: token);
+  }
 }

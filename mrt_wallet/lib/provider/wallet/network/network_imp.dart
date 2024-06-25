@@ -6,12 +6,24 @@ mixin WalletNetworkImpl on WalletCryptoImpl, WalletStorageImpl, MasterKeyImpl {
   AppNetworkImpl get network => chain.network;
   bool get walletIsUnlock;
 
-  List<AppNetworkImpl> networks() {
+  List<AppNetworkImpl> _networks() {
     return _appChains.networks.values.map((e) => e.network).toList();
   }
 
-  List<AppChain> getChains() {
+  List<AppChain> _getChains() {
     return _appChains.networks.values.toList();
+  }
+
+  List<String> coinIds() {
+    final ids = _appChains.networks.values
+        .map((e) => e.account.tokens())
+        .expand((e) => e)
+        .map((e) => e.token.market?.apiId)
+        .where((element) => element != null);
+    final networkIds = _networks()
+        .map((e) => e.token.market?.apiId)
+        .where((element) => element != null);
+    return List<String>.from([...ids, ...networkIds]);
   }
 
   Future<void> _updateImportNetwork(AppNetworkImpl network) async {

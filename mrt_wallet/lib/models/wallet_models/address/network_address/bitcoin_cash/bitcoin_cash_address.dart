@@ -1,3 +1,4 @@
+import 'package:bitcoin_base/src/bitcoin/address/address.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
@@ -112,6 +113,11 @@ class IBitcoinCashAddress extends IBitcoinAddress {
 
   @override
   String get orginalAddress => networkAddress.addressProgram;
+
+  @override
+  bool isEqual(Bip32AddressCore<BigInt, BitcoinBaseAddress> other) {
+    return orginalAddress == other.orginalAddress;
+  }
 }
 
 class IBitcoinCashMultiSigAddress extends IBitcoinCashAddress

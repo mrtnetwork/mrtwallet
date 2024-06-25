@@ -1736,7 +1736,28 @@ class Localization {
           "show_content": "Show content.",
           "backup_restored_desc": "Your backup has been successfully restored.",
           "qr_code": "QR Barcode",
-          "submit": "Submit"
+          "submit": "Submit",
+          "live_price": "Live price",
+          "coin_gecko_desc":
+              "We can also provide live price updates for your token balance using CoinGecko. To enable this, locate your token on CoinGecko, find the API ID on the token's page, and select the appropriate name here.",
+          "retrieving_token_information": "Retrieving token. Please wait.",
+          "coingecko_id": "CoingeckoId",
+          "api_id": "API ID",
+          "coingecko_api_id_validator":
+              "The API ID must be at least 2 characters long",
+          "retrieving_token_price": "Retrieving token price. Please wait.",
+          "updating_token": "Updating token. Please wait. ",
+          "token_updated_successfully":
+              "The token has been successfully updated.",
+          "invalid_api_id": "Invalid API ID.",
+          "token_decimals": "Token decimals",
+          "token_decimals_validator":
+              "The number of token decimal places must be between 0 and 255.",
+          "change_token_decimal_desc":
+              "Warning: Changing the token decimal places can significantly impact token balances and transactions. For example, changing from 9 to 10 decimal places may cause balance discrepancies and potential loss of funds. Proceed with caution and ensure you understand the consequences before making this change. The number of decimal places must be between 0 and 255.",
+          "change_decimals": "Change decimals",
+          "change_token_decimal_desc2":
+              "The token decimal places will be changed from ___1__ to ___2__ ."
         }
       };
 }

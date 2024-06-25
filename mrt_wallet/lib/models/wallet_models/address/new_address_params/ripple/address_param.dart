@@ -53,7 +53,7 @@ class RippleMultisigNewAddressParam implements RippleNewAddressParam {
   final int? tag;
 
   @override
-  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+  IXRPMultisigAddress toAccount(AppNetworkImpl network, List<int> publicKey) {
     return IXRPMultisigAddress.newAccount(
         accountParams: this, network: network as AppXRPNetwork);
   }

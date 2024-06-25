@@ -18,6 +18,7 @@ class AppChain with CborSerializable {
   bool get haveAddress => account.haveAddress;
   NetworkApiProvider? _networkApiProvider;
   late final List<String> services = List.unmodifiable(_services(network));
+
   static List<String> _services(AppNetworkImpl network) {
     switch (network.type) {
       case NetworkType.xrpl:
@@ -69,14 +70,18 @@ class AppChain with CborSerializable {
   factory AppChain.fromCborBytesOrObject({List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, WalletModelCborTagsConst.network);
-    final network =
-        AppNetworkImpl.fromCborBytesOrObject(obj: cbor.getCborTag(0));
-    final provider = cbor.getCborTag(1) == null
-        ? null
-        : ApiProviderService.fromCborBytesOrObject(obj: cbor.getCborTag(1));
-    final apiProvider = ChainUtils.buildApiProvider(network, service: provider);
-    return AppChain._(
-        network, apiProvider, ChainUtils.account(network, cbor.getCborTag(2)));
+    final networkObject = cbor.getCborTag(0)?.getList;
+    final int networkId = networkObject?.elementAt(0);
+    final network = MethodCaller.nullOnException(
+        () => AppNetworkImpl.fromCborBytesOrObject(obj: cbor.getCborTag(0)));
+    final updateNetwork =
+        ChainUtils.updateNetwork(networkId: networkId, network: network);
+    final provider = MethodCaller.nullOnException(() =>
+        ApiProviderService.fromCborBytesOrObject(obj: cbor.getCborTag(1)));
+    final apiProvider =
+        ChainUtils.buildApiProvider(updateNetwork, service: provider);
+    return AppChain._(updateNetwork, apiProvider,
+        ChainUtils.account(updateNetwork, cbor.getCborTag(2)));
   }
 }
 

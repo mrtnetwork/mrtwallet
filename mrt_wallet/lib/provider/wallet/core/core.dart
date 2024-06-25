@@ -9,7 +9,8 @@ abstract class _WalletCore extends StateController
         WalletNetworkImpl,
         Signer {}
 
-abstract class WalletCore extends _WalletCore with WalletStatusImpl {
+abstract class WalletCore extends _WalletCore
+    with WalletStatusImpl, BaseRepository {
   WalletCore(this._navigatorKey);
 
   final GlobalKey<NavigatorState> _navigatorKey;
@@ -206,6 +207,20 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
       return List<EncryptedCustomKey>.from(_massterKey!.customKeys);
     }, conditionStatus: WalletStatus.unlock);
     return result;
+  }
+
+  List<AppNetworkImpl> networks() {
+    if (walletIsUnlock) {
+      return _appChains.networks.values.map((e) => e.network).toList();
+    }
+    return [];
+  }
+
+  List<AppChain> getChains() {
+    if (walletIsUnlock) {
+      return _appChains.networks.values.toList();
+    }
+    return [];
   }
 
   Future<MethodResult<void>> removeImportedKey(
@@ -455,7 +470,7 @@ abstract class WalletCore extends _WalletCore with WalletStatusImpl {
   @override
   void init() {
     _initWallet();
-    // _lifeCycleTracker.init();
+    _lifeCycleTracker.init();
     super.init();
   }
 

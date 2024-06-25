@@ -210,4 +210,9 @@ class IEthAddress
 
   @override
   List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+
+  @override
+  bool isEqual(Bip32AddressCore<BigInt, ETHAddress> other) {
+    return other.networkAddress.address == networkAddress.address;
+  }
 }

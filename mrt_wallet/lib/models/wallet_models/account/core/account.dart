@@ -22,4 +22,5 @@ abstract class NetworkAccountCore<N, T, X> with CborSerializable {
   CryptoAccountAddress<N, T, X> addNewAddress(
       List<int> publicKey, NewAccountParams accountParams);
   void switchAccount(CryptoAccountAddress<N, T, X> address);
+  List<TokenCore> tokens();
 }

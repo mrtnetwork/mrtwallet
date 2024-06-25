@@ -219,8 +219,7 @@ class ITonAddress
   }
 
   @override
-  late final String orginalAddress =
-      networkAddress.toFriendlyAddress(bounceable: bouncable);
+  late final String orginalAddress = networkAddress.toRawAddress();
   @override
   List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 
@@ -231,5 +230,12 @@ class ITonAddress
         version: version,
         subWalletId: subWalletId,
         bouncable: bouncable);
+  }
+
+  @override
+  bool isEqual(Bip32AddressCore<BigInt, TonAddress> other) {
+    if (other is! ITonAddress) return false;
+    return bouncable == other.bouncable &&
+        BytesUtils.bytesEqual(other.networkAddress.hash, networkAddress.hash);
   }
 }

@@ -266,6 +266,13 @@ class IXRPAddress
 
   @override
   List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+
+  @override
+  bool isEqual(Bip32AddressCore<BigRational, XRPAddress> other) {
+    return networkAddress.address == other.networkAddress.address &&
+        networkAddress.tag == other.networkAddress.tag &&
+        multiSigAccount == other.multiSigAccount;
+  }
 }
 
 class IXRPMultisigAddress extends IXRPAddress

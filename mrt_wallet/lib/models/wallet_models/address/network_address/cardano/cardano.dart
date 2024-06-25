@@ -215,4 +215,11 @@ class ICardanoAddress
   @override
   List<AddressDerivationIndex> get keyIndexes =>
       [keyIndex, if (rewardKeyIndex != null) rewardKeyIndex!];
+
+  @override
+  bool isEqual(Bip32AddressCore<BigInt, ADAAddress> other) {
+    if (other is! ICardanoAddress) return false;
+    return networkAddress.address == other.networkAddress.address &&
+        rewardAddress?.address == other.rewardAddress?.address;
+  }
 }

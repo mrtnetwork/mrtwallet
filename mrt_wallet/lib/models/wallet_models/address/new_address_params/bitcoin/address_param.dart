@@ -19,7 +19,7 @@ class BitcoinNewAddressParams
   });
 
   @override
-  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+  IBitcoinAddress toAccount(AppNetworkImpl network, List<int> publicKey) {
     return IBitcoinAddress.newAccount(
         accountParams: this,
         publicKey: publicKey,
@@ -45,7 +45,7 @@ class BitcoinMultiSigNewAddressParams implements BitcoinNewAddressParams {
   final CryptoCoins coin;
 
   @override
-  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+  IBitcoinAddress toAccount(AppNetworkImpl network, List<int> publicKey) {
     return IBitcoinMultiSigAddress.newAccount(
         accountParam: this, network: network as AppBitcoinNetwork);
   }

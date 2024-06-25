@@ -187,6 +187,11 @@ class IBitcoinAddress
 
   @override
   List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+
+  @override
+  bool isEqual(Bip32AddressCore<BigInt, BitcoinBaseAddress> other) {
+    return orginalAddress == other.orginalAddress;
+  }
 }
 
 class IBitcoinMultiSigAddress extends IBitcoinAddress

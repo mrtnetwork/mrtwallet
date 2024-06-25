@@ -275,6 +275,12 @@ class ITronAddress
 
   @override
   List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+
+  @override
+  bool isEqual(Bip32AddressCore<BigInt, TronAddress> other) {
+    return multiSigAccount == other.multiSigAccount &&
+        orginalAddress == other.orginalAddress;
+  }
 }
 
 class ITronMultisigAddress extends ITronAddress

@@ -1,53 +1,45 @@
 import 'dart:async';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utility/http/http_caller.dart';
 import 'package:mrt_wallet/models/app/app_seting.dart';
 import 'package:mrt_wallet/models/wallet_models/wallet_models.dart';
+import 'package:mrt_wallet/provider/repository/repository.dart';
 
-mixin AppCurrencies on StateController {
-  String _toName(String currency, String amount, Token token) {
-    return "$currency-$amount-${token.name}";
-  }
-
+mixin AppCurrencies on StateController, ExternalRepository {
+  List<String> coinIds();
   AppSetting get appSetting;
-  final Map<String, NoneDecimalBalance?> _prices = {};
-  late final Live<Token> _currency = Live<Token>(appSetting.currency.toToken());
-  Token get currencyToken => _currency.value;
+  late final Live<Currency> _currency = Live<Currency>(appSetting.currency);
+  Currency get currencyToken => _currency.value;
+  List<String>? _coinIds;
   NoneDecimalBalance? amount(String amount, Token token) {
-    final Token currency = _currency.value;
-    if (currency.symbol.toLowerCase() == token.symbol.toLowerCase()) {
-      return null;
-    }
-
-    final name = _toName(currency.symbol.toLowerCase(), amount, token);
-    return _prices[name] ??= _amount(currency, amount, token);
+    return _currenciesPrice.getPrice(
+        baseCurrency: currencyToken, token: token, amount: amount);
   }
 
-  NoneDecimalBalance? _amount(Token currency, String amount, Token token) {
-    final String? tokenId = CoinGeckoUtils.getCoinGeckoCurrencyId(token.name);
-
-    final String? price =
-        _currenciesPrice[tokenId]?[currency.symbol.toLowerCase()]?.toString();
-    if (price == null) return null;
-    final BigInt priceInCurrency = PriceUtils.convertPrice(
-        base: price, amount: amount, decimal: currency.decimal!);
-
-    return NoneDecimalBalance(priceInCurrency, currency.decimal!);
+  @override
+  Future<CoingeckoCoinInfo?> getCoinPrice(String id) async {
+    CoingeckoCoinInfo? coin = _currenciesPrice.getCoin(id);
+    coin ??= await super.getCoinPrice(id);
+    if (coin == null) return null;
+    _currenciesPrice.addCoin(coin);
+    return coin;
   }
 
-  Map<String, dynamic> _currenciesPrice = {};
-  StreamSubscription<Map<String, dynamic>>? _streamPrices;
+  CoingeckoPriceHandler _currenciesPrice = CoingeckoPriceHandler({});
+  StreamSubscription<CoingeckoPriceHandler>? _streamPrices;
   final Cancelable _cancelStream = Cancelable();
-  void _onUpdatePrices(Map<String, dynamic> result) {
-    _currenciesPrice = Map<String, dynamic>.unmodifiable(result);
+  void _onUpdatePrices(CoingeckoPriceHandler result) {
+    _currenciesPrice = result;
     _currency.notify();
   }
 
   void _startListening() {
-    final uri = CoinGeckoUtils.toCoingeckoPriceUri(
-        Currency.toApiCall(), CoinGeckoUtils.currencyIds.join(","));
-    _streamPrices = MethodCaller.prediocCaller<Map<String, dynamic>>(
-            () async => await HttpCaller.get<Map<String, dynamic>>(uri),
+    _coinIds ??= coinIds();
+    _streamPrices = MethodCaller.prediocCaller<CoingeckoPriceHandler>(() async {
+      final result = await MethodCaller.call(() async {
+        return await getCoinPrices(_coinIds!);
+      });
+      return result;
+    },
             waitOnSuccess: const Duration(minutes: 10),
             waitOnError: const Duration(minutes: 1),
             canclable: _cancelStream)
@@ -62,19 +54,19 @@ mixin AppCurrencies on StateController {
 
   void changeCurrency(Currency? currency) {
     if (currency == null) return;
-    _prices.clear();
-    _currency.value = currency.toToken();
-  }
-
-  @override
-  void close() {
-    _disposeSteam();
-    super.close();
+    _currenciesPrice.clearCache();
+    _currency.value = currency;
   }
 
   @override
   void ready() {
     super.ready();
     _startListening();
+  }
+
+  @override
+  void close() {
+    _disposeSteam();
+    super.close();
   }
 }

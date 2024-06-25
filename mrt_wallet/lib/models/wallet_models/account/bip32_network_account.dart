@@ -93,7 +93,11 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
     }
     final Bip32AddressCore newAddress =
         accountParams.toAccount(network, publicKey);
-    if (addresses.contains(newAddress)) {
+    if (newAddress is! Bip32AddressCore<T, X>) {
+      throw WalletExceptionConst.invalidAccountDetails;
+    }
+    final any = addresses.any((element) => element.isEqual(newAddress));
+    if (any) {
       throw WalletExceptionConst.addressAlreadyExist;
     }
 
@@ -218,5 +222,10 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
     final totalBalances = total.values
         .fold(BigInt.zero, (previousValue, element) => previousValue + element);
     totalBalance.value.updateBalance(totalBalances);
+  }
+
+  @override
+  List<TokenCore> tokens() {
+    return addresses.map((e) => e.tokens).expand((e) => e).toList();
   }
 }

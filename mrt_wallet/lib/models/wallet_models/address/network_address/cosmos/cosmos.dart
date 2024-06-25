@@ -192,4 +192,11 @@ class ICosmosAddress
   String get orginalAddress => networkAddress.address;
   @override
   List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+
+  @override
+  bool isEqual(Bip32AddressCore<BigInt, CosmosBaseAddress> other) {
+    if (other is! ICosmosAddress) return false;
+    return other.networkAddress.address == networkAddress.address &&
+        hrp == other.hrp;
+  }
 }

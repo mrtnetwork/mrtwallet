@@ -169,7 +169,27 @@ class DefaultNodeProviders {
           serviceName: "pepeblocks-ssl",
           websiteUri: "https://mainnet.pepeblocks.com",
           url: "mainnet.pepeblocks.com:50001",
-          protocol: ProviderProtocol.tcp)
+          protocol: ProviderProtocol.tcp),
+      ElectrumApiProviderService(
+          serviceName: "pepeblocks-wss",
+          websiteUri: "mainnet.pepeblocks.com",
+          url: "wss://mainnet.pepeblocks.com:50004",
+          protocol: ProviderProtocol.websocket),
+      ElectrumApiProviderService(
+          serviceName: "pepelum-ssl",
+          websiteUri: "https://mainnet.pepelum.site",
+          url: "mainnet.pepelum.site:50002",
+          protocol: ProviderProtocol.ssl),
+      ElectrumApiProviderService(
+          serviceName: "pepelum-ssl",
+          websiteUri: "https://mainnet.pepelum.site",
+          url: "mainnet.pepelum.site:50001",
+          protocol: ProviderProtocol.tcp),
+      ElectrumApiProviderService(
+          serviceName: "pepelum-wss",
+          websiteUri: "mainnet.pepelum.site",
+          url: "wss://mainnet.pepelum.site:50004",
+          protocol: ProviderProtocol.websocket)
     ],
     30: <ApiProviderService>[
       ApiProviderService.xrplWebsocket,

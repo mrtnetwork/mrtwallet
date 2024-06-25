@@ -190,10 +190,7 @@ class _TabbarView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasProvider = chainAccount.provider() != null;
-    final explorer = chainAccount.network.coinParam
-        .getAccountExplorer(chainAccount.account.address.address.toAddress);
-    final coinGeckoURL = CoinGeckoUtils.getTokenCoinGeckoURL(
-        chainAccount.network.coinParam.token.name);
+    final networkParam = chainAccount.network.coinParam;
     return Column(
       children: [
         if (!hasProvider)
@@ -213,16 +210,17 @@ class _TabbarView extends StatelessWidget {
               ],
             ),
           ),
-        if (explorer != null)
+        if (networkParam.hasAccountExplorer)
           AppListTile(
             title: Text("view_on_explorer".tr),
             subtitle: Text("view_address_on_explorer".tr),
             trailing: const Icon(Icons.open_in_new),
             onTap: () {
-              LunchUri.lunch(explorer);
+              LunchUri.lunch(networkParam.getAccountExplorer(
+                  chainAccount.account.address.address.toAddress)!);
             },
           ),
-        if (coinGeckoURL != null)
+        if (networkParam.hasMarketUrl)
           AppListTile(
             title: const Text("CoinGecko"),
             subtitle: Text("view_on_coingecko"
@@ -231,7 +229,7 @@ class _TabbarView extends StatelessWidget {
             trailing:
                 const CircleAssetsImgaeView(CoinGeckoUtils.logo, radius: 15),
             onTap: () {
-              LunchUri.lunch(coinGeckoURL);
+              LunchUri.lunch(networkParam.marketUri!);
             },
           ),
       ],
@@ -450,10 +448,6 @@ class _NetworkPageTabbar extends StatelessWidget
   @override
   Widget build(BuildContext context) {
     return TabBar(
-        tabs: chainAccount.services
-            .map((e) => Tab(
-                  text: e.tr,
-                ))
-            .toList());
+        tabs: chainAccount.services.map((e) => Tab(text: e.tr)).toList());
   }
 }

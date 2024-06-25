@@ -17,7 +17,7 @@ class EthereumNewAddressParam
   });
 
   @override
-  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+  IEthAddress toAccount(AppNetworkImpl network, List<int> publicKey) {
     return IEthAddress.newAccount(
         accountParams: this,
         publicKey: publicKey,

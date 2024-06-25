@@ -14,7 +14,7 @@ class TronNewAddressParam implements NewAccountParams<SolanaNewAddressParam> {
   final CryptoCoins coin;
 
   @override
-  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+  ITronAddress toAccount(AppNetworkImpl network, List<int> publicKey) {
     return ITronAddress.newAccount(
         accountParams: this,
         publicKey: publicKey,
@@ -41,7 +41,7 @@ class TronMultisigNewAddressParam implements TronNewAddressParam {
   final CryptoCoins coin;
 
   @override
-  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+  ITronMultisigAddress toAccount(AppNetworkImpl network, List<int> publicKey) {
     return ITronMultisigAddress.newAccount(
         accountParams: this, network: network as APPTVMNetwork);
   }

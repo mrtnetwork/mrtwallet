@@ -7,6 +7,10 @@ class WalletProviderConst {
 class WalletModelCborTagsConst {
   static const List<int> appSetting = [44];
   static const List<int> image = [50, 1];
+  static const List<int> wallet = [60];
+  static const List<int> coingeckoInfo = [60, 12];
+  static const List<int> coingeckoCoins = [60, 13];
+
   static const List<int> setting = [160];
   static const List<int> backup = [170];
   static const List<int> backupV2 = [170, 2];

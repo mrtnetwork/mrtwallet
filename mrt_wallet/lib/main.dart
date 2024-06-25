@@ -70,8 +70,8 @@ void run() async {
         .setBounds(null, size: const Size(500, 700));
     await PlatformInterface.interface.desktop.setResizable(false);
   }
-  final materialData = await PlatformInterface.interface
-      .readSecure(StorageKeysConst.appMaterial);
+  final materialData =
+      await PlatformInterface.interface.readSecure(StorageKeysConst.setting);
   final setting = AppSetting.fromHex(materialData);
   AppMaterialController.fromAppSetting(setting);
   runApp(Repository(child: MyBTC(setting: setting)));

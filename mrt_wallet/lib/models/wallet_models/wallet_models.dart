@@ -9,3 +9,4 @@ export 'network/network_models.dart';
 export 'nfts/nfts.dart';
 export 'signing_request/signing_reguest.dart';
 export 'token/token.dart';
+export 'external/external.dart';

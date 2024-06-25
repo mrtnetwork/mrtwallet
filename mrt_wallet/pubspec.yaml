@@ -22,11 +22,15 @@ homepage: "https://github.com/mrtnetwork/mrtwallet"
 repository: "https://github.com/mrtnetwork/mrtwallet"
 Author: mrhaydari.t@gmail.com
 topics:
-  - bitcoin-wallet
   - bitcoin
-  - p2tr
-  - p2sh
-  - p2wpkh-p2wsh
+  - xrp
+  - tron
+  - ethereum
+  - ton
+  - cardano
+  - cosmos
+  - wallet
+
 
 environment:
   sdk: '>=3.1.4 <4.0.0'
@@ -145,5 +149,5 @@ msix_config:
     display_name: MRT Wallet
     publisher_display_name: MRT NETWORK
     identity_name: com.mrtnetwork.wallet
-    msix_version: 4.0.0.0
+    msix_version: 5.0.0.0
     logo_path: C:\in_work\bitcoin\mrt_wallet\docs\icons\Icon-512.png

@@ -11,7 +11,7 @@ class SolanaNewAddressParam implements NewAccountParams<SolanaNewAddressParam> {
   final CryptoCoins coin;
 
   @override
-  Bip32AddressCore toAccount(AppNetworkImpl network, List<int> publicKey) {
+  ISolanaAddress toAccount(AppNetworkImpl network, List<int> publicKey) {
     return ISolanaAddress.newAccount(
       accountParams: this,
       publicKey: publicKey,

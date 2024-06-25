@@ -30,7 +30,8 @@ class AppSetting with CborSerializable {
           WalletModelCborTagsConst.appSetting);
       final String? colorHex = cbor.elementAt(0);
       final String? brightnessName = cbor.elementAt(1);
-      final Currency currency = Currency.fromName(cbor.elementAt(2));
+      final Currency currency =
+          Currency.fromName(cbor.elementAt(2)) ?? Currency.USD;
 
       return AppSetting._(
           appColor: colorHex,
@@ -38,7 +39,7 @@ class AppSetting with CborSerializable {
           currency: currency);
     } catch (e) {
       return const AppSetting._(
-          appColor: null, appBrightness: null, currency: Currency.usd);
+          appColor: null, appBrightness: null, currency: Currency.USD);
     }
   }
 

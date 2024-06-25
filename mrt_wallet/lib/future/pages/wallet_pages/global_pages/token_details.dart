@@ -35,22 +35,13 @@ class TokenDetailsModalView extends StatelessWidget {
             IconButton(
                 onPressed: () {
                   context
-                      .openSliverBottomSheet<Token>(
+                      .openSliverBottomSheet<bool>(
                     "update_token".tr,
-                    child: UpdateTokenDetailsView(token: token.token),
+                    child:
+                        UpdateTokenDetailsView(token: token, account: address),
                   )
-                      .then((value) {
-                    if (value != null) {
-                      wallet
-                          .updateToken(
-                              token: token,
-                              updatedToken: value,
-                              address: address)
-                          .then((value) {
-                        if (value.hasError) return;
-                        context.pop();
-                      });
-                    }
+                      .then((v) {
+                    if (v == true) context.pop();
                   });
                 },
                 icon: const Icon(Icons.edit)),

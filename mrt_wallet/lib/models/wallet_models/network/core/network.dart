@@ -22,10 +22,11 @@ class NetworkType {
   static const NetworkType ton = NetworkType._("TON");
 }
 
-abstract class AppNetworkImpl with Equatable, CborSerializable {
+abstract class AppNetworkImpl<PARAMS extends NetworkCoinParams>
+    with Equatable, CborSerializable {
   const AppNetworkImpl();
   abstract final int value;
-  abstract final NetworkCoinParams coinParam;
+  abstract final PARAMS coinParam;
   abstract final NetworkType type;
   bool get supportCustomNode;
   List<CryptoCoins> get coins;
@@ -50,7 +51,7 @@ abstract class AppNetworkImpl with Equatable, CborSerializable {
     return this as T;
   }
 
-  factory AppNetworkImpl.fromCborBytesOrObject(
+  static AppNetworkImpl fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
 
@@ -87,18 +88,28 @@ abstract class AppNetworkImpl with Equatable, CborSerializable {
   Token get token => coinParam.token;
 
   int get coinDecimal => token.decimal!;
+
+  AppNetworkImpl copyWith({int? value, PARAMS? coinParam});
 }
 
-class AppBitcoinNetwork extends AppNetworkImpl {
+class AppBitcoinNetwork extends AppNetworkImpl<BitcoinParams> {
   @override
   final int value;
   @override
   final BitcoinParams coinParam;
-  AppBitcoinNetwork copyWith({int? value, BitcoinParams? coinParam}) {
-    return AppBitcoinNetwork(value ?? this.value, coinParam ?? this.coinParam);
+
+  factory AppBitcoinNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, WalletModelCborTagsConst.bitconNetwork);
+    return AppBitcoinNetwork(
+      cbor.elementAt(0),
+      BitcoinParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
   }
 
   const AppBitcoinNetwork(this.value, this.coinParam);
+
   bool get isBitcoin => true;
 
   @override
@@ -137,18 +148,13 @@ class AppBitcoinNetwork extends AppNetworkImpl {
         WalletModelCborTagsConst.bitconNetwork);
   }
 
-  factory AppBitcoinNetwork.fromCborBytesOrObject(
-      {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
-        bytes, obj, WalletModelCborTagsConst.bitconNetwork);
-    return AppBitcoinNetwork(
-      cbor.elementAt(0),
-      BitcoinParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
-    );
-  }
-
   @override
   bool get supportCustomNode => true;
+
+  @override
+  AppBitcoinNetwork copyWith({int? value, BitcoinParams? coinParam}) {
+    return AppBitcoinNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
 }
 
 class AppBitcoinCashNetwork extends AppBitcoinNetwork {
@@ -179,7 +185,7 @@ class AppBitcoinCashNetwork extends AppBitcoinNetwork {
   }
 }
 
-class AppXRPNetwork extends AppNetworkImpl {
+class AppXRPNetwork extends AppNetworkImpl<RippleNetworkParams> {
   @override
   final int value;
   @override
@@ -222,10 +228,15 @@ class AppXRPNetwork extends AppNetworkImpl {
 
   @override
   NetworkType get type => NetworkType.xrpl;
+
+  @override
+  AppXRPNetwork copyWith({int? value, RippleNetworkParams? coinParam}) {
+    return AppXRPNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
 }
 //
 
-class APPEVMNetwork extends AppNetworkImpl {
+class APPEVMNetwork extends AppNetworkImpl<EVMNetworkParams> {
   @override
   final int value;
   @override
@@ -241,6 +252,7 @@ class APPEVMNetwork extends AppNetworkImpl {
         EVMNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
         slip44: cbor.elementAt(2));
   }
+  @override
   APPEVMNetwork copyWith(
       {int? value, EVMNetworkParams? coinParam, int? slip44}) {
     return APPEVMNetwork(value ?? this.value, coinParam ?? this.coinParam,
@@ -271,7 +283,7 @@ class APPEVMNetwork extends AppNetworkImpl {
   NetworkType get type => NetworkType.ethereum;
 }
 
-class APPTVMNetwork extends AppNetworkImpl {
+class APPTVMNetwork extends AppNetworkImpl<TVMNetworkParams> {
   @override
   final int value;
   @override
@@ -308,9 +320,14 @@ class APPTVMNetwork extends AppNetworkImpl {
 
   @override
   NetworkType get type => NetworkType.tron;
+
+  @override
+  APPTVMNetwork copyWith({int? value, TVMNetworkParams? coinParam}) {
+    return APPTVMNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
 }
 
-class APPSolanaNetwork extends AppNetworkImpl {
+class APPSolanaNetwork extends AppNetworkImpl<SolanaNetworkParams> {
   @override
   final int value;
   @override
@@ -325,6 +342,7 @@ class APPSolanaNetwork extends AppNetworkImpl {
       SolanaNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
     );
   }
+  @override
   APPSolanaNetwork copyWith({int? value, SolanaNetworkParams? coinParam}) {
     return APPSolanaNetwork(value ?? this.value, coinParam ?? this.coinParam);
   }
@@ -355,7 +373,7 @@ class APPSolanaNetwork extends AppNetworkImpl {
   NetworkType get type => NetworkType.solana;
 }
 
-class APPCardanoNetwork extends AppNetworkImpl {
+class APPCardanoNetwork extends AppNetworkImpl<CardanoNetworkParams> {
   @override
   final int value;
   @override
@@ -409,9 +427,14 @@ class APPCardanoNetwork extends AppNetworkImpl {
 
   @override
   NetworkType get type => NetworkType.cardano;
+
+  @override
+  APPCardanoNetwork copyWith({int? value, CardanoNetworkParams? coinParam}) {
+    return APPCardanoNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
 }
 
-class APPCosmosNetwork extends AppNetworkImpl {
+class APPCosmosNetwork extends AppNetworkImpl<CosmosNetworkParams> {
   @override
   final int value;
   @override
@@ -451,9 +474,14 @@ class APPCosmosNetwork extends AppNetworkImpl {
 
   @override
   NetworkType get type => NetworkType.cosmos;
+
+  @override
+  APPCosmosNetwork copyWith({int? value, CosmosNetworkParams? coinParam}) {
+    return APPCosmosNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
 }
 
-class APPTonNetwork extends AppNetworkImpl {
+class APPTonNetwork extends AppNetworkImpl<TonNetworkParams> {
   @override
   final int value;
   @override
@@ -493,4 +521,9 @@ class APPTonNetwork extends AppNetworkImpl {
   bool get supportCustomNode => false;
   @override
   NetworkType get type => NetworkType.ton;
+
+  @override
+  APPTonNetwork copyWith({int? value, TonNetworkParams? coinParam}) {
+    return APPTonNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
 }
