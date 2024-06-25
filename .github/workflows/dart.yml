@@ -22,9 +22,9 @@ jobs:
     - name: Download and set up Flutter
       run: |
         curl -L -o flutter.zip https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.3.8-stable.zip
-        powershell -Command "New-Item -Path ${{ env.FLUTTER_ROOT }} -ItemType Directory -Force"
-        powershell -Command "Expand-Archive -Path flutter.zip -DestinationPath ${{ env.FLUTTER_ROOT }}"
-        echo "${{ env.FLUTTER_ROOT }}\\flutter\\bin" >> $GITHUB_PATH
+        powershell -Command "New-Item -Path 'flutter_sdk' -ItemType Directory -Force"
+        powershell -Command "Expand-Archive -Path 'flutter.zip' -DestinationPath 'flutter_sdk'"
+        echo "flutter_sdk\\flutter\\bin" >> $GITHUB_PATH
 
     - name: Install dependencies
       run: flutter pub get
