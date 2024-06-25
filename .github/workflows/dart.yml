@@ -19,12 +19,17 @@ jobs:
     - name: Set Flutter directory
       run: echo "FLUTTER_ROOT=flutter_sdk" >> $GITHUB_ENV
 
-    - name: Download and set up Flutter
-      run: |
-        curl -L -o flutter.zip https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.3.8-stable.zip
-        powershell -Command "New-Item -Path 'flutter_sdk' -ItemType Directory -Force"
-        powershell -Command "Expand-Archive -Path 'flutter.zip' -DestinationPath 'flutter_sdk'"
-        echo "flutter_sdk\\flutter\\bin" >> $GITHUB_PATH
+    - name: Download Flutter SDK
+      run: curl -L -o flutter.zip https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.3.8-stable.zip
+
+    - name: Create Flutter directory
+      run: powershell -Command "New-Item -Path 'flutter_sdk' -ItemType Directory -Force"
+
+    - name: Extract Flutter SDK
+      run: powershell -Command "Expand-Archive -Path 'flutter.zip' -DestinationPath 'flutter_sdk'"
+
+    - name: Add Flutter to PATH
+      run: echo "flutter_sdk\\flutter\\bin" >> $GITHUB_PATH
 
     - name: Install dependencies
       run: flutter pub get
