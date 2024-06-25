@@ -25,6 +25,7 @@ class CoinGeckoUtils {
         "Bitcoin": "bitcoin",
         "Litecoin": "litecoin",
         "Dogecoin": "dogecoin",
+        "Pepecoin": "pepecoin-network",
         "BitcoinSV": "bitcoin-cash-sv",
         "Dash": "dash",
         "Ripple": "ripple",

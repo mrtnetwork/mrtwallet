@@ -2,3 +2,4 @@
 *.zip
 *.apk
 *.msix
+mrt_wallet/release-key.jks
