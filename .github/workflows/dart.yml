@@ -16,17 +16,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Navigate to project directory
-      run: cd mrt_wallet
-
     - name: Set Flutter directory
       run: echo "FLUTTER_ROOT=flutter_sdk" >> $GITHUB_ENV
 
     - name: Download and set up Flutter
       run: |
         curl -L -o flutter.zip https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.3.8-stable.zip
-        Expand-Archive -Path flutter.zip -DestinationPath ${{ env.FLUTTER_ROOT }}
-        echo "${{ env.FLUTTER_ROOT }}\flutter\bin" >> $GITHUB_PATH
+        mkdir -p ${{ env.FLUTTER_ROOT }}
+        powershell -Command "Expand-Archive -Path flutter.zip -DestinationPath ${{ env.FLUTTER_ROOT }}"
+        echo "${{ env.FLUTTER_ROOT }}\\flutter\\bin" >> $GITHUB_PATH
 
     - name: Install dependencies
       run: flutter pub get
