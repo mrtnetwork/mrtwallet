@@ -29,7 +29,12 @@ jobs:
       run: powershell -Command "Expand-Archive -Path 'flutter.zip' -DestinationPath 'flutter_sdk'"
 
     - name: Add Flutter to PATH
-      run: echo "flutter_sdk\\flutter\\bin" >> $GITHUB_PATH
+      run: |
+        echo "${{ github.workspace }}\\flutter_sdk\\flutter\\bin" >> $GITHUB_PATH
+        echo "${{ github.workspace }}\\flutter_sdk\\flutter\\bin\\cache\\dart-sdk\\bin" >> $GITHUB_PATH
+
+    - name: Verify Flutter installation
+      run: flutter --version
 
     - name: Install dependencies
       run: flutter pub get
