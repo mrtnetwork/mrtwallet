@@ -42,12 +42,10 @@ class _MyWidgetState extends State<MyWidget> with WindowListener {
     final path = await plat.path();
     final naame = "${path.support}${DateTime.now().microsecond}.txt";
     final f = File(naame);
-
     await f.create(recursive: true);
     final v = List.generate(1000, (index) => "m").join();
     await f.writeAsString(v);
     plat.launchUri(f.path);
-    print("wrote done ${f.absolute.path}");
 
     await plat.share(Share.file(f.absolute.path, "ssds",
         text: "hasheddm", subject: "jafar2"));

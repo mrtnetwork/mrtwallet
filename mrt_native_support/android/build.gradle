@@ -2,7 +2,7 @@ group 'com.mrtnetwork.mrt_native_support'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.9.21'
+    ext.kotlin_version = '2.0.0'
     repositories {
         google()
         mavenCentral()
@@ -10,9 +10,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.0'
+        classpath 'com.android.tools.build:gradle:8.5.+'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.0'
+        classpath 'com.google.gms:google-services:4.4.2'
     }
 }
 
@@ -28,7 +28,8 @@ apply plugin: 'kotlin-android'
 
 
 android {
-    compileSdkVersion 33
+    namespace "com.mrtnetwork.mrt_native_support"
+    compileSdkVersion 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

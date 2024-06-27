@@ -50,7 +50,7 @@ class MrtViewBuilderState<T extends StateController>
 
   @override
   void didChangeDependencies() {
-    r = Repository.of(context);
+    r = StateRepository.of(context);
     r._add(context, stateController);
     super.didChangeDependencies();
   }

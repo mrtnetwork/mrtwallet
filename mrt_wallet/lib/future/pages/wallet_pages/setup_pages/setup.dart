@@ -1,9 +1,0 @@
-export 'controller/controller.dart';
-export 'extra_options.dart';
-export 'mnemonic_view.dart';
-export 'generate_mnemonic.dart';
-export 'setup_password.dart';
-export 'setup_wallet.dart';
-export 'verify_mnemonic.dart';
-export 'enter_backup.dart';
-export 'enter_mnemonic.dart';

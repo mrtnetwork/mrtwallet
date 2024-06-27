@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.mrtnetwork.wallet"
-    compileSdkVersion 33
+    compileSdkVersion 34
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -41,6 +41,7 @@ android {
     }
 
     defaultConfig {
+        namespace "com.mrtnetwork.wallet"
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.mrtnetwork.wallet"
         // You can update the following values to match your application needs.

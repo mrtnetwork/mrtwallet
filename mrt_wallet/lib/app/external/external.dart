@@ -1,1 +1,1 @@
-export 'coingeko.dart';
+export 'coingeko/coingeko.dart';

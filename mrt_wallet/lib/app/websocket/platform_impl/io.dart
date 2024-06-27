@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:mrt_wallet/app/error/exception/exception.dart';
 import 'package:mrt_wallet/app/websocket/core/core.dart';
-import 'package:mrt_wallet/provider/api/api_provider.dart';
 
 Future<PlatformWebScoket> connectSoc(String url,
         {List<String>? protocols}) async =>

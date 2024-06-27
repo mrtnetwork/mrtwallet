@@ -1,1 +1,0 @@
-export 'global.dart';
