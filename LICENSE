@@ -68,7 +68,8 @@ Apache License
       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
       copyright license to reproduce, prepare Derivative Works of,
       publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
+      Work and such Derivative Works in Source or Object form, with the
+      restriction that You may not modify the Work in any way. 
 
    3. Grant of Patent License. Subject to the terms and conditions of
       this License, each Contributor hereby grants to You a perpetual,
@@ -87,15 +88,15 @@ Apache License
       as of the date such litigation is filed.
 
    4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
+      Work or Derivative Works thereof in any medium, without
       modifications, and in Source or Object form, provided that You
       meet the following conditions:
 
       (a) You must give any other recipients of the Work or
           Derivative Works a copy of this License; and
 
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
+      (b) You must cause any distributed files to carry prominent notices
+          stating that the files may not be modified; and
 
       (c) You must retain, in the Source form of any Derivative Works
           that You distribute, all copyright, patent, trademark, and
@@ -125,7 +126,8 @@ Apache License
       for use, reproduction, or distribution of Your modifications, or
       for any such Derivative Works as a whole, provided Your use,
       reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
+      the conditions stated in this License, except for the restriction
+      against modification.
 
    5. Submission of Contributions. Unless You explicitly state otherwise,
       any Contribution intentionally submitted for inclusion in the Work
