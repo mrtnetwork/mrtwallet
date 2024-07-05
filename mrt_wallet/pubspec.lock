@@ -44,10 +44,11 @@ packages:
   bitcoin_base:
     dependency: "direct main"
     description:
-      path: "../../bitcoin_base"
-      relative: true
-    source: path
-    version: "4.5.0"
+      name: bitcoin_base
+      sha256: c934e20e090a4cb4e6b8e04dda5591bedd268439681d302a594457d0a35515f4
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.6.0"
   blockchain_utils:
     dependency: "direct main"
     description:
@@ -361,10 +362,11 @@ packages:
   on_chain:
     dependency: "direct main"
     description:
-      path: "../../on_chain"
-      relative: true
-    source: path
-    version: "3.5.0"
+      name: on_chain
+      sha256: "07d7d82fa29e5a98ee4a810b003666d5cb1ede8e280b4ad30d38d3d215632144"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.6.0"
   package_config:
     dependency: transitive
     description:

@@ -52,15 +52,15 @@ dependencies:
   blockchain_utils: ^3.2.0
   # blockchain_utils:
   #   path: ../../../bitcoin/blockchain_utils
-  # bitcoin_base: ^4.5.0
-  bitcoin_base:
-    path: ../../../bitcoin/bitcoin_base
+  bitcoin_base: ^4.6.0
+  # bitcoin_base:
+  #   path: ../../../bitcoin/bitcoin_base
   xrpl_dart: ^4.4.0
   # xrpl_dart:
   #   path: ../../../xrpl_dart
-  # on_chain: ^3.5.0
-  on_chain:
-    path: ../../on_chain
+  on_chain: ^3.6.0
+  # on_chain:
+  #   path: ../../on_chain
   cosmos_sdk: ^0.4.0
   # cosmos_sdk:
   #   path: ../../../cosmos_sdk
