@@ -3,6 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/address/utils.dart';
 
 class SelectRecipientAccountView<NETWORKADDRESS> extends StatefulWidget {
   const SelectRecipientAccountView(
@@ -183,10 +184,13 @@ class _SelectFromAccounts extends StatelessWidget {
                   children: [
                     Expanded(
                       child: InkWell(
-                          child: AddressDetailsView(address: addresses[index])),
+                          child: AddressDetailsView(
+                        address: addresses[index],
+                      )),
                     ),
                     WidgetConstant.width8,
                     CopyTextIcon(
+                        isSensitive: false,
                         dataToCopy: addresses[index].address.toAddress),
                   ],
                 ),
@@ -239,7 +243,10 @@ class _SelectFromContacts extends StatelessWidget {
                     )),
                   ),
                   WidgetConstant.width8,
-                  CopyTextIcon(dataToCopy: contacts[index].address),
+                  CopyTextIcon(
+                    isSensitive: false,
+                    dataToCopy: contacts[index].address,
+                  ),
                 ],
               ),
             );
@@ -286,7 +293,10 @@ class _WriteAddress extends StatelessWidget {
                                 },
                                 icon: const Icon(Icons.account_circle),
                               )
-                            : PasteTextIcon(onPaste: state.onPaste),
+                            : PasteTextIcon(
+                                onPaste: state.onPaste,
+                                isSensitive: false,
+                              ),
                       );
                     }),
                   ],

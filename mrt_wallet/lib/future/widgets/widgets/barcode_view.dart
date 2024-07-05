@@ -30,10 +30,10 @@ class BarcodeView extends StatefulWidget {
 }
 
 class _BarcodeViewState extends State<BarcodeView> with SafeState {
-  final buttomState = GlobalKey<StreamWidgetState>();
+  final buttonState = GlobalKey<StreamWidgetState>();
   bool showBarcode = false;
   Future<void> share() async {
-    buttomState.process();
+    buttonState.process();
     try {
       final toFile = await FileUtils.qrCodeToFile(
           data: widget.barcodeData,
@@ -45,9 +45,9 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
           subject: widget.shareSubject,
           text: widget.shareText,
           mimeType: FileMimeTypes.imagePng);
-      buttomState.success();
+      buttonState.success();
     } catch (e) {
-      buttomState.error();
+      buttonState.error();
     }
   }
 
@@ -116,8 +116,8 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
           children: [
             StreamWidget(
               backToIdle: APPConst.animationDuraion,
-              key: buttomState,
-              buttomWidget: FilledButton.icon(
+              key: buttonState,
+              buttonWidget: FilledButton.icon(
                 onPressed: share,
                 icon: const Icon(Icons.share),
                 label: Text("share_barcode".tr),

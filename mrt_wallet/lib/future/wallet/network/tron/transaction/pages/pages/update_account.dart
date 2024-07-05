@@ -32,7 +32,7 @@ class TronUpdateAccountFieldsView extends StatelessWidget {
                 title: PageTitleSubtitle(
                     title: "account_name".tr,
                     body: Text("account_name_desc".tr)),
-                buttomText: "setup_input".tr,
+                buttonText: "setup_input".tr,
                 label: "account_name".tr,
               ),
             )

@@ -4,5 +4,4 @@ export 'global/global.dart';
 export 'network/network.dart';
 export 'security/security.dart';
 export 'setting/setting.dart';
-export 'setup/setup.dart';
 export 'start/start.dart';

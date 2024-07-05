@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/core/core.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';

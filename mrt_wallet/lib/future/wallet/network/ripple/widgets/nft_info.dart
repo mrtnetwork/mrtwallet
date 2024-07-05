@@ -15,6 +15,7 @@ class RippleNFTokenView extends StatelessWidget {
       children: [
         Text("serial".tr, style: context.textTheme.labelLarge),
         CopyTextIcon(
+          isSensitive: false,
           dataToCopy: nft.serial.toString(),
           widget: OneLineTextWidget(nft.serial.toString(),
               style: context.textTheme.bodySmall),
@@ -22,6 +23,7 @@ class RippleNFTokenView extends StatelessWidget {
         WidgetConstant.height8,
         Text("nfts_id".tr, style: context.textTheme.labelLarge),
         CopyTextIcon(
+          isSensitive: false,
           dataToCopy: nft.nftokenId,
           widget: OneLineTextWidget(nft.nftokenId,
               style: context.textTheme.bodySmall),
@@ -30,6 +32,7 @@ class RippleNFTokenView extends StatelessWidget {
           WidgetConstant.height8,
           Text("uri".tr, style: context.textTheme.labelLarge),
           CopyTextIcon(
+              isSensitive: false,
               dataToCopy: nft.uri!,
               widget: OneLineTextWidget(nft.uri ?? "",
                   style: context.textTheme.bodySmall)),

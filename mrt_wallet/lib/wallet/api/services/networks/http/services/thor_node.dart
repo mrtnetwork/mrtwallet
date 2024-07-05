@@ -1,9 +1,8 @@
 import 'package:cosmos_sdk/cosmos_sdk.dart';
-import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/http/http.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 
-class ThorNodeHTTPService extends HTTPService
+class ThorNodeHTTPService extends HTTPService<CosmosAPIProvider>
     implements ThorNodeServiceProvider {
   ThorNodeHTTPService({
     required this.url,
@@ -32,5 +31,5 @@ class ThorNodeHTTPService extends HTTPService
   final Duration defaultTimeOut;
 
   @override
-  final APIServiceTracker<CosmosAPIProvider> provider;
+  final CosmosAPIProvider provider;
 }

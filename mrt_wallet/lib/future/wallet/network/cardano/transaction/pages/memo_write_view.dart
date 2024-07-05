@@ -7,14 +7,14 @@ class CardanoTransactionMemoWriteView extends StatefulWidget {
     super.key,
     required this.title,
     required this.label,
-    required this.buttomText,
+    required this.buttonText,
     required this.labeles,
     this.customForm,
     this.defaultValue,
   });
   final Widget title;
   final String label;
-  final String buttomText;
+  final String buttonText;
   final String? defaultValue;
   final NullStringString? customForm;
   final List<BigInt> labeles;
@@ -108,7 +108,10 @@ class _CardanoTransactionMemoWriteViewState
             maxLines: 5,
             initialValue: text,
             validator: widget.customForm,
-            suffixIcon: PasteTextIcon(onPaste: onPaste),
+            suffixIcon: PasteTextIcon(
+              onPaste: onPaste,
+              isSensitive: false,
+            ),
             onChanged: onChange,
             key: textFieldKey,
           ),
@@ -118,7 +121,7 @@ class _CardanoTransactionMemoWriteViewState
               FixedElevatedButton(
                 padding: WidgetConstant.paddingVertical20,
                 onPressed: onPressed,
-                child: Text(widget.buttomText),
+                child: Text(widget.buttonText),
               )
             ],
           )

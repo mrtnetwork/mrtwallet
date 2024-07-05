@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/core/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/ethereum/ethereum.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/core/core.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -12,11 +12,8 @@ class EthereumNewAddressParam implements NewAccountParams {
   final AddressDerivationIndex deriveIndex;
   @override
   final CryptoCoins coin;
-  const EthereumNewAddressParam({
-    required this.deriveIndex,
-    required this.coin,
-    List<int>? publicKey,
-  });
+  const EthereumNewAddressParam(
+      {required this.deriveIndex, required this.coin});
 
   @override
   IEthAddress toAccount(WalletNetwork network, List<int> publicKey) {

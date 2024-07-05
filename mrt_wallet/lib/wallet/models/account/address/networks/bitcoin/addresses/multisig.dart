@@ -1,8 +1,7 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
-
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 mixin BitcoinMultiSigBase {
@@ -18,7 +17,7 @@ class BitcoinMultiSigSignerDetais
 
   factory BitcoinMultiSigSignerDetais(
       {required List<int> publicKey,
-      required AddressDerivationIndex keyIndex,
+      required Bip32AddressIndex keyIndex,
       int weight = 1}) {
     if (!BytesUtils.bytesEqual(
         ECPublic.fromBytes(publicKey).toCompressedBytes(), publicKey)) {
@@ -40,7 +39,7 @@ class BitcoinMultiSigSignerDetais
     final List<int> publicKey = cbor.elementAt(0);
     final int weight = cbor.elementAt(1);
     final keyIndex =
-        AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
+        Bip32AddressIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     return BitcoinMultiSigSignerDetais(
         publicKey: publicKey, weight: weight, keyIndex: keyIndex);
   }
@@ -50,7 +49,7 @@ class BitcoinMultiSigSignerDetais
   @override
   int get weight => _wieght;
 
-  final AddressDerivationIndex keyIndex;
+  final Bip32AddressIndex keyIndex;
   String get path => keyIndex.toString();
 
   @override

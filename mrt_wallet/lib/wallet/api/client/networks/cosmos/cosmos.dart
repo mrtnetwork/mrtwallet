@@ -1,14 +1,13 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
-import 'package:mrt_wallet/wallet/utils/cosmos/cosmos.dart';
+import 'package:mrt_wallet/wroker/utils/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/services/core/base_service.dart';
-import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
-class CosmosClient implements NetworkClient<ICosmosAddress> {
+class CosmosClient implements NetworkClient<ICosmosAddress, CosmosAPIProvider> {
   CosmosClient(
       {required this.provider,
       required this.network,
@@ -19,9 +18,8 @@ class CosmosClient implements NetworkClient<ICosmosAddress> {
   @override
   final WalletCosmosNetwork network;
   @override
-  APIServiceTracker<CosmosAPIProvider> get serviceProvider =>
-      (provider.rpc as BaseServiceProtocol).provider
-          as APIServiceTracker<CosmosAPIProvider>;
+  BaseServiceProtocol<CosmosAPIProvider> get service =>
+      provider.rpc as BaseServiceProtocol<CosmosAPIProvider>;
 
   @override
   Future<void> updateBalance(ICosmosAddress account) async {

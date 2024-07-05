@@ -2,8 +2,7 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
-
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
@@ -16,21 +15,17 @@ import 'package:on_chain/ethereum/src/address/evm_address.dart';
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 
-class IEthAddress
-    with Equatable
-    implements Bip32AddressCore<BigInt, ETHAddress> {
+class IEthAddress extends CryptoAddress<BigInt, ETHAddress> with Equatable {
   IEthAddress._(
       {required this.keyIndex,
       required this.coin,
-      required List<int> publicKey,
       required this.address,
       required this.network,
       required this.networkAddress,
       required List<ETHERC20Token> tokens,
       required List<RippleNFToken> nfts,
       String? accountName})
-      : publicKey = List.unmodifiable(publicKey),
-        _tokens = List.unmodifiable(tokens),
+      : _tokens = List.unmodifiable(tokens),
         _nfts = List.unmodifiable(nfts),
         _accountName = accountName;
 
@@ -44,7 +39,6 @@ class IEthAddress
         balance: IntegerBalance.zero(network.coinParam.decimal));
     return IEthAddress._(
       coin: accountParams.coin,
-      publicKey: publicKey,
       address: addressDetauls,
       keyIndex: accountParams.deriveIndex,
       networkAddress: ethAddress,
@@ -67,7 +61,6 @@ class IEthAddress
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final List<int> publicKey = cbor.elementAt(3);
     final networkId = cbor.elementAt(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
@@ -89,7 +82,6 @@ class IEthAddress
     final String? accountName = cbor.elementAt(9);
     return IEthAddress._(
         coin: coin,
-        publicKey: publicKey,
         address: address,
         keyIndex: keyIndex,
         networkAddress: ethAddress,
@@ -116,8 +108,8 @@ class IEthAddress
   @override
   final int network;
 
-  @override
-  final List<int> publicKey;
+  // @override
+  // final List<int> publicKey;
 
   @override
   CborTagValue toCbor() {
@@ -126,7 +118,7 @@ class IEthAddress
           coin.proposal.specName,
           coin.coinName,
           keyIndex.toCbor(),
-          publicKey,
+          const CborNullValue(),
           address.toCbor(),
           networkAddress.address,
           network,
@@ -212,10 +204,12 @@ class IEthAddress
   String get orginalAddress => networkAddress.address;
 
   @override
-  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+  bool isEqual(CryptoAddress<BigInt, ETHAddress> other) {
+    return other.networkAddress.address == networkAddress.address;
+  }
 
   @override
-  bool isEqual(Bip32AddressCore<BigInt, ETHAddress> other) {
-    return other.networkAddress.address == networkAddress.address;
+  EthereumNewAddressParam toAccountParams() {
+    return EthereumNewAddressParam(deriveIndex: keyIndex, coin: coin);
   }
 }

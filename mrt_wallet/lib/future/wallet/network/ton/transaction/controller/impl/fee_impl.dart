@@ -40,6 +40,7 @@ mixin TonFeeImpl on TonTransactionImpl {
     _feeDetails = TonTransactionFeeDetails.nonEstimate();
     onChange();
     final estimate = await MethodUtils.call(() async => await _estimateFee());
+
     if (estimate.hasError) {
       if (!estimate.isCancel) {
         _feeStatus = StreamWidgetStatus.error;

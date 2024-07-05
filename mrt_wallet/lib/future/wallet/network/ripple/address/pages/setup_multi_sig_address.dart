@@ -5,6 +5,8 @@ import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/pages/pages/controll_ripple_transaction_account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 enum _MultiSigPage { account, info }
@@ -72,7 +74,7 @@ class _SetupRippleMutlisigAddressViewState
 
       final newAcc = RippleMultiSigSignerDetais(
           publicKey: acc.publicKey,
-          keyIndex: acc.keyIndex,
+          keyIndex: acc.keyIndex as Bip32AddressIndex,
           weight: signer.signerWeight);
 
       signers.addAll({signer: newAcc});
@@ -138,7 +140,9 @@ class _SetupRippleMutlisigAddressViewState
         threshold: 1,
         signers: [
           RippleMultiSigSignerDetais(
-              keyIndex: addr.keyIndex, publicKey: addr.publicKey, weight: 1)
+              keyIndex: addr.keyIndex as Bip32AddressIndex,
+              publicKey: addr.publicKey,
+              weight: 1)
         ],
         isRegularKey: true);
     setState(() {});
@@ -197,11 +201,11 @@ class _SetupRippleMutlisigAddressViewState
       } else {
         progressKey.success(
             backToIdle: false,
-            progressWidget: SuccessWithButtomView(
-              buttomWidget: ContainerWithBorder(
+            progressWidget: SuccessWithButtonView(
+              buttonWidget: ContainerWithBorder(
                   margin: WidgetConstant.paddingVertical8,
                   child: AddressDetailsView(address: result.result)),
-              buttomText: "close".tr,
+              buttonText: "close".tr,
               onPressed: () {
                 if (mounted) {
                   context.pop();

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
-    show APPConst, CoinGeckoUtils, QuickContextAccsess, Translate, UriUtils;
+    show CoinGeckoUtils, QuickContextAccsess, Translate, UriUtils;
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/future/wallet/account/pages/show_public_key.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/wallet/network/bch/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/bitcoin/account/account.dart';
@@ -13,9 +12,8 @@ import 'package:mrt_wallet/future/wallet/network/solana/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/account/account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/app/models/models/typedef.dart' show IntVoid;
 import 'package:mrt_wallet/wallet/wallet.dart'
-    show WalletBitcoinCashNetwork, ChainHandler, CryptoAddress, NetworkType;
+    show WalletBitcoinCashNetwork, ChainHandler, NetworkType;
 import 'package:mrt_wallet/future/router/page_router.dart';
 
 class NetworkAccountPageView extends StatelessWidget {
@@ -31,67 +29,6 @@ class NetworkAccountPageView extends StatelessWidget {
             if (!chainAccount.haveAddress) return [];
 
             return [
-              SliverAppBar(
-                pinned: true,
-                toolbarHeight: 0,
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(80),
-                  child: SizedBox(
-                    height: 80,
-                    child: _AddressDetailsView(
-                      account: chainAccount.account.address,
-                      onPressed: (p0) {
-                        switch (p0) {
-                          case 1:
-                            context.openSliverBottomSheet(
-                              "publick_key".tr,
-                              child: AccountPublicKeyView(
-                                  chainAccount: wallet.chain),
-                            );
-
-                            break;
-                          case 0:
-                            context.to(PageRouter.exportPrivateKey,
-                                argruments: chainAccount.account.address);
-                            break;
-                          case 2:
-                            context.to(PageRouter.removeAccount,
-                                argruments: chainAccount.account.address);
-                          case 3:
-                            context
-                                .openSliverBottomSheet<String>(
-                                  "account_name".tr,
-                                  child: StringWriterView(
-                                    defaultValue: chainAccount
-                                        .account.address.accountName,
-                                    regExp: APPConst.accountNameRegExp,
-                                    title: PageTitleSubtitle(
-                                        title:
-                                            "setup_or_update_account_name".tr,
-                                        body: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text("setup_or_update_account_name"
-                                                .tr),
-                                            WidgetConstant.height8,
-                                            Text("remove_account_name_desc".tr),
-                                          ],
-                                        )),
-                                    buttomText: "setup_input".tr,
-                                    label: "account_name".tr,
-                                  ),
-                                )
-                                .then((value) => wallet.setupAccountName(
-                                    value, chainAccount.account.address));
-
-                          default:
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ),
               SliverToBoxAdapter(
                 child: Container(
                   width: context.mediaQuery.size.width,
@@ -169,10 +106,8 @@ class NetworkAccountPageView extends StatelessWidget {
                           FixedElevatedButton(
                               padding: WidgetConstant.paddingVertical20,
                               onPressed: () {
-                                context.to(
-                                    PageRouter.setupAddressPage(
-                                        chainAccount.network),
-                                    argruments: chainAccount.account);
+                                context.to(PageRouter.setupGenericAddress,
+                                    argruments: wallet.chain.account);
                               },
                               child: Text("setup_address".tr)),
                         ],
@@ -326,120 +261,6 @@ class _AccountPageView extends StatelessWidget {
       default:
         return const SizedBox();
     }
-  }
-}
-
-class _AddressDetailsView extends StatelessWidget {
-  const _AddressDetailsView({required this.account, required this.onPressed});
-  final CryptoAddress account;
-  final IntVoid onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        width: context.mediaQuery.size.width,
-        padding: WidgetConstant.padding10,
-        decoration: BoxDecoration(
-            color: context.colors.primary,
-            borderRadius: WidgetConstant.borderBottom8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: CopyTextIcon(
-                dataToCopy: account.address.toAddress,
-                color: context.colors.onPrimary,
-                widget: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    account.accountName != null
-                        ? RichText(
-                            maxLines: 1,
-                            text: TextSpan(children: [
-                              TextSpan(
-                                  text: account.accountName,
-                                  style: context.textTheme.labelLarge?.copyWith(
-                                      color: context.colors.onPrimary)),
-                              if (account.type != null)
-                                TextSpan(
-                                    text: " (${account.type!.tr})",
-                                    style: context.textTheme.bodySmall
-                                        ?.copyWith(
-                                            color: context.colors.onPrimary))
-                            ]))
-                        : account.type == null
-                            ? WidgetConstant.sizedBox
-                            : Text(
-                                account.accountName ?? account.type!.tr,
-                                style: context.textTheme.labelLarge
-                                    ?.copyWith(color: context.colors.onPrimary),
-                              ),
-                    if (account.multiSigAccount)
-                      Text(
-                        "multi_signature".tr,
-                        style: context.textTheme.bodyMedium
-                            ?.copyWith(color: context.colors.onPrimary),
-                      ),
-                    OneLineTextWidget(
-                      account.address.toAddress,
-                      style: context.textTheme.bodyMedium
-                          ?.copyWith(color: context.colors.onPrimary),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            FocusScope(
-              autofocus: false,
-              canRequestFocus: false,
-              child: SubmenuButton(
-                menuChildren: [
-                  MenuItemButton(
-                    trailingIcon: const Icon(Icons.north_east_sharp),
-                    onPressed: () {
-                      onPressed(0);
-                    },
-                    child: Text("export_private_key".tr),
-                  ),
-                  MenuItemButton(
-                    trailingIcon: const Icon(Icons.north_east_sharp),
-                    onPressed: () {
-                      onPressed(1);
-                    },
-                    child: Text("export_public_key".tr),
-                  ),
-                  MenuItemButton(
-                    trailingIcon: const Icon(Icons.edit),
-                    onPressed: () {
-                      onPressed(3);
-                    },
-                    child: Text("account_name".tr),
-                  ),
-                  MenuItemButton(
-                    trailingIcon: const Icon(Icons.remove),
-                    onPressed: () {
-                      onPressed(2);
-                    },
-                    child: Text("remove_account".tr),
-                  ),
-                ],
-                style: ButtonStyle(
-                    iconColor:
-                        WidgetStatePropertyAll(context.colors.onPrimary)),
-                child: const SizedBox(
-                  width: APPConst.double40,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.more_vert_sharp),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          ],
-        ));
   }
 }
 

@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/pages/pages/controller_tron_transaction_account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
@@ -101,7 +102,7 @@ class __SetupTronMultisigAddressViewState
 
       final newAcc = TronMultiSigSignerDetais(
           publicKey: acc.publicKey,
-          keyIndex: acc.keyIndex,
+          keyIndex: acc.keyIndex as Bip32AddressIndex,
           weight: signer.weight);
 
       signers.addAll({signer: newAcc});
@@ -158,11 +159,11 @@ class __SetupTronMultisigAddressViewState
       } else {
         progressKey.success(
             backToIdle: false,
-            progressWidget: SuccessWithButtomView(
-              buttomWidget: ContainerWithBorder(
+            progressWidget: SuccessWithButtonView(
+              buttonWidget: ContainerWithBorder(
                   margin: WidgetConstant.paddingVertical8,
                   child: AddressDetailsView(address: result.result)),
-              buttomText: "close".tr,
+              buttonText: "close".tr,
               onPressed: () {
                 if (mounted) {
                   context.pop();

@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/wallet/utils/ethereum/utils.dart';
+import 'package:mrt_wallet/wroker/utils/ethereum/utils.dart';
 import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
 
 class EthereumFee {

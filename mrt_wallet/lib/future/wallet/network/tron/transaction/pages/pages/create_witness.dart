@@ -32,7 +32,7 @@ class TronCreateWitnessFieldsView extends StatelessWidget {
                 title: PageTitleSubtitle(
                     title: "url".tr,
                     body: Text("tron_create_witness_url_desc".tr)),
-                buttomText: "setup_input".tr,
+                buttonText: "setup_input".tr,
                 label: "url".tr,
               ),
             )

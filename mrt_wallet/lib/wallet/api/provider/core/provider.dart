@@ -31,36 +31,32 @@ abstract class APIProvider with Equatable, CborSerializable {
 
   factory APIProvider.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    try {
-      final cborObj = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-      if (BytesUtils.bytesEqual(
-          cborObj.tags, CborTagsConst.evmApiServiceProvider)) {
-        return EthereumAPIProvider.fromCborBytesOrObject(obj: cborObj);
-      } else if (BytesUtils.bytesEqual(
-          cborObj.tags, CborTagsConst.tronApiServiceProvider)) {
-        return TronAPIProvider.fromCborBytesOrObject(obj: cborObj);
-      } else if (BytesUtils.bytesEqual(
-              cborObj.tags, CborTagsConst.electrumApiServiceProvider) ||
-          BytesUtils.bytesEqual(
-              cborObj.tags, CborTagsConst.bitcoinExplorerApiProvider)) {
-        return BaseBitcoinAPIProvider.fromCborBytesOrObject(obj: cborObj);
-      } else if (BytesUtils.bytesEqual(
-          cborObj.tags, CborTagsConst.solApiServiceProvider)) {
-        return SolanaAPIProvider.fromCborBytesOrObject(obj: cborObj);
-      } else if (BytesUtils.bytesEqual(
-          cborObj.tags, CborTagsConst.cardanoApiServiceProvider)) {
-        return CardanoAPIProvider.fromCborBytesOrObject(obj: cborObj);
-      } else if (BytesUtils.bytesEqual(
-          cborObj.tags, CborTagsConst.cosmosApiServiceProvider)) {
-        return CosmosAPIProvider.fromCborBytesOrObject(obj: cborObj);
-      } else if (BytesUtils.bytesEqual(
-          cborObj.tags, CborTagsConst.rippleApiServiceProvider)) {
-        return RippleAPIProvider.fromCborBytesOrObject(obj: cborObj);
-      } else {
-        return TonAPIProvider.fromCborBytesOrObject(obj: cborObj);
-      }
-    } catch (e) {
-      throw WalletExceptionConst.invalidProviderInformation;
+    final cborObj = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
+    if (BytesUtils.bytesEqual(
+        cborObj.tags, CborTagsConst.evmApiServiceProvider)) {
+      return EthereumAPIProvider.fromCborBytesOrObject(obj: cborObj);
+    } else if (BytesUtils.bytesEqual(
+        cborObj.tags, CborTagsConst.tronApiServiceProvider)) {
+      return TronAPIProvider.fromCborBytesOrObject(obj: cborObj);
+    } else if (BytesUtils.bytesEqual(
+            cborObj.tags, CborTagsConst.electrumApiServiceProvider) ||
+        BytesUtils.bytesEqual(
+            cborObj.tags, CborTagsConst.bitcoinExplorerApiProvider)) {
+      return BaseBitcoinAPIProvider.fromCborBytesOrObject(obj: cborObj);
+    } else if (BytesUtils.bytesEqual(
+        cborObj.tags, CborTagsConst.solApiServiceProvider)) {
+      return SolanaAPIProvider.fromCborBytesOrObject(obj: cborObj);
+    } else if (BytesUtils.bytesEqual(
+        cborObj.tags, CborTagsConst.cardanoApiServiceProvider)) {
+      return CardanoAPIProvider.fromCborBytesOrObject(obj: cborObj);
+    } else if (BytesUtils.bytesEqual(
+        cborObj.tags, CborTagsConst.cosmosApiServiceProvider)) {
+      return CosmosAPIProvider.fromCborBytesOrObject(obj: cborObj);
+    } else if (BytesUtils.bytesEqual(
+        cborObj.tags, CborTagsConst.rippleApiServiceProvider)) {
+      return RippleAPIProvider.fromCborBytesOrObject(obj: cborObj);
+    } else {
+      return TonAPIProvider.fromCborBytesOrObject(obj: cborObj);
     }
   }
 }

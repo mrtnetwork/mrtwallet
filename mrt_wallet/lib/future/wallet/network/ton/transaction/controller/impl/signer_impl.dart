@@ -1,7 +1,9 @@
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/transaction/controller/impl/transaction_impl.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
-import 'package:mrt_wallet/wallet/models/signing_request/signing_reguest.dart';
+import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 mixin TonSignerImpl on TonTransactionImpl {
@@ -22,8 +24,16 @@ mixin TonSignerImpl on TonTransactionImpl {
       sig = List<int>.unmodifiable(List<int>.filled(64, 0));
     } else {
       final signature = await walletProvider.signTransaction(
-          request: TonSigningRequest(
-              addresses: [address], network: network, digest: transfer.hash()));
+          request: SigningRequest(
+        addresses: [address],
+        network: network,
+        sign: (generateSignature) async {
+          final signRequest = GlobalSignRequest.cardano(
+              digest: transfer.hash(), index: address as Bip32AddressIndex);
+          final sss = await generateSignature(signRequest);
+          return sss.signature;
+        },
+      ));
       sig = signature.result;
     }
     return beginCell()

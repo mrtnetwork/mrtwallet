@@ -98,7 +98,7 @@ class RippleTransactionFieldsView extends StatelessWidget {
                               StreamWidget(
                                 key: controller.buttonKey,
                                 backToIdle: APPConst.oneSecoundDuration,
-                                buttomWidget: FixedElevatedButton(
+                                buttonWidget: FixedElevatedButton(
                                   padding: WidgetConstant.paddingVertical20,
                                   onPressed: () {
                                     controller.sendTr();

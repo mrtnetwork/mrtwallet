@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/core/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/cardano/cardano.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -11,7 +11,7 @@ class CardanoNewAddressParams implements NewAccountParams {
   final ADAAddressType addressType;
   @override
   final AddressDerivationIndex deriveIndex;
-  final AddressDerivationIndex? rewardKeyIndex;
+  final Bip32AddressIndex? rewardKeyIndex;
   final CardanoAddrDetails? addressDetails;
   final String? customHdPath;
   final List<int>? customHdPathKey;
@@ -41,7 +41,7 @@ class CardanoNewAddressParams implements NewAccountParams {
       {ADAAddressType? addressType,
       AddressDerivationIndex? deriveIndex,
       CardanoAddrDetails? addressDetails,
-      AddressDerivationIndex? rewardKeyIndex,
+      Bip32AddressIndex? rewardKeyIndex,
       List<int>? publicKey,
       String? customHdPath,
       List<int>? customHdPathKey,

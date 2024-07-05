@@ -1,5 +1,6 @@
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/controller/impl/transaction_impl.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 mixin RippleFeeImpl on RippleTransactionImpl {

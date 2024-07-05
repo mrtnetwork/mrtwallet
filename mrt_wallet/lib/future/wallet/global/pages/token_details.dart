@@ -48,7 +48,7 @@ class TokenDetailsModalView extends StatelessWidget {
                 onPressed: () {
                   context.openSliverDialog(
                       (ctx) => DialogTextView(
-                          buttomWidget: AsyncDialogDoubleButtonView(
+                          buttonWidget: AsyncDialogDoubleButtonView(
                             firstButtonPressed: () => wallet
                                 .removeToken(token, address)
                                 .then((value) {

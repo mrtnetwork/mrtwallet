@@ -9,6 +9,10 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/wroker/keys/models/imported.dart';
+import 'package:mrt_wallet/wroker/keys/models/key_type.dart';
+import 'package:mrt_wallet/wroker/utils/global/utils.dart';
+import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 
 enum _PrivateKeyTypes {
   extendKey("Extended key"),
@@ -48,8 +52,8 @@ class ImportAccountView extends StatelessWidget {
     final ImportCustomKeys? importKey = context.getNullArgruments();
     return PasswordCheckerView(
         accsess: WalletAccsessType.verify,
-        onAccsess: (p0, p1) {
-          return _ImportAccount(password: p1, customKey: importKey);
+        onAccsess: (crendential, password, network) {
+          return _ImportAccount(password: password, customKey: importKey);
         },
         title: "import_account".tr,
         subtitle: PageTitleSubtitle(
@@ -257,7 +261,16 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                     WidgetConstant.height8,
                     AppDropDownBottom(
                         items: {
-                          for (final i in coins) i: Text(i.coinName.camelCase)
+                          for (final i in coins)
+                            i: RichText(
+                                text: TextSpan(
+                                    style: context.textTheme.bodyMedium,
+                                    children: [
+                                  TextSpan(text: i.coinName),
+                                  TextSpan(
+                                      text: " (${i.proposal.specName}) ",
+                                      style: context.textTheme.labelSmall)
+                                ]))
                         },
                         value: coin,
                         label: "coin_type".tr,
@@ -318,7 +331,8 @@ class _ImportAccountStateKey extends StatelessWidget {
             onChanged: state.onChangeKey,
             initialValue: state._key,
             validator: state.validate,
-            suffixIcon: PasteTextIcon(onPaste: state.onPaste),
+            suffixIcon:
+                PasteTextIcon(onPaste: state.onPaste, isSensitive: true),
             error: state._error,
             obscureText: true),
         Row(
@@ -350,7 +364,7 @@ class _ImportAccountStateKey extends StatelessWidget {
                     title: PageTitleSubtitle(
                         title: "key_name".tr,
                         body: Text("import_private_key_key_name_desc".tr)),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: "key_name".tr,
                   ),
                 )

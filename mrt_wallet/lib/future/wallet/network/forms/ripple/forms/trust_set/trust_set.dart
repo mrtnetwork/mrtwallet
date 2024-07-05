@@ -5,6 +5,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
+import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 
 class RippleTrustSetForm implements RippleTransactionForm {
   final TransactionFormField<XRPCurrencyAmount> amount = TransactionFormField(

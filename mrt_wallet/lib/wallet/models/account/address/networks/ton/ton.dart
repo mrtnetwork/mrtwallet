@@ -3,20 +3,18 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
 
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wallet/utils/ton/ton.dart';
+import 'package:mrt_wallet/wroker/utils/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 
-class ITonAddress
-    with Equatable
-    implements Bip32AddressCore<BigInt, TonAddress> {
+class ITonAddress extends CryptoAddress<BigInt, TonAddress> with Equatable {
   ITonAddress._({
     required this.keyIndex,
     required this.coin,
@@ -84,9 +82,8 @@ class ITonAddress
     final WalletVersion version = WalletVersion.fromValue(cbor.elementAt(7));
     final int? subWalletId = cbor.elementAt(8);
     final List<TonJettonToken> tokens = (cbor.elementAt<List<dynamic>>(9))
-            ?.map((e) => TonJettonToken.fromCborBytesOrObject(obj: e))
-            .toList() ??
-        [];
+        .map((e) => TonJettonToken.fromCborBytesOrObject(obj: e))
+        .toList();
     final String? accountName = cbor.elementAt(11);
 
     return ITonAddress._(
@@ -124,7 +121,6 @@ class ITonAddress
   @override
   final int network;
 
-  @override
   final List<int> publicKey;
 
   final bool bouncable;
@@ -221,8 +217,8 @@ class ITonAddress
 
   @override
   late final String orginalAddress = networkAddress.toRawAddress();
-  @override
-  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+  // @override
+  // List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 
   WalletContract toWalletContract() {
     return TonUtils.fromVersion(
@@ -234,9 +230,19 @@ class ITonAddress
   }
 
   @override
-  bool isEqual(Bip32AddressCore<BigInt, TonAddress> other) {
+  bool isEqual(CryptoAddress<BigInt, TonAddress> other) {
     if (other is! ITonAddress) return false;
     return bouncable == other.bouncable &&
         BytesUtils.bytesEqual(other.networkAddress.hash, networkAddress.hash);
+  }
+
+  @override
+  TonNewAddressParam toAccountParams() {
+    return TonNewAddressParam(
+        deriveIndex: keyIndex,
+        coin: coin,
+        version: version,
+        bouncable: bouncable,
+        subWalletId: subWalletId);
   }
 }

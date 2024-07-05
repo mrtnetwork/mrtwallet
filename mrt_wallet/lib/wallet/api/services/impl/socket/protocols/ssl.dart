@@ -8,10 +8,12 @@ import 'package:mrt_wallet/wallet/api/services/impl/socket/core/socket_provider.
 import 'package:mrt_wallet/wallet/api/services/models/models/request_completer.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models/socket_status.dart';
 
-class SSLService extends BaseSocketService {
+class SSLService<T extends APIProvider> extends BaseSocketService<T> {
   SSLService({required this.url, required this.provider});
   @override
-  final APIServiceTracker<APIProvider> provider;
+  final T provider;
+  @override
+  final APIServiceTracker tracker = APIServiceTracker();
   @override
   final String url;
 
@@ -40,7 +42,7 @@ class SSLService extends BaseSocketService {
   }
 
   @override
-  void close() => _onClose();
+  void disposeService() => _onClose();
 
   void _onMessge(List<int> event) {
     final Map<String, dynamic> decode =

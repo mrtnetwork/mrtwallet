@@ -1,13 +1,10 @@
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
 
-class APIServiceTracker<T extends APIProvider> {
-  APIServiceTracker({required this.provider});
+class APIServiceTracker {
   final Live<APIServiceStatus> _status = Live(APIServiceStatus.active);
   APIServiceStatus get status => _status.value;
   Live<APIServiceStatus> get liveStatus => _status;
-  final T provider;
   final List<ApiRequest> _requests = [];
   List<ApiRequest> get requests => List<ApiRequest>.from(_requests)
     ..sort((a, b) => b.time.compareTo(a.time));

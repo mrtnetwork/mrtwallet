@@ -93,7 +93,7 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
       currectDecimal = decimal;
       final alert = await context.openSliverDialog(
           (ctx) => DialogTextView(
-                buttomWidget: AsyncDialogDoubleButtonView(
+                buttonWidget: AsyncDialogDoubleButtonView(
                   firstButtonLabel: "change_decimals".tr,
                 ),
                 widget: Column(

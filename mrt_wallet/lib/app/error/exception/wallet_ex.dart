@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'app_exception.dart';
 
 class WalletException implements AppException {
@@ -11,7 +11,7 @@ class WalletException implements AppException {
   final List<String>? _argruments;
   @override
   String toString() {
-    if (_argruments != null && !kDebugMode) {
+    if (_argruments != null) {
       return "invalid_request";
     }
     if (_argruments != null) {
@@ -19,11 +19,24 @@ class WalletException implements AppException {
     }
     return message;
   }
+
+  @override
+  operator ==(other) {
+    if (other is! WalletException) return false;
+    return other.message == message &&
+        CompareUtils.iterableIsEqual(_argruments, other._argruments);
+  }
+
+  @override
+  int get hashCode => Object.hash(message, _argruments);
 }
 
 class WalletExceptionConst {
   static final WalletException dataVerificationFailed =
       WalletException("data_verification_failed");
+
+  static final WalletException invalidSerializationData =
+      WalletException("invalid_serialization_data");
   static final WalletException invalidAccountDetails =
       WalletException("invalid_account_details");
   static final WalletException invalidBitcoinAddressType =
@@ -36,8 +49,14 @@ class WalletExceptionConst {
       WalletException("invalid_bip39_mnemonic_words");
   static final WalletException invalidBackup =
       WalletException("invalid_wallet_backup");
+  static final WalletException invalidBackupChecksum =
+      WalletException("invalid_wallet_backup_checksum");
+
+  ///
   static final WalletException incorrectPassword =
       WalletException("incorrect_password");
+  static final WalletException passwordUsedBefore =
+      WalletException("password_used_before");
   static final WalletException incorrectWalletData =
       WalletException("wallet_data_is_invalid");
   static final WalletException tooManyAccounts =
@@ -54,6 +73,12 @@ class WalletExceptionConst {
       WalletException("key_already_exists");
   static final WalletException accountDoesNotFound =
       WalletException("account_not_found");
+  static final WalletException notAuthorizedSigningAccount =
+      WalletException("signing_auth_validator");
+  static final WalletException incompleteWalletSetup =
+      WalletException("incomplete_wallet_setup");
+  static final WalletException walletDoesNotExists =
+      WalletException("wallet_does_not_exists");
   static final WalletException privateKeyIsNotAvailable =
       WalletException("private_key_is_not_available");
   static final WalletException fileVerificationFiled =
@@ -106,4 +131,9 @@ class WalletExceptionConst {
       WalletException("token_already_exists");
   static final WalletException nftsAlreadyExist =
       WalletException("nfts_already_exists");
+
+  static final WalletException walletAlreadyExists =
+      WalletException("wallet_already_exists");
+  static final WalletException walletNameExists =
+      WalletException("wallet_name_exists");
 }

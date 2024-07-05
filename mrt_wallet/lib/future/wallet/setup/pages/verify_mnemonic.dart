@@ -85,6 +85,7 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
       for (int i = 0; i < widget.mnemonic.length; i++) {
         inSelectMnemonic[i] = SelectedMnemonic.select(i, widget.mnemonic[i]);
       }
+      print(selectedMnemonic.join(" "));
       isEqual();
       setState(() {});
     }
@@ -184,7 +185,7 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         FixedElevatedButton(
-                            padding: WidgetConstant.padding10,
+                            padding: WidgetConstant.paddingVertical40,
                             onPressed: clear,
                             child: Text("reset".tr))
                       ],

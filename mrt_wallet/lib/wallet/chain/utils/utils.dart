@@ -581,7 +581,7 @@ class ChainUtils {
       WalletNetwork network, CborTagValue? account) {
     try {
       return toNetworkAccount(network, account!);
-    } catch (e) {
+    } catch (e, s) {
       return createNetworkAccount(network);
     }
   }

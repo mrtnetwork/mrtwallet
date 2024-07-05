@@ -20,7 +20,7 @@ class NumberWriteView extends StatefulWidget {
     super.key,
     required this.title,
     required this.label,
-    required this.buttomText,
+    required this.buttonText,
     this.allowDecimal = true,
     this.defaultValue,
     this.maxPrecision,
@@ -32,7 +32,7 @@ class NumberWriteView extends StatefulWidget {
   });
   final Widget title;
   final String label;
-  final String buttomText;
+  final String buttonText;
   final BigRational? min;
   final BigRational? max;
   final RegExp? regExp;
@@ -124,7 +124,7 @@ class _NumberWriteViewState extends State<NumberWriteView> with SafeState {
                     maxPrecision: widget.maxPrecision),
               ],
               validator: widget.customForm ?? validator,
-              suffixIcon: PasteTextIcon(onPaste: onPaste),
+              suffixIcon: PasteTextIcon(onPaste: onPaste, isSensitive: false),
               textAlign: TextAlign.center,
               onChanged: onChange,
               key: textFieldKey,
@@ -136,7 +136,7 @@ class _NumberWriteViewState extends State<NumberWriteView> with SafeState {
               FixedElevatedButton(
                 padding: WidgetConstant.paddingVertical20,
                 onPressed: onPressed,
-                child: Text(widget.buttomText),
+                child: Text(widget.buttonText),
               )
             ],
           )

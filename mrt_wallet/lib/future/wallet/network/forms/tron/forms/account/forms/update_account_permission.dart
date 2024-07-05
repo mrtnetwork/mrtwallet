@@ -3,6 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
+import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
 
 class TronAccountUpdatePermissionForm extends TronTransactionForm {

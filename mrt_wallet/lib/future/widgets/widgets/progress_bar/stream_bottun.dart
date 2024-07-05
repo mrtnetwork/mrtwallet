@@ -8,13 +8,15 @@ enum StreamWidgetStatus {
   success,
   error,
   progress,
-  hide,
+  hide;
+
+  bool get inProgress => this == StreamWidgetStatus.progress;
 }
 
 class StreamWidget extends StatefulWidget {
   const StreamWidget({
     GlobalKey<StreamWidgetState>? key,
-    required this.buttomWidget,
+    required this.buttonWidget,
     this.padding = EdgeInsets.zero,
     this.initialStatus = StreamWidgetStatus.idle,
     this.backToIdle,
@@ -25,7 +27,7 @@ class StreamWidget extends StatefulWidget {
   final StreamWidgetStatus initialStatus;
   final EdgeInsets padding;
   final Duration? backToIdle;
-  final Widget buttomWidget;
+  final Widget buttonWidget;
   final bool hideAfterError;
   final bool hideAfterSuccsess;
   final bool fixedSize;
@@ -93,7 +95,7 @@ class StreamWidgetState extends State<StreamWidget> with SafeState {
                         ? WidgetConstant.errorIcon
                         : _status == StreamWidgetStatus.progress
                             ? const Center(child: CircularProgressIndicator())
-                            : widget.buttomWidget,
+                            : widget.buttonWidget,
           ),
         ),
       ),

@@ -147,7 +147,7 @@ class __MonitorTronTRC10TokenViewState extends State<_MonitorTronTRC10TokenView>
                             onRemove: () {
                               context.openSliverDialog(
                                   (ctx) => DialogTextView(
-                                      buttomWidget: AsyncDialogDoubleButtonView(
+                                      buttonWidget: AsyncDialogDoubleButtonView(
                                         firstButtonPressed: () =>
                                             onTap(token, exist),
                                       ),
@@ -161,7 +161,7 @@ class __MonitorTronTRC10TokenViewState extends State<_MonitorTronTRC10TokenView>
                               onChanged: (value) {
                                 context.openSliverDialog(
                                     (ctx) => DialogTextView(
-                                        buttomWidget:
+                                        buttonWidget:
                                             AsyncDialogDoubleButtonView(
                                           firstButtonPressed: () =>
                                               onTap(token, exist),

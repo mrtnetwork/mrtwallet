@@ -3,6 +3,9 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/controller/impl/transaction.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
 
 mixin TronSignerImpl on TronTransactionImpl {
@@ -38,11 +41,44 @@ mixin TronSignerImpl on TronTransactionImpl {
           ],
           timestamp: block.blockHeader.rawData.timestamp);
 
-      final Secp256k1SigningRequest<List<List<int>>> request =
-          Secp256k1SigningRequest<List<List<int>>>(
-              address: address,
-              network: network,
-              transactionDigest: raw.toBuffer());
+      final SigningRequest<List<List<int>>> request =
+          SigningRequest<List<List<int>>>(
+        addresses: [address],
+        network: network,
+        sign: (generateSignature) async {
+          final List<int> transactionDigest =
+              List<int>.unmodifiable(raw.toBuffer());
+          if (address.multiSigAccount) {
+            final multiSigAddress = address as ITronMultisigAddress;
+            final List<List<int>> signerSignatures = [];
+            BigInt threshHold = BigInt.zero;
+            for (final i in multiSigAddress.multiSignatureAccount.signers) {
+              try {
+                final signRequest = GlobalSignRequest.tron(
+                    digest: transactionDigest, index: i.keyIndex);
+                final sss = await generateSignature(signRequest);
+                signerSignatures.add(sss.signature);
+                threshHold += i.weight;
+                if (threshHold >=
+                    multiSigAddress.multiSignatureAccount.threshold) {
+                  break;
+                }
+              } catch (e) {
+                continue;
+              }
+            }
+            if (threshHold < multiSigAddress.multiSignatureAccount.threshold) {
+              throw WalletExceptionConst.privateKeyIsNotAvailable;
+            }
+            return signerSignatures;
+          }
+          final signRequest = GlobalSignRequest.tron(
+              digest: transactionDigest,
+              index: address.keyIndex as Bip32AddressIndex);
+          final sss = await generateSignature(signRequest);
+          return [sss.signature];
+        },
+      );
       final signature = await walletProvider.signTransaction(request: request);
       if (signature.hasError) {
         throw signature.exception!;

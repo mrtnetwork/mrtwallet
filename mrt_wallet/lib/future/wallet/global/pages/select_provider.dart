@@ -14,8 +14,8 @@ class SelectProviderIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
     return LiveWidget(() {
-      final APIServiceTracker<APIProvider>? provider =
-          wallet.chain.provider()?.serviceProvider;
+      final client = wallet.chain.provider();
+      final APIServiceTracker? provider = client?.service.tracker;
 
       return IconButton(
         tooltip: provider.message().tr,
@@ -23,7 +23,7 @@ class SelectProviderIcon extends StatelessWidget {
           context.openSliverDialog(
               (ctx) => _SelectProviderView(
                     network: wallet.network,
-                    selectedProvider: provider,
+                    service: client?.service,
                   ), content: (context) {
             return wallet.network.supportCustomNode
                 ? [
@@ -69,9 +69,8 @@ class ProviderTrackerStatusView extends StatelessWidget {
 }
 
 class _SelectProviderView extends StatelessWidget {
-  const _SelectProviderView(
-      {required this.selectedProvider, required this.network});
-  final APIServiceTracker<APIProvider>? selectedProvider;
+  const _SelectProviderView({required this.service, required this.network});
+  final BaseServiceProtocol? service;
   final WalletNetwork network;
   bool get isTron => network is WalletTronNetwork;
   @override
@@ -103,10 +102,10 @@ class _SelectProviderView extends StatelessWidget {
               shrinkWrap: true,
               itemBuilder: (context, index) {
                 final provider = providers.elementAt(index);
-                final bool isSelected = selectedProvider?.provider == provider;
+                final bool isSelected = service?.provider == provider;
                 return ContainerWithBorder(
                   onRemoveIcon: isSelected
-                      ? Icon(selectedProvider.icon,
+                      ? Icon(service?.tracker.icon,
                           color: context.colors.onPrimaryContainer)
                       : WidgetConstant.sizedBox,
                   onRemove: (isTron && !isSelected)
@@ -116,7 +115,7 @@ class _SelectProviderView extends StatelessWidget {
                             context.openSliverBottomSheet(
                                 "network_provider_log_details".tr,
                                 child: _ProviderLogsView(
-                                    provider: selectedProvider!));
+                                    provider: service!.tracker));
                             return;
                           }
                           if (isTron) return;
@@ -287,6 +286,7 @@ class _ProviderLogsViewState extends State<_ProviderLogsView> with SafeState {
                             onRemove: () {},
                             onRemoveIcon: CopyTextIcon(
                               dataToCopy: request.uri!,
+                              isSensitive: false,
                               color: context.colors.onSecondary,
                             ),
                             onTapWhenOnRemove: false,
@@ -305,6 +305,7 @@ class _ProviderLogsViewState extends State<_ProviderLogsView> with SafeState {
                             backgroundColor: context.colors.secondary,
                             onRemove: () {},
                             onRemoveIcon: CopyTextIcon(
+                              isSensitive: false,
                               dataToCopy: request.params!,
                               color: context.colors.onSecondary,
                             ),
@@ -338,6 +339,7 @@ class _ProviderLogsViewState extends State<_ProviderLogsView> with SafeState {
                             onRemoveIcon: CopyTextIcon(
                               dataToCopy: request.response!,
                               color: context.colors.onSecondary,
+                              isSensitive: false,
                             ),
                             onTapWhenOnRemove: false,
                             child: Text(

@@ -54,7 +54,7 @@ class RippleAccountSetFieldsView extends StatelessWidget {
                         Text("empty_desc".tr)
                       ],
                     )),
-                buttomText: "setup_input".tr,
+                buttonText: "setup_input".tr,
                 label: "domain".tr,
               ),
             )
@@ -106,7 +106,7 @@ class RippleAccountSetFieldsView extends StatelessWidget {
                         Text("empty_desc".tr)
                       ],
                     )),
-                buttomText: "setup_input".tr,
+                buttonText: "setup_input".tr,
                 label: "email_hash".tr,
               ),
             )
@@ -147,7 +147,7 @@ class RippleAccountSetFieldsView extends StatelessWidget {
                         Text("empty_desc".tr)
                       ],
                     )),
-                buttomText: "setup_input".tr,
+                buttonText: "setup_input".tr,
                 label: "ripple_message_key".tr,
               ),
             )
@@ -219,7 +219,7 @@ class RippleAccountSetFieldsView extends StatelessWidget {
                         Text("ripple_transfer_rate_desc2".tr),
                       ],
                     )),
-                buttomText: "setup_input".tr,
+                buttonText: "setup_input".tr,
                 label: "ripple_transfer_rate".tr,
               ),
             )
@@ -259,7 +259,7 @@ class RippleAccountSetFieldsView extends StatelessWidget {
                         Text("ripple_tick_size_desc2".tr),
                       ],
                     )),
-                buttomText: "setup_input".tr,
+                buttonText: "setup_input".tr,
                 label: "ripple_tick_size".tr,
               ),
             )

@@ -11,7 +11,7 @@ import 'package:mrt_wallet/wallet/models/token/tokens/jetton.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:ton_dart/ton_dart.dart';
 
-class TonClient implements NetworkClient<ITonAddress> {
+class TonClient implements NetworkClient<ITonAddress, TonAPIProvider> {
   const TonClient({required this.provider, required this.network});
   final TonProvider provider;
   @override
@@ -19,9 +19,8 @@ class TonClient implements NetworkClient<ITonAddress> {
   TonApiType get apiType => provider.rpc.api;
 
   @override
-  APIServiceTracker<TonAPIProvider> get serviceProvider =>
-      (provider.rpc as BaseServiceProtocol).provider
-          as APIServiceTracker<TonAPIProvider>;
+  BaseServiceProtocol<TonAPIProvider> get service =>
+      provider.rpc as BaseServiceProtocol<TonAPIProvider>;
 
   @override
   Future<void> updateBalance(ITonAddress account) async {

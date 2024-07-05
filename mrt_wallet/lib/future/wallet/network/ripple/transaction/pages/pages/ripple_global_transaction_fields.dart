@@ -47,7 +47,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                             Text(field.subject!.tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: field.name.tr,
                   ),
                 )
@@ -115,7 +115,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                             Text(field.subject!.tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: field.name.tr,
                   ),
                 )
@@ -161,7 +161,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                             Text(field.subject!.tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: field.name.tr,
                   ),
                 )
@@ -193,7 +193,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                             Text(field.subject!.tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: field.name.tr,
                   ),
                 )
@@ -398,7 +398,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                                   Text(field.subject!.tr),
                                 ],
                               )),
-                          buttomText: "setup_input".tr,
+                          buttonText: "setup_input".tr,
                           label: field.name.tr,
                         ),
                       )
@@ -520,6 +520,7 @@ class _GenerateFulFillmentViewState extends State<_GenerateFulFillmentView>
                     ContainerWithBorder(
                         child: CopyTextIcon(
                       dataToCopy: fulFillment!.fulfillment,
+                      isSensitive: true,
                       widget: Text(fulFillment!.fulfillment),
                     )),
                     WidgetConstant.height20,
@@ -528,6 +529,7 @@ class _GenerateFulFillmentViewState extends State<_GenerateFulFillmentView>
                     ContainerWithBorder(
                         child: CopyTextIcon(
                       dataToCopy: fulFillment!.condition,
+                      isSensitive: true,
                       widget: Text(fulFillment!.condition),
                     ))
                   ],
@@ -543,7 +545,7 @@ class _GenerateFulFillmentViewState extends State<_GenerateFulFillmentView>
                 child: fulFillment == null
                     ? StreamWidget(
                         key: progressKey,
-                        buttomWidget: FilledButton(
+                        buttonWidget: FilledButton(
                             onPressed: generateFulFillment,
                             child: Text("generate".tr)))
                     : Row(children: [
@@ -553,7 +555,7 @@ class _GenerateFulFillmentViewState extends State<_GenerateFulFillmentView>
                                   .openSliverDialog<bool>(
                                       (p0) => DialogTextView(
                                             text: "saved_fulfillment_desc".tr,
-                                            buttomWidget:
+                                            buttonWidget:
                                                 const DialogDoubleButtonView(),
                                           ),
                                       "fulfillment".tr)

@@ -1,5 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:mrt_wallet/wallet/utils/bitcoin/bitcoin.dart';
+import 'package:mrt_wallet/wroker/utils/bitcoin/bitcoin.dart';
 
 class BitcoinMemo {
   factory BitcoinMemo(String memo) {

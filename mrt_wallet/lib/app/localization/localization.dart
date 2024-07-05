@@ -43,6 +43,7 @@ class Localization {
               "Password should be at least 8 characters long and include a combination of letters, numbers, and special characters",
           "weak_password":
               "Password is not strong. Make sure it contains uppercase, lowercase, special character, and numbers.",
+          "password_used_before": "This password has been used before.",
           "p_does_not_match": "Password does not match",
           "show_mnemonic_desc":
               "Please treat your mnemonic phrase with the utmost care and confidentiality. Do not share it with anyone, and ensure it remains hidden from prying eyes. Your mnemonic is the key to accessing your funds and should be kept secure at all times. Any unauthorized access may result in the loss of your assets.",
@@ -67,6 +68,7 @@ class Localization {
           "incorrect_password": "Incorrect password",
           "invalid_mnemonic": "Invalid mnemonic",
           "invalid_account_details": "Invalid account details",
+          "invalid_serialization_data": "Invalid serialization data",
           "invalid_passphrase": "invalid mnemonic passphrase.",
           "close": "Close",
           "launch_the_wallet": "Launching the wallet",
@@ -174,8 +176,7 @@ class Localization {
               "Do not take pictures of your mnemonic, as storing it in image format is not a safe practice and can compromise its security.",
           "show_mnemonic": "Show mnemonic",
           "backup_mnemonic": "Backup mnemonic",
-          "b_using_web3_secret_defination":
-              "Backup using the Web3 Secret Storage Definition.",
+          "b_using_web3_secret_defination": "Backup using the Web3 SSD.",
           "about_web3_secret_defination":
               "You can learn more about saving with Web3 Secret Storage Definition version 3 by following this",
           "end_link": "link.",
@@ -192,7 +193,7 @@ class Localization {
           "backup_desc1":
               "Kindly save the backup text in a text file and securely store it.",
           "backup_desc2":
-              "Only with the current wallet password can the backup be decrypted. In case of forgetting the password, there is no possibility of opening the file.",
+              "Only the current wallet password can decrypt the backup. If the password is forgotten, the file cannot be opened.",
           "restore_backup": "Restore backup",
           "restore_backuo_desc":
               "Recover the mnemonic using the backup stored in the Web3 definition storage",
@@ -432,9 +433,9 @@ class Localization {
           "wallet_preferences": "Wallet Preferences",
           "clear_wallet_data": "Clear Wallet Data",
           "never": "Never",
-          "one_minute": "one Minute",
-          "two_minute": "two Minute",
-          "five_minute": "five Minute",
+          "one_minute": "One Minute",
+          "two_minute": "Two Minute",
+          "five_minute": "Five Minute",
           "switching_account": "Switching account",
           "switching_network": "Switching network",
           "unlocking_wallet": "Unlocking wallet",
@@ -486,6 +487,8 @@ class Localization {
           "backup_wallet_desc1":
               "This backup can only be decrypted using this application.",
           "invalid_wallet_backup": "Invalid wallet backup.",
+          "invalid_wallet_backup_checksum":
+              "Invalid wallet backup checksum. The passphrase may be incorrect.",
           "mnemonic_backup": "Mnemonic backup",
           "wallet_backup": "Wallet backup",
           "select_backup_option": "Select your backup option.",
@@ -1391,6 +1394,7 @@ class Localization {
           "seed_generation_type":
               "Please select the method for generating the seed",
           "byron_legacy_seed": "Byron Legacy Seed",
+          "bip39_seed": "BIP-39 Seed",
           "byron_legacy": "Byron legacy",
           "first_index": "First index",
           "second_index": "second index",
@@ -1549,6 +1553,7 @@ class Localization {
           "derivation_path": "Derivation path",
           "hd_wallet_path_max_indeqxes":
               "only supports up to ___1__ HD wallet indexes.",
+          "unsupported_hd_wallet_index": "Unsupported hd wallet index.",
           "hd_wallet_hardened_desc":
               "For hardened indices, append ' or h to the end of the index.",
           "imported_": "Imported(___1__)",
@@ -1757,7 +1762,58 @@ class Localization {
               "Warning: Changing the token decimal places can significantly impact token balances and transactions. For example, changing from 9 to 10 decimal places may cause balance discrepancies and potential loss of funds. Proceed with caution and ensure you understand the consequences before making this change. The number of decimal places must be between 0 and 255.",
           "change_decimals": "Change decimals",
           "change_token_decimal_desc2":
-              "The token decimal places will be changed from ___1__ to ___2__ ."
+              "The token decimal places will be changed from ___1__ to ___2__ .",
+          "customize_key_derivation": "Customize derivation",
+          "ada_customize_derivation_desc":
+              "Choose seed, master key, and address generation type",
+          "choose_mnemonic_desc":
+              "Choose between 12, 15, 18, 21, or 24 words to generate a mnemonic.",
+          "choose_mnemonic_lang_desc":
+              "Choose your mnemonic language. We recommend using English as it is more universal.",
+          "wallet_already_exists": "Wallet already exists.",
+          "unlock_access_desc":
+              "This feature only works on an unlocked wallet. Please enter your wallet password to continue.",
+          "unlock_wallet": "Unlock Wallet",
+          "incomplete_wallet_setup": "Wallet setup is incomplete",
+          "switch_wallets": "Switch wallets",
+          "wallet_does_not_exists": "Wallet does not exists.",
+          "wallet_settings": "Wallet settings",
+          "wallet_settings_desc":
+              "Modify your wallet name, set password requirements, and choose it as the default app wallet.",
+          "wallet_name": "Wallet name",
+          "wallet_identifier_name": "Wallet identifier name",
+          "password_requirement": "Password requirement",
+          "wallet_password_requirement_desc":
+              "A password is required to access the wallet.",
+          "default_wallet": "Default wallet",
+          "default_wallet_desc":
+              "This wallet loads first among multiple wallets.",
+          "wallet_name_validator":
+              "Wallet name must be between 3 and 15 characters long.",
+          "wallet_name_validator2": "Wallet name already exists.",
+          "wallet_name_exists": "A wallet with this name already exists.",
+          "generate_keystore": "Generate keystore",
+          "generate_keystore_desc": "Generate Keystore V3 from private key.",
+          "verification_backup_review": "Backup Verification Review",
+          "verification_backup_desc":
+              "Please review the backup verification before importing it to your wallet.",
+          "backup_verification_success_desc":
+              "Backup successfully passed checksum verification",
+          "backup_verification_failed_desc":
+              "Verification failed. Please recheck your passphrase.",
+          "unsuported_legacy_backup": "Unsupported: Legacy backup",
+          "verified_accounts": "Verified accounts",
+          "total_accounts": "Total accounts",
+          "decrypting_backup_please_wait": "Decrypting backup. Please wait.",
+          "generating_wallet_please_wait": "Generating wallet. Please wait.",
+          "verifying_backup_please_wait": "Verifying backup. Please wait",
+          "unverified_account": "Unverified Account",
+          "unverified_account_desc":
+              "The verification of these accounts failed, so they cannot be imported into your wallet.",
+          "switching_wallet": "Switching wallet. Please wait.",
+          "signing_auth_validator":
+              "This account is not authorized for signing.",
+          "unsuported_key": "Unsupported key"
         }
       };
 }

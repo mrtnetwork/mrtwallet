@@ -59,12 +59,7 @@ Future<ByteBuffer> encrypt(crypto.SubtleAlgorithm algorithm,
     html.CryptoKey encryptionKey, String value) async {
   final v = await js_util.promiseToFuture<ByteBuffer>(
     crypto.encrypt(
-      algorithm,
-      encryptionKey,
-      Uint8List.fromList(
-        utf8.encode(value),
-      ),
-    ),
+        algorithm, encryptionKey, Uint8List.fromList(utf8.encode(value))),
   );
   return v;
 }

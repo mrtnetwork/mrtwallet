@@ -2,11 +2,19 @@ import 'dart:async';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/marketcap/prices/coingecko.dart';
 import 'package:mrt_wallet/repository/repository.dart';
-import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
-import 'package:mrt_wallet/wallet/models/token/token/token.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
+import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin LiveCurrencies on StateController, ExternalRepository {
-  List<String> coinIds();
+mixin LiveCurrencies on WalletStateController, ExternalRepository {
+  final _lock = SynchronizedLock();
+  void _listenOnWallet(WalletEventStaus status) {
+    if (status.isOpen) {
+      _startListening();
+    } else {
+      _disposeSteam();
+    }
+  }
+
   APPSetting get appSetting;
   late final Live<Currency> _currency = Live<Currency>(appSetting.currency);
   Currency get currencyToken => _currency.value;
@@ -32,24 +40,32 @@ mixin LiveCurrencies on StateController, ExternalRepository {
     _currency.notify();
   }
 
-  void _startListening() {
-    _coinIds ??= coinIds();
-    _streamPrices = MethodUtils.prediocCaller<CoingeckoPriceHandler>(() async {
-      final result = await MethodUtils.call(() async {
-        return await getCoinPrices(_coinIds!);
-      });
-      return result;
-    },
-            waitOnSuccess: const Duration(minutes: 10),
-            waitOnError: const Duration(minutes: 1),
-            canclable: _cancelStream)
-        .listen(_onUpdatePrices);
+  void _startListening() async {
+    if (_streamPrices != null) return;
+    await _lock.synchronized(() {
+      _coinIds ??= coinIds();
+      _streamPrices = MethodUtils.prediocCaller<CoingeckoPriceHandler>(
+              () async {
+        final result = await MethodUtils.call(() async {
+          return await getCoinPrices(_coinIds!);
+        });
+        return result;
+      },
+              waitOnSuccess: const Duration(minutes: 10),
+              waitOnError: const Duration(minutes: 1),
+              canclable: _cancelStream)
+          .listen(_onUpdatePrices);
+    });
   }
 
-  void _disposeSteam() {
-    _streamPrices?.cancel().catchError((e) => null);
-    _streamPrices = null;
-    _cancelStream.cancel();
+  void _disposeSteam() async {
+    await _lock.synchronized(() {
+      MethodUtils.nullOnException(() {
+        _streamPrices?.cancel().catchError((e) => null);
+        _streamPrices = null;
+        _cancelStream.cancel();
+      });
+    });
   }
 
   void changeCurrency(Currency? currency) {
@@ -61,12 +77,12 @@ mixin LiveCurrencies on StateController, ExternalRepository {
   @override
   void ready() {
     super.ready();
-    _startListening();
+    addWalletListener(_listenOnWallet);
   }
 
   @override
   void close() {
-    _disposeSteam();
+    removeWalletListener(_listenOnWallet);
     super.close();
   }
 }

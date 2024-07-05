@@ -38,7 +38,7 @@ extension QuickAccsessStreamButtonStateState on GlobalKey<StreamWidgetState> {
   }
 }
 
-extension QuickAccsessPageProgressState on GlobalKey<PageProgressState> {
+extension QuickAccsessPageProgressState on GlobalKey<PageProgressBaseState> {
   void progress([Widget? progressWidget]) {
     currentState?.updateStream(StreamWidgetStatus.progress,
         progressWidget: progressWidget);
@@ -64,11 +64,11 @@ extension QuickAccsessPageProgressState on GlobalKey<PageProgressState> {
   }
 
   void errorText(String text,
-      {bool backToIdle = true, bool showBackButtom = false}) {
+      {bool backToIdle = true, bool showBackButton = false}) {
     currentState?.updateStream(StreamWidgetStatus.error,
         progressWidget: ErrorWithTextView(
           text: text,
-          progressKey: showBackButtom ? this : null,
+          progressKey: showBackButton ? this : null,
         ),
         backToIdle: backToIdle);
   }
@@ -86,3 +86,53 @@ extension QuickAccsessPageProgressState on GlobalKey<PageProgressState> {
         backToIdle: backToIdle);
   }
 }
+
+// extension QuickAccsessFullPageProgressState
+//     on GlobalKey<FullPageProgressState> {
+//   void progress([Widget? progressWidget]) {
+//     currentState?.updateStream(StreamWidgetStatus.progress,
+//         progressWidget: progressWidget);
+//   }
+
+//   void backToIdle([Widget? progressWidget]) {
+//     currentState?.updateStream(StreamWidgetStatus.idle);
+//   }
+
+//   void progressText(String text, {bool sliver = true}) {
+//     currentState?.updateStream(StreamWidgetStatus.progress,
+//         progressWidget: ProgressWithTextView(text: text));
+//   }
+
+//   PageProgressStatus? get status => currentState?.status;
+//   bool get isSuccess => currentState?.status == PageProgressStatus.success;
+//   bool get hasError => currentState?.status == PageProgressStatus.error;
+
+//   bool get inProgress => currentState?.status == PageProgressStatus.progress;
+//   void error([Widget? progressWidget]) {
+//     currentState?.updateStream(StreamWidgetStatus.error,
+//         progressWidget: progressWidget);
+//   }
+
+//   void errorText(String text,
+//       {bool backToIdle = true, bool showBackButton = false}) {
+//     currentState?.updateStream(StreamWidgetStatus.error,
+//         progressWidget: ErrorWithTextView(
+//           text: text,
+//           // progressKey: showBackButton ? this : null,
+//         ),
+//         backToIdle: backToIdle);
+//   }
+
+//   void success({Widget? progressWidget, bool backToIdle = true}) {
+//     currentState?.updateStream(StreamWidgetStatus.success,
+//         progressWidget: progressWidget, backToIdle: backToIdle);
+//   }
+
+//   void successText(String text, {bool backToIdle = true}) {
+//     currentState?.updateStream(StreamWidgetStatus.success,
+//         progressWidget: SuccessWithTextView(
+//           text: text,
+//         ),
+//         backToIdle: backToIdle);
+//   }
+// }

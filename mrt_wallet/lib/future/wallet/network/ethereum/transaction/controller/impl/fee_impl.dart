@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/transaction_impl.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/ethereum/utils.dart';
 import 'package:on_chain/on_chain.dart';
 
 enum EIP1559FeeSpeed {

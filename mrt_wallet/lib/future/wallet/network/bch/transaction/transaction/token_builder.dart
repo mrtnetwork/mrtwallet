@@ -5,6 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/bch/token/pages/bcmr_validate.d
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/bitcoin_cash/bitcoin_cash_utils.dart';
 
 enum BCHCashTokenPage { build, utxo, send }
 
@@ -251,7 +252,7 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                                     Text("empty_desc".tr)
                                   ],
                                 )),
-                            buttomText: "setup_input".tr,
+                            buttonText: "setup_input".tr,
                             label: "commitment".tr,
                           ),
                         )
@@ -288,7 +289,7 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                           title: PageTitleSubtitle(
                               title: "total_supply".tr,
                               body: Text("input_total_supply".tr)),
-                          buttomText: "setup_input".tr,
+                          buttonText: "setup_input".tr,
                           label: "create_tokens".tr,
                         ),
                       )

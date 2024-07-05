@@ -117,7 +117,7 @@ class CosmosTransactionFieldsView extends StatelessWidget {
                                       .then(controller.setupFee);
                                 },
                                 onRemoveIcon: StreamWidget(
-                                  buttomWidget: controller.isThorChain
+                                  buttonWidget: controller.isThorChain
                                       ? Icon(Icons.circle,
                                           color: context.colors.transparent)
                                       : const Icon(Icons.edit),
@@ -162,7 +162,7 @@ class CosmosTransactionFieldsView extends StatelessWidget {
                                                   Text("empty_desc".tr),
                                                 ],
                                               )),
-                                          buttomText: "setup_memo".tr,
+                                          buttonText: "setup_memo".tr,
                                           label: "memo".tr,
                                         ),
                                       );

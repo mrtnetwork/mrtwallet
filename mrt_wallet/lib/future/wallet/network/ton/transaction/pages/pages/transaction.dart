@@ -24,8 +24,8 @@ class TonTransactionFieldsView extends StatelessWidget {
           return MrtViewBuilder<TonTransactionStateController>(
             controller: () => TonTransactionStateController(
                 walletProvider: wallet,
-                account: chain.account
-                    as NetworkAccountCore<BigInt, BigInt, TonAddress>,
+                account:
+                    chain.account as NetworkAccountCore<BigInt, TonAddress>,
                 network: network,
                 address: address,
                 apiProvider: chain.provider()!,
@@ -164,7 +164,7 @@ class _TonTransactionTransferFields extends StatelessWidget {
                             .openSliverDialog<bool>(
                                 (p0) => DialogTextView(
                                       text: "remove_recipient_desc".tr,
-                                      buttomWidget:
+                                      buttonWidget:
                                           const DialogDoubleButtonView(),
                                     ),
                                 "remove_recipient".tr)
@@ -294,6 +294,7 @@ class _TonTransactionTransferFields extends StatelessWidget {
                                         onRemove: () {},
                                         onTapWhenOnRemove: false,
                                         onRemoveWidget: CopyTextIcon(
+                                            isSensitive: false,
                                             dataToCopy: receiver.address.view),
                                         child: Column(
                                           crossAxisAlignment:
@@ -352,7 +353,7 @@ class _TonTransactionTransferFields extends StatelessWidget {
                                         url: LinkConst.reviewJettonQueryId),
                                   ],
                                 )),
-                            buttomText: "setup_input".tr,
+                            buttonText: "setup_input".tr,
                             label: "query_id".tr,
                           ),
                         )
@@ -411,7 +412,9 @@ class _TonTransactionTransferFields extends StatelessWidget {
                                     onRemove: () {},
                                     onTapWhenOnRemove: false,
                                     onRemoveIcon: CopyTextIcon(
-                                        dataToCopy: receiver.address.view),
+                                      dataToCopy: receiver.address.view,
+                                      isSensitive: false,
+                                    ),
                                     child: OneLineTextWidget(
                                         receiver.address.view),
                                   ),

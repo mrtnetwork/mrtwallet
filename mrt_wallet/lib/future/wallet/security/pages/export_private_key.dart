@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
@@ -6,9 +5,10 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/wroker/keys/keys.dart';
+import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 
 class AccountPrivteKeyView extends StatelessWidget {
   const AccountPrivteKeyView({super.key});
@@ -33,10 +33,10 @@ class AccountPrivteKeyView extends StatelessWidget {
         account: account,
         password: password,
         customKey: customKey,
-        onAccsess: (p0, p1) {
+        onAccsess: (crendential, password, network) {
           return _AccountPrivateKeyView(
-              keys: p0.whereType<AccessPrivateKeyResponse>().toList(),
-              password: p1,
+              keys: crendential.whereType<PrivateKeyData>().toList(),
+              password: password,
               account: account,
               network: wallet.network,
               customKey: customKey);
@@ -63,7 +63,7 @@ class _AccountPrivateKeyView extends StatefulWidget {
     required this.network,
     required this.customKey,
   });
-  final List<AccessPrivateKeyResponse> keys;
+  final List<PrivateKeyData> keys;
   final String password;
   final CryptoAddress? account;
   final EncryptedCustomKey? customKey;
@@ -74,24 +74,40 @@ class _AccountPrivateKeyView extends StatefulWidget {
 
 class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
     with SafeState, SecureState {
-  late AccessPrivateKeyResponse key = widget.keys.first;
+  late PrivateKeyData key = widget.keys.first;
   bool get hasMultipleKey => widget.keys.length > 1;
-  Bip32Base get account => key.account;
-  String get privateKey => key.privateKey;
+  String? keyInNetwork;
+  String get privateKey => keyInNetwork ?? key.privateKey;
+
+  String get extendedKey => key.extendedKey;
   CryptoCoins get coin => key.coin;
   String? get keyName => widget.customKey?.name;
   String? get wif => key.wif;
   bool _showPrivateKey = false;
 
-  void onChangeKey(AccessPrivateKeyResponse? changeKey) {
+  void onChangeKey(PrivateKeyData? changeKey) {
     if (key == changeKey || changeKey == null) return;
     key = changeKey;
+    init();
     setState(() {});
   }
 
   void onChangeShowPrivateKey() {
     _showPrivateKey = !_showPrivateKey;
     setState(() {});
+  }
+
+  void init() {
+    if (widget.network.type == NetworkType.xrpl) {
+      keyInNetwork = MethodUtils.nullOnException(
+          () => RippleUtils.toRipplePrivateKey(privateKey, coin));
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    init();
   }
 
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
@@ -165,6 +181,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                             secureBarcode: true,
                             barcodeWidget: ContainerWithBorder(
                                 child: CopyTextIcon(
+                                    isSensitive: true,
                                     dataToCopy: privateKey,
                                     widget: ObscureTextView(privateKey,
                                         maxLine: 3))),
@@ -213,17 +230,16 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                             secureBarcode: true,
                             barcodeWidget: ContainerWithBorder(
                                 child: CopyTextIcon(
-                                    dataToCopy: account.privateKey.toExtended,
-                                    widget: ObscureTextView(
-                                        account.privateKey.toExtended,
+                                    isSensitive: true,
+                                    dataToCopy: extendedKey,
+                                    widget: ObscureTextView(extendedKey,
                                         maxLine: 5))),
                             underBarcodeWidget: ErrorTextContainer(
                                 margin: WidgetConstant.paddingVertical10,
                                 error: "image_store_alert_keys".tr),
-                            dataToCopy: account.privateKey.toExtended,
+                            dataToCopy: extendedKey,
                             barcodeTitle: "extended_private_key".tr,
-                            widget:
-                                SelectableText(account.privateKey.toExtended),
+                            widget: SelectableText(extendedKey),
                           )),
                         ),
                       ),
@@ -264,6 +280,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                               barcodeWidget: ContainerWithBorder(
                                   child: CopyTextIcon(
                                       dataToCopy: wif!,
+                                      isSensitive: true,
                                       widget:
                                           ObscureTextView(wif!, maxLine: 3))),
                               underBarcodeWidget: ErrorTextContainer(
@@ -299,7 +316,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Padding(
-                  padding: WidgetConstant.paddingVertical20,
+                  padding: WidgetConstant.paddingVertical40,
                   child: FilledButton.icon(
                       label: Text("create_backup".tr),
                       onPressed: () {
@@ -308,11 +325,12 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                                   password: widget.password,
                                   data: privateKey,
                                   descriptions: [
-                                    WidgetConstant.height8,
                                     Text("about_web3_defination_desc4".tr),
+                                    WidgetConstant.height8,
+                                    Text("generate_keystore_desc".tr),
                                   ],
                                 ),
-                            "backup_private_key".tr);
+                            "generate_keystore".tr);
                       },
                       icon: const Icon(Icons.backup)),
                 )

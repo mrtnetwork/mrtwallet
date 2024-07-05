@@ -1,7 +1,9 @@
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/transaction/controller/imp/transaction_impl.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
-import 'package:mrt_wallet/wallet/models/signing_request/signing_reguest.dart';
+import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
 import 'package:on_chain/solana/solana.dart';
 
 mixin SolanaSignerImpl on SolanaTransactionImpl {
@@ -28,10 +30,22 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
       throw WalletException("required_signer_account_missing".tr);
     }
     final signedTr = await walletProvider.signTransaction(
-        request: SolanaSigningRequest(
-            network: network,
-            addresses: signerAccounts,
-            solanaTransaction: transaction));
+        request: SigningRequest(
+      network: network,
+      addresses: signerAccounts,
+      sign: (generateSignature) async {
+        final digest = List<int>.unmodifiable(transaction.serializeMessage());
+        for (int i = 0; i < signerAccounts.length; i++) {
+          final addr = signerAccounts.elementAt(i);
+          final signier = addr.keyIndex as Bip32AddressIndex;
+          final signRequest =
+              GlobalSignRequest.solana(digest: digest, index: signier);
+          final sss = await generateSignature(signRequest);
+          transaction.addSignature(addr.networkAddress, sss.signature);
+        }
+        return transaction;
+      },
+    ));
     if (signedTr.hasError) {
       throw signedTr.exception!;
     }
@@ -53,7 +67,7 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
     });
     if (result.hasError) {
       progressKey.errorText(result.error!.tr,
-          showBackButtom: true, backToIdle: false);
+          showBackButton: true, backToIdle: false);
     } else {
       progressKey.success(
           progressWidget:

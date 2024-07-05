@@ -68,9 +68,8 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
       websiteUri: "",
       uri: "https://",
     );
-    final tracker = APIServiceTracker(provider: evmServiceProvider);
     selectedProvider = EthereumClient(
-        provider: EVMRPC(EthereumHTTPService("", tracker)),
+        provider: EVMRPC(EthereumHTTPService("", evmServiceProvider)),
         network: widget.network);
 
     setState(() {});
@@ -136,8 +135,8 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
     final path =
         StrUtils.validateUri(v, schame: ['http', 'https', 'wss', 'ws']);
     if (path == null) return "rpc_url_validator".tr;
-    final exists = MethodUtils.nullOnException(() => providers
-        .firstWhere((element) => element.serviceProvider.provider.uri == v));
+    final exists = MethodUtils.nullOnException(() =>
+        providers.firstWhere((element) => element.service.provider.uri == v));
     if (exists != null) {
       return "rpc_url_already_exists".tr;
     }
@@ -165,8 +164,7 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
     pageProgressKey.progressText("updating_network".tr);
     final result = await MethodUtils.call(() async {
       final wallet = context.watch<WalletProvider>(StateConst.main);
-      final services =
-          providers.map((e) => e.serviceProvider.provider).toList();
+      final services = providers.map((e) => e.service.provider).toList();
       final updatedNetwork = network.copyWith(
           coinParam: network.coinParam.copyWith(
               providers: services,
@@ -196,14 +194,11 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
 
       final serviceProvider = EthereumAPIProvider(
           serviceName: StrUtils.addNumberToMakeUnique(
-              providers
-                  .map((e) => e.serviceProvider.provider.serviceName)
-                  .toList()
-                ..addAll(defaultProviders
-                    .map((e) => e.serviceProvider.provider.serviceName))
+              providers.map((e) => e.service.provider.serviceName).toList()
+                ..addAll(
+                    defaultProviders.map((e) => e.service.provider.serviceName))
                 ..removeWhere((element) =>
-                    element ==
-                    selectedProvider!.serviceProvider.provider.serviceName),
+                    element == selectedProvider!.service.provider.serviceName),
               uri.toString()),
           websiteUri: StrUtils.removeSchame(uri.host),
           uri: uri.toString());
@@ -325,7 +320,8 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                                         suffixIcon: isDefaultNetwork
                                             ? null
                                             : PasteTextIcon(
-                                                onPaste: onPasteExplorerAddres),
+                                                onPaste: onPasteExplorerAddres,
+                                                isSensitive: false),
                                       ),
                                       WidgetConstant.height20,
                                       Text(
@@ -349,7 +345,9 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                                             ? null
                                             : PasteTextIcon(
                                                 onPaste:
-                                                    onPasteExplorerTransaction),
+                                                    onPasteExplorerTransaction,
+                                                isSensitive: false,
+                                              ),
                                       ),
 
                                       if (defaultProviders.isNotEmpty) ...[
@@ -368,15 +366,15 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                                               onRemoveIcon:
                                                   ProviderTrackerStatusView(
                                                       provider: provider
-                                                          .serviceProvider),
+                                                          .service.tracker),
                                               child: Column(
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
-                                                  Text(provider.serviceProvider
-                                                      .provider.serviceName),
-                                                  Text(provider.serviceProvider
-                                                      .provider.websiteUri),
+                                                  Text(provider.service.provider
+                                                      .serviceName),
+                                                  Text(provider.service.provider
+                                                      .websiteUri),
                                                 ],
                                               ));
                                         }),
@@ -397,17 +395,17 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                                             onRemoveIcon:
                                                 ProviderTrackerStatusView(
                                                     provider: provider
-                                                        .serviceProvider),
+                                                        .service.tracker),
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(provider.serviceProvider
-                                                    .provider.serviceName),
-                                                Text(provider.serviceProvider
-                                                    .provider.websiteUri),
-                                                Text(provider.serviceProvider
-                                                    .provider.protocol.value.tr)
+                                                Text(provider.service.provider
+                                                    .serviceName),
+                                                Text(provider.service.provider
+                                                    .websiteUri),
+                                                Text(provider.service.provider
+                                                    .protocol.value.tr)
                                               ],
                                             ));
                                       }),
@@ -452,19 +450,15 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                                             onRemoveIcon:
                                                 ProviderTrackerStatusView(
                                                     provider: selectedProvider!
-                                                        .serviceProvider),
+                                                        .service.tracker),
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(selectedProvider!
-                                                    .serviceProvider
-                                                    .provider
-                                                    .serviceName),
-                                                Text(selectedProvider!
-                                                    .serviceProvider
-                                                    .provider
-                                                    .websiteUri)
+                                                Text(selectedProvider!.service
+                                                    .provider.serviceName),
+                                                Text(selectedProvider!.service
+                                                    .provider.websiteUri)
                                               ],
                                             )),
                                         WidgetConstant.height20,
@@ -478,8 +472,9 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                                         initialValue: rpcUrl,
                                         onChanged: onChageUrl,
                                         validator: validateRpcUrl,
-                                        suffixIcon:
-                                            PasteTextIcon(onPaste: onPasteUri),
+                                        suffixIcon: PasteTextIcon(
+                                            onPaste: onPasteUri,
+                                            isSensitive: false),
                                         label: "rpc_url".tr,
                                       ),
                                       Padding(

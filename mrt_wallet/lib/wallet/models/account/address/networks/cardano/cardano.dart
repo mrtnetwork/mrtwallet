@@ -2,37 +2,30 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
-
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
-import 'package:mrt_wallet/wallet/models/coins/coins.dart';
 import 'package:mrt_wallet/wallet/models/networks/cardano/models/address_details.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
-import 'package:mrt_wallet/wallet/utils/cardano/cardano_utils.dart';
+import 'package:mrt_wallet/wroker/worker.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 
-class ICardanoAddress
-    with Equatable
-    implements Bip32AddressCore<BigInt, ADAAddress> {
+class ICardanoAddress extends CryptoAddress<BigInt, ADAAddress> with Equatable {
   ICardanoAddress._(
       {required this.keyIndex,
       required this.coin,
-      required List<int> publicKey,
       required this.address,
       required this.network,
       required this.networkAddress,
       required List<TokenCore> tokens,
       required List<NFTCore> nfts,
       required this.addressDetails,
-      AddressDerivationIndex? rewardKeyIndex,
+      Bip32AddressIndex? rewardKeyIndex,
       String? accountName})
-      : publicKey = List.unmodifiable(publicKey),
-        _tokens = List.unmodifiable(tokens),
+      : _tokens = List.unmodifiable(tokens),
         _nfts = List.unmodifiable(nfts),
         _accountName = accountName,
         _rewardKeyIndex = rewardKeyIndex,
@@ -48,7 +41,6 @@ class ICardanoAddress
         balance: IntegerBalance.zero(network.coinParam.decimal));
     return ICardanoAddress._(
         coin: accountParams.coin,
-        publicKey: publicKey,
         address: addressDetauls,
         keyIndex: accountParams.deriveIndex,
         networkAddress: cardanoAddr,
@@ -72,7 +64,6 @@ class ICardanoAddress
     final CryptoCoins coin = CustomCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final List<int> publicKey = cbor.elementAt(3);
     final networkId = cbor.elementAt(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
@@ -92,13 +83,12 @@ class ICardanoAddress
     final CborTagValue? rewardIndexCbor = cbor.getCborTag(11);
     final rewardIndex = rewardIndexCbor == null
         ? null
-        : AddressDerivationIndex.fromCborBytesOrObject(obj: rewardIndexCbor);
+        : Bip32AddressIndex.fromCborBytesOrObject(obj: rewardIndexCbor);
     if (adaAddress.addressType == ADAAddressType.base && rewardIndex == null) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
     return ICardanoAddress._(
         coin: coin,
-        publicKey: publicKey,
         address: address,
         keyIndex: keyIndex,
         networkAddress: adaAddress,
@@ -127,8 +117,8 @@ class ICardanoAddress
   @override
   final int network;
 
-  @override
-  final List<int> publicKey;
+  // @override
+  // final List<int> publicKey;
 
   @override
   CborTagValue toCbor() {
@@ -137,7 +127,7 @@ class ICardanoAddress
           coin.proposal.specName,
           coin.coinName,
           keyIndex.toCbor(),
-          publicKey,
+          const CborNullValue(),
           address.toCbor(),
           networkAddress.address,
           network,
@@ -162,9 +152,9 @@ class ICardanoAddress
 
   final ADARewardAddress? rewardAddress;
 
-  final AddressDerivationIndex? _rewardKeyIndex;
+  final Bip32AddressIndex? _rewardKeyIndex;
 
-  AddressDerivationIndex? get rewardKeyIndex => _rewardKeyIndex;
+  Bip32AddressIndex? get rewardKeyIndex => _rewardKeyIndex;
 
   bool get isBaseAddress => networkAddress.addressType == ADAAddressType.base;
 
@@ -213,14 +203,33 @@ class ICardanoAddress
   @override
   String get orginalAddress => networkAddress.address;
 
-  @override
   List<AddressDerivationIndex> get keyIndexes =>
       [keyIndex, if (rewardKeyIndex != null) rewardKeyIndex!];
 
   @override
-  bool isEqual(Bip32AddressCore<BigInt, ADAAddress> other) {
+  List<Bip32AddressIndex> accessKeysIndexes() {
+    return [
+      keyIndex as Bip32AddressIndex,
+      if (_rewardKeyIndex != null) _rewardKeyIndex!
+    ];
+  }
+
+  @override
+  bool isEqual(CryptoAddress<BigInt, ADAAddress> other) {
     if (other is! ICardanoAddress) return false;
     return networkAddress.address == other.networkAddress.address &&
         rewardAddress?.address == other.rewardAddress?.address;
+  }
+
+  @override
+  CardanoNewAddressParams toAccountParams() {
+    return CardanoNewAddressParams(
+        addressType: addressDetails.addressType,
+        deriveIndex: keyIndex,
+        rewardKeyIndex: rewardKeyIndex,
+        addressDetails: addressDetails,
+        customHdPath: addressDetails.hdPath,
+        customHdPathKey: addressDetails.hdPathKey,
+        coin: coin);
   }
 }

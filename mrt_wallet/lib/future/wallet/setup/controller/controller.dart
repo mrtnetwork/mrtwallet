@@ -4,8 +4,10 @@ import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
+import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
 enum SetupWalletPage {
   password,
@@ -13,19 +15,41 @@ enum SetupWalletPage {
   confirm,
   extraOption,
   enterMnemonic,
-  backup
+  backup,
+  setting
 }
 
-enum SetupWalletMode { generate, exist, backup }
+enum SetupWalletMode {
+  generate,
+  exist,
+  backup;
+
+  SetupWalletPage get walletPage {
+    switch (this) {
+      case SetupWalletMode.exist:
+        return SetupWalletPage.enterMnemonic;
+      case SetupWalletMode.backup:
+        return SetupWalletPage.backup;
+      default:
+        return SetupWalletPage.mnemonic;
+    }
+  }
+}
 
 class SetupWalletController extends StateController {
-  SetupWalletController(this.setupMode);
-  final GlobalKey<PageProgressState> progressKey = GlobalKey();
+  SetupWalletController(this.setupMode, this.walletProvider);
   final SetupWalletMode setupMode;
+  final WalletProvider walletProvider;
   Mnemonic? _mnemonic;
   Mnemonic? get mnemonic => _mnemonic;
+
+  HDWallet? _wallet;
+  HDWallet? get wallet => _wallet;
+  WalletRestoreV2? _backup;
   int _mnemoicWord = 12;
   int get mnemonicWord => _mnemoicWord;
+
+  bool get hasMnemonic => _mnemonic != null;
 
   Bip39Languages _language = Bip39Languages.english;
   Bip39Languages get language => _language;
@@ -37,18 +61,28 @@ class SetupWalletController extends StateController {
   bool get inConfirm => _page == SetupWalletPage.confirm;
   bool get inExtraOption => _page == SetupWalletPage.extraOption;
 
+  void _reset() {
+    _mnemonic = null;
+    _mnemoicWord = 12;
+    _language = Bip39Languages.english;
+    _page = SetupWalletPage.password;
+  }
+
   void backButton() {
     switch (page) {
+      case SetupWalletPage.setting:
+        _page = setupMode.walletPage;
+        break;
       case SetupWalletPage.extraOption:
         _page = SetupWalletPage.confirm;
         break;
       case SetupWalletPage.confirm:
-        _page = SetupWalletPage.mnemonic;
-        _mnemonic = null;
+        _reset();
         break;
       case SetupWalletPage.mnemonic:
       case SetupWalletPage.enterMnemonic:
       case SetupWalletPage.backup:
+        _mnemonic = null;
         _page = SetupWalletPage.password;
         break;
       default:
@@ -62,13 +96,7 @@ class SetupWalletController extends StateController {
   void setPassword(String password) {
     if (StrUtils.isStrongPassword(password)) {
       _password = password;
-      if (setupMode == SetupWalletMode.exist) {
-        _page = SetupWalletPage.enterMnemonic;
-      } else if (setupMode == SetupWalletMode.backup) {
-        _page = SetupWalletPage.backup;
-      } else {
-        _page = SetupWalletPage.mnemonic;
-      }
+      _page = setupMode.walletPage;
       notify();
     }
   }
@@ -87,18 +115,34 @@ class SetupWalletController extends StateController {
     notify();
   }
 
-  void generate() {
+  void regenerate() {
+    _mnemonic = null;
+    notify();
+  }
+
+  void _generate() {
     final wNum = Bip39WordsNum.values
         .firstWhere((element) => element.value == _mnemoicWord);
     final mne = Bip39MnemonicGenerator(language);
     _mnemonic = mne.fromWordsNumber(wNum);
-    notify();
   }
 
   void toConfirm() {
     if (_mnemonic == null) return;
     _page = SetupWalletPage.confirm;
     notify();
+  }
+
+  final GlobalKey<StreamWidgetState> generateMnemonicKey = GlobalKey();
+  Future<void> generateMnemonic() async {
+    if (mnemonic == null) {
+      generateMnemonicKey.process();
+      await Future.microtask(() => _generate());
+      generateMnemonicKey.success();
+      notify();
+    } else {
+      toConfirm();
+    }
   }
 
   void toExtra(List<String> selectedMnemonic) {
@@ -109,23 +153,57 @@ class SetupWalletController extends StateController {
     notify();
   }
 
-  Future<(WalletMasterKeys, String)> setup(String? passphrase,
-      {Mnemonic? exitingMnemonic}) async {
+  Future<void> setupHDWallet(WalletUpdateInfosData walletInfos) async {
+    if (wallet == null) {
+      throw WalletExceptionConst.dataVerificationFailed;
+    }
+    MethodResult<void> result;
+    if (_backup != null) {
+      result = await walletProvider.setupBackup(
+          backup: _backup!, password: _password, walletInfos: walletInfos);
+    } else {
+      result = await walletProvider.setup(
+          hdWallet: wallet!, password: _password, walletInfos: walletInfos);
+    }
+    result.rethrowIfError();
+  }
+
+  Future<void> setup(String? passphrase, {Mnemonic? exitingMnemonic}) async {
     if (passphrase?.isEmpty ?? false) {
       throw WalletExceptionConst.invalidMnemonicPassphrase;
     }
-    final generate = await WalletMasterKeys.setup(
-        exitingMnemonic?.toStr() ?? mnemonic!.toStr(), passphrase ?? "");
-    return (generate, _password);
-  }
-
-  Future<String> setupBackup(WalletBackupCore backup,
-      {Mnemonic? exitingMnemonic}) async {
     if (!StrUtils.isStrongPassword(_password)) {
       throw WalletExceptionConst.incorrectPassword;
     }
+    exitingMnemonic ??= mnemonic!;
+    _wallet = await walletProvider.createWallet(
+        mnemonic: exitingMnemonic.toStr(),
+        passphrase: passphrase,
+        password: _password);
+    _page = SetupWalletPage.setting;
+    notify();
+  }
 
-    return _password;
+  Future<WalletRestoreV2> restoreWalletBackup(List<int> walletBackupBytes,
+      {String? passphrase}) async {
+    if (passphrase?.isEmpty ?? false) {
+      throw WalletExceptionConst.invalidMnemonicPassphrase;
+    }
+    if (!StrUtils.isStrongPassword(_password)) {
+      throw WalletExceptionConst.incorrectPassword;
+    }
+    _backup = await walletProvider.restoreWalletBackup(
+        backupBytes: walletBackupBytes,
+        passhphrase: passphrase,
+        password: _password);
+    _wallet = _backup!.wallet;
+    return _backup!;
+  }
+
+  void setupBackup(WalletRestoreV2 backup, {String? passphrase}) {
+    _backup = backup;
+    _page = SetupWalletPage.setting;
+    notify();
   }
 
   @override

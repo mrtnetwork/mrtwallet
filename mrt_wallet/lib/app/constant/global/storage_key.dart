@@ -8,4 +8,5 @@ class StorageConst {
   static const String coingeckoCoins = "coingeckoCoins";
   static const String external = "external";
   static const String app = "app";
+  static const String hdWallets = "wallets";
 }

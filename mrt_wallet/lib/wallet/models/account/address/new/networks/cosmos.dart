@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/core/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';

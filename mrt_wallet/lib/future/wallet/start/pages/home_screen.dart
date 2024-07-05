@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/wallet/start/pages/about.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
-import 'package:mrt_wallet/future/wallet/setup/setup.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart' show CryptoAddress;
+import 'package:mrt_wallet/wallet/models/others/models/status.dart';
+import 'package:mrt_wallet/wallet/wallet.dart' show CryptoAddress, HDWallet;
 import 'account_page.dart';
+import 'appbar.dart';
 import 'login_page.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
+import 'setup.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -16,110 +17,41 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
+
     return MrtViewBuilder<WalletProvider>(
       removable: false,
       controller: () => wallet,
       builder: (model) {
         return MaterialPageView(
-          child: Scaffold(
-            appBar: model.walletIsUnlock
-                ? null
-                : AppBar(
-                    title: Text(
-                        model.walletIsLock ? "wallet_login".tr : "setup".tr),
-                  ),
-            key: context.scaffoldKey,
-            resizeToAvoidBottomInset: true,
-            bottomNavigationBar:
-                !model.walletIsUnlock ? null : _BottomAppBar(model),
-            body: UnfocusableChild(
-              child: PageProgress(
-                key: wallet.pageStatusHandler,
-                backToIdle: APPConst.oneSecoundDuration,
-                initialStatus: StreamWidgetStatus.progress,
-                initialWidget:
-                    ProgressWithTextView(text: "launch_the_wallet".tr),
-                child: () => RefreshIndicator(
-                  notificationPredicate: (notification) => model.walletIsUnlock,
-                  onRefresh: model.updateBalance,
-                  child: AnimatedSwitcher(
-                    duration: APPConst.animationDuraion,
-                    child: model.walletIsLock
-                        ? const WalletLoginPageView()
-                        : model.walletIsUnlock
-                            ? NetworkAccountPageView(wallet: model)
-                            : ConstraintsBoxView(
-                                padding: WidgetConstant.padding20,
-                                alignment: Alignment.center,
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      const CircleAssetsImgaeView(
-                                          APPConst.logo),
-                                      WidgetConstant.height8,
-                                      Text(
-                                        "wellcome".tr,
-                                        style: context.textTheme.titleLarge,
-                                      ),
-                                      WidgetConstant.height20,
-                                      AppListTile(
-                                        title: Text("use_mnemonic".tr),
-                                        subtitle: Text("e_mnemonic".tr),
-                                        trailing:
-                                            const Icon(Icons.arrow_forward),
-                                        onTap: () async {
-                                          context.to(PageRouter.setup,
-                                              argruments:
-                                                  SetupWalletMode.exist);
-                                        },
-                                      ),
-                                      WidgetConstant.height8,
-                                      AppListTile(
-                                        title: Text("generate_mnemonic".tr),
-                                        subtitle: Text("g_mnemonic".tr),
-                                        trailing:
-                                            const Icon(Icons.arrow_forward),
-                                        onTap: () {
-                                          context.to(PageRouter.setup);
-                                        },
-                                      ),
-                                      WidgetConstant.height8,
-                                      AppListTile(
-                                        title: Text("restore_backup".tr),
-                                        subtitle:
-                                            Text("restore_backuo_desc".tr),
-                                        trailing:
-                                            const Icon(Icons.arrow_forward),
-                                        onTap: () {
-                                          context.to(PageRouter.setup,
-                                              argruments:
-                                                  SetupWalletMode.backup);
-                                        },
-                                      ),
-                                      WidgetConstant.height20,
-                                      FilledButton(
-                                          style: ButtonStyle(
-                                              foregroundColor:
-                                                  WidgetStatePropertyAll(
-                                                      context.colors.onSurface),
-                                              backgroundColor:
-                                                  WidgetStatePropertyAll(
-                                                      context.colors.surface)),
-                                          onPressed: () {
-                                            context.openSliverDialog(
-                                                (ctx) =>
-                                                    const AbountWalletView(),
-                                                APPConst.name);
-                                          },
-                                          child: Text("about_mrt_wallet".tr))
-                                    ],
-                                  ),
-                                ),
-                              ),
-                  ),
-                ),
+          child: FullPageProgressWidget(
+            key: wallet.pageStatusHandler,
+            backToIdle: APPConst.oneSecoundDuration,
+            initialStatus: StreamWidgetStatus.progress,
+            initialWidget: ProgressWithTextView(text: "launch_the_wallet".tr),
+            appBar: (c, s) => _CustomAppBar(
+              isOpen: wallet.isOpen,
+              hideAppbar: s.inProgress || !wallet.homePageStatus.isReady,
+              child: _AccountAppBar(wallet),
+            ),
+            scaffoldKey: context.scaffoldKey,
+            bottomNavigationBar: (c, s) {
+              if (s.inProgress || !model.isOpen) return null;
+              return _BottomAppBar(model);
+            },
+            child: (c) => UnfocusableChild(
+              child: RefreshIndicator(
+                notificationPredicate: (notification) => model.isOpen,
+                onRefresh: model.updateBalance,
+                child: APPAnimatedSwitcher(
+                    enable: wallet.homePageStatus,
+                    widgets: {
+                      WalletStatus.setup: (c) => const WalletSetupPageWidget(),
+                      WalletStatus.ready: (c) =>
+                          APPAnimatedSwitcher(enable: wallet.isOpen, widgets: {
+                            true: (c) => NetworkAccountPageView(wallet: model),
+                            false: (c) => const WalletLoginPageView()
+                          }),
+                    }),
               ),
             ),
           ),
@@ -165,9 +97,7 @@ class _BottomAppBar extends StatelessWidget {
                               padding: WidgetConstant.paddingHorizontal10,
                               child: IconButton(
                                   onPressed: () {
-                                    context.to(
-                                        PageRouter.setupAddressPage(
-                                            wallet.network),
+                                    context.to(PageRouter.setupGenericAddress,
                                         argruments: wallet.chain.account);
                                   },
                                   icon: const Icon(Icons.add_box),
@@ -219,6 +149,7 @@ class _BottomAppBar extends StatelessWidget {
                   tooltip: 'settings'.tr,
                   icon: const Icon(Icons.settings),
                   onPressed: () {
+                    // wallet.eraseAll();
                     context.to(PageRouter.setting);
                   },
                 ),
@@ -227,6 +158,163 @@ class _BottomAppBar extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _CustomAppBar(
+      {required this.child, required this.isOpen, required this.hideAppbar});
+  final Widget child;
+  final bool isOpen;
+  final bool hideAppbar;
+  static const double onActiveSize = kToolbarHeight + 80;
+
+  @override
+  Widget build(BuildContext context) {
+    return APPAnimatedSize(
+        isActive: !hideAppbar,
+        onActive: (p0) => child,
+        onDeactive: (p0) => WidgetConstant.sizedBox);
+  }
+
+  @override
+  Size get preferredSize => hideAppbar
+      ? Size.zero
+      : Size.fromHeight(isOpen ? onActiveSize : kToolbarHeight);
+}
+
+class _AccountAppBar extends StatelessWidget {
+  const _AccountAppBar(this.wallet);
+  final WalletProvider wallet;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      centerTitle: false,
+      // toolbarHeight: 0,
+      title: Text(wallet.wallet.name),
+      leading: IconButton(
+          onPressed: () {
+            context
+                .openSliverDialog<HDWallet>(
+                    (c) => SwitchWalletView(
+                          wallets: wallet.wallets,
+                          selectedWallet: wallet.wallet,
+                        ),
+                    "switch_wallets".tr,
+                    content: (c) => [
+                          IconButton(
+                              onPressed: () {
+                                context.offTo(PageRouter.createWallet);
+                              },
+                              icon: const Icon(Icons.add))
+                        ])
+                .then(wallet.switchWallet);
+          },
+          icon: const Icon(Icons.account_balance_wallet_rounded)),
+      // foregroundColor: context.colors.onSurface,
+      bottom: wallet.isOpen && wallet.chain.haveAddress
+          ? PreferredSize(
+              preferredSize: const Size.fromHeight(80),
+              child: SizedBox(
+                height: 80,
+                child: AccountAppBarView(
+                  account: wallet.chain.account.address,
+                  onPressed: (p0) {
+                    switch (p0) {
+                      case 1:
+                        context.to(PageRouter.showPublicKey,
+                            argruments: wallet.chain.account.address);
+
+                        break;
+                      case 0:
+                        context.to(PageRouter.exportPrivateKey,
+                            argruments: wallet.chain.account.address);
+                        break;
+                      case 2:
+                        context.to(PageRouter.removeAccount,
+                            argruments: wallet.chain.account.address);
+                      case 3:
+                        context
+                            .openSliverBottomSheet<String>(
+                              "account_name".tr,
+                              child: StringWriterView(
+                                defaultValue:
+                                    wallet.chain.account.address.accountName,
+                                regExp: APPConst.accountNameRegExp,
+                                title: PageTitleSubtitle(
+                                    title: "setup_or_update_account_name".tr,
+                                    body: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("setup_or_update_account_name".tr),
+                                        WidgetConstant.height8,
+                                        Text("remove_account_name_desc".tr),
+                                      ],
+                                    )),
+                                buttonText: "setup_input".tr,
+                                label: "account_name".tr,
+                              ),
+                            )
+                            .then((value) => wallet.setupAccountName(
+                                value, wallet.chain.account.address));
+
+                      default:
+                    }
+                  },
+                ),
+              ),
+            )
+          : null,
+    );
+  }
+}
+
+class SwitchWalletView extends StatelessWidget {
+  const SwitchWalletView(
+      {required this.wallets, required this.selectedWallet, Key? key})
+      : super(key: key);
+  final List<HDWallet> wallets;
+  final HDWallet selectedWallet;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemBuilder: (context, index) {
+        final wallet = wallets[index];
+        final bool selected = selectedWallet.name == wallet.name;
+        return ContainerWithBorder(
+          onRemove: () {
+            context.pop(wallet);
+          },
+          onTapWhenOnRemove: selected ? false : true,
+          onRemoveWidget: selected
+              ? const Icon(Icons.check_circle)
+              : WidgetConstant.sizedBox,
+          child: Row(
+            children: [
+              wallet.requiredPassword
+                  ? const Icon(Icons.lock)
+                  : const Icon(Icons.lock_open),
+              WidgetConstant.width8,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(wallet.name, style: context.textTheme.labelLarge),
+                    Text(wallet.created.toString(),
+                        style: context.textTheme.bodySmall),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      itemCount: wallets.length,
+      shrinkWrap: true,
     );
   }
 }

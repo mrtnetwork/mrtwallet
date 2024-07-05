@@ -3,32 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
     show QuickContextAccsess, QuickDateTimeFormater, SafeState, Translate;
 import 'package:mrt_wallet/future/wallet/global/global.dart';
-
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart'
-    show
-        AddressDerivationIndex,
-        WalletNetwork,
-        Bip32AddressIndex,
-        ChainHandler,
-        CustomProposal,
-        EncryptedCustomKey;
+import 'package:mrt_wallet/wallet/wallet.dart' show WalletNetwork, ChainHandler;
+import 'package:mrt_wallet/wroker/worker.dart';
 
 typedef _OnGenerateDerivation = Future<Bip32AddressIndex?> Function();
 
 class SetupDerivationModeView extends StatefulWidget {
   final CryptoCoins coin;
+  final List<CryptoCoins> networkCoins;
   final ChainHandler chainAccout;
   final AddressDerivationIndex? defaultDerivation;
   final Widget? title;
   final List<EncryptedCustomKey> customKeys;
+  final SeedTypes seedGenerationType;
   const SetupDerivationModeView(
       {super.key,
       required this.coin,
       required this.chainAccout,
       required this.customKeys,
+      this.networkCoins = const [],
       this.defaultDerivation,
-      this.title});
+      this.title,
+      this.seedGenerationType = SeedTypes.bip39});
 
   @override
   State<SetupDerivationModeView> createState() =>
@@ -40,13 +37,13 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
   EncryptedCustomKey? selectedCustomKey;
   WalletNetwork get network => chainAccount.network;
   ChainHandler get chainAccount => widget.chainAccout;
+  late CryptoCoins coin = widget.coin;
   late final bool useByronLegacyDeriavation =
-      widget.coin.proposal == CustomProposal.cip0019;
+      coin.proposal == CustomProposal.cip0019;
 
   AddressDerivationIndex derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
-      return (customKeyIndex ??
-              Bip32AddressIndex(currencyCoin: selectedCustomKey?.coin ?? coin))
+      return (customKeyIndex ?? Bip32AddressIndex(currencyCoin: coin))
           .copyWith(importedKeyId: selectedCustomKey!.id);
     }
     return customKeyIndex ?? nextDerivation;
@@ -56,13 +53,35 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     if (widget.defaultDerivation != null) {
       return widget.defaultDerivation!;
     }
-    final nextDerive =
-        chainAccount.account.nextDerive(selectedCustomKey?.coin ?? widget.coin);
+    final nextDerive = chainAccount.account
+        .nextDerive(coin, seedGeneration: widget.seedGenerationType);
     return nextDerive;
   }
 
   void onChangeCustomKey(EncryptedCustomKey? newSelected) {
-    selectedCustomKey = newSelected;
+    if (newSelected == null) {
+      selectedCustomKey = null;
+      coin = widget.coin;
+    } else {
+      bool canUseKey = false;
+      coin = widget.coin;
+      if (newSelected.coin.conf.type == coin.conf.type) {
+        selectedCustomKey = newSelected;
+        canUseKey = true;
+      } else {
+        final findCoin = widget.networkCoins.firstWhere(
+            (element) => element.conf.type == newSelected.coin.conf.type,
+            orElse: () => coin);
+        if (newSelected.coin.conf.type == findCoin.conf.type) {
+          selectedCustomKey = newSelected;
+          coin = findCoin;
+          canUseKey = true;
+        }
+      }
+      if (!canUseKey) {
+        context.showAlert("unsuported_key".tr);
+      }
+    }
     setState(() {});
   }
 
@@ -80,7 +99,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
   }
 
   void onSubmit() {
-    final key = derivationkey(widget.coin);
+    final key = derivationkey(coin);
     context.pop(key);
   }
 
@@ -111,19 +130,18 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
                     return context.openSliverBottomSheet<Bip32AddressIndex>(
                         "key_derivation".tr,
                         child: ByronLegacyKeyDerivationView(
-                          coin: widget.coin,
-                          curve: widget.coin.conf.type,
+                          coin: coin,
+                          curve: coin.conf.type,
                         ));
                   }
                   return context.openSliverBottomSheet<Bip32AddressIndex>(
                       "key_derivation".tr,
                       child: Bip32KeyDerivationView(
-                        coin: selectedCustomKey?.coin ?? widget.coin,
-                        curve: selectedCustomKey?.coin.conf.type ??
-                            widget.coin.conf.type,
-                        network: network,
-                        defaultPath: nextDerivation.hdPath,
-                      ));
+                          coin: coin,
+                          curve: coin.conf.type,
+                          network: network,
+                          defaultPath: nextDerivation.hdPath,
+                          seedGeneration: widget.seedGenerationType));
                 },
               );
             },
@@ -147,13 +165,10 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
                         style: context.textTheme.labelLarge,
                       ),
                 selectedCustomKey == null
-                    ? Text(
-                        customKeyIndex?.toString() ?? nextDerivation.toString(),
-                      )
-                    : Text(
-                        customKeyIndex?.toString() ??
-                            "import_key_derivation_desc2".tr,
-                      )
+                    ? AddressDrivationInfo(customKeyIndex ?? nextDerivation)
+                    : customKeyIndex != null
+                        ? AddressDrivationInfo(customKeyIndex ?? nextDerivation)
+                        : Text("import_key_derivation_desc2".tr)
               ],
             )),
         WidgetConstant.height20,
@@ -173,11 +188,12 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
         Column(
           children: List.generate(customKeys.length, (index) {
             final key = customKeys[index];
+
             return RadioListTile(
               value: key,
               groupValue: selectedCustomKey,
               onChanged: onChangeCustomKey,
-              title: OneLineTextWidget(key.networkPubKey(network)),
+              title: OneLineTextWidget(key.publicKey),
               subtitle: RichText(
                   text:
                       TextSpan(style: context.textTheme.bodyMedium, children: [

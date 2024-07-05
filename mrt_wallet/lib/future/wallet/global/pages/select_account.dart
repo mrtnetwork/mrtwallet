@@ -42,8 +42,7 @@ class SwitchOrSelectAccountView extends StatelessWidget {
                     children: [
                       FixedElevatedButton(
                           onPressed: () {
-                            context.to(
-                                PageRouter.setupAddressPage(account.network),
+                            context.to(PageRouter.setupGenericAddress,
                                 argruments: account);
                           },
                           child: Text("setup_address".tr)),
@@ -89,6 +88,7 @@ class SwitchOrSelectAccountView extends StatelessWidget {
                       ),
                       WidgetConstant.width8,
                       CopyTextIcon(
+                        isSensitive: false,
                         dataToCopy: addr.address.toAddress,
                         color: isSelected
                             ? context.colors.onSecondary

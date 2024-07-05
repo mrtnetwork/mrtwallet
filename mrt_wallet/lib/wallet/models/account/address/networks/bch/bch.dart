@@ -2,7 +2,6 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
@@ -16,7 +15,8 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
-import 'package:mrt_wallet/wallet/utils/address/utils.dart';
+import 'package:mrt_wallet/wroker/utils/address/utils.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 
 class IBitcoinCashAddress extends IBitcoinAddress {
   IBitcoinCashAddress._(
@@ -123,8 +123,14 @@ class IBitcoinCashAddress extends IBitcoinAddress {
   String get orginalAddress => networkAddress.addressProgram;
 
   @override
-  bool isEqual(Bip32AddressCore<BigInt, BitcoinBaseAddress> other) {
+  bool isEqual(CryptoAddress<BigInt, BitcoinBaseAddress> other) {
     return orginalAddress == other.orginalAddress;
+  }
+
+  @override
+  NewAccountParams toAccountParams() {
+    return BitcoinCashNewAddressParams(
+        deriveIndex: keyIndex, bitcoinAddressType: addressType, coin: coin);
   }
 }
 
@@ -253,11 +259,24 @@ class IBitcoinCashMultiSigAddress extends IBitcoinCashAddress
       multiSignatureAddress.signers.map((e) => e.publicKey).toList();
 
   @override
-  List<(String, AddressDerivationIndex)> get keyDetails =>
+  List<(String, Bip32AddressIndex)> get keyDetails =>
       multiSignatureAddress.signers
           .map((e) => (e.publicKey, e.keyIndex))
           .toList();
 
   @override
+  List<Bip32AddressIndex> signerKeyIndexes() {
+    return keyDetails.map((e) => e.$2).toList();
+  }
+
+  @override
   String get orginalAddress => networkAddress.addressProgram;
+
+  @override
+  NewAccountParams toAccountParams() {
+    return BitcoinCashMultiSigNewAddressParams(
+        multiSignatureAddress: multiSignatureAddress,
+        bitcoinAddressType: addressType,
+        coin: coin);
+  }
 }

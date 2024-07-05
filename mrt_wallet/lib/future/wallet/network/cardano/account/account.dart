@@ -39,7 +39,8 @@ class _ShowRewardAddress extends StatelessWidget {
     return ContainerWithBorder(
       onRemove: () {},
       onTapWhenOnRemove: false,
-      onRemoveWidget: CopyTextIcon(dataToCopy: rewardAddress.address),
+      onRemoveWidget:
+          CopyTextIcon(dataToCopy: rewardAddress.address, isSensitive: false),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

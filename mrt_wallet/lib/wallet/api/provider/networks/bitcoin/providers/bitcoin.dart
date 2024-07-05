@@ -104,7 +104,7 @@ class BitcoinExplorerAPIProvider extends BaseBitcoinAPIProvider {
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength(
-            [serviceName, websiteUri, uri, auth?.toCbor(), type.name]),
+            [serviceName, websiteUri, uri, auth?.toCbor(), explorerType.name]),
         CborTagsConst.bitcoinExplorerApiProvider);
   }
 

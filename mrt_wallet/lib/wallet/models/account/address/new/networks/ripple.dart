@@ -1,8 +1,7 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/core/derivation.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation/multisig.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/xrp/addresses/multisig.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/xrp/addresses/xrp.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/core/core.dart';
@@ -24,7 +23,7 @@ class RippleNewAddressParam implements NewAccountParams {
       {required this.deriveIndex, required this.coin, this.tag});
 
   @override
-  Bip32AddressCore toAccount(WalletNetwork network, List<int> publicKey) {
+  CryptoAddress toAccount(WalletNetwork network, List<int> publicKey) {
     return IXRPAddress.newAccount(
         accountParams: this,
         publicKey: publicKey,

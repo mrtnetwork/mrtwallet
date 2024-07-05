@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/wallet/start/pages/about.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
@@ -103,16 +102,15 @@ class _AppSettingViewState extends State<AppSettingView> {
                   context.to(PageRouter.importAccount);
                 },
               ),
-              if (wallet.hasCustomKeys)
-                AppListTile(
-                  leading: const Icon(Icons.key),
-                  title: Text("imported_key".tr),
-                  subtitle: Text("manage_imported_key".tr),
-                  onTap: () {
-                    context.to(PageRouter.manageImportedKey,
-                        argruments: wallet.network);
-                  },
-                ),
+              AppListTile(
+                leading: const Icon(Icons.key),
+                title: Text("imported_key".tr),
+                subtitle: Text("manage_imported_key".tr),
+                onTap: () {
+                  context.to(PageRouter.manageImportedKey,
+                      argruments: wallet.network);
+                },
+              ),
               AppListTile(
                 leading: const Icon(Icons.backup),
                 title: Text("backup".tr),
@@ -123,9 +121,9 @@ class _AppSettingViewState extends State<AppSettingView> {
                 },
               ),
               AppListTile(
-                leading: const Icon(Icons.security),
-                title: Text("automatic_loc".tr),
-                subtitle: Text(wallet.setting.lockTime.viewName.tr),
+                leading: const Icon(Icons.settings),
+                title: Text("wallet_settings".tr),
+                subtitle: Text("wallet_settings_desc".tr),
                 onTap: () {
                   context.to(PageRouter.updateSetting).then((value) {
                     setState(() {});
@@ -209,8 +207,9 @@ class _AppSettingViewState extends State<AppSettingView> {
                 leading: const Icon(Icons.info),
                 subtitle: Text("essence_of_mrt_wallet".tr),
                 onTap: () {
-                  context.openSliverDialog(
-                      (ctx) => const AbountWalletView(), APPConst.name);
+                  wallet.eraseAll();
+                  // context.openSliverDialog(
+                  //     (ctx) => const AbountWalletView(), APPConst.name);
                 },
               ),
               WidgetConstant.height20,

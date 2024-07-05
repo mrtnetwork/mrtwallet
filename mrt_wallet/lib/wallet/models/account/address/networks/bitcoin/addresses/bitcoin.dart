@@ -3,7 +3,6 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -13,12 +12,12 @@ import 'package:bitcoin_base/bitcoin_base.dart'
     show BitcoinBaseAddress, BitcoinAddressType;
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
-import 'package:mrt_wallet/wallet/utils/address/utils.dart';
+import 'package:mrt_wallet/wroker/utils/address/utils.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'multisig.dart';
 
-class IBitcoinAddress
-    with Equatable
-    implements Bip32AddressCore<BigInt, BitcoinBaseAddress> {
+class IBitcoinAddress extends CryptoAddress<BigInt, BitcoinBaseAddress>
+    with Equatable {
   factory IBitcoinAddress.newAccount(
       {required BitcoinNewAddressParams accountParams,
       required List<int> publicKey,
@@ -102,7 +101,6 @@ class IBitcoinAddress
 
   @override
   final CryptoCoins coin;
-  @override
   final List<int> publicKey;
 
   @override
@@ -150,8 +148,7 @@ class IBitcoinAddress
   String get type => addressType.value;
 
   @override
-  List<TokenCore<BigInt>> get tokens =>
-      throw WalletExceptionConst.networkTokenUnsuported;
+  List<TokenCore<BigInt>> get tokens => const [];
 
   @override
   void addToken(TokenCore<BigInt> newToken) {
@@ -191,12 +188,18 @@ class IBitcoinAddress
   @override
   void updateToken(TokenCore<BigInt> token, Token updatedToken) {}
 
-  @override
-  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+  // @override
+  // List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 
   @override
-  bool isEqual(Bip32AddressCore<BigInt, BitcoinBaseAddress> other) {
+  bool isEqual(CryptoAddress<BigInt, BitcoinBaseAddress> other) {
     return orginalAddress == other.orginalAddress;
+  }
+
+  @override
+  NewAccountParams toAccountParams() {
+    return BitcoinNewAddressParams(
+        deriveIndex: keyIndex, bitcoinAddressType: addressType, coin: coin);
   }
 }
 
@@ -324,8 +327,21 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
       multiSignatureAddress.signers.map((e) => e.publicKey).toList();
 
   @override
-  List<(String, AddressDerivationIndex)> get keyDetails =>
+  List<(String, Bip32AddressIndex)> get keyDetails =>
       multiSignatureAddress.signers
           .map((e) => (e.publicKey, e.keyIndex))
           .toList();
+
+  @override
+  List<Bip32AddressIndex> signerKeyIndexes() {
+    return keyDetails.map((e) => e.$2).toList();
+  }
+
+  @override
+  BitcoinMultiSigNewAddressParams toAccountParams() {
+    return BitcoinMultiSigNewAddressParams(
+        multiSignatureAddress: multiSignatureAddress,
+        bitcoinAddressType: addressType,
+        coin: coin);
+  }
 }

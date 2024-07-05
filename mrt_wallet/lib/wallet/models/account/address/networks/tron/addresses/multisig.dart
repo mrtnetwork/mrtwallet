@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class TronMultiSigSignerDetais with Equatable, CborSerializable {
@@ -10,7 +10,7 @@ class TronMultiSigSignerDetais with Equatable, CborSerializable {
 
   factory TronMultiSigSignerDetais(
       {required List<int> publicKey,
-      required AddressDerivationIndex keyIndex,
+      required Bip32AddressIndex keyIndex,
       required BigInt weight}) {
     return TronMultiSigSignerDetais._(
         publicKey: BytesUtils.toHexString(publicKey),
@@ -25,7 +25,7 @@ class TronMultiSigSignerDetais with Equatable, CborSerializable {
     final List<int> publicKey = cbor.elementAt(0);
     final BigInt weight = cbor.elementAt(1);
     final keyIndex =
-        AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
+        Bip32AddressIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     return TronMultiSigSignerDetais(
         publicKey: publicKey, weight: weight, keyIndex: keyIndex);
   }
@@ -33,7 +33,7 @@ class TronMultiSigSignerDetais with Equatable, CborSerializable {
   final String publicKey;
   final BigInt weight;
 
-  final AddressDerivationIndex keyIndex;
+  final Bip32AddressIndex keyIndex;
   String get path => keyIndex.toString();
 
   @override

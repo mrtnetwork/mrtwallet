@@ -2,13 +2,14 @@ import 'package:mrt_wallet/app/error/exception/exception.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ethereum/client/ethereum.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/tron/methods/methods.dart';
+import 'package:mrt_wallet/wallet/api/provider/networks/tron.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/networks.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
 import 'package:on_chain/on_chain.dart';
 
-class TronClient implements NetworkClient<ITronAddress> {
+class TronClient implements NetworkClient<ITronAddress, TronAPIProvider> {
   TronClient(
       {required this.provider,
       required this.solidityProvider,
@@ -17,10 +18,10 @@ class TronClient implements NetworkClient<ITronAddress> {
   final EthereumClient solidityProvider;
   @override
   final WalletTronNetwork network;
-
   @override
-  APIServiceTracker get serviceProvider =>
-      (provider.rpc as HTTPService).provider;
+  BaseServiceProtocol<TronAPIProvider> get service =>
+      provider.rpc as BaseServiceProtocol<TronAPIProvider>;
+
   @override
   Future<void> updateBalance(ITronAddress account) async {
     final tronAccount = await getAccount(account.networkAddress);

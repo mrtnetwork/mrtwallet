@@ -16,7 +16,7 @@ abstract class SolanaTransactionImpl extends StateController {
       required this.apiProvider,
       required this.validator});
   final WalletProvider walletProvider;
-  final NetworkAccountCore<BigInt, BigInt, SolAddress> account;
+  final NetworkAccountCore<BigInt, SolAddress> account;
   final WalletSolanaNetwork network;
   final SolanaClient apiProvider;
   final ISolanaAddress address;

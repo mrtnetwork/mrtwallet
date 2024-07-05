@@ -3,7 +3,8 @@ import 'package:mrt_wallet/wallet/api/provider/networks/ton.dart';
 import 'package:ton_dart/ton_dart.dart'
     show TonServiceProvider, TonRequestInfo, TonApiType;
 
-class TonHTTPService extends HTTPService implements TonServiceProvider {
+class TonHTTPService extends HTTPService<TonAPIProvider>
+    implements TonServiceProvider {
   TonHTTPService(
       {required this.provider,
       this.defaultTimeOut = const Duration(seconds: 30)});
@@ -12,16 +13,15 @@ class TonHTTPService extends HTTPService implements TonServiceProvider {
   final Duration defaultTimeOut;
 
   @override
-  APIServiceTracker<TonAPIProvider> provider;
-  ProviderAuth? get auth => provider.provider.auth;
+  final TonAPIProvider provider;
+  ProviderAuth? get auth => provider.auth;
 
   @override
-  TonApiType get api => provider.provider.apiType;
+  TonApiType get api => provider.apiType;
 
-  late final String? tonApiUrl =
-      api == TonApiType.tonApi ? provider.provider.uri : null;
+  late final String? tonApiUrl = api == TonApiType.tonApi ? provider.uri : null;
   late final String? tonCenter =
-      api == TonApiType.tonCenter ? provider.provider.uri : null;
+      api == TonApiType.tonCenter ? provider.uri : null;
 
   @override
   Future<String> get(TonRequestInfo params, {Duration? timeout}) async {

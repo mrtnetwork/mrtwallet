@@ -24,7 +24,7 @@ class SendBitcoinTransactionView extends StatelessWidget {
           canPop: controller.canPopPage,
           onPopInvoked: (didPop) {
             if (!didPop) {
-              controller.onBackButtom();
+              controller.onBackButton();
             }
           },
           child: Scaffold(
@@ -148,7 +148,7 @@ class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     StreamWidget(
-                        buttomWidget: FilledButton.icon(
+                        buttonWidget: FilledButton.icon(
                             onPressed: widget.controller.updateBalances,
                             icon: const Icon(Icons.update),
                             label: Text("update_balances".tr)),

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mrt_wallet/app/constant/global/app.dart';
 import 'package:mrt_wallet/app/extention/extention.dart'
     show QuickContextAccsess, Translate;
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'barcode_view.dart';
 import 'container_with_border.dart';
 import 'text_widget.dart';
@@ -15,12 +16,14 @@ class CopyTextIcon extends StatefulWidget {
       this.widget,
       this.size,
       this.messaage,
-      this.color});
+      this.color,
+      required this.isSensitive});
   final String dataToCopy;
   final double? size;
   final String? messaage;
   final Color? color;
   final Widget? widget;
+  final bool isSensitive;
 
   @override
   State<CopyTextIcon> createState() => CopyTextIconState();
@@ -32,7 +35,6 @@ class CopyTextIconState extends State<CopyTextIcon> {
     if (inCopy) return;
     inCopy = true;
     setState(() {});
-
     await Clipboard.setData(ClipboardData(text: widget.dataToCopy));
     if (_close) return;
     if (mounted) {
@@ -123,9 +125,19 @@ class CopyTextWithBarcodeState extends State<CopyTextWithBarcode> {
     if (mounted) {
       context.showAlert(widget.messaage ?? "copied_to_clipboard".tr);
     }
+    _resetClipoard(widget.dataToCopy);
     await Future.delayed(APPConst.oneSecoundDuration);
     inCopy = false;
     setState(() {});
+  }
+
+  void _resetClipoard(String txt) {
+    if (!widget.secureBarcode) return;
+    MethodUtils.after(() async {
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (data?.text != txt) return;
+      Clipboard.setData(const ClipboardData(text: ''));
+    }, milliseconds: APPConst.tenSecoundDuration);
   }
 
   bool _close = false;
@@ -170,6 +182,7 @@ class CopyTextWithBarcodeState extends State<CopyTextWithBarcode> {
                                 ContainerWithBorder(
                                     child: CopyTextIcon(
                                         dataToCopy: widget.dataToCopy,
+                                        isSensitive: widget.secureBarcode,
                                         widget: OneLineTextWidget(
                                             widget.dataToCopy,
                                             maxLine: 3))),

@@ -6,6 +6,8 @@ import 'package:mrt_wallet/future/wallet/setup/setup.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/global/utils.dart';
+import 'package:mrt_wallet/wroker/utils/ton/ton.dart';
 
 enum _MnemonicOption { import, generate }
 
@@ -477,7 +479,8 @@ class _TonMnemonicImportMnemonic extends StatelessWidget {
             validator: state.mnemonicLengthForm,
             minlines: 3,
             initialValue: state.mnemonic,
-            suffixIcon: PasteTextIcon(onPaste: state.onPasteMnemonic),
+            suffixIcon: PasteTextIcon(
+                onPaste: state.onPasteMnemonic, isSensitive: false),
           ),
           WidgetConstant.height20,
           AppCheckListTile(

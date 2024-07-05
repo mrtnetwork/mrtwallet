@@ -7,6 +7,8 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/utils/bitcoin/bitcoin.dart';
 
 class SetupBitcoinMultiSigAddressView extends StatefulWidget {
   const SetupBitcoinMultiSigAddressView({super.key});
@@ -35,7 +37,7 @@ class _SetupBitcoinMultiSigAddressViewState
       return;
     }
     final newAcc = BitcoinMultiSigSignerDetais(
-        publicKey: acc.publicKey, keyIndex: acc.keyIndex);
+        publicKey: acc.publicKey, keyIndex: acc.keyIndex as Bip32AddressIndex);
     if (_signers.containsKey(newAcc.publicKey)) {
       context.showAlert("public_key_already_exist".tr);
       return;
@@ -222,11 +224,11 @@ class _SetupBitcoinMultiSigAddressViewState
       } else {
         progressKey.success(
             backToIdle: false,
-            progressWidget: SuccessWithButtomView(
-              buttomWidget: ContainerWithBorder(
+            progressWidget: SuccessWithButtonView(
+              buttonWidget: ContainerWithBorder(
                   margin: WidgetConstant.paddingVertical8,
                   child: AddressDetailsView(address: result.result)),
-              buttomText: "generate_new_address".tr,
+              buttonText: "generate_new_address".tr,
               onPressed: () {
                 if (mounted) {
                   progressKey.backToIdle();
@@ -238,14 +240,14 @@ class _SetupBitcoinMultiSigAddressViewState
     setState(() {});
   }
 
-  final GlobalKey<StreamWidgetState> buttomState = GlobalKey();
+  final GlobalKey<StreamWidgetState> buttonState = GlobalKey();
   String? _shareError;
   void share() async {
     if (_shareError != null) {
       _shareError = null;
       setState(() {});
     }
-    buttomState.process();
+    buttonState.process();
     final result = await MethodUtils.call(() async {
       final name =
           "credentials_${_multiSigViewAddress}_${DateTime.now().toFileName()}.txt";
@@ -258,10 +260,10 @@ class _SetupBitcoinMultiSigAddressViewState
     });
 
     if (result.hasError || !result.result) {
-      buttomState.error();
+      buttonState.error();
       _shareError = result.error?.tr;
     } else {
-      buttomState.success();
+      buttonState.success();
     }
     setState(() {});
   }
@@ -368,6 +370,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                           WidgetConstant.height8,
                                           ContainerWithBorder(
                                               child: CopyTextIcon(
+                                            isSensitive: false,
                                             widget: SelectableText(
                                                 _multiSigViewAddress!),
                                             dataToCopy: _multiSigViewAddress!,
@@ -462,7 +465,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                                                 text:
                                                                     "backup_multi_sig_address_desc"
                                                                         .tr,
-                                                                buttomWidget:
+                                                                buttonWidget:
                                                                     const DialogDoubleButtonView(),
                                                               ),
                                                           "backup".tr)
@@ -514,7 +517,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                                                         .spaceEvenly,
                                                                 children: [
                                                                   StreamWidget(
-                                                                    buttomWidget: FilledButton.icon(
+                                                                    buttonWidget: FilledButton.icon(
                                                                         onPressed:
                                                                             share,
                                                                         icon: const Icon(Icons
@@ -525,11 +528,13 @@ class _SetupBitcoinMultiSigAddressViewState
                                                                         APPConst
                                                                             .oneSecoundDuration,
                                                                     key:
-                                                                        buttomState,
+                                                                        buttonState,
                                                                   ),
                                                                   WidgetConstant
                                                                       .width8,
                                                                   CopyTextIcon(
+                                                                      isSensitive:
+                                                                          false,
                                                                       dataToCopy:
                                                                           toText,
                                                                       size: APPConst

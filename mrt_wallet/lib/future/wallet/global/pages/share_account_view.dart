@@ -14,6 +14,7 @@ class ShareAccountView extends StatelessWidget {
     return BarcodeView(
         title: CopyTextIcon(
             dataToCopy: address.address.toAddress,
+            isSensitive: false,
             widget: AddressDetailsView(address: address, showBalance: false)),
         barcodeData: address.address.toAddress,
         shareSubject: network.coinParam.token.name,

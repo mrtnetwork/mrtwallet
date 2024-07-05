@@ -1,7 +1,7 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/core/core.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/methods/script_hash_balance.dart';
-import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/providers/electrum.dart';
+import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/bitcoin/addresses/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/networks/bitcoin/models/electrum_server_infos.dart';
@@ -11,10 +11,11 @@ class BitcoinElectrumClient implements BitcoinClient<IBitcoinAddress> {
   BitcoinElectrumClient({required this.provider, required this.network});
   @override
   final WalletNetwork network;
+
   @override
-  APIServiceTracker<ElectrumAPIProvider> get serviceProvider =>
-      (provider.rpc as BaseServiceProtocol).provider
-          as APIServiceTracker<ElectrumAPIProvider>;
+  BaseServiceProtocol<ElectrumAPIProvider> get service =>
+      provider.rpc as BaseServiceProtocol<ElectrumAPIProvider>;
+
   final ElectrumApiProvider provider;
 
   @override

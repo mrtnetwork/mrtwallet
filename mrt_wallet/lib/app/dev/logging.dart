@@ -15,4 +15,19 @@ class WalletLogging {
     dev.log(msg,
         time: DateTime.now(), zone: Zone.root, name: "wallet", level: 0);
   }
+
+  static void debug<T>(T? Function() t, {bool stake = false}) {
+    if (!kDebugMode) {
+      return;
+    }
+    try {
+      t();
+    } catch (e, s) {
+      String message = "${e.runtimeType}: ${e.toString()}";
+      if (stake) {
+        message += "\n $s";
+      }
+      WalletLogging.print(message, prefix: "DEBUG-");
+    }
+  }
 }

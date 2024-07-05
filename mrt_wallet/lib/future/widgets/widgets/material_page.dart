@@ -19,14 +19,26 @@ class MaterialPageView extends StatelessWidget {
 }
 
 class ScaffolPageView extends StatelessWidget {
-  const ScaffolPageView({required this.child, super.key, this.appBar});
+  const ScaffolPageView(
+      {required this.child,
+      super.key,
+      this.appBar,
+      this.scaffoldKey,
+      this.bottomNavigationBar,
+      this.resizeToAvoidBottomInset = true});
   final Widget child;
-  final AppBar? appBar;
+  final PreferredSizeWidget? appBar;
+  final Key? scaffoldKey;
+  final Widget? bottomNavigationBar;
+  final bool resizeToAvoidBottomInset;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBar,
-      body: child,
-    );
+        appBar: appBar,
+        key: scaffoldKey,
+        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+        body: child,
+        bottomNavigationBar: bottomNavigationBar);
   }
 }

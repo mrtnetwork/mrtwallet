@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
 import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
-import 'package:mrt_wallet/wallet/utils/cosmos/cosmos.dart';
+import 'package:mrt_wallet/wroker/utils/cosmos/cosmos.dart';
 import 'transaction.dart';
 
 enum CosmosFeeTypes {
@@ -38,6 +38,13 @@ mixin CosmosTransactionFeeImpl on CosmosTransactiomImpl {
   final Cancelable _cancelable = Cancelable();
 
   Future<Fee> _simulateTr() async {
+    // SignerInfo get signerInfo => SignerInfo(
+    // publicKey: coin.conf.type == EllipticCurveTypes.nist256p1
+    //     ? CosmosSecp256R1PublicKey.fromBytes(publicKey)
+    //     : CosmosSecp256K1PublicKey.fromBytes(publicKey),
+    // modeInfo: const ModeInfo(ModeInfoSignle(SignMode.signModeDirect)),
+    // sequence: BigInt.zero);
+
     final messages = validator.validator.messages(address.networkAddress);
 
     final txbody = TXBody(messages: messages, memo: memo);

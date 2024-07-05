@@ -16,7 +16,7 @@ class ProgressWithTextView extends StatelessWidget {
 class ErrorWithTextView extends StatelessWidget {
   const ErrorWithTextView({super.key, required this.text, this.progressKey});
   final String text;
-  final GlobalKey<PageProgressState>? progressKey;
+  final GlobalKey<PageProgressBaseState>? progressKey;
 
   @override
   Widget build(BuildContext context) {
@@ -74,18 +74,18 @@ class SuccessWithTextView extends StatelessWidget {
   }
 }
 
-class SuccessWithButtomView extends StatelessWidget {
-  const SuccessWithButtomView(
+class SuccessWithButtonView extends StatelessWidget {
+  const SuccessWithButtonView(
       {super.key,
       this.text,
-      required this.buttomText,
-      this.buttomWidget,
+      required this.buttonText,
+      this.buttonWidget,
       required this.onPressed})
-      : assert(text != null || buttomWidget != null,
-            "use text or buttomWidget for child");
+      : assert(text != null || buttonWidget != null,
+            "use text or buttonWidget for child");
   final String? text;
-  final String buttomText;
-  final Widget? buttomWidget;
+  final String buttonText;
+  final Widget? buttonWidget;
   final DynamicVoid onPressed;
 
   @override
@@ -93,9 +93,9 @@ class SuccessWithButtomView extends StatelessWidget {
     return _ProgressWithTextView(
         text: Column(
           children: [
-            buttomWidget ?? Text(text!, textAlign: TextAlign.center),
+            buttonWidget ?? Text(text!, textAlign: TextAlign.center),
             WidgetConstant.height8,
-            FilledButton(onPressed: onPressed, child: Text(buttomText))
+            FilledButton(onPressed: onPressed, child: Text(buttonText))
           ],
         ),
         icon: WidgetConstant.checkCircleLarge);
@@ -142,7 +142,9 @@ class SuccessTransactionTextView extends StatelessWidget {
         WidgetConstant.height20,
         ContainerWithBorder(
             child: CopyTextIcon(
-                dataToCopy: txId, widget: OneLineTextWidget(txId))),
+                isSensitive: false,
+                dataToCopy: txId,
+                widget: OneLineTextWidget(txId))),
         WidgetConstant.height20,
         FilledButton.icon(
             onPressed: () {

@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/wallet/network/bch/transaction/cotnroller/bitcoin_operation.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/bitcoin_cash/bitcoin_cash_utils.dart';
 
 class TokenCashOperationView extends StatefulWidget {
   const TokenCashOperationView({
@@ -571,7 +572,7 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
                                                       Text("empty_desc".tr)
                                                     ],
                                                   )),
-                                              buttomText: "setup_input".tr,
+                                              buttonText: "setup_input".tr,
                                               label: "commitment".tr,
                                             ),
                                           )

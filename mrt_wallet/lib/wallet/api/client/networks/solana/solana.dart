@@ -7,15 +7,14 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/solana/models/solana_account_tokens_info.dart';
 import 'package:on_chain/solana/solana.dart';
 
-class SolanaClient implements NetworkClient<ISolanaAddress> {
+class SolanaClient implements NetworkClient<ISolanaAddress, SolanaAPIProvider> {
   SolanaClient({required this.provider, required this.network});
   final SolanaRPC provider;
   @override
   final WalletSolanaNetwork network;
   @override
-  APIServiceTracker<SolanaAPIProvider> get serviceProvider =>
-      (provider.rpc as BaseServiceProtocol).provider
-          as APIServiceTracker<SolanaAPIProvider>;
+  BaseServiceProtocol<SolanaAPIProvider> get service =>
+      provider.rpc as BaseServiceProtocol<SolanaAPIProvider>;
 
   @override
   Future<void> updateBalance(ISolanaAddress account) async {

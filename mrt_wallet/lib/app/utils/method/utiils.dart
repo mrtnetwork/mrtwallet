@@ -15,20 +15,20 @@ class MethodUtils {
   }
 
   static Future<T> after<T>(Future<T> Function() t,
-      {int milliseconds = 0}) async {
-    return await Future.delayed(Duration(milliseconds: milliseconds), t);
+      {Duration milliseconds = Duration.zero}) async {
+    return await Future.delayed(milliseconds, t);
   }
 
-  static Future<void> _callWithCanclable<T>(
-    Future<T> Function() t,
-    Cancelable canclable,
-  ) async {
-    try {
-      canclable.success(await t());
-    } catch (e) {
-      canclable.cancel(e);
-    }
-  }
+  // static Future<void> _callWithCanclable<T>(
+  //   Future<T> Function() t,
+  //   Cancelable canclable,
+  // ) async {
+  //   try {
+  //     canclable.success(() async => await t());
+  //   } catch (e) {
+  //     canclable.cancel(e);
+  //   }
+  // }
 
   static Future<MethodResult<T>> retryCall<T>(
       Future<T> Function() t, bool Function(Object?) onExceptionRetry,
@@ -64,8 +64,7 @@ class MethodUtils {
         cancelable.setup(<T>() {
           return completer;
         });
-        _callWithCanclable(t, cancelable);
-
+        cancelable.success(t);
         r = completer.future;
       }
       return MethodResult.succsess(await r);
@@ -90,7 +89,7 @@ class MethodUtils {
         cancelable.setup(<T>() {
           return completer;
         });
-        _callWithCanclable(t, cancelable);
+        cancelable.success(t);
 
         r = completer.future;
       }
@@ -123,34 +122,38 @@ class MethodUtils {
       bool closeOnSuccess = false}) async* {
     bool run = true;
     while (run) {
-      Completer<void> completer = Completer();
+      Completer<MethodResult<T>> completer = Completer();
       canclable.setup(() => completer);
-      final result = await t();
-      try {
-        if (result.hasError) {
-          await completer.future.timeout(waitOnError).catchError((e) {
-            if (e is CancelableExption) {
-              run = false;
-            }
-            return null;
-          });
+      canclable.success(() => t());
+      final result = await call(() async {
+        final r = await completer.future;
+        return r.result;
+      });
+      if (result.hasResult) {
+        yield result.result;
+        Completer<void> waitCompleter = Completer();
+        canclable.setup(() => waitCompleter);
+        final onErrorWait =
+            await call(() async => waitCompleter.future.timeout(waitOnSuccess));
+        if (onErrorWait.isCancel) {
+          run = false;
           continue;
         }
-
-        yield result.result;
-
-        if (closeOnSuccess) {
+        canclable.dispose();
+      } else {
+        if (result.isCancel) {
           run = false;
-        } else {
-          await completer.future.timeout(waitOnSuccess).catchError((e) {
-            if (e is CancelableExption) {
-              run = false;
-            }
-            return null;
-          });
+          continue;
         }
-      } finally {
-        canclable.cancel();
+        Completer<void> waitCompleter = Completer();
+        canclable.setup(() => waitCompleter);
+        final onErrorWait =
+            await call(() async => waitCompleter.future.timeout(waitOnError));
+        if (onErrorWait.isCancel) {
+          run = false;
+          continue;
+        }
+        canclable.dispose();
       }
     }
   }
@@ -221,15 +224,26 @@ class Cancelable<T> {
     return false;
   }
 
-  void success(T result) {
+  void success(FutureOr<T> Function() func) async {
     final completer = _setup?.call();
     if (completer?.isCompleted ?? true) return;
-    completer!.complete(result);
+    var r = func();
+    if (r is Future) {
+      final result = await r;
+      if (completer?.isCompleted ?? true) return;
+      completer?.complete(result);
+    } else {
+      completer?.complete(r);
+    }
     _setup = null;
   }
 
   void setup(CompleterResult setup) {
     assert(_setup == null, "please first complete or cancel");
     _setup = setup;
+  }
+
+  void dispose() {
+    _setup = null;
   }
 }

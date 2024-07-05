@@ -78,7 +78,7 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
                             Text("empty_desc".tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: "memo".tr,
                   ),
                 )
@@ -111,7 +111,7 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
                             Text("empty_desc".tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: "memo".tr,
                   ),
                 )
@@ -143,7 +143,7 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
                             Text("empty_desc".tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: "memo_type".tr,
                   ),
                 )

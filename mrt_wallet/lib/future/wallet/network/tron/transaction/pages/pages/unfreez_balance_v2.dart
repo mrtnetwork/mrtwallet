@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/resource_v2/forms/unfreez_balance_v2.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 
 class TronUnFreezBalanceV2FieldsView extends StatelessWidget {
   const TronUnFreezBalanceV2FieldsView(

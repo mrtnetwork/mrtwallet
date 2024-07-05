@@ -33,6 +33,7 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
 
   void unlock() async {
     final provider = context.watch<WalletProvider>(StateConst.main);
+
     if (!(formKey.currentState?.validate() ?? false)) return;
     buttonKey.process();
     final login = await provider.login(password);
@@ -70,7 +71,7 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
               ),
               StreamWidget(
                 padding: WidgetConstant.paddingVertical20,
-                buttomWidget: FixedElevatedButton(
+                buttonWidget: FixedElevatedButton(
                   onPressed: unlock,
                   child: Text("unlock".tr),
                 ),

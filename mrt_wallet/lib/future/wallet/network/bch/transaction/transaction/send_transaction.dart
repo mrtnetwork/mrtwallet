@@ -25,7 +25,7 @@ class SendBitcoinCashTransactionView extends StatelessWidget {
           canPop: controller.canPopPage,
           onPopInvoked: (didPop) {
             if (!didPop) {
-              controller.onBackButtom();
+              controller.onBackButton();
             }
           },
           child: Scaffold(

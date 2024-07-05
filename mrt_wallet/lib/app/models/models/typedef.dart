@@ -13,7 +13,9 @@ typedef FuncBool<T> = bool Function(T);
 typedef FuncBoolString = bool Function(String);
 typedef FuncFutureBoolString = Future<bool> Function(String);
 typedef NullWidget = Widget? Function();
-typedef FuncWidget = Widget? Function();
+typedef FuncWidget = Widget Function();
+typedef FuncWidgetContext = Widget Function(BuildContext context);
+
 typedef IntVoid = Function(int);
 
 typedef FuncVoidSize = Function(Size);

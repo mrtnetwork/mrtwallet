@@ -26,6 +26,7 @@ class SecureContentView extends StatelessWidget {
     return Stack(
       children: [
         Container(
+          alignment: Alignment.center,
           foregroundDecoration: show
               ? null
               : BoxDecoration(
@@ -33,6 +34,7 @@ class SecureContentView extends StatelessWidget {
                   borderRadius: WidgetConstant.border8),
           child: ContainerWithBorder(
               child: CopyTextIcon(
+            isSensitive: true,
             dataToCopy: content,
             widget: SelectableText(
               content,

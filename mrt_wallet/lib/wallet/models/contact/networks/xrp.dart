@@ -4,7 +4,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/contact/core/contract_core.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wallet/utils/address/utils.dart';
+import 'package:mrt_wallet/wroker/utils/address/utils.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleContact with Equatable implements ContactCore<XRPAddress> {

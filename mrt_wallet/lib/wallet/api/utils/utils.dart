@@ -15,38 +15,33 @@ class APIUtils {
   static BitcoinExplorerApiProvider _buildBlockCypherOrMempolProvider(
       WalletBitcoinNetwork network, BitcoinExplorerAPIProvider provider) {
     final btcNetwork = network.coinParam.transacationNetwork;
-    final serviceProvider = APIServiceTracker(provider: provider);
     final api = ApiProvider(
         api: provider.config(btcNetwork),
-        service: BitcoinHTTPService(serviceProvider));
+        service: BitcoinHTTPService(provider));
     return BitcoinExplorerApiProvider(provider: api, network: network);
   }
 
   static BitcoinElectrumClient _buildBitcoinElectrumProvider(
       ElectrumAPIProvider provider, WalletNetwork network) {
-    final serviceTracker = APIServiceTracker(provider: provider);
     return BitcoinElectrumClient(
         provider: ElectrumApiProvider(ElectrumService.fromProvider(
-            provider: serviceTracker, service: provider)),
+            provider: provider, service: provider)),
         network: network);
   }
 
-  static EVMRPC _buildEthereumRPC(
-      APIServiceTracker<EthereumAPIProvider> provider) {
-    if (provider.provider.protocol == ServiceProtocol.websocket) {
-      return EVMRPC(EthereumWebsocketService(
-          provider: provider, url: provider.provider.uri));
+  static EVMRPC _buildEthereumRPC(EthereumAPIProvider provider) {
+    if (provider.protocol == ServiceProtocol.websocket) {
+      return EVMRPC(
+          EthereumWebsocketService(provider: provider, url: provider.uri));
     }
-    return EVMRPC(EthereumHTTPService(provider.provider.uri, provider));
+    return EVMRPC(EthereumHTTPService(provider.uri, provider));
   }
 
-  static RpcService _buildRippleProvider(
-      APIServiceTracker<RippleAPIProvider> provider) {
-    if (provider.provider.protocol == ServiceProtocol.websocket) {
-      return RippleWebsocketService(
-          url: provider.provider.callUrl, provider: provider);
+  static RpcService _buildRippleProvider(RippleAPIProvider provider) {
+    if (provider.protocol == ServiceProtocol.websocket) {
+      return RippleWebsocketService(url: provider.callUrl, provider: provider);
     }
-    return RippleHTTPService(RPCConst.devnetUri, provider);
+    return RippleHTTPService(provider.callUrl, provider);
   }
 
   static BitcoinClient buildBitcoinApiPorivder(
@@ -60,61 +55,54 @@ class APIUtils {
 
   static EthereumClient buildEthereumProvider(
       EthereumAPIProvider provider, WalletNetwork network) {
-    final tracker = APIServiceTracker(provider: provider);
     return EthereumClient(
-        provider: _buildEthereumRPC(tracker), network: network);
+        provider: _buildEthereumRPC(provider), network: network);
   }
 
   static RippleClient buildRippleProvider(
       RippleAPIProvider provider, WalletXRPNetwork network) {
-    final tracker = APIServiceTracker(provider: provider);
     return RippleClient(
-        provider: XRPLRpc(_buildRippleProvider(tracker)), network: network);
+        provider: XRPLRpc(_buildRippleProvider(provider)), network: network);
   }
 
   static CardanoClient buildCardanoProvider(
       CardanoAPIProvider provider, WalletCardanoNetwork network) {
-    final tracker = APIServiceTracker(provider: provider);
     return CardanoClient(
-        provider: BlockforestProvider(CardanoHTTPService(provider: tracker)),
+        provider: BlockforestProvider(CardanoHTTPService(provider: provider)),
         network: network);
   }
 
   static CosmosClient buildTendermintProvider(
       CosmosAPIProvider provider, WalletCosmosNetwork network) {
-    final tracker = APIServiceTracker(provider: provider);
     return CosmosClient(
         provider: TendermintProvider(
-            TendermintHTTPService(provider: tracker, url: provider.uri)),
+            TendermintHTTPService(provider: provider, url: provider.uri)),
         network: network,
         nodeProvider: provider.nodeUri == null
             ? null
             : ThorNodeProvider(ThorNodeHTTPService(
-                provider: tracker, url: provider.nodeUri!)));
+                provider: provider, url: provider.nodeUri!)));
   }
 
   static TonClient buildTonApiProvider(
       TonAPIProvider provider, WalletTonNetwork network) {
-    final tracker = APIServiceTracker(provider: provider);
     return TonClient(
-      provider: TonProvider(TonHTTPService(provider: tracker)),
+      provider: TonProvider(TonHTTPService(provider: provider)),
       network: network,
     );
   }
 
   static SolanaClient buildSoalanaProvider(
       SolanaAPIProvider provider, WalletSolanaNetwork network) {
-    final tracker = APIServiceTracker(provider: provider);
     return SolanaClient(
-        provider: SolanaRPC(SolanaHTTPService(provider.httpNodeUri, tracker)),
+        provider: SolanaRPC(SolanaHTTPService(provider.httpNodeUri, provider)),
         network: network);
   }
 
   static TronClient buildTronProvider(
       TronAPIProvider httpProviderService, WalletTronNetwork network) {
-    final httpNodeTracker = APIServiceTracker(provider: httpProviderService);
     final httpNode = TronProvider(
-        TronHTTPService(httpProviderService.httpNodeUri, httpNodeTracker));
+        TronHTTPService(httpProviderService.httpNodeUri, httpProviderService));
     return TronClient(
         provider: httpNode,
         solidityProvider: buildEthereumProvider(

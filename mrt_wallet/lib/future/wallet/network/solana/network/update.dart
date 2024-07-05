@@ -50,7 +50,7 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
     if (provider == null || defaultProviders.contains(provider)) return;
 
     selectedProvider = provider;
-    service = selectedProvider!.serviceProvider.provider;
+    service = selectedProvider!.service.provider;
     rpcUrl = service!.httpNodeUri;
     setState(() {});
   }
@@ -75,11 +75,10 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
 
   SolanaClient _buildSolanaRpc(
       String url, String serviceName, String websiteurl) {
-    final service = SolanaAPIProvider(
+    final provider = SolanaAPIProvider(
         serviceName: serviceName, websiteUri: websiteurl, httpNodeUri: url);
-    final tracker = APIServiceTracker(provider: service);
     return SolanaClient(
-        provider: SolanaRPC(SolanaHTTPService(service.httpNodeUri, tracker)),
+        provider: SolanaRPC(SolanaHTTPService(provider.httpNodeUri, provider)),
         network: widget.network);
   }
 
@@ -110,8 +109,7 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
     pageProgressKey.progressText("updating_network".tr);
     final result = await MethodUtils.call(() async {
       final wallet = context.watch<WalletProvider>(StateConst.main);
-      final services =
-          providers.map((e) => e.serviceProvider.provider).toList();
+      final services = providers.map((e) => e.service.provider).toList();
       final updatedNetwork = network.copyWith(
           coinParam: network.coinParam.copyWith(providers: services));
       return await wallet.updateImportNetwork(updatedNetwork);
@@ -130,7 +128,7 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
       final alert = await context.openSliverDialog(
         (p0) => DialogTextView(
           text: "network_electrum_incorrect_genesis_hash".tr,
-          buttomWidget: const DialogDoubleButtonView(),
+          buttonWidget: const DialogDoubleButtonView(),
         ),
         "network_security_issue".tr,
       );
@@ -140,7 +138,7 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
       }
     }
     final currentProvider = providers.indexWhere((element) =>
-        element.serviceProvider.provider.serviceName == service?.serviceName);
+        element.service.provider.serviceName == service?.serviceName);
     if (!currentProvider.isNegative) {
       providers[currentProvider] = selectedProvider!;
     } else {
@@ -164,10 +162,9 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
     pageProgressKey.progressText("network_waiting_for_response".tr);
     final result = await MethodUtils.call(() async {
       final uniqueServiceName = StrUtils.addNumberToMakeUnique(
-          providers.map((e) => e.serviceProvider.provider.serviceName).toList()
+          providers.map((e) => e.service.provider.serviceName).toList()
             ..removeWhere((element) =>
-                element ==
-                selectedProvider!.serviceProvider.provider.serviceName),
+                element == selectedProvider!.service.provider.serviceName),
           rpcUrl);
       selectedProvider = _buildSolanaRpc(rpcUrl, uniqueServiceName, rpcUrl);
       final serverBanner = await selectedProvider!.getGenesisHash();
@@ -237,15 +234,15 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
                                           onRemoveIcon:
                                               ProviderTrackerStatusView(
                                                   provider:
-                                                      provider.serviceProvider),
+                                                      provider.service.tracker),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(provider.serviceProvider
-                                                  .provider.serviceName),
-                                              Text(provider.serviceProvider
-                                                  .provider.websiteUri)
+                                              Text(provider.service.provider
+                                                  .serviceName),
+                                              Text(provider
+                                                  .service.provider.websiteUri)
                                             ],
                                           ));
                                     }),
@@ -263,15 +260,15 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
                                           onRemoveIcon:
                                               ProviderTrackerStatusView(
                                                   provider:
-                                                      provider.serviceProvider),
+                                                      provider.service.tracker),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(provider.serviceProvider
-                                                  .provider.serviceName),
-                                              Text(provider.serviceProvider
-                                                  .provider.websiteUri)
+                                              Text(provider.service.provider
+                                                  .serviceName),
+                                              Text(provider
+                                                  .service.provider.websiteUri)
                                             ],
                                           ));
                                     }),
@@ -314,19 +311,15 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
                                           onRemoveIcon:
                                               ProviderTrackerStatusView(
                                                   provider: selectedProvider!
-                                                      .serviceProvider),
+                                                      .service.tracker),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
+                                              Text(selectedProvider!.service
+                                                  .provider.serviceName),
                                               Text(selectedProvider!
-                                                  .serviceProvider
-                                                  .provider
-                                                  .serviceName),
-                                              Text(selectedProvider!
-                                                  .serviceProvider
-                                                  .provider
-                                                  .websiteUri)
+                                                  .service.provider.websiteUri)
                                             ],
                                           )),
                                       WidgetConstant.height20,
@@ -349,7 +342,8 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
                                                   onChanged: onChageUrl,
                                                   validator: validateRpcUrl,
                                                   suffixIcon: PasteTextIcon(
-                                                      onPaste: onPasteUri),
+                                                      onPaste: onPasteUri,
+                                                      isSensitive: false),
                                                   label: "rpc_url".tr,
                                                   hint:
                                                       "https://api.mainnet.solana....",

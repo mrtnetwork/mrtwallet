@@ -2,7 +2,7 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 
 class RippleMultiSigSignerDetais with Equatable, CborSerializable {
   const RippleMultiSigSignerDetais._(
@@ -10,7 +10,7 @@ class RippleMultiSigSignerDetais with Equatable, CborSerializable {
 
   factory RippleMultiSigSignerDetais(
       {required List<int> publicKey,
-      required AddressDerivationIndex keyIndex,
+      required Bip32AddressIndex keyIndex,
       required int weight}) {
     return RippleMultiSigSignerDetais._(
         publicKey: BytesUtils.toHexString(publicKey),
@@ -25,7 +25,7 @@ class RippleMultiSigSignerDetais with Equatable, CborSerializable {
     final List<int> publicKey = cbor.elementAt(0);
     final int weight = cbor.elementAt(1);
     final keyIndex =
-        AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
+        Bip32AddressIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     return RippleMultiSigSignerDetais(
         publicKey: publicKey, weight: weight, keyIndex: keyIndex);
   }
@@ -33,7 +33,7 @@ class RippleMultiSigSignerDetais with Equatable, CborSerializable {
   final String publicKey;
   final int weight;
 
-  final AddressDerivationIndex keyIndex;
+  final Bip32AddressIndex keyIndex;
   String get path => keyIndex.toString();
 
   @override

@@ -1,5 +1,4 @@
 import 'package:blockchain_utils/utils/utils.dart';
-import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/controller/impl/fee_impl.dart';
@@ -9,6 +8,9 @@ import 'package:mrt_wallet/future/wallet/network/ripple/transaction/controller/i
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleTransactionStateController extends RippleTransactionImpl
@@ -118,8 +120,72 @@ class RippleTransactionStateController extends RippleTransactionImpl
           address.networkAddress,
           memos: memos,
           fee: fee.balance);
-      await super.signAndSendTransaction(RippleSigningRequest(
-          addresses: [address], network: network, transaction: transaction));
+      bool needMultiSig = false;
+      if (address.multiSigAccount) {
+        final IXRPMultisigAddress addr = address as IXRPMultisigAddress;
+        needMultiSig = !addr.multiSignatureAccount.isRegular;
+      }
+      await super.signAndSendTransaction(
+          SigningRequest<XRPTransaction>(
+            addresses: [address],
+            network: network,
+            sign: (generateSignature) async {
+              if (!needMultiSig) {
+                final keyIndex = address.keyIndex as Bip32AddressIndex;
+                final algorithm = XRPKeyAlgorithm.values.firstWhere((element) =>
+                    element.curveType == keyIndex.currencyCoin.conf.type);
+                final pubkey = XRPPublicKey.fromBytes(address.publicKey,
+                        algorithm: algorithm)
+                    .toHex();
+
+                transaction.setSignature(XRPLSignature.signer(pubkey));
+                final signRequest = GlobalSignRequest.ripple(
+                    digest: BytesUtils.fromHexString(transaction.toBlob()),
+                    index: keyIndex);
+                final sss = await generateSignature(signRequest);
+
+                transaction.setSignature(XRPLSignature.sign(
+                    pubkey, BytesUtils.toHexString(sss.signature)));
+              } else {
+                final multiSigAddress = address as IXRPMultisigAddress;
+                final List<XRPLSigners> signerSignatures = [];
+                int threshHold = 0;
+                for (final i in multiSigAddress.multiSignatureAccount.signers) {
+                  final address =
+                      RippleUtils.strPublicKeyToRippleAddress(i.publicKey)
+                          .address;
+                  final blob = transaction.toMultisigBlob(address);
+                  try {
+                    final signRequest = GlobalSignRequest.ripple(
+                        digest: BytesUtils.fromHexString(blob),
+                        index: i.keyIndex);
+                    final sss = await generateSignature(signRequest);
+                    signerSignatures.add(XRPLSigners(
+                        account: address,
+                        signingPubKey:
+                            XRPPublicKey.fromHex(sss.signerPubKey.comprossed)
+                                .toHex(),
+                        txnSignature: BytesUtils.toHexString(sss.signature)));
+                    threshHold += i.weight;
+                    if (threshHold >=
+                        multiSigAddress.multiSignatureAccount.threshold) {
+                      break;
+                    }
+                  } catch (e) {
+                    continue;
+                  }
+                }
+                if (threshHold <
+                    multiSigAddress.multiSignatureAccount.threshold) {
+                  throw WalletExceptionConst.privateKeyIsNotAvailable;
+                }
+
+                transaction.setMultiSigSignature(signerSignatures);
+              }
+              return transaction;
+            },
+          ),
+          transaction);
     });
     if (result.hasError) {
       buttonKey.error();

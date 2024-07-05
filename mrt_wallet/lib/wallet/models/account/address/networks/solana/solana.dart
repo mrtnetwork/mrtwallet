@@ -4,7 +4,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
 
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -13,21 +13,17 @@ import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
 import 'package:on_chain/solana/solana.dart';
 
-class ISolanaAddress
-    with Equatable
-    implements Bip32AddressCore<BigInt, SolAddress> {
+class ISolanaAddress extends CryptoAddress<BigInt, SolAddress> with Equatable {
   ISolanaAddress._(
       {required this.keyIndex,
       required this.coin,
-      required List<int> publicKey,
       required this.address,
       required this.network,
       required this.networkAddress,
       required List<SolanaSPLToken> tokens,
       required List<NFTCore> nfts,
       String? accountName})
-      : publicKey = List.unmodifiable(publicKey),
-        _tokens = List.unmodifiable(tokens),
+      : _tokens = List.unmodifiable(tokens),
         _nfts = List.unmodifiable(nfts),
         _accountName = accountName;
 
@@ -41,7 +37,6 @@ class ISolanaAddress
         balance: IntegerBalance.zero(network.coinParam.decimal));
     return ISolanaAddress._(
       coin: accountParams.coin,
-      publicKey: publicKey,
       address: addressDetauls,
       keyIndex: accountParams.deriveIndex,
       networkAddress: ethAddress,
@@ -64,7 +59,6 @@ class ISolanaAddress
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final List<int> publicKey = cbor.elementAt(3);
     final networkId = cbor.elementAt(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
@@ -86,7 +80,6 @@ class ISolanaAddress
     final String? accountName = cbor.elementAt(9);
     return ISolanaAddress._(
         coin: coin,
-        publicKey: publicKey,
         address: address,
         keyIndex: keyIndex,
         networkAddress: ethAddress,
@@ -114,16 +107,13 @@ class ISolanaAddress
   final int network;
 
   @override
-  final List<int> publicKey;
-
-  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
           coin.proposal.specName,
           coin.coinName,
           keyIndex.toCbor(),
-          publicKey,
+          const CborNullValue(),
           address.toCbor(),
           networkAddress.address,
           network,
@@ -214,11 +204,16 @@ class ISolanaAddress
               mint: mint, owner: networkAddress, tokenProgramId: tokenProgramId)
           .address;
 
-  @override
-  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+  // @override
+  // List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 
   @override
-  bool isEqual(Bip32AddressCore<BigInt, SolAddress> other) {
+  bool isEqual(CryptoAddress<BigInt, SolAddress> other) {
     return other.networkAddress.address == networkAddress.address;
+  }
+
+  @override
+  SolanaNewAddressParam toAccountParams() {
+    return SolanaNewAddressParam(deriveIndex: keyIndex, coin: coin);
   }
 }

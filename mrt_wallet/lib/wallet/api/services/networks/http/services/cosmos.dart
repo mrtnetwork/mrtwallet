@@ -1,9 +1,8 @@
 import 'package:cosmos_sdk/cosmos_sdk.dart';
-import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/http/http.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 
-class TendermintHTTPService extends HTTPService
+class TendermintHTTPService extends HTTPService<CosmosAPIProvider>
     implements TendermintServiceProvider {
   TendermintHTTPService({
     required this.url,
@@ -35,5 +34,5 @@ class TendermintHTTPService extends HTTPService
   final Duration defaultTimeOut;
 
   @override
-  final APIServiceTracker<CosmosAPIProvider> provider;
+  final CosmosAPIProvider provider;
 }

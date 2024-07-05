@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
     show QuickContextAccsess, Translate, WalletException;
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/utils/utils.dart';
+import 'package:mrt_wallet/wroker/utils/utils.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
-    show Bip32AddressIndex, BlockchainConst, SeedTypes, WalletNetwork;
+    show BlockchainConst, WalletNetwork;
+import 'package:mrt_wallet/wroker/worker.dart'
+    show SeedTypes, Bip32AddressIndex;
 
 class Bip32KeyDerivationView extends StatefulWidget {
   const Bip32KeyDerivationView(
@@ -107,7 +109,7 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
           AppTextField(
             onChanged: onChangePath,
             initialValue: path,
-            suffixIcon: PasteTextIcon(onPaste: onPaste),
+            suffixIcon: PasteTextIcon(onPaste: onPaste, isSensitive: false),
             validator: validator,
             key: pathTextFieldKey,
             label: "derivation_path".tr,

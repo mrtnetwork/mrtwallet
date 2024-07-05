@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/wroker/keys/keys.dart';
 
 enum WalletAccsessType {
   privateKey,
   seed,
   verify,
+  unlock,
   extendedKey;
 
   bool get isAccsessKey =>
       this == WalletAccsessType.privateKey ||
       this == WalletAccsessType.extendedKey;
+  bool get isAccessMnemonic => this == WalletAccsessType.seed;
   bool get isExtendedKey => this == WalletAccsessType.extendedKey;
+  bool get isUnlock => this == WalletAccsessType.unlock;
 }
 
 typedef FuncWidgetStringPaagePrgoressKey = Widget Function(
-    List<AccessKeyResponse>, String);
+    List<CryptoKeyData> credential, String password, WalletNetwork network);
 
 class PasswordCheckerView extends StatefulWidget {
   const PasswordCheckerView(
@@ -29,7 +32,8 @@ class PasswordCheckerView extends StatefulWidget {
       required this.subtitle,
       this.account,
       this.password,
-      this.customKey});
+      this.customKey,
+      this.controller});
   final FuncWidgetStringPaagePrgoressKey onAccsess;
   final WalletAccsessType accsess;
   final String title;
@@ -37,6 +41,7 @@ class PasswordCheckerView extends StatefulWidget {
   final CryptoAddress? account;
   final String? password;
   final EncryptedCustomKey? customKey;
+  final ScrollController? controller;
 
   @override
   State<PasswordCheckerView> createState() => _PasswordCheckerViewState();
@@ -51,8 +56,9 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
   final GlobalKey<AppTextFieldState> textFildState =
       GlobalKey<AppTextFieldState>(debugLabel: "AppTextFieldState");
   String _password = "";
+  late WalletProvider wallet;
 
-  List<AccessKeyResponse>? credentials;
+  List<CryptoKeyData>? credentials;
   String? error;
   String? psaswordForm(String? v) {
     if (StrUtils.isStrongPassword(v)) return null;
@@ -76,14 +82,27 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     await getKey();
   }
 
-  Future<void> getKey() async {
+  // void checkUnlockAccess() {
+  //   if (widget.accsess == WalletAccsessType.unlock) {
+  //     if (wallet.walletIsUnlock) {
+  //       credentials = [FakeKeyData()];
+  //       updateState();
+  //     }
+  //   }
+  // }
+
+  Future<void> getKey({bool isInit = false}) async {
     progressKey.process();
-    final wallet = context.watch<WalletProvider>(StateConst.main);
+
     final result = await wallet.accsess(widget.accsess, _password,
         account: widget.account, accountId: widget.customKey?.id);
     if (result.hasError) {
-      error = result.error?.tr;
-      progressKey.error();
+      if (isInit) {
+        progressKey.idle();
+      } else {
+        error = result.error?.tr;
+        progressKey.error();
+      }
     } else {
       credentials = result.result;
       progressKey.success();
@@ -110,116 +129,119 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
   bool inited = false;
   void _init() {
     if (inited) return;
+
     inited = true;
     _password = widget.password ?? "";
-    if (_password.isNotEmpty) {
-      getKey();
+    if (_password.isNotEmpty || widget.accsess.isUnlock) {
+      MethodUtils.after(() => getKey(isInit: true));
     }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    wallet = context.watch<WalletProvider>(StateConst.main);
+
     _init();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+      appBar: AppBar(title: Text(widget.title)),
+      body: UnfocusableChild(
+        child: APPAnimatedSwitcher(
+          duration: APPConst.animationDuraion,
+          enable: credentials != null,
+          widgets: {
+            true: (c) =>
+                widget.onAccsess(credentials!, _password, wallet.network),
+            false: (c) => _PasswordWriterView(this)
+          },
+        ),
       ),
-      body: AnimatedSwitcher(
-        duration: APPConst.animationDuraion,
-        child: credentials != null
-            ? widget.onAccsess(credentials!, _password)
-            : UnfocusableChild(
-                child: Center(
-                  child: CustomScrollView(
-                    shrinkWrap: true,
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: ConstraintsBoxView(
-                          padding: WidgetConstant.padding20,
-                          child: AnimatedSwitcher(
-                            duration: APPConst.animationDuraion,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                widget.subtitle,
-                                Form(
-                                  key: form,
-                                  child: AnimatedSwitcher(
-                                    duration: APPConst.animationDuraion,
-                                    child: MeasureSize(
-                                      onChange: onChangeHeight,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(height: _heightSpace),
-                                          const Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.security,
-                                                size: APPConst.double80,
-                                                color: ColorConst.green,
-                                              ),
-                                            ],
-                                          ),
-                                          WidgetConstant.height8,
-                                          AppTextField(
-                                            label: "wallet_password".tr,
-                                            obscureText: true,
-                                            key: textFildState,
-                                            validator: psaswordForm,
-                                            initialValue: _password,
-                                            onChanged: onChange,
-                                            error: error,
-                                            helperText:
-                                                "enter_wallet_password_to_continue"
-                                                    .tr,
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              StreamWidget(
-                                                key: progressKey,
-                                                initialStatus:
-                                                    widget.password != null
-                                                        ? StreamWidgetStatus
-                                                            .progress
-                                                        : StreamWidgetStatus
-                                                            .idle,
-                                                buttomWidget:
-                                                    FixedElevatedButton(
-                                                  onPressed: onSubmit,
-                                                  child: Text("unlock".tr),
-                                                ),
-                                                backToIdle:
-                                                    APPConst.milliseconds100,
-                                                padding: WidgetConstant
-                                                    .paddingVertical20,
-                                              )
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
+    );
+  }
+}
+
+class _PasswordWriterView extends StatelessWidget {
+  const _PasswordWriterView(this.state, {Key? key}) : super(key: key);
+  final _PasswordCheckerViewState state;
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CustomScrollView(
+        shrinkWrap: true,
+        controller: state.widget.controller,
+        slivers: [
+          SliverToBoxAdapter(
+            child: ConstraintsBoxView(
+              padding: WidgetConstant.padding20,
+              child: AnimatedSwitcher(
+                duration: APPConst.animationDuraion,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    state.widget.subtitle,
+                    Form(
+                      key: state.form,
+                      child: AnimatedSwitcher(
+                        duration: APPConst.animationDuraion,
+                        child: MeasureSize(
+                          onChange: state.onChangeHeight,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: state._heightSpace),
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.security,
+                                    size: APPConst.double80,
+                                    color: ColorConst.green,
                                   ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              ),
+                              WidgetConstant.height8,
+                              AppTextField(
+                                  label: "wallet_password".tr,
+                                  obscureText: true,
+                                  key: state.textFildState,
+                                  validator: state.psaswordForm,
+                                  initialValue: state._password,
+                                  onChanged: state.onChange,
+                                  error: state.error,
+                                  helperText:
+                                      "enter_wallet_password_to_continue".tr),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  StreamWidget(
+                                    key: state.progressKey,
+                                    initialStatus: state.widget.password != null
+                                        ? StreamWidgetStatus.progress
+                                        : StreamWidgetStatus.idle,
+                                    buttonWidget: FixedElevatedButton(
+                                      onPressed: state.onSubmit,
+                                      child: Text("unlock".tr),
+                                    ),
+                                    backToIdle: APPConst.milliseconds100,
+                                    padding: WidgetConstant.paddingVertical20,
+                                  )
+                                ],
+                              )
+                            ],
                           ),
                         ),
-                      )
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+          )
+        ],
       ),
     );
   }

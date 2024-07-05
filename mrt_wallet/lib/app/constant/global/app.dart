@@ -9,6 +9,9 @@ class APPConst {
   static const Duration milliseconds100 = Duration(milliseconds: 100);
   static const Duration oneSecoundDuration = Duration(seconds: 1);
   static const Duration twoSecoundDuration = Duration(seconds: 2);
+  static const Duration tenSecoundDuration = Duration(seconds: 10);
+  // static const Duration fiveSecoundDuration = Duration(seconds: 20);
+
   static const double double80 = 80;
   static const double double40 = 40;
   static const double double20 = 20;

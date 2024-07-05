@@ -12,7 +12,6 @@ export 'external/external.dart';
 export 'secure_state/secure_state.dart';
 export 'lifecycle/lifecycle.dart';
 export 'text_field/input_formaters.dart';
-export 'compute/compute.dart';
 export 'file/file.dart';
 export 'websocket/websocket.dart';
 export 'theme/theme.dart';

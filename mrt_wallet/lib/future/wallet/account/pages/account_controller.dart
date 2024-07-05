@@ -5,17 +5,16 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart'
-    show WalletNetwork, Bip32AddressCore, ChainHandler;
+    show WalletNetwork, CryptoAddress, ChainHandler;
 
-typedef SolanaAccountBuilder<N extends WalletNetwork,
-        A extends Bip32AddressCore>
+typedef SolanaAccountBuilder<N extends WalletNetwork, A extends CryptoAddress>
     = Widget Function(WalletProvider wallet, ChainHandler account, A address,
         N network, OnNetworkAccountChange onAccountChanged);
 
-typedef OnNetworkAccountChange = void Function(Bip32AddressCore? address);
+typedef OnNetworkAccountChange = void Function(CryptoAddress? address);
 
 class NetworkAccountControllerView<N extends WalletNetwork,
-    A extends Bip32AddressCore> extends StatefulWidget {
+    A extends CryptoAddress> extends StatefulWidget {
   const NetworkAccountControllerView(
       {super.key, required this.childBulder, required this.title});
   final SolanaAccountBuilder<N, A> childBulder;
@@ -26,7 +25,7 @@ class NetworkAccountControllerView<N extends WalletNetwork,
 }
 
 class _NetworkAccountControllerViewState<N extends WalletNetwork,
-        A extends Bip32AddressCore>
+        A extends CryptoAddress>
     extends State<NetworkAccountControllerView<N, A>> with SafeState {
   late WalletProvider wallet;
   late ChainHandler account;
@@ -34,7 +33,7 @@ class _NetworkAccountControllerViewState<N extends WalletNetwork,
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>();
 
-  void switchAccount(Bip32AddressCore? updateAddress) async {
+  void switchAccount(CryptoAddress? updateAddress) async {
     if (updateAddress == null) return;
     if (!account.account.addresses.contains(updateAddress)) return;
     if (updateAddress == address) return;

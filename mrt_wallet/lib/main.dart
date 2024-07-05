@@ -25,6 +25,7 @@ void main() async {
 void run() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
+
   if (PlatformInterface.appPlatform.isDesktop) {
     await PlatformInterface.interface.desktop.init();
     await PlatformInterface.interface.desktop.waitUntilReadyToShow();
@@ -73,6 +74,7 @@ class MyBTC extends StatelessWidget {
           initialRoute: PageRouter.home,
           navigatorObservers: [MyRouteObserver()],
           showSemanticsDebugger: false,
+          debugShowCheckedModeBanner: false,
           color: ThemeController.appTheme.colorScheme.primary,
           darkTheme: ThemeController.appTheme,
           navigatorKey: StateRepository.navigatorKey(context),

@@ -1,9 +1,9 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/wallet/models/keys/seed/seed.dart';
 
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:mrt_wallet/wroker/keys/keys.dart';
 import 'package:on_chain/ada/src/address/address.dart';
 import 'package:on_chain/ada/src/models/ada_models.dart';
 

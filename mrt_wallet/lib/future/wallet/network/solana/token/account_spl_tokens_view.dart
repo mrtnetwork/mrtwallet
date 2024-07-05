@@ -129,7 +129,7 @@ class __SolanaImportSPLTokensViewState
                             onRemove: () {
                               context.openSliverDialog(
                                   (ctx) => DialogTextView(
-                                      buttomWidget: AsyncDialogDoubleButtonView(
+                                      buttonWidget: AsyncDialogDoubleButtonView(
                                         firstButtonPressed: () =>
                                             onTap(token, exist),
                                       ),
@@ -143,7 +143,7 @@ class __SolanaImportSPLTokensViewState
                               onChanged: (value) {
                                 context.openSliverDialog(
                                     (ctx) => DialogTextView(
-                                        buttomWidget:
+                                        buttonWidget:
                                             AsyncDialogDoubleButtonView(
                                           firstButtonPressed: () =>
                                               onTap(token, exist),

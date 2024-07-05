@@ -253,7 +253,7 @@ class _BuildRippleCurrencyAmountViewState
                                             Text("token_currency".tr),
                                           ],
                                         )),
-                                    buttomText: "setup_input".tr,
+                                    buttonText: "setup_input".tr,
                                     label: "currency".tr,
                                   ),
                                 )

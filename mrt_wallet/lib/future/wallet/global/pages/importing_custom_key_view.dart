@@ -55,6 +55,7 @@ class ImportCustomKeyToWalletViewState
                   secureBarcode: true,
                   barcodeWidget: ContainerWithBorder(
                       child: CopyTextIcon(
+                          isSensitive: true,
                           dataToCopy: widget.keypair.privateKey,
                           widget: ObscureTextView(widget.keypair.privateKey,
                               maxLine: 3))),
@@ -85,6 +86,7 @@ class ImportCustomKeyToWalletViewState
             secureBarcode: false,
             barcodeWidget: ContainerWithBorder(
                 child: CopyTextIcon(
+                    isSensitive: false,
                     dataToCopy: widget.keypair.publicKey,
                     widget: Text(widget.keypair.publicKey))),
             dataToCopy: widget.keypair.publicKey,

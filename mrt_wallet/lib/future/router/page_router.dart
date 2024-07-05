@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/future.dart';
+import 'package:mrt_wallet/future/wallet/setup/pages/setup_wallet.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network.dart';
 
 class PageRouter {
@@ -33,12 +34,10 @@ class PageRouter {
   static const String cosmosTransaction = "/cosmos/transaction";
 
   // static const String setupRippleAddress = "/ripple/setup_address";
-  static const String setupBitcoinAddress = "/bitcoin/setup_address";
   static const String setupGenericAddress = "/networks/setup_address";
-  static const String setupCardanoAddress = "/cardano/setup_address";
 
   static const String setupBitcoinMultsig = "/bitcoin/setup_multisig_address";
-
+  static const String createWallet = "/create_wallet";
   static const String setup = "/setup";
   static const String home = "/";
 
@@ -48,6 +47,7 @@ class PageRouter {
   /// acccount
   static const String removeAccount = "/account/remove";
   static const String importAccount = "/account/import";
+  static const String showPublicKey = "account/public_key";
 
   /// security
   static const String changePassword = "/security/password";
@@ -85,8 +85,6 @@ class PageRouter {
         return const SendBitcoinCashTransactionView();
       case setupBitcoinMultsig:
         return const SetupBitcoinMultiSigAddressView();
-      case setupBitcoinAddress:
-        return const SetupBitcoinAddressView();
       case exportSeed:
         return const ExportSeedView();
       case changePassword:
@@ -144,8 +142,6 @@ class PageRouter {
         return const SolanaImportSPLTokensView();
       case importJettons:
         return const TonImportJettonsView();
-      case setupCardanoAddress:
-        return const SetupCardanoAddressView();
       case cardanoTransaction:
         return const SendCardanoTransactionView();
       case cosmosTransaction:
@@ -162,6 +158,10 @@ class PageRouter {
         return const RippleFeaturePageView();
       case rippleKeyConversion:
         return const RippleKeyConversionView();
+      case showPublicKey:
+        return const AccountPublicKeyView();
+      case createWallet:
+        return const WalletSetupPageView();
       default:
         return const HomeScreen();
     }
@@ -212,17 +212,6 @@ class PageRouter {
         return cosmosTransaction;
       default:
         return rippleTransfer;
-    }
-  }
-
-  static String setupAddressPage(WalletNetwork network) {
-    switch (network.type) {
-      case NetworkType.bitcoinAndForked:
-        return setupBitcoinAddress;
-      case NetworkType.cardano:
-        return setupCardanoAddress;
-      default:
-        return setupGenericAddress;
     }
   }
 

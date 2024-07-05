@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
+import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/http/http.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
-class RippleHTTPService extends HTTPService implements RpcService {
+class RippleHTTPService extends HTTPService<RippleAPIProvider>
+    implements RpcService {
   RippleHTTPService(this.url, this.provider,
       {this.defaultTimeOut = const Duration(seconds: 30)});
 
@@ -12,7 +13,7 @@ class RippleHTTPService extends HTTPService implements RpcService {
   final String url;
 
   @override
-  final APIServiceTracker provider;
+  final RippleAPIProvider provider;
   @override
   final Duration defaultTimeOut;
 

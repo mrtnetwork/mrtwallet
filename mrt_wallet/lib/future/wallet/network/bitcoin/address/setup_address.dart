@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/utils/bitcoin/bitcoin.dart';
 
 class SetupBitcoinAddressView extends StatefulWidget {
   const SetupBitcoinAddressView({super.key});
@@ -138,9 +139,9 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     } else {
       pageProgressKey.success(
           backToIdle: false,
-          progressWidget: SuccessWithButtomView(
-            buttomText: "generate_new_address".tr,
-            buttomWidget: ContainerWithBorder(
+          progressWidget: SuccessWithButtonView(
+            buttonText: "generate_new_address".tr,
+            buttonWidget: ContainerWithBorder(
                 margin: WidgetConstant.paddingVertical8,
                 child: AddressDetailsView(address: result.result)),
             onPressed: () {
@@ -162,60 +163,52 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("setup_address".tr),
-      ),
-      body: PageProgress(
-        key: pageProgressKey,
-        backToIdle: APPConst.oneSecoundDuration,
-        initialStatus: PageProgressStatus.idle,
-        child: () => UnfocusableChild(
-          child: Center(
-            child: CustomScrollView(
-              shrinkWrap: true,
-              slivers: [
-                SliverToBoxAdapter(
-                    child: ConstraintsBoxView(
-                  padding: WidgetConstant.paddingHorizontal20,
-                  child: Column(
-                    key: const ValueKey<bool>(true),
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PageTitleSubtitle(
-                          title: "setup_network_address"
-                              .tr
-                              .replaceOne(network.coinParam.token.name),
-                          body: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("disable_standard_derivation".tr),
-                              WidgetConstant.height8,
-                              Text("setup_address_derivation_keys_desc".tr),
-                              WidgetConstant.height8,
-                              Text("please_following_steps_to_generate_address"
-                                  .tr),
-                            ],
-                          )),
-                      _DriveFromHdWallet(
-                        onVisibleGenerateAddress: visibleGenerateAddress,
-                        typesToSelect: typesToSelect,
-                        generateAddress: generateAddress,
-                        p2shTypes: p2shTypes,
-                        p2pkhTypes: p2pkhTypes,
-                        onChageSegwit: onChageSegwit,
-                        onChangeSelected: onChangeSelected,
-                        selected: selected,
-                        selectedP2shType: p2shType,
-                        onChangeP2pkh: onChangeP2pkh,
-                        selectedP2pkhType: p2pkhType,
-                      ),
-                    ],
+    return PageProgress(
+      key: pageProgressKey,
+      backToIdle: APPConst.oneSecoundDuration,
+      initialStatus: PageProgressStatus.idle,
+      child: () => Center(
+        child: CustomScrollView(
+          shrinkWrap: true,
+          slivers: [
+            SliverToBoxAdapter(
+                child: ConstraintsBoxView(
+              padding: WidgetConstant.paddingHorizontal20,
+              child: Column(
+                key: const ValueKey<bool>(true),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PageTitleSubtitle(
+                      title: "setup_network_address"
+                          .tr
+                          .replaceOne(network.coinParam.token.name),
+                      body: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("disable_standard_derivation".tr),
+                          WidgetConstant.height8,
+                          Text("setup_address_derivation_keys_desc".tr),
+                          WidgetConstant.height8,
+                          Text("please_following_steps_to_generate_address".tr),
+                        ],
+                      )),
+                  _DriveFromHdWallet(
+                    onVisibleGenerateAddress: visibleGenerateAddress,
+                    typesToSelect: typesToSelect,
+                    generateAddress: generateAddress,
+                    p2shTypes: p2shTypes,
+                    p2pkhTypes: p2pkhTypes,
+                    onChageSegwit: onChageSegwit,
+                    onChangeSelected: onChangeSelected,
+                    selected: selected,
+                    selectedP2shType: p2shType,
+                    onChangeP2pkh: onChangeP2pkh,
+                    selectedP2pkhType: p2pkhType,
                   ),
-                ))
-              ],
-            ),
-          ),
+                ],
+              ),
+            ))
+          ],
         ),
       ),
     );
@@ -290,7 +283,7 @@ class _DriveFromHdWallet extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
-              padding: WidgetConstant.paddingVertical20,
+              padding: WidgetConstant.paddingVertical40,
               onPressed: generateAddress,
               key: onVisibleGenerateAddress,
               child: Text("setup_derivation".tr),

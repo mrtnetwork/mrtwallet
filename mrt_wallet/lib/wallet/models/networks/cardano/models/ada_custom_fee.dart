@@ -1,6 +1,6 @@
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wallet/utils/cardano/cardano_utils.dart';
+import 'package:mrt_wallet/wroker/utils/cardano/cardano_utils.dart';
 import 'package:on_chain/ada/src/builder/builder/deposit.dart';
 
 enum ADACustomFeeTypes {

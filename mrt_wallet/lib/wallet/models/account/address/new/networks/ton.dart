@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
-import 'package:mrt_wallet/wallet/utils/ton/ton.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/core/derivation.dart';
+import 'package:mrt_wallet/wroker/utils/ton/ton.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';

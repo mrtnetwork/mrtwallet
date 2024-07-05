@@ -21,8 +21,8 @@ class SolanaTransactionFieldsView extends StatelessWidget {
           return MrtViewBuilder<SolanaTransactionStateController>(
             controller: () => SolanaTransactionStateController(
                 walletProvider: wallet,
-                account: chain.account
-                    as NetworkAccountCore<BigInt, BigInt, SolAddress>,
+                account:
+                    chain.account as NetworkAccountCore<BigInt, SolAddress>,
                 network: network,
                 address: address,
                 apiProvider: chain.provider()!,
@@ -86,7 +86,7 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                             key: controller.feeProgressKey,
                                             initialStatus:
                                                 StreamWidgetStatus.idle,
-                                            buttomWidget: Icon(Icons.circle,
+                                            buttonWidget: Icon(Icons.circle,
                                                 color:
                                                     context.colors.transparent),
                                           ),
@@ -124,7 +124,7 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                                     Text("empty_desc".tr),
                                                   ],
                                                 )),
-                                            buttomText: "setup_memo".tr,
+                                            buttonText: "setup_memo".tr,
                                             label: "memo".tr,
                                           ),
                                         );
@@ -252,7 +252,7 @@ class _SolanaTransferFields extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
             onRemoveIcon: StreamWidget(
-                buttomWidget:
+                buttonWidget:
                     Icon(Icons.circle, color: context.colors.transparent),
                 key: field.accountKey),
             onRemove: () {
@@ -522,7 +522,7 @@ class _CreateAccountFields extends StatelessWidget {
                     title: PageTitleSubtitle(
                         title: "account_size".tr,
                         body: Text("solana_account_size_desc".tr)),
-                    buttomText: "setup_account_size".tr,
+                    buttonText: "setup_account_size".tr,
                     label: "account_size".tr,
                   ),
                 )
@@ -539,7 +539,7 @@ class _CreateAccountFields extends StatelessWidget {
           validate: field.lamports.isCompleted,
           onRemoveIcon: StreamWidget(
               key: field.rentProgress,
-              buttomWidget: field.lamports.hasValue
+              buttonWidget: field.lamports.hasValue
                   ? const Icon(Icons.edit)
                   : const Icon(Icons.add)),
           onTap: () {
@@ -682,7 +682,7 @@ class _InitializeMintFields extends StatelessWidget {
                 title: PageTitleSubtitle(
                     title: "decimals".tr,
                     body: Text("solana_mint_decimal_desc".tr)),
-                buttomText: "setup_token_decimal".tr,
+                buttonText: "setup_token_decimal".tr,
                 label: "decimals".tr,
               ),
             )
@@ -817,7 +817,7 @@ class _MintToFields extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
             onRemoveIcon: StreamWidget(
-                buttomWidget:
+                buttonWidget:
                     Icon(Icons.circle, color: context.colors.transparent),
                 key: field.accountProgressKey),
             onRemove: () {

@@ -5,15 +5,37 @@ import 'package:mrt_wallet/wallet/models/account/address/address.dart';
 import 'package:mrt_wallet/wallet/models/account/account/core/account.dart';
 import 'package:mrt_wallet/wallet/models/contact/contact.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
-import 'package:mrt_wallet/wallet/models/keys/seed/seed.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
-import 'package:mrt_wallet/wallet/utils/global/utils.dart';
+import 'package:mrt_wallet/wroker/worker.dart';
 
-class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
+class Bip32NetworkAccount<T, X> implements NetworkAccountCore<T, X> {
+  Bip32NetworkAccount._(
+      {required this.network,
+      required this.totalBalance,
+      List<CryptoAddress> addresses = const [],
+      List<ContactCore> contacts = const [],
+      required int addressIndex})
+      : _addresses = List.unmodifiable(addresses),
+        _addressIndex = addressIndex,
+        _contacts = List.unmodifiable(contacts);
+  Bip32NetworkAccount<T, X> copyWith(
+      {WalletNetwork? network,
+      Live<IntegerBalance>? totalBalance,
+      List<CryptoAddress>? addresses,
+      List<ContactCore>? contacts,
+      int? addressIndex}) {
+    return Bip32NetworkAccount._(
+        network: network ?? this.network,
+        totalBalance: totalBalance ?? this.totalBalance,
+        addressIndex: addressIndex ?? this._addressIndex,
+        addresses: addresses ?? this._addresses,
+        contacts: contacts ?? this._contacts);
+  }
+
   factory Bip32NetworkAccount.setup(WalletNetwork network) {
     return Bip32NetworkAccount._(
         network: network,
@@ -21,15 +43,6 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
         totalBalance:
             Live(IntegerBalance.zero(network.coinParam.token.decimal!)));
   }
-  Bip32NetworkAccount._(
-      {required this.network,
-      required this.totalBalance,
-      List<Bip32AddressCore> addresses = const [],
-      List<ContactCore> contacts = const [],
-      required int addressIndex})
-      : _addresses = List.unmodifiable(addresses),
-        _addressIndex = addressIndex,
-        _contacts = List.unmodifiable(contacts);
   factory Bip32NetworkAccount.fromHex(String cborHex, WalletNetwork network) {
     return Bip32NetworkAccount.fromCborBytesOrObject(network,
         bytes: BytesUtils.fromHexString(cborHex));
@@ -73,35 +86,41 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)))
       ..refreshTotalBalance();
   }
-  @override
-  final WalletNetwork network;
-  List<Bip32AddressCore<T, X>> _addresses;
 
   @override
-  List<Bip32AddressCore<T, X>> get addresses => _addresses;
+  final WalletNetwork network;
+  List<CryptoAddress<T, X>> _addresses;
+
+  @override
+  List<CryptoAddress<T, X>> get addresses => _addresses;
 
   @override
   bool get haveAddress => addresses.isNotEmpty;
   List<ContactCore<X>> _contacts;
   @override
   List<ContactCore<X>> get contacts => _contacts;
+  int _addressIndex;
+  @override
+  final Live<IntegerBalance> totalBalance;
+  @override
+  CryptoAddress get address => addresses.elementAt(_addressIndex);
 
   @override
   Bip32AddressIndex nextDerive(CryptoCoins coin,
       {SeedTypes seedGeneration = SeedTypes.bip39}) {
-    return BlockchainUtils.generateAccountNextKeyIndex(
+    return BipDerivationUtils.generateAccountNextKeyIndex(
         coin: coin, addresses: addresses, seedGenerationType: seedGeneration);
   }
 
   @override
-  CryptoAddress<BigInt, T, X> addNewAddress(
+  CryptoAddress<T, X> addNewAddress(
       List<int> publicKey, NewAccountParams accountParams) {
     if (!network.coins.contains(accountParams.coin)) {
       throw WalletExceptionConst.invalidCoin;
     }
-    final Bip32AddressCore newAddress =
+    final CryptoAddress newAddress =
         accountParams.toAccount(network, publicKey);
-    if (newAddress is! Bip32AddressCore<T, X>) {
+    if (newAddress is! CryptoAddress<T, X>) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
     final any = addresses.any((element) => element.isEqual(newAddress));
@@ -110,16 +129,11 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
     }
 
     _addresses = List.unmodifiable([newAddress, ..._addresses]);
-    return newAddress as CryptoAddress<BigInt, T, X>;
+    return newAddress;
   }
 
-  int _addressIndex;
   @override
-  CryptoAddress get address => addresses.elementAt(_addressIndex);
-
-  @override
-  void switchAccount(CryptoAddress<BigInt, T, X> address) {
-    if (address is! Bip32AddressCore<T, X>) return;
+  void switchAccount(CryptoAddress<T, X> address) {
     final index = addresses.indexOf(address);
     if (index < 0 || index == _addressIndex) return;
     _addressIndex = index;
@@ -127,11 +141,10 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
 
   @override
   void removeAccount(CryptoAddress address) {
-    if (address is! Bip32AddressCore) return;
     if (!addresses.contains(address)) {
       throw WalletExceptionConst.accountDoesNotFound;
     }
-    final currentAccounts = List<Bip32AddressCore<T, X>>.from(_addresses);
+    final currentAccounts = List<CryptoAddress<T, X>>.from(_addresses);
     currentAccounts.remove(address);
     _addressIndex = 0;
     _addresses = currentAccounts;
@@ -217,9 +230,6 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<BigInt, T, X> {
     }
     return null;
   }
-
-  @override
-  final Live<IntegerBalance> totalBalance;
 
   @override
   void refreshTotalBalance() {

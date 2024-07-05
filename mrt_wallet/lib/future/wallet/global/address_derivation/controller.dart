@@ -6,14 +6,9 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
-    show
-        AddressDerivationIndex,
-        WalletNetwork,
-        Bip32AddressIndex,
-        ChainHandler,
-        EncryptedCustomKey,
-        NetworkAccountCore,
-        NewAccountParams;
+    show WalletNetwork, ChainHandler, NetworkAccountCore, NewAccountParams;
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/keys/models/encrypted_imported.dart';
 
 typedef OnGenerateDerivation = Future<Bip32AddressIndex?> Function();
 
@@ -74,11 +69,16 @@ class AddressDerivationController extends StateController {
 
   Future<Bip32AddressIndex?> getCoin(BuildContext context) async {
     if (!(form.currentState?.validate() ?? true)) return null;
+    final c = coin;
     final customKeys = wallet.getCustomKeysForCoin(coins);
     return await context.openSliverBottomSheet<Bip32AddressIndex>(
         "setup_derivation".tr,
         child: SetupDerivationModeView(
-            coin: coin, chainAccout: chainAccount, customKeys: customKeys));
+          coin: c,
+          chainAccout: chainAccount,
+          customKeys: customKeys,
+          networkCoins: coins,
+        ));
   }
 
   void generateAddress(NewAccountParams newAccount) async {
@@ -94,11 +94,13 @@ class AddressDerivationController extends StateController {
     } else {
       pageProgressKey.success(
           backToIdle: false,
-          progressWidget: SuccessWithButtomView(
-            buttomText: "generate_new_address".tr,
-            buttomWidget: ContainerWithBorder(
+          progressWidget: SuccessWithButtonView(
+            buttonText: "generate_new_address".tr,
+            buttonWidget: ContainerWithBorder(
                 margin: WidgetConstant.paddingVertical8,
-                child: AddressDetailsView(address: result.result)),
+                child: AddressDetailsView(
+                  address: result.result,
+                )),
             onPressed: () {
               pageProgressKey.backToIdle();
             },

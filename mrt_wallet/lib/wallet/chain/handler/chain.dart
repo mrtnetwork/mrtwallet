@@ -10,7 +10,7 @@ import 'package:mrt_wallet/wallet/chain/utils/utils.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wallet/utils/ethereum/utils.dart';
+import 'package:mrt_wallet/wroker/utils/ethereum/utils.dart';
 
 class ChainHandler with CborSerializable {
   ChainHandler._(this.network, this._networkApiProvider, this.account)
@@ -20,6 +20,15 @@ class ChainHandler with CborSerializable {
   bool get haveAddress => account.haveAddress;
   NetworkClient? _networkApiProvider;
   late final List<String> services = List.unmodifiable(_services(network));
+
+  ChainHandler copyWith({
+    WalletNetwork? network,
+    NetworkAccountCore? account,
+    NetworkClient? networkApiProvider,
+  }) {
+    return ChainHandler._(network ?? this.network,
+        networkApiProvider ?? _networkApiProvider, account ?? this.account);
+  }
 
   static List<String> _services(WalletNetwork network) {
     switch (network.type) {
@@ -50,7 +59,8 @@ class ChainHandler with CborSerializable {
   void setProvider(APIProvider service) {
     final currentProvider = _networkApiProvider;
     _networkApiProvider = APIUtils.createApiClient(network, service: service);
-    currentProvider?.serviceProvider.notify();
+    currentProvider?.service.tracker.notify();
+    currentProvider?.service.disposeService();
   }
 
   @override
@@ -58,42 +68,65 @@ class ChainHandler with CborSerializable {
     return CborTagValue(
         CborListValue.dynamicLength([
           network.toCbor(),
-          _networkApiProvider?.serviceProvider.provider.toCbor(),
+          _networkApiProvider?.service.provider.toCbor(),
           account.toCbor()
         ]),
         CborTagsConst.network);
   }
 
-  factory ChainHandler.fromHex(String hex) {
-    return ChainHandler.fromCborBytesOrObject(
-        bytes: BytesUtils.fromHexString(hex));
-  }
-
   factory ChainHandler.fromCborBytesOrObject(
-      {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor =
-        CborSerializable.decodeCborTags(bytes, obj, CborTagsConst.network);
+      {List<int>? bytes, CborObject? obj, String? hex}) {
+    final CborListValue cbor = CborSerializable.cborTagValue(
+        cborBytes: bytes, object: obj, tags: CborTagsConst.network, hex: hex);
     final networkObject = cbor.getCborTag(0)?.getList;
-    final int networkId = networkObject?.elementAt(0);
+    final int? networkId = networkObject?.elementAt(0);
     final network = MethodUtils.nullOnException(
         () => WalletNetwork.fromCborBytesOrObject(obj: cbor.getCborTag(0)));
+    WalletLogging.debug(() {
+      if (network == null) {
+        throw Exception();
+      }
+    });
     final updateNetwork =
         ChainUtils.updateNetwork(networkId: networkId, network: network);
     final provider = MethodUtils.nullOnException(
         () => APIProvider.fromCborBytesOrObject(obj: cbor.getCborTag(1)));
+
     final apiProvider =
         APIUtils.createApiClient(updateNetwork, service: provider);
+    WalletLogging.debug(() {
+      if (provider == null) {
+        throw Exception("$updateNetwork $provider ${cbor.getCborTag(1)}");
+      }
+    });
+
     return ChainHandler._(updateNetwork, apiProvider,
         ChainUtils.account(updateNetwork, cbor.getCborTag(2)));
   }
 }
 
 class ChainsHandler {
-  ChainsHandler._(this.networks, this._network);
-  final Map<int, ChainHandler> networks;
+  ChainsHandler._(this._networks, this._network);
+  final Map<int, ChainHandler> _networks;
   int _network;
-  WalletNetwork get network => networks[_network]!.network;
-  ChainHandler get chain => networks[_network]!;
+  WalletNetwork get network => _networks[_network]!.network;
+  ChainHandler get chain => _networks[_network]!;
+  List<CryptoAddress<dynamic, dynamic>> get accounts => _networks.values
+      .map((e) => e.account.addresses)
+      .expand((e) => e)
+      .toList();
+  List<WalletNetwork> networks() {
+    return _networks.values.map((e) => e.network).toList();
+  }
+
+  List<ChainHandler> chains() {
+    return _networks.values.toList();
+  }
+
+  bool hasNetwork(int network) {
+    return _networks.containsKey(network);
+  }
+
   factory ChainsHandler.setup() {
     return ChainsHandler._({
       for (final i in ChainUtils.defaultCoins.values)
@@ -123,16 +156,18 @@ class ChainsHandler {
   }
 
   void setNetwork(int networkId) {
-    if (_network == networkId || !networks.containsKey(networkId)) return;
+    if (_network == networkId || !_networks.containsKey(networkId)) return;
     final currentChain = chain;
     _network = networkId;
-    currentChain._networkApiProvider?.serviceProvider.notify();
-    chain._networkApiProvider?.serviceProvider.notify();
+    currentChain._networkApiProvider?.service.tracker.notify();
+    currentChain._networkApiProvider?.service.disposeService();
+    chain._networkApiProvider?.service.tracker.notify();
   }
 
   ChainHandler fromAccount(NetworkAccountCore account) =>
-      networks[account.network.value]!;
-  ChainHandler fromAddress(CryptoAddress adresss) => networks[adresss.network]!;
+      _networks[account.network.value]!;
+  ChainHandler fromAddress(CryptoAddress adresss) =>
+      _networks[adresss.network]!;
   ChainHandler updateImportNetwork(WalletNetwork network) {
     if (network.coinParam.providers.isEmpty) {
       if (ProvidersConst.getDefaultProvider(network).isEmpty) {
@@ -148,12 +183,12 @@ class ChainsHandler {
       if (network.coinParam.token.decimal != EthereumUtils.decimal) {
         throw WalletException("invalid_network_information");
       }
-      final evmIds = networks.values.map((e) => e.network.value).toList();
+      final evmIds = _networks.values.map((e) => e.network.value).toList();
       networkId = StrUtils.findFirstMissingNumber(evmIds, start: 100);
       network = network.copyWith(value: networkId);
     } else {
-      if (networks[networkId] == null ||
-          networks[networkId]!.network.runtimeType != network.runtimeType ||
+      if (_networks[networkId] == null ||
+          _networks[networkId]!.network.runtimeType != network.runtimeType ||
           network.value != _network) {
         throw WalletException("invalid_network_information");
       }
@@ -162,10 +197,10 @@ class ChainsHandler {
     final updateChain = ChainHandler._(
         network,
         APIUtils.createApiClient(network),
-        networks[networkId]?.account ??
+        _networks[networkId]?.account ??
             ChainUtils.createNetworkAccount(network));
-    networks[networkId] = updateChain;
-    currentChain._networkApiProvider?.serviceProvider.notify();
+    _networks[networkId] = updateChain;
+    currentChain._networkApiProvider?.service.tracker.notify();
     return chain;
   }
 }

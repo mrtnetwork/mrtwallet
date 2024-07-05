@@ -15,7 +15,7 @@ abstract class TonTransactionImpl extends StateController {
       required this.apiProvider,
       required this.validator});
   final WalletProvider walletProvider;
-  final NetworkAccountCore<BigInt, BigInt, TonAddress> account;
+  final NetworkAccountCore<BigInt, TonAddress> account;
   final WalletTonNetwork network;
   final TonClient apiProvider;
   final ITonAddress address;

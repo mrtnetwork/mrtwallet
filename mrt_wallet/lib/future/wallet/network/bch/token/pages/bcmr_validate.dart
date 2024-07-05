@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/networks/bch/models/cash_token_bcmr.dart';
-import 'package:mrt_wallet/wallet/utils/bitcoin_cash/bitcoin_cash_utils.dart';
+import 'package:mrt_wallet/wroker/utils/bitcoin_cash/bitcoin_cash_utils.dart';
 
 enum _MetadataUriTypes {
   ipfs("ipfs"),
@@ -120,7 +120,7 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
                                 title: PageTitleSubtitle(
                                     title: "on_chain_uri".tr,
                                     body: Text("on_chain_uri_desc".tr)),
-                                buttomText: "setup_input".tr,
+                                buttonText: "setup_input".tr,
                                 label: "on_chain_uri".tr,
                               ),
                             )
@@ -207,7 +207,8 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
                       initialValue: _uri,
                       onChanged: onChangeUri,
                       validator: onValidateUri,
-                      suffixIcon: PasteTextIcon(onPaste: onPasteUri),
+                      suffixIcon: PasteTextIcon(
+                          onPaste: onPasteUri, isSensitive: false),
                       hint: isIpfs
                           ? BCHUtils.hintIPFSUri
                           : "https://example.com/.well-known/bitcoin-cash-metadata-registry.json",

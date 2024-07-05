@@ -1,12 +1,13 @@
-import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
+import 'package:mrt_wallet/wallet/api/provider/networks/tron.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/http/http.dart';
 import 'package:on_chain/on_chain.dart';
 
-class TronHTTPService extends HTTPService implements TronServiceProvider {
+class TronHTTPService extends HTTPService<TronAPIProvider>
+    implements TronServiceProvider {
   TronHTTPService(this.url, this.provider,
       {this.defaultTimeOut = const Duration(seconds: 30)});
   @override
-  final APIServiceTracker provider;
+  final TronAPIProvider provider;
   @override
   final Duration defaultTimeOut;
 

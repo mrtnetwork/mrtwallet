@@ -1,9 +1,9 @@
 import 'package:blockchain_utils/secret_wallet/web3_storage_defination.dart';
+import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/future/widgets/widgets/secure_content_view.dart';
-import 'package:mrt_wallet/wallet/utils/global/utils.dart';
 
 enum _Pages { restore, content }
 
@@ -72,13 +72,14 @@ class _RestoreBackupViewState extends State<RestoreBackupView> with SafeState {
   void onRestore() async {
     if (!(form.currentState?.validate() ?? false)) return;
     progressKey.progressText("restoring_backup_please_wait".tr);
+    final wallet = context.watch<WalletProvider>(StateConst.main);
     final result = await MethodUtils.call(() async =>
-        await BlockchainUtils.restoreBackup(
-            backup: backup, encoding: encoding, password: password));
+        await wallet.restoreKeysBackup(
+            password: password, backup: backup, encoding: encoding));
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
-      restored = result.result;
+      restored = BytesUtils.toHexString(result.result);
       page = _Pages.content;
       progressKey.success();
     }
@@ -184,7 +185,10 @@ class _RestoreBackupRestorePage extends StatelessWidget {
             minlines: 3,
             maxLines: 5,
             initialValue: state.backup,
-            suffixIcon: PasteTextIcon(onPaste: state.onPaseBackupText),
+            suffixIcon: PasteTextIcon(
+              onPaste: state.onPaseBackupText,
+              isSensitive: false,
+            ),
           ),
           AppTextField(
               label: "input_backup_password".tr,

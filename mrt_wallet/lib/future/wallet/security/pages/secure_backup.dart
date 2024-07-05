@@ -44,7 +44,11 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
     progressKey.progressText("creating_backup_desc".tr, sliver: false);
     final result = widget.isWalletBackup
         ? await wallet.generateWalletBackup(widget.password, encoding)
-        : await wallet.generateBackup(widget.data, widget.password, encoding);
+        : await wallet.generateBackup(
+            data: widget.data,
+            password: widget.password,
+            encoding: encoding,
+          );
     if (result?.hasError ?? true) {
       progressKey.errorText(result?.error?.tr ?? "");
     } else {
@@ -53,7 +57,7 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
     }
   }
 
-  final GlobalKey<StreamWidgetState> buttomState = GlobalKey();
+  final GlobalKey<StreamWidgetState> buttonState = GlobalKey();
   String? _shareError;
 
   void share() async {
@@ -62,7 +66,7 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
       _shareError = null;
       setState(() {});
     }
-    buttomState.process();
+    buttonState.process();
     final result = await MethodUtils.call(() async {
       final name = "credentials_${DateTime.now().toFileName()}.txt";
       final toFile = await FileUtils.writeString(backup!, name);
@@ -74,11 +78,11 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
       );
     });
     if (result.hasError || !result.result) {
-      buttomState.error();
+      buttonState.error();
       _shareError = result.error?.tr;
       setState(() {});
     } else {
-      buttomState.success();
+      buttonState.success();
     }
   }
 
@@ -97,7 +101,10 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
                 ),
                 WidgetConstant.height8,
                 Text("backup_desc2".tr),
-                ...widget.descriptions
+                if (widget.descriptions.isNotEmpty) ...[
+                  WidgetConstant.height8,
+                  ...widget.descriptions
+                ]
               ],
             )),
         PageProgress(
@@ -156,15 +163,16 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
                                     StreamWidget(
-                                      buttomWidget: FilledButton.icon(
+                                      buttonWidget: FilledButton.icon(
                                           onPressed: share,
                                           icon: const Icon(Icons.share),
                                           label: Text("share_as_file".tr)),
                                       backToIdle: APPConst.oneSecoundDuration,
-                                      key: buttomState,
+                                      key: buttonState,
                                     ),
                                     WidgetConstant.width8,
                                     CopyTextIcon(
+                                        isSensitive: false,
                                         dataToCopy: backup!,
                                         size: APPConst.double40),
                                   ],

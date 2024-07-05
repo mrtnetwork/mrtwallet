@@ -94,7 +94,7 @@ class EthereumTransactionFieldsView extends StatelessWidget {
                                               Text("empty_desc".tr),
                                             ],
                                           )),
-                                      buttomText: "setup_memo".tr,
+                                      buttonText: "setup_memo".tr,
                                       label: "memo".tr,
                                     ),
                                   );

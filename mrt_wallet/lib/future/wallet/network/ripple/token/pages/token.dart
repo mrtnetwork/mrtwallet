@@ -127,7 +127,7 @@ class __MonitorRippleTokenViewState extends State<_MonitorRippleTokenView>
                             onRemove: () {
                               context.openSliverDialog(
                                   (ctx) => DialogTextView(
-                                      buttomWidget: AsyncDialogDoubleButtonView(
+                                      buttonWidget: AsyncDialogDoubleButtonView(
                                         firstButtonPressed: () =>
                                             onTap(token, exist),
                                       ),
@@ -141,7 +141,7 @@ class __MonitorRippleTokenViewState extends State<_MonitorRippleTokenView>
                               onChanged: (value) {
                                 context.openSliverDialog(
                                     (ctx) => DialogTextView(
-                                        buttomWidget:
+                                        buttonWidget:
                                             AsyncDialogDoubleButtonView(
                                           firstButtonPressed: () =>
                                               onTap(token, exist),

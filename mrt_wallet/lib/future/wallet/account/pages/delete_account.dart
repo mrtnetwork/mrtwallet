@@ -22,8 +22,8 @@ class DeleteAccountView extends StatelessWidget {
     final CryptoAddress account = context.getArgruments();
     return PasswordCheckerView(
         accsess: WalletAccsessType.verify,
-        onAccsess: (p0, p1) {
-          return _DeleteAccountView(password: p1, account: account);
+        onAccsess: (crendential, password, network) {
+          return _DeleteAccountView(password: password, account: account);
         },
         title: "remove_account".tr,
         subtitle: PageTitleSubtitle(
@@ -121,7 +121,7 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
                                   context
                                       .openSliverDialog<bool>(
                                         (p0) => DialogTextView(
-                                            buttomWidget:
+                                            buttonWidget:
                                                 DialogDoubleButtonView(
                                               firstButtonLabel: "remove".tr,
                                               secoundButtonLabel: "cancel".tr,

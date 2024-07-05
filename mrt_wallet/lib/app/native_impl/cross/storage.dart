@@ -20,4 +20,8 @@ mixin NativeSecureStorageImpl {
   Future<Map<String, String>> readAll() async {
     return await BaseNativeMEthod.platform.readAllSecure();
   }
+
+  Future<bool> deleteMultiple({required List<String> keys}) async {
+    return await BaseNativeMEthod.platform.removeMultipleSecure(keys);
+  }
 }

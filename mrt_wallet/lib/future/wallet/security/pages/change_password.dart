@@ -10,17 +10,15 @@ class ChangeWalletPasswordView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PasswordCheckerView(
         accsess: WalletAccsessType.seed,
-        onAccsess: (p0, p1) {
-          return _ChangePasswordView(password: p1);
+        onAccsess: (crendential, password, network) {
+          return _ChangePasswordView(password: password);
         },
         title: "change_password".tr,
         subtitle: PageTitleSubtitle(
             title: "wallet_password_desc".tr,
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("enter_wallet_password_to_continue".tr),
-              ],
+              children: [Text("enter_wallet_password_to_continue".tr)],
             )));
   }
 }
@@ -54,6 +52,9 @@ class _ChangePasswordViewState extends State<_ChangePasswordView>
   }
 
   String? validator(String? value) {
+    if (value == widget.password) {
+      return "password_used_before".tr;
+    }
     if (StrUtils.isStrongPassword(value)) {
       return null;
     }
@@ -102,18 +103,13 @@ class _ChangePasswordViewState extends State<_ChangePasswordView>
                       WidgetConstant.height20,
                       PageTitleSubtitle(
                           title: "wallet_password_desc".tr,
-                          body: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("p_note1".tr),
-                              WidgetConstant.height8,
-                              Text("p_note2".tr),
-                              WidgetConstant.height8,
-                              Text("p_note3".tr),
-                              WidgetConstant.height8,
-                              Text("p_note4".tr),
-                              WidgetConstant.height8,
-                              Text("change_password_desc".tr)
+                          body: LargeTextView(
+                            [
+                              "p_note1".tr,
+                              "p_note2".tr,
+                              "p_note3".tr,
+                              "p_note4".tr,
+                              "change_password_desc".tr
                             ],
                           )),
                       AppTextField(

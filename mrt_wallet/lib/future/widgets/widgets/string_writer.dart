@@ -13,7 +13,7 @@ class StringWriterView extends StatefulWidget {
     super.key,
     required this.title,
     required this.label,
-    required this.buttomText,
+    required this.buttonText,
     this.customForm,
     this.defaultValue,
     this.minLength,
@@ -22,7 +22,7 @@ class StringWriterView extends StatefulWidget {
   });
   final Widget title;
   final String label;
-  final String buttomText;
+  final String buttonText;
   final int? minLength;
   final int? maxLength;
   final RegExp? regExp;
@@ -94,7 +94,10 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
             maxLines: 5,
             initialValue: text,
             validator: widget.customForm ?? validator,
-            suffixIcon: PasteTextIcon(onPaste: onPaste),
+            suffixIcon: PasteTextIcon(
+              onPaste: onPaste,
+              isSensitive: false,
+            ),
             onChanged: onChange,
             key: textFieldKey,
           ),
@@ -104,7 +107,7 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
               FixedElevatedButton(
                 padding: WidgetConstant.paddingVertical20,
                 onPressed: onPressed,
-                child: Text(widget.buttomText),
+                child: Text(widget.buttonText),
               )
             ],
           )

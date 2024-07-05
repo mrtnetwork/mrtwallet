@@ -5,17 +5,17 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/wroker/keys/models/encrypted_imported.dart';
 
 class ManageImportedKeysView extends StatelessWidget {
   const ManageImportedKeysView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final WalletNetwork network = context.getArgruments();
     return PasswordCheckerView(
         accsess: WalletAccsessType.verify,
-        onAccsess: (p0, p1) {
-          return _ImportAccount(password: p1, network: network);
+        onAccsess: (crendential, password, network) {
+          return _ImportAccount(password: password, network: network);
         },
         title: "imported_key".tr,
         subtitle: PageTitleSubtitle(
@@ -145,7 +145,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                                     context
                                         .openSliverDialog<bool>(
                                       (p0) => DialogTextView(
-                                          buttomWidget: DialogDoubleButtonView(
+                                          buttonWidget: DialogDoubleButtonView(
                                             firstButtonLabel: "remove".tr,
                                             secoundButtonLabel: "cancel".tr,
                                           ),

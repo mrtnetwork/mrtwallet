@@ -109,16 +109,16 @@ class DialogDoubleButtonView extends StatelessWidget {
 }
 
 class DialogTextView extends StatelessWidget {
-  const DialogTextView({super.key, this.text, this.widget, this.buttomWidget});
+  const DialogTextView({super.key, this.text, this.widget, this.buttonWidget});
   final String? text;
   final Widget? widget;
-  final Widget? buttomWidget;
+  final Widget? buttonWidget;
   @override
   Widget build(BuildContext context) {
     final Widget subtitle = widget ?? Text(text ?? "");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [subtitle, buttomWidget ?? WidgetConstant.sizedBox],
+      children: [subtitle, buttonWidget ?? WidgetConstant.sizedBox],
     );
   }
 }
@@ -192,7 +192,7 @@ class _AsyncDialogDoubleButtonViewState
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           StreamWidget(
-              buttomWidget: FilledButton(
+              buttonWidget: FilledButton(
                   onPressed: () {
                     onTap(true);
                   },
@@ -200,7 +200,7 @@ class _AsyncDialogDoubleButtonViewState
               key: progressKeyFirst),
           WidgetConstant.width8,
           StreamWidget(
-              buttomWidget: FilledButton(
+              buttonWidget: FilledButton(
                   style: ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll(
                           context.colors.tertiaryContainer),

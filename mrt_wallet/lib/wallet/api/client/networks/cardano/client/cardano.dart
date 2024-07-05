@@ -7,16 +7,15 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/cardano/models/utxos.dart';
 import 'package:on_chain/on_chain.dart';
 
-class CardanoClient implements NetworkClient<ICardanoAddress> {
+class CardanoClient
+    implements NetworkClient<ICardanoAddress, CardanoAPIProvider> {
   CardanoClient({required this.provider, required this.network});
   final BlockforestProvider provider;
   @override
   final WalletCardanoNetwork network;
-
   @override
-  APIServiceTracker<CardanoAPIProvider> get serviceProvider =>
-      (provider.rpc as BaseServiceProtocol).provider
-          as APIServiceTracker<CardanoAPIProvider>;
+  BaseServiceProtocol<CardanoAPIProvider> get service =>
+      provider.rpc as BaseServiceProtocol<CardanoAPIProvider>;
 
   @override
   Future<void> updateBalance(ICardanoAddress account) async {

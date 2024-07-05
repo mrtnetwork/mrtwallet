@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/ethereum/utils.dart';
 
 class ImportEthereumNetwork extends StatelessWidget {
   const ImportEthereumNetwork({super.key});
@@ -218,7 +219,10 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                           initialValue: rpcUrl,
                           onChanged: onChageUrl,
                           validator: validateRpcUrl,
-                          suffixIcon: PasteTextIcon(onPaste: onPasteUri),
+                          suffixIcon: PasteTextIcon(
+                            onPaste: onPasteUri,
+                            isSensitive: false,
+                          ),
                           label: "rpc_url".tr,
                         ),
                         WidgetConstant.height20,
@@ -253,8 +257,10 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                           onChanged: onChangeExplorerAddress,
                           validator: validateAddressLink,
                           label: "network_explorer_address_link".tr,
-                          suffixIcon:
-                              PasteTextIcon(onPaste: onPasteExplorerAddres),
+                          suffixIcon: PasteTextIcon(
+                            onPaste: onPasteExplorerAddres,
+                            isSensitive: false,
+                          ),
                         ),
                         WidgetConstant.height20,
                         Text("network_explorer_transaction_link".tr,
@@ -268,7 +274,9 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                           validator: validateAddressLink,
                           label: "network_explorer_transaction_link".tr,
                           suffixIcon: PasteTextIcon(
-                              onPaste: onPasteExplorerTransaction),
+                            onPaste: onPasteExplorerTransaction,
+                            isSensitive: false,
+                          ),
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,

@@ -154,7 +154,10 @@ class _TonBodyBuilderView extends StatelessWidget {
           minlines: 5,
           maxLines: 8,
           initialValue: initialValue,
-          prefixIcon: PasteTextIcon(onPaste: state.onPaste),
+          prefixIcon: PasteTextIcon(
+            onPaste: state.onPaste,
+            isSensitive: false,
+          ),
           helperText: state.bodyType.helperText.tr,
         )
       ],

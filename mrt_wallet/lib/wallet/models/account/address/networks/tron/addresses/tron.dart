@@ -8,7 +8,7 @@ import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:on_chain/tron/tron.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
@@ -16,9 +16,7 @@ import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 
 import 'multisig.dart';
 
-class ITronAddress
-    with Equatable
-    implements Bip32AddressCore<BigInt, TronAddress> {
+class ITronAddress extends CryptoAddress<BigInt, TronAddress> with Equatable {
   ITronAddress._(
       {required this.keyIndex,
       required this.coin,
@@ -139,7 +137,6 @@ class ITronAddress
   @override
   final int network;
 
-  @override
   final List<int> publicKey;
 
   @override
@@ -282,13 +279,18 @@ class ITronAddress
   @override
   String get orginalAddress => networkAddress.toAddress();
 
-  @override
-  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+  // @override
+  // List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 
   @override
-  bool isEqual(Bip32AddressCore<BigInt, TronAddress> other) {
+  bool isEqual(CryptoAddress<BigInt, TronAddress> other) {
     return multiSigAccount == other.multiSigAccount &&
         orginalAddress == other.orginalAddress;
+  }
+
+  @override
+  TronNewAddressParam toAccountParams() {
+    return TronNewAddressParam(deriveIndex: keyIndex, coin: coin);
   }
 }
 
@@ -331,6 +333,7 @@ class ITronMultisigAddress extends ITronAddress
         accountName: null,
         nfts: const []);
   }
+
   factory ITronMultisigAddress.fromCborBytesOrObject(WalletNetwork network,
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
@@ -419,8 +422,21 @@ class ITronMultisigAddress extends ITronAddress
   bool get multiSigAccount => true;
 
   @override
-  List<(String, AddressDerivationIndex)> get keyDetails =>
+  List<(String, Bip32AddressIndex)> get keyDetails =>
       multiSignatureAccount.signers
           .map((e) => (e.publicKey, e.keyIndex))
           .toList();
+  @override
+  List<Bip32AddressIndex> signerKeyIndexes() {
+    return keyDetails.map((e) => e.$2).toList();
+  }
+
+  @override
+  TronMultisigNewAddressParam toAccountParams() {
+    return TronMultisigNewAddressParam(
+        deriveIndex: keyIndex,
+        coin: coin,
+        masterAddress: networkAddress,
+        multiSigAccount: multiSignatureAccount);
+  }
 }

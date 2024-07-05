@@ -3,8 +3,8 @@ import 'package:mrt_wallet/app/constant/constant.dart';
 import 'package:mrt_wallet/app/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
 import 'package:mrt_wallet/wallet/wallet.dart' show ContactCore, CryptoAddress;
+import 'package:mrt_wallet/wroker/derivation/core/derivation.dart';
 
 class AddressDetailsView extends StatelessWidget {
   const AddressDetailsView({
@@ -46,17 +46,32 @@ class AddressDetailsView extends StatelessWidget {
                           context.textTheme.labelLarge?.copyWith(color: color)),
         OneLineTextWidget(address.address.toAddress,
             style: context.textTheme.bodyMedium?.copyWith(color: color)),
-        OneLineTextWidget(address.keyIndex.toString(),
-            style: context.textTheme.bodyMedium?.copyWith(color: color)),
+        AddressDrivationInfo(address.keyIndex, color: color),
         if (showBalance)
           CoinPriceView(
-            account: address,
-            style: context.textTheme.titleLarge?.copyWith(color: color),
-            token: wallet.network.coinParam.token,
-            symbolColor: color,
-          ),
+              account: address,
+              style: context.textTheme.titleLarge?.copyWith(color: color),
+              token: wallet.network.coinParam.token,
+              symbolColor: color),
       ],
     );
+  }
+}
+
+class AddressDrivationInfo extends StatelessWidget {
+  const AddressDrivationInfo(this.keyIndex, {this.color, Key? key})
+      : super(key: key);
+  final AddressDerivationIndex keyIndex;
+  final Color? color;
+  @override
+  Widget build(BuildContext context) {
+    final keyStr = keyIndex.toString().tr;
+    if (keyIndex.isImportedKey) {
+      return OneLineTextWidget("imported_".tr.replaceOne(keyStr),
+          style: context.textTheme.bodySmall?.copyWith(color: color));
+    }
+    return OneLineTextWidget(keyIndex.toString().tr,
+        style: context.textTheme.bodySmall?.copyWith(color: color));
   }
 }
 

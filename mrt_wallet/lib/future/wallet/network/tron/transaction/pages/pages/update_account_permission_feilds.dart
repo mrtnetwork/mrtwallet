@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/global/pages/select_account_or_contact.
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/account/forms/update_account_permission.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
 
 class TronAccountUpdatePermissionFieldsView extends StatelessWidget {
@@ -106,7 +107,7 @@ class _EditPermissionView extends StatelessWidget {
                     title: PageTitleSubtitle(
                         title: "permission_name".tr,
                         body: Text("input_the_permission_name".tr)),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: "permission_name".tr,
                   ),
                 )

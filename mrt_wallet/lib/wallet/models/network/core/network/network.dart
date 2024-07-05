@@ -3,8 +3,7 @@ import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
-
-import 'package:mrt_wallet/wallet/models/coins/coins.dart';
+import 'package:mrt_wallet/wroker/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';

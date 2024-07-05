@@ -1,9 +1,9 @@
 import 'package:mrt_wallet/wallet/api/provider/networks/solana.dart';
-import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/http/http.dart';
 import 'package:on_chain/solana/solana.dart';
 
-class SolanaHTTPService extends HTTPService implements SolanaJSONRPCService {
+class SolanaHTTPService extends HTTPService<SolanaAPIProvider>
+    implements SolanaJSONRPCService {
   @override
   final String url;
   @override
@@ -21,5 +21,5 @@ class SolanaHTTPService extends HTTPService implements SolanaJSONRPCService {
   }
 
   @override
-  final APIServiceTracker<SolanaAPIProvider> provider;
+  final SolanaAPIProvider provider;
 }

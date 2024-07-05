@@ -10,8 +10,8 @@ class BackupWalletView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PasswordCheckerView(
         accsess: WalletAccsessType.verify,
-        onAccsess: (p0, p1) {
-          return _BackupWallet(password: p1);
+        onAccsess: (crendential, password, network) {
+          return _BackupWallet(password: password);
         },
         title: "backup".tr,
         subtitle: PageTitleSubtitle(

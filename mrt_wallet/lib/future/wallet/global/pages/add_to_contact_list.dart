@@ -19,7 +19,7 @@ class _AddToContactListViewState extends State<AddToContactListView> {
   final GlobalKey<FormState> formKey = GlobalKey(debugLabel: "SelectAddress_1");
   final GlobalKey<AppTextFieldState> textFieldKey =
       GlobalKey(debugLabel: "SelectAddress");
-  final GlobalKey<StreamWidgetState> buttomProgressKey =
+  final GlobalKey<StreamWidgetState> buttonProgressKey =
       GlobalKey<StreamWidgetState>();
   bool added = false;
   late String name = widget.contact.name.tr;
@@ -46,7 +46,7 @@ class _AddToContactListViewState extends State<AddToContactListView> {
 
   void onTapAdd() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
-    buttomProgressKey.process();
+    buttonProgressKey.process();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     final newContact = ContactCore.newContact(
         network: widget.network,
@@ -54,12 +54,12 @@ class _AddToContactListViewState extends State<AddToContactListView> {
         name: name);
     final result = await wallet.addNewContact(newContact);
     if (result.hasError) {
-      buttomProgressKey.error();
+      buttonProgressKey.error();
       _error = result.error?.tr;
       setState(() {});
     } else {
       added = true;
-      buttomProgressKey.success();
+      buttonProgressKey.success();
       setState(() {});
     }
   }
@@ -96,11 +96,14 @@ class _AddToContactListViewState extends State<AddToContactListView> {
                         key: textFieldKey,
                         label: "name_of_contact".tr,
                         initialValue: name,
-                        readOnly: buttomProgressKey.inProgress,
+                        readOnly: buttonProgressKey.inProgress,
                         minlines: 1,
                         maxLines: 2,
                         error: _error,
-                        suffixIcon: PasteTextIcon(onPaste: onPaste),
+                        suffixIcon: PasteTextIcon(
+                          onPaste: onPaste,
+                          isSensitive: false,
+                        ),
                         validator: validator,
                         onChanged: onChange,
                       ),
@@ -120,12 +123,12 @@ class _AddToContactListViewState extends State<AddToContactListView> {
                     )
                   : StreamWidget(
                       padding: WidgetConstant.paddingVertical20,
-                      buttomWidget: FixedElevatedButton(
+                      buttonWidget: FixedElevatedButton(
                         onPressed: onTapAdd,
                         child: Text("add_to_contacts".tr),
                       ),
                       backToIdle: APPConst.oneSecoundDuration,
-                      key: buttomProgressKey,
+                      key: buttonProgressKey,
                     ),
             ],
           ),

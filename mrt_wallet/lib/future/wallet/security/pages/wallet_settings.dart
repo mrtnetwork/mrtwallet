@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/wallet/global/pages/update_wallet_infos.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
-import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/wallet/models/setting/setting.dart';
+import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
 class UpdateWalletSettingView extends StatelessWidget {
   const UpdateWalletSettingView({super.key});
@@ -12,8 +13,8 @@ class UpdateWalletSettingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PasswordCheckerView(
         accsess: WalletAccsessType.verify,
-        onAccsess: (p0, p1) {
-          return _ExportSeedView(password: p1);
+        onAccsess: (crendential, password, network) {
+          return _ExportSeedView(password: password);
         },
         title: "wallet_preferences".tr,
         subtitle: PageTitleSubtitle(
@@ -37,33 +38,42 @@ class _ExportSeedView extends StatefulWidget {
 
 class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
-  late final WalletSetting setting;
-  late final Map<WalletLockTime, Widget> lockTime = {
-    for (final i in WalletLockTime.values) i: Text(i.viewName.tr)
-  };
-  late WalletLockTime selected;
-  bool inited = false;
+  late final HDWallet hdWallet;
+  late String name = hdWallet.name;
+  late bool reqPassword = hdWallet.requiredPassword;
+  late bool defaultWallet = true;
+  late WalletLockTime locktime = hdWallet.locktime;
+  late List<String> walletIds;
 
-  void onChanged(WalletLockTime? v) {
-    selected = v ?? selected;
-    setState(() {});
+  bool inited = false;
+  void init() {
+    if (!inited) {
+      inited = true;
+      final wallet = context.watch<WalletProvider>(StateConst.main);
+      hdWallet = wallet.wallet;
+      walletIds = wallet.wallets.map((e) => e.name).toList();
+      walletIds.remove(hdWallet.name);
+      defaultWallet = wallet.defaultWalletId == hdWallet.name;
+    }
   }
 
   @override
   void didChangeDependencies() {
-    if (!inited) {
-      inited = true;
-      setting = context.watch<WalletProvider>(StateConst.main).setting;
-      selected = setting.lockTime;
-    }
     super.didChangeDependencies();
+    init();
   }
 
-  void onUpdate() async {
-    final model = context.watch<WalletProvider>(StateConst.main);
+  void setup(WalletUpdateInfosData walletInfos) async {
+    name = walletInfos.name;
+    locktime = walletInfos.lockTime;
+    reqPassword = walletInfos.requirmentPassword;
+    defaultWallet = walletInfos.asDefaultWallet;
+
     progressKey.progressText("updating".tr);
-    final result = await model.updateWlletSetting(
-        widget.password, setting.copyWith(lockTime: selected));
+    final model = context.watch<WalletProvider>(StateConst.main);
+
+    final result = await model.updateWalletInfos(
+        password: widget.password, walletInfos: walletInfos);
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
@@ -77,36 +87,26 @@ class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => ConstraintsBoxView(
-        padding: WidgetConstant.paddingHorizontal20,
-        alignment: Alignment.center,
-        child: AnimatedSwitcher(
-          duration: APPConst.animationDuraion,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                PageTitleSubtitle(
-                    title: "customize_wallet_settings".tr,
-                    body: Text("update_settings_desc".tr)),
-                AppDropDownBottom(
-                  items: lockTime,
-                  label: "automatic_loc".tr,
-                  value: selected,
-                  onChanged: onChanged,
+      child: () => Center(
+        child: CustomScrollView(
+          shrinkWrap: true,
+          slivers: [
+            SliverToBoxAdapter(
+              child: ConstraintsBoxView(
+                padding: WidgetConstant.paddingHorizontal20,
+                alignment: Alignment.center,
+                child: UpdateWalletInfosWidget(
+                  name: name,
+                  locktime: locktime,
+                  requrmentPassword: reqPassword,
+                  exitsIds: walletIds,
+                  asDefaultWallet: defaultWallet,
+                  setupButtonTitle: "update_settings".tr,
+                  onUpdate: (update) => setup(update),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FixedElevatedButton(
-                      padding: WidgetConstant.paddingVertical20,
-                      onPressed: onUpdate,
-                      child: Text("update_settings".tr),
-                    ),
-                  ],
-                )
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

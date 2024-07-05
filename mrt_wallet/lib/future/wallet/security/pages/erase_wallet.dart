@@ -9,9 +9,9 @@ class EraseWalletView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PasswordCheckerView(
-        accsess: WalletAccsessType.seed,
-        onAccsess: (p0, p1) {
-          return _EraseWalletView(password: p1);
+        accsess: WalletAccsessType.verify,
+        onAccsess: (crendential, password, network) {
+          return _EraseWalletView(password: password);
         },
         title: "delete_wallet".tr,
         subtitle: PageTitleSubtitle(
@@ -83,7 +83,7 @@ class _EraseWalletViewState extends State<_EraseWalletView> with SafeState {
                           .openSliverDialog<bool>(
                               (p0) => DialogTextView(
                                     text: "wallet_deletation_desc".tr,
-                                    buttomWidget:
+                                    buttonWidget:
                                         const DialogDoubleButtonView(),
                                   ),
                               "erase_wallet".tr)

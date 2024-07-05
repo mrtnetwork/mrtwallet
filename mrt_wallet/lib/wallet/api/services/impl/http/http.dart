@@ -1,15 +1,23 @@
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:http/http.dart' as http;
-import 'package:mrt_wallet/app/error/exception/exception.dart';
+import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/core/base_service.dart';
+import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'dart:async';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
 
-abstract class HTTPService implements BaseServiceProtocol {
+abstract class HTTPService<P extends APIProvider>
+    implements BaseServiceProtocol<P> {
+  @override
+  final APIServiceTracker tracker = APIServiceTracker();
   static final http.Client _client = http.Client();
   http.Client get client => _client;
   Duration get defaultTimeOut;
+
+  @override
+  void disposeService() {}
 
   Future<T> providerPOST<T>(String url, Object? params,
       {List<int> allowStatus = const [200],
@@ -26,12 +34,12 @@ abstract class HTTPService implements BaseServiceProtocol {
           allowStatus: allowStatus);
       return response!;
     } on ApiProviderException catch (e) {
-      provider.addRequest(
+      tracker.addRequest(
           ApiRequest(uri: url, params: params?.toString(), error: e));
       rethrow;
     } finally {
       if (response != null) {
-        provider.addRequest(ApiRequest(
+        tracker.addRequest(ApiRequest(
             params: params?.toString(), response: response.toString()));
       }
     }
@@ -53,11 +61,11 @@ abstract class HTTPService implements BaseServiceProtocol {
 
       return response!;
     } on ApiProviderException catch (e) {
-      provider.addRequest(ApiRequest(uri: url, params: null, error: e));
+      tracker.addRequest(ApiRequest(uri: url, params: null, error: e));
       rethrow;
     } finally {
       if (response != null) {
-        provider.addRequest(
+        tracker.addRequest(
             ApiRequest(uri: url, params: null, response: response.toString()));
       }
     }
@@ -67,8 +75,14 @@ abstract class HTTPService implements BaseServiceProtocol {
       {List<int> allowStatus = const [200]}) async {
     try {
       final response = await t();
+
       if (!allowStatus.contains(response.statusCode)) {
-        throw ApiProviderException(statusCode: response.statusCode);
+        final decode = StringUtils.tryToJson(response.body);
+        final map = (decode is Map<String, dynamic>?) ? decode : null;
+        throw ApiProviderException(
+            statusCode: response.statusCode,
+            responseData: map,
+            message: map == null ? response.body : null);
       }
       return _readResponse<T>(response);
     } on RPCError catch (e) {
@@ -80,6 +94,8 @@ abstract class HTTPService implements BaseServiceProtocol {
           requestPayload: e.data);
     } on http.ClientException {
       throw const ApiProviderException(message: "api_http_client_error");
+    } on ApiProviderException {
+      rethrow;
     } on TimeoutException {
       throw const ApiProviderException(message: "api_http_timeout_error");
     } on FormatException {
@@ -107,7 +123,4 @@ abstract class HTTPService implements BaseServiceProtocol {
         }
     }
   }
-
-  @override
-  void close() {}
 }

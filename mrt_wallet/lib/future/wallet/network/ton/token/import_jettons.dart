@@ -233,7 +233,7 @@ class _NonContentJettonView extends StatelessWidget {
         if (token.jettonToken == null) return;
         context.openSliverDialog(
             (ctx) => DialogTextView(
-                  buttomWidget: AsyncDialogDoubleButtonView(
+                  buttonWidget: AsyncDialogDoubleButtonView(
                     firstButtonPressed: () {
                       return state.onTap(token.jettonToken!, exist);
                     },

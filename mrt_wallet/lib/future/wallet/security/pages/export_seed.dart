@@ -1,9 +1,8 @@
-import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/keys/keys.dart';
 
 class ExportSeedView extends StatelessWidget {
   const ExportSeedView({super.key});
@@ -11,9 +10,10 @@ class ExportSeedView extends StatelessWidget {
   Widget build(BuildContext context) {
     return PasswordCheckerView(
         accsess: WalletAccsessType.seed,
-        onAccsess: (p0, p1) {
+        onAccsess: (crendential, password, network) {
           return _ExportSeedView(
-              mnemonic: p0.first as AccessMnemonicResponse, password: p1);
+              mnemonic: crendential.first as AccessMnemonicResponse,
+              password: password);
         },
         title: "export_mnemonic".tr,
         subtitle: PageTitleSubtitle(
@@ -36,7 +36,8 @@ class _ExportSeedViewState extends State<_ExportSeedView>
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "ExportSeedView");
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
-  late final Mnemonic _mnemonic = widget.mnemonic.mnemonic;
+  late final String _mnemonic = widget.mnemonic.mnemonic.toStr();
+  late final List<String> mnemonicList = widget.mnemonic.mnemonic.toList();
   bool _showMnemonic = false;
 
   void onChangeShowMnemonic() {
@@ -60,128 +61,116 @@ class _ExportSeedViewState extends State<_ExportSeedView>
                 WidgetConstant.height20,
                 PageTitleSubtitle(
                     title: "export_mnemonic_desc".tr,
-                    body: Text("export_mnemonic_desc2".tr)),
-                Column(
+                    body: LargeTextView([
+                      "export_mnemonic_desc2".tr,
+                      "mnemonic_security_des1".tr,
+                      "mnemonic_security_des2".tr,
+                      "mnemonic_security_des3".tr
+                    ])),
+                Stack(
                   children: [
-                    PageTitleSubtitle(
-                        title: "more_security".tr,
-                        body: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    AnimatedSwitcher(
+                      duration: APPConst.animationDuraion,
+                      child: Container(
+                        key: ValueKey<bool>(_showMnemonic),
+                        decoration: BoxDecoration(
+                          color: context.colors.primaryContainer,
+                          borderRadius: WidgetConstant.border8,
+                        ),
+                        foregroundDecoration: _showMnemonic
+                            ? null
+                            : BoxDecoration(
+                                color: context.colors.secondary,
+                                borderRadius: WidgetConstant.border8,
+                              ),
+                        child: Stack(
                           children: [
-                            Text("mnemonic_security_des1".tr),
-                            WidgetConstant.height8,
-                            Text("mnemonic_security_des2".tr),
-                            WidgetConstant.height8,
-                            Text("mnemonic_security_des3".tr),
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              children: List.generate(
+                                  mnemonicList.length,
+                                  (index) => Padding(
+                                        padding: WidgetConstant.padding5,
+                                        child: Stack(
+                                          children: [
+                                            Chip(
+                                                padding:
+                                                    WidgetConstant.padding10,
+                                                label:
+                                                    Text(mnemonicList[index])),
+                                            Badge.count(count: index + 1),
+                                          ],
+                                        ),
+                                      )),
+                            )
                           ],
-                        )),
-                    Stack(
-                      children: [
-                        AnimatedSwitcher(
+                        ),
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: AnimatedSize(
                           duration: APPConst.animationDuraion,
-                          child: Container(
-                            key: ValueKey<bool>(_showMnemonic),
-                            decoration: BoxDecoration(
-                              color: context.colors.primaryContainer,
-                              borderRadius: WidgetConstant.border8,
-                            ),
-                            foregroundDecoration: _showMnemonic
-                                ? null
-                                : BoxDecoration(
-                                    color: context.colors.secondary,
-                                    borderRadius: WidgetConstant.border8,
-                                  ),
-                            child: Stack(
-                              children: [
-                                Wrap(
-                                  alignment: WrapAlignment.center,
-                                  children: List.generate(
-                                      _mnemonic.toList().length,
-                                      (index) => Padding(
-                                            padding: WidgetConstant.padding5,
-                                            child: Stack(
-                                              children: [
-                                                Chip(
-                                                    padding: WidgetConstant
-                                                        .padding10,
-                                                    label: Text(_mnemonic
-                                                        .toList()[index])),
-                                                Badge.count(count: index + 1),
-                                              ],
-                                            ),
-                                          )),
-                                )
-                              ],
-                            ),
-                          ),
+                          child: _showMnemonic
+                              ? const SizedBox()
+                              : FilledButton.icon(
+                                  onPressed: onChangeShowMnemonic,
+                                  icon: const Icon(Icons.remove_red_eye),
+                                  label: Text("show_mnemonic".tr)),
                         ),
-                        Positioned.fill(
-                          child: Align(
-                            alignment: Alignment.center,
-                            child: AnimatedSize(
-                              duration: APPConst.animationDuraion,
-                              child: _showMnemonic
-                                  ? const SizedBox()
-                                  : FilledButton.icon(
-                                      onPressed: onChangeShowMnemonic,
-                                      icon: const Icon(Icons.remove_red_eye),
-                                      label: Text("show_mnemonic".tr)),
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                    WidgetConstant.height20,
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CopyTextIcon(
-                            dataToCopy: _mnemonic.toStr(),
-                            size: APPConst.double40),
-                        WidgetConstant.width8,
-                        IconButton(
-                          icon: const Icon(Icons.qr_code,
-                              size: APPConst.double40),
-                          onPressed: () {
-                            context.openSliverDialog(
-                                (ctx) => BarcodeView(
-                                    underBarcodeWidget: ErrorTextContainer(
-                                        margin:
-                                            WidgetConstant.paddingVertical10,
-                                        error: "image_store_alert_keys".tr),
-                                    secure: true,
-                                    title: ContainerWithBorder(
-                                        child: CopyTextIcon(
-                                            dataToCopy: _mnemonic.toStr(),
-                                            widget: ObscureTextView(
-                                                _mnemonic.toStr(),
-                                                maxLine: 5))),
-                                    barcodeData: _mnemonic.toStr()),
-                                "share_mnemonic".tr);
-                          },
-                        ),
-                        WidgetConstant.width8,
-                        FilledButton.icon(
-                            label: Text("create_backup".tr),
-                            onPressed: () {
-                              context.openSliverDialog(
-                                  (ctx) => SecureBackupView(
-                                        data: _mnemonic.toStr(),
-                                        password: widget.password,
-                                        descriptions: [
-                                          WidgetConstant.height8,
-                                          Text(
-                                              "about_web3_defination_desc1".tr),
-                                        ],
-                                      ),
-                                  "backup_mnemonic".tr);
-                            },
-                            icon: const Icon(Icons.backup))
-                      ],
-                    ),
-                    WidgetConstant.height20,
+                      ),
+                    )
                   ],
                 ),
+                WidgetConstant.height20,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CopyTextIcon(
+                      dataToCopy: _mnemonic,
+                      size: APPConst.double40,
+                      isSensitive: true,
+                    ),
+                    WidgetConstant.width8,
+                    IconButton(
+                      icon: const Icon(Icons.qr_code, size: APPConst.double40),
+                      onPressed: () {
+                        context.openSliverDialog(
+                            (ctx) => BarcodeView(
+                                underBarcodeWidget: ErrorTextContainer(
+                                    margin: WidgetConstant.paddingVertical10,
+                                    error: "image_store_alert_keys".tr),
+                                secure: true,
+                                title: ContainerWithBorder(
+                                    child: CopyTextIcon(
+                                        dataToCopy: _mnemonic,
+                                        isSensitive: true,
+                                        widget: ObscureTextView(_mnemonic,
+                                            maxLine: 5))),
+                                barcodeData: _mnemonic),
+                            "share_mnemonic".tr);
+                      },
+                    ),
+                    WidgetConstant.width8,
+                    FilledButton.icon(
+                        label: Text("create_backup".tr),
+                        onPressed: () {
+                          context.openSliverDialog(
+                              (ctx) => SecureBackupView(
+                                    data: _mnemonic,
+                                    password: widget.password,
+                                    descriptions: [
+                                      WidgetConstant.height8,
+                                      Text("about_web3_defination_desc1".tr),
+                                    ],
+                                  ),
+                              "backup_mnemonic".tr);
+                        },
+                        icon: const Icon(Icons.backup))
+                  ],
+                ),
+                WidgetConstant.height20,
               ],
             ),
           ),

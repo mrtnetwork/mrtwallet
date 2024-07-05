@@ -3,11 +3,17 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/worker.dart'
+    show AddressDerivationIndex, Bip32AddressIndex;
 
 class WalletSigningPassword extends StatefulWidget {
   const WalletSigningPassword(
-      {super.key, required this.request, required this.onPasswordForm});
-  final SigningRequest request;
+      {super.key,
+      required this.keys,
+      required this.addresses,
+      required this.onPasswordForm});
+  final Set<Bip32AddressIndex> keys;
+  final Set<CryptoAddress> addresses;
   final FuncFutureBoolString onPasswordForm;
 
   @override
@@ -20,9 +26,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
       GlobalKey<StreamWidgetState>(debugLabel: "WalletSigningPassword_1");
   final GlobalKey<FormState> formKey =
       GlobalKey<FormState>(debugLabel: "WalletSigningPassword");
-  late final Set<AddressDerivationIndex> signers =
-      widget.request.signers.toSet();
-  late final Set<CryptoAddress> addresses = widget.request.addresses.toSet();
+
   List<String> singerPubKeys = [];
 
   String _password = "";
@@ -82,8 +86,8 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
     setState(() {});
   }
 
-  late bool showAllPrivateKeys = signers.length == 1;
-  late bool showAllAddresses = addresses.length == 1;
+  late bool showAllPrivateKeys = widget.keys.length == 1;
+  late bool showAllAddresses = widget.addresses.length == 1;
 
   void toggleShowAllPrivateKey() {
     showAllPrivateKeys = !showAllPrivateKeys;
@@ -133,10 +137,11 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                     child: showAllAddresses
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: List.generate(addresses.length, (index) {
-                              final address = addresses.elementAt(index);
+                            children:
+                                List.generate(widget.addresses.length, (index) {
+                              final address = widget.addresses.elementAt(index);
                               final bool isLastIndex =
-                                  index == addresses.length - 1;
+                                  index == widget.addresses.length - 1;
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -151,7 +156,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                           )
                         : Text("transaction_generated_with_number_accounts"
                             .tr
-                            .replaceOne(addresses.length.toString()))),
+                            .replaceOne(widget.addresses.length.toString()))),
               )),
           WidgetConstant.height20,
           Text("private_keys".tr, style: context.textTheme.titleMedium),
@@ -176,10 +181,10 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                   child: showAllPrivateKeys
                       ? Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: List.generate(signers.length, (index) {
-                            final keyIndex = signers.elementAt(index);
+                          children: List.generate(widget.keys.length, (index) {
+                            final keyIndex = widget.keys.elementAt(index);
                             final bool isLastIndex =
-                                index == signers.length - 1;
+                                index == widget.keys.length - 1;
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -193,7 +198,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                         )
                       : Text("transaction_need_number_private_key_to_complete"
                           .tr
-                          .replaceOne(signers.length.toString())),
+                          .replaceOne(widget.keys.length.toString())),
                 ),
               )),
           WidgetConstant.height20,
@@ -211,7 +216,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
             children: [
               StreamWidget(
                 key: keyState,
-                buttomWidget: FixedElevatedButton(
+                buttonWidget: FixedElevatedButton(
                     onPressed: onPassword, child: Text("sign_transaction".tr)),
                 backToIdle: APPConst.oneSecoundDuration,
                 padding: WidgetConstant.paddingVertical20,
@@ -233,7 +238,7 @@ class _HDWalletDerivationDetails extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("hd_wallet".tr, style: context.textTheme.labelLarge),
-        Text(keyIndex.toString()),
+        AddressDrivationInfo(keyIndex),
       ],
     );
   }

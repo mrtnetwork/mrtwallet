@@ -128,7 +128,7 @@ class RipplePaymentFieldsView extends StatelessWidget {
                             Text("ripple_payment_invoiceid".tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: "invoiceid".tr,
                   ),
                 )

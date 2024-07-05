@@ -1,8 +1,9 @@
+import 'package:mrt_wallet/wallet/api/provider/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/socket/protocols/websocket.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models/request_completer.dart';
 import 'package:on_chain/on_chain.dart';
 
-class EthereumWebsocketService extends WebSocketService
+class EthereumWebsocketService extends WebSocketService<EthereumAPIProvider>
     implements JSONRPCService {
   EthereumWebsocketService(
       {required super.url,

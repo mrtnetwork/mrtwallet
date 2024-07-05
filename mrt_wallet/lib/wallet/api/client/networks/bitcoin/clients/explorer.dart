@@ -9,10 +9,11 @@ class BitcoinExplorerApiProvider implements BitcoinClient<IBitcoinAddress> {
   BitcoinExplorerApiProvider({required this.provider, required this.network});
   @override
   final WalletBitcoinNetwork network;
+
   @override
-  APIServiceTracker<BaseBitcoinAPIProvider> get serviceProvider =>
-      (provider.service as HTTPService).provider
-          as APIServiceTracker<BaseBitcoinAPIProvider>;
+  BaseServiceProtocol<BaseBitcoinAPIProvider> get service =>
+      provider.service as BaseServiceProtocol<BaseBitcoinAPIProvider>;
+
   final ApiProvider provider;
 
   @override

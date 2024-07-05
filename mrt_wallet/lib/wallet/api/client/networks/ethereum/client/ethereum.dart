@@ -13,15 +13,15 @@ import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solidity/address/core.dart';
 
-class EthereumClient implements NetworkClient<IEthAddress> {
+class EthereumClient
+    implements NetworkClient<IEthAddress, EthereumAPIProvider> {
   EthereumClient({required this.provider, required this.network});
   final EVMRPC provider;
   @override
   final WalletNetwork network;
   @override
-  APIServiceTracker<EthereumAPIProvider> get serviceProvider =>
-      (provider.rpc as BaseServiceProtocol).provider
-          as APIServiceTracker<EthereumAPIProvider>;
+  BaseServiceProtocol<EthereumAPIProvider> get service =>
+      provider.rpc as BaseServiceProtocol<EthereumAPIProvider>;
 
   @override
   Future<void> updateBalance(IEthAddress account) async {
@@ -94,7 +94,7 @@ class EthereumClient implements NetworkClient<IEthAddress> {
     token.updateBalance(balance);
   }
 
-  Future<void> updateAccountTokensBalance(Bip32AddressCore account) async {
+  Future<void> updateAccountTokensBalance(CryptoAddress account) async {
     if (account is! IEthAddress && account is! ITronAddress) return;
     for (final i in account.tokens) {
       try {

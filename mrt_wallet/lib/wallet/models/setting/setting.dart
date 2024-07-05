@@ -1,2 +1,2 @@
-export 'models/lock_option.dart';
-export 'models/setting.dart';
+export 'models/lock_time.dart';
+export 'models/update_setting.dart';

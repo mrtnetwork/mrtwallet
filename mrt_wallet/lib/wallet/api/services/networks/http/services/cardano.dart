@@ -1,11 +1,10 @@
 import 'package:mrt_wallet/wallet/api/provider/networks/cardano.dart';
-import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/http/http.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
 import 'package:on_chain/ada/src/provider/blockfrost/core/core.dart';
 import 'package:on_chain/ada/src/provider/service/service.dart';
 
-class CardanoHTTPService extends HTTPService
+class CardanoHTTPService extends HTTPService<CardanoAPIProvider>
     implements BlockfrostServiceProvider {
   CardanoHTTPService(
       {required this.provider,
@@ -14,8 +13,8 @@ class CardanoHTTPService extends HTTPService
 
   final String version;
   @override
-  String get url => provider.provider.callUrl;
-  ProviderAuth? get auth => provider.provider.auth;
+  String get url => provider.callUrl;
+  ProviderAuth? get auth => provider.auth;
 
   @override
   Future<dynamic> get(BlockforestRequestDetails params,
@@ -49,5 +48,5 @@ class CardanoHTTPService extends HTTPService
   final Duration defaultTimeOut;
 
   @override
-  final APIServiceTracker<CardanoAPIProvider> provider;
+  final CardanoAPIProvider provider;
 }

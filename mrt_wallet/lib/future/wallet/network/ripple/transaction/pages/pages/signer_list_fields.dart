@@ -83,7 +83,7 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
                                   url: validator.helperUri),
                             ],
                           )),
-                      buttomText: "setup_input".tr,
+                      buttonText: "setup_input".tr,
                       label: validator.signerQuorum.name.tr,
                     ),
                   )
@@ -247,7 +247,7 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
                             Text("ripple_signer_weight_desc".tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: "ripple_signer_weight".tr,
                   ),
                 )
@@ -277,7 +277,7 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
                             Text("ripple_signer_entry_wallet_locator_desc".tr),
                           ],
                         )),
-                    buttomText: "setup_input".tr,
+                    buttonText: "setup_input".tr,
                     label: "ripple_wallet_locator".tr,
                   ),
                 )

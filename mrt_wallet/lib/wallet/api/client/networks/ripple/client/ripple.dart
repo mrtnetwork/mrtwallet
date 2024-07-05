@@ -2,6 +2,7 @@ import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ripple/methods/methods.dart';
+import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/account/address/address.dart';
 import 'package:mrt_wallet/wallet/models/networks/ripple/models/account_object_signer_list.dart';
@@ -12,14 +13,15 @@ class _RippleApiProviderConst {
   static const int accountNotFound = 19;
 }
 
-class RippleClient implements NetworkClient<IXRPAddress> {
+class RippleClient implements NetworkClient<IXRPAddress, RippleAPIProvider> {
   RippleClient({required this.provider, required this.network});
   final XRPLRpc provider;
   @override
   final WalletXRPNetwork network;
+
   @override
-  APIServiceTracker get serviceProvider =>
-      (provider.rpc as BaseServiceProtocol).provider;
+  BaseServiceProtocol<RippleAPIProvider> get service =>
+      provider.rpc as BaseServiceProtocol<RippleAPIProvider>;
 
   @override
   Future<void> updateBalance(IXRPAddress account) async {

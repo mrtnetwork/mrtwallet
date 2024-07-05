@@ -3,8 +3,7 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
-
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
@@ -13,9 +12,8 @@ import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 
-class ICosmosAddress
-    with Equatable
-    implements Bip32AddressCore<BigInt, CosmosBaseAddress> {
+class ICosmosAddress extends CryptoAddress<BigInt, CosmosBaseAddress>
+    with Equatable {
   ICosmosAddress._(
       {required this.keyIndex,
       required this.coin,
@@ -110,7 +108,6 @@ class ICosmosAddress
   @override
   final int network;
 
-  @override
   final List<int> publicKey;
 
   final String hrp;
@@ -192,13 +189,18 @@ class ICosmosAddress
 
   @override
   String get orginalAddress => networkAddress.address;
-  @override
-  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
+  // @override
+  // List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 
   @override
-  bool isEqual(Bip32AddressCore<BigInt, CosmosBaseAddress> other) {
+  bool isEqual(CryptoAddress<BigInt, CosmosBaseAddress> other) {
     if (other is! ICosmosAddress) return false;
     return other.networkAddress.address == networkAddress.address &&
         hrp == other.hrp;
+  }
+
+  @override
+  CosmosNewAddressParams toAccountParams() {
+    return CosmosNewAddressParams(deriveIndex: keyIndex, coin: coin);
   }
 }

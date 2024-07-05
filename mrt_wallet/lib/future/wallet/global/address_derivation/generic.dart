@@ -7,14 +7,13 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
     show
         WalletNetwork,
-        Bip32AddressIndex,
         CosmosNewAddressParams,
         EthereumNewAddressParam,
         NetworkType,
         NewAccountParams,
         SolanaNewAddressParam,
         TronNewAddressParam;
-
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'controller.dart';
 
 class SetupGenericAddressView extends StatelessWidget {

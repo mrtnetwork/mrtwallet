@@ -133,7 +133,7 @@ class _SelectAccountUtxoState extends State<_SelectAccountUtxo> {
                 //   mainAxisAlignment: MainAxisAlignment.end,
                 //   children: [
                 //     StreamWidget(
-                //         buttomWidget: FilledButton.icon(
+                //         buttonWidget: FilledButton.icon(
                 //             onPressed: widget.controller.updateBalances,
                 //             icon: const Icon(Icons.update),
                 //             label: Text("update_balances".tr)),

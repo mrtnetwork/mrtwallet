@@ -141,7 +141,10 @@ class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
             label: "asset_name".tr,
             initialValue: assetName,
             validator: validator,
-            suffixIcon: PasteTextIcon(onPaste: onPaste),
+            suffixIcon: PasteTextIcon(
+              onPaste: onPaste,
+              isSensitive: false,
+            ),
             onChanged: onChangeAssetsName,
             key: textFieldKey,
           ),
@@ -169,7 +172,7 @@ class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
                       title: PageTitleSubtitle(
                           title: "total_supply".tr,
                           body: Text("total_supply_desc".tr)),
-                      buttomText: "setup_supply".tr,
+                      buttonText: "setup_supply".tr,
                       label: "create_a_new_token".tr,
                     ),
                   )

@@ -4,14 +4,14 @@ import 'package:mrt_wallet/app/core.dart';
 
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
-import 'package:mrt_wallet/wallet/models/account/address/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/new_address.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
 import 'package:mrt_wallet/wallet/models/nfts/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wallet/utils/ripple/ripple.dart';
+import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'multisig.dart';
@@ -24,9 +24,8 @@ enum XrpAddressType {
   const XrpAddressType(this.value);
 }
 
-class IXRPAddress
-    with Equatable
-    implements Bip32AddressCore<BigRational, XRPAddress> {
+class IXRPAddress extends CryptoAddress<BigRational, XRPAddress>
+    with Equatable {
   IXRPAddress._(
       {required this.keyIndex,
       required this.coin,
@@ -50,23 +49,21 @@ class IXRPAddress
       {required RippleNewAddressParam accountParams,
       required List<int> publicKey,
       required WalletXRPNetwork network}) {
-    final rippleAddress = RippleUtils.publicKeyToRippleAddress(
-        publicKey,
-        XRPKeyAlgorithm.values
-            .firstWhere((e) => e.curveType == accountParams.type));
-    final addressDetauls = IntegerAddressBalance(
-        address: accountParams.tag == null
-            ? rippleAddress.toString()
-            : rippleAddress.toXAddress(
-                tag: accountParams.tag,
-                isTestnet: accountParams.coin.conf.isTestnet),
+    final keyAlgorithm = XRPKeyAlgorithm.values
+        .firstWhere((e) => e.curveType == accountParams.type);
+    final rippleAddress = RippleUtils.publicKeyToRippleAddress(publicKey,
+        algorithm: keyAlgorithm,
+        tag: accountParams.tag,
+        isTenstNet: !network.coinParam.mainnet);
+    final addressDetails = IntegerAddressBalance(
+        address: rippleAddress.toAddress(),
         balance: IntegerBalance.zero(network.coinParam.decimal));
     return IXRPAddress._(
       coin: accountParams.coin,
       publicKey: publicKey,
-      address: addressDetauls,
+      address: addressDetails,
       keyIndex: accountParams.deriveIndex,
-      networkAddress: XRPAddress(addressDetauls.address),
+      networkAddress: rippleAddress,
       network: network.value,
       tag: accountParams.tag,
       curveType: accountParams.type,
@@ -101,23 +98,18 @@ class IXRPAddress
         IntegerAddressBalance.fromCborBytesOrObject(network.coinParam.decimal,
             obj: cbor.getCborTag(4));
 
+    /// cbor.elementAt(5)
     final XRPAddress rippleAddress = XRPAddress(cbor.elementAt(5));
-    int? tag = cbor.elementAt(6);
+    final int? tag = cbor.elementAt(6);
+    final List<RippleIssueToken>? issueTokens = cbor
+        .elementAt<List<dynamic>?>(8)
+        ?.map((e) => RippleIssueToken.fromCborBytesOrObject(obj: e))
+        .toList();
+    final List<RippleNFToken>? nfts = cbor
+        .elementAt<List<dynamic>?>(9)
+        ?.map((e) => RippleNFToken.fromCborBytesOrObject(obj: e))
+        .toList();
 
-    final List<RippleIssueToken> issueTokens = [];
-    final List<dynamic>? tokens = cbor.elementAt(8);
-    if (tokens != null) {
-      for (final i in tokens) {
-        issueTokens.add(RippleIssueToken.fromCborBytesOrObject(obj: i));
-      }
-    }
-    final List<RippleNFToken> accountNfts = [];
-    final List<dynamic>? nfts = cbor.elementAt(9);
-    if (nfts != null) {
-      for (final i in nfts) {
-        accountNfts.add(RippleNFToken.fromCborBytesOrObject(obj: i));
-      }
-    }
     final String? curveName = cbor.elementAt(10);
     final curveType = curveName == null
         ? EllipticCurveTypes.secp256k1
@@ -132,8 +124,8 @@ class IXRPAddress
         network: networkId,
         tag: tag,
         curveType: curveType,
-        tokens: issueTokens,
-        nfts: accountNfts,
+        tokens: issueTokens ?? [],
+        nfts: nfts ?? [],
         accountName: accountName);
   }
 
@@ -154,7 +146,6 @@ class IXRPAddress
   @override
   final int network;
 
-  @override
   final List<int> publicKey;
 
   @override
@@ -268,13 +259,15 @@ class IXRPAddress
   String get orginalAddress => networkAddress.address;
 
   @override
-  List<AddressDerivationIndex> get keyIndexes => [keyIndex];
-
-  @override
-  bool isEqual(Bip32AddressCore<BigRational, XRPAddress> other) {
+  bool isEqual(CryptoAddress<BigRational, XRPAddress> other) {
     return networkAddress.address == other.networkAddress.address &&
         networkAddress.tag == other.networkAddress.tag &&
         multiSigAccount == other.multiSigAccount;
+  }
+
+  @override
+  RippleNewAddressParam toAccountParams() {
+    return RippleNewAddressParam(deriveIndex: keyIndex, coin: coin, tag: tag);
   }
 }
 
@@ -295,6 +288,15 @@ class IXRPMultisigAddress extends IXRPAddress
             curveType: EllipticCurveTypes.secp256k1,
             publicKey: const [],
             accountName: accountName);
+  @override
+  RippleMultisigNewAddressParam toAccountParams() {
+    return RippleMultisigNewAddressParam(
+        deriveIndex: keyIndex,
+        coin: coin,
+        tag: tag,
+        masterAddress: networkAddress,
+        multiSigAccount: multiSignatureAccount);
+  }
 
   factory IXRPMultisigAddress.newAccount(
       {required RippleMultisigNewAddressParam accountParams,
@@ -383,6 +385,11 @@ class IXRPMultisigAddress extends IXRPAddress
   }
 
   @override
+  List<Bip32AddressIndex> signerKeyIndexes() {
+    return keyDetails.map((e) => e.$2).toList();
+  }
+
+  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -391,7 +398,7 @@ class IXRPMultisigAddress extends IXRPAddress
           const CborNullValue(),
           const CborNullValue(),
           address.toCbor(),
-          networkAddress.toString(),
+          networkAddress.toAddress(),
           tag == null ? const CborNullValue() : CborIntValue(tag!),
           network,
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
@@ -407,7 +414,7 @@ class IXRPMultisigAddress extends IXRPAddress
   bool get multiSigAccount => true;
 
   @override
-  List<(String, AddressDerivationIndex)> get keyDetails =>
+  List<(String, Bip32AddressIndex)> get keyDetails =>
       multiSignatureAccount.signers
           .map((e) => (e.publicKey, e.keyIndex))
           .toList();

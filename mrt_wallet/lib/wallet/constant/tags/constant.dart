@@ -6,12 +6,16 @@ class WalletProviderConst {
 
 class CborTagsConst {
   static const List<int> wallet = [60];
+  static const List<int> wallets = [60, 1];
+  static const List<int> walletInfo = [60, 2];
+
   static const List<int> coingeckoInfo = [60, 12];
   static const List<int> coingeckoCoins = [60, 13];
 
   static const List<int> setting = [160];
   static const List<int> backup = [170];
   static const List<int> backupV2 = [170, 2];
+
   static const List<int> mnemonic = [180];
   static const List<int> walletCustomKey = [180, 0];
   static const List<int> derivedKeys = [180, 1];
@@ -100,7 +104,6 @@ class CborTagsConst {
   static const List<int> tonNetworkParam = [80, 1, 8];
 
   ///
-  static const List<int> apiServiceProvider = [90];
 
   static const List<int> electrumApiServiceProvider = [90, 0];
   static const List<int> apiServiceAuthSettings = [90, 1];

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
     show APPSetting, StateConst, ThemeController;
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart'
-    show PageProgressState;
+    show PageProgressBaseState;
 import 'package:mrt_wallet/app/models/models/currencies.dart';
 import 'package:mrt_wallet/marketcap/prices/live_currency.dart';
 import 'package:mrt_wallet/repository/repository.dart';
@@ -14,8 +14,8 @@ class WalletProvider extends WalletCore
   WalletProvider(super._navigatorKey, this._appSetting);
 
   @override
-  final GlobalKey<PageProgressState> pageStatusHandler =
-      GlobalKey<PageProgressState>(debugLabel: "WalletProvider");
+  final GlobalKey<PageProgressBaseState> pageStatusHandler =
+      GlobalKey<PageProgressBaseState>(debugLabel: "WalletProvider");
   APPSetting _appSetting;
   @override
   APPSetting get appSetting => _appSetting;

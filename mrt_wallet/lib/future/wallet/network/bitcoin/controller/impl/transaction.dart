@@ -6,6 +6,9 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/utils/bitcoin_cash/bitcoin_cash_utils.dart';
 import 'memo_impl.dart';
 
 enum TransactionOrdering {
@@ -185,7 +188,7 @@ abstract class BitcoinTransactionImpl extends StateController
   bool get inUtxoPage => _page == BitcoinTransactionPages.utxo;
   bool get inSendPage => _page == BitcoinTransactionPages.send;
 
-  bool onBackButtom() {
+  bool onBackButton() {
     if (progressKey.status == StreamWidgetStatus.success) {
       return true;
     }
@@ -411,9 +414,42 @@ abstract class BitcoinTransactionImpl extends StateController
         }
       }
       final tr = _buildTransaction();
-      final signedTr = await walletProvider.signTransaction(
-          request: BitcoinSigningRequest(
-              addresses: signers, network: network, transaction: tr));
+      final request = SigningRequest(
+        addresses: signers,
+        network: network,
+        sign: (generateSignature) async {
+          return tr.buildTransactionAsync(
+              (trDigest, utxo, publicKey, sighash) async {
+            try {
+              final account =
+                  signers.whereType<IBitcoinAddress>().firstWhere((element) {
+                return element.signers.contains(publicKey);
+              });
+              AddressDerivationIndex keyIndex = account.keyIndex;
+              if (account.multiSigAccount) {
+                final multiSignatureAddress =
+                    (account as BitcoinMultiSigBase).multiSignatureAddress;
+                final correctSigner = multiSignatureAddress.signers
+                    .firstWhere((element) => element.publicKey == publicKey);
+                keyIndex = correctSigner.keyIndex;
+              }
+              final bitcoinSigning = BitcoinSigning(
+                  digest: trDigest,
+                  index: keyIndex as Bip32AddressIndex,
+                  useTaproot: utxo.utxo.isP2tr(),
+                  sighash: sighash);
+              final sss = await generateSignature(bitcoinSigning);
+              return BytesUtils.toHexString(sss.signature);
+            } on StateError {
+              throw WalletExceptionConst.accountDoesNotFound;
+            } catch (e) {
+              rethrow;
+            }
+          });
+        },
+      );
+      final signedTr = await walletProvider.signTransaction(request: request);
+
       if (signedTr.hasError) {
         throw signedTr.exception!;
       }

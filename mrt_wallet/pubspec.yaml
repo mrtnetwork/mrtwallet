@@ -52,15 +52,15 @@ dependencies:
   blockchain_utils: ^3.2.0
   # blockchain_utils:
   #   path: ../../../bitcoin/blockchain_utils
-  bitcoin_base: ^4.5.0
-  # bitcoin_base:
-  #   path: ../../../bitcoin/bitcoin_base
+  # bitcoin_base: ^4.5.0
+  bitcoin_base:
+    path: ../../../bitcoin/bitcoin_base
   xrpl_dart: ^4.4.0
   # xrpl_dart:
   #   path: ../../../xrpl_dart
-  on_chain: ^3.5.0
-  # on_chain:
-  #   path: ../../on_chain
+  # on_chain: ^3.5.0
+  on_chain:
+    path: ../../on_chain
   cosmos_sdk: ^0.4.0
   # cosmos_sdk:
   #   path: ../../../cosmos_sdk
@@ -82,6 +82,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
   msix: ^3.16.7
+  test: ^1.25.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

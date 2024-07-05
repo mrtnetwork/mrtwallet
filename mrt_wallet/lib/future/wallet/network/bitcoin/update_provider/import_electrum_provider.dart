@@ -98,7 +98,7 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
       final alert = await context.openSliverDialog(
         (p0) => DialogTextView(
           text: "network_electrum_incorrect_genesis_hash".tr,
-          buttomWidget: const DialogDoubleButtonView(),
+          buttonWidget: const DialogDoubleButtonView(),
         ),
         "network_security_issue".tr,
       );
@@ -108,7 +108,7 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
       }
     }
     final currentProvider = providers.indexWhere((element) =>
-        element.serviceProvider.provider.serviceName == service?.serviceName);
+        element.service.provider.serviceName == service?.serviceName);
     if (!currentProvider.isNegative) {
       providers[currentProvider] = selectedProvider!;
     } else {
@@ -130,7 +130,7 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
       return;
     }
     selectedProvider = provider as BitcoinElectrumClient;
-    service = selectedProvider!.serviceProvider.provider;
+    service = selectedProvider!.service.provider;
     protocol = service!.protocol;
     rpcUrl = service!.endpoint;
     setState(() {});
@@ -155,10 +155,9 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
         websiteUri: websiteurl,
         url: url,
         protocol: protocol);
-    final tracker = APIServiceTracker(provider: service);
     return BitcoinElectrumClient(
         provider: ElectrumApiProvider(
-            ElectrumService.fromProvider(provider: tracker, service: service)),
+            ElectrumService.fromProvider(provider: service, service: service)),
         network: widget.network);
   }
 
@@ -235,8 +234,7 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
     pageProgressKey.progressText("updating_network".tr);
     final result = await MethodUtils.call(() async {
       final wallet = context.watch<WalletProvider>(StateConst.main);
-      final services =
-          providers.map((e) => e.serviceProvider.provider).toList();
+      final services = providers.map((e) => e.service.provider).toList();
       final updatedNetwork = network.copyWith(
           coinParam: network.coinParam.copyWith(providers: services));
       return await wallet.updateImportNetwork(updatedNetwork);
@@ -261,10 +259,9 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
     pageProgressKey.progressText("network_waiting_for_response".tr);
     final result = await MethodUtils.call(() async {
       final uniqueServiceName = StrUtils.addNumberToMakeUnique(
-          providers.map((e) => e.serviceProvider.provider.serviceName).toList()
+          providers.map((e) => e.service.provider.serviceName).toList()
             ..removeWhere((element) =>
-                element ==
-                selectedProvider!.serviceProvider.provider.serviceName),
+                element == selectedProvider!.service.provider.serviceName),
           rpcUrl);
       selectedProvider =
           _buildElectrumRPC(protocol, rpcUrl, uniqueServiceName, rpcUrl);
@@ -337,15 +334,15 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
                                           onRemoveIcon:
                                               ProviderTrackerStatusView(
                                                   provider:
-                                                      provider.serviceProvider),
+                                                      provider.service.tracker),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(provider.serviceProvider
-                                                  .provider.serviceName),
-                                              Text(provider.serviceProvider
-                                                  .provider.websiteUri)
+                                              Text(provider.service.provider
+                                                  .serviceName),
+                                              Text(provider
+                                                  .service.provider.websiteUri)
                                             ],
                                           ));
                                     }),
@@ -363,15 +360,15 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
                                           onRemoveIcon:
                                               ProviderTrackerStatusView(
                                                   provider:
-                                                      provider.serviceProvider),
+                                                      provider.service.tracker),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text(provider.serviceProvider
-                                                  .provider.serviceName),
-                                              Text(provider.serviceProvider
-                                                  .provider.websiteUri)
+                                              Text(provider.service.provider
+                                                  .serviceName),
+                                              Text(provider
+                                                  .service.provider.websiteUri)
                                             ],
                                           ));
                                     }),
@@ -423,19 +420,15 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
                                           onRemoveIcon:
                                               ProviderTrackerStatusView(
                                                   provider: selectedProvider!
-                                                      .serviceProvider),
+                                                      .service.tracker),
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
+                                              Text(selectedProvider!.service
+                                                  .provider.serviceName),
                                               Text(selectedProvider!
-                                                  .serviceProvider
-                                                  .provider
-                                                  .serviceName),
-                                              Text(selectedProvider!
-                                                  .serviceProvider
-                                                  .provider
-                                                  .websiteUri)
+                                                  .service.provider.websiteUri)
                                             ],
                                           )),
                                       WidgetConstant.height20,
@@ -460,7 +453,9 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
                                                   onChanged: onChageUrl,
                                                   validator: validateRpcUrl,
                                                   suffixIcon: PasteTextIcon(
-                                                      onPaste: onPasteUri),
+                                                    onPaste: onPasteUri,
+                                                    isSensitive: false,
+                                                  ),
                                                   label:
                                                       "network_electrum_server_url"
                                                           .tr,

@@ -3,11 +3,10 @@ import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 
 class APPSetting with CborSerializable {
-  const APPSetting._({
-    required this.appColor,
-    required this.appBrightness,
-    required this.currency,
-  });
+  const APPSetting._(
+      {required this.appColor,
+      required this.appBrightness,
+      required this.currency});
   final String? appColor;
   final String? appBrightness;
   final Currency currency;
