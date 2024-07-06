@@ -108,7 +108,7 @@ class WalletCrypto {
   }
 
   List<int> masterKeyfromMemoryStorage(List<int> key, List<int> data) {
-    final CborListValue values = CborSerializable.decode(data);
+    final CborListValue values = CborSerializable.decode(cborBytes: data);
     return decryptChacha(key, values.elementAt(2), nonce: values.elementAt(1));
   }
 

@@ -150,7 +150,7 @@ mixin WalletNetworkManager2 on WalletStorageManger2 {
       try {
         final chain = ChainHandler.fromCborBytesOrObject(hex: i);
         chains.add(chain);
-      } catch (e, s) {
+      } catch (e) {
         // rethrow;
         continue;
       }

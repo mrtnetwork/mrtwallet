@@ -334,16 +334,16 @@ abstract class WalletCore extends _WalletCore
     return result;
   }
 
-  Future<MethodResult<String>?> generateBackup(
-      {required String data,
-      required String password,
-      required SecretWalletEncoding encoding}) async {
-    final result = await _callSynchronized(
-        () async => await _controller._generateKeysBackup(
-            dataToEncrypt: data, password: password, encoding: encoding),
-        conditionStatus: _isUnlock);
-    return result;
-  }
+  // Future<MethodResult<String>?> generateBackup(
+  //     {required String data,
+  //     required String password,
+  //     required SecretWalletEncoding encoding}) async {
+  //   final result = await _callSynchronized(
+  //       () async => await _controller._generateKeysBackup(
+  //           dataToEncrypt: data, password: password, encoding: encoding),
+  //       conditionStatus: _isUnlock);
+  //   return result;
+  // }
 
   Future<void> updateImportNetwork(WalletNetwork network) async {
     try {
@@ -359,11 +359,9 @@ abstract class WalletCore extends _WalletCore
     }
   }
 
-  Future<MethodResult<String>?> generateWalletBackup(
-      String password, SecretWalletEncoding encoding) async {
+  Future<MethodResult<String>> generateWalletBackup(String password) async {
     final result = await _callSynchronized(() async {
-      return await _controller._generateWalletBackup(password,
-          encoding: encoding);
+      return await _controller._generateMrtWalletBackup(password);
     }, conditionStatus: _isUnlock);
     return result;
   }
@@ -525,6 +523,37 @@ abstract class WalletCore extends _WalletCore
         backup: backup, password: password, encoding: encoding);
   }
 
+  Future<MRTBackup> restoreMRTBackup(
+      {required String backup, required String password}) async {
+    MRTBackup mrtBackup;
+    final toBytes = BytesUtils.tryFromHexString(backup);
+    if (toBytes != null) {
+      mrtBackup = MRTBackup.fromCborBytesOrObject(bytes: toBytes);
+    } else {
+      mrtBackup = MRTKeyBackup(key: backup, type: MrtBackupTypes.keystore);
+    }
+    final decodeBytes = await restoreKeysBackup(
+        backup: mrtBackup.key,
+        password: password,
+        encoding: mrtBackup.type.encoding);
+    return mrtBackup.decrypt(decodeBytes);
+  }
+
+  Future<MethodResult<String>> generateMrtBackup(
+      {required String data,
+      required MrtBackupTypes type,
+      required String password}) async {
+    if (type == MrtBackupTypes.wallet) {
+      throw WalletExceptionConst.dataVerificationFailed;
+    }
+
+    final result = await MethodUtils.call(() async {
+      return await _controller._generateMrtBackup(
+          data: data, password: password, type: type);
+    });
+    return result;
+  }
+
   Future<HDWallet> createWallet({
     required String mnemonic,
     required String? passphrase,
@@ -551,38 +580,20 @@ abstract class WalletCore extends _WalletCore
     required String password,
   }) async {
     try {
-      if (passhphrase?.isEmpty ?? false) {
-        throw WalletExceptionConst.invalidMnemonicPassphrase;
-      }
       final CborListValue cbor = CborSerializable.cborTagValue(
           cborBytes: backupBytes, tags: CborTagsConst.backupV2);
       final WalletMasterKeys backupkey =
           WalletMasterKeys.fromCborBytesOrObject(obj: cbor.getCborTag(0));
-      final String mnemonic = backupkey.mnemonic.toStr();
-      BlockchainUtils.validateMnemonic(mnemonic);
-      WalletMasterKeys masterKey =
-          await _crypto.generateWalletSeeds(mnemonic, passhphrase);
-      if (backupkey.customKeys.isNotEmpty) {
-        masterKey = masterKey.addKey(backupkey.customKeys);
-      }
-      bool? verifiedChecksum;
-      if (backupkey.checksum != null) {
-        if (!BytesUtils.bytesEqual(masterKey.checksum, backupkey.checksum)) {
-          verifiedChecksum = false;
-        } else {
-          verifiedChecksum = true;
-        }
-      }
       final List<ChainHandler> chains = cbor
           .elementAt<List<dynamic>>(1)
           .map((e) => ChainHandler.fromCborBytesOrObject(obj: e))
           .toList();
 
-      return await _validateBackupAccounts(
+      return _restoreWalletBackup(
+          backupkey: backupkey,
           chains: chains,
-          masterKey: masterKey,
           password: password,
-          verifiedChecksum: verifiedChecksum);
+          passhphrase: passhphrase);
     } on WalletException catch (e) {
       if (e == WalletExceptionConst.invalidBackupChecksum) {
         rethrow;
@@ -591,6 +602,66 @@ abstract class WalletCore extends _WalletCore
     } catch (e) {
       throw WalletExceptionConst.invalidBackup;
     }
+  }
+
+  Future<WalletRestoreV2> restoreWalletBackupV3({
+    required MRTBackup backup,
+    required String? passhphrase,
+    required String password,
+  }) async {
+    try {
+      if (backup.type != MrtBackupTypes.wallet) {
+        throw WalletExceptionConst.invalidBackup;
+      }
+      final WalletMasterKeys backupkey = WalletMasterKeys.fromCborBytesOrObject(
+          bytes: BytesUtils.fromHexString(backup.key));
+      return _restoreWalletBackup(
+          backupkey: backupkey,
+          chains: (backup as MRTWalletBackup).chains,
+          password: password,
+          passhphrase: passhphrase);
+    } on WalletException catch (e) {
+      if (e == WalletExceptionConst.invalidBackupChecksum) {
+        rethrow;
+      }
+      throw WalletExceptionConst.invalidBackup;
+    } catch (e) {
+      throw WalletExceptionConst.invalidBackup;
+    }
+  }
+
+  Future<WalletRestoreV2> _restoreWalletBackup({
+    required WalletMasterKeys backupkey,
+    required List<ChainHandler> chains,
+    required String password,
+    required String? passhphrase,
+  }) async {
+    if (passhphrase?.isEmpty ?? false) {
+      throw WalletExceptionConst.invalidMnemonicPassphrase;
+    }
+    final String mnemonic = backupkey.mnemonic.toStr();
+    BlockchainUtils.validateMnemonic(mnemonic);
+    WalletMasterKeys masterKey =
+        await _crypto.generateWalletSeeds(mnemonic, passhphrase);
+    if (backupkey.customKeys.isNotEmpty) {
+      masterKey = masterKey.addKey(backupkey.customKeys);
+    }
+
+    bool? verifiedChecksum;
+    if (backupkey.checksum != null) {
+      if (!BytesUtils.bytesEqual(masterKey.checksum, backupkey.checksum)) {
+        verifiedChecksum = false;
+      } else {
+        verifiedChecksum = true;
+      }
+    }
+    final v3 = await _validateBackupAccounts(
+        chains: chains,
+        masterKey: masterKey,
+        password: password,
+        verifiedChecksum: verifiedChecksum);
+
+    return v3;
   }
 
   Future<WalletRestoreV2> _validateBackupAccounts(

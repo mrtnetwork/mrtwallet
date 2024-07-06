@@ -17,6 +17,8 @@ class TonTransactionStateController extends TonTransactionImpl
     estimateFee();
   }
 
+  bool get hasMultipleMessage => address.version.version > 1;
+
   late final IntegerBalance remindAmount =
       IntegerBalance.zero(network.coinParam.decimal);
 

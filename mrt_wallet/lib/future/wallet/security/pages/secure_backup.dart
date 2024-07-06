@@ -1,40 +1,34 @@
-import 'package:blockchain_utils/secret_wallet/web3_storage_defination.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wallet/models/backup/mrt_backup.dart';
 
-class SecureBackupView extends StatefulWidget {
-  const SecureBackupView(
+class GenerateBackupView extends StatefulWidget {
+  const GenerateBackupView(
       {super.key,
       required this.data,
       required this.password,
-      this.descriptions = const [],
-      this.isWalletBackup = false});
+      required this.type,
+      this.descriptions = const []});
   final String data;
   final String password;
   final List<Widget> descriptions;
-  final bool isWalletBackup;
+  final MrtBackupTypes type;
 
   @override
-  State<SecureBackupView> createState() => _SecureBackupViewState();
+  State<GenerateBackupView> createState() => _SecureBackupViewState();
 }
 
-class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
-  String? _error;
-  SecretWalletEncoding encoding = SecretWalletEncoding.json;
+class _SecureBackupViewState extends State<GenerateBackupView> with SafeState {
+  bool get canUseKeyStore => widget.type == MrtBackupTypes.privatekey;
 
-  void onChangeEncoding(SecretWalletEncoding? updateEncoding) {
-    encoding = updateEncoding ?? encoding;
-    if (encoding != SecretWalletEncoding.json) {
-      if (!widget.isWalletBackup) {
-        _error = "encoding_desc".tr;
-      }
-    } else {
-      _error = null;
-    }
-    setState(() {});
+  bool useKeyStore = false;
+
+  void onChangeUseKeystore(bool? _) {
+    useKeyStore = !useKeyStore;
+    updateState();
   }
 
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
@@ -42,17 +36,20 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
   void createBackup() async {
     final wallet = context.watch<WalletProvider>(StateConst.main);
     progressKey.progressText("creating_backup_desc".tr, sliver: false);
-    final result = widget.isWalletBackup
-        ? await wallet.generateWalletBackup(widget.password, encoding)
-        : await wallet.generateBackup(
-            data: widget.data,
-            password: widget.password,
-            encoding: encoding,
-          );
-    if (result?.hasError ?? true) {
-      progressKey.errorText(result?.error?.tr ?? "");
+    final MethodResult<String> result;
+    if (widget.type == MrtBackupTypes.wallet) {
+      result = await wallet.generateWalletBackup(widget.password);
     } else {
-      backup = result!.result;
+      result = await wallet.generateMrtBackup(
+        data: widget.data,
+        type: useKeyStore ? MrtBackupTypes.keystore : widget.type,
+        password: widget.password,
+      );
+    }
+    if (result.hasError) {
+      progressKey.errorText(result.error?.tr ?? "");
+    } else {
+      backup = result.result;
       progressKey.success();
     }
   }
@@ -87,6 +84,11 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
   }
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
@@ -101,6 +103,13 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
                 ),
                 WidgetConstant.height8,
                 Text("backup_desc2".tr),
+                WidgetConstant.height8,
+                APPAnimatedSwitcher(enable: useKeyStore, widgets: {
+                  true: (c) => Text("use_key_store_backup_desc".tr),
+                  false: (c) => Text("mrt_backup_encoding_desc".tr,
+                      style: context.textTheme.bodyMedium
+                          ?.copyWith(color: context.colors.error)),
+                }),
                 if (widget.descriptions.isNotEmpty) ...[
                   WidgetConstant.height8,
                   ...widget.descriptions
@@ -113,27 +122,18 @@ class _SecureBackupViewState extends State<SecureBackupView> with SafeState {
             child: () => backup == null
                 ? Column(
                     children: [
-                      DropdownButtonFormField<SecretWalletEncoding>(
-                        value: encoding,
-                        decoration: InputDecoration(
-                            label: Text("encoding".tr),
-                            helperText: _error,
-                            helperStyle: context.textTheme.bodySmall
-                                ?.copyWith(color: context.colors.error),
-                            helperMaxLines: 3),
-                        items: SecretWalletEncoding.values.map((enc) {
-                          return DropdownMenuItem<SecretWalletEncoding>(
-                            value: enc,
-                            child: Text(enc.name.camelCase),
-                          );
-                        }).toList(),
-                        onChanged: onChangeEncoding,
-                      ),
+                      if (canUseKeyStore)
+                        AppCheckListTile(
+                          title: Text("generate_keystore".tr),
+                          subtitle: Text("generate_keystore_desc".tr),
+                          value: useKeyStore,
+                          onChanged: onChangeUseKeystore,
+                        ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           FixedElevatedButton(
-                            padding: WidgetConstant.paddingOnlyTop20,
+                            padding: WidgetConstant.paddingVertical40,
                             onPressed: createBackup,
                             child: Text("create_backup".tr),
                           )

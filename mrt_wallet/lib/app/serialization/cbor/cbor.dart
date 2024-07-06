@@ -57,23 +57,24 @@ mixin CborSerializable {
     return cbor.value;
   }
 
-  static T decode<T extends CborObject>(List<int> bytes) {
+  static T decode<T extends CborObject>(
+      {List<int>? cborBytes, CborObject? object, String? hex}) {
     try {
-      final cborObject = CborObject.fromCbor(bytes);
-      if (cborObject is! T) {
-        throw WalletException.invalidArgruments(
-            ["$T" "${cborObject.runtimeType}"]);
+      if (object == null) {
+        cborBytes ??= BytesUtils.tryFromHexString(hex);
+        if (cborBytes == null) {
+          throw WalletException(
+              "decoding cbor required object, bytes or hex. no value provided for decoding.");
+        }
+        object = CborObject.fromCbor(cborBytes);
       }
-      return cborObject;
+      if (object is! T) {
+        throw WalletException.invalidArgruments(["$T" "${object.runtimeType}"]);
+      }
+      return object;
     } catch (e) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
-
-    // if (tags != null && !BytesUtils.bytesEqual(cbor.tags, tags)) {
-    //   throw WalletException(
-    //       "invalid cbor tags got ${cbor.tags} excepted $tags");
-    // }
-    // return cbor.value;
   }
 }
 

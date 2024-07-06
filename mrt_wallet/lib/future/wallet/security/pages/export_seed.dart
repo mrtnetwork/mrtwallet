@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wallet/models/backup/mrt_backup.dart';
 import 'package:mrt_wallet/wroker/keys/keys.dart';
 
 class ExportSeedView extends StatelessWidget {
@@ -157,14 +158,10 @@ class _ExportSeedViewState extends State<_ExportSeedView>
                         label: Text("create_backup".tr),
                         onPressed: () {
                           context.openSliverDialog(
-                              (ctx) => SecureBackupView(
-                                    data: _mnemonic,
-                                    password: widget.password,
-                                    descriptions: [
-                                      WidgetConstant.height8,
-                                      Text("about_web3_defination_desc1".tr),
-                                    ],
-                                  ),
+                              (ctx) => GenerateBackupView(
+                                  data: _mnemonic,
+                                  password: widget.password,
+                                  type: MrtBackupTypes.mnemonic),
                               "backup_mnemonic".tr);
                         },
                         icon: const Icon(Icons.backup))

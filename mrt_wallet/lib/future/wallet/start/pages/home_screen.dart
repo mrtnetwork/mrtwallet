@@ -115,13 +115,14 @@ class _BottomAppBar extends StatelessWidget {
             ),
             Row(
               children: [
-                IconButton(
-                  tooltip: "lock_wallet".tr,
-                  icon: const Icon(Icons.lock),
-                  onPressed: () {
-                    model.lock();
-                  },
-                ),
+                if (model.wallet.requiredPassword)
+                  IconButton(
+                    tooltip: "lock_wallet".tr,
+                    icon: const Icon(Icons.lock),
+                    onPressed: () {
+                      model.lock();
+                    },
+                  ),
                 SelectProviderIcon(key: UniqueKey()),
                 IconButton(
                     tooltip: "switch_network".tr,

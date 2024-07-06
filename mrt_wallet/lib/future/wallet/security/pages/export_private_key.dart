@@ -190,6 +190,18 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                                 error: "image_store_alert_keys".tr),
                             dataToCopy: privateKey,
                             barcodeTitle: "private_key".tr,
+                            buttons: [
+                              IconButton(
+                                  onPressed: () {
+                                    context.openSliverDialog(
+                                        (ctx) => GenerateBackupView(
+                                            password: widget.password,
+                                            data: privateKey,
+                                            type: MrtBackupTypes.privatekey),
+                                        "backup_private_key".tr);
+                                  },
+                                  icon: const Icon(Icons.backup)),
+                            ],
                             widget: SelectableText(privateKey),
                           )),
                         ),
@@ -228,6 +240,20 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                           child: ContainerWithBorder(
                               child: CopyTextWithBarcode(
                             secureBarcode: true,
+                            buttons: [
+                              IconButton(
+                                  onPressed: () {
+                                    context.openSliverDialog<
+                                            SecretWalletEncoding>(
+                                        (ctx) => GenerateBackupView(
+                                              password: widget.password,
+                                              data: extendedKey,
+                                              type: MrtBackupTypes.extendedKey,
+                                            ),
+                                        "backup_extended_key".tr);
+                                  },
+                                  icon: const Icon(Icons.backup)),
+                            ],
                             barcodeWidget: ContainerWithBorder(
                                 child: CopyTextIcon(
                                     isSensitive: true,
@@ -277,6 +303,20 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                             child: ContainerWithBorder(
                                 child: CopyTextWithBarcode(
                               secureBarcode: true,
+                              buttons: [
+                                IconButton(
+                                    onPressed: () {
+                                      context.openSliverDialog<
+                                              SecretWalletEncoding>(
+                                          (ctx) => GenerateBackupView(
+                                                password: widget.password,
+                                                data: wif!,
+                                                type: MrtBackupTypes.wif,
+                                              ),
+                                          "backup_wif".tr);
+                                    },
+                                    icon: const Icon(Icons.backup)),
+                              ],
                               barcodeWidget: ContainerWithBorder(
                                   child: CopyTextIcon(
                                       dataToCopy: wif!,
@@ -312,30 +352,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                 ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  padding: WidgetConstant.paddingVertical40,
-                  child: FilledButton.icon(
-                      label: Text("create_backup".tr),
-                      onPressed: () {
-                        context.openSliverDialog<SecretWalletEncoding>(
-                            (ctx) => SecureBackupView(
-                                  password: widget.password,
-                                  data: privateKey,
-                                  descriptions: [
-                                    Text("about_web3_defination_desc4".tr),
-                                    WidgetConstant.height8,
-                                    Text("generate_keystore_desc".tr),
-                                  ],
-                                ),
-                            "generate_keystore".tr);
-                      },
-                      icon: const Icon(Icons.backup)),
-                )
-              ],
-            )
+            WidgetConstant.height20,
           ],
         ),
       ),

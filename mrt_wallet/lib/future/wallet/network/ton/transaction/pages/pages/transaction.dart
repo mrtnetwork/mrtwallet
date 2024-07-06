@@ -138,6 +138,8 @@ class _TonTransactionTransferFields extends StatelessWidget {
   final TonTransferForm field;
   @override
   Widget build(BuildContext context) {
+    final receivers = field.destination.value?.length ?? 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -146,8 +148,7 @@ class _TonTransactionTransferFields extends StatelessWidget {
         Text("amount_for_each_output".tr),
         WidgetConstant.height8,
         Column(
-          children:
-              List.generate(field.destination.value?.length ?? 0, (index) {
+          children: List.generate(receivers, (index) {
             final TonOutputWithBalance receiver =
                 field.destination.value![index];
             return ContainerWithBorder(
@@ -445,41 +446,43 @@ class _TonTransactionTransferFields extends StatelessWidget {
             );
           }),
         ),
-        ContainerWithBorder(
-          validate: field.destination.hasValue,
-          onRemove: () {
-            context
-                .openSliverBottomSheet<ReceiptAddress<TonAddress>>(
-                    "receiver_address".tr,
-                    bodyBuilder: (c) => SelectRecipientAccountView<TonAddress>(
-                          account: controller.account,
-                          scrollController: c,
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("jetton_destination_address_desc".tr),
-                              WidgetConstant.height8,
-                              Text("receiver_address_desc".tr),
-                            ],
+        if (receivers == 0 || controller.hasMultipleMessage)
+          ContainerWithBorder(
+            validate: field.destination.hasValue,
+            onRemove: () {
+              context
+                  .openSliverBottomSheet<ReceiptAddress<TonAddress>>(
+                      "receiver_address".tr,
+                      bodyBuilder: (c) =>
+                          SelectRecipientAccountView<TonAddress>(
+                            account: controller.account,
+                            scrollController: c,
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("jetton_destination_address_desc".tr),
+                                WidgetConstant.height8,
+                                Text("receiver_address_desc".tr),
+                              ],
+                            ),
                           ),
-                        ),
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9)
-                .then(
-              (value) {
-                field.setReceiver(
-                  address: value,
-                  onExists: () {
-                    context.showAlert("address_already_exist".tr);
-                  },
-                );
-              },
-            );
-          },
-          onRemoveIcon: const Icon(Icons.add_box),
-          child: Text("tap_to_add_new_receipment".tr),
-        ),
+                      maxExtend: 1,
+                      minExtent: 0.8,
+                      initialExtend: 0.9)
+                  .then(
+                (value) {
+                  field.setReceiver(
+                    address: value,
+                    onExists: () {
+                      context.showAlert("address_already_exist".tr);
+                    },
+                  );
+                },
+              );
+            },
+            onRemoveIcon: const Icon(Icons.add_box),
+            child: Text("tap_to_add_new_receipment".tr),
+          ),
       ],
     );
   }

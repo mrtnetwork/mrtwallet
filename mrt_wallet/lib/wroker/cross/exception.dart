@@ -3,3 +3,8 @@ class FailedIsolateInitialization implements Exception {
   static const FailedIsolateInitialization failed =
       FailedIsolateInitialization._();
 }
+
+class IsolateAuthenticated implements Exception {
+  const IsolateAuthenticated._();
+  static const IsolateAuthenticated failed = IsolateAuthenticated._();
+}

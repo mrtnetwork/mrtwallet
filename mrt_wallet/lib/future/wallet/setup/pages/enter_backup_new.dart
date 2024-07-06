@@ -1,57 +1,38 @@
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
-import 'package:blockchain_utils/secret_wallet/web3_storage_defination.dart';
-import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/wallet/setup/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wallet/models/backup/mrt_backup.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 
-enum _BackupMode { mnemonicBackup, walletBackup }
-
 enum _BackupPage { fields, verify }
 
-class EnterLegacyBackupView extends StatefulWidget {
-  const EnterLegacyBackupView({super.key});
+class EnterWalletBackupView extends StatefulWidget {
+  const EnterWalletBackupView({super.key});
 
   @override
-  State<EnterLegacyBackupView> createState() => _EnterMnemonicBackupViewState();
+  State<EnterWalletBackupView> createState() => _EnterMnemonicBackupViewState();
 }
 
-class _EnterMnemonicBackupViewState extends State<EnterLegacyBackupView>
+class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
     with SafeState {
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "EnterMnemonicBackupView_1");
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
   final GlobalKey<AppTextFieldState> backupTextField =
       GlobalKey<AppTextFieldState>(debugLabel: "EnterMnemonicBackupView_2");
-  _BackupMode selectedMode = _BackupMode.mnemonicBackup;
   _BackupPage page = _BackupPage.fields;
-  void onChangeBackupMode(_BackupMode? v) {
-    selectedMode = v ?? selectedMode;
-    setState(() {});
-  }
 
-  late final Map<_BackupMode, Widget> backupModes = {
-    _BackupMode.mnemonicBackup: Text("mnemonic_backup".tr),
-    _BackupMode.walletBackup: Text("wallet_backup".tr)
-  };
   String _backup = "";
   String _passphrase = "";
   bool passphrase = false;
   String? _error;
-  SecretWalletEncoding encoding = SecretWalletEncoding.json;
 
   WalletRestoreV2? restoredBackup;
-
-  void onChangeEncoding(SecretWalletEncoding? updateEncoding) {
-    encoding = updateEncoding ?? encoding;
-
-    setState(() {});
-  }
 
   void usePassphrase(bool? v) {
     passphrase = v ?? passphrase;
@@ -110,19 +91,19 @@ class _EnterMnemonicBackupViewState extends State<EnterLegacyBackupView>
     progressKey.progressText("decrypting_backup_please_wait".tr);
     final result = await MethodUtils.call(() async {
       final walletProvider = context.watch<WalletProvider>(StateConst.main);
-      return await walletProvider.restoreKeysBackup(
-          password: _backupPassword, backup: _backup, encoding: encoding);
+      return await walletProvider.restoreMRTBackup(
+          password: _backupPassword, backup: _backup);
     });
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
       return;
     }
-    if (selectedMode == _BackupMode.mnemonicBackup) {
+    final backup = result.result;
+    if (backup.type == MrtBackupTypes.mnemonic) {
       progressKey.progressText("generating_wallet_please_wait".tr);
       final generateWalletResult = await MethodUtils.call(() async {
-        final toString = StringUtils.tryDecode(result.result);
-        BlockchainUtils.validateMnemonic(toString ?? "");
-        final Mnemonic exitingMnemonic = Mnemonic.fromString(toString!);
+        BlockchainUtils.validateMnemonic(backup.key);
+        final Mnemonic exitingMnemonic = Mnemonic.fromString(backup.key);
         final String? mnemonicPassphrase = passphrase ? _passphrase : null;
         await model.setup(mnemonicPassphrase, exitingMnemonic: exitingMnemonic);
       });
@@ -133,7 +114,7 @@ class _EnterMnemonicBackupViewState extends State<EnterLegacyBackupView>
       progressKey.progressText("verifying_backup_please_wait".tr);
       final restoreWalletResult = await MethodUtils.call(() async {
         final String? passPhrase = passphrase ? _passphrase : null;
-        return await model.restoreWalletBackup(result.result,
+        return await model.restoreWalletBackupV3(result.result,
             passphrase: passPhrase);
       });
       if (restoreWalletResult.hasError) {
@@ -265,6 +246,7 @@ class _BackupFieldsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final model = context.watch<SetupWalletController>("setup_wallet");
     return Form(
       key: state.form,
       child: Column(
@@ -278,29 +260,6 @@ class _BackupFieldsWidget extends StatelessWidget {
                 Text("restore_mnemonic_desc".tr),
               ],
             ),
-          ),
-          AppDropDownBottom(
-            items: state.backupModes,
-            label: "select_backup_option".tr,
-            onChanged: state.onChangeBackupMode,
-            value: state.selectedMode,
-          ),
-          WidgetConstant.height20,
-          DropdownButtonFormField<SecretWalletEncoding>(
-            value: state.encoding,
-            decoration: InputDecoration(
-                label: Text("decoding_type".tr),
-                helperText: state._error,
-                helperStyle: context.textTheme.bodySmall
-                    ?.copyWith(color: context.colors.error),
-                helperMaxLines: 3),
-            items: SecretWalletEncoding.values.map((enc) {
-              return DropdownMenuItem<SecretWalletEncoding>(
-                value: enc,
-                child: Text(enc.name.camelCase),
-              );
-            }).toList(),
-            onChanged: state.onChangeEncoding,
           ),
           WidgetConstant.height8,
           AppTextField(
@@ -370,6 +329,16 @@ class _BackupFieldsWidget extends StatelessWidget {
               ),
             ],
           ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: model.toggleLegacy,
+                child: Text("legacy_backup".tr),
+              ),
+            ],
+          ),
+          WidgetConstant.height15,
         ],
       ),
     );

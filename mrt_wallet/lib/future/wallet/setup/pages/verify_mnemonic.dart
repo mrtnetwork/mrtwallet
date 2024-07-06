@@ -85,7 +85,6 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
       for (int i = 0; i < widget.mnemonic.length; i++) {
         inSelectMnemonic[i] = SelectedMnemonic.select(i, widget.mnemonic[i]);
       }
-      print(selectedMnemonic.join(" "));
       isEqual();
       setState(() {});
     }

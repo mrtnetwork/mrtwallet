@@ -20,7 +20,7 @@ class _DefaultAppCoins {
             apiId: "bitcoin-cash", coinName: "bitcoin-cash"),
         symbol: "BCH",
         decimal: 8,
-        assetLogo: const APPImage.local("assets/image/bch.png"),
+        assetLogo: APPConst.bch,
       ),
       providers: []);
   static final BitcoinParams bitcoinCashChipnet = BitcoinParams(
@@ -28,12 +28,13 @@ class _DefaultAppCoins {
       addressExplorer: "https://cbch.loping.net/address/#address",
       transacationNetwork: BitcoinCashNetwork.testnet,
       token: Token(
-          name: "BitcoinCash chipnet",
-          symbol: "tBCH",
-          market: const CoingeckoCoin(
-              apiId: "bitcoin-cash", coinName: "bitcoin-cash"),
-          decimal: 8,
-          assetLogo: const APPImage.local("assets/image/bch.png")),
+        name: "BitcoinCash chipnet",
+        symbol: "tBCH",
+        market: const CoingeckoCoin(
+            apiId: "bitcoin-cash", coinName: "bitcoin-cash"),
+        decimal: 8,
+        assetLogo: APPConst.bch,
+      ),
       providers: []);
   static final BitcoinParams bitcoinMainnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/btc/tx/#txid/",
@@ -44,7 +45,7 @@ class _DefaultAppCoins {
           symbol: "BTC",
           market: const CoingeckoCoin(apiId: "bitcoin", coinName: "bitcoin"),
           decimal: 8,
-          assetLogo: const APPImage.local("assets/image/btc.png")),
+          assetLogo: APPConst.btc),
       providers: []);
   static final BitcoinParams bitcoinTestnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/btc-testnet/tx/#txid/",
@@ -56,7 +57,7 @@ class _DefaultAppCoins {
           symbol: "tBTC",
           market: const CoingeckoCoin(apiId: "bitcoin", coinName: "bitcoin"),
           decimal: 8,
-          assetLogo: const APPImage.local("assets/image/btc.png")),
+          assetLogo: APPConst.btc),
       providers: []);
   static final BitcoinParams litecoinMainnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/ltc/tx/#txid/",
@@ -67,7 +68,7 @@ class _DefaultAppCoins {
           symbol: "LTC",
           market: const CoingeckoCoin(apiId: "litecoin", coinName: "litecoin"),
           decimal: 8,
-          assetLogo: const APPImage.local("assets/image/ltc.png")),
+          assetLogo: APPConst.ltc),
       providers: []);
   static final BitcoinParams litecoinTestnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/ltc/tx/#txid/",
@@ -78,7 +79,7 @@ class _DefaultAppCoins {
           symbol: "tLTC",
           market: const CoingeckoCoin(apiId: "litecoin", coinName: "litecoin"),
           decimal: 8,
-          assetLogo: const APPImage.local("assets/image/ltc.png")),
+          assetLogo: APPConst.ltc),
       providers: []);
   static final BitcoinParams dogecoinMainnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/doge/tx/#txid/",
@@ -89,7 +90,7 @@ class _DefaultAppCoins {
           market: const CoingeckoCoin(apiId: "dogecoin", coinName: "dogecoin"),
           symbol: "Ɖ",
           decimal: 8,
-          assetLogo: const APPImage.local("assets/image/doge.png")),
+          assetLogo: APPConst.doge),
       providers: []);
   static final BitcoinParams pepecoinMainnet = BitcoinParams(
       transactionExplorer: "https://pepeexplorer.com/tx/#txid",
@@ -101,73 +102,79 @@ class _DefaultAppCoins {
           decimal: 8,
           market: const CoingeckoCoin(
               apiId: "pepecoin-network", coinName: "pepecoin-network"),
-          assetLogo: const APPImage.local("assets/image/pepecoin.png")),
+          assetLogo: APPConst.pepecoin),
       providers: []);
   static final BitcoinParams dogeTestnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/doge/tx/#txid/",
       addressExplorer: "https://live.blockcypher.com/doge/address/#address/",
       transacationNetwork: DogecoinNetwork.testnet,
       token: Token(
-          name: "Dogecoin testnet",
-          symbol: "tƉ",
-          market: const CoingeckoCoin(apiId: "dogecoin", coinName: "dogecoin"),
-          decimal: 8,
-          assetLogo: const APPImage.local("assets/image/doge.png")),
+        name: "Dogecoin testnet",
+        symbol: "tƉ",
+        market: const CoingeckoCoin(apiId: "dogecoin", coinName: "dogecoin"),
+        decimal: 8,
+        assetLogo: APPConst.doge,
+      ),
       providers: []);
   static final BitcoinParams bsvMainnet = BitcoinParams(
       transactionExplorer: "https://whatsonchain.com/tx/#txid",
       addressExplorer: "https://whatsonchain.com/address/#address",
       transacationNetwork: BitcoinSVNetwork.mainnet,
       token: Token(
-          name: "BitcoinSV",
-          symbol: "BSV",
-          market: const CoingeckoCoin(
-              apiId: "bitcoin-cash-sv", coinName: "bitcoin-sv"),
-          decimal: 8,
-          assetLogo: const APPImage.local("assets/image/bsv.png")),
+        name: "BitcoinSV",
+        symbol: "BSV",
+        market: const CoingeckoCoin(
+            apiId: "bitcoin-cash-sv", coinName: "bitcoin-sv"),
+        decimal: 8,
+        assetLogo: APPConst.bsv,
+      ),
       providers: []);
   static final BitcoinParams dashMainnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/dash/tx/#txid/",
       addressExplorer: "https://live.blockcypher.com/dash/address/#address/",
       token: Token(
-          name: "Dash",
-          symbol: "DASH",
-          market: const CoingeckoCoin(apiId: "dash", coinName: "dash"),
-          decimal: 8,
-          assetLogo: const APPImage.local("assets/image/dash.png")),
+        name: "Dash",
+        symbol: "DASH",
+        market: const CoingeckoCoin(apiId: "dash", coinName: "dash"),
+        decimal: 8,
+        assetLogo: APPConst.dash,
+      ),
       transacationNetwork: DashNetwork.mainnet,
       providers: []);
   static final RippleNetworkParams xrpMainnet = RippleNetworkParams(
       transactionExplorer: "https://livenet.xrpl.org/transactions/#txid",
       addressExplorer: "https://livenet.xrpl.org/accounts/#address",
       token: Token(
-          name: "Ripple",
-          symbol: "XRP",
-          decimal: 6,
-          market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
-          assetLogo: const APPImage.local("assets/image/xrp.png")),
+        name: "Ripple",
+        symbol: "XRP",
+        decimal: 6,
+        market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
+        assetLogo: APPConst.xrp,
+      ),
       providers: [],
       mainnet: true);
   static final RippleNetworkParams xrpTestnet = RippleNetworkParams(
       transactionExplorer: "https://testnet.xrpl.org/transactions/#txid",
       addressExplorer: "https://testnet.xrpl.org/accounts/#address",
       token: Token(
-          name: "Ripple testnet",
-          symbol: "tXRP",
-          decimal: 6,
-          market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
-          assetLogo: const APPImage.local("assets/image/xrp.png")),
+        name: "Ripple testnet",
+        symbol: "tXRP",
+        decimal: 6,
+        market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
+        assetLogo: APPConst.xrp,
+      ),
       providers: [],
       mainnet: false);
   static final RippleNetworkParams xrpDevnet = RippleNetworkParams(
       transactionExplorer: "https://devnet.xrpl.org/transactions/#txid",
       addressExplorer: "https://devnet.xrpl.org/accounts/#address",
       token: Token(
-          name: "Ripple devnet",
-          symbol: "tXRP",
-          decimal: 6,
-          market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
-          assetLogo: const APPImage.local("assets/image/xrp.png")),
+        name: "Ripple devnet",
+        symbol: "tXRP",
+        decimal: 6,
+        market: const CoingeckoCoin(apiId: "ripple", coinName: "xrp"),
+        assetLogo: APPConst.xrp,
+      ),
       providers: [],
       mainnet: false);
 
@@ -178,11 +185,12 @@ class _DefaultAppCoins {
       mainnet: true,
       supportEIP1559: true,
       token: Token(
-          name: "Ethereum",
-          symbol: "ETH",
-          market: const CoingeckoCoin(apiId: "ethereum", coinName: "ethereum"),
-          decimal: 18,
-          assetLogo: const APPImage.local("assets/image/eth.png")),
+        name: "Ethereum",
+        symbol: "ETH",
+        market: const CoingeckoCoin(apiId: "ethereum", coinName: "ethereum"),
+        decimal: 18,
+        assetLogo: APPConst.eth,
+      ),
       providers: []);
   static final EthereumNetworkParams ethreumTestnet = EthereumNetworkParams(
       transactionExplorer: "https://sepolia.etherscan.io/tx/#txid",
@@ -191,11 +199,12 @@ class _DefaultAppCoins {
       mainnet: false,
       supportEIP1559: true,
       token: Token(
-          name: "Ethereum Sepolia testnet",
-          symbol: "tETH",
-          market: const CoingeckoCoin(apiId: "ethereum", coinName: "ethereum"),
-          decimal: 18,
-          assetLogo: const APPImage.local("assets/image/eth.png")),
+        name: "Ethereum Sepolia testnet",
+        symbol: "tETH",
+        market: const CoingeckoCoin(apiId: "ethereum", coinName: "ethereum"),
+        decimal: 18,
+        assetLogo: APPConst.eth,
+      ),
       providers: []);
   static final EthereumNetworkParams polygon = EthereumNetworkParams(
       transactionExplorer: "https://polygonscan.com/tx/#txid",
@@ -204,12 +213,13 @@ class _DefaultAppCoins {
       supportEIP1559: true,
       mainnet: true,
       token: Token(
-          name: "Polygon",
-          symbol: "MATIC",
-          market:
-              const CoingeckoCoin(apiId: "matic-network", coinName: "polygon"),
-          decimal: 18,
-          assetLogo: const APPImage.local("assets/image/matic.png")),
+        name: "Polygon",
+        symbol: "MATIC",
+        market:
+            const CoingeckoCoin(apiId: "matic-network", coinName: "polygon"),
+        decimal: 18,
+        assetLogo: APPConst.matic,
+      ),
       providers: []);
   static final EthereumNetworkParams polygonTestnet = EthereumNetworkParams(
       transactionExplorer: "https://mumbai.polygonscan.com/tx/#txid",
@@ -218,12 +228,13 @@ class _DefaultAppCoins {
       supportEIP1559: true,
       mainnet: false,
       token: Token(
-          name: "Polygon mumbai testnet",
-          symbol: "tMATIC",
-          market:
-              const CoingeckoCoin(apiId: "matic-network", coinName: "polygon"),
-          decimal: 18,
-          assetLogo: const APPImage.local("assets/image/matic.png")),
+        name: "Polygon mumbai testnet",
+        symbol: "tMATIC",
+        market:
+            const CoingeckoCoin(apiId: "matic-network", coinName: "polygon"),
+        decimal: 18,
+        assetLogo: APPConst.matic,
+      ),
       providers: []);
   static final EthereumNetworkParams bnb = EthereumNetworkParams(
       transactionExplorer: "https://bscscan.com/tx/#txid",
@@ -236,7 +247,7 @@ class _DefaultAppCoins {
           symbol: "BNB",
           market: const CoingeckoCoin(apiId: "binancecoin", coinName: "bnb"),
           decimal: 18,
-          assetLogo: const APPImage.local("assets/image/bnb.png")),
+          assetLogo: APPConst.bnb),
       providers: []);
   static final EthereumNetworkParams bnbTestnet = EthereumNetworkParams(
       transactionExplorer: "https://testnet.bscscan.com/tx/#txid",
@@ -249,7 +260,7 @@ class _DefaultAppCoins {
           symbol: "tBNB",
           market: const CoingeckoCoin(apiId: "binancecoin", coinName: "bnb"),
           decimal: 18,
-          assetLogo: const APPImage.local("assets/image/bnb.png")),
+          assetLogo: APPConst.bnb),
       providers: []);
 
   /// tron networks
@@ -258,11 +269,12 @@ class _DefaultAppCoins {
       addressExplorer: "https://shasta.tronscan.org/#/address/#address",
       mainnet: false,
       token: Token(
-          name: "Tron shasta testnet",
-          symbol: "tTRX",
-          market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
-          decimal: 6,
-          assetLogo: const APPImage.local("assets/image/trx.png")),
+        name: "Tron shasta testnet",
+        symbol: "tTRX",
+        market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
+        decimal: 6,
+        assetLogo: APPConst.trx,
+      ),
       providers: [],
       ethereumProviders: []);
   static final TronNetworkParams tronNile = TronNetworkParams(
@@ -270,11 +282,12 @@ class _DefaultAppCoins {
       addressExplorer: "https://nile.tronscan.org/#/address/#address",
       mainnet: false,
       token: Token(
-          name: "Tron nile testnet",
-          symbol: "tTRX",
-          market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
-          decimal: 6,
-          assetLogo: const APPImage.local("assets/image/trx.png")),
+        name: "Tron nile testnet",
+        symbol: "tTRX",
+        market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
+        decimal: 6,
+        assetLogo: APPConst.trx,
+      ),
       ethereumProviders: [],
       providers: []);
   static final TronNetworkParams tron = TronNetworkParams(
@@ -282,11 +295,12 @@ class _DefaultAppCoins {
       addressExplorer: "https://tronscan.org/#/address/#address",
       mainnet: true,
       token: Token(
-          name: "Tron",
-          symbol: "TRX",
-          decimal: 6,
-          market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
-          assetLogo: const APPImage.local("assets/image/trx.png")),
+        name: "Tron",
+        symbol: "TRX",
+        decimal: 6,
+        market: const CoingeckoCoin(apiId: "tron", coinName: "tron"),
+        assetLogo: APPConst.trx,
+      ),
       ethereumProviders: [],
       providers: []);
 
@@ -299,7 +313,7 @@ class _DefaultAppCoins {
           symbol: "SOL",
           market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
           decimal: 9,
-          assetLogo: const APPImage.local("assets/image/sol.png")),
+          assetLogo: APPConst.sol),
       providers: []);
   static final SolanaNetworkParams solanaTestnet = SolanaNetworkParams(
       transactionExplorer:
@@ -308,11 +322,12 @@ class _DefaultAppCoins {
           "https://explorer.solana.com/address/#address?cluster=testnet",
       mainnet: false,
       token: Token(
-          name: "Solana testnet",
-          symbol: "tSOL",
-          market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
-          decimal: 9,
-          assetLogo: const APPImage.local("assets/image/sol.png")),
+        name: "Solana testnet",
+        symbol: "tSOL",
+        market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
+        decimal: 9,
+        assetLogo: APPConst.sol,
+      ),
       providers: []);
 
   static final CardanoNetworkParams cardanoTestnet = CardanoNetworkParams(
@@ -322,11 +337,12 @@ class _DefaultAppCoins {
           "https://preprod.beta.explorer.cardano.org/en/address/#address",
       mainnet: false,
       token: Token(
-          name: "Cardano preprod",
-          symbol: "tADA",
-          market: const CoingeckoCoin(apiId: "cardano", coinName: "cardano"),
-          decimal: 6,
-          assetLogo: const APPImage.local("assets/image/ada.png")),
+        name: "Cardano preprod",
+        symbol: "tADA",
+        market: const CoingeckoCoin(apiId: "cardano", coinName: "cardano"),
+        decimal: 6,
+        assetLogo: APPConst.ada,
+      ),
       providers: []);
   static final CardanoNetworkParams cardano = CardanoNetworkParams(
       transactionExplorer:
@@ -334,11 +350,12 @@ class _DefaultAppCoins {
       addressExplorer: "https://beta.explorer.cardano.org/en/address/#address",
       mainnet: true,
       token: Token(
-          name: "Cardano",
-          symbol: "ADA",
-          market: const CoingeckoCoin(apiId: "cardano", coinName: "cardano"),
-          decimal: 6,
-          assetLogo: const APPImage.local("assets/image/ada.png")),
+        name: "Cardano",
+        symbol: "ADA",
+        market: const CoingeckoCoin(apiId: "cardano", coinName: "cardano"),
+        decimal: 6,
+        assetLogo: APPConst.ada,
+      ),
       providers: []);
   static final CosmosNetworkParams cosmosTestnet = CosmosNetworkParams(
       transactionExplorer:
@@ -351,11 +368,12 @@ class _DefaultAppCoins {
       mainCoin: const CosmosNativeCoin(decimal: 6, denom: 'uatom'),
       coins: [const CosmosNativeCoin(decimal: 6, denom: 'uatom')],
       token: Token(
-          name: "Cosmos hub testnet",
-          symbol: "tATOM",
-          market: const CoingeckoCoin(apiId: "cosmos", coinName: "cosmos-hub"),
-          decimal: 6,
-          assetLogo: const APPImage.local("assets/image/atom.png")),
+        name: "Cosmos hub testnet",
+        symbol: "tATOM",
+        market: const CoingeckoCoin(apiId: "cosmos", coinName: "cosmos-hub"),
+        decimal: 6,
+        assetLogo: APPConst.atom,
+      ),
       providers: []);
   static final CosmosNetworkParams cosmos = CosmosNetworkParams(
       transactionExplorer: "https://ping.pub/cosmos/tx/#txid",
@@ -366,11 +384,12 @@ class _DefaultAppCoins {
       mainCoin: const CosmosNativeCoin(decimal: 6, denom: 'uatom'),
       coins: [const CosmosNativeCoin(decimal: 6, denom: 'uatom')],
       token: Token(
-          name: "Cosmos hub",
-          symbol: "ATOM",
-          market: const CoingeckoCoin(apiId: "cosmos", coinName: "cosmos-hub"),
-          decimal: 6,
-          assetLogo: const APPImage.local("assets/image/atom.png")),
+        name: "Cosmos hub",
+        symbol: "ATOM",
+        market: const CoingeckoCoin(apiId: "cosmos", coinName: "cosmos-hub"),
+        decimal: 6,
+        assetLogo: APPConst.atom,
+      ),
       providers: []);
   static final CosmosNetworkParams maya = CosmosNetworkParams(
       transactionExplorer: "https://www.mayascan.org/tx/#txid",
@@ -386,7 +405,7 @@ class _DefaultAppCoins {
           market:
               const CoingeckoCoin(apiId: "cacao", coinName: "maya-protocol"),
           decimal: 10,
-          assetLogo: const APPImage.local("assets/image/cacao.png")),
+          assetLogo: APPConst.cacao),
       providers: []);
   static final CosmosNetworkParams thorchain = CosmosNetworkParams(
       transactionExplorer: "https://www.thorscanner.org/tx/#txid",
@@ -402,7 +421,7 @@ class _DefaultAppCoins {
           market:
               const CoingeckoCoin(apiId: "thorchain", coinName: "thorchain"),
           decimal: 8,
-          assetLogo: const APPImage.local("assets/image/thor.png")),
+          assetLogo: APPConst.thor),
       providers: []);
   static final CosmosNetworkParams kujiraTestnet = CosmosNetworkParams(
       transactionExplorer: "https://finder.kujira.network/harpoon-4/tx/#txid",
@@ -418,7 +437,7 @@ class _DefaultAppCoins {
           symbol: "tKuji",
           market: const CoingeckoCoin(apiId: "kujira", coinName: "kujira"),
           decimal: 6,
-          assetLogo: const APPImage.local("assets/image/kujira.png")),
+          assetLogo: APPConst.kujira),
       providers: []);
   static final CosmosNetworkParams kujira = CosmosNetworkParams(
       transactionExplorer: "https://finder.kujira.network/kaiyo-1/tx/#txid",
@@ -433,7 +452,7 @@ class _DefaultAppCoins {
           symbol: "Kuji",
           market: const CoingeckoCoin(apiId: "kujira", coinName: "kujira"),
           decimal: 6,
-          assetLogo: const APPImage.local("assets/image/kujira.png")),
+          assetLogo: APPConst.kujira),
       providers: []);
 
   static final CosmosNetworkParams osmosTestnet = CosmosNetworkParams(
@@ -447,11 +466,12 @@ class _DefaultAppCoins {
       mainCoin: const CosmosNativeCoin(decimal: 6, denom: 'uosmo'),
       coins: [const CosmosNativeCoin(decimal: 6, denom: 'uosmo')],
       token: Token(
-          name: "Osmo testnet",
-          symbol: "tOsmo",
-          decimal: 6,
-          market: const CoingeckoCoin(apiId: "osmosis", coinName: "osmosis"),
-          assetLogo: const APPImage.local("assets/image/osmo.png")),
+        name: "Osmo testnet",
+        symbol: "tOsmo",
+        decimal: 6,
+        market: const CoingeckoCoin(apiId: "osmosis", coinName: "osmosis"),
+        assetLogo: APPConst.osmo,
+      ),
       providers: []);
   static final TonNetworkParams tonTestnet = TonNetworkParams(
       transactionExplorer: "https://testnet.tonscan.org/tx/#txid",
@@ -459,12 +479,13 @@ class _DefaultAppCoins {
       mainnet: false,
       workchain: -1,
       token: Token(
-          name: "TonCoin testnet",
-          symbol: "tTon",
-          decimal: 9,
-          market: const CoingeckoCoin(
-              apiId: "the-open-network", coinName: "toncoin"),
-          assetLogo: const APPImage.local("assets/image/ton.png")),
+        name: "TonCoin testnet",
+        symbol: "tTon",
+        decimal: 9,
+        market:
+            const CoingeckoCoin(apiId: "the-open-network", coinName: "toncoin"),
+        assetLogo: APPConst.ton,
+      ),
       providers: []);
 
   static final TonNetworkParams tonMainnet = TonNetworkParams(
@@ -478,7 +499,7 @@ class _DefaultAppCoins {
           market: const CoingeckoCoin(
               apiId: "the-open-network", coinName: "toncoin"),
           decimal: 9,
-          assetLogo: const APPImage.local("assets/image/ton.png")),
+          assetLogo: APPConst.ton),
       providers: []);
 }
 
@@ -581,7 +602,7 @@ class ChainUtils {
       WalletNetwork network, CborTagValue? account) {
     try {
       return toNetworkAccount(network, account!);
-    } catch (e, s) {
+    } catch (e) {
       return createNetworkAccount(network);
     }
   }

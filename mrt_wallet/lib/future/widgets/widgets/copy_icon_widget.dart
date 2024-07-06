@@ -93,6 +93,7 @@ class CopyTextWithBarcode extends StatefulWidget {
       required this.dataToCopy,
       required this.widget,
       required this.barcodeTitle,
+      this.buttons = const [],
       this.secureBarcode = false,
       this.underBarcodeWidget,
       this.barcodeWidget,
@@ -107,6 +108,7 @@ class CopyTextWithBarcode extends StatefulWidget {
   final Widget? barcodeWidget;
   final String barcodeTitle;
   final Widget? underBarcodeWidget;
+  final List<Widget> buttons;
   final bool secureBarcode;
 
   @override
@@ -172,6 +174,7 @@ class CopyTextWithBarcodeState extends State<CopyTextWithBarcode> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              ...widget.buttons,
               IconButton(
                   onPressed: () {
                     context.openSliverDialog(

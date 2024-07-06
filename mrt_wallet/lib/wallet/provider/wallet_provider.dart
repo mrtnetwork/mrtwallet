@@ -10,7 +10,6 @@ import 'package:mrt_wallet/wallet/chain/handler/chain.dart';
 import 'package:mrt_wallet/repository/repository.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
-import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
 import 'package:mrt_wallet/wroker/core/worker.dart';
 import 'package:mrt_wallet/wroker/worker.dart';
 

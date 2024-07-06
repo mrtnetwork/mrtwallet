@@ -19,9 +19,23 @@ enum _PrivateKeyTypes {
   privateKey("Private key"),
   wif("Wif");
 
+  MrtBackupTypes? get backupType {
+    switch (this) {
+      case _PrivateKeyTypes.extendKey:
+        return MrtBackupTypes.extendedKey;
+      case _PrivateKeyTypes.privateKey:
+        return MrtBackupTypes.privatekey;
+      case _PrivateKeyTypes.wif:
+        return MrtBackupTypes.wif;
+      default:
+        throw UnimplementedError();
+    }
+  }
+
   const _PrivateKeyTypes(this.value);
   final String value;
   bool get isExtendedKey => this == _PrivateKeyTypes.extendKey;
+  bool get supportedBackup => this != _PrivateKeyTypes.wif;
   CustomKeyType toCustomKeyType() {
     if (this == _PrivateKeyTypes.extendKey) return CustomKeyType.extendedKey;
     return CustomKeyType.privateKey;
@@ -342,7 +356,8 @@ class _ImportAccountStateKey extends StatelessWidget {
                 onPressed: () {
                   context
                       .openSliverBottomSheet<String>("restore_backup".tr,
-                          child: const RestoreBackupView())
+                          child: RestoreBackupView(
+                              accepted: state.selected.backupType))
                       .then(state.onRestoreBackup);
                 },
                 icon: const Icon(Icons.restore),

@@ -15,6 +15,14 @@ class CborTagsConst {
   static const List<int> setting = [160];
   static const List<int> backup = [170];
   static const List<int> backupV2 = [170, 2];
+  static const List<int> backupV3 = [170, 3];
+
+  static const int mrtBackupVersion = 1;
+  static const List<int> mrtBackupWallet = [mrtBackupVersion, 170, 2];
+  static const List<int> mrtBackupMnemonic = [mrtBackupVersion, 170, 3];
+  static const List<int> mrtBackupPrivateKey = [mrtBackupVersion, 170, 4];
+  static const List<int> mrtBackupExtendedKey = [mrtBackupVersion, 170, 5];
+  static const List<int> mrtBackupWif = [mrtBackupVersion, 170, 6];
 
   static const List<int> mnemonic = [180];
   static const List<int> walletCustomKey = [180, 0];

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wallet/models/backup/mrt_backup.dart';
 
 class BackupWalletView extends StatelessWidget {
   const BackupWalletView({super.key});
@@ -71,15 +72,10 @@ class _BackupWalletState extends State<_BackupWallet> with SafeState {
                           label: Text("create_backup".tr),
                           onPressed: () {
                             context.openSliverDialog(
-                                (ctx) => SecureBackupView(
-                                      data: "",
-                                      password: widget.password,
-                                      isWalletBackup: true,
-                                      descriptions: [
-                                        WidgetConstant.height8,
-                                        Text("backup_wallet_desc1".tr),
-                                      ],
-                                    ),
+                                (ctx) => GenerateBackupView(
+                                    data: "",
+                                    password: widget.password,
+                                    type: MrtBackupTypes.wallet),
                                 "backup_wallet".tr);
                           },
                           icon: const Icon(Icons.backup)),

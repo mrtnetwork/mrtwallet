@@ -16,6 +16,8 @@ class SwitchNetworkView extends StatefulWidget {
 class _SwitchNetworkViewState extends State<SwitchNetworkView>
     with SingleTickerProviderStateMixin {
   late final tabController = TabController(length: 8, vsync: this);
+  final GlobalKey<PageProgressState> progressKey =
+      GlobalKey<PageProgressState>();
 
   double? height;
   void onChangeSize(Size size) {
@@ -103,6 +105,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
     if (initialIndex != 0) {
       tabController.animateTo(initialIndex);
     }
+    progressKey.backToIdle();
   }
 
   bool showImport = false;
@@ -128,7 +131,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    initNetwork();
+    MethodUtils.after(() async => initNetwork());
   }
 
   @override
@@ -160,44 +163,69 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                       controller: tabController,
                       tabAlignment: TabAlignment.start,
                       isScrollable: true,
-                      tabs: [
-                        Tab(text: "bitcoin_and_forked".tr),
-                        Tab(text: "ripple".tr),
-                        Tab(text: "evm_networks".tr),
-                        Tab(text: "tvm_networks".tr),
-                        Tab(text: "sol_networks".tr),
-                        Tab(text: "cardano_networks".tr),
-                        Tab(text: "cosmos_networks".tr),
-                        Tab(text: "ton_networks".tr),
+                      tabs: const [
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.btc,
+                                radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.xrp,
+                                radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.eth,
+                                radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.trx,
+                                radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.sol,
+                                radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.ada,
+                                radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.atom,
+                                radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.ton,
+                                radius: 15)),
                       ]),
                   pinned: true,
                   actions: [
-                    AnimatedSwitcher(
-                      duration: APPConst.animationDuraion,
-                      child: showImport
-                          ? FilledButton(
+                    APPAnimatedSwitcher(
+                        duration: APPConst.animationDuraion,
+                        enable: showImport,
+                        widgets: {
+                          true: (c) => IconButton(
+                              tooltip: "import".tr,
                               onPressed: () {
                                 context.pop(-1);
                               },
-                              child: Text("import".tr))
-                          : WidgetConstant.sizedBox,
-                    ),
+                              icon: const Icon(Icons.add)),
+                          false: (c) => WidgetConstant.sizedBox
+                        }),
                     const CloseButton(),
                   ],
                 ),
                 SliverToBoxAdapter(
                   child: ConstraintsBoxView(
                     maxHeight: 400,
-                    child: TabBarView(controller: tabController, children: [
-                      _NetworksView(widget.selectedNetwork, bitcoinNetworks),
-                      _NetworksView(widget.selectedNetwork, rippleNetworks),
-                      _NetworksView(widget.selectedNetwork, evmNetworks),
-                      _NetworksView(widget.selectedNetwork, tvmNetworks),
-                      _NetworksView(widget.selectedNetwork, solNetworks),
-                      _NetworksView(widget.selectedNetwork, cardanoNetworks),
-                      _NetworksView(widget.selectedNetwork, cosmosNetworks),
-                      _NetworksView(widget.selectedNetwork, tonNetworks)
-                    ]),
+                    // padding: WidgetConstant.paddingHorizontal10,
+                    child: PageProgress(
+                      backToIdle: APPConst.milliseconds100,
+                      initialStatus: StreamWidgetStatus.progress,
+                      key: progressKey,
+                      child: () =>
+                          TabBarView(controller: tabController, children: [
+                        _NetworksView(widget.selectedNetwork, bitcoinNetworks),
+                        _NetworksView(widget.selectedNetwork, rippleNetworks),
+                        _NetworksView(widget.selectedNetwork, evmNetworks),
+                        _NetworksView(widget.selectedNetwork, tvmNetworks),
+                        _NetworksView(widget.selectedNetwork, solNetworks),
+                        _NetworksView(widget.selectedNetwork, cardanoNetworks),
+                        _NetworksView(widget.selectedNetwork, cosmosNetworks),
+                        _NetworksView(widget.selectedNetwork, tonNetworks)
+                      ]),
+                    ),
                   ),
                 ),
               ],

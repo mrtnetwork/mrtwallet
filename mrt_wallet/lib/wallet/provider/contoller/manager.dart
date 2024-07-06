@@ -112,27 +112,32 @@ mixin WalletManager2 on _WalletController {
     _setDefaultPageStatus();
   }
 
-  Future<String> _generateKeysBackup(
-      {required String dataToEncrypt,
-      required String password,
-      required SecretWalletEncoding encoding}) async {
-    return await _crypto.createBackup(dataToEncrypt, password, encoding);
+  Future<String> _generateMrtBackup(
+      {required String data,
+      required MrtBackupTypes type,
+      required String password}) async {
+    final encryptKey = await _crypto.createBackup2(
+        backup: type.toEncryptionBytes(data),
+        encoding: type.encoding,
+        password: password);
+    if (type == MrtBackupTypes.keystore) {
+      return encryptKey;
+    }
+    final mrtBackup = MRTKeyBackup(key: encryptKey, type: type);
+    return mrtBackup.toCbor().toCborHex();
   }
 
-  Future<String> _generateWalletBackup(String password,
-      {SecretWalletEncoding encoding = SecretWalletEncoding.cbor}) async {
+  Future<String> _generateMrtWalletBackup(String password) async {
     final pw = _validatePassword(password);
-    final masterKeys =
+    final storageKey =
         await _crypto.masterKeyfromMemoryStorage(pw, _massterKey!.masterKey);
-    final backup = WalletBackupV2(
-        masterKeys: masterKeys,
-        chains: _appChains.chains(),
-        wallet: _wallet,
-        created: DateTime.now());
-    return await _generateKeysBackup(
-        dataToEncrypt: backup.toCbor().toCborHex(),
-        password: password,
-        encoding: encoding);
+    final encrypt = await _crypto.createBackup2(
+        backup: storageKey.toCbor().encode(),
+        encoding: SecretWalletEncoding.cbor,
+        password: password);
+    final mrtBackup =
+        MRTWalletBackup(key: encrypt, chains: _appChains.chains());
+    return mrtBackup.toCbor().toCborHex();
   }
 
   Future<List<CryptoKeyData>> _accsess(

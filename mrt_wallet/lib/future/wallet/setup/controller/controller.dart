@@ -40,6 +40,9 @@ class SetupWalletController extends StateController {
   SetupWalletController(this.setupMode, this.walletProvider);
   final SetupWalletMode setupMode;
   final WalletProvider walletProvider;
+
+  bool _legacyBackup = false;
+  bool get lagacyBackup => _legacyBackup;
   Mnemonic? _mnemonic;
   Mnemonic? get mnemonic => _mnemonic;
 
@@ -60,6 +63,11 @@ class SetupWalletController extends StateController {
   bool get inMnemonic => _page == SetupWalletPage.mnemonic;
   bool get inConfirm => _page == SetupWalletPage.confirm;
   bool get inExtraOption => _page == SetupWalletPage.extraOption;
+
+  void toggleLegacy() {
+    _legacyBackup = !_legacyBackup;
+    notify();
+  }
 
   void _reset() {
     _mnemonic = null;
@@ -84,6 +92,7 @@ class SetupWalletController extends StateController {
       case SetupWalletPage.backup:
         _mnemonic = null;
         _page = SetupWalletPage.password;
+        _legacyBackup = false;
         break;
       default:
         break;
@@ -196,6 +205,20 @@ class SetupWalletController extends StateController {
         backupBytes: walletBackupBytes,
         passhphrase: passphrase,
         password: _password);
+    _wallet = _backup!.wallet;
+    return _backup!;
+  }
+
+  Future<WalletRestoreV2> restoreWalletBackupV3(MRTBackup backup,
+      {String? passphrase}) async {
+    if (passphrase?.isEmpty ?? false) {
+      throw WalletExceptionConst.invalidMnemonicPassphrase;
+    }
+    if (!StrUtils.isStrongPassword(_password)) {
+      throw WalletExceptionConst.incorrectPassword;
+    }
+    _backup = await walletProvider.restoreWalletBackupV3(
+        backup: backup, passhphrase: passphrase, password: _password);
     _wallet = _backup!.wallet;
     return _backup!;
   }

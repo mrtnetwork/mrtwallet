@@ -22,16 +22,16 @@ abstract class IsolateCryptoWoker {
   bool get hasIsolate;
   Future<T> _call<T>(
       {required Future<T> Function() onIsolate,
-      required T Function() onMain}) async {
+      required Future<T> Function() onMain}) async {
     if (!hasIsolate) {
-      return onMain();
+      return await Future.microtask(() => onMain());
     }
     try {
       final result = await onIsolate();
 
       return result;
     } on FailedIsolateInitialization {
-      final result = onMain();
+      final result = await Future.microtask(() => onMain());
       return result;
     }
   }
@@ -46,7 +46,7 @@ abstract class IsolateCryptoWoker {
       final OneArgBytes response = await getResult(request);
 
       return response.keyOne;
-    }, onMain: () {
+    }, onMain: () async {
       return _crypto.decryptChacha(key, sealed);
     });
   }
@@ -58,7 +58,7 @@ abstract class IsolateCryptoWoker {
           args: args, message: CryptoMessageType.encryptChacha);
       final OneArgBytes response = await getResult(request);
       return response.keyOne;
-    }, onMain: () {
+    }, onMain: () async {
       return _crypto.encryptChaha(key, data);
     });
   }
@@ -77,7 +77,7 @@ abstract class IsolateCryptoWoker {
       final String encryptedString =
           StringUtils.decode(response.keyTwo, type: StringEncoding.base64);
       return (encryptedStorageKey, encryptedString);
-    }, onMain: () {
+    }, onMain: () async {
       final decode = _crypto.generateMasterKey(dataBytes, password);
       final String encryptedString =
           StringUtils.decode(decode.$2, type: StringEncoding.base64);
@@ -94,7 +94,7 @@ abstract class IsolateCryptoWoker {
           message: CryptoMessageType.readMasterKeyFromMemoryStorage);
       final OneArgBytes response = await getResult(request);
       return WalletMasterKeys.fromCborBytesOrObject(bytes: response.keyOne);
-    }, onMain: () {
+    }, onMain: () async {
       return WalletMasterKeys.fromCborBytesOrObject(
           bytes: _crypto.masterKeyfromMemoryStorage(key, data));
     });
@@ -113,14 +113,16 @@ abstract class IsolateCryptoWoker {
           args: args, message: CryptoMessageType.restoreBackup);
       final OneArgBytes response = await getResult(request);
       return response.keyOne;
-    }, onMain: () {
+    }, onMain: () async {
       return _crypto.restoreBackup(
           backup: backup, password: password, encoding: encoding);
     });
   }
 
   Future<String> createBackup(
-      String backup, String password, SecretWalletEncoding encoding) async {
+      {required String backup,
+      required String password,
+      required SecretWalletEncoding encoding}) async {
     final backupBytes = List<int>.unmodifiable(StringUtils.toBytes(backup));
     return _call(onIsolate: () async {
       final args = ThreeArgsBytes(
@@ -131,7 +133,26 @@ abstract class IsolateCryptoWoker {
           args: args, message: CryptoMessageType.createBackup);
       final OneArgBytes response = await getResult(request);
       return StringUtils.decode(response.keyOne);
-    }, onMain: () {
+    }, onMain: () async {
+      return _crypto.createBackup(backupBytes, password, encoding);
+    });
+  }
+
+  Future<String> createBackup2(
+      {required List<int> backup,
+      required String password,
+      required SecretWalletEncoding encoding}) async {
+    final backupBytes = List<int>.unmodifiable(backup);
+    return _call(onIsolate: () async {
+      final args = ThreeArgsBytes(
+          keyOne: StringUtils.encode(password),
+          keyTwo: backupBytes,
+          keyThree: StringUtils.encode(encoding.name));
+      final request = WorkerMessageBytes(
+          args: args, message: CryptoMessageType.createBackup);
+      final OneArgBytes response = await getResult(request);
+      return StringUtils.decode(response.keyOne);
+    }, onMain: () async {
       return _crypto.createBackup(backupBytes, password, encoding);
     });
   }
@@ -146,7 +167,7 @@ abstract class IsolateCryptoWoker {
           args: args, message: CryptoMessageType.createWalletSeed);
       final OneArgBytes response = await getResult(request);
       return WalletMasterKeys.fromCborBytesOrObject(bytes: response.keyOne);
-    }, onMain: () {
+    }, onMain: () async {
       return _crypto.createWalletSeed(mnemonic, passphrase ?? '');
     });
   }
@@ -169,7 +190,7 @@ abstract class IsolateCryptoWoker {
       final String encryptedString =
           StringUtils.decode(response.keyTwo, type: StringEncoding.base64);
       return (encryptedStorageKey, encryptedString);
-    }, onMain: () {
+    }, onMain: () async {
       final encrypt = _crypto.importCustomKey(
           newKey: newKey, key: key, encryptedWallet: encryptedWallet);
       final String encryptedString =
@@ -195,7 +216,7 @@ abstract class IsolateCryptoWoker {
       final String encryptedString =
           StringUtils.decode(response.keyTwo, type: StringEncoding.base64);
       return (encryptedStorageKey, encryptedString);
-    }, onMain: () {
+    }, onMain: () async {
       final encrypt = _crypto.removeMasterKey(
           keyId: removeKey.id, key: key, encryptedWallet: encryptedWallet);
       final String encryptedString =
@@ -220,7 +241,7 @@ abstract class IsolateCryptoWoker {
       final String encryptedString =
           StringUtils.decode(response.keyTwo, type: StringEncoding.base64);
       return (encryptedStorageKey, encryptedString);
-    }, onMain: () {
+    }, onMain: () async {
       final encrypt = _crypto.changePassword(
           newPassword: newPassword, key: key, encryptedWallet: encryptedWallet);
       final String encryptedString =
@@ -231,15 +252,23 @@ abstract class IsolateCryptoWoker {
 
   Future<(EncryptedMasterKey, String)> setup(
       {required WalletMasterKeys masterKey, required List<int> key}) async {
-    final args = TwoArgsBytes(keyOne: key, keyTwo: masterKey.toCbor().encode());
-    final request =
-        WorkerMessageBytes(args: args, message: CryptoMessageType.setup);
-    final TwoArgsBytes response = await getResult(request);
-    final encryptedStorageKey =
-        EncryptedMasterKey.fromCborBytesOrObject(bytes: response.keyOne);
-    final String encryptedString =
-        StringUtils.decode(response.keyTwo, type: StringEncoding.base64);
-    return (encryptedStorageKey, encryptedString);
+    return _call(onIsolate: () async {
+      final args =
+          TwoArgsBytes(keyOne: key, keyTwo: masterKey.toCbor().encode());
+      final request =
+          WorkerMessageBytes(args: args, message: CryptoMessageType.setup);
+      final TwoArgsBytes response = await getResult(request);
+      final encryptedStorageKey =
+          EncryptedMasterKey.fromCborBytesOrObject(bytes: response.keyOne);
+      final String encryptedString =
+          StringUtils.decode(response.keyTwo, type: StringEncoding.base64);
+      return (encryptedStorageKey, encryptedString);
+    }, onMain: () async {
+      final setup = _crypto.setup(masterKey: masterKey, key: key);
+      final String encryptedString =
+          StringUtils.decode(setup.$2, type: StringEncoding.base64);
+      return (setup.$1, encryptedString);
+    });
   }
 
   Future<PrivateKeyData> getImportedKey({
@@ -256,7 +285,7 @@ abstract class IsolateCryptoWoker {
           args: args, message: CryptoMessageType.readImportKey);
       final OneArgBytes response = await getResult(request);
       return PrivateKeyData.fromCborBytesOrObject(bytes: response.keyOne);
-    }, onMain: () {
+    }, onMain: () async {
       return _crypto.getImportedKey(
           keyId: keyId, key: key, encryptedWallet: encryptedWallet);
     });
@@ -278,7 +307,7 @@ abstract class IsolateCryptoWoker {
       final responseKeys = CryptoPrivateKeysResponse.fromCborBytesOrObject(
           bytes: response.keyOne);
       return responseKeys.keys;
-    }, onMain: () {
+    }, onMain: () async {
       final responseKeys = _crypto.readPrivateKeys(
           keyIndexes: keysRequest.indexes,
           key: key,
@@ -303,7 +332,7 @@ abstract class IsolateCryptoWoker {
       final responseKey = CryptoPrivateKeyResponse.fromCborBytesOrObject(
           bytes: response.keyOne);
       return responseKey.key;
-    }, onMain: () {
+    }, onMain: () async {
       final responseKeys = _crypto.readPrivateKeys(
           keyIndexes: [keyRequest], key: key, encryptedWallet: encryptedWallet);
       return responseKeys.first;
@@ -323,7 +352,7 @@ abstract class IsolateCryptoWoker {
           WorkerMessageBytes(args: args, message: CryptoMessageType.sign);
       final OneArgBytes response = await getResult(request);
       return GlobalSignResponse.deserialize(response.keyOne);
-    }, onMain: () {
+    }, onMain: () async {
       return _crypto.sign(
           key: key, encryptedWallet: encryptedWallet, request: signingRequest);
     });
@@ -346,7 +375,7 @@ abstract class IsolateCryptoWoker {
       final CryptoPublicKeyResponse responseKey =
           CryptoPublicKeyResponse.fromCborBytesOrObject(bytes: response.keyOne);
       return responseKey.key;
-    }, onMain: () {
+    }, onMain: () async {
       final responseKeys = _crypto.readPublicKeys(
           key: key,
           encryptedWallet: encryptedWallet,
@@ -371,7 +400,7 @@ abstract class IsolateCryptoWoker {
           CryptoPublicKeysResponse.fromCborBytesOrObject(
               bytes: response.keyOne);
       return responseKey.keys;
-    }, onMain: () {
+    }, onMain: () async {
       final responseKeys = _crypto.readPublicKeys(
           key: key,
           encryptedWallet: encryptedWallet,
@@ -390,7 +419,7 @@ abstract class IsolateCryptoWoker {
       final OneArgBytes response = await getResult(request);
       return AccessMnemonicResponse.fromCborBytesOrObject(
           bytes: response.keyOne);
-    }, onMain: () {
+    }, onMain: () async {
       return _crypto.readMnemonic(key: key, encryptedWallet: encryptedWallet);
     });
   }

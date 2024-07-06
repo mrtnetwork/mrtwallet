@@ -1,14 +1,14 @@
-import 'package:blockchain_utils/secret_wallet/web3_storage_defination.dart';
-import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 
 enum _Pages { restore, content }
 
 class RestoreBackupView extends StatefulWidget {
-  const RestoreBackupView({Key? key}) : super(key: key);
+  const RestoreBackupView({Key? key, this.accepted}) : super(key: key);
+  final MrtBackupTypes? accepted;
 
   @override
   State<RestoreBackupView> createState() => _RestoreBackupViewState();
@@ -19,7 +19,6 @@ class _RestoreBackupViewState extends State<RestoreBackupView> with SafeState {
       GlobalKey<PageProgressState>(debugLabel: "_RestoreBackupViewState");
   final GlobalKey<FormState> form =
       GlobalKey(debugLabel: "_RestoreBackupViewState_2");
-  SecretWalletEncoding encoding = SecretWalletEncoding.json;
   bool showContet = false;
   String backup = "";
   String password = "";
@@ -55,11 +54,6 @@ class _RestoreBackupViewState extends State<RestoreBackupView> with SafeState {
     return "bcakup_validator".tr;
   }
 
-  void onChangeEncoding(SecretWalletEncoding? updateEncoding) {
-    encoding = updateEncoding ?? encoding;
-    setState(() {});
-  }
-
   String? passwordForm(String? v) {
     if (v?.isEmpty ?? true) {
       return "backup_password_validator".tr;
@@ -74,14 +68,26 @@ class _RestoreBackupViewState extends State<RestoreBackupView> with SafeState {
     progressKey.progressText("restoring_backup_please_wait".tr);
     final wallet = context.watch<WalletProvider>(StateConst.main);
     final result = await MethodUtils.call(() async =>
-        await wallet.restoreKeysBackup(
-            password: password, backup: backup, encoding: encoding));
+        await wallet.restoreMRTBackup(password: password, backup: backup));
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
-      restored = BytesUtils.toHexString(result.result);
-      page = _Pages.content;
-      progressKey.success();
+      final keyType = result.result.type;
+      bool isCorrectKey = true;
+      if (widget.accepted != null) {
+        isCorrectKey = (keyType == widget.accepted ||
+            keyType.isPrivateKey && widget.accepted!.isPrivateKey);
+      }
+      if (!isCorrectKey) {
+        progressKey.errorText("invalid_backup_type_desc"
+            .tr
+            .replaceOne(widget.accepted!.value.tr)
+            .replaceTwo(keyType.value.tr));
+      } else {
+        restored = result.result.key;
+        page = _Pages.content;
+        progressKey.success();
+      }
     }
   }
 
@@ -94,7 +100,7 @@ class _RestoreBackupViewState extends State<RestoreBackupView> with SafeState {
   Widget build(BuildContext context) {
     return PageProgress(
       key: progressKey,
-      backToIdle: APPConst.oneSecoundDuration,
+      backToIdle: APPConst.twoSecoundDuration,
       child: () => ConstraintsBoxView(
         padding: WidgetConstant.paddingHorizontal20,
         child: Column(
@@ -161,22 +167,6 @@ class _RestoreBackupRestorePage extends StatelessWidget {
           PageTitleSubtitle(
               title: "restore_encrypted_backup".tr,
               body: Text("restore_backup_desc".tr)),
-          DropdownButtonFormField<SecretWalletEncoding>(
-            value: state.encoding,
-            decoration: InputDecoration(
-                label: Text("decoding_type".tr),
-                helperStyle: context.textTheme.bodySmall
-                    ?.copyWith(color: context.colors.error),
-                helperMaxLines: 3),
-            items: SecretWalletEncoding.values.map((enc) {
-              return DropdownMenuItem<SecretWalletEncoding>(
-                value: enc,
-                child: Text(enc.name.camelCase),
-              );
-            }).toList(),
-            onChanged: state.onChangeEncoding,
-          ),
-          WidgetConstant.height20,
           AppTextField(
             label: "enter_backup".tr,
             validator: state.bcakupForm,

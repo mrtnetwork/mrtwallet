@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
 import 'enter_backup.dart';
+import 'enter_backup_new.dart';
 import 'enter_mnemonic.dart';
 import 'extra_options.dart';
 import 'generate_mnemonic.dart';
@@ -47,6 +48,7 @@ class SetupWallet extends StatelessWidget {
                         child: _SetupWalletPages(
                           page: model.page,
                           mnemonic: model.mnemonic?.toList(),
+                          legacyBackup: model.lagacyBackup,
                           onValidate: model.toExtra,
                           wallet: model.wallet,
                           key: ValueKey<SetupWalletPage>(model.page),
@@ -69,12 +71,14 @@ class _SetupWalletPages extends StatelessWidget {
       {required this.page,
       this.mnemonic,
       required this.onValidate,
+      required this.legacyBackup,
       this.wallet,
       super.key});
   final List<String>? mnemonic;
   final SetupWalletPage page;
   final OnValidateMnemonic onValidate;
   final HDWallet? wallet;
+  final bool legacyBackup;
   @override
   Widget build(BuildContext context) {
     switch (page) {
@@ -89,7 +93,10 @@ class _SetupWalletPages extends StatelessWidget {
       case SetupWalletPage.enterMnemonic:
         return const EnterMnemonicView();
       case SetupWalletPage.backup:
-        return const EnterMnemonicBackupView();
+        if (legacyBackup) {
+          return const EnterLegacyBackupView();
+        }
+        return const EnterWalletBackupView();
       default:
         return CreateWalletSettingsView(wallet!);
     }

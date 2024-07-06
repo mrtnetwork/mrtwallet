@@ -185,8 +185,8 @@ class Localization {
           "about_web3_defination_desc4":
               "At present, only your current account private key is stored in the Web3 storage definition.",
           "encoding": "Encoding type",
-          "encoding_desc":
-              "This encoding can only be decoded by this application and is not compatible with other supported Web3 storage definitions.",
+          "mrt_backup_encoding_desc":
+              "This type of backup can only be decoded by the MRT Wallet application.",
           "create_backup": "Create a backup",
           "creating_backup_desc":
               "Creating a backup, this process may take a few seconds",
@@ -197,10 +197,9 @@ class Localization {
           "restore_backup": "Restore backup",
           "restore_backuo_desc":
               "Recover the mnemonic using the backup stored in the Web3 definition storage",
-          "restore_mnemonic_from_bcakup":
-              "Recover the mnemonic from the backup.",
+          "restore_wallet_from_bcakup": "Restore wallet from backup.",
           "restore_mnemonic_desc":
-              "Kindly paste the encrypted text of your Web3 secret definition below.",
+              "Kindly paste the encrypted text of your mnemonic or wallet backup.",
           "enter_backup": "Input backup text.",
           "bcakup_validator":
               "The backup text should exceed 100 characters in length.",
@@ -1793,6 +1792,8 @@ class Localization {
           "wallet_name_validator2": "Wallet name already exists.",
           "wallet_name_exists": "A wallet with this name already exists.",
           "generate_keystore": "Generate keystore",
+          "backup_extended_key": "Backup extended key",
+          "backup_wif": "Backup WIF",
           "generate_keystore_desc": "Generate Keystore V3 from private key.",
           "verification_backup_review": "Backup Verification Review",
           "verification_backup_desc":
@@ -1813,7 +1814,18 @@ class Localization {
           "switching_wallet": "Switching wallet. Please wait.",
           "signing_auth_validator":
               "This account is not authorized for signing.",
-          "unsuported_key": "Unsupported key"
+          "unsuported_key": "Unsupported key",
+          "backup_key_type_desc":
+              "Which type of key would you like to back up?",
+          "use_key_store_backup_desc":
+              "A keystore backup can be unlocked by any compliant Web3 wallet, such as TronLink, MetaMask, and others.",
+          "invalid_backup_type_desc":
+              "Invalid backup type. Expected a ___1__ but received an ___2__.",
+          "mnemonic": "Mnemonic",
+          "keystore": "Keystore",
+          "legacy_backup": "Legacy backup?",
+          "ton_wallet_validator_desc":
+              "Wallet contract v1 only support on message per transaction."
         }
       };
 }

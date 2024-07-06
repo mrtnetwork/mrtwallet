@@ -11,6 +11,9 @@ mixin TonSignerImpl on TonTransactionImpl {
 
   Cell _buildMessage({required WalletContract wallet, required int seqno}) {
     final messages = validator.validator.toMessages(address.networkAddress);
+    if (wallet.type.version == 1 && messages.length > 1) {
+      throw WalletException("ton_wallet_validator_desc");
+    }
     return wallet.createTransfer(messages: messages, accountSeqno: seqno);
   }
 
@@ -29,7 +32,8 @@ mixin TonSignerImpl on TonTransactionImpl {
         network: network,
         sign: (generateSignature) async {
           final signRequest = GlobalSignRequest.cardano(
-              digest: transfer.hash(), index: address as Bip32AddressIndex);
+              digest: transfer.hash(),
+              index: address.keyIndex as Bip32AddressIndex);
           final sss = await generateSignature(signRequest);
           return sss.signature;
         },

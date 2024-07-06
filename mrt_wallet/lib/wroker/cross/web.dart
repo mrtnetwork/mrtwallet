@@ -10,6 +10,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wroker/core/worker.dart';
 import 'package:mrt_wallet/wroker/crypto/crypto.dart';
 import 'package:mrt_wallet/wroker/models/bytes.dart';
+import 'package:mrt_wallet/wroker/models/completer.dart';
 import 'package:mrt_wallet/wroker/models/message_type.dart';
 import 'package:mrt_wallet/wroker/models/request_message.dart';
 import 'package:mrt_wallet/wroker/models/response_message.dart';
@@ -22,6 +23,7 @@ import 'dart:js' as js;
 import 'dart:js_interop';
 
 import 'exception.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 IsolateCryptoWoker getCryptoWorker() => _WebCryptoWorker._web;
 
@@ -32,10 +34,14 @@ class _WebCryptoWorker extends IsolateCryptoWoker {
       "74f0a7867518f8d84c0314c4007cc746d421c92984f339c5d6e43ca6a4d9f496";
   static const String _wasmhash =
       "748ef3c4836a896629903872170a45ef79c6f01464d70200a682e3bca31a7fcf";
+  static const String _workerHash =
+      "3e271fd1f7f2f62d511d7d0d4c2a39328b60ec83e947290a4507edf64db2d335";
   _WebCryptoWorker._() : super.parent();
-  static const String _wasmPath = "crypto.wasm";
-  static const String _scryptPath = "crypto.mjs";
-  bool _hasIsolate = true;
+  static const String _wasmPath = "assets/wasm/crypto.wasm";
+  static const String _wrokerJs = "assets/wasm/wasm.js";
+  static const String _scryptPath = "assets/wasm/crypto.mjs";
+  int _retryFailed = 0;
+  late bool _hasIsolate = html.Worker.supported;
   @override
   bool get hasIsolate => _hasIsolate;
   int _id = 0;
@@ -44,84 +50,101 @@ class _WebCryptoWorker extends IsolateCryptoWoker {
 
   @override
   Future<T> getResult<T extends ArgsBytes>(WorkerMessageBytes message) async {
-    return _lock.synchronized(() async {
-      await _init();
-      final request = WorkerMessageRequest(message: message, id: _id++);
-      final args = _connector!.sentRequest(request);
-      if (args.type == ArgsType.exception) {
-        throw WalletException((args as ExceptionArg).message);
+    await _lock.synchronized(() async {
+      try {
+        await _init();
+      } on IsolateAuthenticated {
+        _hasIsolate = false;
+        throw FailedIsolateInitialization.failed;
+      } catch (e) {
+        _retryFailed += 1;
+        throw FailedIsolateInitialization.failed;
+      } finally {
+        if (_retryFailed > 3) {
+          _hasIsolate = false;
+        }
       }
-      if (args is! T) {
-        throw WalletExceptionConst.dataVerificationFailed;
-      }
-      return args;
     });
+
+    final request = WorkerMessageRequest(message: message, id: _id++);
+    final args = await _connector!.sentRequest(request);
+    if (args.type == ArgsType.exception) {
+      throw WalletException((args as ExceptionArg).message);
+    }
+    if (args is! T) {
+      throw WalletExceptionConst.dataVerificationFailed;
+    }
+    return args;
   }
 
   _WebConnectionInfo? _connector;
 
-  Future<JSObject?> _loadScript() async {
-    final file = await html.window.fetch(_scryptPath);
-    final buffer = await js_util
-        .promiseToFuture(js_util.callMethod<Object>(file, "text", []));
+  Future<String> _loadWorker() async {
+    final file = await rootBundle.loadString(_wrokerJs);
+    final workerHash = BytesUtils.toHexString(
+        QuickCrypto.sha3256Hash(StringUtils.encode(file)));
+    if (workerHash != _workerHash) {
+      throw IsolateAuthenticated.failed;
+    }
+    return file;
+  }
+
+  Future<ByteBuffer> _loadWasm() async {
+    final file = await rootBundle.load(_wasmPath);
+    final wasmHash = BytesUtils.toHexString(
+        QuickCrypto.sha3256Hash(file.buffer.asUint8List()));
+    if (wasmHash != _wasmhash) {
+      throw IsolateAuthenticated.failed;
+    }
+    return file.buffer;
+  }
+
+  Future<String> _loadScript() async {
+    final file = await rootBundle.loadString(_scryptPath);
     final scriptHash = BytesUtils.toHexString(
-        QuickCrypto.sha3256Hash(StringUtils.encode(buffer)));
-    if (scriptHash == _scriptHash) return null;
-    final loadMDL =
-        ((await importModule("data:text/javascript,$buffer").toDart));
-    if (js_util.hasProperty(loadMDL, "instantiate")) {
-      return loadMDL;
+        QuickCrypto.sha3256Hash(StringUtils.encode(file)));
+    if (scriptHash != _scriptHash) {
+      throw IsolateAuthenticated.failed;
     }
-    return null;
+    return file;
   }
 
-  Future<Object?> _compile() async {
-    final file = await html.window.fetch(_wasmPath);
-    ByteBuffer buffer = await js_util
-        .promiseToFuture(js_util.callMethod<Object>(file, "arrayBuffer", []));
-    final wasmHash =
-        BytesUtils.toHexString(QuickCrypto.sha3256Hash(buffer.asUint8List()));
-    if (wasmHash == _wasmhash) return null;
-    final wasm = js_util.getProperty(js_util.globalThis, "WebAssembly");
-    final moudle = await js_util
-        .promiseToFuture(js_util.callMethod<Object>(wasm, "compile", [buffer]));
-    return moudle;
-  }
-
-  Future<_WebConnectionInfo?> _run(
-      {required JSObject moudle, required Object wasm}) async {
-    const String methodOne = "mrtJsHandler";
-    const String methodTwo = "mrtWalletActivation";
-    final instantiate = await js_util.promiseToFuture(
-        js_util.callMethod<Object>(moudle, "instantiate", [wasm]));
-    js_util.callMethod(moudle, "invoke", [instantiate, methodOne, methodTwo]);
-    if (js_util.hasProperty(js_util.globalThis, methodTwo)) {
-      final keyStr =
-          js_util.callMethod<String>(js_util.globalThis, methodTwo, []);
-      if (js_util.hasProperty(js_util.globalThis, methodOne)) {
-        return _WebConnectionInfo(
-            funcName: methodOne, key: BytesUtils.fromHexString(keyStr));
-      }
+  Future<_WebConnectionInfo> _loadMoudle() async {
+    if (_connector?.isActive ?? false) {
+      return _connector!;
     }
-    return null;
-  }
 
-  Future<_WebConnectionInfo?> _loadMoudle() async {
-    try {
-      if (_connector?.isActive ?? false) {
-        return _connector!;
+    Completer<_WebConnectionInfo> completer = Completer();
+
+    if (html.Worker.supported) {
+      final String workerJs;
+      final String moudle;
+      final ByteBuffer wasm;
+      try {
+        workerJs = await _loadWorker();
+        moudle = await _loadScript();
+        wasm = await _loadWasm();
+      } catch (e) {
+        throw IsolateAuthenticated.failed;
       }
-      final moudle = await _loadScript();
-      final wasm = await _compile();
-      if (moudle != null && wasm != null) {
-        final run = await _run(moudle: moudle, wasm: wasm);
-        if (run != null) return run;
+      final worker = html.Worker("data:text/javascript,$workerJs");
+      void onEvent(html.Event event) {
+        final String key = (event as html.MessageEvent).data;
+        completer.complete(_WebConnectionInfo(
+            key: BytesUtils.fromHexString(key), worker: worker));
       }
-      throw FailedIsolateInitialization.failed;
-    } catch (e) {
-      _hasIsolate = false;
-      return null;
+
+      worker.addEventListener("message", onEvent);
+      worker.postMessage({"module": moudle, "wasm": wasm});
+      final result =
+          await completer.future.timeout(const Duration(seconds: 10));
+      worker.removeEventListener("message", onEvent);
+      return result;
     }
+
+    // return _runJs();
+
+    throw FailedIsolateInitialization.failed;
   }
 
   Future<void> _init() async {
@@ -130,14 +153,27 @@ class _WebCryptoWorker extends IsolateCryptoWoker {
 }
 
 class _WebConnectionInfo {
-  final String funcName;
   final ChaCha20Poly1305 chacha;
+  final html.Worker worker;
   _WebConnectionInfo({
-    required this.funcName,
     required List<int> key,
-  }) : chacha = ChaCha20Poly1305(key);
+    required this.worker,
+  }) : chacha = ChaCha20Poly1305(key) {
+    setResponse();
+  }
 
-  bool get isActive => js_util.hasProperty(js_util.globalThis, funcName);
+  final Map<int, WorkerMessageCompleter> _requests = {};
+  // final id = WorkerMessageCompleter(_id++);
+  // _requests[id.id] = id;
+  void setResponse() {
+    worker.addEventListener("message", (e) {
+      final String message = (e as html.MessageEvent).data;
+      final result = getResult(message);
+      _requests[result.id]?.complete(result);
+    });
+  }
+
+  bool get isActive => true;
 
   String _toEncryptedMessage(WorkerMessageRequest request) {
     final nonce = QuickCrypto.generateRandom(16);
@@ -147,11 +183,13 @@ class _WebConnectionInfo {
     return BytesUtils.toHexString(encryptMessage.toCbor().encode());
   }
 
-  ArgsBytes sentRequest(WorkerMessageRequest request) {
+  Future<ArgsBytes> sentRequest(WorkerMessageRequest request) async {
+    final id = WorkerMessageCompleter(request.id);
+    _requests[id.id] = id;
     final encryptMessage = _toEncryptedMessage(request);
-    final response =
-        js_util.callMethod(js_util.globalThis, funcName, [encryptMessage]);
-    return getResult(response).args;
+    worker.postMessage(encryptMessage);
+    final r = await id.getResult();
+    return r;
   }
 
   WorkerMessageResponse getResult(dynamic message) {
