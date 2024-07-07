@@ -4,11 +4,29 @@ class IoPlatformInterface extends MrtPlatformInterface {
   static const MethodChannel _methodChannel =
       MethodChannel(MrtNativeConst.channelAuthory);
 
+  StreamController<BarcodeScannerResult>? _barcodeListener;
+
   static MethodChannel get _channel => _methodChannel;
   IoPlatformInterface() {
     if (Platform.isWindows || Platform.isMacOS) {
       _desktop = DesktopPlatformInterface();
-      _methodChannel.setMethodCallHandler(_desktop._methodCallHandler);
+    }
+    _methodChannel.setMethodCallHandler(_methodCallHandler);
+  }
+
+  Future<void> _methodCallHandler(MethodCall call) async {
+    switch (call.method) {
+      case "onEvent":
+        if (Platform.isWindows || Platform.isMacOS) {
+          _desktop._methodCallHandler(call);
+          break;
+        }
+        break;
+      case "onBarcodeScanned":
+        _barcodeListener?.add(BarcodeScannerResult.fromJson(
+            Map<String, dynamic>.from(call.arguments)));
+        break;
+      default:
     }
   }
 
@@ -147,5 +165,32 @@ class IoPlatformInterface extends MrtPlatformInterface {
   }
 
   @override
-  Future<void> test() async {}
+  Future<Stream<BarcodeScannerResult>> startBarcodeScanner(
+      {required BarcodeScannerParams param}) async {
+    if (_barcodeListener != null) {
+      throw const MRTNativePluginException("Service already running.");
+    }
+    await _channel.invokeMethod("startBarcodeScanner", param.toJson());
+    _barcodeListener ??= StreamController();
+    _barcodeListener?.onCancel = () {
+      _channel.invokeMethod("stopBarcodeScanner");
+      _barcodeListener?.close();
+      _barcodeListener = null;
+    };
+    return _barcodeListener!.stream;
+  }
+
+  @override
+  Future<void> stopBarcodeScanner() async {
+    await _channel.invokeMethod("stopBarcodeScanner");
+    _barcodeListener?.close();
+    _barcodeListener = null;
+  }
+
+  @override
+  Future<bool> hasBarcodeScanner() async {
+    if (Platform.isWindows) return false;
+    final hasBarcode = await _channel.invokeMethod<bool>("hasBarcodeScanner");
+    return hasBarcode ?? false;
+  }
 }

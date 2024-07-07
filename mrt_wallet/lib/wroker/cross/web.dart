@@ -163,8 +163,6 @@ class _WebConnectionInfo {
   }
 
   final Map<int, WorkerMessageCompleter> _requests = {};
-  // final id = WorkerMessageCompleter(_id++);
-  // _requests[id.id] = id;
   void setResponse() {
     worker.addEventListener("message", (e) {
       final String message = (e as html.MessageEvent).data;

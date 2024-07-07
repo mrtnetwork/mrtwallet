@@ -1825,7 +1825,9 @@ class Localization {
           "keystore": "Keystore",
           "legacy_backup": "Legacy backup?",
           "ton_wallet_validator_desc":
-              "Wallet contract v1 only support on message per transaction."
+              "Wallet contract v1 only support on message per transaction.",
+          "qr_code_scanner": "Barcode scanner",
+          "getting_scanner_ready": "Getting scanner ready, please wait...",
         }
       };
 }

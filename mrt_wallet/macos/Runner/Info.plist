@@ -30,5 +30,8 @@
 	<string>NSApplication</string>
 	<key>com.apple.security.network.client</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to the camera for scanning barcodes.</string>
+	
 </dict>
 </plist>

@@ -58,6 +58,7 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
 
   @override
   Widget build(BuildContext context) {
+    // print("build here ?!");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

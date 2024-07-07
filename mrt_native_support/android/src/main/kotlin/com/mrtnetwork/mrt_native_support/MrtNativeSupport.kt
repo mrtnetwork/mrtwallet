@@ -50,9 +50,11 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
 
 
     override fun onMethodCall(call: MethodCall, result: Result) {
+        MrtCore.logging(call.method );
         @Suppress("UNCHECKED_CAST") val args: Map<String, Any?> =
                 call.arguments as Map<String, Any?>
         when (call.method) {
+        
             "logging" -> {
                 // MrtCore.logging("logging event: $args")
             }
@@ -63,7 +65,7 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
                     val isSecure = secureApplication(secure)
                     result.success(isSecure)
                 } catch (e: Exception) {
-                    result.error("ERROR", e.message, "")
+                    result.error("secureFlag", e.message, "")
                 }
             }
 

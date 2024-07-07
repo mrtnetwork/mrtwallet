@@ -12,6 +12,10 @@ import io.flutter.embedding.engine.plugins.service.ServicePluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.barcode.common.Barcode
+
 
 abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl, PluginRegistry.NewIntentListener, ServiceAware {
 
@@ -33,6 +37,12 @@ abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl, PluginRegi
 
             "share" -> {
                 super<ShareImpl>.onMethodCall(call, result)
+            }
+            "stopBarcodeScanner" ->{
+                result.success(true);
+            }
+            "startBarcodeScanner" ->{
+                barcodeScan(result);
             }
         }
 
@@ -66,6 +76,40 @@ abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl, PluginRegi
                 methodChannel.invokeMethod(update.toString(), update.toJson())
             }
         }
+    }
+
+    private fun barcodeScan(result: MethodChannel.Result){
+        MrtCore.logging("started")
+        val options = GmsBarcodeScannerOptions.Builder()
+            .setBarcodeFormats( Barcode.FORMAT_ALL_FORMATS).enableAutoZoom()
+            .build()
+        val scanner = GmsBarcodeScanning.getClient(applicationContext)
+        scanner.startScan()
+            .addOnSuccessListener { barcode ->
+                val rawValue: String? = barcode.rawValue
+                // Task completed successfully
+
+                if(rawValue!= null){
+                    val message = HashMap<String, Any?>()
+                    message["type"] = "success"
+                    message["message"] = rawValue
+                    methodChannel.invokeMethod("onBarcodeScanned",message)
+                  
+                }
+            }
+            .addOnCanceledListener {
+                    val message = HashMap<String, Any?>()
+                    message["type"] = "cancel"
+                    methodChannel.invokeMethod("onBarcodeScanned",message)
+            }
+            .addOnFailureListener { e: Exception ->
+                    val message = HashMap<String, Any?>()
+                    message["type"] = "cancel"
+                    message["message"] = e.message
+                    methodChannel.invokeMethod("onBarcodeScanned",message)        
+            }
+      result.success(null);
+
     }
 
 }

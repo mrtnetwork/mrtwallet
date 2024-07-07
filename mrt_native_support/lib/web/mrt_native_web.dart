@@ -177,7 +177,18 @@ class MrtNativeWeb extends MrtPlatformInterface {
       "only available in desktop platforms (windows, macos)");
 
   @override
-  Future<void> test() {
+  Future<Stream<BarcodeScannerResult>> startBarcodeScanner(
+      {BarcodeScannerParams param = const EmptyBarcodeScannerParams()}) {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<void> stopBarcodeScanner() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> hasBarcodeScanner() async {
+    return js_util.hasProperty(html.window, "BarcodeDetector");
   }
 }

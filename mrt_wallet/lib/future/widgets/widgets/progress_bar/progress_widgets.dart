@@ -74,6 +74,30 @@ class SuccessWithTextView extends StatelessWidget {
   }
 }
 
+class SuccessWithButtonAndCopyView extends StatelessWidget {
+  const SuccessWithButtonAndCopyView(
+      {super.key, required this.text, required this.bottomWidget});
+  final String text;
+  final Widget bottomWidget;
+
+  @override
+  Widget build(BuildContext context) {
+    return _ProgressWithTextView(
+        text: Column(
+          children: [
+            ContainerWithBorder(
+                child: CopyTextIcon(
+                    isSensitive: false,
+                    dataToCopy: text,
+                    widget: OneLineTextWidget(text))),
+            WidgetConstant.height8,
+            bottomWidget
+          ],
+        ),
+        icon: WidgetConstant.checkCircleLarge);
+  }
+}
+
 class SuccessWithButtonView extends StatelessWidget {
   const SuccessWithButtonView(
       {super.key,

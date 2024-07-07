@@ -6,6 +6,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'models/barcode/models/barcode_scanner_result.dart';
 import 'models/models.dart';
 
 abstract class MrtPlatformInterface extends PlatformInterface {
@@ -44,19 +45,18 @@ abstract class MrtPlatformInterface extends PlatformInterface {
   void addNetworkListener(NetworkStatusListener listener);
   void removeNetworkListener(NetworkStatusListener listener);
   abstract final SpecificPlatfromMethods desktop;
-  Future<void> test();
+  Future<Stream<BarcodeScannerResult>> startBarcodeScanner(
+      {required BarcodeScannerParams param});
+  Future<void> stopBarcodeScanner();
+  Future<bool> hasBarcodeScanner();
 }
 
 abstract class SpecificPlatfromMethods {
   Future<bool> show();
   Future<bool> hide();
   Future<bool> init();
-  Future<void> setBounds(
-    Rect? bounds, {
-    Offset? position,
-    Size? size,
-    bool animate = false,
-  });
+  Future<void> setBounds(Rect? bounds,
+      {Offset? position, Size? size, bool animate = false});
 
   Future<bool> setFullScreen(bool isFullScreen);
   Future<bool> isFullScreen();

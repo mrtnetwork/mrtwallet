@@ -2,6 +2,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "webLDLD",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-d",
+                "chrome",
+                // "--web-hostname",
+                // "0.0.0.0",
+                // "--web-port",
+                // "8080"
+            ]
+        },
+        {
             "name": "flutter_demo",
             "request": "launch",
             "type": "dart"

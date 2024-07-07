@@ -52,9 +52,6 @@ class DesktopPlatformInterface implements SpecificPlatfromMethods {
       if (!_listeners.contains(listener)) {
         return;
       }
-
-      if (call.method != 'onEvent') throw UnimplementedError();
-
       String eventName = call.arguments['eventName'];
       listener.onWindowEvent(eventName);
       Map<String, Function> funcMap = {

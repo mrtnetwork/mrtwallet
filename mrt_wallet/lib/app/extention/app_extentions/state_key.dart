@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart' show GlobalKey, Scrollable, Curves;
+import 'package:flutter/material.dart'
+    show GlobalKey, Scrollable, Curves, Rect, RenderBox, Offset;
 import 'package:mrt_wallet/app/models/models/typedef.dart';
 
 extension QuickWidgetKeys on GlobalKey {
@@ -18,5 +19,17 @@ extension QuickWidgetKeys on GlobalKey {
       }
       // ignore: empty_catches
     } catch (e) {}
+  }
+
+  Rect? getPosition() {
+    try {
+      final RenderBox renderBox =
+          currentContext!.findRenderObject() as RenderBox;
+      final position = renderBox.localToGlobal(Offset.zero);
+      final size = renderBox.size;
+      return Rect.fromLTWH(position.dx, position.dy, size.width, size.height);
+    } catch (e) {
+      return null;
+    }
   }
 }

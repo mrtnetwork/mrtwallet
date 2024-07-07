@@ -5,3 +5,4 @@ export 'share.dart';
 export 'types.dart';
 export 'platform.dart';
 export 'windows_listener.dart';
+export 'barcode/barcode.dart';

@@ -14,6 +14,7 @@ class QrCode {
   final int moduleCount;
   List<int>? _dataCache;
   final _dataList = <QrDatum>[];
+  List<QrDatum> get dataList => _dataList;
 
   QrCode(this.typeNumber, this.errorCorrectLevel)
       : moduleCount = typeNumber * 4 + 17 {

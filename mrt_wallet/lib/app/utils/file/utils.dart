@@ -45,6 +45,7 @@ class FileUtils {
               textColor: color.onSurface,
               backgroundColor: color.surface)
           .toImageData();
+
       final List<int> bufferData = bufferBytes!.buffer.asUint8List();
       final write = await CrossFileWriter.writeBytes(
           bytes: bufferData, fileName: fileName, validate: false);
