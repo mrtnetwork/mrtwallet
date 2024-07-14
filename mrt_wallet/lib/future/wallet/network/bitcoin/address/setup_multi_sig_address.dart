@@ -8,6 +8,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:mrt_wallet/wroker/utils/bitcoin/bitcoin.dart';
 
 class SetupBitcoinMultiSigAddressView extends StatefulWidget {
@@ -202,7 +203,7 @@ class _SetupBitcoinMultiSigAddressViewState
     final accountParams = await MethodUtils.call(() async {
       final network = wallet.network as WalletBitcoinNetwork;
       final NewAccountParams newAccountParams;
-      if (network is WalletBitcoinCashNetwork) {
+      if (network.type == NetworkType.bitcoinCash) {
         newAccountParams = BitcoinCashMultiSigNewAddressParams(
             coin: network.findCOinFromBitcoinAddressType(multiSigAddressTye),
             bitcoinAddressType: multiSigAddressTye,

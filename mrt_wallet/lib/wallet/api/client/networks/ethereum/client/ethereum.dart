@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/exception/exceptions.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ethereum/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ethereum.dart';
@@ -10,11 +11,11 @@ import 'package:mrt_wallet/wallet/models/token/core/core.dart';
 import 'package:mrt_wallet/wallet/models/token/tokens/erc20.dart';
 import 'package:mrt_wallet/wallet/models/token/tokens/trc20.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solidity/address/core.dart';
 
-class EthereumClient
-    implements NetworkClient<IEthAddress, EthereumAPIProvider> {
+class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
   EthereumClient({required this.provider, required this.network});
   final EVMRPC provider;
   @override
@@ -119,5 +120,17 @@ class EthereumClient
         balance: balance,
         token: token,
         contractAddress: contractAddress as ETHAddress);
+  }
+
+  @override
+  Future<bool> onInit() async {
+    if (network.type == NetworkType.ethereum) {
+      final result = await MethodUtils.nullOnException(() async {
+        final BigInt chainId = await provider.request(RPCGetChainId());
+        return chainId;
+      });
+      return result == (network as WalletEthereumNetwork).coinParam.chainId;
+    }
+    return false;
   }
 }

@@ -85,7 +85,7 @@ class _TronTransactionFeeView extends StatelessWidget {
                           ToolTipView(
                             mode: TooltipTriggerMode.tap,
                             waitDuration: null,
-                            tooltipWidget: Container(
+                            tooltipWidget: (c) => Container(
                               constraints: const BoxConstraints(maxWidth: 280),
                               child: Column(
                                 children: [
@@ -194,7 +194,7 @@ class _TronTransactionFeeView extends StatelessWidget {
                                       ),
                                       ToolTipView(
                                         waitDuration: null,
-                                        tooltipWidget: Container(
+                                        tooltipWidget: (c) => Container(
                                           constraints: const BoxConstraints(
                                               maxWidth: 300),
                                           child: Text(

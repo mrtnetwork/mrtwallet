@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
-import 'package:mrt_wallet/future/wallet/network/ethereum/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:on_chain/on_chain.dart';
@@ -13,12 +13,13 @@ class ImportERC20TokenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ControllerEthereumTransactionAccountView(
-        childBulder: (walletProvider, account, address, switchRippleAccount) {
+    return NetworkAccountControllerView<WalletEthereumNetwork, IEthAddress>(
+        childBulder:
+            (walletProvider, account, address, network, switchRippleAccount) {
           return _ImportErc20TokenView(
               walletProvider: walletProvider,
               account: account.account,
-              network: account.network as WalletEthereumNetwork,
+              network: network,
               apiProvider: account.provider()!,
               address: address);
         },
@@ -151,7 +152,7 @@ class __ImportErc20TokenViewState extends State<_ImportErc20TokenView> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           FixedElevatedButton(
-                            padding: WidgetConstant.paddingVertical20,
+                            padding: WidgetConstant.paddingVertical40,
                             onPressed:
                                 hasContractAddress ? onAddToAccount : null,
                             child: Text("add_to_my_account".tr),

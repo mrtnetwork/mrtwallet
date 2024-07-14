@@ -1,4 +1,5 @@
 import 'package:mrt_wallet/app/error/exception/exception.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ethereum/client/ethereum.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/tron/methods/methods.dart';
@@ -9,7 +10,7 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
 import 'package:on_chain/on_chain.dart';
 
-class TronClient implements NetworkClient<ITronAddress, TronAPIProvider> {
+class TronClient extends NetworkClient<ITronAddress, TronAPIProvider> {
   TronClient(
       {required this.provider,
       required this.solidityProvider,
@@ -109,5 +110,14 @@ class TronClient implements NetworkClient<ITronAddress, TronAPIProvider> {
         TronRequestGetDelegatedResourceV2Details(
             fromAddress: from, toAddress: to));
     return details;
+  }
+
+  @override
+  Future<bool> onInit() async {
+    final genesis = await MethodUtils.nullOnException(() async {
+      final block = await provider.request(TronRequestGetBlockByNum(num: 0));
+      return block["blockID"];
+    });
+    return genesis == network.coinParam.genesis;
   }
 }

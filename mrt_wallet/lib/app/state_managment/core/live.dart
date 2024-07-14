@@ -58,7 +58,6 @@ class LiveListenable<T> with _LiveListenable {
       DynamicVoid listener, Widget Function() builder) {
     _listener = listener;
     final build = builder();
-
     _listener = null;
     return build;
   }

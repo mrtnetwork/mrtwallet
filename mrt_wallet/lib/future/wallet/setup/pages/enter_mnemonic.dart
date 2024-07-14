@@ -17,7 +17,10 @@ class EnterMnemonicView extends StatefulWidget {
 class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "EnterMnemonicView_1");
-  final GlobalKey<PageProgressState> progressKey = GlobalKey();
+  final GlobalKey<PageProgressState> progressKey =
+      GlobalKey(debugLabel: "EnterMnemonicView_2");
+  final GlobalKey<AppTextFieldState> mnemonicController =
+      GlobalKey(debugLabel: "EnterMnemonicView_3");
 
   String _mnemonic = "";
   String _passphrase = "";
@@ -73,6 +76,10 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
     }
   }
 
+  void onPasteMnemonic(String v) {
+    mnemonicController.currentState?.updateText(v);
+  }
+
   @override
   Widget build(BuildContext context) {
     return PageProgress(
@@ -96,7 +103,14 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
               validator: mnemonicLengthForm,
               onChanged: onChange,
               error: _error,
+              key: mnemonicController,
               minlines: 3,
+              suffixIcon: Column(
+                children: [
+                  PasteTextIcon(onPaste: onPasteMnemonic, isSensitive: true),
+                  BarcodeScannerIconView(onPasteMnemonic, isSensitive: true)
+                ],
+              ),
               initialValue: _mnemonic,
             ),
             WidgetConstant.height20,

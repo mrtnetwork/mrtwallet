@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
-import 'package:mrt_wallet/future/wallet/network/tron/transaction/pages/pages/controller_tron_transaction_account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:on_chain/on_chain.dart';
@@ -13,8 +12,9 @@ class ImportTRC20TokenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ControllerTronTransactionAccountView(
-        childBulder: (walletProvider, account, address, switchRippleAccount) {
+    return NetworkAccountControllerView<WalletTronNetwork, ITronAddress>(
+        childBulder:
+            (walletProvider, account, address, network, switchRippleAccount) {
           return _ImportTrc20TokenView(
               walletProvider: walletProvider,
               account: account.account,

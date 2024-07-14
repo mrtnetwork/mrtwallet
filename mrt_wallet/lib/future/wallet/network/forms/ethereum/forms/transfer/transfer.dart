@@ -39,13 +39,11 @@ class EthereumTransferForm extends EthereumTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields => [destination, amount];
 
   @override
   String get name => erc20Token != null ? "transfer_erc20" : "transfer";
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

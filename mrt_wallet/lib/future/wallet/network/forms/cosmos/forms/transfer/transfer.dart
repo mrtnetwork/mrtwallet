@@ -27,9 +27,6 @@ class CosmosTransferForm extends CosmosTransactionForm {
   OnChangeForm? onChanged;
 
   @override
-  List<TransactionFormField> get fields => [destination];
-
-  @override
   String get name => "transfer";
 
   void setListValue<T>(TransactionFormField<List<T>> field, T? value,
@@ -105,14 +102,6 @@ class CosmosTransferForm extends CosmosTransactionForm {
       }
       // ignore: empty_catches
     } on StateError {}
-  }
-
-  @override
-  void setValue<T>(TransactionFormField<T>? field, T? value) {
-    if (field == null) return;
-    if (field.setValue(value)) {
-      onChanged?.call();
-    }
   }
 
   @override

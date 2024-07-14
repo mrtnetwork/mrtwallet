@@ -50,7 +50,6 @@ class TonTransferForm extends TonTransactionForm {
               previousValue! + element.balance.balance) ??
       BigInt.zero;
 
-  @override
   List<TransactionFormField> get fields => throw UnimplementedError();
 
   @override
@@ -186,7 +185,6 @@ class TonTransferForm extends TonTransactionForm {
     return "ton_query_id_validator".tr;
   }
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     onChanged?.call();
   }

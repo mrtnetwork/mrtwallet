@@ -47,22 +47,26 @@ class CoingeckoPriceHandler {
     final name = "${baseCurrency.name}_${apiId}_$amount";
     final BigRational? basePrice = _coins[apiId]?.getPrice(baseCurrency);
     if (basePrice == null) return null;
-    _caches[name] ??=
-        _getPrice(basePrice: basePrice, token: token, amount: amount);
+    _caches[name] ??= _getPrice(
+        basePrice: basePrice,
+        token: token,
+        amount: amount,
+        baseCurrency: baseCurrency);
 
     return _caches[name];
   }
 
-  IntegerBalance _getPrice({
-    required BigRational basePrice,
-    required Token token,
-    required String amount,
-  }) {
+  IntegerBalance _getPrice(
+      {required BigRational basePrice,
+      required Token token,
+      required String amount,
+      required Currency baseCurrency}) {
     final BigRational aPrice = BigRational.parseDecimal(amount);
     final val = PriceUtils.decodePrice(
         (basePrice * aPrice).toDecimal(), token.decimal!,
         validateDecimal: false);
-    return IntegerBalance(val, token.decimal!);
+    return IntegerBalance(val, token.decimal!,
+        decimalPlaces: baseCurrency.decimal);
   }
 
   void addCoin(CoingeckoCoinInfo newCoin) {

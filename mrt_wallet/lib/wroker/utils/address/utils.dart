@@ -1,12 +1,13 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solana/solana.dart';
+import 'package:polkadot_dart/polkadot_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
@@ -215,10 +216,36 @@ class BlockchainAddressUtils {
     });
   }
 
+  static SubstrateAddress? validateSubstrateAddress(
+      String address, WalletPolkadotNetwork network) {
+    return MethodUtils.nullOnException(() {
+      return SubstrateAddress(address,
+          ss58Format: network.coinParam.ss58Format);
+    });
+  }
+
   static XRPAddress? validateXRPAddress(
-      String address, WalletXRPNetwork network) {
+      String address, WalletXRPNetwork network,
+      {int? tag}) {
     return MethodUtils.nullOnException(() {
       return BlockchainAddressUtils.toRippleAddress(address, network);
+    });
+  }
+
+  static XRPAddress? validateXAddressTag(
+      {required String? addr,
+      required WalletXRPNetwork network,
+      required int? tag}) {
+    if (addr == null) return null;
+    return MethodUtils.nullOnException(() {
+      final address = BlockchainAddressUtils.toRippleAddress(addr, network);
+      if (tag != null) {
+        if (address.tag == tag) return address;
+        if (address.tag != null && address.tag != tag) return null;
+        return XRPAddress(address.toXAddress(
+            tag: tag, isTestnet: !network.coinParam.mainnet));
+      }
+      return address;
     });
   }
 
@@ -240,6 +267,9 @@ class BlockchainAddressUtils {
         return validateCosmosAddress(address, network.toNetwork());
       case NetworkType.ton:
         return validateTonAddress(address, network.toNetwork());
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        return validateSubstrateAddress(address, network.toNetwork());
       default:
         return validateBitcoinNetwork(address, network.toNetwork());
     }
@@ -247,5 +277,9 @@ class BlockchainAddressUtils {
 
   static List<Bip32KeyIndex> praseBip32Path(String path) {
     return Bip32PathParser.parse(path).elems;
+  }
+
+  static List<SubstratePathElem> praseSubstratePath(String path) {
+    return SubstratePathParser.parse(path).elems;
   }
 }

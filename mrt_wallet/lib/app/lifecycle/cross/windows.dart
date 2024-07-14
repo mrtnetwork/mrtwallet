@@ -1,4 +1,4 @@
-import 'package:mrt_native_support/models/windows_listener.dart';
+import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/models/models/typedef.dart';
 import 'core.dart';

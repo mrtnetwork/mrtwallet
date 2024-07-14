@@ -25,6 +25,8 @@ class APPConst {
   static const APPImage kujira = APPImage.local("assets/image/kujira.png");
   static const APPImage osmo = APPImage.local("assets/image/osmo.png");
   static const APPImage ton = APPImage.local("assets/image/ton.png");
+  static const APPImage polkadot = APPImage.local("assets/image/polkadot.png");
+  static const APPImage kusama = APPImage.local("assets/image/ksm.png");
 
   static const String name = "MRT WALLET";
   static const Duration animationDuraion = Duration(milliseconds: 400);
@@ -37,8 +39,10 @@ class APPConst {
   static const double double80 = 80;
   static const double double40 = 40;
   static const double double20 = 20;
+  static const double tooltipConstrainedWidth = 300;
   static const double dialogWidth = 650;
   static const double maxTextFieldWidth = 400;
+  static const double qrCodeWidth = 300;
   static final RegExp accountNameRegExp = RegExp(r'^[^\n]{0,20}$');
   static final RegExp keyNameRegex = RegExp(r'^[^\n]{0,20}$');
 

@@ -1,3 +1,5 @@
+import 'package:blockchain_utils/utils/compare/compare.dart';
+
 abstract mixin class Equatable {
   List<dynamic> get variabels;
 
@@ -14,7 +16,13 @@ abstract mixin class Equatable {
       return false;
     }
     for (int i = 0; i < variabels.length; i++) {
-      if (variabels[i] != other.variabels[i]) {
+      final vi = variabels[i];
+      final oI = other.variabels[i];
+      if (vi is Iterable && oI is Iterable) {
+        if (!CompareUtils.iterableIsEqual(vi, oI)) {
+          return false;
+        }
+      } else if (variabels[i] != other.variabels[i]) {
         return false;
       }
     }

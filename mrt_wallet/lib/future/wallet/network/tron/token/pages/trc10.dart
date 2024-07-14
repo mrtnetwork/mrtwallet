@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/future/wallet/network/tron/transaction/pages/pages/controller_tron_transaction_account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
@@ -10,9 +10,9 @@ class MonitorTronTRC10TokenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ControllerTronTransactionAccountView(
+    return NetworkAccountControllerView<WalletTronNetwork, ITronAddress>(
       title: "add_token".tr,
-      childBulder: (wallet, account, address, switchRippleAccount) {
+      childBulder: (wallet, account, address, network, switchRippleAccount) {
         return _MonitorTronTRC10TokenView(
             address: address, wallet: wallet, provider: account.provider()!);
       },

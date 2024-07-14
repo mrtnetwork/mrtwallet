@@ -4,12 +4,16 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 
 class ProgressWithTextView extends StatelessWidget {
-  const ProgressWithTextView({super.key, required this.text});
+  const ProgressWithTextView({super.key, required this.text, this.icon});
   final String text;
+  final Widget? icon;
 
   @override
   Widget build(BuildContext context) {
-    return _ProgressWithTextView(text: Text(text, textAlign: TextAlign.center));
+    return _ProgressWithTextView(
+      text: Text(text, textAlign: TextAlign.center),
+      icon: icon,
+    );
   }
 }
 
@@ -74,24 +78,48 @@ class SuccessWithTextView extends StatelessWidget {
   }
 }
 
-class SuccessWithButtonAndCopyView extends StatelessWidget {
-  const SuccessWithButtonAndCopyView(
-      {super.key, required this.text, required this.bottomWidget});
+class SuccessBarcodeProgressView extends StatefulWidget {
+  const SuccessBarcodeProgressView(
+      {super.key,
+      required this.text,
+      required this.bottomWidget,
+      this.secure = false,
+      this.secureButtonText});
   final String text;
   final Widget bottomWidget;
+  final bool secure;
+  final String? secureButtonText;
+
+  @override
+  State<SuccessBarcodeProgressView> createState() =>
+      _SuccessBarcodeProgressViewState();
+}
+
+class _SuccessBarcodeProgressViewState extends State<SuccessBarcodeProgressView>
+    with SafeState {
+  late bool isSecure = widget.secure;
+  void onShowContent() {
+    isSecure = !isSecure;
+    updateState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return _ProgressWithTextView(
         text: Column(
           children: [
-            ContainerWithBorder(
-                child: CopyTextIcon(
-                    isSensitive: false,
-                    dataToCopy: text,
-                    widget: OneLineTextWidget(text))),
+            SecureContentView(
+              show: !isSecure,
+              showButtonTitle: widget.secureButtonText?.tr ?? "show_content".tr,
+              onTapShow: onShowContent,
+              widgetContent: ContainerWithBorder(
+                  child: CopyTextIcon(
+                      isSensitive: widget.secure,
+                      dataToCopy: widget.text,
+                      widget: Text(widget.text, maxLines: 3))),
+            ),
             WidgetConstant.height8,
-            bottomWidget
+            widget.bottomWidget
           ],
         ),
         icon: WidgetConstant.checkCircleLarge);

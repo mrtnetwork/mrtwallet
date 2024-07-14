@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 
 class SwitchNetworkView extends StatefulWidget {
   const SwitchNetworkView({required this.selectedNetwork, super.key});
@@ -15,7 +16,7 @@ class SwitchNetworkView extends StatefulWidget {
 
 class _SwitchNetworkViewState extends State<SwitchNetworkView>
     with SingleTickerProviderStateMixin {
-  late final tabController = TabController(length: 8, vsync: this);
+  late final tabController = TabController(length: 10, vsync: this);
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>();
 
@@ -35,14 +36,17 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
   late List<ChainHandler> cardanoNetworks;
   late List<ChainHandler> cosmosNetworks;
   late List<ChainHandler> tonNetworks;
+  late List<ChainHandler> polkadotNetworks;
+  late List<ChainHandler> kusamaNetworks;
 
   void initNetwork() {
     final wallet = context.watch<WalletProvider>(StateConst.main);
     final networks = wallet.getChains();
     int initialIndex;
     bitcoinNetworks = networks
-        .where(
-            (element) => element.network.type == NetworkType.bitcoinAndForked)
+        .where((element) =>
+            (element.network.type == NetworkType.bitcoinAndForked ||
+                element.network.type == NetworkType.bitcoinCash))
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
     rippleNetworks = networks
@@ -73,6 +77,15 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         .where((element) => element.network.type == NetworkType.ton)
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    polkadotNetworks = networks
+        .where((element) => element.network.type == NetworkType.polkadot)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+    kusamaNetworks = networks
+        .where((element) => element.network.type == NetworkType.kusama)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+
     final currentNetwork = MethodUtils.nullOnException(() =>
         networks.firstWhere((element) =>
             element.network.value == widget.selectedNetwork.value));
@@ -97,6 +110,12 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         break;
       case NetworkType.ton:
         initialIndex = 7;
+        break;
+      case NetworkType.polkadot:
+        initialIndex = 8;
+        break;
+      case NetworkType.kusama:
+        initialIndex = 9;
         break;
       default:
         initialIndex = 0;
@@ -188,6 +207,12 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                         Tab(
                             icon: CircleAssetsImgaeView(APPConst.ton,
                                 radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.polkadot,
+                                radius: 15)),
+                        Tab(
+                            icon: CircleAssetsImgaeView(APPConst.kusama,
+                                radius: 15)),
                       ]),
                   pinned: true,
                   actions: [
@@ -223,7 +248,9 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                         _NetworksView(widget.selectedNetwork, solNetworks),
                         _NetworksView(widget.selectedNetwork, cardanoNetworks),
                         _NetworksView(widget.selectedNetwork, cosmosNetworks),
-                        _NetworksView(widget.selectedNetwork, tonNetworks)
+                        _NetworksView(widget.selectedNetwork, tonNetworks),
+                        _NetworksView(widget.selectedNetwork, polkadotNetworks),
+                        _NetworksView(widget.selectedNetwork, kusamaNetworks)
                       ]),
                     ),
                   ),

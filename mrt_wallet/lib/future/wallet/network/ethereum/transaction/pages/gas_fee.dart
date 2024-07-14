@@ -43,8 +43,6 @@ class EthereumGasFeeView extends StatelessWidget {
               duration: APPConst.animationDuraion,
               child: Row(
                 key: UniqueKey(),
-                // key: ValueKey<String>(
-                //     "${transaction.gasInited}/${transaction.updatingGas}"),
                 children: [
                   Expanded(
                     child: transaction.gasInited

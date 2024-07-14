@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
@@ -35,7 +34,7 @@ class ICardanoAddress extends CryptoAddress<BigInt, ADAAddress> with Equatable {
       {required CardanoNewAddressParams accountParams,
       required List<int> publicKey,
       required WalletCardanoNetwork network}) {
-    final cardanoAddr = accountParams.toAddress();
+    final cardanoAddr = accountParams.toAddress(network);
     final addressDetauls = IntegerAddressBalance(
         address: cardanoAddr.address,
         balance: IntegerBalance.zero(network.coinParam.decimal));
@@ -60,8 +59,10 @@ class ICardanoAddress extends CryptoAddress<BigInt, ADAAddress> with Equatable {
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.cardanoAccount);
-    final CryptoProposal proposal = CustomProposal.fromName(cbor.elementAt(0));
-    final CryptoCoins coin = CustomCoins.getCoin(cbor.elementAt(1), proposal)!;
+    final CryptoCoins coin = CustomCoins.getCoin(
+      name: cbor.elementAt(1),
+      proposal: cbor.elementAt(0),
+    );
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     final networkId = cbor.elementAt(6);
@@ -75,7 +76,8 @@ class ICardanoAddress extends CryptoAddress<BigInt, ADAAddress> with Equatable {
     final ADAAddress adaAddress = ADAAddress.fromAddress(cbor.elementAt(5));
     final CardanoAddrDetails addrDetails =
         CardanoAddrDetails.fromCborBytesOrObject(obj: cbor.getCborTag(7));
-    if (addrDetails.toAddress(coin).address != adaAddress.address) {
+    if (addrDetails.toAddress(coin, !network.coinParam.mainnet).address !=
+        adaAddress.address) {
       throw WalletException("Incorrect ADA addresss.");
     }
 
@@ -117,9 +119,6 @@ class ICardanoAddress extends CryptoAddress<BigInt, ADAAddress> with Equatable {
   @override
   final int network;
 
-  // @override
-  // final List<int> publicKey;
-
   @override
   CborTagValue toCbor() {
     return CborTagValue(
@@ -142,7 +141,7 @@ class ICardanoAddress extends CryptoAddress<BigInt, ADAAddress> with Equatable {
 
   @override
   List get variabels {
-    return [keyIndex, network, networkAddress.addressType];
+    return [keyIndex, network, networkAddress.addressType, addressDetails];
   }
 
   final CardanoAddrDetails addressDetails;

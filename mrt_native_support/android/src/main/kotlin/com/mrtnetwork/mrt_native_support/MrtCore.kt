@@ -23,6 +23,21 @@ interface MrtCore {
         fun logging(message: String, TAG: String? = null) {
             Log.e(TAG ?: "mrt_service", message)
         }
+        const val REQUEST_CODE_SCAN = 49374;
+        const val BARCODE_SUCCESS_TYPE = "success"
+        const val BARCODE_SUCCESS_ERROR = "error"
+        const val BARCODE_SUCCESS_CANCEL = "cancel"
+        const val BARCODE_CHANNEL_RESPONSE_EVENT = "onBarcodeScanned"
+        @Suppress("UNCHECKED_CAST")
+        fun getMapArguments(call: MethodCall, result: MethodChannel.Result): Map<String, Any?>? {
+            return try {
+                call.arguments as? Map<String, Any?>
+            } catch (e: Exception) {
+                result.error("ARGUMENT_CAST_ERROR", "Failed to cast arguments to Map<String, Any?>", e.localizedMessage)
+                null
+            }
+        }
+
     }
 
 

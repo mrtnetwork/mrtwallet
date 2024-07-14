@@ -9,3 +9,4 @@ export 'networks/ton.dart';
 export 'networks/tron.dart';
 export 'networks/ripple.dart';
 export 'models/bitcoin_explorer_provider_type.dart';
+export 'networks/substrate.dart';

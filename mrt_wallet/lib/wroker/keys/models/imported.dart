@@ -1,15 +1,12 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wroker/keys/access/private_key_response.dart';
-import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 import 'package:mrt_wallet/wroker/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wroker/constant/const.dart';
 import 'package:mrt_wallet/wroker/keys/models/key_type.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
 
 class ImportedKeyStorage with CborSerializable, Equatable {
   ImportedKeyStorage(
@@ -34,10 +31,10 @@ class ImportedKeyStorage with CborSerializable, Equatable {
       final CborListValue cbor = CborSerializable.decodeCborTags(
           bytes, obj, CryptoKeyConst.walletCustomKey);
 
-      final CryptoProposal proposal =
-          CustomProposal.fromName(cbor.elementAt(3));
-      final CryptoCoins coin =
-          CustomCoins.getCoin(cbor.elementAt(4), proposal)!;
+      final CryptoCoins coin = CustomCoins.getCoin(
+        name: cbor.elementAt(4),
+        proposal: cbor.elementAt(3),
+      );
       return ImportedKeyStorage(
           checksum: cbor.elementAt(0),
           extendedPrivateKey: cbor.elementAt(1),
@@ -71,26 +68,29 @@ class ImportedKeyStorage with CborSerializable, Equatable {
   List get variabels =>
       [checksum, extendedPrivateKey, coin.coinName, publicKey];
 
-  Bip32Base _toBip32KeyKey(Bip32AddressIndex? key) {
+  PrivateKeyData _toBip32KeyKey(AddressDerivationIndex? key) {
+    final currentCoin = key?.currencyCoin ?? coin;
+    // print(
+    //     "key ${keyType.isPrivateKey} ${key} ${extendedPrivateKey} ${currentCoin} ${coin}");
     if (keyType.isPrivateKey) {
-      return BlockchainUtils.privteKeyToBip32(
-          BytesUtils.fromHexString(extendedPrivateKey),
-          key?.currencyCoin ?? coin);
+      return PrivateKeyData(
+          coin: coin,
+          keyName: checksum,
+          key: IPrivateKey.fromHex(extendedPrivateKey, currentCoin.conf.type));
     }
-    return BlockchainUtils.extendedKeyToBip32(
-        extendedKey: extendedPrivateKey, coin: key?.currencyCoin ?? coin);
+    return PrivateKeyData.fromExtendedKey(
+      extendedKey: extendedPrivateKey,
+      coin: currentCoin,
+      keyName: checksum,
+    );
   }
 
-  PrivateKeyData toKey(Bip32AddressIndex? key,
+  PrivateKeyData toKey(AddressDerivationIndex? key,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
-    final toKey = _toBip32KeyKey(key);
-
+    final masterKey = _toBip32KeyKey(key);
     if (key == null) {
-      return PrivateKeyData.fromBip32(
-          account: toKey, coin: key?.currencyCoin ?? coin, keyName: checksum);
+      return masterKey;
     }
-    final derivedKey = key.derive(toKey, maxLevel: maxLevel);
-    return PrivateKeyData.fromBip32(
-        account: derivedKey, coin: key.currencyCoin, keyName: checksum);
+    return key.derive(masterKey, maxLevel: maxLevel);
   }
 }

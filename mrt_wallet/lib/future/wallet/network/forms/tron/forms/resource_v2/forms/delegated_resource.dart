@@ -74,7 +74,6 @@ class TronDelegatedResourceV2Form extends TronTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields => [amount, destination, resource];
 
   @override
@@ -88,7 +87,6 @@ class TronDelegatedResourceV2Form extends TronTransactionForm {
     }
   }
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

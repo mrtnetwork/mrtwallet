@@ -45,18 +45,18 @@ packages:
     dependency: "direct main"
     description:
       name: bitcoin_base
-      sha256: c934e20e090a4cb4e6b8e04dda5591bedd268439681d302a594457d0a35515f4
+      sha256: "59411b6ebd9cde003749fc48720bdfebc261f4b50c0c03efb98c6f106c89ac1d"
       url: "https://pub.dev"
     source: hosted
-    version: "4.6.0"
+    version: "4.7.0"
   blockchain_utils:
     dependency: "direct main"
     description:
       name: blockchain_utils
-      sha256: f78783b522b5247faab0a811bfa83bf121fccdbfbbae0c3488543a690d3de480
+      sha256: aebc3a32b927b34f638817c4bfdb85f86a97e6ad35f0cd962660b0c6e8d5c56b
       url: "https://pub.dev"
     source: hosted
-    version: "3.2.0"
+    version: "3.3.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -117,10 +117,10 @@ packages:
     dependency: "direct main"
     description:
       name: cosmos_sdk
-      sha256: "117f0186406bace74fa93d2945d469eab8b28dcf8595aee4c1d5a7d991d31eb5"
+      sha256: "5c2287cd7f0f4f7cd687609fa898a1dee6d5d154b3340c14e1d76b6dc238bbed"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.0"
+    version: "1.0.0"
   coverage:
     dependency: transitive
     description:
@@ -363,10 +363,10 @@ packages:
     dependency: "direct main"
     description:
       name: on_chain
-      sha256: "07d7d82fa29e5a98ee4a810b003666d5cb1ede8e280b4ad30d38d3d215632144"
+      sha256: "49ffd886fbdcdfdead4484fe2aa4b94c527b852cfca5aeb4d2a3432b8afbfe46"
       url: "https://pub.dev"
     source: hosted
-    version: "3.6.0"
+    version: "3.7.0"
   package_config:
     dependency: transitive
     description:
@@ -407,6 +407,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.9.0"
+  polkadot_dart:
+    dependency: "direct main"
+    description:
+      name: polkadot_dart
+      sha256: "47b413e705a0101e009f38a6b1b61adeaedca29a25e5e3a029aee9f418f980f6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   pool:
     dependency: transitive
     description:
@@ -544,10 +552,10 @@ packages:
     dependency: "direct main"
     description:
       name: ton_dart
-      sha256: "6b0b3d4cf0bdda5c6aa712b956e1f931f6b3c07ce23a64964eb3e67bfb911704"
+      sha256: "997b08219220807df4aaceaaa8038c2e722ae76c979cf6a7478bd52f58d222d8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.3"
+    version: "0.0.4"
   typed_data:
     dependency: transitive
     description:
@@ -616,10 +624,10 @@ packages:
     dependency: "direct main"
     description:
       name: xrpl_dart
-      sha256: "39cc1b6891c0070144f4a4899a866be4b3e61d738faad9f6478ef401a109ed92"
+      sha256: "38dbf171d8ad3a7229c7abd5b9c61a00e2203e2263b6e76861b0f0d26ad4430c"
       url: "https://pub.dev"
     source: hosted
-    version: "4.4.0"
+    version: "4.5.0"
   yaml:
     dependency: transitive
     description:

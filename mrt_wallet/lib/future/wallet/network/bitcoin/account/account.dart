@@ -19,20 +19,23 @@ class _Services extends StatelessWidget {
   const _Services();
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppListTile(
-            title: Text("multi_signature".tr),
-            subtitle: Text("establishing_multi_sig_addr".tr),
-            trailing: const Icon(Icons.arrow_forward),
-            onTap: () {
-              context.to(PageRouter.setupBitcoinMultsig);
-            },
+    return AccountTabbarScrollWidget(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              AppListTile(
+                title: Text("multi_signature".tr),
+                subtitle: Text("establishing_multi_sig_addr".tr),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: () {
+                  context.to(PageRouter.setupBitcoinMultsig);
+                },
+              )
+            ],
           ),
-        ],
-      ),
+        )
+      ],
     );
   }
 }

@@ -3,8 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/worker.dart'
-    show AddressDerivationIndex, Bip32AddressIndex;
+import 'package:mrt_wallet/wroker/worker.dart' show AddressDerivationIndex;
 
 class WalletSigningPassword extends StatefulWidget {
   const WalletSigningPassword(
@@ -12,7 +11,7 @@ class WalletSigningPassword extends StatefulWidget {
       required this.keys,
       required this.addresses,
       required this.onPasswordForm});
-  final Set<Bip32AddressIndex> keys;
+  final Set<AddressDerivationIndex> keys;
   final Set<CryptoAddress> addresses;
   final FuncFutureBoolString onPasswordForm;
 

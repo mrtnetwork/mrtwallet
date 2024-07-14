@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
-import 'package:mrt_wallet/future/wallet/network/tron/transaction/pages/pages/controller_tron_transaction_account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:on_chain/on_chain.dart';
@@ -13,14 +13,14 @@ class SetupTronMultiSigAddressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ControllerTronTransactionAccountView(
-        childBulder: (wallet, account, address, switchRippleAccount) {
+    return NetworkAccountControllerView<WalletTronNetwork, ITronAddress>(
+        childBulder: (wallet, account, address, network, switchRippleAccount) {
           return _SetupTronMultisigAddressView(
             wallet: wallet,
             address: address,
             provider: account.provider()!,
             account: account.account,
-            network: account.network as WalletTronNetwork,
+            network: network,
           );
         },
         title: "multi_sig_addr".tr);
@@ -295,32 +295,30 @@ class __SetupTronMultisigAddressViewState
                                                                       waitDuration:
                                                                           null,
                                                                       tooltipWidget:
-                                                                          Wrap(
-                                                                        alignment:
-                                                                            WrapAlignment.spaceBetween,
-                                                                        runSpacing:
-                                                                            2.5,
-                                                                        spacing:
-                                                                            2.5,
-                                                                        children: List.generate(
-                                                                            TransactionContractType.values.length,
-                                                                            (index) => Container(
-                                                                                  padding: WidgetConstant.padding5,
-                                                                                  decoration: BoxDecoration(color: context.colors.surface, borderRadius: WidgetConstant.border8),
-                                                                                  width: 120,
-                                                                                  child: Row(
-                                                                                    children: [
-                                                                                      Expanded(child: OneLineTextWidget(TransactionContractType.values[index].name, style: context.textTheme.bodySmall)),
-                                                                                      IgnorePointer(
-                                                                                        child: Checkbox(
-                                                                                          value: operations!.contains(TransactionContractType.values[index]),
-                                                                                          onChanged: (value) {},
-                                                                                        ),
-                                                                                      ),
-                                                                                    ],
-                                                                                  ),
-                                                                                )),
-                                                                      ),
+                                                                          (c) =>
+                                                                              Wrap(
+                                                                                alignment: WrapAlignment.spaceBetween,
+                                                                                runSpacing: 2.5,
+                                                                                spacing: 2.5,
+                                                                                children: List.generate(
+                                                                                    TransactionContractType.values.length,
+                                                                                    (index) => Container(
+                                                                                          padding: WidgetConstant.padding5,
+                                                                                          decoration: BoxDecoration(color: context.colors.surface, borderRadius: WidgetConstant.border8),
+                                                                                          width: 120,
+                                                                                          child: Row(
+                                                                                            children: [
+                                                                                              Expanded(child: OneLineTextWidget(TransactionContractType.values[index].name, style: context.textTheme.bodySmall)),
+                                                                                              IgnorePointer(
+                                                                                                child: Checkbox(
+                                                                                                  value: operations!.contains(TransactionContractType.values[index]),
+                                                                                                  onChanged: (value) {},
+                                                                                                ),
+                                                                                              ),
+                                                                                            ],
+                                                                                          ),
+                                                                                        )),
+                                                                              ),
                                                                       child: const Icon(
                                                                           Icons
                                                                               .help)),

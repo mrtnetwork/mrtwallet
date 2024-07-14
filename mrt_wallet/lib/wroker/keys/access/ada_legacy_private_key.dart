@@ -1,14 +1,16 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
-import 'package:blockchain_utils/bip/wif/wif.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wroker/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wroker/constant/const.dart';
+import 'package:mrt_wallet/wroker/keys/access/ada_legacy_public_key.dart';
 import 'package:mrt_wallet/wroker/keys/access/key_data.dart';
 import 'package:mrt_wallet/wroker/utils/global/utils.dart';
+// import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 
 class ADALegacyPrivateKeyData implements CryptoPrivateKeyData {
+  @override
   final CryptoCoins coin;
   @override
   final String privateKey;
@@ -17,18 +19,25 @@ class ADALegacyPrivateKeyData implements CryptoPrivateKeyData {
   final String? wif;
   @override
   final String keyName;
+
+  @override
+  final CryptoPublicKeyData publicKey;
   factory ADALegacyPrivateKeyData.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CryptoKeyConst.accessAdaLegacyPrivateKeyResponse);
-    final CryptoProposal proposal = CustomProposal.fromName(cbor.elementAt(0));
-    final CryptoCoins coin = CustomCoins.getCoin(cbor.elementAt(1), proposal)!;
+    final CryptoCoins coin = CustomCoins.getCoin(
+      name: cbor.elementAt(1),
+      proposal: cbor.elementAt(0),
+    );
     return ADALegacyPrivateKeyData._(
         privateKey: cbor.elementAt(2),
         extendedKey: cbor.elementAt(3),
         coin: coin,
         wif: cbor.elementAt(4),
-        keyName: cbor.elementAt(5));
+        keyName: cbor.elementAt(5),
+        publicKey: AdaLegacyPublicKeyData.fromCborBytesOrObject(
+            obj: cbor.getCborTag(6)));
   }
 
   const ADALegacyPrivateKeyData._(
@@ -36,22 +45,25 @@ class ADALegacyPrivateKeyData implements CryptoPrivateKeyData {
       required this.extendedKey,
       required this.coin,
       required this.wif,
-      required this.keyName});
+      required this.keyName,
+      required this.publicKey});
   factory ADALegacyPrivateKeyData.fromBip32(
       {required Bip32Base account,
       required CryptoCoins coin,
-      required String keyName}) {
-    final wifKey = coin.conf.wifNetVer != null
-        ? WifEncoder.encode(account.privateKey.raw,
-            netVer: coin.conf.wifNetVer!)
-        : null;
+      required String keyName,
+      required List<int> hdPathKey}) {
+    final wifKey =
+        BlockchainUtils.toWif(privateKey: account.privateKey.raw, coin: coin);
 
     return ADALegacyPrivateKeyData._(
-        privateKey: account.privateKey.toHex(),
-        extendedKey: account.privateKey.toExtended,
-        coin: coin,
-        wif: wifKey,
-        keyName: keyName);
+      privateKey: account.privateKey.toHex(),
+      extendedKey: account.privateKey.toExtended,
+      coin: coin,
+      wif: wifKey,
+      keyName: keyName,
+      publicKey: AdaLegacyPublicKeyData.fromBip32(
+          account: account, hdPathKey: hdPathKey, keyName: keyName),
+    );
   }
 
   @override
@@ -63,14 +75,20 @@ class ADALegacyPrivateKeyData implements CryptoPrivateKeyData {
           privateKey,
           extendedKey,
           wif ?? const CborNullValue(),
-          keyName
+          keyName,
+          publicKey.toCbor()
         ]),
         CryptoKeyConst.accessAdaLegacyPrivateKeyResponse);
   }
 
   @override
-  Bip32Base toKey() {
-    return BlockchainUtils.extendedKeyToBip32(
+  Bip32Base toBipKey() {
+    return BlockchainUtils.extendedKeyToBip32Key(
         extendedKey: extendedKey, coin: coin);
+  }
+
+  @override
+  List<int> privateKeyBytes() {
+    return BytesUtils.fromHexString(privateKey);
   }
 }

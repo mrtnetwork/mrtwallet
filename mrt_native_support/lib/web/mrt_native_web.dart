@@ -4,6 +4,7 @@ library mrt_native_web;
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:mrt_native_support/exception/exception.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/mrt_native_support.dart';
 import 'web_storage/web_storage.dart' as crypto;
@@ -27,12 +28,12 @@ class MrtNativeWeb extends MrtPlatformInterface {
 
   @override
   Future<NetworkEvent> deviceConnectionStatus() {
-    throw UnimplementedError();
+    throw MRTNativePluginException.unsuported;
   }
 
   @override
   Future<DeviceInfo> getDeviceInfo() {
-    throw UnimplementedError();
+    throw MRTNativePluginException.unsuported;
   }
 
   @override
@@ -163,7 +164,7 @@ class MrtNativeWeb extends MrtPlatformInterface {
 
   @override
   Future<AppPath> path() {
-    throw UnimplementedError();
+    throw MRTNativePluginException.unsuported;
   }
 
   @override
@@ -179,16 +180,22 @@ class MrtNativeWeb extends MrtPlatformInterface {
   @override
   Future<Stream<BarcodeScannerResult>> startBarcodeScanner(
       {BarcodeScannerParams param = const EmptyBarcodeScannerParams()}) {
-    throw UnimplementedError();
+    throw MRTNativePluginException.unsuported;
   }
 
   @override
   Future<void> stopBarcodeScanner() {
-    throw UnimplementedError();
+    throw MRTNativePluginException.unsuported;
   }
 
   @override
   Future<bool> hasBarcodeScanner() async {
     return js_util.hasProperty(html.window, "BarcodeDetector");
+  }
+
+  @override
+  Future<MRTAPPConfig> getConfig() async {
+    final barcode = await hasBarcodeScanner().catchError((e) => false);
+    return MRTAPPConfig(platform: getPlatform(), hasBarcodeScanner: barcode);
   }
 }

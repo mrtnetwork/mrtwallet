@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
@@ -66,7 +65,7 @@ class ITonAddress extends CryptoAddress<BigInt, TonAddress> with Equatable {
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.tonAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CoinProposal proposal = CoinProposal.fromName(cbor.elementAt(0));
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));

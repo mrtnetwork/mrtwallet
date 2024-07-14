@@ -42,7 +42,8 @@ class TransactionAmountView extends StatelessWidget {
                 ? CoinPriceView(
                     token: token,
                     balance: amount,
-                    style: context.textTheme.titleLarge)
+                    style: context.textTheme.titleLarge,
+                    showTokenImage: true)
                 : Text("tap_to_enter_amount".tr))
       ],
     );

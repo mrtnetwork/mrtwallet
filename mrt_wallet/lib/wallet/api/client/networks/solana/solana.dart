@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/solana.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
@@ -7,7 +8,7 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/solana/models/solana_account_tokens_info.dart';
 import 'package:on_chain/solana/solana.dart';
 
-class SolanaClient implements NetworkClient<ISolanaAddress, SolanaAPIProvider> {
+class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider> {
   SolanaClient({required this.provider, required this.network});
   final SolanaRPC provider;
   @override
@@ -94,5 +95,16 @@ class SolanaClient implements NetworkClient<ISolanaAddress, SolanaAPIProvider> {
           tokenOwner: i.account.owner));
     }
     return tokens;
+  }
+
+  Future<String> genesis() async {
+    return await provider.request(SolanaRPCGetGenesisHash());
+  }
+
+  @override
+  Future<bool> onInit() async {
+    final genesisHash =
+        await MethodUtils.nullOnException(() async => await genesis());
+    return genesisHash == network.coinParam.genesis;
   }
 }

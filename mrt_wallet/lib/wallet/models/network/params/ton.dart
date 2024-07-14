@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
@@ -64,12 +65,12 @@ class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
 
   @override
   NetworkCoinParams<TonAPIProvider> updateProviders(
-      List<TonAPIProvider> updateProviders) {
+      List<APIProvider> updateProviders) {
     return TonNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
         token: token,
-        providers: providers,
+        providers: providers.cast<TonAPIProvider>(),
         workchain: workchain,
         mainnet: mainnet);
   }

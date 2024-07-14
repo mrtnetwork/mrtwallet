@@ -1,5 +1,4 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
@@ -8,6 +7,7 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 
 abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
     with Equatable, CborSerializable {
@@ -40,33 +40,32 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
   static WalletNetwork fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-
-    if (BytesUtils.bytesEqual(toCborTag.tags, CborTagsConst.bitconNetwork)) {
-      return WalletBitcoinNetwork.fromCborBytesOrObject(obj: toCborTag);
-    }
-    if (BytesUtils.bytesEqual(
-        toCborTag.tags, CborTagsConst.bitcoinCashNetwork)) {
-      return WalletBitcoinCashNetwork.fromCborBytesOrObject(obj: toCborTag);
-    } else if (BytesUtils.bytesEqual(
-        toCborTag.tags, CborTagsConst.xrpNetwork)) {
-      return WalletXRPNetwork.fromCborBytesOrObject(obj: toCborTag);
-    } else if (BytesUtils.bytesEqual(
-        toCborTag.tags, CborTagsConst.evmNetwork)) {
-      return WalletEthereumNetwork.fromCborBytesOrObject(obj: toCborTag);
-    } else if (BytesUtils.bytesEqual(
-        toCborTag.tags, CborTagsConst.solanaNetwork)) {
-      return WalletSolanaNetwork.fromCborBytesOrObject(obj: toCborTag);
-    } else if (BytesUtils.bytesEqual(
-        toCborTag.tags, CborTagsConst.cardanoNetwork)) {
-      return WalletCardanoNetwork.fromCborBytesOrObject(obj: toCborTag);
-    } else if (BytesUtils.bytesEqual(
-        CborTagsConst.cosmosNetwork, toCborTag.tags)) {
-      return WalletCosmosNetwork.fromCborBytesOrObject(obj: toCborTag);
-    } else if (BytesUtils.bytesEqual(
-        CborTagsConst.tonNetwork, toCborTag.tags)) {
-      return WalletTonNetwork.fromCborBytesOrObject(obj: toCborTag);
-    } else {
-      return WalletTronNetwork.fromCborBytesOrObject(obj: toCborTag);
+    final network = NetworkType.fromTag(toCborTag.tags);
+    switch (network) {
+      case NetworkType.bitcoinAndForked:
+        return WalletBitcoinNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.bitcoinCash:
+        return WalletBitcoinCashNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.xrpl:
+        return WalletXRPNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.ethereum:
+        return WalletEthereumNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.solana:
+        return WalletSolanaNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.cardano:
+        return WalletCardanoNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.cosmos:
+        return WalletCosmosNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.ton:
+        return WalletTonNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.tron:
+        return WalletTronNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.polkadot:
+        return WalletPolkadotNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.kusama:
+        return WalletKusamaNetwork.fromCborBytesOrObject(obj: toCborTag);
+      default:
+        throw UnimplementedError("network does not exist.");
     }
   }
 
@@ -101,7 +100,7 @@ class WalletBitcoinNetwork extends WalletNetwork<BitcoinParams> {
   NetworkType get type => NetworkType.bitcoinAndForked;
 
   @override
-  List<CryptoCoins> get coins => coinParam.transacationNetwork.coins;
+  List<BipCoins> get coins => coinParam.transacationNetwork.coins;
 
   CryptoCoins findCOinFromBitcoinAddressType(BitcoinAddressType type) {
     if (type.isP2sh) {
@@ -155,6 +154,9 @@ class WalletBitcoinCashNetwork extends WalletBitcoinNetwork {
   bool get isBitcoin => false;
 
   @override
+  NetworkType get type => NetworkType.bitcoinCash;
+
+  @override
   CborTagValue toCbor() {
     return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
         CborTagsConst.bitcoinCashNetwork);
@@ -195,7 +197,7 @@ class WalletXRPNetwork extends WalletNetwork<RippleNetworkParams> {
   }
 
   @override
-  List<CryptoCoins> get coins {
+  List<BipCoins> get coins {
     if (coinParam.mainnet) {
       return [Bip44Coins.ripple, Bip44Coins.rippleEd25519];
     }
@@ -247,7 +249,7 @@ class WalletEthereumNetwork extends WalletNetwork<EthereumNetworkParams> {
   }
 
   @override
-  List<CryptoCoins> get coins {
+  List<BipCoins> get coins {
     if (coinParam.mainnet) {
       return [Bip44Coins.ethereum];
     }
@@ -287,7 +289,7 @@ class WalletTronNetwork extends WalletNetwork<TronNetworkParams> {
     );
   }
   @override
-  List<CryptoCoins> get coins {
+  List<BipCoins> get coins {
     if (coinParam.mainnet) {
       return [Bip44Coins.tron];
     }
@@ -336,7 +338,7 @@ class WalletSolanaNetwork extends WalletNetwork<SolanaNetworkParams> {
   }
 
   @override
-  List<CryptoCoins> get coins {
+  List<BipCoins> get coins {
     if (coinParam.mainnet) {
       return [Bip44Coins.solana];
     }
@@ -381,7 +383,7 @@ class WalletCardanoNetwork extends WalletNetwork<CardanoNetworkParams> {
       coinParam.mainnet ? ADANetwork.mainnet : ADANetwork.testnetPreprod;
 
   @override
-  List<CryptoCoins> get coins {
+  List<BipCoins> get coins {
     return [
       if (coinParam.mainnet) ...[
         Bip44Coins.cardanoByronLedger,
@@ -440,7 +442,7 @@ class WalletCosmosNetwork extends WalletNetwork<CosmosNetworkParams> {
   }
 
   @override
-  List<CryptoCoins> get coins {
+  List<BipCoins> get coins {
     if (coinParam.mainnet) {
       return [Bip44Coins.cosmos];
     }
@@ -489,7 +491,7 @@ class WalletTonNetwork extends WalletNetwork<TonNetworkParams> {
   }
 
   @override
-  List<CryptoCoins> get coins {
+  List<BipCoins> get coins {
     if (coinParam.mainnet) {
       return [Bip44Coins.tonMainnet];
     }
@@ -515,5 +517,101 @@ class WalletTonNetwork extends WalletNetwork<TonNetworkParams> {
   @override
   WalletTonNetwork copyWith({int? value, TonNetworkParams? coinParam}) {
     return WalletTonNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
+}
+
+class WalletPolkadotNetwork extends WalletNetwork<SubstrateNetworkParams> {
+  @override
+  final int value;
+  @override
+  final SubstrateNetworkParams coinParam;
+  const WalletPolkadotNetwork(this.value, this.coinParam);
+  factory WalletPolkadotNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, CborTagsConst.polkadotNetwork);
+    return WalletPolkadotNetwork(cbor.elementAt(0),
+        SubstrateNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)));
+  }
+
+  @override
+  List<CryptoCoins> get coins {
+    return [
+      SubstrateCoins.genericEd25519,
+      SubstrateCoins.genericSecp256k1,
+      SubstrateCoins.genericSr25519,
+      if (coinParam.mainnet)
+        Bip44Coins.polkadotEd25519Slip
+      else
+        Bip44Coins.polkadotTestnetEd25519Slip
+    ];
+  }
+
+  @override
+  List get variabels => [value];
+  @override
+  List<EllipticCurveTypes> get keyTypes => [
+        EllipticCurveTypes.secp256k1,
+        EllipticCurveTypes.ed25519,
+        EllipticCurveTypes.sr25519
+      ];
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        CborTagsConst.polkadotNetwork);
+  }
+
+  @override
+  bool get supportCustomNode => false;
+
+  @override
+  NetworkType get type => NetworkType.polkadot;
+
+  @override
+  WalletPolkadotNetwork copyWith(
+      {int? value, SubstrateNetworkParams? coinParam}) {
+    return WalletPolkadotNetwork(
+        value ?? this.value, coinParam ?? this.coinParam);
+  }
+}
+
+class WalletKusamaNetwork extends WalletPolkadotNetwork {
+  const WalletKusamaNetwork(super.value, super.coinParam);
+  factory WalletKusamaNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, CborTagsConst.kusamaNetwork);
+    return WalletKusamaNetwork(cbor.elementAt(0),
+        SubstrateNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)));
+  }
+
+  @override
+  List<CryptoCoins> get coins {
+    return [
+      SubstrateCoins.genericEd25519,
+      SubstrateCoins.genericSecp256k1,
+      SubstrateCoins.genericSr25519,
+      if (coinParam.mainnet)
+        Bip44Coins.kusamaEd25519Slip
+      else
+        Bip44Coins.kusamaTestnetEd25519Slip
+    ];
+  }
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        CborTagsConst.kusamaNetwork);
+  }
+
+  @override
+  NetworkType get type => NetworkType.kusama;
+
+  @override
+  WalletKusamaNetwork copyWith(
+      {int? value, SubstrateNetworkParams? coinParam}) {
+    return WalletKusamaNetwork(
+        value ?? this.value, coinParam ?? this.coinParam);
   }
 }

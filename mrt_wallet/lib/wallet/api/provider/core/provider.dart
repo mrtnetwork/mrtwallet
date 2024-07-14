@@ -6,10 +6,12 @@ import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/solana.dart';
+import 'package:mrt_wallet/wallet/api/provider/networks/substrate.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ton.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/tron.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
-import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:mrt_wallet/wallet/models/network/network.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 
 abstract class APIProvider with Equatable, CborSerializable {
   const APIProvider(
@@ -29,34 +31,35 @@ abstract class APIProvider with Equatable, CborSerializable {
 
   String get callUrl => websiteUri;
 
-  factory APIProvider.fromCborBytesOrObject(
+  factory APIProvider.fromCborBytesOrObject(WalletNetwork network,
       {List<int>? bytes, CborObject? obj}) {
-    final cborObj = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-    if (BytesUtils.bytesEqual(
-        cborObj.tags, CborTagsConst.evmApiServiceProvider)) {
-      return EthereumAPIProvider.fromCborBytesOrObject(obj: cborObj);
-    } else if (BytesUtils.bytesEqual(
-        cborObj.tags, CborTagsConst.tronApiServiceProvider)) {
-      return TronAPIProvider.fromCborBytesOrObject(obj: cborObj);
-    } else if (BytesUtils.bytesEqual(
-            cborObj.tags, CborTagsConst.electrumApiServiceProvider) ||
-        BytesUtils.bytesEqual(
-            cborObj.tags, CborTagsConst.bitcoinExplorerApiProvider)) {
-      return BaseBitcoinAPIProvider.fromCborBytesOrObject(obj: cborObj);
-    } else if (BytesUtils.bytesEqual(
-        cborObj.tags, CborTagsConst.solApiServiceProvider)) {
-      return SolanaAPIProvider.fromCborBytesOrObject(obj: cborObj);
-    } else if (BytesUtils.bytesEqual(
-        cborObj.tags, CborTagsConst.cardanoApiServiceProvider)) {
-      return CardanoAPIProvider.fromCborBytesOrObject(obj: cborObj);
-    } else if (BytesUtils.bytesEqual(
-        cborObj.tags, CborTagsConst.cosmosApiServiceProvider)) {
-      return CosmosAPIProvider.fromCborBytesOrObject(obj: cborObj);
-    } else if (BytesUtils.bytesEqual(
-        cborObj.tags, CborTagsConst.rippleApiServiceProvider)) {
-      return RippleAPIProvider.fromCborBytesOrObject(obj: cborObj);
-    } else {
-      return TonAPIProvider.fromCborBytesOrObject(obj: cborObj);
+    switch (network.type) {
+      case NetworkType.ethereum:
+        return EthereumAPIProvider.fromCborBytesOrObject(
+            obj: obj, bytes: bytes);
+      case NetworkType.tron:
+        return TronAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
+      case NetworkType.solana:
+        return SolanaAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
+      case NetworkType.bitcoinAndForked:
+      case NetworkType.bitcoinCash:
+        return BaseBitcoinAPIProvider.fromCborBytesOrObject(
+            obj: obj, bytes: bytes);
+      case NetworkType.cardano:
+        return CardanoAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
+      case NetworkType.cosmos:
+        return CosmosAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
+      case NetworkType.xrpl:
+        return RippleAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
+      case NetworkType.ton:
+        return TonAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        return SubstrateAPIProvider.fromCborBytesOrObject(
+            obj: obj, bytes: bytes);
+      default:
+        throw UnimplementedError(
+            "Network does not exists ${network.type.name}");
     }
   }
 }

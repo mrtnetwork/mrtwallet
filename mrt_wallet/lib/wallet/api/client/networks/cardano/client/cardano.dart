@@ -7,8 +7,7 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/cardano/models/utxos.dart';
 import 'package:on_chain/on_chain.dart';
 
-class CardanoClient
-    implements NetworkClient<ICardanoAddress, CardanoAPIProvider> {
+class CardanoClient extends NetworkClient<ICardanoAddress, CardanoAPIProvider> {
   CardanoClient({required this.provider, required this.network});
   final BlockforestProvider provider;
   @override
@@ -36,5 +35,12 @@ class CardanoClient
   Future<String> broadcastTransaction(List<int> txCborBytes) async {
     return await provider.request(
         BlockfrostRequestSubmitTransaction(transactionCborBytes: txCborBytes));
+  }
+
+  @override
+  Future<bool> onInit() async {
+    final result =
+        await provider.request(BlockfrostRequestBackendHealthStatus());
+    return result;
   }
 }

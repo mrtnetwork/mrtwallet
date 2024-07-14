@@ -1,6 +1,5 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
@@ -8,8 +7,6 @@ import 'package:mrt_wallet/wallet/models/account/address/networks/networks.dart'
 import 'package:mrt_wallet/wallet/models/account/address/new/core/core.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/nfts/nfts.dart';
-
-import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/core/core.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wroker/worker.dart';
@@ -25,18 +22,18 @@ abstract class CryptoAddress<T, X> with CborSerializable {
   abstract final X networkAddress;
   abstract final String? accountName;
   NewAccountParams toAccountParams();
-  List<Bip32AddressIndex> accessKeysIndexes() {
+  List<AddressDerivationIndex> accessKeysIndexes() {
     if (multiSigAccount) {
       throw WalletExceptionConst.featureUnavailableForMultiSignature;
     }
     return signerKeyIndexes();
   }
 
-  List<Bip32AddressIndex> signerKeyIndexes() {
+  List<AddressDerivationIndex> signerKeyIndexes() {
     if (multiSigAccount) {
       throw WalletExceptionConst.featureUnavailableForMultiSignature;
     }
-    return [keyIndex as Bip32AddressIndex];
+    return [keyIndex];
   }
 
   /// its only for checking duplicate account
@@ -54,44 +51,52 @@ abstract class CryptoAddress<T, X> with CborSerializable {
   void removeToken(TokenCore<T> token);
   void updateToken(TokenCore<T> token, Token updatedToken);
 
-  static CryptoAddress fromCbor(WalletNetwork network, CborObject cbor) {
+  static CryptoAddress<T, X> fromCbor<T, X>(
+      WalletNetwork network, CborObject cbor) {
     if (cbor is! CborTagValue) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
-    if (BytesUtils.bytesEqual(
-        cbor.tags, CborTagsConst.bitcoinMultiSigAccount)) {
-      return IBitcoinMultiSigAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(cbor.tags, CborTagsConst.bitcoinAccount)) {
-      return IBitcoinAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(
-        cbor.tags, CborTagsConst.bitcoinCashAccount)) {
-      return IBitcoinCashAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(
-        cbor.tags, CborTagsConst.bitcoinCashMultiSigAccount)) {
-      return IBitcoinCashMultiSigAddress.fromCborBytesOrObject(network,
-          obj: cbor);
-    } else if (BytesUtils.bytesEqual(cbor.tags, CborTagsConst.rippleAccount)) {
-      return IXRPAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(
-        cbor.tags, CborTagsConst.rippleMultisigAccount)) {
-      return IXRPMultisigAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(cbor.tags, CborTagsConst.ethAccount)) {
-      return IEthAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(cbor.tags, CborTagsConst.tronAccount)) {
-      return ITronAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(
-        cbor.tags, CborTagsConst.tronMultisigAccount)) {
-      return ITronMultisigAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(cbor.tags, CborTagsConst.solAccount)) {
-      return ISolanaAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(cbor.tags, CborTagsConst.cardanoAccount)) {
-      return ICardanoAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(cbor.tags, CborTagsConst.cosmosAccount)) {
-      return ICosmosAddress.fromCborBytesOrObject(network, obj: cbor);
-    } else if (BytesUtils.bytesEqual(cbor.tags, CborTagsConst.tonAccount)) {
-      return ITonAddress.fromCborBytesOrObject(network, obj: cbor);
+    CryptoAddress address;
+    switch (network.type) {
+      case NetworkType.bitcoinAndForked:
+        address = IBitcoinAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.bitcoinCash:
+        address = IBitcoinCashAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.xrpl:
+        address = IXRPAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.ethereum:
+        address = IEthAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.tron:
+        address = ITronAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.solana:
+        address = ISolanaAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.cardano:
+        address = ICardanoAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.cosmos:
+        address = ICosmosAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.ton:
+        address = ITonAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        address = ISubstrateAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      default:
+        throw UnimplementedError("Network does not exists. ");
     }
-    throw WalletExceptionConst.invalidAccountDetails;
+    if (address is! CryptoAddress<T, X>) {
+      throw WalletExceptionConst.invalidArgruments(
+          "${CryptoAddress<T, X>}", "${address.runtimeType}");
+    }
+    return address;
   }
 }
 

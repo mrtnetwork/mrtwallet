@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/controller/c
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
 import 'package:mrt_wallet/wroker/utils/bitcoin_cash/bitcoin_cash_utils.dart';
 import 'memo_impl.dart';
 
@@ -281,7 +281,7 @@ abstract class BitcoinTransactionImpl extends StateController
   void updateBalances() async {
     if (updateBalancessKey.inProgress) return;
     updateBalancessKey.process();
-    await walletProvider.updateAccountBalance();
+    await walletProvider.updateAccountBalance(account.addresses);
     updateBalancessKey.success();
     notify();
   }

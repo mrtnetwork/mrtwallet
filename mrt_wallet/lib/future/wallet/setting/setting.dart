@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/start/pages/about.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+
+import 'color_selector.dart';
 
 class AppSettingView extends StatefulWidget {
   const AppSettingView({super.key});
@@ -18,35 +21,13 @@ class _AppSettingViewState extends State<AppSettingView> {
     setState(() {});
   }
 
-  void changeColor(Color color) {
+  void changeColor(Color? color) {
+    if (color == null) return;
     final wallet = context.watch<WalletProvider>(StateConst.main);
     wallet.changeColor(color);
     setState(() {});
     context.showAlert("color_changed".tr);
   }
-
-  static const List<Color> _defaultColors = [
-    Colors.red,
-    Colors.pink,
-    Colors.purple,
-    Colors.deepPurple,
-    Colors.indigo,
-    Colors.blue,
-    Colors.lightBlue,
-    Colors.cyan,
-    Colors.teal,
-    Colors.green,
-    Colors.lightGreen,
-    Colors.lime,
-    Colors.yellow,
-    Colors.amber,
-    Colors.orange,
-    Colors.deepOrange,
-    Colors.brown,
-    Colors.grey,
-    Colors.blueGrey,
-    Colors.black,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +137,9 @@ class _AppSettingViewState extends State<AppSettingView> {
               ),
               AppListTile(
                 onTap: toggleBrightness,
-                leading: const Icon(Icons.dark_mode),
+                leading: ThemeController.appTheme.brightness == Brightness.dark
+                    ? const Icon(Icons.dark_mode)
+                    : const Icon(Icons.light_mode),
                 trailing: Switch(
                   value: ThemeController.appTheme.brightness == Brightness.dark,
                   onChanged: (value) => toggleBrightness(),
@@ -166,50 +149,33 @@ class _AppSettingViewState extends State<AppSettingView> {
               ),
               AppListTile(
                 onTap: () {
-                  context.openSliverDialog(
-                      (ctx) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              PageTitleSubtitle(
-                                  title: null,
-                                  body: Text("select_color_from_blow".tr)),
-                              WidgetConstant.height20,
-                              Wrap(
-                                children: List.generate(_defaultColors.length,
-                                    (index) {
-                                  return InkWell(
-                                    onTap: () {
-                                      context.pop(null);
-                                      changeColor(_defaultColors[index]);
-                                    },
-                                    child: Padding(
-                                      padding: WidgetConstant.padding10,
-                                      child: Icon(
-                                        Icons.color_lens,
-                                        color: _defaultColors[index],
-                                        size: APPConst.double40,
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              )
-                            ],
-                          ),
-                      "primary_color_palette".tr);
+                  context
+                      .openSliverDialog<Color>(
+                          (ctx) => const ColorSelectorModal(),
+                          "primary_color_palette".tr)
+                      .then(changeColor);
                 },
                 leading: const Icon(Icons.color_lens),
                 title: Text("primary_color_palette".tr),
                 subtitle: Text("define_primary_of_app".tr),
               ),
+              if (wallet.appSetting.supportBarcodeScanner)
+                AppListTile(
+                  onTap: () {
+                    context.to(PageRouter.barcodeScanner);
+                  },
+                  leading: const Icon(Icons.qr_code),
+                  title: Text("qr_code_scanner".tr),
+                  subtitle: Text("retrive_barcode_data".tr),
+                ),
               const Divider(),
               AppListTile(
                 title: Text("about_mrt_wallet".tr),
                 leading: const Icon(Icons.info),
                 subtitle: Text("essence_of_mrt_wallet".tr),
                 onTap: () {
-                  wallet.eraseAll();
-                  // context.openSliverDialog(
-                  //     (ctx) => const AbountWalletView(), APPConst.name);
+                  context.openSliverDialog(
+                      (ctx) => const AbountWalletView(), APPConst.name);
                 },
               ),
               WidgetConstant.height20,

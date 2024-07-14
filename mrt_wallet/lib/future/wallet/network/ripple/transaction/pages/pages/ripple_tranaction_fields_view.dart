@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/pages/pages/payment_fields.dart';
-import 'package:mrt_wallet/future/wallet/network/ripple/transaction/pages/pages/controll_ripple_transaction_account.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/pages/pages/ripple_memo_fee.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/pages/pages/account_set_fields.dart';
@@ -21,101 +21,100 @@ class RippleTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<RippleTransactionForm> validator =
         field ?? context.getArgruments();
-    return ControllerRippleTransactionAccountView(
+    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress>(
       title: validator.validator.name.tr,
-      childBulder: (wallet, chain, address, switchAccount) => MrtViewBuilder<
-              RippleTransactionStateController>(
-          controller: () => RippleTransactionStateController(
-              walletProvider: wallet,
-              account: chain.account,
-              network: chain.network as WalletXRPNetwork,
-              apiProvider: chain.provider()!,
-              address: address,
-              validator: validator),
-          builder: (controller) {
-            return PageProgress(
-              key: controller.progressKey,
-              initialStatus: PageProgressStatus.progress,
-              backToIdle: APPConst.oneSecoundDuration,
-              child: () => CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: ConstraintsBoxView(
-                      padding: WidgetConstant.padding20,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("account".tr,
-                              style: context.textTheme.titleLarge),
-                          WidgetConstant.height8,
-                          ContainerWithBorder(
-                            onRemoveIcon: const Icon(Icons.edit),
-                            child: AnimatedSwitcher(
-                              duration: APPConst.animationDuraion,
-                              child: AddressDetailsView(
-                                  address: controller.owner,
-                                  key:
-                                      ValueKey<IXRPAddress?>(controller.owner)),
-                            ),
-                            onRemove: () {
-                              context
-                                  .openSliverBottomSheet<IXRPAddress>(
-                                    "switch_account".tr,
-                                    child: SwitchOrSelectAccountView(
-                                        account: controller.account,
-                                        showMultiSig: true),
-                                    minExtent: 0.5,
-                                    maxExtend: 0.9,
-                                    initialExtend: 0.7,
-                                    centerContent: false,
-                                  )
-                                  .then(switchAccount);
-                            },
-                          ),
-                          WidgetConstant.height20,
-                          PageTitleSubtitle(
-                              title: validator.validator.name.tr,
-                              body: TextAndLinkView(
-                                  text: validator
-                                      .validator.validatorDescription.tr,
-                                  url: validator.validator.helperUri)),
-                          _RippleFormFields(
-                              validator: controller.validator,
-                              account: chain.account,
-                              address: address),
-                          RippleMemoAndFeeView(controller: controller),
-                          ErrorTextContainer(
-                              error: controller.fieldsError,
-                              verticalMargin: WidgetConstant.paddingVertical10),
-                          InsufficientBalanceErrorView(
-                            verticalMargin: WidgetConstant.paddingVertical10,
-                            balance: controller.remindAmount.$1,
-                            token: controller.remindAmount.$2,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+      childBulder: (wallet, chain, address, network, switchAccount) =>
+          MrtViewBuilder<RippleTransactionStateController>(
+              controller: () => RippleTransactionStateController(
+                  walletProvider: wallet,
+                  account: chain.account,
+                  network: network,
+                  apiProvider: chain.provider()!,
+                  address: address,
+                  validator: validator),
+              builder: (controller) {
+                return PageProgress(
+                  key: controller.progressKey,
+                  initialStatus: PageProgressStatus.progress,
+                  backToIdle: APPConst.oneSecoundDuration,
+                  child: () => CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: ConstraintsBoxView(
+                          padding: WidgetConstant.padding20,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              StreamWidget(
-                                key: controller.buttonKey,
-                                backToIdle: APPConst.oneSecoundDuration,
-                                buttonWidget: FixedElevatedButton(
-                                  padding: WidgetConstant.paddingVertical20,
-                                  onPressed: () {
-                                    controller.sendTr();
-                                  },
-                                  child: Text("send_transaction".tr),
-                                ),
+                              Text("account".tr,
+                                  style: context.textTheme.titleLarge),
+                              WidgetConstant.height8,
+                              ContainerWithBorder(
+                                onRemoveIcon: const Icon(Icons.edit),
+                                child: AddressDetailsView(
+                                    address: controller.owner,
+                                    key: ValueKey<IXRPAddress?>(
+                                        controller.owner)),
+                                onRemove: () {
+                                  context
+                                      .openSliverBottomSheet<IXRPAddress>(
+                                        "switch_account".tr,
+                                        child: SwitchOrSelectAccountView(
+                                            account: controller.account,
+                                            showMultiSig: true),
+                                        minExtent: 0.5,
+                                        maxExtend: 0.9,
+                                        initialExtend: 0.7,
+                                        centerContent: false,
+                                      )
+                                      .then(switchAccount);
+                                },
                               ),
+                              WidgetConstant.height20,
+                              PageTitleSubtitle(
+                                  title: validator.validator.name.tr,
+                                  body: TextAndLinkView(
+                                      text: validator
+                                          .validator.validatorDescription.tr,
+                                      url: validator.validator.helperUri)),
+                              _RippleFormFields(
+                                  validator: controller.validator,
+                                  account: chain.account,
+                                  address: address),
+                              RippleMemoAndFeeView(controller: controller),
+                              ErrorTextContainer(
+                                  error: controller.fieldsError?.tr,
+                                  verticalMargin:
+                                      WidgetConstant.paddingVertical10),
+                              InsufficientBalanceErrorView(
+                                verticalMargin:
+                                    WidgetConstant.paddingVertical10,
+                                balance: controller.remindAmount.$1,
+                                token: controller.remindAmount.$2,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  StreamWidget(
+                                    key: controller.buttonKey,
+                                    backToIdle: APPConst.oneSecoundDuration,
+                                    buttonWidget: FixedElevatedButton(
+                                      padding: WidgetConstant.paddingVertical20,
+                                      onPressed: () {
+                                        controller.sendTr();
+                                      },
+                                      child: Text("send_transaction".tr),
+                                    ),
+                                  ),
+                                ],
+                              )
                             ],
-                          )
-                        ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          }),
+                );
+              }),
     );
   }
 }

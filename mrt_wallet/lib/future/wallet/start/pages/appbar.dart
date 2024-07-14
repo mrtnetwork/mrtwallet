@@ -1,120 +1,158 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/wallet/global/pages/share_account_view.dart';
+import 'package:mrt_wallet/future/wallet/start/pages/menu_bar.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/models.dart';
+import 'package:mrt_wallet/wallet/wallet.dart';
 
-class AccountAppBarView extends StatelessWidget {
-  const AccountAppBarView(
-      {super.key, required this.account, required this.onPressed});
-  final CryptoAddress account;
-  final IntVoid onPressed;
+class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final WalletProvider wallet;
+  AccountPageSliverHeaderDelegate(this.wallet);
+  ChainHandler get chainAccount => wallet.chain;
+  bool get bottom => wallet.isOpen && wallet.chain.haveAddress;
+  PreferredSizeWidget get bottomWidget =>
+      TabBar(tabs: chainAccount.services.map((e) => Tab(text: e.tr)).toList());
+  final double accountSize = 150;
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final enabled = shrinkOffset + minExtent > accountSize;
+    return AppBar(
+      bottom: bottomWidget,
+      surfaceTintColor: context.colors.transparent,
+      backgroundColor: context.colors.surface,
+      foregroundColor: context.colors.onSurface,
+      flexibleSpace: Stack(
+        children: [
+          APPAnimatedSwitcher(enable: enabled, widgets: {
+            true: (c) => APPAnimatedContainer(
+                alignment: Alignment.topCenter,
+                isActive: bottom,
+                onActive: (c) => AccountMenuButtonView(wallet: wallet),
+                onDeactive: (p0) => WidgetConstant.sizedBox),
+            false: (c) => Align(
+                  alignment: Alignment.topCenter,
+                  child: SingleChildScrollView(
+                    physics: WidgetConstant.noScrollPhysics,
+                    child: Padding(
+                      padding: WidgetConstant.padding20,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            children: [
+                              CircleTokenImgaeView(
+                                  chainAccount.network.coinParam.token,
+                                  radius: 40),
+                              WidgetConstant.height8,
+                              Text(chainAccount.network.coinParam.token.name,
+                                  style: context.textTheme.labelLarge),
+                            ],
+                          ),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      CoinPriceView(
+                                          account: chainAccount.account.address,
+                                          style: context.textTheme.titleLarge,
+                                          token: chainAccount
+                                              .network.coinParam.token),
+                                      WidgetConstant.height15,
+                                      _AccountButtons(chainAccount)
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          AccountAppbarPopupMenu(wallet)
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+          }),
+          if (!chainAccount.network.coinParam.mainnet)
+            Positioned(
+                top: 0,
+                right: 10,
+                child: ToolTipView(
+                  message: "testnet_price_desc".tr,
+                  child: Card(
+                    // elevation: 1,
+                    color: context.colors.errorContainer,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: WidgetConstant.border4),
+                    child: Padding(
+                      padding: WidgetConstant.padding2,
+                      child: Text(
+                        "testnet".tr,
+                        style: context.textTheme.labelSmall
+                            ?.copyWith(color: context.colors.onErrorContainer),
+                      ),
+                    ),
+                  ),
+                ))
+        ],
+      ),
+    );
+  }
+
+  @override
+  double get maxExtent => (accountSize + bottomWidget.preferredSize.height);
+
+  @override
+  double get minExtent => (80 + bottomWidget.preferredSize.height);
+
+  @override
+  bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) {
+    return false;
+  }
+}
+
+class _AccountButtons extends StatelessWidget {
+  const _AccountButtons(this.chainAccount);
+  final ChainHandler chainAccount;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        width: context.mediaQuery.size.width,
-        padding: WidgetConstant.padding10,
-        decoration: BoxDecoration(
-            color: context.colors.primary,
-            borderRadius: WidgetConstant.borderBottom8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: CopyTextIcon(
-                dataToCopy: account.address.toAddress,
-                isSensitive: false,
-                color: context.colors.onPrimary,
-                widget: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    account.accountName != null
-                        ? RichText(
-                            maxLines: 1,
-                            text: TextSpan(children: [
-                              TextSpan(
-                                  text: account.accountName,
-                                  style: context.textTheme.labelLarge?.copyWith(
-                                      color: context.colors.onPrimary)),
-                              if (account.type != null)
-                                TextSpan(
-                                    text: " (${account.type!.tr})",
-                                    style: context.textTheme.bodySmall
-                                        ?.copyWith(
-                                            color: context.colors.onPrimary))
-                            ]))
-                        : account.type == null
-                            ? WidgetConstant.sizedBox
-                            : Text(
-                                account.accountName ?? account.type!.tr,
-                                style: context.textTheme.labelLarge
-                                    ?.copyWith(color: context.colors.onPrimary),
-                              ),
-                    if (account.multiSigAccount)
-                      Text(
-                        "multi_signature".tr,
-                        style: context.textTheme.bodyMedium
-                            ?.copyWith(color: context.colors.onPrimary),
-                      ),
-                    OneLineTextWidget(
-                      account.address.toAddress,
-                      style: context.textTheme.bodyMedium
-                          ?.copyWith(color: context.colors.onPrimary),
+    final hasProvider = !(chainAccount.provider()?.isConnect ?? false);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        FloatingActionButton(
+          onPressed: () {
+            context.openSliverDialog(
+                (ctx) => ShareAccountView(
+                      address: chainAccount.account.address,
+                      network: chainAccount.network,
                     ),
-                  ],
-                ),
-              ),
-            ),
-            FocusScope(
-              autofocus: false,
-              canRequestFocus: false,
-              child: SubmenuButton(
-                menuChildren: [
-                  MenuItemButton(
-                    trailingIcon: const Icon(Icons.north_east_sharp),
-                    onPressed: () {
-                      onPressed(0);
-                    },
-                    child: Text("export_private_key".tr),
-                  ),
-                  MenuItemButton(
-                    trailingIcon: const Icon(Icons.north_east_sharp),
-                    onPressed: () {
-                      onPressed(1);
-                    },
-                    child: Text("export_public_key".tr),
-                  ),
-                  MenuItemButton(
-                    trailingIcon: const Icon(Icons.edit),
-                    onPressed: () {
-                      onPressed(3);
-                    },
-                    child: Text("account_name".tr),
-                  ),
-                  MenuItemButton(
-                    trailingIcon: const Icon(Icons.remove),
-                    onPressed: () {
-                      onPressed(2);
-                    },
-                    child: Text("remove_account".tr),
-                  ),
-                ],
-                style: ButtonStyle(
-                    iconColor:
-                        WidgetStatePropertyAll(context.colors.onPrimary)),
-                child: const SizedBox(
-                  width: APPConst.double40,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.more_vert_sharp),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          ],
-        ));
+                "address_sharing".tr);
+          },
+          heroTag: null,
+          child: const Icon(Icons.download),
+        ),
+        WidgetConstant.width8,
+        IgnorePointer(
+          ignoring: hasProvider,
+          child: FloatingActionButton(
+            heroTag: null,
+            onPressed: () {
+              context.to(PageRouter.transactionPage(chainAccount.network),
+                  argruments: chainAccount);
+            },
+            child: const Icon(Icons.upload),
+          ),
+        )
+      ],
+    );
   }
 }

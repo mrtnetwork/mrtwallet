@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/bitcoin/address/setup_address.d
 import 'package:mrt_wallet/future/wallet/network/cardano/address/setup_address_page.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart' show NetworkType;
+import 'package:mrt_wallet/wroker/models/networks.dart';
 
 class NetworkGenericAddressDerivationView extends StatelessWidget {
   const NetworkGenericAddressDerivationView({Key? key}) : super(key: key);
@@ -19,6 +19,7 @@ class NetworkGenericAddressDerivationView extends StatelessWidget {
         onAccsess: (crendential, password, network) {
           switch (network.type) {
             case NetworkType.bitcoinAndForked:
+            case NetworkType.bitcoinCash:
               return const SetupBitcoinAddressView();
             case NetworkType.cardano:
               return const SetupCardanoAddressView();
@@ -53,32 +54,28 @@ class _NetworkGenericAddressDerivationView extends StatelessWidget {
               SliverToBoxAdapter(
                   child: ConstraintsBoxView(
                 padding: WidgetConstant.paddingHorizontal20,
-                child: AnimatedSwitcher(
-                    duration: APPConst.animationDuraion,
-                    child: Form(
-                      key: controller.form,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        key: const ValueKey<bool>(true),
-                        children: [
-                          PageTitleSubtitle(
-                              title: "setup_network_address".tr.replaceOne(
-                                  controller.network.coinParam.token.name),
-                              body: LargeTextView(
-                                [
-                                  "disable_standard_derivation".tr,
-                                  "setup_address_derivation_keys_desc".tr,
-                                  "please_following_steps_to_generate_address"
-                                      .tr,
-                                  if (controller.network.type ==
-                                      NetworkType.ton)
-                                    "ton_mnemonic_feature_desc".tr
-                                ],
-                              )),
-                          SetupGenericAddressView(controller: controller)
-                        ],
-                      ),
-                    )),
+                child: Form(
+                  key: controller.form,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PageTitleSubtitle(
+                          title: "setup_network_address".tr.replaceOne(
+                              controller.network.coinParam.token.name),
+                          body: LargeTextView(
+                            [
+                              "disable_standard_derivation_desc".tr,
+                              "setup_address_derivation_keys_desc".tr,
+                              "please_following_steps_to_generate_address".tr,
+                              "custom_path_derivation_desc".tr,
+                              if (controller.network.type == NetworkType.ton)
+                                "ton_mnemonic_feature_desc".tr
+                            ],
+                          )),
+                      SetupGenericAddressView(controller: controller)
+                    ],
+                  ),
+                ),
               ))
             ],
           ),

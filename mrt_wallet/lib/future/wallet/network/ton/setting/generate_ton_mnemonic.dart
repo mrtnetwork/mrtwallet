@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
-import 'package:mrt_wallet/future/wallet/global/pages/importing_custom_key_view.dart';
+import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/wallet/setup/setup.dart';
-import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/utils/global/utils.dart';
-import 'package:mrt_wallet/wroker/utils/ton/ton.dart';
+import 'package:mrt_wallet/wroker/worker.dart';
 
 enum _MnemonicOption { import, generate }
 
@@ -27,19 +24,24 @@ class GenerateTonMnemonicView extends StatelessWidget {
   const GenerateTonMnemonicView({super.key});
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletTonNetwork, ITonAddress>(
+    return NetworkAccountControllerView<WalletTonNetwork, ITonAddress?>(
       title: "ton_mnemonic".tr,
       childBulder: (wallet, chain, address, sm, switchAccount) {
-        return _GenerateTonMnemonicView(network: chain.network.toNetwork());
+        return _GenerateTonMnemonicView(
+            network: chain.network.toNetwork(), wallet: wallet);
       },
     );
   }
 }
 
 class _GenerateTonMnemonicView extends StatefulWidget {
-  const _GenerateTonMnemonicView({Key? key, required this.network})
-      : super(key: key);
+  const _GenerateTonMnemonicView({
+    Key? key,
+    required this.network,
+    required this.wallet,
+  }) : super(key: key);
   final WalletTonNetwork network;
+  final WalletProvider wallet;
 
   @override
   State<_GenerateTonMnemonicView> createState() =>
@@ -150,8 +152,11 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
     final int? wordsNum = mnemonicWordsKey.currentState?.getValue();
     if (wordsNum == null) return;
     progressKey.progressText("generating_mnemonic".tr);
-    final result = await MethodUtils.call(() async =>
-        TonUtils.generateTonMnemonic(password: password, wordsNum: wordsNum));
+    final result = await MethodUtils.call(() async => widget.wallet
+        .networkRequest(
+            networkRequest: TonMenmonicGenerateMessage(
+                password: password, wordsNum: wordsNum),
+            network: NetworkType.ton));
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
@@ -178,21 +183,21 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
         progressKey.errorText(result.error!.tr);
       } else {
         progressKey.progressText("generating_private_key".tr);
-        final key = await MethodUtils.call(
-            () async => TonUtils.generateTonPrivateKeyFromSeed(
-                mnemonic: mnemonicList,
-                password: password ?? "",
-                validateTonMnemonic: validateTonMnemonic),
-            delay: APPConst.milliseconds100);
+        final key = await MethodUtils.call<ImportCustomKeys>(
+          () async {
+            return await widget.wallet.networkRequest(
+                networkRequest: TonMnemonicToPrivateKeyMessage(
+                    mnemonic: mnemonicList.join(" "),
+                    password: password,
+                    validateTonMnemonic: validateTonMnemonic,
+                    coin: widget.network.coins.first),
+                network: widget.network.type);
+          },
+        );
         if (key.hasError) {
-          progressKey.errorText(result.error!.tr);
-          mnemonic = "";
-          mnemonicList.clear();
+          progressKey.errorText(result.error?.tr ?? "");
         } else {
-          keyPair = ImportCustomKeys(
-              privateKey: key.result.toHex(),
-              publicKey: key.result.toPublicKey().toHex(),
-              coin: widget.network.coins.first);
+          keyPair = key.result;
           page = _MnemonicPage.importKey;
           progressKey.success();
         }
@@ -217,8 +222,6 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
       case _MnemonicPage.generate:
         mnemonic = '';
         mnemonicList.clear();
-        password = null;
-        hasPassword = false;
         page = null;
         break;
       default:
@@ -423,6 +426,7 @@ class _TonMnemonicChooseOptionPage extends StatelessWidget {
                   key: state.passwordKey,
                   label: "mnemonic_password".tr,
                   validator: state.validator,
+                  initialValue: state.password,
                 ),
               ],
             ),

@@ -9,10 +9,6 @@ mixin WalletStorageWriter {
     await BaseNativeMEthod.platform.writeSecure(key, value);
   }
 
-  Future<void> _deleteAll() async {
-    await BaseNativeMEthod.platform.removeAllSecure();
-  }
-
   Future<void> _delete({required String key}) async {
     await BaseNativeMEthod.platform.removeSecure(key);
   }

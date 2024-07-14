@@ -1,7 +1,7 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
 // ignore: library_private_types_in_public_api
-mixin WalletManager on _WalletCore {
+mixin WalletsManager on _WalletCore {
   late WalletController _controller;
   HDWallets _wallets = HDWallets.init();
 
@@ -96,5 +96,12 @@ mixin WalletManager on _WalletCore {
     await _writeHdWallet(_wallets);
     await _removeWalletStorage(controller._wallet);
     await _initPage();
+  }
+
+  Future<T> networkRequest<T, A extends MessageArgs,
+          E extends MessageArgsNetwork<T, A>>(
+      {required E networkRequest, required NetworkType network}) async {
+    return _crypto.networkRequest(
+        networkRequest: networkRequest, network: network);
   }
 }

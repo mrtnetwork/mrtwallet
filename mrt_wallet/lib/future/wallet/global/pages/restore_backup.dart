@@ -135,11 +135,10 @@ class _RestoreBackupContentPage extends StatelessWidget {
               ],
             )),
         SecureContentView(
-          content: state.restored ?? "test",
-          show: state.showContet,
-          onTapShow: state.onShowContet,
-          contentName: "qr_code".tr,
-        ),
+            content: state.restored ?? "test",
+            show: state.showContet,
+            onTapShow: state.onShowContet,
+            contentName: "qr_code".tr),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

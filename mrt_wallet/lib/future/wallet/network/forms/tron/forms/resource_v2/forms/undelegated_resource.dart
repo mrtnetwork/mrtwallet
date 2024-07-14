@@ -96,13 +96,11 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields => [balance, destination];
 
   @override
   late final String name = "undelegated_resource";
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

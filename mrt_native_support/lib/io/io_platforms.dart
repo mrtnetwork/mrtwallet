@@ -24,5 +24,5 @@ AppPlatform getPlatform() {
   } else if (Platform.isMacOS) {
     return AppPlatform.macos;
   }
-  throw UnimplementedError("app does not support");
+  throw const MRTNativePluginException("Unknown platform.");
 }

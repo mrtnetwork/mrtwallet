@@ -32,6 +32,7 @@ abstract class HTTPService<P extends APIProvider>
                   body: params)
               .timeout(timeout ?? defaultTimeOut),
           allowStatus: allowStatus);
+
       return response!;
     } on ApiProviderException catch (e) {
       tracker.addRequest(
@@ -75,10 +76,10 @@ abstract class HTTPService<P extends APIProvider>
       {List<int> allowStatus = const [200]}) async {
     try {
       final response = await t();
-
       if (!allowStatus.contains(response.statusCode)) {
         final decode = StringUtils.tryToJson(response.body);
-        final map = (decode is Map<String, dynamic>?) ? decode : null;
+        final Map<String, dynamic>? map =
+            (decode is Map<String, dynamic>?) ? decode : null;
         throw ApiProviderException(
             statusCode: response.statusCode,
             responseData: map,

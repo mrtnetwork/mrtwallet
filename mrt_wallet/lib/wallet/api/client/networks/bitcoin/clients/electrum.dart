@@ -1,4 +1,6 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
+import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/core/core.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/methods/script_hash_balance.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
@@ -7,10 +9,10 @@ import 'package:mrt_wallet/wallet/models/account/address/networks/bitcoin/addres
 import 'package:mrt_wallet/wallet/models/networks/bitcoin/models/electrum_server_infos.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
-class BitcoinElectrumClient implements BitcoinClient<IBitcoinAddress> {
+class BitcoinElectrumClient extends BitcoinClient<IBitcoinAddress> {
   BitcoinElectrumClient({required this.provider, required this.network});
   @override
-  final WalletNetwork network;
+  final WalletBitcoinNetwork network;
 
   @override
   BaseServiceProtocol<ElectrumAPIProvider> get service =>
@@ -75,5 +77,20 @@ class BitcoinElectrumClient implements BitcoinClient<IBitcoinAddress> {
     final header = await serverHeaders();
     return ElectrumServerInfos(
         banner: banner, features: features, header: header);
+  }
+
+  @override
+  Future<String> genesis() async {
+    final result = await MethodUtils.nullOnException(() async {
+      final features = await serverFeatures();
+      return (features["genesis_hash"] as String);
+    });
+    if (result != null) return result;
+    final header = await provider
+        .request(ElectrumBlockHeader(startHeight: 0, cpHeight: 0));
+    return BytesUtils.toHexString(
+        QuickCrypto.sha256DoubleHash(BytesUtils.fromHexString(header))
+            .reversed
+            .toList());
   }
 }

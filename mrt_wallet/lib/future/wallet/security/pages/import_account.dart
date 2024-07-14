@@ -1,18 +1,12 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
-import 'package:blockchain_utils/utils/binary/utils.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/restore_backup.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/wroker/keys/models/imported.dart';
-import 'package:mrt_wallet/wroker/keys/models/key_type.dart';
-import 'package:mrt_wallet/wroker/utils/global/utils.dart';
-import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
+import 'package:mrt_wallet/wroker/worker.dart';
 
 enum _PrivateKeyTypes {
   extendKey("Extended key"),
@@ -101,7 +95,6 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   bool get needSelectCoins => coins.length > 1;
 
   _PrivateKeyTypes selected = _PrivateKeyTypes.privateKey;
-  Bip32Base? _account;
   String? keyName;
   String _key = "";
 
@@ -114,15 +107,20 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   Map<_PrivateKeyTypes, Widget> _buildKeyTypes() {
     Map<_PrivateKeyTypes, Widget> types = {};
     for (final i in _PrivateKeyTypes.values) {
-      if (i == _PrivateKeyTypes.wif && coin!.conf.wifNetVer == null) continue;
-      types[i] = OneLineTextWidget(i.value);
+      if (i == _PrivateKeyTypes.wif && coin!.conf.hasWif) {
+        types[i] = OneLineTextWidget(i.value);
+      } else if (i == _PrivateKeyTypes.extendKey &&
+          coin!.conf.hasExtendedKeys) {
+        types[i] = OneLineTextWidget(i.value);
+      } else if (i == _PrivateKeyTypes.privateKey) {
+        types[i] = OneLineTextWidget(i.value);
+      }
     }
     return types;
   }
 
   void onSelectKeyType(_PrivateKeyTypes? s) {
     selected = s ?? selected;
-    _account = null;
     _error = null;
     setState(() {});
   }
@@ -131,6 +129,9 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     if (mewCoin == null) return;
     coin = mewCoin;
     keyTypes = _buildKeyTypes();
+    if (!keyTypes.containsKey(selected)) {
+      selected = keyTypes.keys.first;
+    }
     setState(() {});
   }
 
@@ -139,24 +140,6 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   }
 
   String? _error;
-
-  Future<Bip32Base> _getKey(WalletProvider model) async {
-    switch (selected) {
-      case _PrivateKeyTypes.extendKey:
-        return BlockchainUtils.extendedKeyToBip32(
-            extendedKey: _key, coin: coin!);
-      case _PrivateKeyTypes.privateKey:
-        if (inRipple) {
-          return RippleUtils.ripplePrivateKeyToBip32(_key, coin!);
-        }
-        return BlockchainUtils.privteKeyToBip32(
-            BytesUtils.fromHexString(_key), coin!);
-      case _PrivateKeyTypes.wif:
-        return BlockchainUtils.wifToBip32(_key, coin!);
-      default:
-        throw WalletExceptionConst.dataVerificationFailed;
-    }
-  }
 
   String? validate(String? v) {
     if (v == null || v.length < BlockchainConst.minimumKeysLength) {
@@ -189,6 +172,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       }
       selected = _PrivateKeyTypes.privateKey;
       coin = customKey.coin;
+      keyTypes = _buildKeyTypes();
       _key = customKey.privateKey;
     }
     progressKey.success();
@@ -208,19 +192,19 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
     final model = context.watch<WalletProvider>(StateConst.main);
 
     final createKey = await MethodUtils.call(() async {
-      _account = await _getKey(model);
-      if (_account == null) {
-        _error = "private_key_invalid".tr;
-        throw WalletExceptionConst.invalidPrivateKey;
+      switch (selected) {
+        case _PrivateKeyTypes.extendKey:
+          return BlockchainUtils.extendeKeyToStorage(
+              extendedKey: _key, coin: coin!, keyName: keyName);
+        case _PrivateKeyTypes.privateKey:
+          return BlockchainUtils.privateKeyToStorage(
+              privateKey: _key, coin: coin!, keyName: keyName);
+        case _PrivateKeyTypes.wif:
+          return BlockchainUtils.wifToStorage(
+              keyName: keyName, coin: coin!, wifKey: _key);
+        default:
+          throw WalletExceptionConst.dataVerificationFailed;
       }
-      final customKey = ImportedKeyStorage(
-          checksum: BlockchainUtils.createCustomKeyChecksum(_account!),
-          extendedPrivateKey: selected.toKey(_account!),
-          coin: coin!,
-          publicKey: _account!.publicKey.toHex(),
-          name: keyName,
-          keyType: selected.toCustomKeyType());
-      return customKey;
     });
     if (createKey.hasError) {
       _error = createKey.error!.tr;
@@ -345,8 +329,13 @@ class _ImportAccountStateKey extends StatelessWidget {
             onChanged: state.onChangeKey,
             initialValue: state._key,
             validator: state.validate,
-            suffixIcon:
+            suffixIcon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                BarcodeScannerIconView(state.onPaste, isSensitive: true),
                 PasteTextIcon(onPaste: state.onPaste, isSensitive: true),
+              ],
+            ),
             error: state._error,
             obscureText: true),
         Row(

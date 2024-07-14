@@ -184,7 +184,7 @@ class _BackupVerifyReview extends StatelessWidget {
                       (i) => ContainerWithBorder(
                           backgroundColor: context.colors.onPrimaryContainer,
                           child: AddressDetailsView(
-                            address: backup.invalidAddresses[0],
+                            address: backup.invalidAddresses[i],
                             color: context.colors.primaryContainer,
                             showBalance: false,
                           ))),

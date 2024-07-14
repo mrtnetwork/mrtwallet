@@ -7,3 +7,4 @@ export 'services/solana.dart';
 export 'services/thor_node.dart';
 export 'services/ton.dart';
 export 'services/tron.dart';
+export 'services/substrate.dart';

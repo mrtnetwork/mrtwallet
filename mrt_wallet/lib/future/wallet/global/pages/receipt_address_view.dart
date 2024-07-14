@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 
@@ -63,8 +64,7 @@ class ReceiptAddressDetailsView extends StatelessWidget {
           Text(address.contact!.name,
               style: context.textTheme.labelSmall?.copyWith(color: color))
         else if (address.isAccount)
-          Text(address.account!.keyIndex.toString(),
-              style: context.textTheme.labelSmall?.copyWith(color: color)),
+          AddressDrivationInfo(address.account!.keyIndex, color: color),
         OneLineTextWidget(
           address.view,
           style: context.textTheme.bodyMedium?.copyWith(color: color),

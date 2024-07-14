@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/networks/tron/tron.dart';
@@ -73,7 +72,7 @@ class ITronAddress extends CryptoAddress<BigInt, TronAddress> with Equatable {
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.tronAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CoinProposal proposal = CoinProposal.fromName(cbor.elementAt(0));
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
@@ -279,9 +278,6 @@ class ITronAddress extends CryptoAddress<BigInt, TronAddress> with Equatable {
   @override
   String get orginalAddress => networkAddress.toAddress();
 
-  // @override
-  // List<AddressDerivationIndex> get keyIndexes => [keyIndex];
-
   @override
   bool isEqual(CryptoAddress<BigInt, TronAddress> other) {
     return multiSigAccount == other.multiSigAccount &&
@@ -340,7 +336,7 @@ class ITronMultisigAddress extends ITronAddress
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.tronMultisigAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CoinProposal proposal = CoinProposal.fromName(cbor.elementAt(0));
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
 
     final TronMultiSignatureAddress multiSignatureAddress =

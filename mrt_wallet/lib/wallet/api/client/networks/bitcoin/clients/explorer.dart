@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/bitcoin/addresses/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
-class BitcoinExplorerApiProvider implements BitcoinClient<IBitcoinAddress> {
+class BitcoinExplorerApiProvider extends BitcoinClient<IBitcoinAddress> {
   BitcoinExplorerApiProvider({required this.provider, required this.network});
   @override
   final WalletBitcoinNetwork network;
@@ -39,5 +39,10 @@ class BitcoinExplorerApiProvider implements BitcoinClient<IBitcoinAddress> {
   @override
   Future<String> sendTransacation(String digest) async {
     return await provider.sendRawTransaction(digest);
+  }
+
+  @override
+  Future<String> genesis() async {
+    return await provider.genesis();
   }
 }

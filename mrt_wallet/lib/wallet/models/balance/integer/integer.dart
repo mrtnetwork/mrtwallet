@@ -40,6 +40,10 @@ class IntegerBalance implements BalanceCore<BigInt> {
     _updateBalance(updateBalance);
   }
 
+  void zero() {
+    _updateBalance(BigInt.zero);
+  }
+
   @override
   bool get isZero => _balance == BigInt.zero;
   @override

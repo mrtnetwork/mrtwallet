@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wroker/constant/const.dart';
@@ -6,7 +5,7 @@ import 'package:mrt_wallet/wroker/keys/access/key_data.dart';
 
 class PublicKeyData extends CryptoPublicKeyData {
   @override
-  final String extendedKey;
+  final String? extendedKey;
   @override
   final String comprossed;
   @override
@@ -14,7 +13,8 @@ class PublicKeyData extends CryptoPublicKeyData {
   @override
   final String keyName;
   @override
-  final String chainCode;
+  final String? chainCode;
+
   const PublicKeyData._(
       {required this.extendedKey,
       required this.comprossed,
@@ -32,6 +32,20 @@ class PublicKeyData extends CryptoPublicKeyData {
         keyName: keyName,
         chainCode: account.publicKey.chainCode.toHex());
   }
+  factory PublicKeyData(
+      {required IPublicKey key,
+      required CryptoCoins coin,
+      required String keyName}) {
+    final comperesed = BytesUtils.toHexString(key.compressed);
+    final uncompresed = BytesUtils.toHexString(key.uncompressed);
+    return PublicKeyData._(
+        extendedKey: null,
+        comprossed: key.toHex(),
+        uncomprossed: uncompresed == comperesed ? null : uncompresed,
+        keyName: keyName,
+        chainCode: null);
+  }
+
   factory PublicKeyData.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(

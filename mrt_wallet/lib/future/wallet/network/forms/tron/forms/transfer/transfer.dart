@@ -49,7 +49,6 @@ class TronTransferForm extends TronTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields => [destination, amount];
 
   @override
@@ -59,7 +58,6 @@ class TronTransferForm extends TronTransactionForm {
           ? "transfer_trc20"
           : "transfer";
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

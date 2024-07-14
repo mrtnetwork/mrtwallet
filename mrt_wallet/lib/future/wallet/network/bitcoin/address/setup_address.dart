@@ -1,5 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
@@ -7,6 +7,8 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/keys/models/seed.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:mrt_wallet/wroker/utils/bitcoin/bitcoin.dart';
 
 class SetupBitcoinAddressView extends StatefulWidget {
@@ -119,13 +121,17 @@ class _SetupBitcoinAddressViewState extends State<SetupBitcoinAddressView>
     Bip32AddressIndex? keyIndex = await context
         .openSliverBottomSheet<Bip32AddressIndex>("setup_derivation".tr,
             child: SetupDerivationModeView(
-                coin: coin, chainAccout: chainAccount, customKeys: customKeys));
+              coin: coin,
+              chainAccout: chainAccount,
+              customKeys: customKeys,
+              seedGenerationType: SeedTypes.bip39,
+            ));
 
     if (keyIndex == null) return;
 
     pageProgressKey.progressText("generating_new_addr".tr);
     NewAccountParams newAccount;
-    if (network is WalletBitcoinCashNetwork) {
+    if (network.type == NetworkType.bitcoinCash) {
       newAccount = BitcoinCashNewAddressParams(
           deriveIndex: keyIndex, bitcoinAddressType: selectedType, coin: coin);
     } else {

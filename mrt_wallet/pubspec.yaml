@@ -1,5 +1,5 @@
 name: mrt_wallet
-description: Open-source decentralized wallet for the future of finance. Securely manage assets, support for Bitcoin, Dogecoin, Ripple, Litecoin, Dash, Android, Windows, web.
+description: Open-source decentralized wallet for the future of finance. Securely manage assets, support for Bitcoin, Dogecoin, Ripple, Litecoin, Dash, Ethereum, Tron, Ton, Cosmos, Kusama, and Polkadot witch cross platform Android, Windows, web and macos.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 5.3.0+9
+version: 5.5.0+11
 
 homepage: "https://github.com/mrtnetwork/mrtwallet"
 repository: "https://github.com/mrtnetwork/mrtwallet"
@@ -50,24 +50,27 @@ dependencies:
   mrt_native_support:
     path: ../mrt_native_support
   http: ^1.1.0
-  blockchain_utils: ^3.2.0
+  blockchain_utils: ^3.3.0
   # blockchain_utils:
   #   path: ../../../bitcoin/blockchain_utils
-  bitcoin_base: ^4.6.0
+  bitcoin_base: ^4.7.0
   # bitcoin_base:
   #   path: ../../../bitcoin/bitcoin_base
-  xrpl_dart: ^4.4.0
+  xrpl_dart: ^4.5.0
   # xrpl_dart:
   #   path: ../../../xrpl_dart
-  on_chain: ^3.6.0
+  on_chain: ^3.7.0
   # on_chain:
   #   path: ../../on_chain
-  cosmos_sdk: ^0.4.0
+  cosmos_sdk: ^1.0.0
   # cosmos_sdk:
   #   path: ../../../cosmos_sdk
-  ton_dart: ^0.0.3
+  ton_dart: ^0.0.4
   # ton_dart:
   #   path: ../../../projects/ton_dart 
+  polkadot_dart: ^1.0.0
+  # polkadot_dart:
+  #   path: ../../../projects/polkadot_dart 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2

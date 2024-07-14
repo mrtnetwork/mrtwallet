@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
@@ -42,13 +43,12 @@ class CardanoNetworkParams extends NetworkCoinParams<CardanoAPIProvider> {
   }
 
   @override
-  CardanoNetworkParams updateProviders(
-      List<CardanoAPIProvider> updateProviders) {
+  CardanoNetworkParams updateProviders(List<APIProvider> updateProviders) {
     return CardanoNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
         token: token,
-        providers: updateProviders,
+        providers: updateProviders.cast<CardanoAPIProvider>(),
         mainnet: mainnet);
   }
 }

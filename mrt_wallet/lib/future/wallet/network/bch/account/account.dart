@@ -20,29 +20,32 @@ class _Services extends StatelessWidget {
   final ChainHandler chainAccount;
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppListTile(
-            title: Text("multi_signature".tr),
-            subtitle: Text("establishing_multi_sig_addr".tr),
-            trailing: const Icon(Icons.arrow_forward),
-            onTap: () {
-              context.to(PageRouter.setupBitcoinMultsig);
-            },
+    return AccountTabbarScrollWidget(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              AppListTile(
+                title: Text("multi_signature".tr),
+                subtitle: Text("establishing_multi_sig_addr".tr),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: () {
+                  context.to(PageRouter.setupBitcoinMultsig);
+                },
+              ),
+              AppListTile(
+                title: Text("pro_transaction_builder".tr),
+                subtitle: Text("bch_pro_builder_desc".tr),
+                trailing: const Icon(Icons.open_in_browser),
+                onTap: () {
+                  context.to(PageRouter.bitcoinCashTransaction,
+                      argruments: chainAccount);
+                },
+              ),
+            ],
           ),
-          AppListTile(
-            title: Text("pro_transaction_builder".tr),
-            subtitle: Text("bch_pro_builder_desc".tr),
-            trailing: const Icon(Icons.open_in_browser),
-            onTap: () {
-              context.to(PageRouter.bitcoinCashTransaction,
-                  argruments: chainAccount);
-            },
-          ),
-        ],
-      ),
+        )
+      ],
     );
   }
 }

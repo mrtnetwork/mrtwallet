@@ -2,7 +2,7 @@
 
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin WalletManager2 on _WalletController {
+mixin WalletManager on _WalletController {
   final _crypto = IsolateCryptoWoker();
   late HDWalletStatus _status =
       _wallet.requiredPassword ? HDWalletStatus.lock : HDWalletStatus.readOnly;
@@ -196,7 +196,7 @@ mixin WalletManager2 on _WalletController {
 
   Future<T> _signTransaction<T>(
       {required List<int> password,
-      required Set<Bip32AddressIndex> signers,
+      required Set<AddressDerivationIndex> signers,
       required SigningRequest<T> request}) async {
     final sign = await request.sign((request) async {
       if (!signers.contains(request.index)) {
@@ -224,8 +224,8 @@ mixin WalletManager2 on _WalletController {
       return (cardanoAccount, cardanoAccount.addressDetails!.publicKey);
     }
     final key = await crypto.readPublicKey(
-        keyRequest: AccessCryptoPrivateKeyRequest(
-            index: newAccountParams.deriveIndex as Bip32AddressIndex),
+        keyRequest:
+            AccessCryptoPrivateKeyRequest(index: newAccountParams.deriveIndex),
         key: password,
         encryptedWallet: masterKey.masterKey);
     return (newAccountParams, key.keyBytes());
@@ -273,7 +273,7 @@ mixin WalletManager2 on _WalletController {
           final adaPubKey = (bip as AdaLegacyPublicKeyData);
           addrDetails = CardanoAddrDetails.byron(
               publicKey: bip.keyBytes(),
-              chainCode: bip.chainCodeBytes(),
+              chainCode: adaPubKey.chainCodeBytes(),
               seedGeneration: params.deriveIndex.seedGeneration,
               hdPathKey: params.customHdPathKey ?? adaPubKey.hdPathKeyBytes(),
               hdPath: params.customHdPath ?? params.deriveIndex.hdPath);
@@ -282,7 +282,7 @@ mixin WalletManager2 on _WalletController {
 
         addrDetails = CardanoAddrDetails.byron(
             publicKey: bip.keyBytes(),
-            chainCode: bip.chainCodeBytes(),
+            chainCode: bip.chainCodeBytes()!,
             seedGeneration: params.deriveIndex.seedGeneration);
         break;
       default:

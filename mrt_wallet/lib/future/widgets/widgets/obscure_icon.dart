@@ -8,16 +8,13 @@ class ObscureIcon extends StatelessWidget {
   final DynamicVoid onTap;
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(5),
-        child: AnimatedSwitcher(
-          duration: APPConst.animationDuraion,
-          child: show
-              ? const Icon(Icons.password, key: ValueKey<bool>(false))
-              : const Icon(Icons.remove_red_eye, key: ValueKey<bool>(true)),
-        ),
+    return IconButton(
+      onPressed: onTap,
+      icon: AnimatedSwitcher(
+        duration: APPConst.animationDuraion,
+        child: show
+            ? const Icon(Icons.password, key: ValueKey<bool>(false))
+            : const Icon(Icons.remove_red_eye, key: ValueKey<bool>(true)),
       ),
     );
   }

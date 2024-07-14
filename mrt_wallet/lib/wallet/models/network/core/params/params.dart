@@ -16,7 +16,8 @@ abstract class NetworkCoinParams<PROVIDER extends APIProvider>
       required this.addressExplorer,
       required this.token,
       required List<PROVIDER> providers,
-      required this.mainnet})
+      required this.mainnet,
+      this.bip32CoinType})
       : providers = List<PROVIDER>.unmodifiable(providers);
   final String? transactionExplorer;
   final String? addressExplorer;
@@ -24,6 +25,7 @@ abstract class NetworkCoinParams<PROVIDER extends APIProvider>
   final List<PROVIDER> providers;
   final bool mainnet;
   int get decimal => token.decimal!;
+  final int? bip32CoinType;
   APPImage get logo => token.assetLogo!;
 
   bool get hasAccountExplorer => addressExplorer != null;
@@ -44,5 +46,6 @@ abstract class NetworkCoinParams<PROVIDER extends APIProvider>
     return token.marketUri;
   }
 
-  NetworkCoinParams updateProviders(List<PROVIDER> updateProviders);
+  NetworkCoinParams<PROVIDER> updateProviders(
+      List<APIProvider> updateProviders);
 }

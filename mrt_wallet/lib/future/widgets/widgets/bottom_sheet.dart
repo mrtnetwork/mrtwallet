@@ -16,9 +16,8 @@ class AppBottomSheet extends StatefulWidget {
       this.maxExtend = 1.0,
       this.initiaalExtend,
       this.centerContent = true,
-      this.actions = const []})
-      : assert(body != null || child != null,
-            "use child or body for build bottomSheet widget");
+      this.slivers = const [],
+      this.actions = const []});
   final String label;
   final Widget? child;
   final BodyBuilder? body;
@@ -26,6 +25,7 @@ class AppBottomSheet extends StatefulWidget {
   final double minExtent;
   final double? initiaalExtend;
   final List<Widget> actions;
+  final List<Widget> slivers;
   final bool centerContent;
   @override
   State<AppBottomSheet> createState() => _AppBottomSheetState();
@@ -136,12 +136,14 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                                         shrinkWrap: true,
                                         controller: scroll,
                                         slivers: [
-                                          SliverToBoxAdapter(
-                                            child: ConstraintsBoxView(
-                                                padding:
-                                                    WidgetConstant.padding20,
-                                                child: widget.child!),
-                                          )
+                                          ...widget.slivers,
+                                          if (widget.child != null)
+                                            SliverToBoxAdapter(
+                                              child: ConstraintsBoxView(
+                                                  padding:
+                                                      WidgetConstant.padding20,
+                                                  child: widget.child!),
+                                            )
                                         ],
                                       ),
                                     ),
@@ -151,11 +153,14 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                                     child: CustomScrollView(
                                       controller: scroll,
                                       slivers: [
-                                        SliverToBoxAdapter(
-                                          child: ConstraintsBoxView(
-                                              padding: WidgetConstant.padding20,
-                                              child: widget.child!),
-                                        )
+                                        ...widget.slivers,
+                                        if (widget.child != null)
+                                          SliverToBoxAdapter(
+                                            child: ConstraintsBoxView(
+                                                padding:
+                                                    WidgetConstant.padding20,
+                                                child: widget.child!),
+                                          )
                                       ],
                                     ),
                                   ),

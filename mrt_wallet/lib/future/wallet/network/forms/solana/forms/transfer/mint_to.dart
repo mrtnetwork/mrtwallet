@@ -63,7 +63,6 @@ class SolanaMintToForm extends SolanaTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields =>
       [mint, destination, authority, programId, amount];
 
@@ -137,7 +136,6 @@ class SolanaMintToForm extends SolanaTransactionForm {
   @override
   String get name => "mint_to";
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

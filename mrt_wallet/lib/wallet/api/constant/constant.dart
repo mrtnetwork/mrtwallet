@@ -4,21 +4,6 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 class ProvidersConst {
-  static const Map<int, String> gnesisHash = {
-    0: "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
-    1: "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943",
-    2: "12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2",
-    7: "4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0",
-    3: "1a91e3dace36e2be3bf030a65679fe821aa1d6ef92e7c9902eb318182c355691",
-    8: "bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e",
-    9: "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
-    4: "00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6",
-    10: "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
-    11: "000000001dd410c49a788668ce26751718cc797474d3152a5fc073dd44fd9f7b",
-    12: "37981c0c48b8d48965376c8a42ece9a0838daadb93ff975cb091f57f8c2a5faa",
-    33: "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
-    34: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
-  };
   static final Map<int, List<APIProvider>> _providers =
       Map<int, List<APIProvider>>.unmodifiable({
     0: <APIProvider>[
@@ -166,7 +151,7 @@ class ProvidersConst {
           url: "mainnet.pepeblocks.com:50002",
           protocol: ServiceProtocol.ssl),
       ElectrumAPIProvider(
-          serviceName: "pepeblocks-ssl",
+          serviceName: "pepeblocks-tcp",
           websiteUri: "https://mainnet.pepeblocks.com",
           url: "mainnet.pepeblocks.com:50001",
           protocol: ServiceProtocol.tcp),
@@ -181,7 +166,7 @@ class ProvidersConst {
           url: "mainnet.pepelum.site:50002",
           protocol: ServiceProtocol.ssl),
       ElectrumAPIProvider(
-          serviceName: "pepelum-ssl",
+          serviceName: "pepelum-tcp",
           websiteUri: "https://mainnet.pepelum.site",
           url: "mainnet.pepelum.site:50001",
           protocol: ServiceProtocol.tcp),
@@ -314,9 +299,16 @@ class ProvidersConst {
     ],
     206: <APIProvider>[
       CosmosAPIProvider(
-          serviceName: "rpc.testnet.osmosis.zone",
+          serviceName: "osmosis.zone",
           websiteUri: "https://rpc.testnet.osmosis.zone/",
           uri: "https://rpc.testnet.osmosis.zone/",
+          nodeUri: null),
+    ],
+    207: <APIProvider>[
+      CosmosAPIProvider(
+          serviceName: "osmosis.zone",
+          websiteUri: "https://rpc.osmosis.zone",
+          uri: "https://rpc.osmosis.zone",
           nodeUri: null),
     ],
     201: <APIProvider>[
@@ -388,6 +380,24 @@ class ProvidersConst {
               value:
                   "d3800f756738ac7b39599914b8a84465960ff869f555c2317664c9a62529baf3")),
     ],
+    400: <APIProvider>[
+      SubstrateAPIProvider(
+          serviceName: "Polkadot",
+          websiteUri: "https://polkadot.io",
+          uri: "https://rpc.polkadot.io"),
+    ],
+    450: <APIProvider>[
+      SubstrateAPIProvider(
+          serviceName: "Kusama",
+          websiteUri: "https://polkadot.io",
+          uri: "https://kusama-rpc.polkadot.io"),
+    ],
+    451: <APIProvider>[
+      SubstrateAPIProvider(
+          serviceName: "Westend",
+          websiteUri: "https://polkadot.io",
+          uri: "https://westend-rpc.polkadot.io"),
+    ],
     1001: <APIProvider>[
       TronAPIProvider(
           serviceName: "trongrid",
@@ -448,9 +458,5 @@ class ProvidersConst {
                 .contains(PlatformInterface.appPlatform))
             .toList() ??
         <T>[];
-  }
-
-  static String? getGnesisHash(WalletNetwork network) {
-    return gnesisHash[network.value];
   }
 }

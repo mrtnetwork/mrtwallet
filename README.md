@@ -5,7 +5,7 @@ Ethereum, Tron, Ripple, Dogecoin, Litecoin, Solana, Cardano, Cosmos and Dash, wi
 
 ## Networks
 
-### Bitcoin (mainnet, testnet)
+### Bitcoin
 
 - **Features:** Comprehensive support for Bitcoin transactions.
 - **Highlights:**
@@ -13,7 +13,7 @@ Ethereum, Tron, Ripple, Dogecoin, Litecoin, Solana, Cardano, Cosmos and Dash, wi
   - Enhanced control over transactions, allowing you to effortlessly create, sign, and send transactions from multiple UTXOs and addresses.
   - Allows for multiple account transactions.
 
-### Bitcoin Cash (mainnet, testnet)
+### Bitcoin Cash
 
 - **Features:** Comprehensive support for Bitcoin Cash transactions.
 - **Highlights:**
@@ -52,13 +52,13 @@ Ethereum, Tron, Ripple, Dogecoin, Litecoin, Solana, Cardano, Cosmos and Dash, wi
 - **Features:** Unlocking the potential of the Ripple network.
 - **Highlights:** Comprehensive support for advanced cryptographic algorithms, NFTs, tokens, multisignature transactions, account settings, trust settings, escrow transactions, regular key settings, and more.
 
-### Solana (Mainnet, Testnet)
+### Solana
 
 - **Features:** Seamless support for Solana transactions.
 - **Highlights:**
   - SPLToken transfer, account creation and token minting.
 
-### Cardano (Mainnet, Preproad)
+### Cardano
 
 - **Features:** Streamlined support for Cardano transactions.
 - **Highlights:**
@@ -77,22 +77,30 @@ Ethereum, Tron, Ripple, Dogecoin, Litecoin, Solana, Cardano, Cosmos and Dash, wi
 - **Features:** Seamless interaction with the Tron blockchain.
 - **Highlights:** Confidence in sending TRX, TRC-20, and TRC-10 tokens. Support for native contracts, including multi-signature transactions. Control over updating account permissions, managing accounts, unstaking (v2), delegating resources, and creating/updating witnesses.
 
-### Cosmos (Mainnet)
+### Cosmos
 
 - **Features:** Seamless support for Cosmos transactions.
 
-### Thor (Mainnet)
+### Thor
 
 - **Features:** Seamless support for Thor transactions.
 
-### Maya (Mainnet)
+### Maya
 
 - **Features:** Seamless support for Maya transactions.
 
-### Ton (Mainnet, Testnet)
+### Ton
 
 - **Features:** Seamless support for Ton transactions.
 - **Highlights:** Jetton transfer, multiple message transfer.
+
+### Kusama
+
+- **Features:** Seamless support for Kusama transactions.
+
+### Polkadot
+
+- **Features:** Seamless support for Polkadot transactions.
 
 
 ## Decentralized, Secure, and Open Source

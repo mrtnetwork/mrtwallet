@@ -9,6 +9,7 @@ class WidgetConstant {
   static const Widget height15 = SizedBox(height: 15);
   static const ScrollPhysics noScrollPhysics = NeverScrollableScrollPhysics();
   static const EdgeInsets padding5 = EdgeInsets.all(5);
+  static const EdgeInsets padding2 = EdgeInsets.all(2);
   static const EdgeInsets padding10 = EdgeInsets.all(10);
   static const EdgeInsets paddingHorizontal10 =
       EdgeInsets.symmetric(horizontal: 10);

@@ -6,7 +6,7 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'models/barcode/models/barcode_scanner_result.dart';
+import 'exception/exception.dart';
 import 'models/models.dart';
 
 abstract class MrtPlatformInterface extends PlatformInterface {
@@ -15,14 +15,15 @@ abstract class MrtPlatformInterface extends PlatformInterface {
   static final Object _token = Object();
 
   /// Platform-specific implementations should set this with their own
-  /// platform-specific class that extends [MrtNativePlatform] when
+  /// platform-specific class that extends [PlatformInterface] when
   /// they register themselves.
   static set instance(MrtPlatformInterface instance) {
     PlatformInterface.verifyToken(instance, _token);
   }
 
   Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw const MRTNativePluginException(
+        'platformVersion() has not been implemented.');
   }
 
   static void registerWith() {}
@@ -49,6 +50,7 @@ abstract class MrtPlatformInterface extends PlatformInterface {
       {required BarcodeScannerParams param});
   Future<void> stopBarcodeScanner();
   Future<bool> hasBarcodeScanner();
+  Future<MRTAPPConfig> getConfig();
 }
 
 abstract class SpecificPlatfromMethods {

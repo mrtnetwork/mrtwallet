@@ -55,7 +55,6 @@ class SolanaCreateAssociatedTokenAccountForm extends SolanaTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields =>
       [ownerAddress, mintAddress, tokenProgram];
 
@@ -82,7 +81,6 @@ class SolanaCreateAssociatedTokenAccountForm extends SolanaTransactionForm {
   @override
   String get name => "create_associated_token_account";
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

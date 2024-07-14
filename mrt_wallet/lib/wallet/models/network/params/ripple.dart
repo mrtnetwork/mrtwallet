@@ -2,11 +2,11 @@ import 'package:blockchain_utils/cbor/core/cbor.dart';
 import 'package:blockchain_utils/cbor/types/cbor_tag.dart';
 import 'package:blockchain_utils/cbor/types/list.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
 
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
-import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class RippleNetworkParams extends NetworkCoinParams<RippleAPIProvider> {
@@ -47,13 +47,13 @@ class RippleNetworkParams extends NetworkCoinParams<RippleAPIProvider> {
   }
 
   @override
-  NetworkCoinParams<APIProvider> updateProviders(
-      List<RippleAPIProvider> updateProviders) {
+  NetworkCoinParams<RippleAPIProvider> updateProviders(
+      List<APIProvider> updateProviders) {
     return RippleNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
         token: token,
-        providers: updateProviders,
+        providers: updateProviders.cast<RippleAPIProvider>(),
         mainnet: mainnet);
   }
 }

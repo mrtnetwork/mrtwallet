@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/future/wallet/network/ripple/transaction/pages/pages/controll_ripple_transaction_account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
@@ -10,9 +10,9 @@ class MonitorRippleTokenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ControllerRippleTransactionAccountView(
+    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress>(
       title: "add_token".tr,
-      childBulder: (wallet, account, address, switchRippleAccount) {
+      childBulder: (wallet, account, address, network, switchRippleAccount) {
         return _MonitorRippleTokenView(
             address: address, wallet: wallet, provider: account.provider()!);
       },

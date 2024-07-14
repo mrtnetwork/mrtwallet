@@ -1,11 +1,7 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/xrp/addresses/xrp.dart';
-import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleUtils {
@@ -214,20 +210,6 @@ class RippleUtils {
     }
   }
 
-  static Bip32Base rippleSeedToBip32(String seed, WalletNetwork network) {
-    try {
-      final ripplePrivateKey = XRPPrivateKey.fromSeed(seed);
-      return BlockchainUtils.privteKeyToBip32(
-          ripplePrivateKey.toBytes(),
-          network.coins.firstWhere((element) =>
-              element.conf.type == ripplePrivateKey.algorithm.curveType));
-    } on WalletException {
-      rethrow;
-    } catch (e) {
-      throw WalletExceptionConst.invalidPrivateKey;
-    }
-  }
-
   static XRPPrivateKey seedToPrivateKey(String seed) {
     try {
       return XRPPrivateKey.fromSeed(seed);
@@ -245,32 +227,15 @@ class RippleUtils {
     }
   }
 
-  static Bip32Base ripplePrivateKeyToBip32(
-      String privateKey, CryptoCoins coin) {
+  static List<int> privateKeyToKeypairBytes(
+      {required List<int> privateKey, required CryptoCoins coin}) {
     try {
-      final ripplePrivateKey = XRPPrivateKey.fromBytes(
-          BytesUtils.fromHexString(privateKey),
+      final ripplePrivateKey = XRPPrivateKey.fromBytes(privateKey,
           algorithm: coin.conf.type == EllipticCurveTypes.ed25519
               ? XRPKeyAlgorithm.ed25519
               : XRPKeyAlgorithm.secp256k1);
 
-      return BlockchainUtils.privteKeyToBip32(ripplePrivateKey.toBytes(), coin);
-    } on WalletException {
-      rethrow;
-    } catch (e) {
-      throw WalletExceptionConst.invalidPrivateKey;
-    }
-  }
-
-  static Bip32Base rippleEntropyToBip32(String entropy, CryptoCoins coin) {
-    try {
-      final ripplePrivateKey = XRPPrivateKey.fromEntropy(entropy,
-          algorithm: coin.conf.type == EllipticCurveTypes.ed25519
-              ? XRPKeyAlgorithm.ed25519
-              : XRPKeyAlgorithm.secp256k1);
-      return BlockchainUtils.privteKeyToBip32(ripplePrivateKey.toBytes(), coin);
-    } on WalletException {
-      rethrow;
+      return ripplePrivateKey.toBytes();
     } catch (e) {
       throw WalletExceptionConst.invalidPrivateKey;
     }

@@ -1,6 +1,6 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin WalletStorageManger on WalletStorageWriter {
+mixin WalletsStoragesManger on WalletStorageWriter {
   Future<HDWallets> _readWallet() async {
     final wallet = await _read(key: StorageConst.hdWallets);
     if (wallet == null) {
@@ -34,10 +34,6 @@ mixin WalletStorageManger on WalletStorageWriter {
     await _delete(key: StorageConst.walletStorageKey);
     await _delete(key: StorageConst.walletChecksum);
     await _delete(key: StorageConst.walletNetworkKey);
-  }
-
-  Future<void> eraseAll() async {
-    await _deleteAll();
   }
 
   Future<void> _removeWalletStorage(HDWallet wallet) async {

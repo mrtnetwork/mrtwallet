@@ -1,22 +1,21 @@
 part of 'package:mrt_wallet/repository/repository.dart';
 
 mixin BaseRepository {
+  String get repositoryStorageId;
   String _toKey(String storageId, String key) {
     assert(key.trim().isNotEmpty &&
         key != StorageConst.walletStorageKey &&
         key != StorageConst.walletNetworkKey);
-    return "${storageId}_$key";
+    return "ST_${storageId}_$key";
   }
 
-  Future<void> _write(
-      {required String key,
-      required String value,
-      required String storageId}) async {
-    await BaseNativeMEthod.platform.writeSecure(_toKey(storageId, key), value);
+  Future<void> write({required String key, required String value}) async {
+    await BaseNativeMEthod.platform
+        .writeSecure(_toKey(repositoryStorageId, key), value);
   }
 
-  Future<String?> _read(
-      {required String key, required String storageId}) async {
-    return await BaseNativeMEthod.platform.readSecure(_toKey(storageId, key));
+  Future<String?> read(String key) async {
+    return await BaseNativeMEthod.platform
+        .readSecure(_toKey(repositoryStorageId, key));
   }
 }

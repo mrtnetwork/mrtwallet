@@ -5,6 +5,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/keys/models/seed.dart';
 
 class SetupRippleAddressView extends StatefulWidget {
   final AddressDerivationController controller;
@@ -39,7 +40,8 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
   }
 
   void generateAddress() async {
-    final keyIndex = await widget.controller.getCoin(context);
+    final keyIndex = await widget.controller
+        .getCoin(context: context, seedGeneration: SeedTypes.bip39);
     if (keyIndex == null) return;
 
     final newAccount = RippleNewAddressParam(

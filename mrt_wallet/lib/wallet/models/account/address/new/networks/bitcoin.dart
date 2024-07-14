@@ -1,5 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart' show BitcoinAddressType;
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/core/core.dart';

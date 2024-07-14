@@ -10,6 +10,7 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
     show CryptoAddress, ICardanoAddress;
 import 'package:mrt_wallet/wroker/keys/keys.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 
 class AccountPublicKeyView extends StatelessWidget {
@@ -41,7 +42,7 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
   bool get hasMultipleKey => pubKeys.length > 1;
   late CryptoPublicKeyData publicKey;
   String? keyInNetwork;
-  String get extendedKey => publicKey.extendedKey;
+  String? get extendedKey => publicKey.extendedKey;
   String? get uncomprossed => publicKey.uncomprossed;
   String get comprossed => keyInNetwork ?? publicKey.comprossed;
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
@@ -154,16 +155,18 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
                       key: UniqueKey(),
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("extended_public_key".tr,
-                            style: context.textTheme.titleMedium),
-                        WidgetConstant.height8,
-                        ContainerWithBorder(
-                            child: CopyTextWithBarcode(
-                          dataToCopy: extendedKey,
-                          barcodeTitle: "extended_public_key".tr,
-                          widget: SelectableText(extendedKey),
-                        )),
-                        WidgetConstant.height20,
+                        if (extendedKey != null) ...[
+                          Text("extended_public_key".tr,
+                              style: context.textTheme.titleMedium),
+                          WidgetConstant.height8,
+                          ContainerWithBorder(
+                              child: CopyTextWithBarcode(
+                            dataToCopy: extendedKey!,
+                            barcodeTitle: "extended_public_key".tr,
+                            widget: SelectableText(extendedKey!),
+                          )),
+                          WidgetConstant.height20,
+                        ],
                         Text("comperessed_public_key".tr,
                             style: context.textTheme.titleMedium),
                         WidgetConstant.height8,

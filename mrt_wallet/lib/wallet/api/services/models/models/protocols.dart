@@ -1,4 +1,4 @@
-import 'package:mrt_native_support/models/platform.dart';
+import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_wallet/app/core.dart';
 
 enum ServiceProtocol {

@@ -18,7 +18,7 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() async {
   runZonedGuarded(run, (error, stack) {
-    WalletLogging.print("zone error $error $stack");
+    WalletLogging.debugPrint("zone error $error $stack");
   });
 }
 
@@ -35,7 +35,8 @@ void run() async {
   }
   final materialData =
       await PlatformInterface.interface.readSecure(StorageConst.setting);
-  final setting = APPSetting.fromHex(materialData);
+  final config = await PlatformInterface.interface.getConfig();
+  final setting = APPSetting.fromHex(materialData, config);
   ThemeController.fromAppSetting(setting);
   runApp(StateRepository(child: MyBTC(setting: setting)));
 }

@@ -43,7 +43,6 @@ class TronUnFreezBalanceV2Form extends TronTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields => [resource, amount];
 
   @override
@@ -51,7 +50,6 @@ class TronUnFreezBalanceV2Form extends TronTransactionForm {
 
   final IntegerBalance stackedBalance = IntegerBalance.zero(TronUtils.decimal);
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

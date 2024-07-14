@@ -2,6 +2,7 @@ import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 
 class BItcoinAccountUtxos {
   BItcoinAccountUtxos._(
@@ -62,7 +63,7 @@ class BitcoinOutputWithBalance {
       required WalletBitcoinNetwork network,
       this.token})
       : assert(() {
-          if (token != null && network is! WalletBitcoinCashNetwork) {
+          if (token != null && network.type != NetworkType.bitcoinCash) {
             return false;
           }
           return true;

@@ -1,19 +1,27 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wroker/constant/const.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation/substrate.dart';
+import 'package:mrt_wallet/wroker/keys/access/private_key_response.dart';
 import 'package:mrt_wallet/wroker/keys/models/seed.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/multisig.dart';
 
 enum AddressDerivationType {
-  bip32,
-  multisig;
+  bip32(CryptoKeyConst.accoutKeyIndex),
+  substrate(CryptoKeyConst.substrateKeyIndex),
+  multisig(CryptoKeyConst.multiSigAccountKeyIndex);
 
+  final List<int> tag;
+  const AddressDerivationType(this.tag);
   bool get isMultiSig => this == AddressDerivationType.multisig;
+
+  static AddressDerivationType fromTag(List<int>? tag) {
+    return values.firstWhere((e) => BytesUtils.bytesEqual(e.tag, tag),
+        orElse: () => throw WalletExceptionConst.invalidAccountDetails);
+  }
 }
 
 abstract class AddressDerivationIndex with CborSerializable, Equatable {
@@ -23,23 +31,31 @@ abstract class AddressDerivationIndex with CborSerializable, Equatable {
   abstract final String? importedKeyId;
   bool get isImportedKey => importedKeyId != null;
   String get name;
+  bool get isSubstrate => derivationType == AddressDerivationType.substrate;
+  bool get isBip32 => derivationType == AddressDerivationType.bip32;
   bool get isMultiSig => derivationType.isMultiSig;
+
+  /// change address index key (use imported key)
+  AddressDerivationIndex asImportedKey(String importKeyId);
 
   const AddressDerivationIndex();
   static AddressDerivationIndex fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final cbor = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-    if (BytesUtils.bytesEqual(cbor.tags, CryptoKeyConst.accoutKeyIndex)) {
-      return Bip32AddressIndex.fromCborBytesOrObject(obj: cbor);
-    } else if (BytesUtils.bytesEqual(
-        cbor.tags, CryptoKeyConst.multiSigAccountKeyIndex)) {
-      return const MultiSigAddressIndex();
-    } else {
-      throw WalletExceptionConst.invalidAccountDetails;
+    final key = AddressDerivationType.fromTag(cbor.tags);
+    switch (key) {
+      case AddressDerivationType.bip32:
+        return Bip32AddressIndex.fromCborBytesOrObject(obj: cbor);
+      case AddressDerivationType.substrate:
+        return SubstrateAddressIndex.fromCborBytesOrObject(obj: cbor);
+      case AddressDerivationType.multisig:
+        return const MultiSigAddressIndex();
+      default:
+        throw UnimplementedError("Unsuported key index.");
     }
   }
 
-  T derive<T extends Bip32Base>(T derivator,
+  PrivateKeyData derive(PrivateKeyData masterKey,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex});
 
   SeedTypes get seedGeneration;

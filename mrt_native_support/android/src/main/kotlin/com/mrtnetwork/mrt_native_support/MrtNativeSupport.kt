@@ -8,9 +8,10 @@ import android.os.Build
 import android.view.WindowManager
 import com.mrtnetwork.mrt_native_support.connection.ConnectionBroadcast
 import com.mrtnetwork.mrt_native_support.connection.NetworkEvent
-import com.mrtnetwork.mrt_native_support.encryptions.*
+import com.mrtnetwork.mrt_native_support.encryptions.EncryptionImpl
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.*
+import io.flutter.plugin.common.MethodCall
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.util.PathUtils
 
@@ -21,7 +22,7 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
     override lateinit var applicationContext: Context
 
     override fun onNewIntent(intent: Intent): Boolean {
-        TODO("Not yet implemented")
+        return false;
     }
 
     override var mainActivity: Activity? = null
@@ -33,7 +34,7 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
         this.applicationContext = flutterPluginBinding.applicationContext
 
         this.methodChannel = MethodChannel(
-                flutterPluginBinding.binaryMessenger, "com.metnetwork.mrt_n.methodChannel"
+            flutterPluginBinding.binaryMessenger, "com.metnetwork.mrt_n.methodChannel"
         )
         this.methodChannel.setMethodCallHandler(this)
         EncryptionImpl.init(applicationContext)
@@ -50,16 +51,14 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
 
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        MrtCore.logging(call.method );
-        @Suppress("UNCHECKED_CAST") val args: Map<String, Any?> =
-                call.arguments as Map<String, Any?>
+        MrtCore.logging(call.method);
         when (call.method) {
-        
+
             "logging" -> {
-                // MrtCore.logging("logging event: $args")
             }
 
             "secureFlag" -> {
+                val args: Map<String, Any?> = MrtCore.getMapArguments(call, result) ?: return
                 try {
                     val secure = args["secure"] as Boolean
                     val isSecure = secureApplication(secure)
@@ -71,7 +70,10 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
 
             "path" -> result.success(getPath())
             "info" -> result.success(deviceInfo())
-            "lunch_uri" -> result.success(lunchUrl(args["uri"] as String?))
+            "lunch_uri" -> {
+                val args: Map<String, Any?> = MrtCore.getMapArguments(call, result) ?: return
+                result.success(lunchUrl(args["uri"] as String?))
+            }
             "network" -> {
                 val event: NetworkEvent = connectionManager.connectivity.networkType
                 result.success(event.toJson())
@@ -87,7 +89,7 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
     private fun secureApplication(secure: Boolean): Boolean {
         if (secure) {
             mainActivity?.window?.setFlags(
-                    WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE
+                WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE
             )
 
         } else {

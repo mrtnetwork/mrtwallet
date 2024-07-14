@@ -1,13 +1,14 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart' show CryptoCoins;
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
     show QuickContextAccsess, QuickDateTimeFormater, SafeState, Translate;
+import 'package:mrt_wallet/app/utils/utils.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart' show WalletNetwork, ChainHandler;
 import 'package:mrt_wallet/wroker/worker.dart';
 
-typedef _OnGenerateDerivation = Future<Bip32AddressIndex?> Function();
+typedef _OnGenerateDerivation = Future<AddressDerivationIndex?> Function();
 
 class SetupDerivationModeView extends StatefulWidget {
   final CryptoCoins coin;
@@ -25,7 +26,7 @@ class SetupDerivationModeView extends StatefulWidget {
       this.networkCoins = const [],
       this.defaultDerivation,
       this.title,
-      this.seedGenerationType = SeedTypes.bip39});
+      required this.seedGenerationType});
 
   @override
   State<SetupDerivationModeView> createState() =>
@@ -43,8 +44,10 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
 
   AddressDerivationIndex derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
-      return (customKeyIndex ?? Bip32AddressIndex(currencyCoin: coin))
-          .copyWith(importedKeyId: selectedCustomKey!.id);
+      final keyIndex = (customKeyIndex ??
+          Bip32AddressIndex(
+              currencyCoin: coin, seedGeneration: widget.seedGenerationType));
+      return keyIndex.asImportedKey(selectedCustomKey!.id);
     }
     return customKeyIndex ?? nextDerivation;
   }
@@ -53,8 +56,8 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     if (widget.defaultDerivation != null) {
       return widget.defaultDerivation!;
     }
-    final nextDerive = chainAccount.account
-        .nextDerive(coin, seedGeneration: widget.seedGenerationType);
+    final nextDerive =
+        chainAccount.account.nextDerive(coin, widget.seedGenerationType);
     return nextDerive;
   }
 
@@ -69,9 +72,10 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
         selectedCustomKey = newSelected;
         canUseKey = true;
       } else {
-        final findCoin = widget.networkCoins.firstWhere(
-            (element) => element.conf.type == newSelected.coin.conf.type,
-            orElse: () => coin);
+        CryptoCoins? findCoin = MethodUtils.nullOnException(() =>
+            widget.networkCoins.firstWhere(
+                (element) => element.conf.type == newSelected.coin.conf.type));
+        findCoin ??= coin;
         if (newSelected.coin.conf.type == findCoin.conf.type) {
           selectedCustomKey = newSelected;
           coin = findCoin;
@@ -87,7 +91,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
 
   List<EncryptedCustomKey> get customKeys => widget.customKeys;
   bool get derivationStandard => customKeyIndex == null;
-  Bip32AddressIndex? customKeyIndex;
+  AddressDerivationIndex? customKeyIndex;
 
   void onChangeDerivation(_OnGenerateDerivation onGenerateDerivation) async {
     if (derivationStandard) {
@@ -130,11 +134,9 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
                     return context.openSliverBottomSheet<Bip32AddressIndex>(
                         "key_derivation".tr,
                         child: ByronLegacyKeyDerivationView(
-                          coin: coin,
-                          curve: coin.conf.type,
-                        ));
+                            coin: coin, curve: coin.conf.type));
                   }
-                  return context.openSliverBottomSheet<Bip32AddressIndex>(
+                  return context.openSliverBottomSheet<AddressDerivationIndex>(
                       "key_derivation".tr,
                       child: Bip32KeyDerivationView(
                           coin: coin,

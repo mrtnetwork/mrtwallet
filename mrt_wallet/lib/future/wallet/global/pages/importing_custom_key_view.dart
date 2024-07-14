@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/keys/import/import_keys.dart';
 
 class ImportCustomKeyToWalletView extends StatefulWidget {
   const ImportCustomKeyToWalletView({required this.keypair, Key? key})

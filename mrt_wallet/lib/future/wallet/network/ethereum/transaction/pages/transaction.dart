@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
-
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/pages/gas_fee.dart';
-import 'package:mrt_wallet/future/wallet/network/ethereum/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
@@ -17,131 +16,135 @@ class EthereumTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<EthereumTransactionForm> validator =
         field ?? context.getArgruments();
-    return ControllerEthereumTransactionAccountView(
+    return NetworkAccountControllerView<WalletEthereumNetwork, IEthAddress>(
       title: validator.validator.name.tr,
-      childBulder: (wallet, chain, address, switchAccount) => MrtViewBuilder<
-              EthereumTransactionStateController>(
-          controller: () => EthereumTransactionStateController(
-              walletProvider: wallet,
-              account: chain.account,
-              network: chain.network as WalletEthereumNetwork,
-              apiProvider: chain.provider()!,
-              address: address,
-              validator: validator),
-          builder: (controller) {
-            return PageProgress(
-              key: controller.progressKey,
-              backToIdle: APPConst.oneSecoundDuration,
-              child: () => CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: ConstraintsBoxView(
-                      padding: WidgetConstant.padding20,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("account".tr,
-                              style: context.textTheme.titleLarge),
-                          WidgetConstant.height8,
-                          ContainerWithBorder(
-                            onRemoveIcon: const Icon(Icons.edit),
-                            child: AddressDetailsView(
-                                address: controller.owner,
-                                key: ValueKey<IEthAddress?>(controller.owner)),
-                            onRemove: () {
-                              context
-                                  .openSliverBottomSheet<IEthAddress>(
-                                    "switch_account".tr,
-                                    child: SwitchOrSelectAccountView(
-                                      account: controller.account,
-                                      showMultiSig: true,
-                                    ),
-                                    minExtent: 0.5,
-                                    maxExtend: 0.9,
-                                    initialExtend: 0.7,
-                                    centerContent: false,
-                                  )
-                                  .then(switchAccount);
-                            },
-                          ),
-                          WidgetConstant.height20,
-                          _ETHTransactionFileds(
-                              account: chain.account,
-                              validator: controller.validator),
-                          WidgetConstant.height20,
-                          Text("setup_memo".tr,
-                              style: context.textTheme.titleMedium),
-                          WidgetConstant.height8,
-                          ContainerWithBorder(
-                              onRemoveIcon: controller.hasMemo
-                                  ? const Icon(Icons.remove_circle)
-                                  : const Icon(Icons.add_box),
-                              onRemove: () {
-                                controller.onTapMemo((s) async {
-                                  final result = await context
-                                      .openSliverBottomSheet<String>(
-                                    "transaction_memo".tr,
-                                    child: StringWriterView(
-                                      defaultValue: controller.memo,
-                                      title: PageTitleSubtitle(
-                                          title: "setup_memo".tr,
-                                          body: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text("memo_desc1".tr),
-                                              WidgetConstant.height8,
-                                              Text("empty_desc".tr),
-                                            ],
-                                          )),
-                                      buttonText: "setup_memo".tr,
-                                      label: "memo".tr,
-                                    ),
-                                  );
-                                  return result;
-                                });
-                              },
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: controller.hasMemo
-                                        ? Text(controller.memo ?? "")
-                                        : Text("tap_to_add_memo".tr,
-                                            style:
-                                                context.textTheme.labelLarge),
-                                  ),
-                                ],
-                              )),
-                          WidgetConstant.height20,
-                          EthereumGasFeeView(transaction: controller),
-                          WidgetConstant.height20,
-                          InsufficientBalanceErrorView(
-                            verticalMargin: WidgetConstant.paddingVertical10,
-                            balance: controller.remindAmount.$1,
-                            token: controller.remindAmount.$2,
-                          ),
-                          ErrorTextContainer(
-                              error: controller.error,
-                              verticalMargin: WidgetConstant.paddingVertical10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+      childBulder: (wallet, chain, address, network, switchAccount) =>
+          MrtViewBuilder<EthereumTransactionStateController>(
+              controller: () => EthereumTransactionStateController(
+                  walletProvider: wallet,
+                  account: chain.account,
+                  network: network,
+                  apiProvider: chain.provider()!,
+                  address: address,
+                  validator: validator),
+              builder: (controller) {
+                return PageProgress(
+                  key: controller.progressKey,
+                  backToIdle: APPConst.oneSecoundDuration,
+                  child: () => CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: ConstraintsBoxView(
+                          padding: WidgetConstant.padding20,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              FixedElevatedButton(
-                                onPressed: controller.trIsReady
-                                    ? controller.sedTransaction
-                                    : null,
-                                child: Text("send_transaction".tr),
+                              Text("account".tr,
+                                  style: context.textTheme.titleLarge),
+                              WidgetConstant.height8,
+                              ContainerWithBorder(
+                                onRemoveIcon: const Icon(Icons.edit),
+                                child: AddressDetailsView(
+                                    address: controller.owner,
+                                    key: ValueKey<IEthAddress?>(
+                                        controller.owner)),
+                                onRemove: () {
+                                  context
+                                      .openSliverBottomSheet<IEthAddress>(
+                                        "switch_account".tr,
+                                        child: SwitchOrSelectAccountView(
+                                          account: controller.account,
+                                          showMultiSig: true,
+                                        ),
+                                        minExtent: 0.5,
+                                        maxExtend: 0.9,
+                                        initialExtend: 0.7,
+                                        centerContent: false,
+                                      )
+                                      .then(switchAccount);
+                                },
+                              ),
+                              WidgetConstant.height20,
+                              _ETHTransactionFileds(
+                                  account: chain.account,
+                                  validator: controller.validator),
+                              WidgetConstant.height20,
+                              Text("setup_memo".tr,
+                                  style: context.textTheme.titleMedium),
+                              WidgetConstant.height8,
+                              ContainerWithBorder(
+                                  onRemoveIcon: controller.hasMemo
+                                      ? const Icon(Icons.remove_circle)
+                                      : const Icon(Icons.add_box),
+                                  onRemove: () {
+                                    controller.onTapMemo((s) async {
+                                      final result = await context
+                                          .openSliverBottomSheet<String>(
+                                        "transaction_memo".tr,
+                                        child: StringWriterView(
+                                          defaultValue: controller.memo,
+                                          title: PageTitleSubtitle(
+                                              title: "setup_memo".tr,
+                                              body: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text("memo_desc1".tr),
+                                                  WidgetConstant.height8,
+                                                  Text("empty_desc".tr),
+                                                ],
+                                              )),
+                                          buttonText: "setup_memo".tr,
+                                          label: "memo".tr,
+                                        ),
+                                      );
+                                      return result;
+                                    });
+                                  },
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: controller.hasMemo
+                                            ? Text(controller.memo ?? "")
+                                            : Text("tap_to_add_memo".tr,
+                                                style: context
+                                                    .textTheme.labelLarge),
+                                      ),
+                                    ],
+                                  )),
+                              WidgetConstant.height20,
+                              EthereumGasFeeView(transaction: controller),
+                              WidgetConstant.height20,
+                              InsufficientBalanceErrorView(
+                                verticalMargin:
+                                    WidgetConstant.paddingVertical10,
+                                balance: controller.remindAmount.$1,
+                                token: controller.remindAmount.$2,
+                              ),
+                              ErrorTextContainer(
+                                  error: controller.error,
+                                  verticalMargin:
+                                      WidgetConstant.paddingVertical10),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FixedElevatedButton(
+                                    padding: WidgetConstant.paddingVertical20,
+                                    onPressed: controller.trIsReady
+                                        ? controller.sedTransaction
+                                        : null,
+                                    child: Text("send_transaction".tr),
+                                  )
+                                ],
                               )
                             ],
-                          )
-                        ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          }),
+                );
+              }),
     );
   }
 }

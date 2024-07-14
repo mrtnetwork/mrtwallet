@@ -4,8 +4,10 @@ import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solana/solana.dart';
+import 'package:polkadot_dart/polkadot_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
@@ -13,6 +15,8 @@ class _DefaultAppCoins {
   static final BitcoinParams bitcoinCashMainnet = BitcoinParams(
       transactionExplorer: "https://bch.loping.net/tx/#txid",
       addressExplorer: "https://bch.loping.net/address/#address",
+      genesis:
+          "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
       transacationNetwork: BitcoinCashNetwork.mainnet,
       token: Token(
         name: "BitcoinCash",
@@ -26,6 +30,8 @@ class _DefaultAppCoins {
   static final BitcoinParams bitcoinCashChipnet = BitcoinParams(
       transactionExplorer: "https://cbch.loping.net/tx/#txid",
       addressExplorer: "https://cbch.loping.net/address/#address",
+      genesis:
+          "000000001dd410c49a788668ce26751718cc797474d3152a5fc073dd44fd9f7b",
       transacationNetwork: BitcoinCashNetwork.testnet,
       token: Token(
         name: "BitcoinCash chipnet",
@@ -40,6 +46,8 @@ class _DefaultAppCoins {
       transactionExplorer: "https://live.blockcypher.com/btc/tx/#txid/",
       addressExplorer: "https://live.blockcypher.com/btc/address/#address/",
       transacationNetwork: BitcoinNetwork.mainnet,
+      genesis:
+          "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
       token: Token(
           name: "Bitcoin",
           symbol: "BTC",
@@ -52,6 +60,8 @@ class _DefaultAppCoins {
       addressExplorer:
           "https://live.blockcypher.com/btc-testnet/address/#address/",
       transacationNetwork: BitcoinNetwork.testnet,
+      genesis:
+          "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943",
       token: Token(
           name: "Bitcoin testnet",
           symbol: "tBTC",
@@ -60,6 +70,8 @@ class _DefaultAppCoins {
           assetLogo: APPConst.btc),
       providers: []);
   static final BitcoinParams litecoinMainnet = BitcoinParams(
+      genesis:
+          "12a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2",
       transactionExplorer: "https://live.blockcypher.com/ltc/tx/#txid/",
       addressExplorer: "https://live.blockcypher.com/ltc/address/#address/",
       transacationNetwork: LitecoinNetwork.mainnet,
@@ -73,6 +85,8 @@ class _DefaultAppCoins {
   static final BitcoinParams litecoinTestnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/ltc/tx/#txid/",
       addressExplorer: "https://live.blockcypher.com/ltc/address/#address/",
+      genesis:
+          "4966625a4b2851d9fdee139e56211a0d88575f59ed816ff5e6a63deb4e3e29a0",
       transacationNetwork: LitecoinNetwork.testnet,
       token: Token(
           name: "Litecoin testnet",
@@ -84,6 +98,8 @@ class _DefaultAppCoins {
   static final BitcoinParams dogecoinMainnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/doge/tx/#txid/",
       addressExplorer: "https://live.blockcypher.com/doge/address/#address/",
+      genesis:
+          "1a91e3dace36e2be3bf030a65679fe821aa1d6ef92e7c9902eb318182c355691",
       transacationNetwork: DogecoinNetwork.mainnet,
       token: Token(
           name: "Dogecoin",
@@ -95,6 +111,8 @@ class _DefaultAppCoins {
   static final BitcoinParams pepecoinMainnet = BitcoinParams(
       transactionExplorer: "https://pepeexplorer.com/tx/#txid",
       addressExplorer: "https://pepeexplorer.com/address/#address",
+      genesis:
+          "37981c0c48b8d48965376c8a42ece9a0838daadb93ff975cb091f57f8c2a5faa",
       transacationNetwork: PepeNetwork.mainnet,
       token: Token(
           name: "Pepecoin",
@@ -107,6 +125,8 @@ class _DefaultAppCoins {
   static final BitcoinParams dogeTestnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/doge/tx/#txid/",
       addressExplorer: "https://live.blockcypher.com/doge/address/#address/",
+      genesis:
+          "bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e",
       transacationNetwork: DogecoinNetwork.testnet,
       token: Token(
         name: "Dogecoin testnet",
@@ -119,6 +139,8 @@ class _DefaultAppCoins {
   static final BitcoinParams bsvMainnet = BitcoinParams(
       transactionExplorer: "https://whatsonchain.com/tx/#txid",
       addressExplorer: "https://whatsonchain.com/address/#address",
+      genesis:
+          "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
       transacationNetwork: BitcoinSVNetwork.mainnet,
       token: Token(
         name: "BitcoinSV",
@@ -132,6 +154,8 @@ class _DefaultAppCoins {
   static final BitcoinParams dashMainnet = BitcoinParams(
       transactionExplorer: "https://live.blockcypher.com/dash/tx/#txid/",
       addressExplorer: "https://live.blockcypher.com/dash/address/#address/",
+      genesis:
+          "00000ffd590b1485b3caadc19b22e6379c733355108f107a430458cdf3407ab6",
       token: Token(
         name: "Dash",
         symbol: "DASH",
@@ -267,6 +291,8 @@ class _DefaultAppCoins {
   static final TronNetworkParams tronShasta = TronNetworkParams(
       transactionExplorer: "https://shasta.tronscan.org/#/transaction/#txid",
       addressExplorer: "https://shasta.tronscan.org/#/address/#address",
+      genesis:
+          "0000000000000000de1aa88295e1fcf982742f773e0419c5a9c134c994a9059e",
       mainnet: false,
       token: Token(
         name: "Tron shasta testnet",
@@ -280,6 +306,8 @@ class _DefaultAppCoins {
   static final TronNetworkParams tronNile = TronNetworkParams(
       transactionExplorer: "https://nile.tronscan.org/#/transaction/#txid",
       addressExplorer: "https://nile.tronscan.org/#/address/#address",
+      genesis:
+          "0000000000000000d698d4192c56cb6be724a558448e2684802de4d6cd8690dc",
       mainnet: false,
       token: Token(
         name: "Tron nile testnet",
@@ -293,6 +321,8 @@ class _DefaultAppCoins {
   static final TronNetworkParams tron = TronNetworkParams(
       transactionExplorer: "https://tronscan.org/#/transaction/#txid",
       addressExplorer: "https://tronscan.org/#/address/#address",
+      genesis:
+          "00000000000000001ebf88508a03865c71d452e25f4d51194196a1d22b6653dc",
       mainnet: true,
       token: Token(
         name: "Tron",
@@ -307,19 +337,22 @@ class _DefaultAppCoins {
   static final SolanaNetworkParams solana = SolanaNetworkParams(
       transactionExplorer: "https://explorer.solana.com/tx/#txid",
       addressExplorer: "https://explorer.solana.com/address/#address",
+      genesis: "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
       mainnet: true,
       token: Token(
-          name: "Solana",
-          symbol: "SOL",
-          market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
-          decimal: 9,
-          assetLogo: APPConst.sol),
+        name: "Solana",
+        symbol: "SOL",
+        market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
+        decimal: 9,
+        assetLogo: APPConst.sol,
+      ),
       providers: []);
   static final SolanaNetworkParams solanaTestnet = SolanaNetworkParams(
       transactionExplorer:
           "https://explorer.solana.com/tx/#txid?cluster=testnet",
       addressExplorer:
           "https://explorer.solana.com/address/#address?cluster=testnet",
+      genesis: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
       mainnet: false,
       token: Token(
         name: "Solana testnet",
@@ -414,6 +447,7 @@ class _DefaultAppCoins {
       hrp: CosmosAddrConst.thor,
       mainCoin: const CosmosNativeCoin(decimal: 8, denom: 'rune'),
       coins: [const CosmosNativeCoin(decimal: 8, denom: 'rune')],
+      bip32CoinType: 931,
       networkType: CosmosNetworkTypes.thorAndForked,
       token: Token(
           name: "THORChain",
@@ -455,7 +489,7 @@ class _DefaultAppCoins {
           assetLogo: APPConst.kujira),
       providers: []);
 
-  static final CosmosNetworkParams osmosTestnet = CosmosNetworkParams(
+  static final CosmosNetworkParams osmosisTestnet = CosmosNetworkParams(
       transactionExplorer:
           "https://celatone.osmosis.zone/osmo-test-5/txs/#txid",
       addressExplorer:
@@ -468,6 +502,23 @@ class _DefaultAppCoins {
       token: Token(
         name: "Osmo testnet",
         symbol: "tOsmo",
+        decimal: 6,
+        market: const CoingeckoCoin(apiId: "osmosis", coinName: "osmosis"),
+        assetLogo: APPConst.osmo,
+      ),
+      providers: []);
+  static final CosmosNetworkParams osmosis = CosmosNetworkParams(
+      transactionExplorer: "https://celatone.osmosis.zone/osmosis-1/txs/#txid",
+      addressExplorer:
+          "https://celatone.osmosis.zone/osmosis-1/accounts/#address",
+      networkType: CosmosNetworkTypes.main,
+      mainnet: true,
+      hrp: CosmosConst.osmoHrp,
+      mainCoin: const CosmosNativeCoin(decimal: 6, denom: 'uosmo'),
+      coins: [const CosmosNativeCoin(decimal: 6, denom: 'uosmo')],
+      token: Token(
+        name: "Osmosis",
+        symbol: "Osmo",
         decimal: 6,
         market: const CoingeckoCoin(apiId: "osmosis", coinName: "osmosis"),
         assetLogo: APPConst.osmo,
@@ -500,6 +551,39 @@ class _DefaultAppCoins {
               apiId: "the-open-network", coinName: "toncoin"),
           decimal: 9,
           assetLogo: APPConst.ton),
+      providers: []);
+  static final SubstrateNetworkParams westend = SubstrateNetworkParams(
+      transactionExplorer: "https://westend.subscan.io/extrinsic/#txid",
+      addressExplorer: "https://westend.subscan.io/account/#address",
+      mainnet: false,
+      ss58Format: SS58Const.genericSubstrate,
+      specVersion: 1014000,
+      token:
+          Token(name: "Westend", symbol: "WND", decimal: 12, assetLogo: null),
+      providers: []);
+  static final SubstrateNetworkParams polkadot = SubstrateNetworkParams(
+      transactionExplorer: "https://polkadot.subscan.io/extrinsic/#txid",
+      addressExplorer: "https://polkadot.subscan.io/account/#address",
+      mainnet: true,
+      ss58Format: SS58Const.polkadot,
+      specVersion: 1002006,
+      token: Token(
+          name: "Polkadot",
+          symbol: "DOT",
+          decimal: 10,
+          assetLogo: APPConst.polkadot),
+      providers: []);
+  static final SubstrateNetworkParams kusama = SubstrateNetworkParams(
+      transactionExplorer: "https://polkadot.subscan.io/extrinsic/#txid",
+      addressExplorer: "https://polkadot.subscan.io/account/#address",
+      mainnet: true,
+      ss58Format: SS58Const.kusama,
+      specVersion: 1002006,
+      token: Token(
+          name: "Kusama",
+          symbol: "KSM",
+          decimal: 12,
+          assetLogo: APPConst.kusama),
       providers: []);
 }
 
@@ -535,9 +619,13 @@ class ChainUtils {
     203: WalletCosmosNetwork(203, _DefaultAppCoins.thorchain),
     204: WalletCosmosNetwork(204, _DefaultAppCoins.kujiraTestnet),
     205: WalletCosmosNetwork(205, _DefaultAppCoins.kujira),
-    206: WalletCosmosNetwork(206, _DefaultAppCoins.osmosTestnet),
+    206: WalletCosmosNetwork(206, _DefaultAppCoins.osmosisTestnet),
+    207: WalletCosmosNetwork(207, _DefaultAppCoins.osmosis),
     300: WalletTonNetwork(300, _DefaultAppCoins.tonMainnet),
     301: WalletTonNetwork(301, _DefaultAppCoins.tonTestnet),
+    400: WalletPolkadotNetwork(400, _DefaultAppCoins.polkadot),
+    450: WalletKusamaNetwork(450, _DefaultAppCoins.kusama),
+    451: WalletKusamaNetwork(451, _DefaultAppCoins.westend),
     1001: WalletTronNetwork(1001, _DefaultAppCoins.tron),
     1002: WalletTronNetwork(1002, _DefaultAppCoins.tronShasta),
     1003: WalletTronNetwork(1003, _DefaultAppCoins.tronNile),
@@ -571,6 +659,10 @@ class ChainUtils {
         return Bip32NetworkAccount<BigInt, TonAddress>.fromCborBytesOrObject(
             network,
             obj: account);
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        return Bip32NetworkAccount<BigInt,
+            SubstrateAddress>.fromCborBytesOrObject(network, obj: account);
       default:
         return Bip32NetworkAccount<BigInt,
             BitcoinBaseAddress>.fromCborBytesOrObject(network, obj: account);
@@ -578,33 +670,35 @@ class ChainUtils {
   }
 
   static Bip32NetworkAccount createNetworkAccount(WalletNetwork network) {
-    switch (network.runtimeType) {
-      case WalletEthereumNetwork:
+    switch (network.type) {
+      case NetworkType.ethereum:
         return Bip32NetworkAccount<BigInt, ETHAddress>.setup(network);
-      case WalletTronNetwork:
+      case NetworkType.tron:
         return Bip32NetworkAccount<BigInt, TronAddress>.setup(network);
-      case WalletXRPNetwork:
+      case NetworkType.xrpl:
         return Bip32NetworkAccount<BigRational, XRPAddress>.setup(network);
-      case WalletSolanaNetwork:
+      case NetworkType.solana:
         return Bip32NetworkAccount<BigInt, SolAddress>.setup(network);
-      case WalletCardanoNetwork:
+      case NetworkType.cardano:
         return Bip32NetworkAccount<BigInt, ADAAddress>.setup(network);
-      case WalletCosmosNetwork:
+      case NetworkType.cosmos:
         return Bip32NetworkAccount<BigInt, CosmosBaseAddress>.setup(network);
-      case WalletTonNetwork:
+      case NetworkType.ton:
         return Bip32NetworkAccount<BigInt, TonAddress>.setup(network);
-      default:
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        return Bip32NetworkAccount<BigInt, SubstrateAddress>.setup(network);
+      case NetworkType.bitcoinAndForked:
+      case NetworkType.bitcoinCash:
         return Bip32NetworkAccount<BigInt, BitcoinBaseAddress>.setup(network);
+      default:
+        throw UnimplementedError("network does not eixst. ");
     }
   }
 
   static Bip32NetworkAccount account(
       WalletNetwork network, CborTagValue? account) {
-    try {
-      return toNetworkAccount(network, account!);
-    } catch (e) {
-      return createNetworkAccount(network);
-    }
+    return toNetworkAccount(network, account!);
   }
 
   static WalletNetwork updateNetwork({int? networkId, WalletNetwork? network}) {

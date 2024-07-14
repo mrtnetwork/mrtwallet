@@ -3,6 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:mrt_wallet/wroker/utils/address/utils.dart';
 
 class SelectRecipientAccountView<NETWORKADDRESS> extends StatefulWidget {
@@ -47,6 +48,7 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
       GlobalKey(debugLabel: "SelectAddress");
   final GlobalKey<FormState> formKey = GlobalKey(debugLabel: "SelectAddress_1");
   late final WalletNetwork network = widget.account.network;
+  late final bool isRippleNetwork = network.type == NetworkType.xrpl;
   String _address = "";
   Live<ContactCore?> newContact = Live<ContactCore?>(null);
 
@@ -54,13 +56,48 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
     _address = v;
   }
 
-  ContactCore<NETWORKADDRESS>? validate(String? address) {
-    final addr =
-        BlockchainAddressUtils.validateNetworkAddress(address, network);
-    if (addr == null) return null;
+  bool useRippleTag = false;
+  int? rippleAddressTag;
+
+  void onChangeTag(String? v) {
+    rippleAddressTag = int.tryParse(v ?? "");
+  }
+
+  void onUseRippleTag(bool? v) {
+    useRippleTag = !useRippleTag;
+    rippleAddressTag = null;
+    updateState();
+  }
+
+  ContactCore<NETWORKADDRESS>? _toNewContact(Object? addr) {
     final contact = ContactCore.newContact<NETWORKADDRESS>(
         network: network, address: addr, name: "new_address".tr);
     return contact as ContactCore<NETWORKADDRESS>;
+  }
+
+  ContactCore<NETWORKADDRESS>? _validate(String? address) {
+    final addr =
+        BlockchainAddressUtils.validateNetworkAddress(address, network);
+    if (addr == null) return null;
+    return _toNewContact(addr as NETWORKADDRESS);
+  }
+
+  (ContactCore<NETWORKADDRESS>?, String? error) _validateRipple(
+      String? address, int? tag) {
+    if (address == null) return (null, null);
+    final addr = MethodUtils.nullOnException(() =>
+        BlockchainAddressUtils.toRippleAddress(address, network.toNetwork()));
+    if (addr == null) return (null, null);
+    if (tag != null) {
+      if (addr.tag == tag) return (_toNewContact(addr), null);
+      if (addr.tag != null && addr.tag != tag) {
+        return (null, "ripple_xaddress_tag_validator".tr);
+      }
+      final newAddress = BlockchainAddressUtils.validateXAddressTag(
+          addr: address, network: network.toNetwork(), tag: tag);
+      return (_toNewContact(newAddress), null);
+    }
+    return (_toNewContact(addr), null);
   }
 
   void _setValidate(ContactCore? contact) {
@@ -76,11 +113,30 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
     }
   }
 
+  String? validatorTag(String? v) {
+    int? tag = int.tryParse(v ?? "");
+    if (tag == null || tag != rippleAddressTag) {
+      return "ripple_address_validator_desc".tr;
+    }
+    return null;
+  }
+
   String? validator(String? v) {
-    final addr = validate(v);
+    ContactCore<NETWORKADDRESS>? addr;
+    String? error;
+    if (isRippleNetwork) {
+      final validate = _validateRipple(v, rippleAddressTag);
+      addr = validate.$1;
+      error = validate.$2;
+    } else {
+      addr = _validate(v);
+    }
     _setValidate(addr);
+    if (useRippleTag && rippleAddressTag == null) {
+      return "ripple_address_validator_desc".tr;
+    }
     if (addr == null) {
-      return "invalid_network_address".tr;
+      return error ?? "invalid_network_address".tr;
     }
     return null;
   }
@@ -90,8 +146,9 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
   }
 
   void onAccountOrContact(String address) {
-    final addr = validate(address);
+    final addr = _validate(address);
     if (addr == null) return;
+
     ReceiptAddress<NETWORKADDRESS>? receipt =
         widget.account.getReceiptAddress(addr.address)
                 as ReceiptAddress<NETWORKADDRESS>? ??
@@ -108,7 +165,14 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
 
   void onSetup() {
     if (!(formKey.currentState?.validate() ?? false)) return;
-    final addr = validate(_address);
+    ContactCore<NETWORKADDRESS>? addr;
+    if (isRippleNetwork) {
+      final validate = _validateRipple(_address, rippleAddressTag);
+      addr = validate.$1;
+    } else {
+      addr = _validate(_address);
+    }
+
     if (context.mounted && addr != null) {
       ReceiptAddress? receipt =
           widget.account.getReceiptAddress(addr.address) ??
@@ -137,13 +201,16 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
         bottom: TabBar(controller: controller, tabs: [
           Tab(text: "address".tr),
           Tab(text: "accounts".tr),
-          Tab(text: "contacts".tr),
+          Tab(text: "contacts".tr)
         ]),
       ),
       body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) => [],
           body: TabBarView(controller: controller, children: [
-            _WriteAddress(state: this),
+            if (isRippleNetwork)
+              _WriteRippleAddress(state: this)
+            else
+              _WriteAddress(state: this),
             _SelectFromAccounts(
                 addresses: widget.account.addresses,
                 controller: widget.scrollController,
@@ -151,7 +218,7 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
             _SelectFromContacts(
                 contacts: widget.account.contacts,
                 controller: widget.scrollController,
-                onSelectContact: onAccountOrContact),
+                onSelectContact: onAccountOrContact)
           ])),
     );
   }
@@ -168,35 +235,40 @@ class _SelectFromAccounts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstraintsBoxView(
-      child: ListView.builder(
-          itemCount: addresses.length,
-          controller: controller,
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: WidgetConstant.paddingHorizontal10,
-              child: ContainerWithBorder(
-                onRemove: () {
-                  onSelectContact(addresses[index].address.toAddress);
-                },
-                onRemoveWidget: const SizedBox(),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: InkWell(
-                          child: AddressDetailsView(
-                        address: addresses[index],
-                      )),
+      child: CustomScrollView(
+        controller: controller,
+        slivers: [
+          SliverList.builder(
+              itemCount: addresses.length,
+              // controller: controller,
+              // shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: WidgetConstant.paddingHorizontal10,
+                  child: ContainerWithBorder(
+                    onRemove: () {
+                      onSelectContact(addresses[index].address.toAddress);
+                    },
+                    onRemoveWidget: const SizedBox(),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                              child: AddressDetailsView(
+                            address: addresses[index],
+                          )),
+                        ),
+                        WidgetConstant.width8,
+                        CopyTextIcon(
+                            isSensitive: false,
+                            dataToCopy: addresses[index].address.toAddress),
+                      ],
                     ),
-                    WidgetConstant.width8,
-                    CopyTextIcon(
-                        isSensitive: false,
-                        dataToCopy: addresses[index].address.toAddress),
-                  ],
-                ),
-              ),
-            );
-          }),
+                  ),
+                );
+              })
+        ],
+      ),
     );
   }
 }
@@ -226,7 +298,7 @@ class _SelectFromContacts extends StatelessWidget {
       child: ListView.builder(
           itemCount: contacts.length,
           shrinkWrap: true,
-          controller: controller,
+          // controller: controller,
           primary: false,
           itemBuilder: (context, index) {
             return ContainerWithBorder(
@@ -263,7 +335,6 @@ class _WriteAddress extends StatelessWidget {
     return ConstraintsBoxView(
       padding: WidgetConstant.padding20,
       child: SingleChildScrollView(
-        controller: state.widget.scrollController,
         primary: false,
         child: Form(
           key: state.formKey,
@@ -280,25 +351,28 @@ class _WriteAddress extends StatelessWidget {
                 minlines: 1,
                 initialValue: state._address,
                 maxLines: 2,
-                suffixIcon: Column(
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     LiveWidget(() {
                       final contact = state.newContact.value;
-                      return AnimatedSize(
-                        duration: APPConst.animationDuraion,
-                        child: contact != null
-                            ? IconButton(
+                      return APPAnimatedSwitcher(
+                        widgets: {
+                          true: (c) => IconButton(
                                 onPressed: () {
                                   state.onTapContact();
                                 },
                                 icon: const Icon(Icons.account_circle),
-                              )
-                            : PasteTextIcon(
+                              ),
+                          false: (c) => PasteTextIcon(
                                 onPaste: state.onPaste,
                                 isSensitive: false,
-                              ),
+                              )
+                        },
+                        enable: contact != null,
                       );
                     }),
+                    BarcodeScannerIconView(state.onPaste),
                   ],
                 ),
                 validator: state.validator,
@@ -309,6 +383,99 @@ class _WriteAddress extends StatelessWidget {
                 children: [
                   FixedElevatedButton(
                       padding: WidgetConstant.paddingVertical20,
+                      onPressed: state.onSetup,
+                      child: Text("setup_address".tr))
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _WriteRippleAddress extends StatelessWidget {
+  const _WriteRippleAddress({required this.state});
+  final _SelectRecipientAccountViewState state;
+  @override
+  Widget build(BuildContext context) {
+    return ConstraintsBoxView(
+      padding: WidgetConstant.padding20,
+      child: SingleChildScrollView(
+        primary: false,
+        child: Form(
+          key: state.formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              state.widget.subtitle ??
+                  PageTitleSubtitle(
+                      title: "address_recipient_funds".tr,
+                      body: Text("receiver_address_desc".tr)),
+              AppTextField(
+                key: state.textFieldKey,
+                label: "address".tr,
+                minlines: 1,
+                initialValue: state._address,
+                maxLines: 2,
+                suffixIcon: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    LiveWidget(() {
+                      final contact = state.newContact.value;
+                      return APPAnimatedSwitcher(
+                        widgets: {
+                          true: (c) => IconButton(
+                                onPressed: () {
+                                  state.onTapContact();
+                                },
+                                icon: const Icon(Icons.account_circle),
+                              ),
+                          false: (c) => PasteTextIcon(
+                                onPaste: state.onPaste,
+                                isSensitive: false,
+                              )
+                        },
+                        enable: contact != null,
+                      );
+                    }),
+                    BarcodeScannerIconView(state.onPaste),
+                  ],
+                ),
+                validator: state.validator,
+                onChanged: state.onChange,
+              ),
+              WidgetConstant.height20,
+              AppCheckListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text("insert_address_tag".tr,
+                    style: context.textTheme.titleMedium),
+                subtitle: Text("ripple_xaddress_feature".tr),
+                onChanged: state.onUseRippleTag,
+                value: state.useRippleTag,
+              ),
+              APPAnimatedSize(
+                  isActive: state.useRippleTag,
+                  onActive: (c) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          WidgetConstant.height8,
+                          NumberTextField(
+                              label: "tag".tr,
+                              onChange: state.onChangeTag,
+                              max: RippleConst.maxRippleTag,
+                              defaultValue: state.rippleAddressTag,
+                              validator: state.validatorTag,
+                              min: 0),
+                        ],
+                      ),
+                  onDeactive: (c) => WidgetConstant.sizedBox),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FixedElevatedButton(
+                      padding: WidgetConstant.paddingVertical40,
                       onPressed: state.onSetup,
                       child: Text("setup_address".tr))
                 ],

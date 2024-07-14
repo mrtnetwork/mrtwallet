@@ -1,7 +1,5 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
-
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
@@ -85,7 +83,7 @@ class IXRPAddress extends CryptoAddress<BigRational, XRPAddress>
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.rippleAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CoinProposal proposal = CoinProposal.fromName(cbor.elementAt(0));
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
@@ -305,8 +303,7 @@ class IXRPMultisigAddress extends IXRPAddress
         address: accountParams.tag == null
             ? accountParams.masterAddress.toString()
             : accountParams.masterAddress.toXAddress(
-                tag: accountParams.tag,
-                isTestnet: accountParams.coin.conf.isTestnet),
+                tag: accountParams.tag, isTestnet: !network.coinParam.mainnet),
         balance: IntegerBalance.zero(network.coinParam.decimal));
 
     return IXRPMultisigAddress._(
@@ -325,8 +322,7 @@ class IXRPMultisigAddress extends IXRPAddress
 
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.rippleMultisigAccount);
-    final CryptoProposal proposal =
-        CryptoProposal.fromName(cbor.value[0].value);
+    final CoinProposal proposal = CoinProposal.fromName(cbor.value[0].value);
     final CryptoCoins coin =
         CryptoCoins.getCoin(cbor.value[1].value, proposal)!;
 

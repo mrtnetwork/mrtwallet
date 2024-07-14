@@ -1,7 +1,8 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart' show CryptoCoins;
+import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
-    show MethodUtils, QuickContextAccsess, StateController, Translate;
+    show QuickContextAccsess, StateController, Translate;
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -9,6 +10,7 @@ import 'package:mrt_wallet/wallet/wallet.dart'
     show WalletNetwork, ChainHandler, NetworkAccountCore, NewAccountParams;
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wroker/keys/models/encrypted_imported.dart';
+import 'package:mrt_wallet/wroker/keys/models/seed.dart';
 
 typedef OnGenerateDerivation = Future<Bip32AddressIndex?> Function();
 
@@ -23,11 +25,10 @@ typedef OnSelectDerivation = void Function(
     AddressDerivationMode mode, EncryptedCustomKey? selectedKey);
 
 class AddressDerivationController extends StateController {
-  AddressDerivationController({
-    required this.wallet,
-    required this.network,
-    required this.chainAccount,
-  });
+  AddressDerivationController(
+      {required this.wallet,
+      required this.network,
+      required this.chainAccount});
   final WalletProvider wallet;
   final GlobalKey visibleContinue =
       GlobalKey(debugLabel: "visibleGenerateAddress");
@@ -63,32 +64,33 @@ class AddressDerivationController extends StateController {
     notify();
   }
 
-  AddressDerivationIndex get nextDerivation {
-    return chainAccount.account.nextDerive(coin);
-  }
-
-  Future<Bip32AddressIndex?> getCoin(BuildContext context) async {
+  Future<AddressDerivationIndex?> getCoin(
+      {required BuildContext context,
+      required SeedTypes seedGeneration,
+      List<CryptoCoins>? selectedCoins}) async {
     if (!(form.currentState?.validate() ?? true)) return null;
-    final c = coin;
-    final customKeys = wallet.getCustomKeysForCoin(coins);
-    return await context.openSliverBottomSheet<Bip32AddressIndex>(
+    if (selectedCoins != null) {
+      if (selectedCoins.any((e) => !coins.contains(e))) {
+        throw WalletExceptionConst.invalidCoin;
+      }
+    }
+    final c = selectedCoins?.first ?? coin;
+    final customKeys = wallet.getCustomKeysForCoin(selectedCoins ?? coins);
+    return await context.openSliverBottomSheet<AddressDerivationIndex>(
         "setup_derivation".tr,
         child: SetupDerivationModeView(
           coin: c,
           chainAccout: chainAccount,
           customKeys: customKeys,
-          networkCoins: coins,
+          networkCoins: selectedCoins ?? coins,
+          seedGenerationType: seedGeneration,
         ));
   }
 
   void generateAddress(NewAccountParams newAccount) async {
     if (!(form.currentState?.validate() ?? false)) return;
     pageProgressKey.progressText("generating_new_addr".tr);
-    final result = await MethodUtils.call(() async {
-      final result = await wallet.deriveNewAccount(newAccount);
-      result.rethrowIfError();
-      return result.result;
-    });
+    final result = await wallet.deriveNewAccount(newAccount);
     if (result.hasError) {
       pageProgressKey.errorText(result.error!.tr);
     } else {

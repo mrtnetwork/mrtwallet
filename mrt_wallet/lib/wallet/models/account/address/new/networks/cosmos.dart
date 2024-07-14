@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
@@ -15,10 +14,7 @@ class CosmosNewAddressParams implements NewAccountParams {
   @override
   final AddressDerivationIndex deriveIndex;
 
-  const CosmosNewAddressParams({
-    required this.deriveIndex,
-    required this.coin,
-  });
+  const CosmosNewAddressParams({required this.deriveIndex, required this.coin});
 
   CosmosBaseAddress toAddress(
       {required List<int> publicKey, required String hrp}) {

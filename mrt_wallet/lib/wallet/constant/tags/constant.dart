@@ -66,6 +66,8 @@ class CborTagsConst {
   ///
   static const List<int> tonAccount = [200, 199];
 
+  static const List<int> substrateAccount = [200, 200];
+
   // contacts
   static const List<int> bitcoinContact = [100, 0];
   static const List<int> rippleContact = [100, 1];
@@ -75,6 +77,7 @@ class CborTagsConst {
   static const List<int> cardanoContct = [100, 5];
   static const List<int> cosmosContact = [100, 6];
   static const List<int> tonContact = [100, 7];
+  static const List<int> substrateContact = [100, 8];
 
   /// network tokens
   static const List<int> token = [110];
@@ -102,6 +105,9 @@ class CborTagsConst {
   static const List<int> bitcoinCashNetwork = [80, 0, 10];
   static const List<int> tonNetwork = [80, 0, 11];
 
+  static const List<int> polkadotNetwork = [80, 0, 12];
+  static const List<int> kusamaNetwork = [80, 0, 13];
+
   static const List<int> bitconNetworkParam = [80, 1, 1];
   static const List<int> xrpNetworkParam = [80, 1, 2];
   static const List<int> evmNetworkParam = [80, 1, 3];
@@ -110,6 +116,7 @@ class CborTagsConst {
   static const List<int> cosmosNetworkParams = [80, 1, 6];
   static const List<int> solNetworkParam = [80, 1, 7];
   static const List<int> tonNetworkParam = [80, 1, 8];
+  static const List<int> substrateNetworkParams = [80, 1, 9];
 
   ///
 
@@ -123,6 +130,7 @@ class CborTagsConst {
   static const List<int> cosmosApiServiceProvider = [90, 7];
   static const List<int> tonApiServiceProvider = [90, 8];
   static const List<int> rippleApiServiceProvider = [90, 9];
+  static const List<int> substrateApiServiceProvider = [90, 10];
 
   /// provider auth
 }

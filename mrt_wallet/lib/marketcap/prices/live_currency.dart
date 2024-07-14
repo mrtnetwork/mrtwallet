@@ -1,11 +1,24 @@
 import 'dart:async';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/marketcap/prices/coingecko.dart';
-import 'package:mrt_wallet/repository/repository.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin LiveCurrencies on WalletStateController, ExternalRepository {
+mixin LiveCurrencies on WalletStateController {
+  Future<CoingeckoPriceHandler> _getCoinPrices(List<String> coins) async {
+    final url = CoinGeckoUtils.toCoingeckoPriceUri(
+        Currency.toApiCall(), coins.join(","));
+    final json = await HttpUtils.get<Map<String, dynamic>>(url);
+    return CoingeckoPriceHandler.fromJson(json.result);
+  }
+
+  Future<CoingeckoCoinInfo?> _getCoinPrice(String id) async {
+    final url = CoinGeckoUtils.toCoingeckoPriceUri(Currency.toApiCall(), id);
+    final json = await HttpUtils.get<Map<String, dynamic>>(url);
+    if (json.result.isEmpty) return null;
+    return CoingeckoCoinInfo.fromJson(json.result[id]!, id);
+  }
+
   final _lock = SynchronizedLock();
   void _listenOnWallet(WalletEventStaus status) {
     if (status.isOpen) {
@@ -24,10 +37,9 @@ mixin LiveCurrencies on WalletStateController, ExternalRepository {
         baseCurrency: currencyToken, token: token, amount: amount);
   }
 
-  @override
   Future<CoingeckoCoinInfo?> getCoinPrice(String id) async {
     CoingeckoCoinInfo? coin = _currenciesPrice.getCoin(id);
-    coin ??= await super.getCoinPrice(id);
+    coin ??= await _getCoinPrice(id);
     _currenciesPrice.addCoin(coin!);
     return coin;
   }
@@ -47,7 +59,7 @@ mixin LiveCurrencies on WalletStateController, ExternalRepository {
       _streamPrices = MethodUtils.prediocCaller<CoingeckoPriceHandler>(
               () async {
         final result = await MethodUtils.call(() async {
-          return await getCoinPrices(_coinIds!);
+          return await _getCoinPrices(_coinIds!);
         });
         return result;
       },

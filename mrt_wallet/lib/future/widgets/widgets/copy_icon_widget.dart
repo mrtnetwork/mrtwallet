@@ -60,13 +60,16 @@ class CopyTextIconState extends State<CopyTextIcon> {
 
   @override
   Widget build(BuildContext context) {
-    final icon = AnimatedSwitcher(
-      duration: APPConst.animationDuraion,
-      child: Icon(
-        inCopy ? Icons.check_circle : Icons.copy,
-        size: widget.size,
-        key: ValueKey<bool>(inCopy),
-        color: widget.color,
+    final icon = IconButton(
+      onPressed: onTap,
+      icon: AnimatedSwitcher(
+        duration: APPConst.animationDuraion,
+        child: Icon(
+          inCopy ? Icons.check_circle : Icons.copy,
+          size: widget.size,
+          key: ValueKey<bool>(inCopy),
+          color: widget.color,
+        ),
       ),
     );
     return InkWell(

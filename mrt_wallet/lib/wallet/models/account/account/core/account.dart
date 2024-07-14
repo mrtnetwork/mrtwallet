@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
 import 'package:mrt_wallet/wallet/models/account/address/new/core/core.dart';
@@ -21,10 +21,9 @@ abstract class NetworkAccountCore<T, X> with CborSerializable {
   CryptoAddress? getAddress(String address);
   ContactCore<X>? getContact(String address);
   ReceiptAddress<X>? getReceiptAddress(String address);
-  abstract final CryptoAddress address;
-  Bip32AddressIndex nextDerive(CryptoCoins coin,
-      {SeedTypes seedGeneration = SeedTypes.bip39});
-  void removeAccount(CryptoAddress<T, X> address);
+  abstract final CryptoAddress<T, X> address;
+  AddressDerivationIndex nextDerive(CryptoCoins coin, SeedTypes seedGeneration);
+  bool removeAccount(CryptoAddress<T, X> address);
   bool get haveAddress;
   CryptoAddress<T, X> addNewAddress(
       List<int> publicKey, NewAccountParams accountParams);

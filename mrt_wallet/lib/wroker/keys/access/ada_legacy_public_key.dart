@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wroker/constant/const.dart';
@@ -66,5 +65,10 @@ class AdaLegacyPublicKeyData extends CryptoPublicKeyData {
 
   List<int> hdPathKeyBytes() {
     return BytesUtils.fromHexString(hdPathKey);
+  }
+
+  @override
+  List<int> chainCodeBytes() {
+    return BytesUtils.fromHexString(chainCode);
   }
 }

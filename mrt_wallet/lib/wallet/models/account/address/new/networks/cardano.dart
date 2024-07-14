@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/cardano/cardano.dart';
@@ -33,8 +32,9 @@ class CardanoNewAddressParams implements NewAccountParams {
       : customHdPathKey =
             BytesUtils.tryToBytes(customHdPathKey, unmodifiable: true);
 
-  ADAAddress toAddress() {
-    return addressDetails!.toAddress(deriveIndex.currencyCoin);
+  ADAAddress toAddress(WalletCardanoNetwork network) {
+    return addressDetails!
+        .toAddress(deriveIndex.currencyCoin, !network.coinParam.mainnet);
   }
 
   CardanoNewAddressParams copyWith(

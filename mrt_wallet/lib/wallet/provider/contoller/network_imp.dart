@@ -1,6 +1,6 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin WalletNetworkManager2 on WalletStorageManger2 {
+mixin WalletNetworkManager on WalletStorageManger {
   ChainsHandler _appChains = ChainsHandler.setup();
   ChainHandler get chain => _appChains.chain;
   WalletNetwork get network => chain.network;
@@ -25,10 +25,11 @@ mixin WalletNetworkManager2 on WalletStorageManger2 {
     await _saveAccount(newChain);
   }
 
-  Future<void> _switchAccount(CryptoAddress account) async {
+  Future<void> _switchAccount(CryptoAddress address) async {
     final acc = chain;
-    acc.account.switchAccount(account);
+    acc.account.switchAccount(address);
     await _saveAccount(acc);
+    _updateAccountBalance(acc, address: address);
   }
 
   Future<void> _removeAccount(CryptoAddress account) async {
@@ -121,26 +122,26 @@ mixin WalletNetworkManager2 on WalletStorageManger2 {
       {CryptoAddress? address}) async {
     if (account == null || !account.haveAddress) return;
     if (address != null && !account.account.addresses.contains(address)) return;
-    await account
-        .provider()
-        ?.updateBalance(address ?? account.account.address)
-        .catchError((e) {});
+    await account.provider()?.updateBalance(address ?? account.account.address);
     account.account.refreshTotalBalance();
     await _saveAccount(account);
   }
 
-  Future<void> _updateAccountsBalance(ChainHandler? account) async {
-    if (account == null || !account.haveAddress) return;
-    final provider = account.provider();
-    for (final i in account.account.addresses) {
-      try {
-        await provider?.updateBalance(i);
-      } catch (e) {
-        continue;
-      }
+  Future<void> _updateAccountsBalance(List<CryptoAddress> addresses) async {
+    final currentChain = chain;
+    final provider = currentChain.provider();
+    if (provider == null) return;
+    final accounts = addresses.where((e) =>
+        e.network == currentChain.network.value &&
+        _appChains.fromAddress(e) == currentChain);
+    for (final i in accounts) {
+      await MethodUtils.call(() async {
+        await provider.updateBalance(i);
+      });
     }
-    account.account.refreshTotalBalance();
-    await _saveAccount(account);
+    if (accounts.isNotEmpty) {
+      await _saveAccount(currentChain);
+    }
   }
 
   Future<void> _setupNetwork() async {
@@ -148,14 +149,15 @@ mixin WalletNetworkManager2 on WalletStorageManger2 {
     final keys = await _readAccounts();
     for (final i in keys) {
       try {
-        final chain = ChainHandler.fromCborBytesOrObject(hex: i);
+        final chain = ChainHandler.fromCborBytesOrObject(hex: i.$2);
         chains.add(chain);
       } catch (e) {
-        // rethrow;
-        continue;
+        WalletLogging.debugPrint("_setupNetwork $e");
+        await _delete(key: i.$1);
       }
     }
     _appChains = ChainsHandler(chains, currentNetwork: _wallet.network);
+    _appChains.chain.initProvider();
   }
 
   Future<void> _switchNetwork(int changeNetwork) async {
@@ -191,22 +193,31 @@ mixin WalletNetworkManager2 on WalletStorageManger2 {
         }
       }
     }
+
     if (removeList.isEmpty) return;
     for (final address in removeList) {
       final account = _appChains.fromAddress(address);
-      MethodUtils.nullOnException(() => account.account.removeAccount(address));
-      await _saveAccount(account);
+      if (account == null) {
+        continue;
+      }
+      if (account.account.removeAccount(address)) {
+        await _saveAccount(account);
+      }
     }
   }
 
   final Cancelable _balanceUpdaterCancelable = Cancelable();
   StreamSubscription<void>? _balanceUpdaterStream;
   void _streamBalances() {
-    _disposeBalanceUpdater();
+    if (WalletLogging.isDebug) return;
+
     final chains = _appChains.chains();
     _balanceUpdaterStream = MethodUtils.prediocCaller(
-            () => MethodUtils.call(() async {
+            () async => await MethodUtils.call(() async {
                   for (final chain in chains) {
+                    if (!chain.account.haveAddress) {
+                      continue;
+                    }
                     bool hasUpdate = false;
                     final provider = chain.provider();
                     if (provider == null) continue;
@@ -224,7 +235,8 @@ mixin WalletNetworkManager2 on WalletStorageManger2 {
                   }
                 }),
             canclable: _balanceUpdaterCancelable,
-            waitOnSuccess: const Duration(minutes: 10))
+            waitOnSuccess: const Duration(minutes: 10),
+            waitOnError: const Duration(minutes: 1))
         .listen((s) {});
   }
 

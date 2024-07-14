@@ -1,6 +1,6 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin WalletStorageManger2 on WalletStorageWriter {
+mixin WalletStorageManger on WalletStorageWriter {
   HDWallet get _wallet;
   Future<void> _updateWallet(HDWallet wallet, bool? asDefaultWallet);
 
@@ -18,11 +18,17 @@ mixin WalletStorageManger2 on WalletStorageWriter {
     await _write(key: accountStorageKey, value: toCbor);
   }
 
-  Future<List<String>> _readAccounts() async {
+  Future<List<(String, String)>> _readAccounts() async {
     final keys = await _readAll();
     return keys.keys
         .where((e) => e.startsWith(_wallet._networkKey))
-        .map((e) => keys[e]!)
+        .map((e) => (e, keys[e]!))
         .toList();
   }
+
+  // Future<void> _saveAccounts(List<ChainHandler> account) async {
+  //   for (final i in account) {
+  //     await _saveAccount(i);
+  //   }
+  // }
 }

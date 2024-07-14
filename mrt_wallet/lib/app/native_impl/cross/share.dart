@@ -1,4 +1,4 @@
-import 'package:mrt_native_support/models/share.dart';
+import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/native_impl/core/core.dart';
 

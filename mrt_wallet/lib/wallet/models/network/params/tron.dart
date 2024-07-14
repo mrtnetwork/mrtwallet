@@ -8,6 +8,7 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
   final List<EthereumAPIProvider> ethereumProviders;
+  final String genesis;
   factory TronNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
@@ -23,7 +24,8 @@ class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
         ethereumProviders: (cbor.elementAt(4) as List)
             .map((e) => EthereumAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        mainnet: cbor.elementAt(5));
+        mainnet: cbor.elementAt(5),
+        genesis: cbor.elementAt(6));
   }
   TronNetworkParams(
       {required super.transactionExplorer,
@@ -31,7 +33,8 @@ class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
       required super.token,
       required super.providers,
       required this.ethereumProviders,
-      required super.mainnet});
+      required super.mainnet,
+      required this.genesis});
 
   @override
   CborTagValue toCbor() {
@@ -43,20 +46,22 @@ class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(
               ethereumProviders.map((e) => e.toCbor()).toList()),
-          mainnet
+          mainnet,
+          genesis
         ]),
         CborTagsConst.tvmNetworkParam);
   }
 
   @override
   NetworkCoinParams<TronAPIProvider> updateProviders(
-      List<TronAPIProvider> updateProviders) {
+      List<APIProvider> updateProviders) {
     return TronNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
         token: token,
-        providers: updateProviders,
+        providers: updateProviders.cast<TronAPIProvider>(),
         ethereumProviders: ethereumProviders,
-        mainnet: mainnet);
+        mainnet: mainnet,
+        genesis: genesis);
   }
 }

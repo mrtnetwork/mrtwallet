@@ -1,6 +1,4 @@
-import 'package:blockchain_utils/bip/bip/bip32/bip32_key_data.dart';
-import 'package:blockchain_utils/bip/bip/bip44/base/bip44_base.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';

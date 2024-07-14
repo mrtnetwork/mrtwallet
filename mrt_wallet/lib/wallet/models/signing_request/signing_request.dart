@@ -1,6 +1,6 @@
 import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
 
 typedef TestSigning<T> = Future<T> Function(OnSignRequest generateSignature);
 

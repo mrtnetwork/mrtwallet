@@ -4,7 +4,6 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
 import 'package:mrt_wallet/wallet/wallet.dart';
 
 class SelectProviderIcon extends StatelessWidget {
@@ -21,7 +20,7 @@ class SelectProviderIcon extends StatelessWidget {
         tooltip: provider.message().tr,
         onPressed: () {
           context.openSliverDialog(
-              (ctx) => _SelectProviderView(
+              (ctx) => SelectProviderView(
                     network: wallet.network,
                     service: client?.service,
                   ), content: (context) {
@@ -68,8 +67,9 @@ class ProviderTrackerStatusView extends StatelessWidget {
   }
 }
 
-class _SelectProviderView extends StatelessWidget {
-  const _SelectProviderView({required this.service, required this.network});
+class SelectProviderView extends StatelessWidget {
+  const SelectProviderView(
+      {super.key, required this.service, required this.network});
   final BaseServiceProtocol? service;
   final WalletNetwork network;
   bool get isTron => network is WalletTronNetwork;
@@ -114,8 +114,12 @@ class _SelectProviderView extends StatelessWidget {
                           if (isSelected || isTron) {
                             context.openSliverBottomSheet(
                                 "network_provider_log_details".tr,
-                                child: _ProviderLogsView(
-                                    provider: service!.tracker));
+                                slivers: [
+                                  _ProviderLogsView(
+                                    tracker: service!.tracker,
+                                    provider: service!.provider,
+                                  ),
+                                ]);
                             return;
                           }
                           if (isTron) return;
@@ -207,9 +211,130 @@ extension _TrackerIcon on APIServiceTracker? {
   }
 }
 
-class _ProviderLogsView extends StatefulWidget {
-  const _ProviderLogsView({required this.provider});
+class _ProviderRequestView extends StatefulWidget {
+  const _ProviderRequestView({required this.provider});
   final APIServiceTracker provider;
+
+  @override
+  State<_ProviderRequestView> createState() => _ProviderRequestViewState();
+}
+
+class _ProviderRequestViewState extends State<_ProviderRequestView>
+    with SafeState {
+  ApiRequest? full;
+
+  void onSetFullView(ApiRequest? request) {
+    full = request;
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final requets = widget.provider.requests;
+    return SliverList.builder(
+        itemCount: requets.length,
+        itemBuilder: (context, index) {
+          final request = requets[index];
+          int? maxLine = full == request ? null : 1;
+          return AnimatedSize(
+            duration: APPConst.animationDuraion,
+            alignment: Alignment.topCenter,
+            child: ContainerWithBorder(
+                key: ValueKey<int?>(maxLine),
+                onRemove: () {
+                  onSetFullView(request);
+                },
+                onRemoveWidget: WidgetConstant.sizedBox,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(request.time.toDateAndTime(),
+                            style: context.textTheme.labelSmall),
+                      ],
+                    ),
+                    if (request.uri != null) ...[
+                      Text("url".tr, style: context.textTheme.titleSmall),
+                      ContainerWithBorder(
+                        backgroundColor: context.colors.secondary,
+                        onRemove: () {},
+                        onRemoveIcon: CopyTextIcon(
+                          dataToCopy: request.uri!,
+                          isSensitive: false,
+                          color: context.colors.onSecondary,
+                        ),
+                        onTapWhenOnRemove: false,
+                        child: Text(
+                          request.uri!,
+                          style: context.textTheme.bodyMedium
+                              ?.copyWith(color: context.colors.onSecondary),
+                          maxLines: maxLine,
+                        ),
+                      ),
+                    ],
+                    if (request.params != null) ...[
+                      Text("request".tr, style: context.textTheme.titleSmall),
+                      ContainerWithBorder(
+                        backgroundColor: context.colors.secondary,
+                        onRemove: () {},
+                        onRemoveIcon: CopyTextIcon(
+                          isSensitive: false,
+                          dataToCopy: request.params!,
+                          color: context.colors.onSecondary,
+                        ),
+                        onTapWhenOnRemove: false,
+                        child: Text(
+                          request.params!,
+                          style: context.textTheme.bodyMedium
+                              ?.copyWith(color: context.colors.onSecondary),
+                          maxLines: maxLine,
+                        ),
+                      ),
+                    ],
+                    if (request.error != null) ...[
+                      Text("error".tr, style: context.textTheme.titleSmall),
+                      ContainerWithBorder(
+                        backgroundColor: context.colors.error,
+                        child: Text(
+                          request.error!.toString().tr,
+                          style: context.textTheme.bodyMedium
+                              ?.copyWith(color: context.colors.onError),
+                          maxLines: maxLine,
+                        ),
+                      ),
+                    ],
+                    if (request.response != null) ...[
+                      Text("response".tr, style: context.textTheme.titleSmall),
+                      ContainerWithBorder(
+                        backgroundColor: context.colors.secondary,
+                        onRemove: () {},
+                        onRemoveIcon: CopyTextIcon(
+                          dataToCopy: request.response!,
+                          color: context.colors.onSecondary,
+                          isSensitive: false,
+                        ),
+                        onTapWhenOnRemove: false,
+                        child: Text(
+                          request.response!,
+                          style: context.textTheme.bodyMedium
+                              ?.copyWith(color: context.colors.onSecondary),
+                          maxLines: maxLine,
+                        ),
+                      ),
+                    ]
+                  ],
+                )),
+          );
+        });
+  }
+}
+
+class _ProviderLogsView extends StatefulWidget {
+  const _ProviderLogsView({required this.tracker, required this.provider});
+  final APIServiceTracker tracker;
+  final APIProvider provider;
 
   @override
   State<_ProviderLogsView> createState() => _ProviderLogsViewState();
@@ -225,141 +350,70 @@ class _ProviderLogsViewState extends State<_ProviderLogsView> with SafeState {
 
   @override
   Widget build(BuildContext context) {
-    final requets = widget.provider.requests;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("status".tr, style: context.textTheme.titleMedium),
-        WidgetConstant.height8,
-        ContainerWithBorder(
-          onRemove: () {},
-          onRemoveIcon: Icon(
-            widget.provider.icon,
-            color: context.colors.onPrimaryContainer,
-          ),
-          child: Text(widget.provider.message().tr),
-        ),
-        WidgetConstant.height20,
-        Text("network_total_request".tr, style: context.textTheme.titleMedium),
-        WidgetConstant.height8,
-        ContainerWithBorder(
-            child: Text(widget.provider.requestCount.toString().to3Digits)),
-        WidgetConstant.height20,
-        Text("network_total_success_request".tr,
-            style: context.textTheme.titleMedium),
-        WidgetConstant.height8,
-        ContainerWithBorder(
-            child: Text(widget.provider.totalSuccess.toString().to3Digits)),
-        if (requets.isNotEmpty) ...[
-          WidgetConstant.height20,
-          Text("network_request_details".tr,
-              style: context.textTheme.titleMedium),
-          WidgetConstant.height8,
-          ListView.builder(
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final request = requets[index];
-              int? maxLine = full == request ? null : 1;
-              return AnimatedSize(
-                duration: APPConst.animationDuraion,
-                alignment: Alignment.topCenter,
-                child: ContainerWithBorder(
-                    key: ValueKey<int?>(maxLine),
-                    onRemove: () {
-                      onSetFullView(request);
-                    },
-                    onRemoveWidget: WidgetConstant.sizedBox,
+    final requets = widget.tracker.requests;
+    return SliverConstraintsBoxView(
+      padding: WidgetConstant.paddingHorizontal20,
+      sliver: SliverMainAxisGroup(
+        slivers: [
+          SliverToBoxAdapter(
+            child: ConstraintsBoxView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("status".tr, style: context.textTheme.titleMedium),
+                  WidgetConstant.height8,
+                  ContainerWithBorder(
+                    onRemove: () {},
+                    onRemoveIcon: Icon(
+                      widget.tracker.icon,
+                      color: context.colors.onPrimaryContainer,
+                    ),
+                    child: Text(widget.tracker.message().tr),
+                  ),
+                  WidgetConstant.height20,
+                  Text("provider".tr, style: context.textTheme.titleMedium),
+                  WidgetConstant.height8,
+                  ContainerWithBorder(
+                    onRemove: () {},
+                    onRemoveWidget:
+                        LaunchBrowserIcon(url: widget.provider.websiteUri),
+                    onTapWhenOnRemove: false,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(request.time.toDateAndTime(),
-                                style: context.textTheme.labelSmall),
-                          ],
-                        ),
-                        if (request.uri != null) ...[
-                          Text("url".tr, style: context.textTheme.titleSmall),
-                          ContainerWithBorder(
-                            backgroundColor: context.colors.secondary,
-                            onRemove: () {},
-                            onRemoveIcon: CopyTextIcon(
-                              dataToCopy: request.uri!,
-                              isSensitive: false,
-                              color: context.colors.onSecondary,
-                            ),
-                            onTapWhenOnRemove: false,
-                            child: Text(
-                              request.uri!,
-                              style: context.textTheme.bodyMedium
-                                  ?.copyWith(color: context.colors.onSecondary),
-                              maxLines: maxLine,
-                            ),
-                          ),
-                        ],
-                        if (request.params != null) ...[
-                          Text("request".tr,
-                              style: context.textTheme.titleSmall),
-                          ContainerWithBorder(
-                            backgroundColor: context.colors.secondary,
-                            onRemove: () {},
-                            onRemoveIcon: CopyTextIcon(
-                              isSensitive: false,
-                              dataToCopy: request.params!,
-                              color: context.colors.onSecondary,
-                            ),
-                            onTapWhenOnRemove: false,
-                            child: Text(
-                              request.params!,
-                              style: context.textTheme.bodyMedium
-                                  ?.copyWith(color: context.colors.onSecondary),
-                              maxLines: maxLine,
-                            ),
-                          ),
-                        ],
-                        if (request.error != null) ...[
-                          Text("error".tr, style: context.textTheme.titleSmall),
-                          ContainerWithBorder(
-                            backgroundColor: context.colors.error,
-                            child: Text(
-                              request.error!.message?.tr ?? "",
-                              style: context.textTheme.bodyMedium
-                                  ?.copyWith(color: context.colors.onError),
-                              maxLines: maxLine,
-                            ),
-                          ),
-                        ],
-                        if (request.response != null) ...[
-                          Text("response".tr,
-                              style: context.textTheme.titleSmall),
-                          ContainerWithBorder(
-                            backgroundColor: context.colors.secondary,
-                            onRemove: () {},
-                            onRemoveIcon: CopyTextIcon(
-                              dataToCopy: request.response!,
-                              color: context.colors.onSecondary,
-                              isSensitive: false,
-                            ),
-                            onTapWhenOnRemove: false,
-                            child: Text(
-                              request.response!,
-                              style: context.textTheme.bodyMedium
-                                  ?.copyWith(color: context.colors.onSecondary),
-                              maxLines: maxLine,
-                            ),
-                          ),
-                        ]
+                        Text(widget.provider.websiteUri),
+                        Text(widget.provider.callUrl,
+                            style: context.textTheme.bodySmall),
                       ],
-                    )),
-              );
-            },
-            itemCount: requets.length,
-            addAutomaticKeepAlives: false,
-            physics: WidgetConstant.noScrollPhysics,
+                    ),
+                  ),
+                  WidgetConstant.height20,
+                  Text("network_total_request".tr,
+                      style: context.textTheme.titleMedium),
+                  WidgetConstant.height8,
+                  ContainerWithBorder(
+                      child: Text(
+                          widget.tracker.requestCount.toString().to3Digits)),
+                  WidgetConstant.height20,
+                  Text("network_total_success_request".tr,
+                      style: context.textTheme.titleMedium),
+                  WidgetConstant.height8,
+                  ContainerWithBorder(
+                      child: Text(
+                          widget.tracker.totalSuccess.toString().to3Digits)),
+                  if (requets.isNotEmpty) ...[
+                    WidgetConstant.height20,
+                    Text("network_request_details".tr,
+                        style: context.textTheme.titleMedium),
+                    WidgetConstant.height8,
+                  ]
+                ],
+              ),
+            ),
           ),
-        ]
-      ],
+          _ProviderRequestView(provider: widget.tracker)
+        ],
+      ),
     );
   }
 }

@@ -120,6 +120,7 @@ class Localization {
           "address_index": "Address index",
           "key_derivation": "Key derivation",
           "bip32_key_derivation": "BIP32 key derivation",
+          "substrate_key_derivation": "Substrate key derivation",
           "bip32_derivation_desc":
               "BIP32 levels (purpose, coin, account, change, address index) provide a hierarchical structure for generating cryptocurrency addresses, enabling deterministic wallet creation with specific attributes for organizational and security purposes.",
           "bip32_derivation_desc2":
@@ -367,9 +368,13 @@ class Localization {
           "import_account_desc2":
               "Please enter your private key, extended key, or Wallet Import Format (WIF) to proceed.",
           "private_key_invalid": "The provided private key is not valid.",
+          "extended_key_invalid": "The provided extended key is not valid.",
+          "wif_key_invalid": "Invalid WIF: incorrect key or wrong coin type.",
           "key_type": "key type",
           "imported": "Imported",
           "importing_key_pls_wait": "Importing key. please wait.",
+          "setup_new_account_pls_wait": "Setup new account. please wait.",
+          "removing_key_pls_wait": "Removing kaypair. please wait.",
           "address_imported_desc1":
               "Key successfully imported. Please proceed to the 'New Address' option in the address menu to create a new address.",
           "hd_wallet": "HD Wallet",
@@ -1369,6 +1374,8 @@ class Localization {
           "import_spl_tokens": "Import SPL Tokens",
           "unable_to_locate_token":
               "Unable to locate any SPL tokens in your account",
+          "unable_to_locate_jetton":
+              "Unable to locate any Jetton tokens in your account",
           "cardano_networks": "ADA",
           "select_era_for_generate_addr":
               "Please select the Cardano era to generate the address.",
@@ -1549,12 +1556,15 @@ class Localization {
           "Invalid_coin_default_path": "Invalid coin default path",
           "invalid_hd_wallet_derivation_path":
               "Invalid HD wallet derivation path",
+          "invalid_substrate_path": "Invalid substrate path.",
           "derivation_path": "Derivation path",
           "hd_wallet_path_max_indeqxes":
               "only supports up to ___1__ HD wallet indexes.",
           "unsupported_hd_wallet_index": "Unsupported hd wallet index.",
           "hd_wallet_hardened_desc":
               "For hardened indices, append ' or h to the end of the index.",
+          "hd_wallet_substrate_hardened_desc":
+              "For hardened indices, append // to the start of the index.",
           "imported_": "Imported(___1__)",
           "hd_path": "HD Path",
           "hd_path_key": "HD Path key",
@@ -1827,7 +1837,56 @@ class Localization {
           "ton_wallet_validator_desc":
               "Wallet contract v1 only support on message per transaction.",
           "qr_code_scanner": "Barcode scanner",
-          "getting_scanner_ready": "Getting scanner ready, please wait...",
+          "getting_scanner_ready": "Getting scanner ready, please wait.",
+          "ripple_address_validator_desc":
+              "Please enter the Ripple address tag or disable this feature.",
+          "insert_address_tag": "Enter the address tag",
+          "ripple_xaddress_feature": "X-address feature.",
+          "ripple_xaddress_tag_validator":
+              "The provided tag does not match the x-address tag.",
+          "page_closed": "Page closed.",
+          "retrive_barcode_data": "Retrieve barcode data",
+          "coin_not_found":
+              "Unable to locate a proposal with the given coin name.",
+          "keypair_type": "Keypair type",
+          "choose_substrate_key_algorithm_desc":
+              "Which type of algorithm would you like to use to create the address?",
+          "disable_standard_derivation_desc":
+              "You can manually setup a derivation path.",
+          "custom_path_derivation_desc":
+              "Ensure you remember the chosen path for custom derivation. Forgetting it could result in losing your funds.",
+          "substrate_key_derivation_desc":
+              "The derivation path in Substrate is used to securely generate key pairs from a master seed. The path is specified using a hierarchical format with slashes (/), and it can include both hard and soft derivation segments.",
+          "substrate_key_derivation_desc2":
+              "Double Slash (//) for Hard Derivation: This indicates a hard derivation step, where the derived key is cryptographically isolated from the parent key. For example, //Account denotes a hard derivation step to derive a key named 'Account' from the master key.",
+          "substrate_key_derivation_desc3":
+              "Single Slash (/) for Soft Derivation: This indicates a soft derivation step, allowing public key derivation without needing the private key. For example, /0 denotes a soft derivation step to derive the first key under the 'Account key.",
+          "substrate_customize_derivation_desc":
+              "Using SR25519 key derivation.",
+          "noce_connection_field":
+              "Connection to the network node was unsuccessful.",
+          "connection_attempt_unsuccessful": "Connection attempt unsuccessful.",
+          "node_connectiong_please_wait":
+              "Connecting to the node. Please wait.",
+          "up_to_4_message_single_transaction":
+              "Up to 4 messages can be added in a single transaction.",
+          "base_fee": "Base fee",
+          "len_fee": "Length fee",
+          "weight_fee": "Weight fee",
+          "tip": "Tip",
+          "barcode_scanning_terminated":
+              "Barcode scanning has been terminated.",
+          "provider": "Provider",
+          "account_options": "Account options",
+          "node_connection_desc":
+              "All actions are disabled until connection is established.",
+          "testnet_price_desc":
+              "You are on the testnet network, and prices are not valid.",
+          "testnet": "Testnet",
+          "coin_type_desc":
+              "Coin type must be a positive number between 0 and 4294967295.",
+          "slip_44_desc":
+              "BIP-0044 defines a logical hierarchy for deterministic wallets. Level 2 of the hierarchy describes a coin type in use.",
         }
       };
 }

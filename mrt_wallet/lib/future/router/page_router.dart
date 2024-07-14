@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/wallet/setup/pages/setup_wallet.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 
 class PageRouter {
   /// bitcoin casah
@@ -28,6 +29,9 @@ class PageRouter {
 
   // ton transfer
   static const String tonTransfer = "/ton/transfer";
+
+  // substrate transfer
+  static const String substrateTransfer = "/substrate/transfer";
 
   /// cardano
   static const String cardanoTransaction = "/cardano/transaction";
@@ -71,6 +75,9 @@ class PageRouter {
   static const String tonSettings = "setting/ton";
   static const String tonMnemonic = "setting/ton/mnemonic";
   static const String importJettons = "ton/import_jettons";
+
+  static const String barcodeScanner = "barcode_scanner";
+
   static Widget _page(String? name) {
     switch (name) {
       case setup:
@@ -161,7 +168,11 @@ class PageRouter {
       case showPublicKey:
         return const AccountPublicKeyView();
       case createWallet:
-        return const WalletSetupPageView();
+        return const WalletSetupPageWidget();
+      case barcodeScanner:
+        return const BarcodeScannerView();
+      case substrateTransfer:
+        return const SubstrateTransferTransactionView();
       default:
         return const HomeScreen();
     }
@@ -196,6 +207,7 @@ class PageRouter {
 
   static String transactionPage(WalletNetwork network) {
     switch (network.type) {
+      case NetworkType.bitcoinCash:
       case NetworkType.bitcoinAndForked:
         return bitcoinTransaction;
       case NetworkType.ethereum:
@@ -210,6 +222,9 @@ class PageRouter {
         return cardanoTransaction;
       case NetworkType.cosmos:
         return cosmosTransaction;
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        return substrateTransfer;
       default:
         return rippleTransfer;
     }

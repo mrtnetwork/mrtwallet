@@ -9,7 +9,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 

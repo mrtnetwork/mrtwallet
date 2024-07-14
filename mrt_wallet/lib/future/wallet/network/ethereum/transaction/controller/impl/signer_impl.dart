@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
 import 'package:on_chain/on_chain.dart';
 
 mixin ETHSignerImpl on EthTransactionImpl {
@@ -37,7 +37,8 @@ mixin ETHSignerImpl on EthTransactionImpl {
       return send;
     });
     if (result.hasError) {
-      progressKey.errorText(result.error!.tr);
+      progressKey.errorText(result.error!.tr,
+          showBackButton: true, backToIdle: false);
     } else {
       stopGasEstimate();
       progressKey.success(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/future/widgets/widgets/sliver/sliver.dart';
 
 class ConstraintsBoxView extends StatelessWidget {
   final Widget child;
@@ -24,6 +25,27 @@ class ConstraintsBoxView extends StatelessWidget {
           child: child,
         ),
       ),
+    );
+  }
+}
+
+class SliverConstraintsBoxView extends StatelessWidget {
+  final Widget sliver;
+  const SliverConstraintsBoxView(
+      {required this.sliver,
+      this.maxWidth = 650,
+      super.key,
+      this.padding = EdgeInsets.zero,
+      this.alignment = 0});
+  final double maxWidth;
+  final EdgeInsets padding;
+  final double alignment;
+  @override
+  Widget build(BuildContext context) {
+    return SliverCrossAxisConstrained(
+      alignment: alignment,
+      maxCrossAxisExtent: maxWidth,
+      child: SliverPadding(padding: padding, sliver: sliver),
     );
   }
 }

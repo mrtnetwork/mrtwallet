@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/balance/balance.dart';
@@ -55,7 +54,7 @@ class IBitcoinAddress extends CryptoAddress<BigInt, BitcoinBaseAddress>
     }
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.bitcoinAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CoinProposal proposal = CoinProposal.fromName(cbor.elementAt(0));
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final keyIndex =
         AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
@@ -240,7 +239,7 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.bitcoinMultiSigAccount);
-    final CryptoProposal proposal = CryptoProposal.fromName(cbor.elementAt(0));
+    final CoinProposal proposal = CoinProposal.fromName(cbor.elementAt(0));
     final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
     final BitcoinMultiSignatureAddress multiSignatureAddress =
         BitcoinMultiSignatureAddress.fromCborBytesOrObject(

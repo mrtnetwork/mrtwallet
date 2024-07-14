@@ -7,10 +7,10 @@ abstract class WalletStateController extends StateController {
 }
 
 abstract class _WalletCore extends WalletStateController
-    with WalletStorageWriter, WalletStorageManger {}
+    with WalletStorageWriter, WalletsStoragesManger {}
 
 abstract class WalletCore extends _WalletCore
-    with WalletManager, BaseRepository, WalletListener {
+    with WalletsManager, BaseRepository, WalletsListener {
   WalletCore(this._navigatorKey);
   final GlobalKey<NavigatorState> _navigatorKey;
   final _lock = SynchronizedLock();
@@ -23,16 +23,52 @@ abstract class WalletCore extends _WalletCore
   List<HDWallet> get wallets => _wallets._wallets.values.toList();
   String? get defaultWalletId => _wallets._defaultWallet;
 
+  Future<MethodResult<T>> _callSynchronized<T>(
+    Future<T> Function() t, {
+    required bool conditionStatus,
+    Duration? delay = APPConst.oneSecoundDuration,
+    Future<void> Function()? onWrongStatus,
+  }) async {
+    bool emeitListeners = false;
+    try {
+      return await _lock.synchronized(() async {
+        final status =
+            WalletEventStaus.fromWalletStatus(_homePageStatus, isOpen);
+        final result = await MethodUtils.call(() async {
+          if (!conditionStatus) {
+            if (onWrongStatus != null) {
+              await onWrongStatus();
+            }
+            if (!conditionStatus) {
+              throw WalletExceptionConst.incorrectStatus;
+            }
+          }
+          return await t();
+        }, delay: delay);
+        final after =
+            WalletEventStaus.fromWalletStatus(_homePageStatus, isOpen);
+        if (status != after) {
+          emeitListeners = true;
+        }
+        return result;
+      });
+    } finally {
+      if (emeitListeners) {
+        emitWalletListeners();
+      }
+    }
+  }
+
   @override
-  List<String> coinIds() => _controller.coinIds();
+  List<String> coinIds() => homePageStatus.isReady ? _controller.coinIds() : [];
 
   Future<MethodResult<void>> setup(
       {required HDWallet hdWallet,
       required String password,
       required WalletUpdateInfosData walletInfos}) async {
     try {
+      pageStatusHandler.progressText("launch_the_wallet".tr);
       final result = await _callSynchronized(() async {
-        pageStatusHandler.progressText("launch_the_wallet".tr);
         await _setup(
             hdWallet: hdWallet, password: password, walletInfos: walletInfos);
       }, conditionStatus: true);
@@ -51,8 +87,8 @@ abstract class WalletCore extends _WalletCore
       required String password,
       required WalletUpdateInfosData walletInfos}) async {
     try {
+      pageStatusHandler.progressText("launch_the_wallet".tr);
       final result = await _callSynchronized(() async {
-        pageStatusHandler.progressText("launch_the_wallet".tr);
         await _setup(
             hdWallet: backup.wallet,
             password: password,
@@ -69,6 +105,11 @@ abstract class WalletCore extends _WalletCore
     }
   }
 
+  Future<void> _onWalletLocked(String password) async {
+    if (!homePageStatus.isReady || _isUnlock) return;
+    await _controller._login(password);
+  }
+
   Future<MethodResult<void>> login(String password) async {
     try {
       final result = await _callSynchronized(
@@ -78,17 +119,14 @@ abstract class WalletCore extends _WalletCore
       return result;
     } finally {
       notify();
-      if (_isUnlock) {
-        updateAccountBalance();
-      }
     }
   }
 
   Future<MethodResult<void>> changePassword(
       String password, String newPassword) async {
     try {
+      pageStatusHandler.progressText("changing_password".tr);
       final result = await _callSynchronized(() async {
-        pageStatusHandler.progressText("changing_password".tr);
         await _controller._changePassword(password, newPassword);
       }, conditionStatus: _isUnlock);
       if (result.hasResult) {
@@ -105,8 +143,8 @@ abstract class WalletCore extends _WalletCore
       {required WalletUpdateInfosData walletInfos,
       required String password}) async {
     try {
+      pageStatusHandler.progressText("updating".tr);
       final result = await _callSynchronized(() async {
-        pageStatusHandler.progressText("updating".tr);
         return await _controller._updateWalletInfos(
             password: password, walletInfos: walletInfos);
       }, conditionStatus: _isUnlock);
@@ -123,17 +161,15 @@ abstract class WalletCore extends _WalletCore
   Future<MethodResult<CryptoAddress>> deriveNewAccount(
       NewAccountParams newAccountParams) async {
     try {
+      pageStatusHandler.progressText("setup_new_account_pls_wait".tr);
       final result = await _callSynchronized(
           () async => await _controller._deriveNewAccount(newAccountParams),
           conditionStatus: _isUnlock,
           delay: APPConst.milliseconds100);
-
+      pageStatusHandler.success();
       return result;
     } finally {
       notify();
-      if (_isUnlock) {
-        updateBalance();
-      }
     }
   }
 
@@ -271,9 +307,11 @@ abstract class WalletCore extends _WalletCore
   Future<MethodResult<void>> removeImportedKey(
       EncryptedCustomKey key, String password) {
     try {
+      pageStatusHandler.progressText("removing_key_pls_wait".tr);
       final result = _callSynchronized(() async {
         return await _controller._removeKey(key, password);
       }, conditionStatus: _isUnlock);
+      pageStatusHandler.success();
       return result;
     } finally {
       notify();
@@ -282,10 +320,11 @@ abstract class WalletCore extends _WalletCore
 
   Future<MethodResult<void>> removeAccount(CryptoAddress account) async {
     try {
+      pageStatusHandler.progressText("remove_account_pls_wait".tr);
       final result = await _callSynchronized(
           () async => await _controller._removeAccount(account),
           conditionStatus: isOpen);
-
+      pageStatusHandler.success();
       return result;
     } finally {
       notify();
@@ -300,7 +339,6 @@ abstract class WalletCore extends _WalletCore
         conditionStatus: isOpen);
     _backToHome();
     pageStatusHandler.success();
-    updateAccountBalance();
     notify();
   }
 
@@ -328,22 +366,12 @@ abstract class WalletCore extends _WalletCore
         () async => await _controller._accsess(accsessType, password,
             account: account, accountId: accountId),
         conditionStatus: isOpen,
+        onWrongStatus: () => _onWalletLocked(password),
         delay: (accsessType.isUnlock && password.isEmpty)
             ? null
             : APPConst.oneSecoundDuration);
     return result;
   }
-
-  // Future<MethodResult<String>?> generateBackup(
-  //     {required String data,
-  //     required String password,
-  //     required SecretWalletEncoding encoding}) async {
-  //   final result = await _callSynchronized(
-  //       () async => await _controller._generateKeysBackup(
-  //           dataToEncrypt: data, password: password, encoding: encoding),
-  //       conditionStatus: _isUnlock);
-  //   return result;
-  // }
 
   Future<void> updateImportNetwork(WalletNetwork network) async {
     try {
@@ -382,8 +410,8 @@ abstract class WalletCore extends _WalletCore
 
   Future<MethodResult<void>> eraseWallet(String password) async {
     try {
+      pageStatusHandler.progressText("erase_wallet".tr);
       final result = await _callSynchronized(() async {
-        pageStatusHandler.progressText("erase_wallet".tr);
         await _eraseWallet(password);
       }, conditionStatus: _isUnlock);
       if (!result.hasError) {
@@ -410,7 +438,7 @@ abstract class WalletCore extends _WalletCore
   }
 
   Future<String> _getPassword({
-    required Set<Bip32AddressIndex> keys,
+    required Set<AddressDerivationIndex> keys,
     required Set<CryptoAddress<dynamic, dynamic>> addresses,
   }) async {
     bool inRetry = false;
@@ -449,9 +477,10 @@ abstract class WalletCore extends _WalletCore
 
   Future<MethodResult<T>> signTransaction<T>(
       {required SigningRequest<T> request}) async {
+    final page = _navigatorKey.currentContext?.path();
     final result = await _callSynchronized(() async {
       late final Set<CryptoAddress> addresses = request.addresses.toSet();
-      late final Set<Bip32AddressIndex> keys =
+      late final Set<AddressDerivationIndex> keys =
           addresses.map((e) => e.signerKeyIndexes()).expand((e) => e).toSet();
       final password = await _getPassword(addresses: addresses, keys: keys);
       return await _controller._signTransaction(
@@ -459,6 +488,13 @@ abstract class WalletCore extends _WalletCore
           password: _controller._toWalletPassword(password),
           signers: keys);
     }, conditionStatus: isOpen);
+    if (result.hasResult) {
+      final currentPage = _navigatorKey.currentContext?.path();
+      if (page != currentPage) {
+        throw WalletExceptionConst.pageClosed;
+      }
+    }
+
     return result;
   }
 
@@ -467,34 +503,7 @@ abstract class WalletCore extends _WalletCore
     await _lock.synchronized(() async => await super._initWallet());
     pageStatusHandler.success();
     notify();
-  }
-
-  Future<MethodResult<T>> _callSynchronized<T>(Future<T> Function() t,
-      {required bool conditionStatus,
-      Duration? delay = APPConst.oneSecoundDuration}) async {
-    bool emeitListeners = false;
-    try {
-      return await _lock.synchronized(() async {
-        final status =
-            WalletEventStaus.fromWalletStatus(_homePageStatus, isOpen);
-        final result = await MethodUtils.call(() async {
-          if (!conditionStatus) {
-            throw WalletExceptionConst.incorrectStatus;
-          }
-          return await t();
-        }, delay: delay);
-        final after =
-            WalletEventStaus.fromWalletStatus(_homePageStatus, isOpen);
-        if (status != after) {
-          emeitListeners = true;
-        }
-        return result;
-      });
-    } finally {
-      if (emeitListeners) {
-        emitWalletListeners();
-      }
-    }
+    emitWalletListeners();
   }
 
   Future<void> updateBalance() async {
@@ -504,9 +513,10 @@ abstract class WalletCore extends _WalletCore
     });
   }
 
-  Future<void> updateAccountBalance() async {
+  Future<void> updateAccountBalance(List<CryptoAddress> addresses) async {
+    if (!isOpen) return;
     await MethodUtils.call(() async {
-      await _controller._updateAccountsBalance(_controller.chain);
+      await _controller._updateAccountsBalance(addresses);
     });
   }
 
@@ -648,12 +658,10 @@ abstract class WalletCore extends _WalletCore
     }
 
     bool? verifiedChecksum;
-    if (backupkey.checksum != null) {
-      if (!BytesUtils.bytesEqual(masterKey.checksum, backupkey.checksum)) {
-        verifiedChecksum = false;
-      } else {
-        verifiedChecksum = true;
-      }
+    if (!BytesUtils.bytesEqual(masterKey.checksum, backupkey.checksum)) {
+      verifiedChecksum = false;
+    } else {
+      verifiedChecksum = true;
     }
     final v3 = await _validateBackupAccounts(
         chains: chains,
@@ -707,7 +715,7 @@ abstract class WalletCore extends _WalletCore
             continue;
           }
 
-          final addr = await WalletManager2._deriveAddress(
+          final addr = await WalletManager._deriveAddress(
               newAccountParams: address.toAccountParams(),
               crypto: _crypto,
               masterKey: encrypt.$1,

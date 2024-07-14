@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
 import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
 import 'package:on_chain/ada/ada.dart';
 
 import 'transaction.dart';
@@ -38,7 +38,7 @@ mixin CardanoSignerImpl on CardanoTransactionImpl {
                 return BootstrapWitness(
                     vkey: Vkey(pubkey.toBytes(false)),
                     signature: ed25519Signature,
-                    chainCode: sss.signerPubKey.chainCodeBytes(),
+                    chainCode: sss.signerPubKey.chainCodeBytes()!,
                     attributes:
                         (address as ADAByronAddress).attributeSerialize());
               }

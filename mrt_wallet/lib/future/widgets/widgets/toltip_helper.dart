@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart' show APPConst;
 
-import 'tooltip.dart';
+import 'tooltip/widgets/tooltip.dart';
 
 class TooltipHelper extends StatelessWidget {
   const TooltipHelper(this.message,

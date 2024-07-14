@@ -24,8 +24,12 @@ class ApiProviderException implements Exception {
   @override
   String toString() {
     if (message != null) return message!;
-    if (responseData?["error"] != null) return responseData!["error"];
-    if (responseData?["message"] != null) return responseData!["message"];
+    if (responseData?["error"] != null) {
+      return responseData!["error"].toString();
+    }
+    if (responseData?["message"] != null) {
+      return responseData!["message"].toString();
+    }
     if (statusCode != null && validStatusCode.contains(statusCode)) {
       return "http_error_$statusCode";
     }

@@ -1,6 +1,5 @@
 export 'pages/account_set_fields.dart';
 export 'pages/build_currency_amount.dart';
-export 'pages/controll_ripple_transaction_account.dart';
 export 'pages/create_ripple_memo.dart';
 export 'pages/memo.dart';
 export 'pages/payment_fields.dart';

@@ -2,7 +2,7 @@ import 'package:blockchain_utils/crypto/crypto/crypto.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/wroker/crypto/crypto.dart';
-import 'package:mrt_wallet/wroker/models/response_message.dart';
+import 'package:mrt_wallet/wroker/messages/response/response.dart';
 import 'dart:js_interop';
 
 @JS()
@@ -45,7 +45,7 @@ class _WebIsolateInitialData {
       id = encryptedMessage.id;
       final decode =
           chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message);
-      return crypto.handleMessage(decode!);
+      return crypto.handleMessage(decode!, id);
     } catch (e) {
       return WorkerMessageResponse(
           args: WalletCrypto.verificationFailed, id: id ?? -1);

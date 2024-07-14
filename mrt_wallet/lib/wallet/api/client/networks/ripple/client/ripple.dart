@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ripple/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
@@ -11,9 +12,10 @@ import 'package:xrpl_dart/xrpl_dart.dart';
 
 class _RippleApiProviderConst {
   static const int accountNotFound = 19;
+  static const String successStatusSr = "success";
 }
 
-class RippleClient implements NetworkClient<IXRPAddress, RippleAPIProvider> {
+class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
   RippleClient({required this.provider, required this.network});
   final XRPLRpc provider;
   @override
@@ -83,5 +85,13 @@ class RippleClient implements NetworkClient<IXRPAddress, RippleAPIProvider> {
     final signerObject =
         (signers?.signerEntries.isEmpty ?? true) ? null : signers!;
     return (account.accountData.regularKey, signerObject);
+  }
+
+  @override
+  Future<bool> onInit() async {
+    final result = await MethodUtils.nullOnException(() async {
+      return await provider.request(RPCServerState());
+    });
+    return result?.status == _RippleApiProviderConst.successStatusSr;
   }
 }

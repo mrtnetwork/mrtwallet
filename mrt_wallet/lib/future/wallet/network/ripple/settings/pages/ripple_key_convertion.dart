@@ -4,7 +4,7 @@ import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/importing_custom_key_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
+import 'package:mrt_wallet/wroker/worker.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 enum _KeyType {
@@ -21,7 +21,7 @@ class RippleKeyConversionView extends StatelessWidget {
   const RippleKeyConversionView({super.key});
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress>(
+    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress?>(
       title: "ripple_key_conversion".tr,
       childBulder: (wallet, chain, address, sm, switchAccount) {
         return _RippleKeyConversionView(chain.network.toNetwork());

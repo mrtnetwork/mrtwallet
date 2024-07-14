@@ -1,10 +1,10 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
-import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
@@ -36,7 +36,8 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
             .toList(),
         mainCoin:
             CosmosNativeCoin.fromCborBytesOrObject(obj: cbor.getCborTag(7)),
-        networkType: CosmosNetworkTypes.fromValue(cbor.elementAt(8)));
+        networkType: CosmosNetworkTypes.fromValue(cbor.elementAt(8)),
+        bip32CoinType: cbor.elementAt(9));
   }
   CosmosNetworkParams(
       {required super.transactionExplorer,
@@ -47,7 +48,8 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
       required this.hrp,
       required List<CosmosNativeCoin> coins,
       required this.mainCoin,
-      required this.networkType})
+      required this.networkType,
+      super.bip32CoinType})
       : nativeCoins = List<CosmosNativeCoin>.unmodifiable(coins);
 
   @override
@@ -62,19 +64,20 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
           CborStringValue(hrp),
           nativeCoins.map((e) => e.toCbor()).toList(),
           mainCoin.toCbor(),
-          networkType.value
+          networkType.value,
+          bip32CoinType
         ]),
         CborTagsConst.cosmosNetworkParams);
   }
 
   @override
-  NetworkCoinParams<APIProvider> updateProviders(
-      List<CosmosAPIProvider> updateProviders) {
+  NetworkCoinParams<CosmosAPIProvider> updateProviders(
+      List<APIProvider> updateProviders) {
     return CosmosNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
         token: token,
-        providers: updateProviders,
+        providers: updateProviders.cast<CosmosAPIProvider>(),
         mainnet: mainnet,
         hrp: hrp,
         coins: nativeCoins,

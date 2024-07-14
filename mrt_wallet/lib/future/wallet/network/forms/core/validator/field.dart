@@ -33,3 +33,38 @@ class TransactionFormField<T> {
     return true;
   }
 }
+
+class TransactionListFormField<T> {
+  TransactionListFormField({
+    required this.name,
+    this.id,
+    this.subject,
+    required this.onChangeForm,
+    this.optional = true,
+  });
+  final String name;
+  final String? id;
+  final String? subject;
+  final bool optional;
+  final List<T> _value = [];
+  List<T> get value => _value;
+  bool get hasValue => _value.isNotEmpty;
+  bool get isCompleted => optional || _value.isNotEmpty;
+  final FuncTResult<T> onChangeForm;
+  int get length => value.length;
+  bool addValue(T v) {
+    if (v == null) return false;
+    if (_value.contains(v)) return false;
+    final value = onChangeForm(v);
+    if (value != null) {
+      _value.add(value);
+    } else {
+      return false;
+    }
+    return true;
+  }
+
+  bool removeValue(T v) {
+    return _value.remove(v);
+  }
+}

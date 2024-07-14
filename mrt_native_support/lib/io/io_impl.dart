@@ -160,7 +160,7 @@ class IoPlatformInterface extends MrtPlatformInterface {
     if (Platform.isWindows || Platform.isMacOS) {
       return _desktop;
     }
-    throw UnimplementedError(
+    throw const MRTNativePluginException(
         "only available in desktop platforms (windows, macos)");
   }
 
@@ -182,15 +182,22 @@ class IoPlatformInterface extends MrtPlatformInterface {
 
   @override
   Future<void> stopBarcodeScanner() async {
-    await _channel.invokeMethod("stopBarcodeScanner");
+    await _channel.invokeMethod("stopBarcodeScanner", {});
     _barcodeListener?.close();
     _barcodeListener = null;
   }
 
   @override
   Future<bool> hasBarcodeScanner() async {
-    if (Platform.isWindows) return false;
+    if (Platform.isWindows || Platform.isLinux) return false;
+    if (Platform.isAndroid) return true;
     final hasBarcode = await _channel.invokeMethod<bool>("hasBarcodeScanner");
     return hasBarcode ?? false;
+  }
+
+  @override
+  Future<MRTAPPConfig> getConfig() async {
+    final barcode = await hasBarcodeScanner().catchError((e) => false);
+    return MRTAPPConfig(platform: getPlatform(), hasBarcodeScanner: barcode);
   }
 }

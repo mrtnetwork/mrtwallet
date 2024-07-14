@@ -14,7 +14,7 @@ class LargeTextView extends StatefulWidget {
 
 class _LargeTextViewState extends State<LargeTextView> with SafeState {
   bool showMore = false;
-  late final String text = widget.text.join("\n\n");
+  late final String text = widget.text.join("\n");
   void onTap() {
     showMore = !showMore;
     setState(() {});
@@ -41,11 +41,9 @@ class _LargeTextViewState extends State<LargeTextView> with SafeState {
                 Text(text, maxLines: widget.maxLine),
                 GestureDetector(
                   onTap: onTap,
-                  child: Text(
-                    "read_more".tr,
-                    style: context.textTheme.bodySmall
-                        ?.copyWith(color: context.colors.tertiary),
-                  ),
+                  child: Text("read_more".tr,
+                      style: context.textTheme.bodySmall
+                          ?.copyWith(color: context.colors.tertiary)),
                 ),
               ],
             );

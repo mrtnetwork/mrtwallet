@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/blockchain_utils.dart'
     show ADAAddressType, Bip32PathParser, Bip44Coins, BytesUtils, Cip1852Coins;
 import 'package:flutter/material.dart';

@@ -2,6 +2,7 @@ import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 
 enum SeedTypes {
   bip39("Bip39"),
+  bip39Entropy("Bip39Entropy"),
   byronLegacySeed("ByronLegacySeed"),
   icarus("icarus");
 

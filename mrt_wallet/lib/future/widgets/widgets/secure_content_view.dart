@@ -8,14 +8,16 @@ import 'widget_constant.dart';
 
 class SecureContentView extends StatelessWidget {
   const SecureContentView(
-      {required this.content,
+      {this.content,
       required this.show,
       required this.onTapShow,
+      this.widgetContent,
       this.showButtonTitle,
       this.contentName,
       Key? key})
       : super(key: key);
-  final String content;
+  final String? content;
+  final Widget? widgetContent;
   final bool show;
   final DynamicVoid onTapShow;
   final String? showButtonTitle;
@@ -32,15 +34,17 @@ class SecureContentView extends StatelessWidget {
               : BoxDecoration(
                   color: context.colors.secondary,
                   borderRadius: WidgetConstant.border8),
-          child: ContainerWithBorder(
-              child: CopyTextIcon(
-            isSensitive: true,
-            dataToCopy: content,
-            widget: SelectableText(
-              content,
-              maxLines: 8,
-            ),
-          )),
+          child: widgetContent ??
+              ContainerWithBorder(
+                  child: CopyTextIcon(
+                isSensitive: true,
+                dataToCopy: content!,
+                widget: SelectableText(
+                  content!,
+                  minLines: 1,
+                  maxLines: 8,
+                ),
+              )),
         ),
         Positioned.fill(
           child: APPAnimatedSwitcher(enable: show, widgets: {

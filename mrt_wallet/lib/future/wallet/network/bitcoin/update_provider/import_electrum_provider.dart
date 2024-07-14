@@ -38,7 +38,7 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
               .map((e) => APIUtils.createApiClient(network, service: e)
                   as BitcoinClient)
               .toList());
-  late final String networkGenesisHash = ProvidersConst.getGnesisHash(network)!;
+  late final String networkGenesisHash = widget.network.coinParam.genesis;
   BitcoinElectrumClient? selectedProvider;
 
   late ServiceProtocol protocol = supportedProtocol.first;

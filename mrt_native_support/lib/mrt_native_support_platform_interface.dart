@@ -1,7 +1,9 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
+import 'exception/exception.dart';
 import 'mrt_native_support_method_channel.dart';
 
+// ignore: camel_case_types
 abstract class Mrt_nPlatform extends PlatformInterface {
   /// Constructs a Mrt_nPlatform.
   Mrt_nPlatform() : super(token: _token);
@@ -24,6 +26,7 @@ abstract class Mrt_nPlatform extends PlatformInterface {
   }
 
   Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+    throw const MRTNativePluginException(
+        'platformVersion() has not been implemented.');
   }
 }

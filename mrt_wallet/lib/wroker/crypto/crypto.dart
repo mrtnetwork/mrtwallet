@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/bip32/base/bip32_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:blockchain_utils/signer/cosmos/cosmos_nist256r1_signer.dart';
 import 'package:blockchain_utils/signer/cosmos/cosmos_signer.dart';
@@ -6,17 +5,17 @@ import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wroker/coins/coins.dart';
 import 'package:mrt_wallet/wroker/keys/keys.dart';
-import 'package:mrt_wallet/wroker/models/bytes.dart';
-import 'package:mrt_wallet/wroker/models/message_type.dart';
-import 'package:mrt_wallet/wroker/models/request_message.dart';
-import 'package:mrt_wallet/wroker/models/response_message.dart';
-import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/messages/argruments/argruments.dart';
+import 'package:mrt_wallet/wroker/messages/types/message_type.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/request.dart';
+import 'package:mrt_wallet/wroker/messages/response/response.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
 import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 
 class WalletCrypto {
   const WalletCrypto();
-  static const ExceptionArg verificationFailed =
-      ExceptionArg("data_verification_failed");
+  static const MessageArgsException verificationFailed =
+      MessageArgsException("data_verification_failed");
   static const List<String> methodNames = [
     "decryptChacha",
     "encryptChaha",
@@ -128,19 +127,20 @@ class WalletCrypto {
   }
 
   WalletMasterKeys createWalletSeed(String mnemonic, String passphrase) {
-    final seed =
-        Bip39SeedGenerator(Mnemonic.fromString(mnemonic)).generate(passphrase);
+    final seed = Bip39SeedGenerator(Mnemonic.fromString(mnemonic));
+    final List<int> seedBytes = seed.generate(passphrase);
+    final List<int> entropySeedBytes = seed.generateFromEntropy(passphrase);
     final icarus = CardanoIcarusSeedGenerator(mnemonic).generate();
     final cardanoLegacy = CardanoByronLegacySeedGenerator(mnemonic).generate();
     final List<int> checksum = QuickCrypto.sha3256Hash(
-        [...seed, ...icarus, ...cardanoLegacy, ...passphrase.codeUnits]);
-
+        [...seedBytes, ...icarus, ...cardanoLegacy, ...passphrase.codeUnits]);
     return WalletMasterKeys.setup(
         mnemonic: mnemonic,
-        seed: seed,
+        seed: seedBytes,
         icarus: icarus,
         cardanoLegacy: cardanoLegacy,
-        checksum: checksum);
+        checksum: checksum,
+        entropySeed: entropySeedBytes);
   }
 
   WalletMasterKeys _importCustomKey(
@@ -149,15 +149,23 @@ class WalletCrypto {
       required List<int> key}) {
     final keys = WalletMasterKeys.fromCborBytesOrObject(
         bytes: masterKeyfromMemoryStorage(key, data));
-    final Bip32Base bip32 = newKey.toKey(null).toKey();
-    final checkshum = BlockchainUtils.createCustomKeyChecksum(bip32);
-    final publicKey = bip32.publicKey.toHex();
-    if (checkshum != newKey.checksum || newKey.publicKey != publicKey) {
+    final ImportedKeyStorage validateKey;
+    if (newKey.keyType == CustomKeyType.extendedKey) {
+      validateKey = BlockchainUtils.extendeKeyToStorage(
+          extendedKey: newKey.extendedPrivateKey, coin: newKey.coin);
+    } else {
+      validateKey = BlockchainUtils.privateKeyToStorage(
+          privateKey: newKey.extendedPrivateKey, coin: newKey.coin);
+    }
+    if (validateKey.checksum != newKey.checksum ||
+        validateKey.publicKey != newKey.publicKey) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
-    if (keys.customKeys.contains(newKey)) {
+    if (keys.customKeys.contains(newKey) ||
+        keys.customKeys.any((e) => e.checksum == newKey.checksum)) {
       throw WalletExceptionConst.keyAlreadyExist;
     }
+
     return keys.addKey([newKey]);
   }
 
@@ -198,11 +206,18 @@ class WalletCrypto {
   }
 
   int version() => 0;
-  static T toArgs<T extends ArgsBytes>(ArgsBytes args) {
+  static T toArgs<T extends MessageArgs>(MessageArgs args) {
     if (args is! T) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
     return args;
+  }
+
+  static String generateTonMnemonic({String? password, required int wordsNum}) {
+    final generator = TonMnemonicGenerator();
+    return generator
+        .fromWordsNumber(wordsNum, password: password ?? "")
+        .toStr();
   }
 
   static T toSignignRequest<T extends SignRequest>(SignRequest args) {
@@ -257,8 +272,7 @@ class WalletCrypto {
             key: key,
             encryptedWallet: encryptedWallet)
         .first;
-    final bipKey = responseKeys.toKey();
-    final keyBytes = bipKey.privateKey.raw;
+    final keyBytes = responseKeys.privateKeyBytes();
     final List<int> signature;
     switch (request.network) {
       case SigningRequestNetwork.tron:
@@ -310,11 +324,16 @@ class WalletCrypto {
         final cardaoSigner = CardanoSigner.fromKeyBytes(keyBytes);
         signature = cardaoSigner.sign(request.digest);
         break;
+      case SigningRequestNetwork.substrate:
+        final cardaoSigner =
+            SubstrateSigner.fromBytes(keyBytes, responseKeys.coin.conf.type);
+        signature = cardaoSigner.sign(request.digest);
+        break;
     }
-    final pubKey =
-        PublicKeyData.fromBip32(account: bipKey, keyName: request.index.name);
     return GlobalSignResponse(
-        index: request.index, signature: signature, signerPubKey: pubKey);
+        index: request.index,
+        signature: signature,
+        signerPubKey: responseKeys.publicKey);
   }
 
   List<CryptoPublicKeyData> readPublicKeys(
@@ -331,7 +350,11 @@ class WalletCrypto {
       final PrivateKeyData privateKey = masterKey.toKey(i.index,
           maxLevel:
               byronLegacy ? Bip44Levels.master : Bip44Levels.addressIndex);
-      Bip32Base bipKey = privateKey.toKey();
+      if (!byronLegacy) {
+        pubKeys.add(privateKey.publicKey);
+        continue;
+      }
+      Bip32Base bipKey = privateKey.toBipKey();
       if (byronLegacy) {
         final legacy = CardanoByronLegacy.fromBip32(bipKey);
         if (i.index.hdPath != null) {
@@ -343,8 +366,6 @@ class WalletCrypto {
             hdPathKey: legacy.hdPathKey));
         continue;
       }
-      pubKeys.add(PublicKeyData.fromBip32(
-          account: bipKey, keyName: privateKey.keyName));
     }
     return pubKeys;
   }
@@ -409,43 +430,40 @@ class WalletCrypto {
     return AccessMnemonicResponse(masterKey.mnemonic);
   }
 
-  WorkerMessageResponse handleMessage(List<int> message) {
-    int? id;
-    ArgsBytes result;
+  WorkerMessageResponse handleMessage(List<int> message, int id) {
+    MessageArgs result;
     try {
-      final workerMessage = WorkerMessageRequest.deserialize(message);
-      final type = workerMessage.message.message;
-
-      id = workerMessage.id;
+      final workerMessage = WorkerMessageBytes.deserialize(message);
+      final type = workerMessage.message;
       switch (type) {
         case CryptoMessageType.decryptChacha:
-          final TwoArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsTwoBytes msg = toArgs(workerMessage.args);
           final decrypt = decryptChacha(msg.keyOne, msg.keyTwo);
-          result = OneArgBytes(keyOne: decrypt);
+          result = MessageArgsOneBytes(keyOne: decrypt);
           break;
         case CryptoMessageType.encryptChacha:
-          final TwoArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsTwoBytes msg = toArgs(workerMessage.args);
           final encrypt = encryptChaha(msg.keyOne, msg.keyTwo);
-          result = OneArgBytes(keyOne: encrypt);
+          result = MessageArgsOneBytes(keyOne: encrypt);
           break;
         case CryptoMessageType.generateMasterKey:
-          final TwoArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsTwoBytes msg = toArgs(workerMessage.args);
           final masterKey = generateMasterKey(msg.keyTwo, msg.keyOne);
-          result = TwoArgsBytes(
+          result = MessageArgsTwoBytes(
               keyOne: masterKey.$1.toCbor().encode(), keyTwo: masterKey.$2);
           break;
         case CryptoMessageType.readMasterKey:
-          final TwoArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsTwoBytes msg = toArgs(workerMessage.args);
           final decrypt = fromStroage(msg.keyTwo, msg.keyOne);
-          result = OneArgBytes(keyOne: decrypt);
+          result = MessageArgsOneBytes(keyOne: decrypt);
           break;
         case CryptoMessageType.readMasterKeyFromMemoryStorage:
-          final TwoArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsTwoBytes msg = toArgs(workerMessage.args);
           final decrypt = masterKeyfromMemoryStorage(msg.keyOne, msg.keyTwo);
-          result = OneArgBytes(keyOne: decrypt);
+          result = MessageArgsOneBytes(keyOne: decrypt);
           break;
         case CryptoMessageType.restoreBackup:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final String password = StringUtils.decode(msg.keyOne);
           final String backup = StringUtils.decode(msg.keyTwo);
           final String encoding = StringUtils.decode(msg.keyThree);
@@ -454,79 +472,79 @@ class WalletCrypto {
               orElse: () => throw WalletExceptionConst.dataVerificationFailed);
           final decrypt =
               restoreBackup(backup: backup, password: password, encoding: enc);
-          result = OneArgBytes(keyOne: decrypt);
+          result = MessageArgsOneBytes(keyOne: decrypt);
           break;
         case CryptoMessageType.createBackup:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final String password = StringUtils.decode(msg.keyOne);
           final String encoding = StringUtils.decode(msg.keyThree);
           final enc = SecretWalletEncoding.values.firstWhere(
               (element) => element.name == encoding,
               orElse: () => throw WalletExceptionConst.dataVerificationFailed);
           final backup = createBackup(msg.keyTwo, password, enc);
-          result = OneArgBytes(keyOne: StringUtils.encode(backup));
+          result = MessageArgsOneBytes(keyOne: StringUtils.encode(backup));
           break;
         case CryptoMessageType.sign:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final signResponse = sign(
               encryptedWallet: msg.keyThree,
               key: msg.keyOne,
               request: SignRequest.deserialize(msg.keyTwo));
-          result = OneArgBytes(keyOne: signResponse.toCbor().encode());
+          result = MessageArgsOneBytes(keyOne: signResponse.toCbor().encode());
           break;
         case CryptoMessageType.createWalletSeed:
-          final TwoArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsTwoBytes msg = toArgs(workerMessage.args);
           final String mnemonic = StringUtils.decode(msg.keyTwo);
           final String passphrase =
               msg.keyOne.isEmpty ? '' : StringUtils.decode(msg.keyOne);
           final masterKey = createWalletSeed(mnemonic, passphrase);
-          result = OneArgBytes(keyOne: masterKey.toCbor().encode());
+          result = MessageArgsOneBytes(keyOne: masterKey.toCbor().encode());
           break;
         case CryptoMessageType.importNewKey:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final masterKey = importCustomKey(
               newKey:
                   ImportedKeyStorage.fromCborBytesOrObject(bytes: msg.keyTwo),
               encryptedWallet: msg.keyThree,
               key: msg.keyOne);
-          result = TwoArgsBytes(
+          result = MessageArgsTwoBytes(
               keyOne: masterKey.$1.toCbor().encode(), keyTwo: masterKey.$2);
           break;
         case CryptoMessageType.removeKey:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final masterKey = removeMasterKey(
               keyId: BytesUtils.toHexString(msg.keyTwo),
               encryptedWallet: msg.keyThree,
               key: msg.keyOne);
-          result = TwoArgsBytes(
+          result = MessageArgsTwoBytes(
               keyOne: masterKey.$1.toCbor().encode(), keyTwo: masterKey.$2);
           break;
         case CryptoMessageType.changePassword:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final encryptedMasterKey = changePassword(
               newPassword: msg.keyTwo,
               key: msg.keyOne,
               encryptedWallet: msg.keyThree);
-          result = TwoArgsBytes(
+          result = MessageArgsTwoBytes(
               keyOne: encryptedMasterKey.$1.toCbor().encode(),
               keyTwo: encryptedMasterKey.$2);
           break;
         case CryptoMessageType.readImportKey:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final keyInfo = getImportedKey(
               keyId: BytesUtils.toHexString(msg.keyTwo),
               key: msg.keyOne,
               encryptedWallet: msg.keyThree);
-          result = OneArgBytes(keyOne: keyInfo.toCbor().encode());
+          result = MessageArgsOneBytes(keyOne: keyInfo.toCbor().encode());
           break;
         case CryptoMessageType.readMnemonic:
-          final TwoArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsTwoBytes msg = toArgs(workerMessage.args);
           final mnemonic =
               readMnemonic(key: msg.keyOne, encryptedWallet: msg.keyTwo);
-          result = OneArgBytes(keyOne: mnemonic.toCbor().encode());
+          result = MessageArgsOneBytes(keyOne: mnemonic.toCbor().encode());
           break;
         case CryptoMessageType.readPrivateKeys:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final AccessCryptoPrivateKeysRequest request =
               AccessCryptoPrivateKeysRequest.fromCborBytesOrObject(
                   bytes: msg.keyTwo);
@@ -535,10 +553,10 @@ class WalletCrypto {
               key: msg.keyOne,
               encryptedWallet: msg.keyThree);
           final response = CryptoPrivateKeysResponse(keys);
-          result = OneArgBytes(keyOne: response.toCbor().encode());
+          result = MessageArgsOneBytes(keyOne: response.toCbor().encode());
           break;
         case CryptoMessageType.readPrivateKey:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final AccessCryptoPrivateKeyRequest request =
               AccessCryptoPrivateKeyRequest.fromCborBytesOrObject(
                   bytes: msg.keyTwo);
@@ -547,10 +565,10 @@ class WalletCrypto {
               key: msg.keyOne,
               encryptedWallet: msg.keyThree);
           final response = CryptoPrivateKeyResponse(keys.first);
-          result = OneArgBytes(keyOne: response.toCbor().encode());
+          result = MessageArgsOneBytes(keyOne: response.toCbor().encode());
           break;
         case CryptoMessageType.readPublicKey:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final AccessCryptoPrivateKeyRequest request =
               AccessCryptoPrivateKeyRequest.fromCborBytesOrObject(
                   bytes: msg.keyTwo);
@@ -559,10 +577,10 @@ class WalletCrypto {
               encryptedWallet: msg.keyThree,
               requestKeys: [request]);
           final response = CryptoPublicKeyResponse(key.first);
-          result = OneArgBytes(keyOne: response.toCbor().encode());
+          result = MessageArgsOneBytes(keyOne: response.toCbor().encode());
           break;
         case CryptoMessageType.readPublicKeys:
-          final ThreeArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsThreeBytes msg = toArgs(workerMessage.args);
           final AccessCryptoPrivateKeysRequest request =
               AccessCryptoPrivateKeysRequest.fromCborBytesOrObject(
                   bytes: msg.keyTwo);
@@ -571,27 +589,30 @@ class WalletCrypto {
               encryptedWallet: msg.keyThree,
               requestKeys: request.indexes);
           final response = CryptoPublicKeysResponse(keys);
-          result = OneArgBytes(keyOne: response.toCbor().encode());
+          result = MessageArgsOneBytes(keyOne: response.toCbor().encode());
           break;
         case CryptoMessageType.setup:
-          final TwoArgsBytes msg = toArgs(workerMessage.message.args);
+          final MessageArgsTwoBytes msg = toArgs(workerMessage.args);
           final masterKey =
               WalletMasterKeys.fromCborBytesOrObject(bytes: msg.keyTwo);
           final encryptedMasterKey =
               setup(masterKey: masterKey, key: msg.keyOne);
-          result = TwoArgsBytes(
+          result = MessageArgsTwoBytes(
               keyOne: encryptedMasterKey.$1.toCbor().encode(),
               keyTwo: encryptedMasterKey.$2);
           break;
+        case CryptoMessageType.networkRequest:
+          final NetworkArgs msg = toArgs(workerMessage.args);
+          result = msg.args.getResult();
         default:
           result = verificationFailed;
           break;
       }
     } on WalletException catch (e) {
-      result = ExceptionArg(e.message);
+      result = MessageArgsException(e.message);
     } catch (e) {
       result = verificationFailed;
     }
-    return WorkerMessageResponse(args: result, id: id ?? -1);
+    return WorkerMessageResponse(args: result, id: id);
   }
 }

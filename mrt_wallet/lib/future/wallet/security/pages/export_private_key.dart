@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
@@ -8,6 +7,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wroker/keys/keys.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 
 class AccountPrivteKeyView extends StatelessWidget {
@@ -79,7 +79,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
   String? keyInNetwork;
   String get privateKey => keyInNetwork ?? key.privateKey;
 
-  String get extendedKey => key.extendedKey;
+  String? get extendedKey => key.extendedKey;
   CryptoCoins get coin => key.coin;
   String? get keyName => widget.customKey?.name;
   String? get wif => key.wif;
@@ -222,69 +222,72 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                       )
                     ],
                   ),
-                  WidgetConstant.height20,
-                  Text("extended_private_key".tr,
-                      style: context.textTheme.titleMedium),
-                  WidgetConstant.height8,
-                  Stack(
-                    children: [
-                      AnimatedSwitcher(
-                        duration: APPConst.animationDuraion,
-                        child: Container(
-                          foregroundDecoration: _showPrivateKey
-                              ? null
-                              : BoxDecoration(
-                                  color: context.colors.secondary,
-                                  borderRadius: WidgetConstant.border8,
-                                ),
-                          child: ContainerWithBorder(
-                              child: CopyTextWithBarcode(
-                            secureBarcode: true,
-                            buttons: [
-                              IconButton(
-                                  onPressed: () {
-                                    context.openSliverDialog<
-                                            SecretWalletEncoding>(
-                                        (ctx) => GenerateBackupView(
-                                              password: widget.password,
-                                              data: extendedKey,
-                                              type: MrtBackupTypes.extendedKey,
-                                            ),
-                                        "backup_extended_key".tr);
-                                  },
-                                  icon: const Icon(Icons.backup)),
-                            ],
-                            barcodeWidget: ContainerWithBorder(
-                                child: CopyTextIcon(
-                                    isSensitive: true,
-                                    dataToCopy: extendedKey,
-                                    widget: ObscureTextView(extendedKey,
-                                        maxLine: 5))),
-                            underBarcodeWidget: ErrorTextContainer(
-                                margin: WidgetConstant.paddingVertical10,
-                                error: "image_store_alert_keys".tr),
-                            dataToCopy: extendedKey,
-                            barcodeTitle: "extended_private_key".tr,
-                            widget: SelectableText(extendedKey),
-                          )),
-                        ),
-                      ),
-                      Positioned.fill(
-                        child: AnimatedSwitcher(
+                  if (extendedKey != null) ...[
+                    WidgetConstant.height20,
+                    Text("extended_private_key".tr,
+                        style: context.textTheme.titleMedium),
+                    WidgetConstant.height8,
+                    Stack(
+                      children: [
+                        AnimatedSwitcher(
                           duration: APPConst.animationDuraion,
-                          child: SizedBox(
-                            key: ValueKey(_showPrivateKey),
-                            child: _showPrivateKey
-                                ? WidgetConstant.sizedBox
-                                : FilledButton.icon(
-                                    onPressed: onChangeShowPrivateKey,
-                                    icon: const Icon(Icons.remove_red_eye),
-                                    label: Text("show_private_key".tr)),
+                          child: Container(
+                            foregroundDecoration: _showPrivateKey
+                                ? null
+                                : BoxDecoration(
+                                    color: context.colors.secondary,
+                                    borderRadius: WidgetConstant.border8,
+                                  ),
+                            child: ContainerWithBorder(
+                                child: CopyTextWithBarcode(
+                              secureBarcode: true,
+                              buttons: [
+                                IconButton(
+                                    onPressed: () {
+                                      context.openSliverDialog<
+                                              SecretWalletEncoding>(
+                                          (ctx) => GenerateBackupView(
+                                                password: widget.password,
+                                                data: extendedKey!,
+                                                type:
+                                                    MrtBackupTypes.extendedKey,
+                                              ),
+                                          "backup_extended_key".tr);
+                                    },
+                                    icon: const Icon(Icons.backup)),
+                              ],
+                              barcodeWidget: ContainerWithBorder(
+                                  child: CopyTextIcon(
+                                      isSensitive: true,
+                                      dataToCopy: extendedKey!,
+                                      widget: ObscureTextView(extendedKey!,
+                                          maxLine: 5))),
+                              underBarcodeWidget: ErrorTextContainer(
+                                  margin: WidgetConstant.paddingVertical10,
+                                  error: "image_store_alert_keys".tr),
+                              dataToCopy: extendedKey!,
+                              barcodeTitle: "extended_private_key".tr,
+                              widget: SelectableText(extendedKey!),
+                            )),
                           ),
                         ),
-                      )
-                    ],
-                  ),
+                        Positioned.fill(
+                          child: AnimatedSwitcher(
+                            duration: APPConst.animationDuraion,
+                            child: SizedBox(
+                              key: ValueKey(_showPrivateKey),
+                              child: _showPrivateKey
+                                  ? WidgetConstant.sizedBox
+                                  : FilledButton.icon(
+                                      onPressed: onChangeShowPrivateKey,
+                                      icon: const Icon(Icons.remove_red_eye),
+                                      label: Text("show_private_key".tr)),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ],
                   if (wif != null) ...[
                     WidgetConstant.height20,
                     Text("wif".tr, style: context.textTheme.titleMedium),

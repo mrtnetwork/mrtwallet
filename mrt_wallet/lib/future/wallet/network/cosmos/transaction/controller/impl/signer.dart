@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
 import 'transaction.dart';
 
 mixin CosmosSignerImpl on CosmosTransactiomImpl {
@@ -65,7 +65,8 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
       return await _buildTransaction();
     });
     if (result.hasError) {
-      progressKey.errorText(result.error!.tr);
+      progressKey.errorText(result.error!.tr,
+          backToIdle: false, showBackButton: true);
     } else {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(

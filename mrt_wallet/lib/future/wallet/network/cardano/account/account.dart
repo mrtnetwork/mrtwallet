@@ -22,9 +22,13 @@ class _CardanoAccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [_ShowRewardAddress(chainAccount: chainAccount)],
-    );
+    return AccountTabbarScrollWidget(slivers: [
+      SliverToBoxAdapter(
+        child: Column(
+          children: [_ShowRewardAddress(chainAccount: chainAccount)],
+        ),
+      )
+    ]);
   }
 }
 

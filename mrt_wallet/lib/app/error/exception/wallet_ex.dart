@@ -34,7 +34,8 @@ class WalletException implements AppException {
 class WalletExceptionConst {
   static final WalletException dataVerificationFailed =
       WalletException("data_verification_failed");
-
+  static final WalletException invalidRequest =
+      WalletException("invalid_request");
   static final WalletException invalidSerializationData =
       WalletException("invalid_serialization_data");
   static final WalletException invalidAccountDetails =
@@ -104,9 +105,14 @@ class WalletExceptionConst {
   static final WalletException emptyThrow = WalletException("");
 
   static final WalletException invalidCoin = WalletException("invalid_coin");
+  static final WalletException coinNotFound = WalletException("coin_not_found");
 
   static final WalletException invalidPrivateKey =
       WalletException("private_key_invalid");
+  static final WalletException invalidExtendedKey =
+      WalletException("extended_key_invalid");
+  static final WalletException invalidWifKey =
+      WalletException("wif_key_invalid");
   static final WalletException invalidRipplePrivateKeyAlgorithm =
       WalletException("invalid_ripple_privatekey_algorithm");
   static final WalletException multiSigDerivationNotSuported =
@@ -136,4 +142,5 @@ class WalletExceptionConst {
       WalletException("wallet_already_exists");
   static final WalletException walletNameExists =
       WalletException("wallet_name_exists");
+  static final WalletException pageClosed = WalletException("page_closed");
 }

@@ -1,10 +1,9 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coin_conf.dart';
 import 'package:blockchain_utils/bip/coin_conf/coins_name.dart';
 import 'package:blockchain_utils/bip/slip/slip44/slip44.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 
 class CustomCurrencyConf {
-  static CoinConfig byronLegacy = CoinConfig(
+  static BipCoinConfig byronLegacy = BipCoinConfig(
     coinNames: const CoinNames("Byron legacy", "ADA"),
     coinIdx: 0,
     isTestnet: false,
@@ -15,7 +14,7 @@ class CustomCurrencyConf {
     addressEncoder: ([dynamic kwargs]) => AdaByronLegacyAddrEncoder(),
     addrParams: {"chain_code": true},
   );
-  static CoinConfig byronLegacyTestnet = CoinConfig(
+  static BipCoinConfig byronLegacyTestnet = BipCoinConfig(
     coinNames: const CoinNames("Byron legacy testnet", "ADA"),
     coinIdx: Slip44.testnet,
     isTestnet: true,

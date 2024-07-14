@@ -3,7 +3,7 @@ import 'package:mrt_wallet/future/wallet/network/ton/transaction/controller/impl
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
 import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/wroker/models/signing_models/bitcoin.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 mixin TonSignerImpl on TonTransactionImpl {

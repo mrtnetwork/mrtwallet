@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
@@ -5,6 +6,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/utils/ethereum/utils.dart';
+import 'package:mrt_wallet/wroker/utils/utils.dart';
 
 class ImportEthereumNetwork extends StatelessWidget {
   const ImportEthereumNetwork({super.key});
@@ -32,6 +34,7 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
   String symbol = "";
   String networkName = "";
   String chainId = "";
+  int? coinType;
   late String explorerAddressLink = "";
   late String explorerTransaction = "";
   String rpcUrl = "";
@@ -89,6 +92,21 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
       chainError = "network_chain_id_already_exist".tr;
       setState(() {});
     }
+  }
+
+  void onChangeCoinType(String v) {
+    coinType = int.tryParse(v);
+  }
+
+  String? validateCoinType(String? v) {
+    if (v?.trim().isEmpty ?? true) return null;
+    final parse = int.tryParse(v ?? "");
+    if (parse == null ||
+        parse < 0 ||
+        parse > Bip32KeyDataConst.keyIndexMaxVal) {
+      return "slip_44_desc".tr;
+    }
+    return null;
   }
 
   String? validateChainId(String? v) {
@@ -151,7 +169,8 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
               chainId: chain,
               supportEIP1559: false,
               defaultNetwork: false,
-              mainnet: false));
+              mainnet: true,
+              bip32CoinType: coinType));
       final rpc = APIUtils.buildEthereumProvider(serviceProvider, network);
       final info = await rpc.getNetworkInfo();
 
@@ -160,8 +179,9 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
       }
       if (info.$2) {
         network = network.copyWith(
-            coinParam: network.coinParam.copyWith(supportEIP1559: true));
+            coinParam: network.coinParam.copyWith(supportEIP1559: false));
       }
+
       return await wallet.updateImportNetwork(network);
     });
     if (result.hasError) {
@@ -263,6 +283,18 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                           ),
                         ),
                         WidgetConstant.height20,
+                        Text("coin_type".tr,
+                            style: context.textTheme.titleMedium),
+                        Text("slip_44_desc".tr),
+                        WidgetConstant.height8,
+                        NumberTextField(
+                            label: "coin_type".tr,
+                            defaultValue: coinType,
+                            onChange: onChangeCoinType,
+                            validator: validateCoinType,
+                            max: Bip32KeyDataConst.keyIndexMaxVal,
+                            min: 0),
+                        WidgetConstant.height20,
                         Text("network_explorer_transaction_link".tr,
                             style: context.textTheme.titleMedium),
                         Text("network_evm_explorer_transaction_desc".tr),
@@ -282,7 +314,7 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             FixedElevatedButton(
-                                padding: WidgetConstant.paddingVertical20,
+                                padding: WidgetConstant.paddingVertical40,
                                 onPressed: onAddChain,
                                 child: Text("import".tr))
                           ],

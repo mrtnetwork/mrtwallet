@@ -319,6 +319,7 @@ class _BackupFieldsWidget extends StatelessWidget {
             validator: state.passwordForm,
             onChanged: state.onChangeBackupPassword,
             initialValue: state._backupPassword,
+            disableContextMenu: true,
             error: state._error,
             obscureText: true,
           ),

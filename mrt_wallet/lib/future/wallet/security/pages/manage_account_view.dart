@@ -136,6 +136,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                                   .tr
                                   .replaceOne(key.created.toDateAndTime()),
                               style: context.textTheme.bodySmall),
+                          Text(key.id, style: context.textTheme.bodySmall),
                           WidgetConstant.height8,
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -187,6 +188,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                       ),
                     );
                   }),
+                  WidgetConstant.height20,
                 ],
               ),
             ),

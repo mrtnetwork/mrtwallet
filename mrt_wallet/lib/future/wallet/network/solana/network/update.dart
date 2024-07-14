@@ -27,7 +27,7 @@ class _ImportSolanaProvider extends StatefulWidget {
 
 class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
   late WalletSolanaNetwork network = widget.network.copyWith();
-  late final String? genesisHash = ProvidersConst.getGnesisHash(network);
+  late final String genesisHash = widget.network.coinParam.genesis;
   late final List<SolanaClient> providers = widget.network.coinParam.providers
       .map((e) => APIUtils.createApiClient(network, service: e) as SolanaClient)
       .toList();

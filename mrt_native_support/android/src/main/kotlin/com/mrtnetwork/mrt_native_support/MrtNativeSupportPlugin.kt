@@ -1,15 +1,15 @@
 package com.mrtnetwork.mrt_native_support
 
-import androidx.annotation.NonNull
-
+import android.content.Intent
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 
 /** MrtNativeSupportPlugin */
-class MrtNativeSupportPlugin: FlutterPlugin, MethodCallHandler {
+class MrtNativeSupportPlugin: FlutterPlugin, MethodCallHandler,ActivityResultListener {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
@@ -20,6 +20,13 @@ class MrtNativeSupportPlugin: FlutterPlugin, MethodCallHandler {
     channel = MethodChannel(flutterPluginBinding.binaryMessenger, "mrt_native_support")
     channel.setMethodCallHandler(this)
   }
+
+  
+
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+    TODO("Not yet implemented")
+  }
+
 
   override fun onMethodCall(call: MethodCall, result: Result) {
     if (call.method == "getPlatformVersion") {

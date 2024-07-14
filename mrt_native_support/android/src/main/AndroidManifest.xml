@@ -4,10 +4,19 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+
 
     <application
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
+        <activity android:name=".barcode.CaptureActivityPortrait"
+            android:screenOrientation="sensorPortrait"
+            android:stateNotNeeded="true"
+            android:theme="@style/zxing_CaptureTheme"
+            android:windowSoftInputMode="stateAlwaysHidden"></activity>
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.share"
@@ -17,9 +26,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/share" />
         </provider>
-    <meta-data
-      android:name="com.google.mlkit.vision.DEPENDENCIES"
-      android:value="barcode_ui"/>
     </application>
 
 </manifest>

@@ -4,6 +4,7 @@ import 'package:mrt_wallet/app/core.dart'
     show APPConst, FileUtils, QuickContextAccsess, SafeState, ShareUtils;
 import 'package:mrt_wallet/app/extention/app_extentions/string.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
+import 'constraints_box_view.dart';
 import 'qr_code/qr_view.dart';
 import 'widget_constant.dart';
 
@@ -58,58 +59,61 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
 
   @override
   Widget build(BuildContext context) {
-    // print("build here ?!");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         widget.title,
-        WidgetConstant.height8,
-        Stack(
-          children: [
-            ClipRRect(
-              borderRadius: WidgetConstant.border8,
-              child: QrImageView(
-                data: widget.barcodeData,
-                backgroundColor: context.colors.secondary,
-                errorStateBuilder: (context, error) => WidgetConstant.errorIcon,
-                eyeStyle: QrEyeStyle(
-                  eyeShape: QrEyeShape.square,
-                  color: context.theme.colorScheme.onSecondary,
-                ),
-                dataModuleStyle: QrDataModuleStyle(
-                  dataModuleShape: QrDataModuleShape.square,
-                  color: context.theme.colorScheme.onSecondary,
+        WidgetConstant.height20,
+        ConstraintsBoxView(
+          maxHeight: APPConst.qrCodeWidth,
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: WidgetConstant.border8,
+                child: QrImageView(
+                  data: widget.barcodeData,
+                  backgroundColor: context.colors.secondary,
+                  errorStateBuilder: (context, error) =>
+                      WidgetConstant.errorIcon,
+                  eyeStyle: QrEyeStyle(
+                    eyeShape: QrEyeShape.square,
+                    color: context.theme.colorScheme.onSecondary,
+                  ),
+                  dataModuleStyle: QrDataModuleStyle(
+                    dataModuleShape: QrDataModuleShape.square,
+                    color: context.theme.colorScheme.onSecondary,
+                  ),
                 ),
               ),
-            ),
-            if (widget.secure)
-              Positioned.fill(
-                  child: AnimatedSwitcher(
-                duration: APPConst.animationDuraion,
-                child: SizedBox(
-                  width: context.mediaQuery.size.width,
-                  key: ValueKey(showBarcode),
-                  child: !showBarcode
-                      ? Container(
-                          decoration: BoxDecoration(
-                              borderRadius: WidgetConstant.border8,
-                              color: context.colors.secondaryContainer
-                                  .withOpacity(0.98)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FilledButton.icon(
-                                  onPressed: show,
-                                  icon: const Icon(Icons.remove_red_eye),
-                                  label: Text("show_barcode".tr))
-                            ],
-                          ),
-                        )
-                      : WidgetConstant.sizedBox,
-                ),
-              ))
-          ],
+              if (widget.secure)
+                Positioned.fill(
+                    child: AnimatedSwitcher(
+                  duration: APPConst.animationDuraion,
+                  child: SizedBox(
+                    width: context.mediaQuery.size.width,
+                    key: ValueKey(showBarcode),
+                    child: !showBarcode
+                        ? Container(
+                            decoration: BoxDecoration(
+                                borderRadius: WidgetConstant.border8,
+                                color: context.colors.secondaryContainer
+                                    .withOpacity(0.98)),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                FilledButton.icon(
+                                    onPressed: show,
+                                    icon: const Icon(Icons.remove_red_eye),
+                                    label: Text("show_barcode".tr))
+                              ],
+                            ),
+                          )
+                        : WidgetConstant.sizedBox,
+                  ),
+                ))
+            ],
+          ),
         ),
         WidgetConstant.height20,
         Row(

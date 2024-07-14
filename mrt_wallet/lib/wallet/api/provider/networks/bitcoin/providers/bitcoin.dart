@@ -24,24 +24,25 @@ class _BitcoinExplorerAPIProviderUtils {
     final String baseUrl = StrUtils.removeLastSlash(url);
     if (type == APIType.mempool) {
       return APIConfig(
-        url: "$baseUrl/address/###/utxo",
-        feeRate: "$baseUrl/v1/fees/recommended",
-        transaction: "$baseUrl/tx/###",
-        sendTransaction: "$baseUrl/tx",
-        apiType: APIType.mempool,
-        transactions: "$baseUrl/address/###/txs",
-        network: network,
-      );
+          url: "$baseUrl/address/###/utxo",
+          feeRate: "$baseUrl/v1/fees/recommended",
+          transaction: "$baseUrl/tx/###",
+          sendTransaction: "$baseUrl/tx",
+          apiType: APIType.mempool,
+          transactions: "$baseUrl/address/###/txs",
+          network: network,
+          blockHeight: "$baseUrl/block-height/###");
     }
     return APIConfig(
-      url: "$baseUrl/addrs/###/?unspentOnly=true&includeScript=true&limit=2000",
-      feeRate: baseUrl,
-      transaction: "$baseUrl/txs/###",
-      sendTransaction: "$baseUrl/txs/push",
-      apiType: APIType.blockCypher,
-      transactions: "$baseUrl/addrs/###/full?limit=200",
-      network: network,
-    );
+        url:
+            "$baseUrl/addrs/###/?unspentOnly=true&includeScript=true&limit=2000",
+        feeRate: baseUrl,
+        transaction: "$baseUrl/txs/###",
+        sendTransaction: "$baseUrl/txs/push",
+        apiType: APIType.blockCypher,
+        transactions: "$baseUrl/addrs/###/full?limit=200",
+        network: network,
+        blockHeight: "$baseUrl/blocks/###");
   }
 }
 

@@ -9,7 +9,7 @@ class TonSettingsView extends StatelessWidget {
   const TonSettingsView({super.key});
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletTonNetwork, ITonAddress>(
+    return NetworkAccountControllerView<WalletTonNetwork, ITonAddress?>(
       title: "settings",
       childBulder: (wallet, chain, address, sm, switchAccount) {
         return ConstraintsBoxView(

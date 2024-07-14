@@ -49,7 +49,6 @@ class SolanaCreateAccountForm extends SolanaTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields =>
       [newAccountAddress, ownerAddress, space, lamports];
 
@@ -99,7 +98,6 @@ class SolanaCreateAccountForm extends SolanaTransactionForm {
   @override
   String get name => "create_account";
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

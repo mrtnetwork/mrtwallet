@@ -6,7 +6,5 @@ typedef OnChageFormField<T> = void Function(TransactionFormField<T>, T?);
 abstract class TransactionForm {
   String? validateError();
   String get name;
-  List<TransactionFormField> get fields;
   OnChangeForm? onChanged;
-  void setValue<T>(TransactionFormField<T>? field, T? value);
 }

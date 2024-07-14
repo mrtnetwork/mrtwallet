@@ -64,7 +64,7 @@ class ContainerWithBorder extends StatelessWidget {
                     : Border.all(
                         color: context.colors.errorContainer,
                         width: 2,
-                        strokeAlign: 1)),
+                        strokeAlign: 2)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

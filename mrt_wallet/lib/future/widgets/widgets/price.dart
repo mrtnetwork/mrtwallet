@@ -7,7 +7,7 @@ import 'package:mrt_wallet/app/models/models/currencies.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
     show BalanceCore, CryptoAddress, IntegerBalance, Token;
 import 'assets_image.dart';
-import 'tooltip.dart';
+import 'tooltip/widgets/tooltip.dart';
 import 'widget_constant.dart';
 
 class PriceTooltipWidget extends StatelessWidget {
@@ -56,6 +56,7 @@ class CoinPriceView extends StatelessWidget {
     this.symbolColor,
     this.disableTooltip = false,
     this.showTokenImage = false,
+    this.enableMarketPrice = true,
   })  : assert(
             (account != null) ||
                 (account == null && (balance != null || liveBalance != null)),
@@ -70,6 +71,7 @@ class CoinPriceView extends StatelessWidget {
   final Color? symbolColor;
   final bool disableTooltip;
   final bool showTokenImage;
+  final bool enableMarketPrice;
   @override
   Widget build(BuildContext context) {
     final Token coin = token;
@@ -83,11 +85,8 @@ class CoinPriceView extends StatelessWidget {
       return ToolTipView(
         tooltipWidget: disableTooltip
             ? null
-            : PriceTooltipWidget(
-                currencyName: coin.name,
-                price: price,
-                symbol: coin.symbol,
-              ),
+            : (c) => PriceTooltipWidget(
+                currencyName: coin.name, price: price, symbol: coin.symbol),
         child: Directionality(
           textDirection: TextDirection.ltr,
           child: Column(
@@ -120,11 +119,12 @@ class CoinPriceView extends StatelessWidget {
                   ),
                 ],
               ),
-              CoinStringPriceView(
-                balance: ta,
-                token: wallet.currencyToken,
-                symbolColor: symbolColor,
-              ),
+              if (enableMarketPrice)
+                CoinStringPriceView(
+                  balance: ta,
+                  token: wallet.currencyToken,
+                  symbolColor: symbolColor,
+                ),
             ],
           ),
         ),
@@ -154,11 +154,11 @@ class CoinStringPriceView extends StatelessWidget {
     return ToolTipView(
       tooltipWidget: disableTooltip
           ? null
-          : PriceTooltipWidget(
-              currencyName: token.name,
-              price: balance!.price,
-              symbol: token.name,
-            ),
+          : (c) => PriceTooltipWidget(
+                currencyName: token.name,
+                price: balance!.price,
+                symbol: token.name,
+              ),
       child: Directionality(
         textDirection: TextDirection.ltr,
         child: Column(
@@ -192,5 +192,72 @@ class CoinStringPriceView extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class CoinMarketPrice extends StatelessWidget {
+  const CoinMarketPrice({
+    Key? key,
+    required this.token,
+    required this.balance,
+    this.style,
+    this.symbolColor,
+    this.disableTooltip = false,
+  }) : super(key: key);
+
+  final Token token;
+  final Live<BalanceCore> balance;
+  final TextStyle? style;
+  final Color? symbolColor;
+  final bool disableTooltip;
+  @override
+  Widget build(BuildContext context) {
+    final wallet = context.watch<WalletProvider>(StateConst.main);
+    return LiveWidget(() {
+      final price = balance.value.price;
+      final amount = wallet.amount(price, token);
+      if (amount?.isZero ?? true) return WidgetConstant.sizedBox;
+      return ToolTipView(
+        tooltipWidget: disableTooltip
+            ? null
+            : (c) => PriceTooltipWidget(
+                  currencyName: wallet.currencyToken.name,
+                  price: amount!.price,
+                  symbol: wallet.currencyToken.name,
+                ),
+        child: Directionality(
+          textDirection: TextDirection.ltr,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: RichText(
+                        textDirection: TextDirection.ltr,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        text: TextSpan(
+                            style: style ??
+                                context.textTheme.labelSmall
+                                    ?.copyWith(color: symbolColor),
+                            children: [
+                              TextSpan(text: amount!.viewPrice),
+                              const TextSpan(text: " "),
+                            ])),
+                  ),
+                  Text(
+                    wallet.currencyToken.name,
+                    style: context.textTheme.labelSmall?.copyWith(
+                        color: symbolColor ?? context.colors.primary),
+                  )
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }

@@ -1,6 +1,8 @@
-import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/wallet/constant/constant.dart';
+import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
+import 'package:blockchain_utils/bip/ton/ton.dart';
+import 'package:blockchain_utils/utils/binary/binary_operation.dart';
+import 'package:blockchain_utils/utils/binary/utils.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 import 'package:ton_dart/ton_dart.dart';
 
@@ -75,23 +77,21 @@ class TonUtils {
     return toList.length >= 8 && toList.length <= 48;
   }
 
-  static Future<TonPrivateKey> generateTonPrivateKeyFromSeed(
-      {required List<String> mnemonic,
+  static TonPrivateKey generateTonPrivateKeyFromSeed(
+      {required String mnemonic,
       String? password,
-      bool validateTonMnemonic = true}) async {
+      bool validateTonMnemonic = true}) {
     try {
-      final mn = Mnemonic.fromList(mnemonic);
-      final seed = await Future.microtask(() => TonSeedGenerator(mn).generate(
-          password: password ?? "", validateTonMnemonic: validateTonMnemonic));
+      final mn = Mnemonic.fromString(mnemonic);
+      final seed = TonSeedGenerator(mn).generate(
+          password: password ?? "", validateTonMnemonic: validateTonMnemonic);
       return TonPrivateKey.fromBytes(seed);
     } catch (e) {
       throw WalletExceptionConst.invalidMnemonic;
     }
   }
 
-  static Future<String> generateTonMnemonic(
-      {String? password,
-      int wordsNum = TonConst.defaultTonMnemonicWordsLength}) async {
+  static String generateTonMnemonic({String? password, required int wordsNum}) {
     try {
       return TonMnemonicGenerator()
           .fromWordsNumber(wordsNum, password: password ?? "")

@@ -7,14 +7,14 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
     show WalletNetwork, CryptoAddress, ChainHandler;
 
-typedef SolanaAccountBuilder<N extends WalletNetwork, A extends CryptoAddress>
+typedef SolanaAccountBuilder<N extends WalletNetwork, A extends CryptoAddress?>
     = Widget Function(WalletProvider wallet, ChainHandler account, A address,
         N network, OnNetworkAccountChange onAccountChanged);
 
 typedef OnNetworkAccountChange = void Function(CryptoAddress? address);
 
 class NetworkAccountControllerView<N extends WalletNetwork,
-    A extends CryptoAddress> extends StatefulWidget {
+    A extends CryptoAddress?> extends StatefulWidget {
   const NetworkAccountControllerView(
       {super.key, required this.childBulder, required this.title});
   final SolanaAccountBuilder<N, A> childBulder;
@@ -25,7 +25,7 @@ class NetworkAccountControllerView<N extends WalletNetwork,
 }
 
 class _NetworkAccountControllerViewState<N extends WalletNetwork,
-        A extends CryptoAddress>
+        A extends CryptoAddress?>
     extends State<NetworkAccountControllerView<N, A>> with SafeState {
   late WalletProvider wallet;
   late ChainHandler account;
@@ -49,7 +49,12 @@ class _NetworkAccountControllerViewState<N extends WalletNetwork,
 
   void _checkAccounts() {
     account = wallet.chain;
-    address = account.account.address as A;
+
+    if (!account.haveAddress) {
+      address = null as A;
+    } else {
+      address = account.account.address as A;
+    }
   }
 
   @override

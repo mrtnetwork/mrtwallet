@@ -4,8 +4,10 @@ import 'package:mrt_wallet/wallet/api/constant/constant.dart';
 import 'package:mrt_wallet/wallet/api/provider/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solana/solana.dart';
+import 'package:polkadot_dart/polkadot_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:bitcoin_base/bitcoin_base.dart';
@@ -22,7 +24,7 @@ class APIUtils {
   }
 
   static BitcoinElectrumClient _buildBitcoinElectrumProvider(
-      ElectrumAPIProvider provider, WalletNetwork network) {
+      ElectrumAPIProvider provider, WalletBitcoinNetwork network) {
     return BitcoinElectrumClient(
         provider: ElectrumApiProvider(ElectrumService.fromProvider(
             provider: provider, service: provider)),
@@ -92,6 +94,13 @@ class APIUtils {
     );
   }
 
+  static SubstrateClient builSibstrateClient(
+      SubstrateAPIProvider provider, WalletPolkadotNetwork network) {
+    return SubstrateClient(
+        provider: SubstrateRPC(SubstrateHttpService(provider)),
+        network: network);
+  }
+
   static SolanaClient buildSoalanaProvider(
       SolanaAPIProvider provider, WalletSolanaNetwork network) {
     return SolanaClient(
@@ -119,6 +128,7 @@ class APIUtils {
     if (serviceProvider == null) return null;
     switch (network.type) {
       case NetworkType.bitcoinAndForked:
+      case NetworkType.bitcoinCash:
         return buildBitcoinApiPorivder(serviceProvider, network.toNetwork());
       case NetworkType.cardano:
         return buildCardanoProvider(
@@ -139,6 +149,10 @@ class APIUtils {
             serviceProvider.toProvider(), network.toNetwork());
       case NetworkType.ton:
         return buildTonApiProvider(
+            serviceProvider.toProvider(), network.toNetwork());
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        return builSibstrateClient(
             serviceProvider.toProvider(), network.toNetwork());
       default:
         throw WalletExceptionConst.incorrectNetwork;

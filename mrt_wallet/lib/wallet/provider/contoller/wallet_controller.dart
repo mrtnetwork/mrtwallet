@@ -3,15 +3,14 @@ part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 typedef OnUpdateWallet = Future<void> Function(HDWallet, bool?);
 
 abstract class _WalletController
-    with WalletStorageWriter, WalletStorageManger2, WalletNetworkManager2 {
+    with WalletStorageWriter, WalletStorageManger, WalletNetworkManager {
   @override
   HDWallet _wallet;
   _WalletController(this._wallet, this._onUpdateWallet);
   final OnUpdateWallet _onUpdateWallet;
 }
 
-class WalletController extends _WalletController
-    with WalletManager2, BaseRepository {
+class WalletController extends _WalletController with WalletManager {
   WalletController._(HDWallet wallet, OnUpdateWallet onUpdateWallet)
       : super(wallet, onUpdateWallet);
 
@@ -19,6 +18,7 @@ class WalletController extends _WalletController
       HDWallet wallet, OnUpdateWallet onUpdateWallet) async {
     final controller = WalletController._(wallet, onUpdateWallet);
     await controller._setupNetwork();
+    // controller.chain.provider()?.init();
     controller._streamBalances();
     return controller;
   }

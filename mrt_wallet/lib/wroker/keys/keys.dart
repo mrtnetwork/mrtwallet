@@ -13,3 +13,4 @@ export 'access/seed_response.dart';
 export 'access/key_request.dart';
 export 'access/key_response.dart';
 export 'access/ada_legacy_public_key.dart';
+export 'import/import_keys.dart';

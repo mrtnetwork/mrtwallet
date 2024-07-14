@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/tron/addresses/multisig.dart';
 import 'package:mrt_wallet/wallet/models/account/address/networks/tron/addresses/tron.dart';

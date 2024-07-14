@@ -1,20 +1,18 @@
-import 'package:blockchain_utils/bip/bip/bip32/bip32_key_data.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coin_conf.dart';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'conf.dart';
 
-class CustomCoins extends CryptoCoins {
+class CustomCoins extends BipCoins {
   CustomCoins._(this.name, this.conf);
   final String name;
   @override
   String get coinName => name;
 
   @override
-  final CoinConfig conf;
+  final BipCoinConfig conf;
 
   @override
-  CryptoProposal get proposal => CustomProposal.cip0019;
+  BipProposal get proposal => CustomProposal.cip0019;
 
   @override
   CryptoCoins get value => this;
@@ -24,14 +22,33 @@ class CustomCoins extends CryptoCoins {
   static final CustomCoins byronLegacyTestnet = CustomCoins._(
       "Byron legacy testnet", CustomCurrencyConf.byronLegacyTestnet);
   static final List<CustomCoins> values = [byronLegacy, byronLegacyTestnet];
-
-  static CryptoCoins? getCoin(String name, CryptoProposal proposal) {
-    switch (proposal) {
-      case CustomProposal.cip0019:
-        return CustomCoins.fromName(name);
-      default:
-        return CryptoCoins.getCoin(name, proposal);
+  static T getSerializationCoin<T extends CryptoCoins>(
+      String serializationStr) {
+    final parts = serializationStr.split("#");
+    if (parts.length != 2) {
+      throw WalletExceptionConst.dataVerificationFailed;
     }
+    return getCoin(name: parts[1], proposal: parts[0]);
+  }
+
+  static T getCoin<T extends CryptoCoins>(
+      {required String name, required String proposal}) {
+    CryptoCoins? coin;
+    switch (proposal) {
+      case CustomProposal._cip0019OldName:
+        coin = CustomCoins.fromName(name);
+        break;
+      default:
+        coin = CryptoCoins.getCoin(name, CustomProposal.fromName(proposal));
+        break;
+    }
+    if (coin == null) {
+      throw WalletExceptionConst.coinNotFound;
+    }
+    if (coin is! T) {
+      throw WalletExceptionConst.invalidCoin;
+    }
+    return coin;
   }
 
   static CustomCoins? fromName(String name) {
@@ -43,36 +60,25 @@ class CustomCoins extends CryptoCoins {
   }
 }
 
-class CustomProposal implements CryptoProposal {
-  static const CustomProposal cip0019 = CustomProposal._("CIP-0019");
+class CustomProposal implements BipProposal {
+  static const CustomProposal cip0019 = CustomProposal._(_cip0019OldName);
 
   const CustomProposal._(this.name);
+  @override
   final String name;
 
   @override
   String get specName => name;
   @override
   CustomProposal get value => this;
-  static const String _cip0019OldName = "custom";
-  static const List<CryptoProposal> values = [cip0019];
+  static const String _cip0019OldName = "CIP-0019";
+  static const List<CoinProposal> values = [cip0019];
 
   @override
   Bip32KeyIndex get purpose => Bip32KeyIndex(0);
 
-  static CryptoProposal fromName(String name) {
-    try {
-      if (name == _cip0019OldName) return CustomProposal.cip0019;
-      return values.firstWhere(
-        (element) => element.specName == name,
-        orElse: () =>
-            BipProposal.values.firstWhere((element) => element.name == name),
-      );
-    } on StateError {
-      return CipProposal.values.firstWhere(
-        (element) => element.name == name,
-        orElse: () => throw WalletException(
-            "Unable to locate a proposal with the given name."),
-      );
-    }
+  static CoinProposal fromName(String name) {
+    if (name == _cip0019OldName) return CustomProposal.cip0019;
+    return CoinProposal.fromName(name);
   }
 }

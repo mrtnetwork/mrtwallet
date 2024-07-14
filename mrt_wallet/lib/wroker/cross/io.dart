@@ -4,10 +4,10 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wroker/core/worker.dart';
 import 'package:mrt_wallet/wroker/crypto/crypto.dart';
-import 'package:mrt_wallet/wroker/models/bytes.dart';
-import 'package:mrt_wallet/wroker/models/completer.dart';
-import 'package:mrt_wallet/wroker/models/request_message.dart';
-import 'package:mrt_wallet/wroker/models/response_message.dart';
+import 'package:mrt_wallet/wroker/messages/argruments/argruments.dart';
+import 'package:mrt_wallet/wroker/messages/completer/completer.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/request.dart';
+import 'package:mrt_wallet/wroker/messages/response/response.dart';
 
 import 'exception.dart';
 
@@ -23,17 +23,17 @@ class _IoCryptoWorker extends IsolateCryptoWoker {
   int _retry = 0;
 
   @override
-  Future<T> getResult<T extends ArgsBytes>(WorkerMessageBytes message) async {
+  Future<T> getResult<T extends MessageArgs>(WorkerMessageBytes message) async {
     return _lock.synchronized(() async {
       await _init();
       final id = WorkerMessageCompleter(_id++);
       try {
         _requests[id.id] = id;
-        final request = WorkerMessageRequest(message: message, id: id.id);
-        _initialInfo!.sentRequest(request);
+        // final request = WorkerMessageRequest(message: message);
+        _initialInfo!.sentRequest(message, id.id);
         final args = await id.getResult();
         if (args.type == ArgsType.exception) {
-          throw WalletException((args as ExceptionArg).message);
+          throw WalletException((args as MessageArgsException).message);
         }
         if (args is! T) {
           throw WalletExceptionConst.dataVerificationFailed;
@@ -125,14 +125,15 @@ class _IoConnectionInfo {
   _IoConnectionInfo(
       {required this.receivePort, required this.sendPort, required this.key});
 
-  WorkerEncryptedMessage _toEncryptedMessage(WorkerMessageRequest request) {
+  WorkerEncryptedMessage _toEncryptedMessage(
+      WorkerMessageBytes request, int requestId) {
     final nonce = QuickCrypto.generateRandom(16);
     final enc = chacha.encrypt(nonce, request.toCbor().encode());
-    return WorkerEncryptedMessage(message: enc, nonce: nonce, id: request.id);
+    return WorkerEncryptedMessage(message: enc, nonce: nonce, id: requestId);
   }
 
-  void sentRequest(WorkerMessageRequest request) {
-    final enc = _toEncryptedMessage(request);
+  void sentRequest(WorkerMessageBytes request, int requestId) {
+    final enc = _toEncryptedMessage(request, requestId);
     sendPort.send(enc.toCbor().encode());
   }
 
@@ -173,7 +174,7 @@ class _IoIsolateInitialData {
       id = encryptedMessage.id;
       final decode =
           chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message);
-      return crypto.handleMessage(decode!);
+      return crypto.handleMessage(decode!, id);
     } catch (e) {
       return WorkerMessageResponse(
           args: WalletCrypto.verificationFailed, id: id ?? -1);

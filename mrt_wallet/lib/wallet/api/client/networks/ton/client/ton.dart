@@ -11,8 +11,8 @@ import 'package:mrt_wallet/wallet/models/token/tokens/jetton.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:ton_dart/ton_dart.dart';
 
-class TonClient implements NetworkClient<ITonAddress, TonAPIProvider> {
-  const TonClient({required this.provider, required this.network});
+class TonClient extends NetworkClient<ITonAddress, TonAPIProvider> {
+  TonClient({required this.provider, required this.network});
   final TonProvider provider;
   @override
   final WalletTonNetwork network;
@@ -270,5 +270,20 @@ class TonClient implements NetworkClient<ITonAddress, TonAPIProvider> {
           walletAddress: jetton.jettonWalletAddress,
           verified: true);
     }
+  }
+
+  @override
+  Future<bool> onInit() async {
+    final result = await MethodUtils.nullOnException(() async {
+      if (provider.isTonCenter) {
+        final result = await provider.request(TonCenterGetMasterchainInfo());
+        return IntUtils.parse(result["last"]["workchain"]);
+      } else {
+        final result =
+            await provider.request(TonApiGetBlockchainMasterchainHead());
+        return result.workchainId;
+      }
+    });
+    return result != null;
   }
 }

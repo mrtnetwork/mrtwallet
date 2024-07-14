@@ -188,8 +188,8 @@ class MethodResult<T> {
 
   final Object? exception;
   final StackTrace? trace;
-  bool get hasError => error != null;
-  bool get hasResult => error == null;
+  bool get hasError => exception != null;
+  bool get hasResult => exception == null;
   bool get isCancel => exception is CancelableExption;
   T get result {
     rethrowIfError();

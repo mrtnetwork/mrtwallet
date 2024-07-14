@@ -173,6 +173,7 @@ class CardanoBuildTransactionView extends StatelessWidget {
                           style: context.textTheme.titleLarge
                               ?.copyWith(color: context.colors.onSecondary),
                           symbolColor: context.colors.onSecondary,
+                          showTokenImage: true,
                         ),
                         if (receiver.minAdaRequired)
                           ErrorTextContainer(

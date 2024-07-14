@@ -36,7 +36,8 @@ extension QuickContextAccsess on BuildContext {
 
   Future<T?> to<T>(String path, {dynamic argruments}) async {
     if (mounted) {
-      return Navigator.pushNamed<T>(this, path, arguments: argruments);
+      final push = await Navigator.pushNamed(this, path, arguments: argruments);
+      return (push as T?);
     }
     return null;
   }
@@ -72,6 +73,7 @@ extension QuickContextAccsess on BuildContext {
       double? initialExtend,
       BodyBuilder? bodyBuilder,
       List<Widget> appbarActions = const [],
+      List<Widget> slivers = const [],
       bool centerContent = true}) async {
     if (!mounted) return null;
     return await showModalBottomSheet<T>(
@@ -84,6 +86,7 @@ extension QuickContextAccsess on BuildContext {
         minExtent: minExtent,
         maxExtend: maxExtend,
         centerContent: centerContent,
+        slivers: slivers,
         initiaalExtend: initialExtend,
         child: child,
       ),
@@ -175,4 +178,16 @@ extension QuickContextAccsess on BuildContext {
 
   GlobalKey<NavigatorState> get navigatorKey =>
       StateRepository.navigatorKey(this);
+  ModalRoute? route() {
+    return ModalRoute.of(this);
+  }
+
+  String? path() {
+    String? currentPath;
+    navigatorKey.currentState?.popUntil((route) {
+      currentPath = route.settings.name;
+      return true;
+    });
+    return currentPath;
+  }
 }

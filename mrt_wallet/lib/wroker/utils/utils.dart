@@ -10,3 +10,4 @@ export 'cardano/cardano_utils.dart';
 export 'cosmos/cosmos.dart';
 export 'ton/ton.dart';
 export 'derivation/bip_derivation.dart';
+export 'substrate/substrate.dart';

@@ -22,4 +22,6 @@ class LinkConst {
   static const String reviewJettonQueryId =
       "https://github.com/ton-blockchain/TEPs/blob/master/text/0074-jettons-standard.md";
   static const String reviewRippleXAddress = "https://xrpaddress.info/";
+  static const String reviewSubstrateSignatureSchame =
+      "https://docs.substrate.io/deploy/keys-and-network-operations/#:~:text=The%20Sr25519%20signature%20scheme%20is,signatures%20with%20Ristretto%20point%20compression.";
 }

@@ -4,6 +4,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/address_derivation/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/worker.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 class SetupTonAddressView extends StatefulWidget {
@@ -55,7 +56,8 @@ class _SetupTonAddressViewState extends State<SetupTonAddressView>
   }
 
   void generateAddress() async {
-    final keyIndex = await widget.controller.getCoin(context);
+    final keyIndex = await widget.controller
+        .getCoin(context: context, seedGeneration: SeedTypes.bip39);
     if (keyIndex == null) return;
     if (widget.controller.form.currentState?.validate() ?? false) {
       if (hasSubWalletId && subWalletId == null) return;

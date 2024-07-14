@@ -25,7 +25,7 @@ class AccessCryptoPrivateKeysRequest with CborSerializable {
 }
 
 class AccessCryptoPrivateKeyRequest with CborSerializable {
-  final Bip32AddressIndex index;
+  final AddressDerivationIndex index;
   final int maxLevel;
 
   const AccessCryptoPrivateKeyRequest({required this.index, this.maxLevel = 5});
@@ -36,7 +36,8 @@ class AccessCryptoPrivateKeyRequest with CborSerializable {
         bytes, obj, CryptoKeyConst.accessPrivateKeyRequest);
 
     return AccessCryptoPrivateKeyRequest(
-        index: Bip32AddressIndex.fromCborBytesOrObject(obj: cbor.getCborTag(0)),
+        index: AddressDerivationIndex.fromCborBytesOrObject(
+            obj: cbor.getCborTag(0)),
         maxLevel: cbor.elementAt(1));
   }
 

@@ -53,7 +53,6 @@ class SolanaInitializeMintForm extends SolanaTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields =>
       [mint, mintAuthority, decimals, freezAuthority];
 
@@ -75,7 +74,6 @@ class SolanaInitializeMintForm extends SolanaTransactionForm {
   @override
   String get name => "initialize_mint";
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

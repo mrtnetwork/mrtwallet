@@ -9,11 +9,11 @@ import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wroker/core/worker.dart';
 import 'package:mrt_wallet/wroker/crypto/crypto.dart';
-import 'package:mrt_wallet/wroker/models/bytes.dart';
-import 'package:mrt_wallet/wroker/models/completer.dart';
-import 'package:mrt_wallet/wroker/models/message_type.dart';
-import 'package:mrt_wallet/wroker/models/request_message.dart';
-import 'package:mrt_wallet/wroker/models/response_message.dart';
+import 'package:mrt_wallet/wroker/messages/argruments/argruments.dart';
+import 'package:mrt_wallet/wroker/messages/completer/completer.dart';
+import 'package:mrt_wallet/wroker/messages/types/message_type.dart';
+import 'package:mrt_wallet/wroker/messages/request/requests/request.dart';
+import 'package:mrt_wallet/wroker/messages/response/response.dart';
 // ignore: avoid_web_libraries_in_flutter
 import 'dart:js_util' as js_util;
 // ignore: avoid_web_libraries_in_flutter
@@ -31,9 +31,9 @@ class _WebCryptoWorker extends IsolateCryptoWoker {
   static final _WebCryptoWorker _web = _WebCryptoWorker._();
 
   static const String _scriptHash =
-      "74f0a7867518f8d84c0314c4007cc746d421c92984f339c5d6e43ca6a4d9f496";
+      "6e0bbc3031e089a4b81d9d52130552129d06e9d92205ffe21ad06bd5fc702598";
   static const String _wasmhash =
-      "748ef3c4836a896629903872170a45ef79c6f01464d70200a682e3bca31a7fcf";
+      "a5d82db82c25525ffa69e3f2708815a842dc5cab48d877415974547550a6903f";
   static const String _workerHash =
       "3e271fd1f7f2f62d511d7d0d4c2a39328b60ec83e947290a4507edf64db2d335";
   _WebCryptoWorker._() : super.parent();
@@ -49,7 +49,7 @@ class _WebCryptoWorker extends IsolateCryptoWoker {
   final _lock = SynchronizedLock();
 
   @override
-  Future<T> getResult<T extends ArgsBytes>(WorkerMessageBytes message) async {
+  Future<T> getResult<T extends MessageArgs>(WorkerMessageBytes message) async {
     await _lock.synchronized(() async {
       try {
         await _init();
@@ -66,10 +66,9 @@ class _WebCryptoWorker extends IsolateCryptoWoker {
       }
     });
 
-    final request = WorkerMessageRequest(message: message, id: _id++);
-    final args = await _connector!.sentRequest(request);
+    final args = await _connector!.sentRequest(message, _id++);
     if (args.type == ArgsType.exception) {
-      throw WalletException((args as ExceptionArg).message);
+      throw WalletException((args as MessageArgsException).message);
     }
     if (args is! T) {
       throw WalletExceptionConst.dataVerificationFailed;
@@ -173,18 +172,19 @@ class _WebConnectionInfo {
 
   bool get isActive => true;
 
-  String _toEncryptedMessage(WorkerMessageRequest request) {
+  String _toEncryptedMessage(WorkerMessageBytes request, int id) {
     final nonce = QuickCrypto.generateRandom(16);
     final enc = chacha.encrypt(nonce, request.toCbor().encode());
     final encryptMessage =
-        WorkerEncryptedMessage(message: enc, nonce: nonce, id: request.id);
+        WorkerEncryptedMessage(message: enc, nonce: nonce, id: id);
     return BytesUtils.toHexString(encryptMessage.toCbor().encode());
   }
 
-  Future<ArgsBytes> sentRequest(WorkerMessageRequest request) async {
-    final id = WorkerMessageCompleter(request.id);
+  Future<MessageArgs> sentRequest(
+      WorkerMessageBytes request, int requestId) async {
+    final id = WorkerMessageCompleter(requestId);
     _requests[id.id] = id;
-    final encryptMessage = _toEncryptedMessage(request);
+    final encryptMessage = _toEncryptedMessage(request, requestId);
     worker.postMessage(encryptMessage);
     final r = await id.getResult();
     return r;

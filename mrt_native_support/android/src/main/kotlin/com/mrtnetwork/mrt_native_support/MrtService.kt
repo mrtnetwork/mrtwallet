@@ -1,7 +1,11 @@
 package com.mrtnetwork.mrt_native_support
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.companion.CompanionDeviceManager.RESULT_CANCELED
+import android.companion.CompanionDeviceManager.RESULT_OK
+import android.content.Intent
+import com.google.zxing.client.android.Intents
+import com.journeyapps.barcodescanner.ScanOptions
+import com.mrtnetwork.mrt_native_support.barcode.CaptureActivityPortrait
 import com.mrtnetwork.mrt_native_support.connection.NetworkEvent
 import com.mrtnetwork.mrt_native_support.encryptions.EncryptionImpl
 import com.mrtnetwork.mrt_native_support.share.ShareImpl
@@ -12,22 +16,21 @@ import io.flutter.embedding.engine.plugins.service.ServicePluginBinding
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
-import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
-import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
-import com.google.mlkit.vision.barcode.common.Barcode
+import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 
 
-abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl, PluginRegistry.NewIntentListener, ServiceAware {
+abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl,
+    PluginRegistry.NewIntentListener, ServiceAware, ActivityResultListener {
 
 
-    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         mainActivity = binding.activity
         binding.addOnNewIntentListener(this)
-
         MrtCore.liveData.observeForever { handleObs(it) }
+        binding.addActivityResultListener(this)
 
     }
+
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
@@ -38,10 +41,12 @@ abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl, PluginRegi
             "share" -> {
                 super<ShareImpl>.onMethodCall(call, result)
             }
-            "stopBarcodeScanner" ->{
+
+            "stopBarcodeScanner" -> {
                 result.success(true);
             }
-            "startBarcodeScanner" ->{
+
+            "startBarcodeScanner" -> {
                 barcodeScan(result);
             }
         }
@@ -78,38 +83,42 @@ abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl, PluginRegi
         }
     }
 
-    private fun barcodeScan(result: MethodChannel.Result){
-        MrtCore.logging("started")
-        val options = GmsBarcodeScannerOptions.Builder()
-            .setBarcodeFormats( Barcode.FORMAT_ALL_FORMATS).enableAutoZoom()
-            .build()
-        val scanner = GmsBarcodeScanning.getClient(applicationContext)
-        scanner.startScan()
-            .addOnSuccessListener { barcode ->
-                val rawValue: String? = barcode.rawValue
-                // Task completed successfully
 
-                if(rawValue!= null){
-                    val message = HashMap<String, Any?>()
-                    message["type"] = "success"
-                    message["message"] = rawValue
-                    methodChannel.invokeMethod("onBarcodeScanned",message)
-                  
+    private fun barcodeScan(result: MethodChannel.Result) {
+        try {
+            val options = ScanOptions()
+            options.setCaptureActivity(CaptureActivityPortrait::class.java)
+            options.setPrompt("Barcode scan")
+            options.setBeepEnabled(true)
+            val intent = options.createScanIntent(mainActivity)
+            mainActivity?.startActivityForResult(intent, MrtCore.REQUEST_CODE_SCAN)
+            result.success(true)
+        } catch (e: Exception) {
+            result.error("BARCODE_SCAN_ERROR", "Error occurred during barcode scan", e.localizedMessage)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        if (requestCode == MrtCore.REQUEST_CODE_SCAN) {
+            val info = HashMap<String, Any?>()
+            when (resultCode) {
+                RESULT_OK -> {
+                    info["type"] = MrtCore.BARCODE_SUCCESS_TYPE
+                    val contents: String? = data?.getStringExtra(Intents.Scan.RESULT)
+                    info["message"] = contents
+                }
+
+                RESULT_CANCELED -> {
+                    info["type"] = MrtCore.BARCODE_SUCCESS_CANCEL
+                }
+                else -> {
+                    info["type"] = MrtCore.BARCODE_SUCCESS_ERROR
                 }
             }
-            .addOnCanceledListener {
-                    val message = HashMap<String, Any?>()
-                    message["type"] = "cancel"
-                    methodChannel.invokeMethod("onBarcodeScanned",message)
-            }
-            .addOnFailureListener { e: Exception ->
-                    val message = HashMap<String, Any?>()
-                    message["type"] = "cancel"
-                    message["message"] = e.message
-                    methodChannel.invokeMethod("onBarcodeScanned",message)        
-            }
-      result.success(null);
-
+            methodChannel.invokeMethod(MrtCore.BARCODE_CHANNEL_RESPONSE_EVENT,info)
+            return true
+        }
+        return false
     }
 
 }

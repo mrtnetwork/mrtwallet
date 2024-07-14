@@ -2,9 +2,7 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 
 import 'package:mrt_wallet/wallet/models/contact/core/contract_core.dart';
-import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wroker/utils/address/utils.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleContact with Equatable implements ContactCore<XRPAddress> {
@@ -14,19 +12,14 @@ class RippleContact with Equatable implements ContactCore<XRPAddress> {
       required this.created,
       required this.name});
   factory RippleContact.newContact(
-      {required XRPAddress address,
-      required WalletXRPNetwork network,
-      required String name}) {
+      {required XRPAddress address, required String name}) {
     return RippleContact._(
         addressObject: address,
-        address: address.tag == null
-            ? address.toString()
-            : address.toXAddress(
-                tag: address.tag, isTestnet: !network.coinParam.mainnet),
+        address: address.tag == null ? address.toString() : address.toAddress(),
         created: DateTime.now(),
         name: name);
   }
-  factory RippleContact.fromCborBytesOrObject(WalletXRPNetwork network,
+  factory RippleContact.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     try {
       final CborListValue cbor = CborSerializable.decodeCborTags(
@@ -35,8 +28,7 @@ class RippleContact with Equatable implements ContactCore<XRPAddress> {
       final int? tag = cbor.elementAt(1);
       final DateTime created = cbor.elementAt(2);
       final String name = cbor.elementAt(3);
-      final rippleAddress =
-          BlockchainAddressUtils.toRippleAddress(address, network);
+      final rippleAddress = XRPAddress(address);
       if (rippleAddress.tag != tag) {
         throw WalletExceptionConst.invalidContactDetails;
       }

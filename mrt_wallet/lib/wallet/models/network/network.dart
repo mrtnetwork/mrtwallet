@@ -8,3 +8,4 @@ export 'params/solana.dart';
 export 'params/cardano.dart';
 export 'params/cosmos.dart';
 export 'params/ton.dart';
+export 'params/substrate.dart';

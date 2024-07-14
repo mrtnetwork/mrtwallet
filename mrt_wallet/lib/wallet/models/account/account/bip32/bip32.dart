@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/account/address/address.dart';
@@ -56,17 +55,17 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<T, X> {
       throw WalletExceptionConst.incorrectNetwork;
     }
     final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
-    final toAccounts =
-        accounts.map((e) => CryptoAddress.fromCbor(network, e)).toList();
-    int addressIndex = 0;
-    final String? currentAddress = cbor.elementAt(2);
-    if (currentAddress != null) {
-      final index = MethodUtils.nullOnException(() => toAccounts.indexWhere(
-              (element) => element.address.toAddress == currentAddress)) ??
-          0;
-      if (index > 0) {
-        addressIndex = index;
+    List<CryptoAddress<T, X>> toAccounts = [];
+    for (final i in accounts) {
+      final acc = MethodUtils.nullOnException(
+          () => CryptoAddress.fromCbor<T, X>(network, i));
+      if (acc != null) {
+        toAccounts.add(acc);
       }
+    }
+    int addressIndex = (cbor.elementAt(5) ?? 0);
+    if (addressIndex >= toAccounts.length) {
+      addressIndex = 0;
     }
     List<ContactCore> contacts = [];
     final List? cborContacts = cbor.elementAt(3);
@@ -79,8 +78,8 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<T, X> {
 
     return Bip32NetworkAccount._(
         network: network,
-        addresses: toAccounts.cast(),
-        addressIndex: addressIndex,
+        addresses: toAccounts,
+        addressIndex: addressIndex < 0 ? 0 : addressIndex,
         contacts: contacts,
         totalBalance: Live(IntegerBalance(
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)))
@@ -103,13 +102,16 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<T, X> {
   @override
   final Live<IntegerBalance> totalBalance;
   @override
-  CryptoAddress get address => addresses.elementAt(_addressIndex);
+  CryptoAddress<T, X> get address => addresses.elementAt(_addressIndex);
 
   @override
-  Bip32AddressIndex nextDerive(CryptoCoins coin,
-      {SeedTypes seedGeneration = SeedTypes.bip39}) {
+  AddressDerivationIndex nextDerive(
+      CryptoCoins coin, SeedTypes seedGeneration) {
     return BipDerivationUtils.generateAccountNextKeyIndex(
-        coin: coin, addresses: addresses, seedGenerationType: seedGeneration);
+        coin: coin,
+        addresses: addresses,
+        seedGenerationType: seedGeneration,
+        coinType: network.coinParam.bip32CoinType);
   }
 
   @override
@@ -127,8 +129,7 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<T, X> {
     if (any) {
       throw WalletExceptionConst.addressAlreadyExist;
     }
-
-    _addresses = List.unmodifiable([newAddress, ..._addresses]);
+    _addresses = List.unmodifiable([..._addresses, newAddress]);
     return newAddress;
   }
 
@@ -140,14 +141,20 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<T, X> {
   }
 
   @override
-  void removeAccount(CryptoAddress address) {
-    if (!addresses.contains(address)) {
-      throw WalletExceptionConst.accountDoesNotFound;
+  bool removeAccount(CryptoAddress<T, X> address) {
+    if (!haveAddress || !addresses.contains(address)) {
+      return false;
     }
+    final currentAddress = address;
     final currentAccounts = List<CryptoAddress<T, X>>.from(_addresses);
     currentAccounts.remove(address);
-    _addressIndex = 0;
     _addresses = currentAccounts;
+    _addressIndex = _addresses.indexOf(currentAddress);
+    if (_addressIndex < 0) {
+      _addressIndex = 0;
+    }
+    refreshTotalBalance();
+    return true;
   }
 
   @override
@@ -162,7 +169,8 @@ class Bip32NetworkAccount<T, X> implements NetworkAccountCore<T, X> {
           CborListValue.fixedLength(addresses.map((e) => e.toCbor()).toList()),
           currentAddress ?? const CborNullValue(),
           CborListValue.fixedLength(contacts.map((e) => e.toCbor()).toList()),
-          totalBalance.value.balance
+          totalBalance.value.balance,
+          _addressIndex
         ]),
         CborTagsConst.iAccount);
   }

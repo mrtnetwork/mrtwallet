@@ -1,7 +1,7 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
 typedef OnWalletEvent = void Function(WalletEventStaus);
-mixin WalletListener on WalletManager {
+mixin WalletsListener on WalletsManager {
   final Set<OnWalletEvent> _listeners = {};
 
   @override

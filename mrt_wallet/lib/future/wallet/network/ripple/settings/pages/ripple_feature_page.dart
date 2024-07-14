@@ -9,7 +9,7 @@ class RippleFeaturePageView extends StatelessWidget {
   const RippleFeaturePageView({super.key});
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress>(
+    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress?>(
       title: "settings",
       childBulder: (wallet, chain, address, sm, switchAccount) {
         return ConstraintsBoxView(

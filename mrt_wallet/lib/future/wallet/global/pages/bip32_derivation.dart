@@ -1,9 +1,11 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
+import 'package:blockchain_utils/bip/substrate/substrate.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
     show QuickContextAccsess, Translate, WalletException;
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wroker/utils/utils.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
     show BlockchainConst, WalletNetwork;
@@ -17,7 +19,7 @@ class Bip32KeyDerivationView extends StatefulWidget {
       required this.curve,
       required this.network,
       required this.defaultPath,
-      this.seedGeneration = SeedTypes.bip39});
+      required this.seedGeneration});
   final CryptoCoins coin;
   final EllipticCurveTypes curve;
   final SeedTypes seedGeneration;
@@ -36,13 +38,22 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
           debugLabel: "_Bip32KeyDerivationViewState_pathTextFieldKey");
   late final bool isSupportNoneHardend;
 
+  late final bool isSubstrate =
+      widget.coin.proposal == SubstratePropoosal.substrate;
+
   void onSubmit() {
     if (!(form.currentState?.validate() ?? false)) return;
-    final keyIndex = Bip32AddressIndex.fromPath(
-      path: path,
-      currencyCoin: widget.coin,
-      seedGeneration: widget.seedGeneration,
-    );
+    AddressDerivationIndex keyIndex;
+    if (isSubstrate) {
+      keyIndex = SubstrateAddressIndex.fromPath(
+          currencyCoin: widget.coin as SubstrateCoins, substratePath: path);
+    } else {
+      keyIndex = Bip32AddressIndex.fromPath(
+          path: path,
+          currencyCoin: widget.coin,
+          seedGeneration: widget.seedGeneration);
+    }
+
     context.pop(keyIndex);
   }
 
@@ -58,7 +69,7 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
     path = v;
   }
 
-  String? validator(String? v) {
+  String? _validatorBip32(String? v) {
     if (path.trim().isEmpty) return null;
     try {
       final parse = BlockchainAddressUtils.praseBip32Path(path);
@@ -78,6 +89,23 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
     return null;
   }
 
+  String? _validatorSubstrate(String? v) {
+    if (path.trim().isEmpty) return null;
+    try {
+      BlockchainAddressUtils.praseSubstratePath(path);
+      return null;
+    } catch (e) {
+      return "invalid_substrate_path".tr;
+    }
+  }
+
+  String? validator(String? v) {
+    if (isSubstrate) {
+      return _validatorSubstrate(v);
+    }
+    return _validatorBip32(v);
+  }
+
   void onPaste(String v) {
     pathTextFieldKey.currentState?.updateText(v);
   }
@@ -89,22 +117,39 @@ class _Bip32KeyDerivationViewState extends State<Bip32KeyDerivationView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          PageTitleSubtitle(
-              title: "bip32_key_derivation".tr,
-              body: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  LargeTextView([
-                    "bip32_derivation_desc".tr,
-                    "bip32_derivation_desc2".tr,
-                    "bip32_derivation_desc3".tr,
-                    if (!isSupportNoneHardend)
-                      "ed25519_support_derivation_desc".tr
-                  ])
-                ],
-              )),
+          if (isSubstrate)
+            PageTitleSubtitle(
+                title: "substrate_key_derivation".tr,
+                body: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LargeTextView([
+                      "substrate_key_derivation_desc".tr,
+                      "substrate_key_derivation_desc2".tr,
+                      "substrate_key_derivation_desc3".tr
+                    ])
+                  ],
+                ))
+          else
+            PageTitleSubtitle(
+                title: "bip32_key_derivation".tr,
+                body: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    LargeTextView([
+                      "bip32_derivation_desc".tr,
+                      "bip32_derivation_desc2".tr,
+                      "bip32_derivation_desc3".tr,
+                      if (!isSupportNoneHardend)
+                        "ed25519_support_derivation_desc".tr
+                    ])
+                  ],
+                )),
           Text("derivation_path".tr, style: context.textTheme.titleMedium),
-          Text("hd_wallet_hardened_desc".tr),
+          if (isSubstrate)
+            Text("hd_wallet_substrate_hardened_desc".tr)
+          else
+            Text("hd_wallet_hardened_desc".tr),
           WidgetConstant.height8,
           AppTextField(
             onChanged: onChangePath,

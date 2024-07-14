@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
@@ -24,9 +24,10 @@ class EncryptedCustomKey with Equatable, CborSerializable {
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CryptoKeyConst.encryptedCustomKey);
-
-    final CryptoProposal proposal = CustomProposal.fromName(cbor.elementAt(2));
-    final CryptoCoins coin = CustomCoins.getCoin(cbor.elementAt(3), proposal)!;
+    final CryptoCoins coin = CustomCoins.getCoin(
+      name: cbor.elementAt(3),
+      proposal: cbor.elementAt(2),
+    );
     return EncryptedCustomKey(
         publicKey: cbor.elementAt(0),
         id: cbor.elementAt(1),

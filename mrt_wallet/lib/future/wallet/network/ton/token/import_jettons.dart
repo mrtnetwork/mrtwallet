@@ -77,7 +77,7 @@ class __TonImportJettonsViewState extends State<_TonImportJettonsView>
               children: [
                 WidgetConstant.checkCircleLarge,
                 WidgetConstant.height8,
-                Text("unable_to_locate_token".tr),
+                Text("unable_to_locate_jetton".tr),
               ],
             ));
       }

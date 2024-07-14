@@ -1,16 +1,15 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
-import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
   final BigInt chainId;
   final bool supportEIP1559;
-
   final bool defaultNetwork;
 
   EthereumNetworkParams(
@@ -21,6 +20,7 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
       required this.chainId,
       required this.supportEIP1559,
       required super.mainnet,
+      super.bip32CoinType,
       this.defaultNetwork = true});
   EthereumNetworkParams copyWith(
       {String? transactionExplorer,
@@ -30,7 +30,8 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
       BigInt? chainId,
       bool? supportEIP1559,
       bool? mainnet,
-      bool? defaultNetwork}) {
+      bool? defaultNetwork,
+      int? bip32CoinType}) {
     return EthereumNetworkParams(
         transactionExplorer: transactionExplorer ?? this.transactionExplorer,
         addressExplorer: addressExplorer ?? this.addressExplorer,
@@ -39,7 +40,8 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
         chainId: chainId ?? this.chainId,
         supportEIP1559: supportEIP1559 ?? this.supportEIP1559,
         mainnet: mainnet ?? this.mainnet,
-        defaultNetwork: defaultNetwork ?? this.defaultNetwork);
+        defaultNetwork: defaultNetwork ?? this.defaultNetwork,
+        bip32CoinType: bip32CoinType ?? this.bip32CoinType);
   }
 
   factory EthereumNetworkParams.fromCborBytesOrObject(
@@ -57,7 +59,8 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
         providers: (cbor.elementAt(6) as List)
             .map((e) => EthereumAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        defaultNetwork: defaultNetwork ?? true);
+        defaultNetwork: defaultNetwork ?? true,
+        bip32CoinType: cbor.elementAt(8));
   }
   @override
   CborTagValue toCbor() {
@@ -70,22 +73,24 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
           addressExplorer,
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          defaultNetwork
+          defaultNetwork,
+          bip32CoinType
         ]),
         CborTagsConst.evmNetworkParam);
   }
 
   @override
-  NetworkCoinParams<APIProvider> updateProviders(
-      List<EthereumAPIProvider> updateProviders) {
+  NetworkCoinParams<EthereumAPIProvider> updateProviders(
+      List<APIProvider> updateProviders) {
     return EthereumNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
         token: token,
-        providers: updateProviders,
+        providers: updateProviders.cast<EthereumAPIProvider>(),
         chainId: chainId,
         supportEIP1559: supportEIP1559,
         mainnet: mainnet,
-        defaultNetwork: defaultNetwork);
+        defaultNetwork: defaultNetwork,
+        bip32CoinType: bip32CoinType);
   }
 }

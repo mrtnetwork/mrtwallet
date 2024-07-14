@@ -26,8 +26,9 @@ class RippleConst {
   static const int rippleTranactionHashLength = 64;
   static const int maxEmailHashLength = 32;
   static const int maxWalletLocatorLength = 64;
-
-  static final BigRational max32UnsignedRational = BigRational.from(mask32);
+  static const int maxRippleTag = mask32;
+  static final BigRational max32UnsignedRational =
+      BigRational.from(maxRippleTag);
   static final BigRational maxNftTokenTransferRate =
       BigRational.from(NFTTokenConst.maxTransferFee);
 

@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 
@@ -7,7 +6,7 @@ import 'package:mrt_wallet/wroker/keys/keys.dart';
 import 'package:on_chain/ada/src/address/address.dart';
 import 'package:on_chain/ada/src/models/ada_models.dart';
 
-class CardanoAddrDetails with CborSerializable {
+class CardanoAddrDetails with Equatable, CborSerializable {
   final List<int> publicKey;
   final List<int>? stakePubkey;
   final List<int>? chainCode;
@@ -91,9 +90,8 @@ class CardanoAddrDetails with CborSerializable {
         hdPath: hdPath);
   }
 
-  ADAAddress toAddress(CryptoCoins coin) {
-    final adaNetwork =
-        coin.conf.isTestnet ? ADANetwork.testnetPreprod : ADANetwork.mainnet;
+  ADAAddress toAddress(CryptoCoins coin, bool testnet) {
+    final adaNetwork = testnet ? ADANetwork.testnetPreprod : ADANetwork.mainnet;
     switch (addressType) {
       case ADAAddressType.base:
         return ADABaseAddress.fromPublicKey(
@@ -137,4 +135,8 @@ class CardanoAddrDetails with CborSerializable {
         ]),
         CborTagsConst.cardanoAccountDetails);
   }
+
+  @override
+  List get variabels =>
+      [publicKey, hdPath, hdPathKeyHex, chainCode, addressType];
 }

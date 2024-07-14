@@ -166,9 +166,6 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
                     editableTextState: editableTextState),
         decoration: InputDecoration(
             filled: widget.filled,
-            suffix: (widget.obscureText
-                ? ObscureIcon(show: obscureText, onTap: onChaangeObscureText)
-                : null),
             prefix: widget.prefix,
             prefixIcon: widget.prefixIcon,
             helperStyle: widget.helperStyle,
@@ -179,7 +176,14 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
             border: OutlineInputBorder(
                 borderRadius: WidgetConstant.border8,
                 borderSide: BorderSide.none),
-            suffixIcon: widget.suffixIcon,
+            suffixIcon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.obscureText)
+                  ObscureIcon(show: obscureText, onTap: onChaangeObscureText),
+                if (widget.suffixIcon != null) widget.suffixIcon!,
+              ],
+            ),
             hintText: widget.hint,
             errorText: widget.error),
       ),

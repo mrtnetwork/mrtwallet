@@ -1,19 +1,14 @@
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart' show CryptoCoins;
+import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart' show Translate;
 import 'package:mrt_wallet/future/wallet/network/ripple/address/pages/setup_address.dart';
+import 'package:mrt_wallet/future/wallet/network/substrate/address/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/address/address.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart'
-    show
-        WalletNetwork,
-        CosmosNewAddressParams,
-        EthereumNewAddressParam,
-        NetworkType,
-        NewAccountParams,
-        SolanaNewAddressParam,
-        TronNewAddressParam;
+import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/keys/models/seed.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'controller.dart';
 
 class SetupGenericAddressView extends StatelessWidget {
@@ -27,6 +22,9 @@ class SetupGenericAddressView extends StatelessWidget {
         return SetupRippleAddressView(controller: controller);
       case NetworkType.ton:
         return SetupTonAddressView(controller: controller);
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        return SetupSubstrateAddressView(controller: controller);
       default:
         return _GenericNetworkAddressGenerationView(controller: controller);
     }
@@ -54,10 +52,11 @@ class _GenericNetworkAddressGenerationView extends StatelessWidget {
 
   static void generateAddress(
       BuildContext context, AddressDerivationController controller) async {
-    final keyIndex = await controller.getCoin(context);
-    if (keyIndex == null) return;
-    final newAccountParam =
-        getnerateAccoutParams(keyIndex, controller.network, controller.coin);
+    final keyIndex = await controller.getCoin(
+        context: context, seedGeneration: SeedTypes.bip39);
+    if (keyIndex == null || !keyIndex.isBip32) return;
+    final newAccountParam = getnerateAccoutParams(
+        keyIndex as Bip32AddressIndex, controller.network, controller.coin);
     controller.generateAddress(newAccountParam);
   }
 

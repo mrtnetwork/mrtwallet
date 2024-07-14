@@ -10,6 +10,7 @@ import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 
 class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
   final BasedUtxoNetwork transacationNetwork;
+  final String genesis;
 
   @override
   bool get mainnet => transacationNetwork.isMainnet;
@@ -26,7 +27,8 @@ class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
         transacationNetwork: BasedUtxoNetwork.fromName(cbor.elementAt(3)),
         providers: (cbor.elementAt(4) as List)
             .map((e) => BaseBitcoinAPIProvider.fromCborBytesOrObject(obj: e))
-            .toList());
+            .toList(),
+        genesis: cbor.elementAt(5));
   }
   BitcoinParams({
     required super.transactionExplorer,
@@ -34,6 +36,7 @@ class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
     required super.providers,
     required super.token,
     required this.transacationNetwork,
+    required this.genesis,
   }) : super(mainnet: transacationNetwork.isMainnet);
 
   BitcoinParams copyWith(
@@ -41,13 +44,15 @@ class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
       String? transactionExplorer,
       String? addressExplorer,
       Token? token,
-      BasedUtxoNetwork? transacationNetwork}) {
+      BasedUtxoNetwork? transacationNetwork,
+      String? genesis}) {
     return BitcoinParams(
         transactionExplorer: transactionExplorer ?? this.transactionExplorer,
         addressExplorer: addressExplorer ?? this.addressExplorer,
         transacationNetwork: transacationNetwork ?? this.transacationNetwork,
         providers: providers ?? this.providers,
-        token: token ?? this.token);
+        token: token ?? this.token,
+        genesis: genesis ?? this.genesis);
   }
 
   @override
@@ -58,7 +63,8 @@ class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
           addressExplorer,
           token.toCbor(),
           transacationNetwork.value,
-          CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList())
+          CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
+          genesis
         ]),
         CborTagsConst.bitconNetworkParam);
   }
@@ -69,7 +75,8 @@ class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
         transacationNetwork: transacationNetwork,
-        providers: providers,
-        token: token);
+        providers: updateProviders.cast<BaseBitcoinAPIProvider>(),
+        token: token,
+        genesis: genesis);
   }
 }

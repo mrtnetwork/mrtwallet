@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/widgets/widgets/sliver/widgets/animated_switcher.dart';
 import 'package:mrt_wallet/future/widgets/widgets/widget_constant.dart';
 
 class APPAnimatedSwitcher<T> extends StatelessWidget {
@@ -23,22 +24,22 @@ class APPAnimatedSwitcher<T> extends StatelessWidget {
   }
 }
 
-class APPAnimatedSwitcherTest<T> extends StatelessWidget {
-  const APPAnimatedSwitcherTest(
+class APPSliverAnimatedSwitcher<T> extends StatelessWidget {
+  const APPSliverAnimatedSwitcher(
       {required this.enable,
       required this.widgets,
       this.duration = APPConst.animationDuraion,
       Key? key})
       : super(key: key);
   final T? enable;
-  final Map<T?, Widget> widgets;
+  final Map<T?, WidgetContext> widgets;
   final Duration duration;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
+    return SliverAnimatedSwitcher(
       duration: duration,
-      child: _Wrap(widgets[enable] ?? WidgetConstant.sizedBox,
+      child: _Wrap(widgets[enable]?.call(context) ?? const SliverToBoxAdapter(),
           key: ValueKey<T?>(enable)),
     );
   }

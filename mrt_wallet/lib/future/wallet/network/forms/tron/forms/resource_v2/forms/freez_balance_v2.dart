@@ -39,13 +39,11 @@ class TronFreezBalanceV2Form extends TronTransactionForm {
   @override
   OnChangeForm? onChanged;
 
-  @override
   List<TransactionFormField> get fields => [amount, resource];
 
   @override
   late final String name = "tron_stack_v2";
 
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {

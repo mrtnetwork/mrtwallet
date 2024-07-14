@@ -1,7 +1,6 @@
 library wallet_provier;
 
 import 'dart:async';
-import 'package:blockchain_utils/bip/bip/conf/bip_coins.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/future.dart';
