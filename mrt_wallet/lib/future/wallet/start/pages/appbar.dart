@@ -110,7 +110,7 @@ class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
   double get maxExtent => (accountSize + bottomWidget.preferredSize.height);
 
   @override
-  double get minExtent => (80 + bottomWidget.preferredSize.height);
+  double get minExtent => (90 + bottomWidget.preferredSize.height);
 
   @override
   bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) {

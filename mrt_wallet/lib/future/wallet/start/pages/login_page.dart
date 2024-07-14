@@ -44,41 +44,46 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
 
   @override
   Widget build(BuildContext context) {
-    return ConstraintsBoxView(
-      padding: WidgetConstant.padding20,
-      alignment: Alignment.center,
-      child: Form(
-        key: formKey,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              PageTitleSubtitle(
-                  title: null, body: Text("wallet_login_desc".tr)),
-              const CircleAssetsImgaeView(APPConst.logo),
-              WidgetConstant.height20,
-              AppTextField(
-                obscureText: true,
-                onChanged: onChange,
-                label: "password".tr,
-                disableContextMenu: true,
-                error: _error,
-                validator: (v) {
-                  if (StrUtils.isStrongPassword(v)) {
-                    return null;
-                  }
-                  return "password_desc".tr;
-                },
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      body: UnfocusableChild(
+        child: ConstraintsBoxView(
+          padding: WidgetConstant.padding20,
+          alignment: Alignment.center,
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  PageTitleSubtitle(
+                      title: null, body: Text("wallet_login_desc".tr)),
+                  const CircleAssetsImgaeView(APPConst.logo),
+                  WidgetConstant.height20,
+                  AppTextField(
+                    obscureText: true,
+                    onChanged: onChange,
+                    label: "password".tr,
+                    disableContextMenu: true,
+                    error: _error,
+                    validator: (v) {
+                      if (StrUtils.isStrongPassword(v)) {
+                        return null;
+                      }
+                      return "password_desc".tr;
+                    },
+                  ),
+                  StreamWidget(
+                    padding: WidgetConstant.paddingVertical20,
+                    buttonWidget: FixedElevatedButton(
+                      onPressed: unlock,
+                      child: Text("unlock".tr),
+                    ),
+                    backToIdle: APPConst.oneSecoundDuration,
+                    key: buttonKey,
+                  ),
+                ],
               ),
-              StreamWidget(
-                padding: WidgetConstant.paddingVertical20,
-                buttonWidget: FixedElevatedButton(
-                  onPressed: unlock,
-                  child: Text("unlock".tr),
-                ),
-                backToIdle: APPConst.oneSecoundDuration,
-                key: buttonKey,
-              ),
-            ],
+            ),
           ),
         ),
       ),

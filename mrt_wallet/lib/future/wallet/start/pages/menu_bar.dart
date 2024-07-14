@@ -17,7 +17,7 @@ class AccountMenuButtonView extends StatelessWidget {
         account.accountName != null || account.type != null;
     final bool showMultiSig = account.multiSigAccount && !hasAccountNameOrType;
     return SizedBox(
-      height: 80,
+      height: 90,
       child: Padding(
         padding: WidgetConstant.paddingHorizontal10,
         child: Row(
@@ -59,21 +59,11 @@ class AccountMenuButtonView extends StatelessWidget {
                       account.address.toAddress,
                       style: context.textTheme.bodyMedium,
                     ),
-                    Row(
-                      children: [
-                        CoinPriceView(
-                          account: chain.account.address,
-                          style: context.textTheme.titleLarge,
-                          token: chain.network.coinParam.token,
-                          enableMarketPrice: false,
-                        ),
-                        WidgetConstant.width8,
-                        Flexible(
-                          child: CoinMarketPrice(
-                              token: chain.network.coinParam.token,
-                              balance: chain.account.address.address.balance),
-                        )
-                      ],
+                    CoinPriceView(
+                      account: chain.account.address,
+                      style: context.textTheme.titleMedium,
+                      token: chain.network.coinParam.token,
+                      enableMarketPrice: true,
                     ),
                   ],
                 ),
