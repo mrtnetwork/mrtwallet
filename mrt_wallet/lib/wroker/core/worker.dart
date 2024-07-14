@@ -26,16 +26,12 @@ abstract class IsolateCryptoWoker {
     }
     try {
       final result = await onIsolate();
-      print("onisolate!");
-
       return result;
     } on FailedIsolateInitialization {
       final result = await Future.microtask(() => onMain());
-      print("on main!");
       return result;
     } on TimeoutException {
       final result = await Future.microtask(() => onMain());
-      print("on main! timeout ");
       return result;
     }
   }
