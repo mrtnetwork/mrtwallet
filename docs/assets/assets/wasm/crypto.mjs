@@ -138,6 +138,7 @@ _117: s => s.toLowerCase(),
 _119: s => s.trim(),
 _122: (s, n) => s.repeat(n),
 _123: (s, p, i) => s.indexOf(p, i),
+_124: (s, p, i) => s.lastIndexOf(p, i),
 _125: (o, offsetInBytes, lengthInBytes) => {
       var dst = new ArrayBuffer(lengthInBytes);
       new Uint8Array(dst).set(new Uint8Array(o, offsetInBytes, lengthInBytes));
