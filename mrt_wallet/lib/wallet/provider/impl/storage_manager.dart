@@ -9,12 +9,12 @@ mixin WalletStorageWriter {
     await BaseNativeMEthod.platform.writeSecure(key, value);
   }
 
-  Future<void> _delete({required String key}) async {
+  Future<void> _remove({required String key}) async {
     await BaseNativeMEthod.platform.removeSecure(key);
   }
 
-  Future<Map<String, String>> _readAll() async {
-    return await BaseNativeMEthod.platform.readAllSecure();
+  Future<Map<String, String>> _readAll({String? prefix}) async {
+    return await BaseNativeMEthod.platform.readAllSecure(prefix: prefix);
   }
 
   Future<bool> _deleteMultiple({required List<String> keys}) async {

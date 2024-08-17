@@ -19,7 +19,6 @@ class BCHUtils {
 
   static Future<CashTokenBCMR> getBCMR(String uri) async {
     final MethodResult<String> result = await HttpUtils.get<String>(uri);
-    result.rethrowIfError();
     final Map<String, dynamic>? inJson =
         MethodUtils.nullOnException(() => StringUtils.toJson(result.result));
     if (inJson == null) {

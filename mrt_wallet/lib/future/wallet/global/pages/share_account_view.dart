@@ -6,7 +6,7 @@ import 'address_details.dart';
 class ShareAccountView extends StatelessWidget {
   const ShareAccountView(
       {required this.address, super.key, required this.network});
-  final CryptoAddress address;
+  final ChainAccount address;
   final WalletNetwork network;
 
   @override

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'transaction.dart';
@@ -9,10 +9,9 @@ class SubstrateTransferTransactionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ChainHandler chain = context.getArgruments();
+    final SubstrateChain chain = context.getArgruments();
     return SubstrateTransactionFieldsView(
         field: LiveTransactionForm(
-            validator: SubstrateTransferForm(
-                network: chain.network as WalletPolkadotNetwork)));
+            validator: SubstrateTransferForm(network: chain.network)));
   }
 }

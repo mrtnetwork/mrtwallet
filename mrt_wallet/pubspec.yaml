@@ -33,7 +33,7 @@ topics:
 
 
 environment:
-  sdk: '>=3.1.4 <4.0.0'
+  sdk: '>=3.3.0 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -51,12 +51,27 @@ dependencies:
     path: ../mrt_native_support
   http: ^1.1.0
   blockchain_utils: ^3.3.0
+  # blockchain_utils:
+  #   path: ../../../bitcoin/blockchain_utils
   bitcoin_base: ^4.7.0
+  # bitcoin_base:
+  #   path: ../../../bitcoin/bitcoin_base
   xrpl_dart: ^4.5.0
-  on_chain: ^3.7.0
+  # xrpl_dart:
+  #   path: ../../../xrpl_dart
+  on_chain: ^3.8.0
+  # on_chain:
+  #   path: ../../on_chain
   cosmos_sdk: ^1.0.0
+  # cosmos_sdk:
+  #   path: ../../../cosmos_sdk
   ton_dart: ^0.0.4
+  # ton_dart:
+  #   path: ../../../projects/ton_dart 
   polkadot_dart: ^1.0.0
+  # polkadot_dart:
+  #   path: ../../../projects/polkadot_dart 
+  
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
@@ -89,6 +104,8 @@ flutter:
   assets:
     - assets/image/
     - assets/wasm/
+    - assets/fonts/
+    - assets/solidity/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

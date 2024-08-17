@@ -11,6 +11,7 @@ import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/impl/transac
 import 'package:mrt_wallet/future/wallet/network/bitcoin/transaction/pages/ordering/transaction_ordering_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class BitcoinCashBuildTransactionView extends StatelessWidget {
   const BitcoinCashBuildTransactionView({super.key, required this.controller});
@@ -95,7 +96,7 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
                                       "token_operation".tr,
                                       child: TokenCashOperationView(
                                         token: p0,
-                                        account: controller.account,
+                                        account: controller.chainAccount,
                                         network: controller.network
                                             as WalletBitcoinCashNetwork,
                                         remindAmount:
@@ -121,7 +122,7 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
                               "token_operation".tr,
                               child: TokenCashOperationView(
                                 token: p0,
-                                account: controller.account,
+                                account: controller.chainAccount,
                                 network: controller.network
                                     as WalletBitcoinCashNetwork,
                                 remindAmount: controller.remindAmount.balance +
@@ -215,7 +216,7 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
                     "receiver_address".tr,
                     bodyBuilder: (c) =>
                         SelectRecipientAccountView<BitcoinBaseAddress>(
-                          account: controller.account,
+                          account: controller.chainAccount,
                           scrollController: c,
                         ),
                     maxExtend: 1,
@@ -259,10 +260,10 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
               validateText: "transaction_Insufficient_balance".tr,
               onRemove: () {
                 context
-                    .openSliverBottomSheet<CryptoAddress>(
+                    .openSliverBottomSheet<ChainAccount>(
                       "select_account".tr,
                       child: SwitchOrSelectAccountView(
-                        account: controller.account,
+                        account: controller.chainAccount,
                         showMultiSig: true,
                       ),
                       minExtent: 0.5,

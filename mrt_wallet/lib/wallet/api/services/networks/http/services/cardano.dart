@@ -20,7 +20,6 @@ class CardanoHTTPService extends HTTPService<CardanoAPIProvider>
   Future<dynamic> get(BlockforestRequestDetails params,
       [Duration? timeout]) async {
     return await providerGET(params.url(url, version), headers: {
-      'Content-Type': 'application/json',
       "Accept": "application/json",
       if (auth != null) ...{auth!.key: auth!.value},
     }, allowStatus: [

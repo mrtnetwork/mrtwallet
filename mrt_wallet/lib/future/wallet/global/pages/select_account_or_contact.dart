@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
@@ -5,6 +6,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:mrt_wallet/wroker/utils/address/utils.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SelectRecipientAccountView<NETWORKADDRESS> extends StatefulWidget {
   const SelectRecipientAccountView(
@@ -13,18 +15,18 @@ class SelectRecipientAccountView<NETWORKADDRESS> extends StatefulWidget {
       required this.scrollController,
       this.subtitle,
       this.multipleSelect = true});
-  final NetworkAccountCore account;
+  final APPCHAINNETWORK<NETWORKADDRESS> account;
   final ScrollController scrollController;
   final Widget? subtitle;
   final bool multipleSelect;
 
   @override
-  State<SelectRecipientAccountView> createState() =>
+  State<SelectRecipientAccountView<NETWORKADDRESS>> createState() =>
       _SelectRecipientAccountViewState<NETWORKADDRESS>();
 }
 
 class _SelectRecipientAccountViewState<NETWORKADDRESS>
-    extends State<SelectRecipientAccountView>
+    extends State<SelectRecipientAccountView<NETWORKADDRESS>>
     with SingleTickerProviderStateMixin, SafeState {
   late final TabController controller = TabController(length: 3, vsync: this);
   void _listener() {
@@ -50,7 +52,8 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
   late final WalletNetwork network = widget.account.network;
   late final bool isRippleNetwork = network.type == NetworkType.xrpl;
   String _address = "";
-  Live<ContactCore?> newContact = Live<ContactCore?>(null);
+  Live<ContactCore<NETWORKADDRESS>?> newContact =
+      Live<ContactCore<NETWORKADDRESS>?>(null);
 
   void onChange(String v) {
     _address = v;
@@ -59,8 +62,8 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
   bool useRippleTag = false;
   int? rippleAddressTag;
 
-  void onChangeTag(String? v) {
-    rippleAddressTag = int.tryParse(v ?? "");
+  void onChangeTag(int v) {
+    rippleAddressTag = v;
   }
 
   void onUseRippleTag(bool? v) {
@@ -70,9 +73,8 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
   }
 
   ContactCore<NETWORKADDRESS>? _toNewContact(Object? addr) {
-    final contact = ContactCore.newContact<NETWORKADDRESS>(
+    return ContactCore.newContact<NETWORKADDRESS>(
         network: network, address: addr, name: "new_address".tr);
-    return contact as ContactCore<NETWORKADDRESS>;
   }
 
   ContactCore<NETWORKADDRESS>? _validate(String? address) {
@@ -100,14 +102,18 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
     return (_toNewContact(addr), null);
   }
 
-  void _setValidate(ContactCore? contact) {
+  void _setValidate(ContactCore<NETWORKADDRESS>? contact) {
     if (contact == null) {
       newContact.value = null;
     } else {
       final inContact = widget.account.getReceiptAddress(contact.address);
+
       if (inContact != null) {
         newContact.value = null;
       } else {
+        newContact.value = contact;
+      }
+      if (isDebug) {
         newContact.value = contact;
       }
     }
@@ -150,8 +156,7 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
     if (addr == null) return;
 
     ReceiptAddress<NETWORKADDRESS>? receipt =
-        widget.account.getReceiptAddress(addr.address)
-                as ReceiptAddress<NETWORKADDRESS>? ??
+        widget.account.getReceiptAddress(addr.address) ??
             _buildReceiptAddress(addr);
     context.pop(receipt);
   }
@@ -185,13 +190,15 @@ class _SelectRecipientAccountViewState<NETWORKADDRESS>
     context
         .openSliverBottomSheet(
       "new_contact".tr,
-      child: AddToContactListView(
-          contact: newContact.value!, network: widget.account.network),
+      child: AddToContactListView<NETWORKADDRESS>(
+          contact: newContact.value!, chain: widget.account),
     )
         .then((value) {
       setState(() {});
     });
   }
+
+  bool get isDebug => kDebugMode;
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +236,7 @@ class _SelectFromAccounts extends StatelessWidget {
       {required this.addresses,
       required this.controller,
       required this.onSelectContact});
-  final List<CryptoAddress> addresses;
+  final List<ChainAccount> addresses;
   final ScrollController controller;
   final StringVoid onSelectContact;
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart' show QuickContextAccsess, Translate;
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/app/models/models/typedef.dart' show DynamicVoid;
-import 'animated/animated_switcher.dart';
+import 'animated/widgets/animated_switcher.dart';
 import 'container_with_border.dart';
 import 'copy_icon_widget.dart';
 import 'widget_constant.dart';

@@ -2,7 +2,7 @@ import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wallet/models/token/tokens/jetton.dart';
+import 'package:mrt_wallet/wallet/models/token/chains_tokens/jetton.dart';
 import 'package:mrt_wallet/wroker/utils/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'message_body_type.dart';

@@ -7,6 +7,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 enum _PrivateKeyTypes {
   extendKey("Extended key"),
@@ -157,7 +158,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   }
 
   void _init() {
-    network = context.watch<WalletProvider>(StateConst.main).network;
+    network = context.watch<WalletProvider>(StateConst.main).wallet.network;
     if (!needSelectCoins) {
       coin = coins.first;
       keyTypes = _buildKeyTypes();
@@ -211,7 +212,8 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       progressKey.errorText(createKey.error!.tr);
       return;
     }
-    final result = await model.importAccount(createKey.result, widget.password);
+    final result =
+        await model.wallet.importAccount(createKey.result, widget.password);
     if (result.hasError) {
       _error = result.error!.tr;
       progressKey.errorText(result.error!.tr);
@@ -233,7 +235,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       backToIdle: APPConst.oneSecoundDuration,
       initialStatus: StreamWidgetStatus.progress,
       initialWidget: ProgressWithTextView(text: "retrieving_resources".tr),
-      child: () => UnfocusableChild(
+      child: (c) => UnfocusableChild(
         child: ConstraintsBoxView(
           alignment: Alignment.center,
           padding: WidgetConstant.paddingHorizontal20,
@@ -264,9 +266,10 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                                 text: TextSpan(
                                     style: context.textTheme.bodyMedium,
                                     children: [
-                                  TextSpan(text: i.coinName),
+                                  TextSpan(text: i.coinName.camelCase),
                                   TextSpan(
-                                      text: " (${i.proposal.specName}) ",
+                                      text:
+                                          " (${i.proposal.specName.camelCase}) ",
                                       style: context.textTheme.labelSmall)
                                 ]))
                         },

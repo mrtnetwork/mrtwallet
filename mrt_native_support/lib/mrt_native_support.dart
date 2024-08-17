@@ -4,26 +4,21 @@
 /// 2. [window_manager](https://pub.dev/packages/window_manager) - Additionally, some methods are inspired by the window_manager plugin, which is licensed under the MIT license. The original project can be found at: https://github.com/leanflutter/window_manager
 
 import 'dart:async';
-import 'dart:ui';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-import 'exception/exception.dart';
 import 'models/models.dart';
 
 abstract class MrtPlatformInterface extends PlatformInterface {
   MrtPlatformInterface() : super(token: _token);
-
   static final Object _token = Object();
+  abstract final SpecificPlatfromMethods desktop;
+  abstract final PlatformWebView webView;
+  AppPlatform get platform;
 
   /// Platform-specific implementations should set this with their own
   /// platform-specific class that extends [PlatformInterface] when
   /// they register themselves.
   static set instance(MrtPlatformInterface instance) {
     PlatformInterface.verifyToken(instance, _token);
-  }
-
-  Future<String?> getPlatformVersion() {
-    throw const MRTNativePluginException(
-        'platformVersion() has not been implemented.');
   }
 
   static void registerWith() {}
@@ -33,7 +28,7 @@ abstract class MrtPlatformInterface extends PlatformInterface {
   Future<String?> readSecure(String key);
   Future<bool> writeSecure(String key, String value);
   Future<bool> containsKeySecure(String key);
-  Future<Map<String, String>> readAllSecure();
+  Future<Map<String, String>> readAllSecure({String? prefix});
   Future<Map<String, String>> readMultipleSecure(List<String> keys);
   Future<bool> removeMultipleSecure(List<String> keys);
   Future<bool> removeAllSecure();
@@ -45,7 +40,7 @@ abstract class MrtPlatformInterface extends PlatformInterface {
   Future<NetworkEvent> deviceConnectionStatus();
   void addNetworkListener(NetworkStatusListener listener);
   void removeNetworkListener(NetworkStatusListener listener);
-  abstract final SpecificPlatfromMethods desktop;
+
   Future<Stream<BarcodeScannerResult>> startBarcodeScanner(
       {required BarcodeScannerParams param});
   Future<void> stopBarcodeScanner();
@@ -53,12 +48,35 @@ abstract class MrtPlatformInterface extends PlatformInterface {
   Future<MRTAPPConfig> getConfig();
 }
 
+abstract class PlatformWebView {
+  bool get supported;
+  Future<Object?> loadScript(
+      {required String viewType, required String script});
+  Future<void> openUrl({required String viewType, required String url});
+  Future<bool> canGoForward(String viewType);
+  Future<bool> canGoBack(String viewType);
+  Future<void> goBack(String viewType);
+  Future<void> goForward(String viewType);
+  Future<void> reload(String viewType);
+  Future<void> addJsInterface({required String viewType, required String name});
+  Future<void> removeJsInterface(
+      {required String viewType, required String name});
+  Future<void> init(String viewType,
+      {String url = "https://google.com", String? jsInterface = "MRT"});
+  void addListener(WebViewListener listener);
+  void removeListener(WebViewListener listener);
+}
+
 abstract class SpecificPlatfromMethods {
   Future<bool> show();
   Future<bool> hide();
   Future<bool> init();
-  Future<void> setBounds(Rect? bounds,
-      {Offset? position, Size? size, bool animate = false});
+  Future<void> setBounds(
+      {required double pixelRatio,
+      WidgetRect? bounds,
+      WidgetOffset? position,
+      WidgetSize? size,
+      bool animate = false});
 
   Future<bool> setFullScreen(bool isFullScreen);
   Future<bool> isFullScreen();
@@ -77,7 +95,7 @@ abstract class SpecificPlatfromMethods {
   Future<bool> setAsFrameless();
   Future<bool> isResizable();
   Future<bool> setResizable(bool isResizable);
-  Future<Rect> getBounds();
+  Future<WidgetRect> getBounds(double pixelRatio);
 
   void addListener(WindowListener listener);
 

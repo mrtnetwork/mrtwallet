@@ -5,6 +5,7 @@ import 'package:mrt_wallet/future/wallet/setup/setup.dart';
 import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 enum _MnemonicOption { import, generate }
 
@@ -24,9 +25,9 @@ class GenerateTonMnemonicView extends StatelessWidget {
   const GenerateTonMnemonicView({super.key});
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletTonNetwork, ITonAddress?>(
+    return NetworkAccountControllerView<TonChain>(
       title: "ton_mnemonic".tr,
-      childBulder: (wallet, chain, address, sm, switchAccount) {
+      childBulder: (wallet, chain, switchAccount) {
         return _GenerateTonMnemonicView(
             network: chain.network.toNetwork(), wallet: wallet);
       },
@@ -152,11 +153,9 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
     final int? wordsNum = mnemonicWordsKey.currentState?.getValue();
     if (wordsNum == null) return;
     progressKey.progressText("generating_mnemonic".tr);
-    final result = await MethodUtils.call(() async => widget.wallet
-        .networkRequest(
-            networkRequest: TonMenmonicGenerateMessage(
-                password: password, wordsNum: wordsNum),
-            network: NetworkType.ton));
+    final result = await MethodUtils.call(() async => widget.wallet.wallet
+        .cryptoRequest(TonMenmonicGenerateMessage(
+            password: password, wordsNum: wordsNum)));
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
@@ -185,13 +184,12 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
         progressKey.progressText("generating_private_key".tr);
         final key = await MethodUtils.call<ImportCustomKeys>(
           () async {
-            return await widget.wallet.networkRequest(
-                networkRequest: TonMnemonicToPrivateKeyMessage(
+            return await widget.wallet.wallet.cryptoRequest(
+                TonMnemonicToPrivateKeyMessage(
                     mnemonic: mnemonicList.join(" "),
                     password: password,
                     validateTonMnemonic: validateTonMnemonic,
-                    coin: widget.network.coins.first),
-                network: widget.network.type);
+                    coin: widget.network.coins.first));
           },
         );
         if (key.hasError) {
@@ -233,7 +231,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: page == null,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
           onBackButton();
         }
@@ -241,7 +239,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
       child: PageProgress(
         key: progressKey,
         backToIdle: APPConst.oneSecoundDuration,
-        child: () => ConstraintsBoxView(
+        child: (c) => ConstraintsBoxView(
             padding: WidgetConstant.paddingHorizontal20,
             child: Form(
               key: formKey,

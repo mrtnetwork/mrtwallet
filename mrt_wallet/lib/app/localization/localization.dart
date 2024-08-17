@@ -1,5 +1,5 @@
 class Localization {
-  static Map<String, dynamic> get languages => {
+  static Map<String, Map<String, String>> get languages => {
         "en": {
           "wellcome": "Welcome To MRT Wallet",
           "setup": "Setup wallet",
@@ -41,6 +41,9 @@ class Localization {
           "c_password": "Confirm password",
           "password_desc":
               "Password should be at least 8 characters long and include a combination of letters, numbers, and special characters",
+          "password_validator":
+              "Password should be at least 8 characters long.",
+
           "weak_password":
               "Password is not strong. Make sure it contains uppercase, lowercase, special character, and numbers.",
           "password_used_before": "This password has been used before.",
@@ -440,6 +443,8 @@ class Localization {
           "one_minute": "One Minute",
           "two_minute": "Two Minute",
           "five_minute": "Five Minute",
+          "ten_minute": "Ten Minute",
+          "thirty_minute": "Thirty Minute",
           "switching_account": "Switching account",
           "switching_network": "Switching network",
           "unlocking_wallet": "Unlocking wallet",
@@ -480,7 +485,7 @@ class Localization {
           "service_provider": "Service provider",
           "what_is_api_provider":
               "A Blockchain API provider service, offers developers a comprehensive interface for interacting with the blockchain. It facilitates functions such as reading UTXOs, checking balances, and sending transactions, providing seamless integration for applications requiring real-time access to blockchain network data and transaction management.",
-          "what_is_service_provider": "What is a blockchain service provider?",
+          // "what_is_service_provider": "What is a blockchain service provider?",
           "select_provider": "Select provider",
           "choose_provider": "Choose a provider.",
           "select_provider_desc": "Select a provider from the options below",
@@ -1560,6 +1565,8 @@ class Localization {
           "derivation_path": "Derivation path",
           "hd_wallet_path_max_indeqxes":
               "only supports up to ___1__ HD wallet indexes.",
+          "byron_legacy_hd_path_max_indexes":
+              "only supports up to ___1__ HD wallet indexes.",
           "unsupported_hd_wallet_index": "Unsupported hd wallet index.",
           "hd_wallet_hardened_desc":
               "For hardened indices, append ' or h to the end of the index.",
@@ -1794,6 +1801,10 @@ class Localization {
           "password_requirement": "Password requirement",
           "wallet_password_requirement_desc":
               "A password is required to access the wallet.",
+          "wallet_password_requirement_desc2":
+              "A password is required to access the wallet. When password protection is disabled, all features except actions requiring a password will remain accessible. For those actions, the wallet will prompt for the password, and the wallet will be unlocked upon entry.",
+          "wallet_locktime_desc":
+              "The wallet will be locked after this time period for wallets that require a password. otherwise, the wallet will be in read-only mode.",
           "default_wallet": "Default wallet",
           "default_wallet_desc":
               "This wallet loads first among multiple wallets.",
@@ -1887,6 +1898,129 @@ class Localization {
               "Coin type must be a positive number between 0 and 4294967295.",
           "slip_44_desc":
               "BIP-0044 defines a logical hierarchy for deterministic wallets. Level 2 of the hierarchy describes a coin type in use.",
+          "barcode_scanner_not_supported_browser":
+              "Barcode scanner is not supported in your browser.",
+          "unknown_requester": "Unknown requester.",
+          "eth_personal_sign_desc":
+              "The message should be signed using 'personal_sign' method.",
+          "message": "Message",
+          "sign_message": "Sign message",
+          "eth_sign_typed_data_desc":
+              "The message should be signed using '___1__' method.",
+          "version": "Version",
+          "primary_type": "Primary type",
+          "transaction_retrieval_requirment":
+              "Transaction Retrieval Requirements",
+          "eip_1559": "EIP-1559",
+          "eip_1559_desc":
+              "Some networks do not support this feature, resulting in `eth_feeHistory` retrieving inaccurate data. If you are unsure, please disable this option and use the legacy gas price instead.",
+          "decryption_failed": "Decryption process failed.",
+          "web3_accounts_permission_desc":
+              "Please select the accounts you wish to grant app permissions to.",
+          "initializing_requirements":
+              "Initializing requirements. Please wait.",
+          "request_completed_success": "Request completed successfully.",
+          "ethereum_networks": "Ethereum networks.",
+          "evm_account_permission_desc":
+              "Switch to each EVM network and grant the necessary permissions.",
+          "import_providers": "Import network providers.",
+          "network_providers_has_been_updated":
+              "Network providers has been updated.",
+          "ethereum_rpc_url_desc":
+              "The RPC URL must be associated with the Ethereum network that has the chain ID ___1__ (___2__).",
+          "confirm_chain_id": "Confirm chain ID",
+          "coin_type_desc2":
+              "The coin type is always determined by a hardened index. You can also set up a custom derivation on the setup address page.",
+          "update_provider_desc":
+              "Update, remove, or add a new provider to the Ethereum network.",
+          "authenticated": "Authentication",
+          "add_provider_authenticated": "Add authentication to your provider.",
+          "authenticated_type": "Authentication Type",
+          "authenticated_key": "Authentication key",
+          "authenticated_value": "Authentication value",
+          "example_value": "Example: ___1__",
+          "authenticated_key_validator":
+              "Please enter at least one character for the authentication key.",
+          "authenticated_value_validator":
+              "Please enter at least one character for the authentication value.",
+          "value_is_to_large": "The provided value is too large.",
+          "access_in_web3_apps": "Access in Web3 applications",
+          "access_provider_in_web3_apps_desc":
+              "Allow Web3 applications to use this provider for blockchain queries.",
+          "update_providers": "Update providers.",
+          "address_type": "Address type",
+          "processing_request": "Processing request, please wait.",
+          "protect_wallet": "Protect wallet",
+          "required_password_to_sign_transaction":
+              "A password is required to sign the transaction.",
+          "wallet_is_not_available": "The wallet is not available",
+          "new_tab": "New tab",
+          "history": "History",
+          "bookmark": "Bookmark",
+          "bookmarks": "Bookmarks",
+          "remove_all": "Remove all",
+          "histories": "Histories",
+          "file_does_not_exist": "File does not exists.",
+          "web3_request_rejected_desc":
+              "Request has been canceled or the client does not exist.",
+          "active_chain": "Active chain",
+          "web3_switch_chain_desc":
+              "A request has been made for this chain. Clients can always request to switch chains.",
+          "web_application_not_valid":
+              "Invalid web application. The application or host was not found or is not valid.",
+          "updating_permission": "Updating permission. please wait.",
+          "enter_wallet_password_request":
+              "Kindly enter your wallet password to proceed with the request.",
+          "application_name": "Application name",
+          "edit_application_name_desc":
+              "You can edit the program name for easier identification.",
+          "application_name_validator":
+              "The application name must be at least 3 characters long.",
+          "web3_activation": "Web3 activation",
+          "web3_activation_desc":
+              "You can also enable or disable the Web3 feature for this application. (Applying this change requires reloading the page.)",
+          "eth_subscribe_websocket_requirment":
+              "`eth_subscribe` method only works with the WebSocket protocol.",
+          "switch_ethereum_chain": "Switch ethereum chain",
+          "switch_ethereum_chain_desc":
+              "The client has sent a request to switch the EVM chain.",
+          "current_chain": "Current chain",
+          "requested_chain": "Requested chain",
+          "agree": "Agree",
+          "unknown": "Unknown",
+          "creation_contract": "Creation Contract",
+          "method_name": "Method name",
+          "method_selector": "Method selector",
+          "transfer_amount": "Transfer amount",
+          "transaction_type": "Transaction type",
+          "smart_contract": "Smart contract",
+          "network_does_not_exist": "Network does not exists.",
+          "web3_request_account_desc":
+              "The request should be processed using this account.",
+          "client": "Client",
+          "web3_client_desc": "This request was generated by the application.",
+          "web3_request_chain_desc":
+              "The request must be processed using this chain.",
+          "web3_success_response_desc":
+              "The response has been successfully generated.",
+          "web3_sending_response_to_client":
+              "Sending the response to the client. Please wait.",
+          "web3_sending_response_error_desc":
+              "The client did not receive the response as it was closed during transmission.",
+          "web3_response_successfully_desc":
+              "The client has successfully received the response.",
+          "verifying_contract": "Verifying Contract",
+          "remove_network": "Remove network",
+          "remove_network_desc2":
+              "Are you sure you want to remove the network from the wallet?",
+          "remove_network_desc":
+              "All accounts, contacts, and any other chain-related data will be permanently removed from the wallet. This action cannot be undone.",
+          "removing_chain_please_wait": "Removing chain. please wait.",
+          "chain_removed_desc":
+              "The client has successfully removed from wallet.",
+          "contract": "Contract",
+          "transfer_token_desc": "The amount of token will be transferred.",
+          "transaction_data": "Transaction data",
         }
       };
 }

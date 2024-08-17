@@ -4,17 +4,18 @@ import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class MonitorTronTRC10TokenView extends StatelessWidget {
   const MonitorTronTRC10TokenView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletTronNetwork, ITronAddress>(
+    return NetworkAccountControllerView<TronChain>(
       title: "add_token".tr,
-      childBulder: (wallet, account, address, network, switchRippleAccount) {
+      childBulder: (wallet, account, switchRippleAccount) {
         return _MonitorTronTRC10TokenView(
-            address: address, wallet: wallet, provider: account.provider()!);
+            account: account, wallet: wallet, provider: account.provider()!);
       },
     );
   }
@@ -22,8 +23,8 @@ class MonitorTronTRC10TokenView extends StatelessWidget {
 
 class _MonitorTronTRC10TokenView extends StatefulWidget {
   const _MonitorTronTRC10TokenView(
-      {required this.address, required this.wallet, required this.provider});
-  final ITronAddress address;
+      {required this.account, required this.wallet, required this.provider});
+  final TronChain account;
   final WalletProvider wallet;
   final TronClient provider;
 
@@ -34,19 +35,20 @@ class _MonitorTronTRC10TokenView extends StatefulWidget {
 
 class __MonitorTronTRC10TokenViewState extends State<_MonitorTronTRC10TokenView>
     with SafeState {
+  late final ITronAddress address = widget.account.address;
   final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
       debugLabel: "__MonitorTronTRC10TokenViewState");
   final Set<TronTRC10Token> tokens = {};
   void fetchingTokens() async {
     if (progressKey.isSuccess || progressKey.inProgress) return;
     final result = await MethodUtils.call(() async {
-      if (widget.address.accountInfo == null) {
-        await widget.provider.updateBalance(widget.address);
+      if (address.accountInfo == null) {
+        await widget.provider.updateBalance(address);
       }
-      if (widget.address.accountInfo == null) {
+      if (address.accountInfo == null) {
         return null;
       }
-      final tronAccount = widget.address.accountInfo!;
+      final tronAccount = address.accountInfo!;
       if (tronAccount.assetV2.isEmpty) {
         return <TronTRC10Token>[];
       }
@@ -92,18 +94,24 @@ class __MonitorTronTRC10TokenViewState extends State<_MonitorTronTRC10TokenView>
   }
 
   Future<void> add(TronTRC10Token token) async {
-    final result = await widget.wallet.addNewToken(
-        TronTRC10Token.create(
-            balance: token.balance.value.balance,
-            token: token.token,
-            tokenID: token.tokenID),
-        widget.address);
+    final result = await widget.wallet.wallet.addNewToken(
+        token: TronTRC10Token.create(
+          balance: token.balance.value.balance,
+          token: token.token,
+          tokenID: token.tokenID,
+        ) as TronToken,
+        address: address,
+        account: widget.account);
     if (result.hasError) throw result.error!;
     return result.result;
   }
 
-  Future<void> removeToken(TronTRC10Token token) async {
-    final result = await widget.wallet.removeToken(token, widget.address);
+  Future<void> removeToken(TronToken token) async {
+    final result = await widget.wallet.wallet.removeToken(
+      token: token,
+      address: address,
+      account: widget.account,
+    );
     if (result.hasError) throw result.error!;
     return result.result;
   }
@@ -128,7 +136,7 @@ class __MonitorTronTRC10TokenViewState extends State<_MonitorTronTRC10TokenView>
       backToIdle: APPConst.oneSecoundDuration,
       initialWidget:
           ProgressWithTextView(text: "fetching_account_token_please_wait".tr),
-      child: () {
+      child: (c) {
         return CustomScrollView(
           slivers: [
             EmptyItemSliverWidgetView(
@@ -139,8 +147,7 @@ class __MonitorTronTRC10TokenViewState extends State<_MonitorTronTRC10TokenView>
                   child: ListView.builder(
                     itemBuilder: (context, index) {
                       final token = tokens.elementAt(index);
-                      final bool exist =
-                          widget.address.trc10Tokens.contains(token);
+                      final bool exist = address.trc10Tokens.contains(token);
                       return Column(
                         children: [
                           ContainerWithBorder(

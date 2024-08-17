@@ -86,7 +86,4 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
     super.close();
     _close();
   }
-
-  @override
-  String get repositoryId => "cosmos";
 }

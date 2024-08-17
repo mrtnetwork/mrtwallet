@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/setup/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'mnemonic_view.dart';
 
 class GenerateMnemonicView extends StatelessWidget {
@@ -11,7 +11,8 @@ class GenerateMnemonicView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MrtViewBuilder<SetupWalletController>(
-      controller: () => context.watch<SetupWalletController>("setup_wallet"),
+      controller: () => context.watch<SetupWalletController>(StateConst.setup),
+      repositoryId: StateConst.setup,
       removable: false,
       builder: (model) {
         return Column(

@@ -7,6 +7,7 @@ import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/socket/core/socket_provider.dart';
+import 'package:mrt_wallet/wallet/api/services/models/models/protocols.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models/request_completer.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models/socket_status.dart';
 
@@ -88,4 +89,7 @@ class TCPService<T extends APIProvider> extends BaseSocketService<T> {
       _requests.remove(message.id);
     }
   }
+
+  @override
+  ServiceProtocol get protocol => ServiceProtocol.tcp;
 }

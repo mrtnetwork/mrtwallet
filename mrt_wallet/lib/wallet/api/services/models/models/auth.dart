@@ -1,17 +1,18 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:mrt_wallet/app/core.dart';
-
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 enum ProviderAuthType {
   header,
-  path,
   query;
 
   static ProviderAuthType fromName(String? name) {
     return values.firstWhere((e) => e.name == name,
         orElse: () => throw WalletExceptionConst.invalidProviderInformation);
   }
+
+  bool get isHeader => this == ProviderAuthType.header;
 }
 
 class ProviderAuth with CborSerializable {
@@ -20,6 +21,8 @@ class ProviderAuth with CborSerializable {
   final String value;
   const ProviderAuth(
       {required this.type, required this.key, required this.value});
+
+  Map<String, String> get auth => {key: value};
 
   factory ProviderAuth.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {

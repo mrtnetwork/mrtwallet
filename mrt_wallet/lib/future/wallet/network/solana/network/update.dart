@@ -3,6 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/select_provider.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/solana/solana.dart';
@@ -76,7 +77,10 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
   SolanaClient _buildSolanaRpc(
       String url, String serviceName, String websiteurl) {
     final provider = SolanaAPIProvider(
-        serviceName: serviceName, websiteUri: websiteurl, httpNodeUri: url);
+        identifier: APIUtils.getProviderIdentifier(null),
+        serviceName: serviceName,
+        websiteUri: websiteurl,
+        httpNodeUri: url);
     return SolanaClient(
         provider: SolanaRPC(SolanaHTTPService(provider.httpNodeUri, provider)),
         network: widget.network);
@@ -112,7 +116,7 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
       final services = providers.map((e) => e.service.provider).toList();
       final updatedNetwork = network.copyWith(
           coinParam: network.coinParam.copyWith(providers: services));
-      return await wallet.updateImportNetwork(updatedNetwork);
+      return await wallet.wallet.updateImportNetwork(updatedNetwork);
     });
     if (result.hasError) {
       pageProgressKey.errorText(result.error!.tr);
@@ -191,7 +195,7 @@ class _ImportSolanaProviderState extends State<_ImportSolanaProvider> {
       child: PageProgress(
         key: pageProgressKey,
         backToIdle: APPConst.twoSecoundDuration,
-        child: () => CustomScrollView(
+        child: (c) => CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: ConstraintsBoxView(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/account/forms/update_account.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -10,8 +10,8 @@ class TronUpdateAccountFieldsView extends StatelessWidget {
       required this.address,
       required this.validator,
       super.key});
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final TronChain account;
   final TronUpdateAccountForm validator;
 
   @override

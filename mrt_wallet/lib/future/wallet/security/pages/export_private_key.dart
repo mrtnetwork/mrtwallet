@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/secure_state/secure_state.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -9,6 +10,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wroker/keys/keys.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class AccountPrivteKeyView extends StatelessWidget {
   const AccountPrivteKeyView({super.key});
@@ -16,11 +18,11 @@ class AccountPrivteKeyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
-    CryptoAddress? account;
+    ChainAccount? account;
     EncryptedCustomKey? customKey;
     String? password;
     final args = context.getDynamicArgs();
-    if (args is CryptoAddress) {
+    if (args is ChainAccount) {
       account = args;
     } else {
       args as (EncryptedCustomKey, String);
@@ -38,7 +40,7 @@ class AccountPrivteKeyView extends StatelessWidget {
               keys: crendential.whereType<PrivateKeyData>().toList(),
               password: password,
               account: account,
-              network: wallet.network,
+              network: wallet.wallet.network,
               customKey: customKey);
         },
         title: "export_private_key".tr,
@@ -65,7 +67,7 @@ class _AccountPrivateKeyView extends StatefulWidget {
   });
   final List<PrivateKeyData> keys;
   final String password;
-  final CryptoAddress? account;
+  final ChainAccount? account;
   final EncryptedCustomKey? customKey;
   final WalletNetwork network;
   @override
@@ -84,6 +86,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
   String? get keyName => widget.customKey?.name;
   String? get wif => key.wif;
   bool _showPrivateKey = false;
+  EllipticCurveTypes get type => key.coin.conf.type;
 
   void onChangeKey(PrivateKeyData? changeKey) {
     if (key == changeKey || changeKey == null) return;
@@ -164,6 +167,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                 key: UniqueKey(),
                 children: [
                   Text("private_key".tr, style: context.textTheme.titleMedium),
+                  Text(type.name.camelCase),
                   WidgetConstant.height8,
                   Stack(
                     children: [

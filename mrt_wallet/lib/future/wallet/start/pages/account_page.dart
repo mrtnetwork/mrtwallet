@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/wallet/network/bch/account/account.dart';
@@ -16,19 +15,23 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'account_not_adress.dart';
 import 'appbar.dart';
 import 'client.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+
+import 'platform_widgets/widgets.dart';
 
 class NetworkAccountPageView extends StatelessWidget {
   const NetworkAccountPageView({super.key, required this.wallet});
   final WalletProvider wallet;
   @override
   Widget build(BuildContext context) {
-    final chainAccount = wallet.chain;
+    final chainAccount = wallet.wallet.chain;
     return Scaffold(
       bottomNavigationBar: _BottomAppBar(wallet),
       body: LiveWidget(() {
-        final status = wallet.chain.provider()?.status.value;
+        final status = chainAccount.provider()?.status.value;
         final bool isConnect = !(status?.isConnect ?? false);
         return DefaultTabController(
           length: chainAccount.services.length,
@@ -47,32 +50,7 @@ class NetworkAccountPageView extends StatelessWidget {
             ];
           }, body: Builder(builder: (context) {
             if (!chainAccount.haveAddress) {
-              return Padding(
-                  padding: WidgetConstant.padding20,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      PageTitleSubtitle(
-                        title: "setup_network_address".tr.replaceOne(
-                            chainAccount.network.coinParam.token.name),
-                        body: Text("setup_network_address_desc".tr.replaceOne(
-                            chainAccount.network.coinParam.token.name)),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          FixedElevatedButton(
-                              padding: WidgetConstant.paddingVertical20,
-                              onPressed: () {
-                                context.to(PageRouter.setupGenericAddress,
-                                    argruments: wallet.chain.account);
-                              },
-                              child: Text("setup_address".tr)),
-                        ],
-                      )
-                    ],
-                  ));
+              return NoAccountFoundInChainWidget(chainAccount);
             }
             return IgnorePointer(
               ignoring: isConnect,
@@ -87,33 +65,33 @@ class NetworkAccountPageView extends StatelessWidget {
 
 class _AccountPageView extends StatelessWidget {
   const _AccountPageView(this.chainAccount);
-  final ChainHandler chainAccount;
+  final Chain chainAccount;
 
   @override
   Widget build(BuildContext context) {
     final network = chainAccount.network;
     switch (network.type) {
       case NetworkType.bitcoinCash:
-        return BitcoinCashAccountPageView(chainAccount: chainAccount);
+        return BitcoinCashAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.bitcoinAndForked:
-        return BitcoinAccountPageView(chainAccount: chainAccount);
+        return BitcoinAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.xrpl:
-        return RippleAccountPageView(chainAccount: chainAccount);
+        return RippleAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.solana:
-        return SolanaAccountPageView(chainAccount: chainAccount);
+        return SolanaAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.ethereum:
-        return ETHAccountPageView(chainAccount: chainAccount);
+        return ETHAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.tron:
-        return TronAccountPageView(chainAccount: chainAccount);
+        return TronAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.cardano:
-        return CardanoAccountPageView(chainAccount: chainAccount);
+        return CardanoAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.ton:
-        return TonAccountPageView(chainAccount: chainAccount);
+        return TonAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.polkadot:
       case NetworkType.kusama:
-        return SubstrateAccountPageView(chainAccount: chainAccount);
+        return SubstrateAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.cosmos:
-        return CosmosAccountPageView(chainAccount: chainAccount);
+        return CosmosAccountPageView(chainAccount: chainAccount.cast());
       default:
         return const TabBarView(children: []);
     }
@@ -121,15 +99,15 @@ class _AccountPageView extends StatelessWidget {
 }
 
 class _BottomAppBar extends StatelessWidget {
-  const _BottomAppBar(this.model);
-  final WalletProvider model;
+  const _BottomAppBar(this.wallet);
+  final WalletProvider wallet;
 
   final FloatingActionButtonLocation fabLocation =
       FloatingActionButtonLocation.endDocked;
 
   @override
   Widget build(BuildContext context) {
-    final wallet = context.watch<WalletProvider>(StateConst.main);
+    // final wallet = context.watch<WalletProvider>(StateConst.main);
     return BottomAppBar(
       color: context.colors.primary,
       child: IconTheme(
@@ -143,45 +121,51 @@ class _BottomAppBar extends StatelessWidget {
                   icon: const Icon(Icons.refresh_sharp),
                   tooltip: "switch_address".tr,
                   onPressed: () {
+                    final account = wallet.wallet.chain;
                     context
-                        .openSliverBottomSheet<CryptoAddress>(
-                          "switch_account".tr,
-                          child: SwitchOrSelectAccountView(
-                            account: wallet.chain.account,
-                            showMultiSig: true,
-                          ),
-                          centerContent: false,
-                          appbarActions: [
-                            Padding(
-                              padding: WidgetConstant.paddingHorizontal10,
-                              child: IconButton(
-                                  onPressed: () {
-                                    context.to(PageRouter.setupGenericAddress,
-                                        argruments: wallet.chain.account);
-                                  },
-                                  icon: const Icon(Icons.add_box),
-                                  tooltip: "new_address".tr),
-                            )
-                          ],
-                          minExtent: 0.5,
-                          maxExtend: 0.9,
-                          initialExtend: 0.7,
+                        .openSliverBottomSheet<ChainAccount>(
+                      "switch_account".tr,
+                      child: SwitchOrSelectAccountView(
+                        account: account,
+                        showMultiSig: true,
+                        isSwitch: true,
+                      ),
+                      centerContent: false,
+                      appbarActions: (c) => [
+                        Padding(
+                          padding: WidgetConstant.paddingHorizontal10,
+                          child: IconButton(
+                              onPressed: () {
+                                c.to(PageRouter.setupGenericAddress,
+                                    argruments: account);
+                              },
+                              icon: const Icon(Icons.add_box),
+                              tooltip: "new_address".tr),
                         )
-                        .then(wallet.switchAccount);
+                      ],
+                      minExtent: 0.5,
+                      maxExtend: 0.9,
+                      initialExtend: 0.7,
+                    )
+                        .then((e) {
+                      if (e == null) return;
+                      wallet.wallet.switchAccount(account: account, address: e);
+                    });
                   },
                 ),
               ],
             ),
             Row(
               children: [
-                if (model.wallet.requiredPassword)
-                  IconButton(
-                    tooltip: "lock_wallet".tr,
-                    icon: const Icon(Icons.lock),
-                    onPressed: () {
-                      model.lock();
-                    },
-                  ),
+                IconButton(
+                  tooltip: "lock_wallet".tr,
+                  icon: wallet.wallet.isUnlock
+                      ? const Icon(Icons.lock_open)
+                      : const Icon(Icons.lock),
+                  onPressed: () {
+                    wallet.wallet.lock();
+                  },
+                ),
                 SelectProviderIcon(key: UniqueKey()),
                 IconButton(
                     tooltip: "switch_network".tr,
@@ -190,7 +174,7 @@ class _BottomAppBar extends StatelessWidget {
                           .openDialogPage<int>(
                         "switch_network".tr,
                         fullWidget: SwitchNetworkView(
-                          selectedNetwork: model.network,
+                          selectedNetwork: wallet.wallet.network,
                         ),
                       )
                           .then(
@@ -199,12 +183,13 @@ class _BottomAppBar extends StatelessWidget {
                           if (value.isNegative) {
                             context.to(PageRouter.importEthereumNetwork);
                           } else {
-                            model.switchNetwork(value);
+                            wallet.wallet.switchNetwork(value);
                           }
                         },
                       );
                     },
                     icon: const Icon(Icons.account_tree_sharp)),
+                ...bottomAppBarWidgets(context),
               ],
             )
           ],

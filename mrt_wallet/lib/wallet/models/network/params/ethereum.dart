@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
@@ -80,8 +80,7 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
   }
 
   @override
-  NetworkCoinParams<EthereumAPIProvider> updateProviders(
-      List<APIProvider> updateProviders) {
+  EthereumNetworkParams updateProviders(List<APIProvider> updateProviders) {
     return EthereumNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,

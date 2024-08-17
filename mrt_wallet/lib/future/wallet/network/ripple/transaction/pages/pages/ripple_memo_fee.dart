@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/setup_transaction_fee.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/pages/pages/create_ripple_memo.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/controller/impl/transaction_impl.dart';

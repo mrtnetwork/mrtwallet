@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/setting/setting.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 typedef OnUpdateWidget = void Function(WalletUpdateInfosData);
 
@@ -14,12 +14,14 @@ class UpdateWalletInfosWidget extends StatefulWidget {
       required this.exitsIds,
       required this.onUpdate,
       required this.asDefaultWallet,
+      required this.protectWallet,
       Key? key})
       : super(key: key);
   final String name;
   final WalletLockTime locktime;
   final bool requrmentPassword;
   final bool asDefaultWallet;
+  final bool protectWallet;
   final String? setupButtonTitle;
   final List<String> exitsIds;
   final OnUpdateWidget onUpdate;
@@ -37,12 +39,11 @@ class _UpdateWalletInfosWidgetState extends State<UpdateWalletInfosWidget>
   late String name = widget.name;
   late bool reqPassword = widget.requrmentPassword;
   late bool defaultWallet = widget.asDefaultWallet;
-
   late WalletLockTime locktime = widget.locktime;
+  late bool protectWallet = widget.protectWallet;
 
   late final Map<WalletLockTime, Widget> lockTimeWidget = {
-    for (final i in WalletLockTime.values)
-      if (i.value != 0) i: Text(i.viewName.tr)
+    for (final i in WalletLockTime.values) i: Text(i.viewName.tr)
   };
 
   void onChangeName(String v) {
@@ -52,13 +53,15 @@ class _UpdateWalletInfosWidgetState extends State<UpdateWalletInfosWidget>
   void onChangeReqPassword(bool? v) {
     reqPassword = v ?? reqPassword;
     updateState();
-    if (reqPassword) {
-      locktime = WalletLockTime.fiveMinute;
-    }
   }
 
   void onChangeReqDefault(bool? v) {
     defaultWallet = v ?? defaultWallet;
+    updateState();
+  }
+
+  void onChangeProtectWallet(bool? v) {
+    protectWallet = !protectWallet;
     updateState();
   }
 
@@ -76,13 +79,14 @@ class _UpdateWalletInfosWidgetState extends State<UpdateWalletInfosWidget>
     if (!(formKey.currentState?.validate() ?? false)) return;
     widget.onUpdate(WalletUpdateInfosData(
         name: name,
-        lockTime: reqPassword ? locktime : WalletLockTime.never,
+        lockTime: locktime,
         requirmentPassword: reqPassword,
-        asDefaultWallet: defaultWallet));
+        asDefaultWallet: defaultWallet,
+        protectWallet: protectWallet));
   }
 
   void onChangeLockTime(WalletLockTime? time) {
-    if (time == null || !reqPassword) return;
+    if (time == null) return;
     locktime = time;
   }
 
@@ -109,36 +113,41 @@ class _UpdateWalletInfosWidgetState extends State<UpdateWalletInfosWidget>
             WidgetConstant.height20,
             AppCheckListTile(
               contentPadding: EdgeInsets.zero,
+              value: reqPassword,
+              maxLine: 6,
+              onChanged: onChangeReqPassword,
+              title: Text("password_requirement".tr,
+                  style: context.textTheme.titleMedium),
+              subtitle: Text("wallet_password_requirement_desc2".tr),
+            ),
+            WidgetConstant.height20,
+            Text("automatic_loc".tr, style: context.textTheme.titleMedium),
+            Text("wallet_locktime_desc".tr),
+            WidgetConstant.height8,
+            AppDropDownBottom(
+              items: lockTimeWidget,
+              label: "automatic_loc".tr,
+              value: locktime,
+              onChanged: onChangeLockTime,
+            ),
+            WidgetConstant.height20,
+            AppCheckListTile(
+              contentPadding: EdgeInsets.zero,
+              value: protectWallet,
+              onChanged: onChangeProtectWallet,
+              title: Text("protect_wallet".tr,
+                  style: context.textTheme.titleMedium),
+              subtitle: Text("required_password_to_sign_transaction".tr),
+            ),
+            WidgetConstant.height20,
+            AppCheckListTile(
+              contentPadding: EdgeInsets.zero,
               value: defaultWallet,
               onChanged: onChangeReqDefault,
               title: Text("default_wallet".tr,
                   style: context.textTheme.titleMedium),
               subtitle: Text("default_wallet_desc".tr),
             ),
-            WidgetConstant.height20,
-            AppCheckListTile(
-              contentPadding: EdgeInsets.zero,
-              value: reqPassword,
-              onChanged: onChangeReqPassword,
-              title: Text("password_requirement".tr,
-                  style: context.textTheme.titleMedium),
-              subtitle: Text("wallet_password_requirement_desc".tr),
-            ),
-            APPAnimatedSize(
-                isActive: reqPassword,
-                onActive: (c) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        WidgetConstant.height8,
-                        AppDropDownBottom(
-                          items: lockTimeWidget,
-                          label: "automatic_loc".tr,
-                          value: locktime,
-                          onChanged: onChangeLockTime,
-                        ),
-                      ],
-                    ),
-                onDeactive: (c) => WidgetConstant.sizedBox),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

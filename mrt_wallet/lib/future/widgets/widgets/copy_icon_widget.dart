@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrt_wallet/app/constant/global/app.dart';
-import 'package:mrt_wallet/app/extention/extention.dart'
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart'
     show QuickContextAccsess, Translate;
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
-import 'barcode_view.dart';
+import 'barcode/widgets/barcode_view.dart';
 import 'container_with_border.dart';
 import 'text_widget.dart';
 import 'widget_constant.dart';

@@ -1,8 +1,9 @@
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
 import 'package:on_chain/ada/ada.dart';
 import 'transaction.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 enum CardanoFeeRateType {
   basic,

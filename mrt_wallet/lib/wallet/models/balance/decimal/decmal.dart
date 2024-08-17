@@ -18,7 +18,7 @@ class DecimalBalance implements BalanceCore<BigRational> {
       {int amoutDecimal = 4}) {
     final String toString = rational.toDecimal(digits: amoutDecimal);
     return DecimalBalance._(rational, rational.toDecimal(digits: amoutDecimal),
-        amoutDecimal, toString.to3Digits);
+        amoutDecimal, StrUtils.to3Digits(toString, separator: ","));
   }
 
   DecimalBalance._(
@@ -37,7 +37,7 @@ class DecimalBalance implements BalanceCore<BigRational> {
     if (updateBalance == null) return;
     _balance = updateBalance;
     _price = _balance.toDecimal(digits: showDecimal);
-    _viewPrice = _price.to3Digits;
+    _viewPrice = StrUtils.to3Digits(_price, separator: ",");
   }
 
   @override

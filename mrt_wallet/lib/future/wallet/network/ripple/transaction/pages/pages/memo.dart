@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 typedef OnTapMemo = Function(XRPLMemo);
 

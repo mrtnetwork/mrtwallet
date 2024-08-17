@@ -1,7 +1,6 @@
-import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:http/http.dart' as http;
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/error/exception.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/core/base_service.dart';
 import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
@@ -11,10 +10,19 @@ import 'package:mrt_wallet/wallet/api/services/models/models.dart';
 abstract class HTTPService<P extends APIProvider>
     implements BaseServiceProtocol<P> {
   @override
+  ServiceProtocol get protocol => ServiceProtocol.http;
+  @override
   final APIServiceTracker tracker = APIServiceTracker();
   static final http.Client _client = http.Client();
   http.Client get client => _client;
   Duration get defaultTimeOut;
+  Uri _toUri(String callUrl) {
+    final uri = Uri.parse(callUrl);
+    if (provider.auth?.type != ProviderAuthType.query) {
+      return uri;
+    }
+    return uri.replace(queryParameters: provider.auth!.auth);
+  }
 
   @override
   void disposeService() {}
@@ -27,8 +35,13 @@ abstract class HTTPService<P extends APIProvider>
     try {
       response = await _onException<T>(
           () async => await client
-              .post(Uri.parse(url),
-                  headers: headers ?? {'Content-Type': 'application/json'},
+              .post(_toUri(url),
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...headers ?? {},
+                    if (provider.auth?.type == ProviderAuthType.header)
+                      ...provider.auth!.auth
+                  },
                   body: params)
               .timeout(timeout ?? defaultTimeOut),
           allowStatus: allowStatus);
@@ -55,8 +68,13 @@ abstract class HTTPService<P extends APIProvider>
     try {
       response = await _onException<T>(
           () async => await client
-              .get(Uri.parse(url),
-                  headers: headers ?? {'Content-Type': 'application/json'})
+              .get(_toUri(url),
+                  headers: headers ??
+                      {
+                        'Content-Type': 'application/json',
+                        if (provider.auth?.type == ProviderAuthType.header)
+                          ...provider.auth!.auth
+                      })
               .timeout(timeout ?? defaultTimeOut),
           allowStatus: allowStatus);
 
@@ -86,19 +104,14 @@ abstract class HTTPService<P extends APIProvider>
             message: map == null ? response.body : null);
       }
       return _readResponse<T>(response);
-    } on RPCError catch (e) {
-      throw ApiProviderException(
-          message: e.message,
-          statusCode: e.errorCode,
-          responseData: e.request,
-          code: e.errorCode,
-          requestPayload: e.data);
     } on http.ClientException {
       throw const ApiProviderException(message: "api_http_client_error");
     } on ApiProviderException {
       rethrow;
     } on TimeoutException {
-      throw const ApiProviderException(message: "api_http_timeout_error");
+      throw const ApiProviderException(
+          message: "api_http_timeout_error",
+          code: ApiProviderExceptionConst.timeoutStatucCode);
     } on FormatException {
       throw const ApiProviderException(message: "invalid_json_response");
     } on ArgumentError catch (e) {

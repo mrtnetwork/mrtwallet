@@ -1,13 +1,12 @@
 import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show QuickContextAccsess, StateController, Translate;
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart'
-    show WalletNetwork, ChainHandler, NetworkAccountCore, NewAccountParams;
+import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wroker/keys/models/encrypted_imported.dart';
 import 'package:mrt_wallet/wroker/keys/models/seed.dart';
@@ -24,15 +23,15 @@ enum AddressDerivationMode {
 typedef OnSelectDerivation = void Function(
     AddressDerivationMode mode, EncryptedCustomKey? selectedKey);
 
-class AddressDerivationController extends StateController {
-  AddressDerivationController(
-      {required this.wallet,
-      required this.network,
-      required this.chainAccount});
+class AddressDerivationController<NETWORKADDRESS,
+        CHAINACCOUNT extends NETWORKCHAINACCOUNT<NETWORKADDRESS>>
+    extends StateController {
+  AddressDerivationController({required this.wallet, required this.chain});
+  final APPCHAINACCOUNT<CHAINACCOUNT> chain;
   final WalletProvider wallet;
   final GlobalKey visibleContinue =
       GlobalKey(debugLabel: "visibleGenerateAddress");
-  final WalletNetwork network;
+  WalletNetwork get network => chain.network;
 
   bool showCustomKes = false;
   bool showSetupPage = false;
@@ -45,8 +44,6 @@ class AddressDerivationController extends StateController {
   final GlobalKey visibleXAddressDetails =
       GlobalKey(debugLabel: "visibleContinue");
 
-  final ChainHandler chainAccount;
-  NetworkAccountCore get networkAccounts => chainAccount.account;
   List<CryptoCoins> get coins => network.coins;
   CryptoCoins get coin => coins.first;
 
@@ -75,22 +72,24 @@ class AddressDerivationController extends StateController {
       }
     }
     final c = selectedCoins?.first ?? coin;
-    final customKeys = wallet.getCustomKeysForCoin(selectedCoins ?? coins);
+    final customKeys =
+        await wallet.wallet.getCustomKeysForCoin(selectedCoins ?? coins);
     return await context.openSliverBottomSheet<AddressDerivationIndex>(
         "setup_derivation".tr,
         child: SetupDerivationModeView(
           coin: c,
-          chainAccout: chainAccount,
+          chainAccout: chain,
           customKeys: customKeys,
           networkCoins: selectedCoins ?? coins,
           seedGenerationType: seedGeneration,
         ));
   }
 
-  void generateAddress(NewAccountParams newAccount) async {
+  void generateAddress(NewAccountParams<NETWORKADDRESS> newAccount) async {
     if (!(form.currentState?.validate() ?? false)) return;
     pageProgressKey.progressText("generating_new_addr".tr);
-    final result = await wallet.deriveNewAccount(newAccount);
+    final result = await wallet.wallet
+        .deriveNewAccount(newAccountParams: newAccount, chain: chain);
     if (result.hasError) {
       pageProgressKey.errorText(result.error!.tr);
     } else {
@@ -111,7 +110,4 @@ class AddressDerivationController extends StateController {
     }
     notify();
   }
-
-  @override
-  String get repositoryId => "address_derivation";
 }

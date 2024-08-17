@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
-
 typedef DynamicVoid = void Function();
+
+typedef ObjectVoid = void Function(Object?);
 typedef StringVoid = void Function(String);
+
 typedef NullStringString = String? Function(String?);
 typedef NullStringT<T> = String? Function(T?);
 typedef NullBoolVoid = void Function(bool?);
@@ -12,19 +13,11 @@ typedef FuncBool<T> = bool Function(T);
 
 typedef FuncBoolString = bool Function(String);
 typedef FuncFutureBoolString = Future<bool> Function(String);
-typedef NullWidget = Widget? Function();
-typedef FuncWidget = Widget Function();
-typedef FuncWidgetContext = Widget Function(BuildContext context);
 
-typedef IntVoid = Function(int);
-
-typedef FuncVoidSize = Function(Size);
+typedef IntVoid = void Function(int);
 
 typedef FuncVoidNullT<T> = void Function(T);
 
 typedef FutureNullString = Future<String?> Function();
-typedef FuncWidgetWithScroll = Widget Function(ScrollController);
-
-typedef WidgetContext = Widget Function(BuildContext);
 
 typedef FuncTResult<T> = T? Function(T?);

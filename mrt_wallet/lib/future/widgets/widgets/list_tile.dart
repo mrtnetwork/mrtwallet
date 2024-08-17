@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/extention/app_extentions/context.dart'
+import 'package:mrt_wallet/future/state_managment/extention/app_extentions/context.dart'
     show QuickContextAccsess;
 import 'package:mrt_wallet/app/models/models/typedef.dart'
     show DynamicVoid, NullBoolVoid;
@@ -63,8 +63,10 @@ class AppCheckListTile extends StatelessWidget {
       this.value,
       this.title,
       this.subtitle,
-      this.contentPadding})
+      this.contentPadding,
+      this.maxLine = 2})
       : super(key: key);
+  final int? maxLine;
   final NullBoolVoid? onChanged;
   final bool? value;
   final Widget? title;
@@ -84,7 +86,7 @@ class AppCheckListTile extends StatelessWidget {
           ? null
           : DefaultTextStyle(
               style: context.textTheme.bodyMedium!,
-              maxLines: 2,
+              maxLines: maxLine,
               overflow: TextOverflow.ellipsis,
               child: subtitle!,
             ),

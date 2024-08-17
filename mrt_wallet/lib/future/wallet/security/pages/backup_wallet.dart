@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/backup/mrt_backup.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 
 class BackupWalletView extends StatelessWidget {
   const BackupWalletView({super.key});
@@ -44,7 +45,7 @@ class _BackupWalletState extends State<_BackupWallet> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => ConstraintsBoxView(
+      child: (c) => ConstraintsBoxView(
         padding: WidgetConstant.padding20,
         alignment: Alignment.center,
         child: AnimatedSwitcher(

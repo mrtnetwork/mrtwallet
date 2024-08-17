@@ -1,10 +1,11 @@
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/transaction/controller/imp/transaction_impl.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
-import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
+import 'package:mrt_wallet/wallet/models/signing/signing.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
 import 'package:on_chain/solana/solana.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 mixin SolanaSignerImpl on SolanaTransactionImpl {
   Future<String> _buildAndSigneTransaction() async {
@@ -29,8 +30,8 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
     if (signersAddresses.length != signerAccounts.length) {
       throw WalletException("required_signer_account_missing".tr);
     }
-    final signedTr = await walletProvider.signTransaction(
-        request: SigningRequest(
+    final signedTr = await walletProvider.wallet.signTransaction(
+        request: WalletSigningRequest(
       network: network,
       addresses: signerAccounts,
       sign: (generateSignature) async {

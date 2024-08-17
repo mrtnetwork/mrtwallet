@@ -10,6 +10,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class RippleGlobalTransactionFieldsView extends StatelessWidget {
   const RippleGlobalTransactionFieldsView(
@@ -19,8 +20,8 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
       required this.validator,
       super.key});
   final TransactionFormField field;
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final RippleChain account;
   final RippleTransactionForm validator;
   @override
   Widget build(BuildContext context) {
@@ -270,7 +271,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                 builder: (context) {
                   return TimePickerDialog(
                     initialTime: TimeOfDay.now(),
-                    helpText: date.toOnlyDate(),
+                    helpText: date.toOnlyDateStr(),
                   );
                 },
               ).then((time) {

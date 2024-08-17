@@ -7,6 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/cosmos/transaction/controller/c
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class CosmosTransactionFieldsView extends StatelessWidget {
   const CosmosTransactionFieldsView({super.key, this.field});
@@ -15,197 +16,194 @@ class CosmosTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<CosmosTransactionForm> validator =
         field ?? context.getArgruments();
-    return NetworkAccountControllerView<WalletCosmosNetwork, ICosmosAddress>(
+    return NetworkAccountControllerView<CosmosChain>(
       title: validator.validator.name.tr,
-      childBulder: (wallet, chain, address, sm, switchAccount) =>
-          MrtViewBuilder<CosomosTransactionStateController>(
-              controller: () => CosomosTransactionStateController(
-                  walletProvider: wallet,
-                  account: chain.account,
-                  network: sm,
-                  apiProvider: chain.provider()!,
-                  address: address,
-                  validator: validator),
-              builder: (controller) {
-                return PageProgress(
-                  key: controller.progressKey,
-                  backToIdle: APPConst.oneSecoundDuration,
-                  initialStatus: StreamWidgetStatus.progress,
-                  child: () => CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: ConstraintsBoxView(
-                          padding: WidgetConstant.padding20,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("account".tr,
-                                  style: context.textTheme.titleLarge),
-                              WidgetConstant.height8,
-                              ContainerWithBorder(
-                                onRemoveIcon: const Icon(Icons.edit),
-                                child: AddressDetailsView(
-                                    address: controller.address,
-                                    key: ValueKey<ICosmosAddress?>(
-                                        controller.address)),
-                                onRemove: () {
-                                  context
-                                      .openSliverBottomSheet<ICosmosAddress>(
-                                        "switch_account".tr,
-                                        child: SwitchOrSelectAccountView(
-                                          account: controller.account,
-                                          showMultiSig: true,
-                                        ),
-                                        minExtent: 0.5,
-                                        maxExtend: 0.9,
-                                        initialExtend: 0.7,
-                                        centerContent: false,
-                                      )
-                                      .then(switchAccount);
-                                },
-                              ),
-                              WidgetConstant.height20,
-                              _CosmosTransactionsFields(
-                                controller: controller,
-                                validator: controller.validator,
-                              ),
-                              WidgetConstant.height20,
-                              Text("transaction_fee".tr,
-                                  style: context.textTheme.titleMedium),
-                              Text("cost_for_transaction".tr),
-                              WidgetConstant.height8,
-                              ContainerWithBorder(
-                                validateText: controller.feeError?.tr,
-                                validate: controller.feeError == null &&
-                                    controller.hasFee,
-                                onTapError: () {
-                                  controller.simulateTr();
-                                },
-                                onRemove: () {
-                                  if (controller.isThorChain) {
-                                    return;
-                                  }
-                                  context
-                                      .openSliverBottomSheet<BigInt>(
-                                        "setup_custom_fee".tr,
-                                        child: SetupNetworkAmount(
-                                          token: controller
-                                              .network.coinParam.token,
-                                          max: controller.address.address
-                                              .balance.value.balance,
-                                          min: BigInt.zero,
-                                          subtitle: PageTitleSubtitle(
-                                              title: "transaction_fee".tr,
-                                              body: Column(
-                                                children: [
-                                                  Text("transaction_fee_desc3"
-                                                      .tr),
-                                                  WidgetConstant.height8,
-                                                  ContainerWithBorder(
-                                                      child: CoinPriceView(
-                                                    balance:
-                                                        controller.feeAmount,
-                                                    token: controller.network
-                                                        .coinParam.token,
-                                                    style: context
-                                                        .textTheme.titleLarge,
-                                                  )),
-                                                ],
-                                              )),
-                                        ),
-                                      )
-                                      .then(controller.setupFee);
-                                },
-                                onRemoveIcon: StreamWidget(
-                                  buttonWidget: controller.isThorChain
-                                      ? Icon(Icons.circle,
-                                          color: context.colors.transparent)
-                                      : const Icon(Icons.edit),
-                                  key: controller.feeProgressKey,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(controller.feeType.name.tr,
-                                        style: context.textTheme.labelLarge),
-                                    CoinPriceView(
-                                      balance: controller.feeAmount,
-                                      token: controller.network.coinParam.token,
-                                      style: context.textTheme.titleLarge,
+      childBulder: (wallet, chain, switchAccount) => MrtViewBuilder<
+              CosomosTransactionStateController>(
+          repositoryId: StateConst.cosmos,
+          controller: () => CosomosTransactionStateController(
+              walletProvider: wallet,
+              account: chain,
+              network: chain.network,
+              apiProvider: chain.provider()!,
+              address: chain.address,
+              validator: validator),
+          builder: (controller) {
+            return PageProgress(
+              key: controller.progressKey,
+              backToIdle: APPConst.oneSecoundDuration,
+              initialStatus: StreamWidgetStatus.progress,
+              child: (c) => CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: ConstraintsBoxView(
+                      padding: WidgetConstant.padding20,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("account".tr,
+                              style: context.textTheme.titleLarge),
+                          WidgetConstant.height8,
+                          ContainerWithBorder(
+                            onRemoveIcon: const Icon(Icons.edit),
+                            child: AddressDetailsView(
+                                address: controller.address,
+                                key: ValueKey<ICosmosAddress?>(
+                                    controller.address)),
+                            onRemove: () {
+                              context
+                                  .openSliverBottomSheet<ICosmosAddress>(
+                                    "switch_account".tr,
+                                    child: SwitchOrSelectAccountView(
+                                      account: controller.account,
+                                      showMultiSig: true,
                                     ),
-                                  ],
-                                ),
-                              ),
-                              WidgetConstant.height20,
-                              Text("setup_memo".tr,
-                                  style: context.textTheme.titleMedium),
-                              WidgetConstant.height8,
-                              ContainerWithBorder(
-                                  onRemoveIcon: controller.hasMemo
-                                      ? const Icon(Icons.remove_circle)
-                                      : const Icon(Icons.add_box),
-                                  onRemove: () {
-                                    controller.onTapMemo((s) async {
-                                      final result = await context
-                                          .openSliverBottomSheet<String>(
-                                        "transaction_memo".tr,
-                                        child: StringWriterView(
-                                          defaultValue: controller.memo,
-                                          title: PageTitleSubtitle(
-                                              title: "setup_memo".tr,
-                                              body: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text("memo_desc1".tr),
-                                                  WidgetConstant.height8,
-                                                  Text("empty_desc".tr),
-                                                ],
-                                              )),
-                                          buttonText: "setup_memo".tr,
-                                          label: "memo".tr,
-                                        ),
-                                      );
-                                      return result;
-                                    });
-                                  },
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: controller.hasMemo
-                                            ? Text(controller.memo ?? "")
-                                            : Text("tap_to_add_memo".tr,
-                                                style: context
-                                                    .textTheme.labelLarge),
-                                      ),
-                                    ],
-                                  )),
-                              InsufficientBalanceErrorView(
-                                verticalMargin:
-                                    WidgetConstant.paddingVertical10,
-                                balance: controller.remindAmount,
-                                token: controller.network.coinParam.token,
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  FixedElevatedButton(
-                                    padding: WidgetConstant.paddingVertical20,
-                                    onPressed: controller.trIsReady
-                                        ? controller.sendTransaction
-                                        : null,
-                                    child: Text("send_transaction".tr),
+                                    minExtent: 0.5,
+                                    maxExtend: 0.9,
+                                    initialExtend: 0.7,
+                                    centerContent: false,
                                   )
+                                  .then(switchAccount);
+                            },
+                          ),
+                          WidgetConstant.height20,
+                          _CosmosTransactionsFields(
+                            controller: controller,
+                            validator: controller.validator,
+                          ),
+                          WidgetConstant.height20,
+                          Text("transaction_fee".tr,
+                              style: context.textTheme.titleMedium),
+                          Text("cost_for_transaction".tr),
+                          WidgetConstant.height8,
+                          ContainerWithBorder(
+                            validateText: controller.feeError?.tr,
+                            validate: controller.feeError == null &&
+                                controller.hasFee,
+                            onTapError: () {
+                              controller.simulateTr();
+                            },
+                            onRemove: () {
+                              if (controller.isThorChain) {
+                                return;
+                              }
+                              context
+                                  .openSliverBottomSheet<BigInt>(
+                                    "setup_custom_fee".tr,
+                                    child: SetupNetworkAmount(
+                                      token: controller.network.coinParam.token,
+                                      max: controller.address.address.balance
+                                          .value.balance,
+                                      min: BigInt.zero,
+                                      subtitle: PageTitleSubtitle(
+                                          title: "transaction_fee".tr,
+                                          body: Column(
+                                            children: [
+                                              Text("transaction_fee_desc3".tr),
+                                              WidgetConstant.height8,
+                                              ContainerWithBorder(
+                                                  child: CoinPriceView(
+                                                balance: controller.feeAmount,
+                                                token: controller
+                                                    .network.coinParam.token,
+                                                style: context
+                                                    .textTheme.titleLarge,
+                                              )),
+                                            ],
+                                          )),
+                                    ),
+                                  )
+                                  .then(controller.setupFee);
+                            },
+                            onRemoveIcon: StreamWidget(
+                              buttonWidget: controller.isThorChain
+                                  ? Icon(Icons.circle,
+                                      color: context.colors.transparent)
+                                  : const Icon(Icons.edit),
+                              key: controller.feeProgressKey,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(controller.feeType.name.tr,
+                                    style: context.textTheme.labelLarge),
+                                CoinPriceView(
+                                  balance: controller.feeAmount,
+                                  token: controller.network.coinParam.token,
+                                  style: context.textTheme.titleLarge,
+                                ),
+                              ],
+                            ),
+                          ),
+                          WidgetConstant.height20,
+                          Text("setup_memo".tr,
+                              style: context.textTheme.titleMedium),
+                          WidgetConstant.height8,
+                          ContainerWithBorder(
+                              onRemoveIcon: controller.hasMemo
+                                  ? const Icon(Icons.remove_circle)
+                                  : const Icon(Icons.add_box),
+                              onRemove: () {
+                                controller.onTapMemo((s) async {
+                                  final result = await context
+                                      .openSliverBottomSheet<String>(
+                                    "transaction_memo".tr,
+                                    child: StringWriterView(
+                                      defaultValue: controller.memo,
+                                      title: PageTitleSubtitle(
+                                          title: "setup_memo".tr,
+                                          body: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text("memo_desc1".tr),
+                                              WidgetConstant.height8,
+                                              Text("empty_desc".tr),
+                                            ],
+                                          )),
+                                      buttonText: "setup_memo".tr,
+                                      label: "memo".tr,
+                                    ),
+                                  );
+                                  return result;
+                                });
+                              },
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: controller.hasMemo
+                                        ? Text(controller.memo ?? "")
+                                        : Text("tap_to_add_memo".tr,
+                                            style:
+                                                context.textTheme.labelLarge),
+                                  ),
                                 ],
+                              )),
+                          InsufficientBalanceErrorView(
+                            verticalMargin: WidgetConstant.paddingVertical10,
+                            balance: controller.remindAmount,
+                            token: controller.network.coinParam.token,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FixedElevatedButton(
+                                padding: WidgetConstant.paddingVertical20,
+                                onPressed: controller.trIsReady
+                                    ? controller.sendTransaction
+                                    : null,
+                                child: Text("send_transaction".tr),
                               )
                             ],
-                          ),
-                        ),
+                          )
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                );
-              }),
+                ],
+              ),
+            );
+          }),
     );
   }
 }

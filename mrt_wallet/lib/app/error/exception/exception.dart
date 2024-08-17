@@ -1,3 +1,7 @@
+class ApiProviderExceptionConst {
+  static const int timeoutStatucCode = 10001;
+}
+
 class ApiProviderException implements Exception {
   static const List<int> validStatusCode = [
     404,
@@ -15,6 +19,7 @@ class ApiProviderException implements Exception {
   final int? code;
   final Map<String, dynamic>? responseData;
   final Map<String, dynamic>? requestPayload;
+  bool get isTimeout => code == ApiProviderExceptionConst.timeoutStatucCode;
   const ApiProviderException(
       {this.message,
       this.statusCode,

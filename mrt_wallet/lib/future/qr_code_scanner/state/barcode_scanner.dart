@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../cross/core.dart'
-    if (dart.library.html) '../cross/web.dart'
+    if (dart.library.js_interop) '../cross/web.dart'
     if (dart.library.io) '../cross/io.dart';
 
 class BarcodeScannerView extends StatefulWidget {

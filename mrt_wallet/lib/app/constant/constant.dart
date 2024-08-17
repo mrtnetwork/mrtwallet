@@ -1,5 +1,4 @@
 /// app settings and related constant
-export 'global/colors.dart';
 export 'global/link.dart';
 export 'global/storage_key.dart';
 export 'global/state.dart';

@@ -47,12 +47,16 @@ class DesktopPlatformInterface implements SpecificPlatfromMethods {
     _listeners.remove(listener);
   }
 
-  Future<void> _methodCallHandler(MethodCall call) async {
+  Future<void> _methodCallHandler(Map<String, dynamic> args) async {
+    String? eventName = args['eventName'];
+    if (eventName == null) {
+      return;
+    }
     for (final WindowListener listener in listeners) {
       if (!_listeners.contains(listener)) {
         return;
       }
-      String eventName = call.arguments['eventName'];
+
       listener.onWindowEvent(eventName);
       Map<String, Function> funcMap = {
         _kWindowEventClose: listener.onWindowClose,
@@ -83,25 +87,21 @@ class DesktopPlatformInterface implements SpecificPlatfromMethods {
     return data;
   }
 
-  double get getDevicePixelRatio {
-    return ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
-  }
-
-  /// ios
+  @override
   @override
   Future<void> setBounds(
-    Rect? bounds, {
-    Offset? position,
-    Size? size,
-    bool animate = false,
-  }) async {
+      {WidgetRect? bounds,
+      required double pixelRatio,
+      WidgetOffset? position,
+      WidgetSize? size,
+      bool animate = false}) async {
     final Map<String, dynamic> arguments = {
       "type": "setbounds",
-      'devicePixelRatio': getDevicePixelRatio,
-      'x': bounds?.topLeft.dx ?? position?.dx,
-      'y': bounds?.topLeft.dy ?? position?.dy,
-      'width': bounds?.size.width ?? size?.width,
-      'height': bounds?.size.height ?? size?.height,
+      'devicePixelRatio': pixelRatio,
+      'x': bounds?.x ?? position?.x,
+      'y': bounds?.y ?? position?.y,
+      'width': bounds?.width ?? size?.width,
+      'height': bounds?.height ?? size?.height,
       'animate': animate,
     }..removeWhere((key, value) => value == null);
     await IoPlatformInterface._channel
@@ -217,9 +217,9 @@ class DesktopPlatformInterface implements SpecificPlatfromMethods {
 
   /// ios
   @override
-  Future<ui.Rect> getBounds() async {
+  Future<WidgetRect> getBounds(double pixelRatio) async {
     final Map<String, dynamic> arguments = {
-      'devicePixelRatio': getDevicePixelRatio,
+      'devicePixelRatio': pixelRatio,
       'type': 'getBounds'
     };
     final Map<dynamic, dynamic> resultData =
@@ -227,11 +227,11 @@ class DesktopPlatformInterface implements SpecificPlatfromMethods {
       MrtNativeConst.windowsManager,
       arguments,
     );
-    return Rect.fromLTWH(
-      resultData['x'],
-      resultData['y'],
-      resultData['width'],
-      resultData['height'],
+    return WidgetRect(
+      x: resultData['x'],
+      y: resultData['y'],
+      width: resultData['width'],
+      height: resultData['height'],
     );
   }
 

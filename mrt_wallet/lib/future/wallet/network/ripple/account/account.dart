@@ -5,22 +5,23 @@ import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class RippleAccountPageView extends StatelessWidget {
   const RippleAccountPageView({required this.chainAccount, super.key});
-  final ChainHandler chainAccount;
+  final RippleChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return TabBarView(children: [
       _RippleServicesView(chainAccount: chainAccount),
-      _RippleTokensView(account: chainAccount.account.address as IXRPAddress),
+      _RippleTokensView(account: chainAccount),
     ]);
   }
 }
 
 class _RippleServicesView extends StatelessWidget {
   const _RippleServicesView({required this.chainAccount});
-  final ChainHandler chainAccount;
+  final RippleChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return AccountTabbarScrollWidget(
@@ -29,12 +30,13 @@ class _RippleServicesView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (!chainAccount.account.address.multiSigAccount) ...[
+              if (!chainAccount.address.multiSigAccount) ...[
                 AppListTile(
                   title: Text("multi_sig_addr".tr),
                   subtitle: Text("establishing_multi_sig_addr".tr),
                   onTap: () {
-                    context.to(PageRouter.rippleMultisigAddress);
+                    context.to(PageRouter.rippleMultisigAddress,
+                        argruments: chainAccount);
                   },
                 ),
                 WidgetConstant.divider
@@ -171,11 +173,12 @@ class _RippleServicesView extends StatelessWidget {
 
 class _RippleTokensView extends StatelessWidget {
   const _RippleTokensView({required this.account});
-  final IXRPAddress account;
+  final RippleChain account;
+  IXRPAddress get address => account.address;
 
   @override
   Widget build(BuildContext context) {
-    final tokens = account.tokens;
+    final tokens = address.tokens;
     return AccountTabbarScrollWidget(slivers: [
       tokens.isEmpty
           ? SliverFillRemaining(
@@ -210,14 +213,15 @@ class _RippleTokensView extends StatelessWidget {
             )),
       SliverList.builder(
           itemBuilder: (context, index) {
-            final RippleIssueToken token = account.tokens[index];
+            final RippleIssueToken token = address.tokens[index];
             return ContainerWithBorder(
               onRemove: () {
                 context.openDialogPage<TokenAction>(
                   "token_info".tr,
                   child: (ctx) => TokenDetailsModalView(
                     token: token,
-                    address: account,
+                    address: address,
+                    account: account,
                     transferPath: PageRouter.rippleTransfer,
                   ),
                 );
@@ -245,7 +249,7 @@ class _RippleTokensView extends StatelessWidget {
               ),
             );
           },
-          itemCount: account.tokens.length,
+          itemCount: address.tokens.length,
           addAutomaticKeepAlives: false,
           addRepaintBoundaries: false)
     ]);

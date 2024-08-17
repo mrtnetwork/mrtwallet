@@ -7,9 +7,10 @@ import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/controller/c
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/wroker/utils/bitcoin_cash/bitcoin_cash_utils.dart';
 import 'memo_impl.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 enum TransactionOrdering {
   bip69("bip_69_desc"),
@@ -42,10 +43,9 @@ abstract class BitcoinTransactionImpl extends StateController
     required this.chainAccount,
   });
   final WalletProvider walletProvider;
-  final ChainHandler chainAccount;
+  final BitcoinChain chainAccount;
   bool get hasFeeRate;
-  late IBitcoinAddress _onChangeAddress =
-      chainAccount.account.address as IBitcoinAddress;
+  late IBitcoinAddress _onChangeAddress = chainAccount.address;
   String get onChangeAddressView => _onChangeAddress.address.toAddress;
   BitcoinBaseAddress get onChangeAddress => _onChangeAddress.networkAddress;
   BigInt get minimumOutput =>
@@ -94,7 +94,7 @@ abstract class BitcoinTransactionImpl extends StateController
     }
   }
 
-  void changeAccount(CryptoAddress? change) {
+  void changeAccount(ChainAccount? change) {
     if (change == null || !addresses.contains(change)) return;
     change as IBitcoinAddress;
     _onChangeAddress = change;
@@ -111,8 +111,7 @@ abstract class BitcoinTransactionImpl extends StateController
       IntegerBalance.zero(network.coinParam.decimal);
   late final IntegerBalance setupAmount =
       IntegerBalance.zero(network.coinParam.decimal);
-  WalletBitcoinNetwork get network =>
-      chainAccount.network as WalletBitcoinNetwork;
+  WalletBitcoinNetwork get network => chainAccount.network;
   late final IntegerBalance spendableAmount =
       IntegerBalance.zero(network.coinParam.decimal);
   final Map<String, BitcoinOutputWithBalance> _receivers = {};
@@ -152,8 +151,8 @@ abstract class BitcoinTransactionImpl extends StateController
   }
 
   void onSetupUtxo();
-  List<IBitcoinAddress> get addresses => chainAccount.account.addresses.cast();
-  NetworkAccountCore get account => chainAccount.account;
+  List<IBitcoinAddress> get addresses => chainAccount.addresses;
+  // Bip32NetworkAccount get account => chainAccount.account;
   late final BitcoinClient apiProvider = chainAccount.provider()!;
 
   void setFee(String? feeType, {BigInt? customFee}) {
@@ -213,10 +212,10 @@ abstract class BitcoinTransactionImpl extends StateController
       GlobalKey<StreamWidgetState>(debugLabel: "updateBalancessKey");
 
   final Map<String, UtxoAddressDetails> _addresses = {};
-  final Map<String, BItcoinAccountUtxos> _accountsUtxos = {};
+  final Map<String, BitcoinAccountUtxos> _accountsUtxos = {};
 
-  List<BItcoinAccountUtxos> get accountsUtxos => _accountsUtxos.values.toList();
-  final Map<String, BItcoinAccountUtxos> _retrievedUtxos = {};
+  List<BitcoinAccountUtxos> get accountsUtxos => _accountsUtxos.values.toList();
+  final Map<String, BitcoinAccountUtxos> _retrievedUtxos = {};
   bool addressSelected(String addressProgram) =>
       _addresses.containsKey(addressProgram);
   bool get hasSpender => _addresses.isNotEmpty;
@@ -262,7 +261,7 @@ abstract class BitcoinTransactionImpl extends StateController
       if (result.hasError) {
         hasError = true;
       }
-      _retrievedUtxos[i] = BItcoinAccountUtxos(
+      _retrievedUtxos[i] = BitcoinAccountUtxos(
           address: i,
           utxos: result.hasError ? null : result.result,
           addressDetails: _addresses[i]!,
@@ -281,7 +280,7 @@ abstract class BitcoinTransactionImpl extends StateController
   void updateBalances() async {
     if (updateBalancessKey.inProgress) return;
     updateBalancessKey.process();
-    await walletProvider.updateAccountBalance(account.addresses);
+    await walletProvider.wallet.updateAccountBalance(chainAccount);
     updateBalancessKey.success();
     notify();
   }
@@ -414,7 +413,7 @@ abstract class BitcoinTransactionImpl extends StateController
         }
       }
       final tr = _buildTransaction();
-      final request = SigningRequest(
+      final request = WalletSigningRequest(
         addresses: signers,
         network: network,
         sign: (generateSignature) async {
@@ -448,7 +447,8 @@ abstract class BitcoinTransactionImpl extends StateController
           });
         },
       );
-      final signedTr = await walletProvider.signTransaction(request: request);
+      final signedTr =
+          await walletProvider.wallet.signTransaction(request: request);
 
       if (signedTr.hasError) {
         throw signedTr.exception!;

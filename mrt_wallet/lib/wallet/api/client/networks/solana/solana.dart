@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/solana.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/solana/solana.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/solana/models/solana_account_tokens_info.dart';
 import 'package:on_chain/solana/solana.dart';
@@ -103,8 +103,7 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider> {
 
   @override
   Future<bool> onInit() async {
-    final genesisHash =
-        await MethodUtils.nullOnException(() async => await genesis());
-    return genesisHash == network.coinParam.genesis;
+    final result = await MethodUtils.call(() async => await genesis());
+    return result.hasResult && result.result == network.coinParam.genesis;
   }
 }

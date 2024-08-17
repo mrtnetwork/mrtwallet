@@ -52,7 +52,4 @@ class BitcoinStateController extends BitcoinTransactionImpl
     if (!trReady) return;
     super.sendTransaction();
   }
-
-  @override
-  String get repositoryId => "bitcoin";
 }

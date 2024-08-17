@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/wallet/constant/networks/ethereum.dart';
+import 'package:mrt_wallet/wroker/utils/solidity/solidity.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solidity/address/core.dart';
 
@@ -16,7 +16,7 @@ class RPCERC20TokenBalance extends ETHRPCRequest<BigInt> {
   final String contractAddress;
   final SolidityAddress accountAddress;
 
-  final AbiFunctionFragment _function = ETHConst.erc20Balance;
+  final AbiFunctionFragment _function = SolidityContractUtils.erc20Balance;
 
   @override
   BigInt onResonse(result) {

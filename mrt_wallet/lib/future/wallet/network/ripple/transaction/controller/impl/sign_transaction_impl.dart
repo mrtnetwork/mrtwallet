@@ -4,16 +4,19 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 mixin RippleSignTransactionImpl on RippleTransactionImpl {
-  Future<void> signAndSendTransaction(SigningRequest<XRPTransaction> request,
+  Future<void> signAndSendTransaction(
+      WalletSigningRequest<XRPTransaction> request,
       XRPTransaction transaction) async {
     progressKey.progressText(
         "create_send_transaction".tr.replaceOne(network.coinParam.token.name));
     final result = await MethodUtils.call(() async {
       await XRPHelper.autoFill(apiProvider.provider, transaction,
           calculateFee: false);
-      final signature = await walletProvider.signTransaction(request: request);
+      final signature =
+          await walletProvider.wallet.signTransaction(request: request);
       if (signature.hasError) {
         throw signature.exception!;
       }

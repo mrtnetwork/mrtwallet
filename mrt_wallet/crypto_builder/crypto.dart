@@ -2,7 +2,7 @@ import 'package:blockchain_utils/crypto/crypto/crypto.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/wroker/crypto/crypto.dart';
-import 'package:mrt_wallet/wroker/messages/response/response.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models.dart';
 import 'dart:js_interop';
 
 @JS()
@@ -38,7 +38,7 @@ class _WebIsolateInitialData {
   _WebIsolateInitialData({required List<int> key})
       : chacha = ChaCha20Poly1305(key);
 
-  WorkerMessageResponse _getResult(List<int> message) {
+  WorkerResponseMessage _getResult(List<int> message) {
     int? id;
     try {
       final encryptedMessage = WorkerEncryptedMessage.deserialize(message);
@@ -47,16 +47,16 @@ class _WebIsolateInitialData {
           chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message);
       return crypto.handleMessage(decode!, id);
     } catch (e) {
-      return WorkerMessageResponse(
+      return WorkerResponseMessage(
           args: WalletCrypto.verificationFailed, id: id ?? -1);
     }
   }
 
   WorkerEncryptedMessage sentResult(String message) {
     final List<int>? messagesBytes = BytesUtils.tryFromHexString(message);
-    WorkerMessageResponse? result;
+    WorkerResponseMessage? result;
     if (messagesBytes == null) {
-      result = const WorkerMessageResponse(
+      result = const WorkerResponseMessage(
           args: WalletCrypto.verificationFailed, id: -1);
     }
     result ??= _getResult(messagesBytes!);
@@ -64,7 +64,7 @@ class _WebIsolateInitialData {
     return encrypted;
   }
 
-  WorkerEncryptedMessage _toEncryptedMessage(WorkerMessageResponse request) {
+  WorkerEncryptedMessage _toEncryptedMessage(WorkerResponseMessage request) {
     final nonce = QuickCrypto.generateRandom(16);
     final enc = chacha.encrypt(nonce, request.toCbor().encode());
     return WorkerEncryptedMessage(message: enc, nonce: nonce, id: request.id);

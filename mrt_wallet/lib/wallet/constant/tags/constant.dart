@@ -9,6 +9,9 @@ class CborTagsConst {
   static const List<int> wallets = [60, 1];
   static const List<int> walletInfo = [60, 2];
 
+  /// chain handler
+  static const List<int> chainHandler = [60, 3];
+
   static const List<int> coingeckoInfo = [60, 12];
   static const List<int> coingeckoCoins = [60, 13];
 
@@ -95,6 +98,7 @@ class CborTagsConst {
 
   static const List<int> networks = [0, 0, 0];
   static const List<int> network = [80];
+
   static const List<int> bitconNetwork = [80, 0, 1];
   static const List<int> xrpNetwork = [80, 0, 2];
   static const List<int> evmNetwork = [80, 0, 3];
@@ -132,5 +136,30 @@ class CborTagsConst {
   static const List<int> rippleApiServiceProvider = [90, 9];
   static const List<int> substrateApiServiceProvider = [90, 10];
 
-  /// provider auth
+  /// web3 permission
+  static const List<int> appPermission = [150, 1];
+  static const List<int> ethereumAppPermisionSetting = [150, 1];
+
+  static const List<int> permisionTag = [151, 0];
+  static const List<int> permissionActivityTag = [151, 1];
+
+  ///
+  static const List<int> web3App = [161, 0, 0];
+  static const List<int> web3EthereumAccount = [161, 1, 1];
+
+  /// address params
+  static const List<int> bitcoinCashNewAddressParams = [12, 0];
+  static const List<int> bitcoinCashMultiSigNewAddressParams = [12, 1];
+  static const List<int> bitcoinNewAddressParams = [12, 2];
+  static const List<int> bitcoinMultiSigNewAddressParams = [12, 4];
+  static const List<int> cardanoNewAddressParams = [12, 5];
+  static const List<int> cosmosNewAddressParams = [12, 6];
+  static const List<int> ethereumNewAddressParamss = [12, 7];
+  static const List<int> solanaNewAddressParams = [12, 8];
+  static const List<int> substrateNewAddressParams = [12, 9];
+  static const List<int> tronNewAddressParams = [12, 10];
+  static const List<int> tronMultisigNewAddressParams = [12, 11];
+  static const List<int> tonNewAddressParams = [12, 12];
+  static const List<int> rippleNewAddressParams = [12, 13];
+  static const List<int> rippleMultiSigNewAddressParams = [12, 14];
 }

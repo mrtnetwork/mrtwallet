@@ -6,44 +6,40 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class ImportTRC20TokenView extends StatelessWidget {
   const ImportTRC20TokenView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletTronNetwork, ITronAddress>(
-        childBulder:
-            (walletProvider, account, address, network, switchRippleAccount) {
+    return NetworkAccountControllerView<TronChain>(
+        childBulder: (walletProvider, chain, switchRippleAccount) {
           return _ImportTrc20TokenView(
-              walletProvider: walletProvider,
-              account: account.account,
-              network: account.network as WalletTronNetwork,
-              apiProvider: account.provider()!,
-              address: address);
+            account: chain,
+            apiProvider: chain.provider()!,
+          );
         },
         title: "import_token".tr);
   }
 }
 
 class _ImportTrc20TokenView extends StatefulWidget {
-  const _ImportTrc20TokenView(
-      {required this.walletProvider,
-      required this.account,
-      required this.network,
-      required this.apiProvider,
-      required this.address});
-  final WalletProvider walletProvider;
-  final NetworkAccountCore account;
-  final WalletTronNetwork network;
+  const _ImportTrc20TokenView({
+    required this.account,
+    // required this.network,
+    required this.apiProvider,
+  });
+  final TronChain account;
   final TronClient apiProvider;
-  final ITronAddress address;
 
   @override
   State<_ImportTrc20TokenView> createState() => __ImportTrc20TokenViewState();
 }
 
 class __ImportTrc20TokenViewState extends State<_ImportTrc20TokenView> {
+  late final ITronAddress address = widget.account.address;
+  WalletTronNetwork get network => widget.account.network;
   ReceiptAddress<TronAddress>? contractAddress;
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>(debugLabel: "__ImportTrc20TokenViewState");
@@ -62,7 +58,7 @@ class __ImportTrc20TokenViewState extends State<_ImportTrc20TokenView> {
     final result = await MethodUtils.call(() async {
       final data = await widget.apiProvider.solidityProvider
           .getAccountERC20Token(
-              widget.address.networkAddress, contractAddress!.networkAddress);
+              address.networkAddress, contractAddress!.networkAddress);
       return data;
     });
     if (result.hasError) {
@@ -70,8 +66,10 @@ class __ImportTrc20TokenViewState extends State<_ImportTrc20TokenView> {
     } else if (result.result == null) {
       progressKey.errorText("smart_contract_not_found".tr);
     } else {
-      final addResult =
-          await wallet.addNewToken(result.result!, widget.address);
+      final addResult = await wallet.wallet.addNewToken(
+          token: result.result! as TronToken,
+          address: address,
+          account: widget.account);
 
       if (addResult.hasError) {
         progressKey.errorText(addResult.error!.tr);
@@ -93,7 +91,7 @@ class __ImportTrc20TokenViewState extends State<_ImportTrc20TokenView> {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => ConstraintsBoxView(
+      child: (c) => ConstraintsBoxView(
           padding: WidgetConstant.padding20,
           child: token != null
               ? Column(

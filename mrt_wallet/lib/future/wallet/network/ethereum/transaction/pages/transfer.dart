@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 
@@ -10,7 +10,7 @@ class EthereumTransferTransactionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ChainHandler? token = context.getNullArgruments();
+    final EthereumChain? token = context.getNullArgruments();
     final ETHERC20Token? erc20Token = context.getNullArgruments();
     return EthereumTransactionFieldsView(
         field: LiveTransactionForm(

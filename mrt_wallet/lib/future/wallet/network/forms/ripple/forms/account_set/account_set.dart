@@ -5,6 +5,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class RippleAccountSetForm implements RippleTransactionForm {
   /// does not need subject or id beacuse has own page

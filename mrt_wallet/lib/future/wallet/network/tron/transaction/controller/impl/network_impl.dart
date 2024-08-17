@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/network/tron/transaction/controller/imp
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 mixin NetworkConditionImpl on TronTransactionImpl {
   late TronChainParameters _chainParameters;

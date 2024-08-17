@@ -1,8 +1,8 @@
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/page_progress.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/page_progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 
@@ -16,7 +16,7 @@ abstract class CosmosTransactiomImpl extends StateController {
       required this.validator});
 
   final WalletProvider walletProvider;
-  final NetworkAccountCore account;
+  final CosmosChain account;
   final WalletCosmosNetwork network;
   final CosmosClient apiProvider;
   final ICosmosAddress address;

@@ -11,6 +11,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'fee.dart';
 import 'message_settings.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class TonTransactionFieldsView extends StatelessWidget {
   const TonTransactionFieldsView({super.key, this.field});
@@ -19,22 +20,22 @@ class TonTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<TonTransactionForm> validator =
         field ?? context.getArgruments();
-    return NetworkAccountControllerView<WalletTonNetwork, ITonAddress>(
-        childBulder: (wallet, chain, address, network, switchAccount) {
+    return NetworkAccountControllerView<TonChain>(
+        childBulder: (wallet, chain, switchAccount) {
           return MrtViewBuilder<TonTransactionStateController>(
+            repositoryId: StateConst.ton,
             controller: () => TonTransactionStateController(
                 walletProvider: wallet,
-                account:
-                    chain.account as NetworkAccountCore<BigInt, TonAddress>,
-                network: network,
-                address: address,
+                account: chain,
+                network: chain.network,
+                address: chain.address,
                 apiProvider: chain.provider()!,
                 validator: validator),
             builder: (controller) {
               return PageProgress(
                 backToIdle: APPConst.oneSecoundDuration,
                 key: controller.progressKey,
-                child: () {
+                child: (c) {
                   return CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(

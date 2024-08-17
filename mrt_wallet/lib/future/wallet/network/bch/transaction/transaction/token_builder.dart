@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/utils/bitcoin_cash/bitcoin_cash_utils.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 enum BCHCashTokenPage { build, utxo, send }
 

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/theme/theme.dart';
 import 'package:mrt_wallet/future/wallet/start/pages/about.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 import 'color_selector.dart';
 
@@ -32,7 +34,7 @@ class _AppSettingViewState extends State<AppSettingView> {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
-    final setting = PageRouter.networkSettings(wallet.network);
+    final setting = PageRouter.networkSettings(wallet.wallet.network);
     return ScaffolPageView(
       appBar: AppBar(
         title: Text("wallet_preferences".tr),
@@ -46,7 +48,7 @@ class _AppSettingViewState extends State<AppSettingView> {
                 AppListTile(
                   leading: const Icon(Icons.settings),
                   title: Text("network_settings".tr),
-                  subtitle: Text(wallet.network.coinParam.token.name),
+                  subtitle: Text(wallet.wallet.network.coinParam.token.name),
                   onTap: () {
                     context.to(setting);
                   },
@@ -89,7 +91,7 @@ class _AppSettingViewState extends State<AppSettingView> {
                 subtitle: Text("manage_imported_key".tr),
                 onTap: () {
                   context.to(PageRouter.manageImportedKey,
-                      argruments: wallet.network);
+                      argruments: wallet.wallet.network);
                 },
               ),
               AppListTile(
@@ -98,7 +100,7 @@ class _AppSettingViewState extends State<AppSettingView> {
                 subtitle: Text("backup_wallet".tr),
                 onTap: () {
                   context.to(PageRouter.backupWallet,
-                      argruments: wallet.network);
+                      argruments: wallet.wallet.network);
                 },
               ),
               AppListTile(

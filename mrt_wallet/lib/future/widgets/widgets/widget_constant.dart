@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/global/colors.dart';
-import 'package:mrt_wallet/app/theme/theme.dart';
+import 'package:mrt_wallet/future/constant/constant.dart';
+import 'package:mrt_wallet/future/theme/theme.dart';
 
 class WidgetConstant {
   static const Widget height8 = SizedBox(height: 8);
@@ -11,8 +11,12 @@ class WidgetConstant {
   static const EdgeInsets padding5 = EdgeInsets.all(5);
   static const EdgeInsets padding2 = EdgeInsets.all(2);
   static const EdgeInsets padding10 = EdgeInsets.all(10);
+  static const BoxConstraints constraintsMinHeight60 =
+      BoxConstraints(minHeight: 60);
   static const EdgeInsets paddingHorizontal10 =
       EdgeInsets.symmetric(horizontal: 10);
+  static const EdgeInsets paddingH10V5 =
+      EdgeInsets.symmetric(horizontal: 10, vertical: 5);
   static const EdgeInsets paddingHorizontal20 =
       EdgeInsets.symmetric(horizontal: 20);
   static const EdgeInsets padding20 = EdgeInsets.all(20);

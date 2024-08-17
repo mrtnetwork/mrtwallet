@@ -11,15 +11,29 @@ class HttpUtils {
       Duration timeout = const Duration(seconds: 30)}) async {
     final client = http.Client();
     try {
-      return MethodUtils.httpCaller<T>(() async {
+      return await MethodUtils.httpCaller<T>(() async {
         try {
-          return await client
-              .get(Uri.parse(uri), headers: header)
-              .timeout(timeout);
+          return client.get(Uri.parse(uri), headers: header).timeout(timeout);
         } catch (e) {
           rethrow;
         }
       });
+    } finally {
+      client.close();
+    }
+  }
+
+  static Future<MethodResult<List<int>>> getStream(String uri,
+      {Map<String, String>? headers,
+      Duration timeout = const Duration(seconds: 30),
+      OnStreamReapose? response}) async {
+    final client = http.Client();
+    try {
+      return await MethodUtils.httpStreamCaller(() async {
+        final request = http.Request("GET", Uri.parse(uri));
+        request.headers.addAll(headers ?? {});
+        return client.send(http.Request("GET", Uri.parse(uri)));
+      }, onProgress: response);
     } finally {
       client.close();
     }
@@ -36,7 +50,7 @@ class HttpUtils {
       data = StringUtils.fromJson(body);
     }
     try {
-      return MethodUtils.httpCaller(() async =>
+      return await MethodUtils.httpCaller(() async =>
           await client.post(Uri.parse(uri), headers: header, body: data));
     } finally {
       client.close();

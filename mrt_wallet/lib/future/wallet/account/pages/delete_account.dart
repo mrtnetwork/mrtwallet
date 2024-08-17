@@ -1,25 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show
-        APPConst,
-        LinkConst,
-        QuickContextAccsess,
-        SafeState,
-        StateConst,
-        Translate;
+import 'package:mrt_wallet/app/core.dart' show APPConst, LinkConst, StateConst;
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
-import 'package:mrt_wallet/wallet/wallet.dart' show CryptoAddress;
+import 'package:mrt_wallet/wallet/models/models.dart';
 
 class DeleteAccountView extends StatelessWidget {
   const DeleteAccountView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final CryptoAddress account = context.getArgruments();
+    final Chain account = context.getArgruments();
     return PasswordCheckerView(
         accsess: WalletAccsessType.verify,
         onAccsess: (crendential, password, network) {
@@ -34,7 +27,7 @@ class DeleteAccountView extends StatelessWidget {
 class _DeleteAccountView extends StatefulWidget {
   const _DeleteAccountView({required this.password, required this.account});
   final String password;
-  final CryptoAddress account;
+  final Chain account;
 
   @override
   State<_DeleteAccountView> createState() => __DeleteAccountViewState();
@@ -49,7 +42,8 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
     if (accept != true) return;
     final model = context.watch<WalletProvider>(StateConst.main);
     progressKey.progressText("remove_account_pls_wait".tr);
-    final result = await model.removeAccount(widget.account);
+    final result = await model.wallet.removeAccount(
+        account: widget.account, address: widget.account.address);
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
@@ -62,12 +56,12 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => ConstraintsBoxView(
+      child: (c) => ConstraintsBoxView(
         padding: WidgetConstant.padding20,
         child: AnimatedSwitcher(
           duration: APPConst.animationDuraion,
           child: SingleChildScrollView(
-            child: deleted
+            child: deleted || !widget.account.haveAddress
                 ? Column(
                     key: const ValueKey<bool>(true),
                     children: [
@@ -109,7 +103,8 @@ class __DeleteAccountViewState extends State<_DeleteAccountView>
                           style: context.textTheme.titleMedium),
                       WidgetConstant.height8,
                       ContainerWithBorder(
-                          child: AddressDetailsView(address: widget.account)),
+                          child: AddressDetailsView(
+                              address: widget.account.address)),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

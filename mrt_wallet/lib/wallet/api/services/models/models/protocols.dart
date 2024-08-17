@@ -1,5 +1,5 @@
 import 'package:mrt_native_support/models/models.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 
 enum ServiceProtocol {
   http("HTTP", 0),

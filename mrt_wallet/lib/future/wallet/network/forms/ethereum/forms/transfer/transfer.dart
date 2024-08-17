@@ -1,7 +1,8 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
+import 'package:mrt_wallet/wroker/utils/utils.dart';
 import 'package:on_chain/on_chain.dart';
 
 class EthereumTransferForm extends EthereumTransactionForm {
@@ -90,7 +91,7 @@ class EthereumTransferForm extends EthereumTransactionForm {
   List<int> _getData([String? memo]) {
     List<int> transactionData = [];
     if (erc20Token != null && destination.hasValue && amount.hasValue) {
-      transactionData = ETHConst.erc20Transfer
+      transactionData = SolidityContractUtils.erc20Transfer
           .encode([destination.value!.networkAddress, amount.value!.balance]);
     }
     if (memo != null) {
@@ -104,26 +105,23 @@ class EthereumTransferForm extends EthereumTransactionForm {
   ETHTransaction toTransaction(
       {required IEthAddress address,
       required WalletEthereumNetwork network,
-      EthereumFee? fee,
+      required EthereumFee fee,
       String? memo}) {
     ETHTransaction tr = ETHTransaction(
+      type: fee.isEIP1559
+          ? ETHTransactionType.eip1559
+          : ETHTransactionType.legacy,
       from: address.networkAddress,
       chainId: network.coinParam.chainId,
       data: _getData(memo),
       nonce: 0,
-      gasLimit: fee == null ? BigInt.zero : BigInt.from(fee.gasLimit),
+      gasPrice: fee.gasPrice,
+      maxFeePerGas: fee.maxFeePerGas,
+      maxPriorityFeePerGas: fee.maxPriorityFeePerGas,
+      gasLimit: BigInt.from(fee.gasLimit),
       value: erc20Token != null ? BigInt.zero : amount.value!.balance,
       to: erc20Token?.contractAddress ?? destination.value!.networkAddress,
     );
-    if (fee != null) {
-      tr = tr.copyWith(
-          type: fee.isEIP1559
-              ? ETHTransactionType.eip1559
-              : ETHTransactionType.legacy,
-          gasPrice: fee.gasPrice,
-          maxFeePerGas: fee.maxFeePerGas,
-          maxPriorityFeePerGas: fee.maxPriorityFeePerGas);
-    }
     return tr;
   }
 

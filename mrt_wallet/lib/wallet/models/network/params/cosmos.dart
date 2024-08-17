@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
@@ -39,18 +39,18 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
         networkType: CosmosNetworkTypes.fromValue(cbor.elementAt(8)),
         bip32CoinType: cbor.elementAt(9));
   }
-  CosmosNetworkParams(
-      {required super.transactionExplorer,
-      required super.addressExplorer,
-      required super.token,
-      required super.providers,
-      required super.mainnet,
-      required this.hrp,
-      required List<CosmosNativeCoin> coins,
-      required this.mainCoin,
-      required this.networkType,
-      super.bip32CoinType})
-      : nativeCoins = List<CosmosNativeCoin>.unmodifiable(coins);
+  CosmosNetworkParams({
+    required super.transactionExplorer,
+    required super.addressExplorer,
+    required super.token,
+    required super.providers,
+    required super.mainnet,
+    required this.hrp,
+    required List<CosmosNativeCoin> coins,
+    required this.mainCoin,
+    required this.networkType,
+    super.bip32CoinType,
+  }) : nativeCoins = List<CosmosNativeCoin>.unmodifiable(coins);
 
   @override
   CborTagValue toCbor() {

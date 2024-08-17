@@ -9,6 +9,7 @@ class CardanoOutputWithBalance {
   CardanoOutputWithBalance._(
       {required ReceiptAddress<ADAAddress> address,
       required WalletCardanoNetwork network,
+      required this.coinPerUtixo,
       UtxoMultiAsset? asset})
       : balance = IntegerBalance.zero(network.coinParam.decimal),
         _asset = asset ?? UtxoMultiAsset({}),
@@ -16,13 +17,14 @@ class CardanoOutputWithBalance {
         minAdaValue = IntegerBalance.zero(network.coinParam.decimal);
   factory CardanoOutputWithBalance(
       {required ReceiptAddress<ADAAddress> address,
-      required WalletCardanoNetwork network}) {
-    final output =
-        CardanoOutputWithBalance._(address: address, network: network);
+      required WalletCardanoNetwork network,
+      required int coinsPerUtxoSize}) {
+    final output = CardanoOutputWithBalance._(
+        address: address, network: network, coinPerUtixo: coinsPerUtxoSize);
     output._checkOutput();
     return output;
   }
-
+  final int coinPerUtixo;
   final IntegerBalance balance;
   final IntegerBalance minAdaValue;
   ReceiptAddress<ADAAddress> _address;
@@ -41,33 +43,34 @@ class CardanoOutputWithBalance {
   bool get minAdaRequired => _minAdaRequired;
 
   void _checkOutput() {
+    minAdaValue.updateBalance(_minValue);
     _minAdaRequired = hasAmount && balance.balance < minAdaValue.balance;
     _isReady = hasAmount && !isRewardAddress && !minAdaRequired;
   }
 
-  void setAsset(UtxoMultiAsset? updateAsset) {
+  void updateAssets(UtxoMultiAsset? updateAsset) {
     _asset = updateAsset ?? UtxoMultiAsset.empty;
+
     if (!hasAssets) {
       updateBalance(BigInt.zero);
-      return;
     }
     _checkOutput();
   }
 
-  void setAddress(ReceiptAddress<ADAAddress>? updateAddress,
-      {int? coinsPerUtxoSize}) {
+  void setAddress(
+    ReceiptAddress<ADAAddress>? updateAddress,
+  ) {
     _address = updateAddress ?? _address;
-    if (coinsPerUtxoSize != null) {
-      minAdaValue.updateBalance(minValue(coinsPerUtxoSize));
-    }
     _checkOutput();
   }
 
-  void updateBalance(BigInt val, {int? coinsPerUtxoSize}) {
+  void initializeBalance() {
+    balance.updateBalance(_minValue);
+    _checkOutput();
+  }
+
+  void updateBalance(BigInt val) {
     balance.updateBalance(val);
-    if (coinsPerUtxoSize != null) {
-      minAdaValue.updateBalance(minValue(coinsPerUtxoSize));
-    }
     _checkOutput();
   }
 
@@ -79,10 +82,10 @@ class CardanoOutputWithBalance {
             multiAsset: asset.hasAsset ? asset.toMultiAsset() : null));
   }
 
-  BigInt minValue(int coinsPerUtxoSize) {
+  BigInt get _minValue {
     final out = toOutput();
     return out
         .copyWith(amount: out.amount.copyWith(coin: maxU64))
-        .minAda(coinsPerUtxoSize);
+        .minAda(coinPerUtixo);
   }
 }

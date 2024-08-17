@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/worker.dart';
 import 'package:ton_dart/ton_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SetupTonAddressView extends StatefulWidget {
   final AddressDerivationController controller;
@@ -38,9 +39,8 @@ class _SetupTonAddressViewState extends State<SetupTonAddressView>
     setState(() {});
   }
 
-  void onChangeSubWalletId(String v) {
-    final id = int.tryParse(v);
-    if (id == null || id < 0 || id > mask32 - 1) {
+  void onChangeSubWalletId(int id) {
+    if (id < 0 || id > mask32 - 1) {
       subWalletId = null;
     } else {
       subWalletId = id;
@@ -61,7 +61,7 @@ class _SetupTonAddressViewState extends State<SetupTonAddressView>
     if (keyIndex == null) return;
     if (widget.controller.form.currentState?.validate() ?? false) {
       if (hasSubWalletId && subWalletId == null) return;
-      final newAccount = TonNewAddressParam(
+      final newAccount = TonNewAddressParams(
           deriveIndex: keyIndex,
           version: version,
           subWalletId: subWalletId,

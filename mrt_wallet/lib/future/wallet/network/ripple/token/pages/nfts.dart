@@ -5,17 +5,18 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/widgets/nft_info.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class MonitorRippleNFTsView extends StatelessWidget {
   const MonitorRippleNFTsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress>(
+    return NetworkAccountControllerView<RippleChain>(
       title: "manage_nfts".tr,
-      childBulder: (wallet, account, address, network, switchRippleAccount) {
+      childBulder: (wallet, account, switchRippleAccount) {
         return _MonitorRippleNFTsView(
-            address: address, wallet: wallet, provider: account.provider()!);
+            account: account, wallet: wallet, provider: account.provider()!);
       },
     );
   }
@@ -23,8 +24,8 @@ class MonitorRippleNFTsView extends StatelessWidget {
 
 class _MonitorRippleNFTsView extends StatefulWidget {
   const _MonitorRippleNFTsView(
-      {required this.address, required this.wallet, required this.provider});
-  final IXRPAddress address;
+      {required this.account, required this.wallet, required this.provider});
+  final RippleChain account;
   final WalletProvider wallet;
   final RippleClient provider;
 
@@ -35,6 +36,7 @@ class _MonitorRippleNFTsView extends StatefulWidget {
 
 class ___MonitorRippleNFTsViewState extends State<_MonitorRippleNFTsView>
     with SafeState {
+  IXRPAddress get address => widget.account.address;
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>(debugLabel: "_MonitorRippleNFTsViewState");
   final Set<RippleNFToken> nfts = {};
@@ -43,7 +45,7 @@ class ___MonitorRippleNFTsViewState extends State<_MonitorRippleNFTsView>
     if (progressKey.isSuccess || progressKey.inProgress) return;
     final result = await MethodUtils.call(() async {
       return await widget.provider.provider.request(XRPRPCAccountNFTs(
-          account: widget.address.networkAddress.address, limit: 50000));
+          account: address.networkAddress.address, limit: 50000));
     });
 
     if (result.hasError) {
@@ -68,13 +70,15 @@ class ___MonitorRippleNFTsViewState extends State<_MonitorRippleNFTsView>
   }
 
   Future<void> add(RippleNFToken nft) async {
-    final result = await widget.wallet.addNewNFT(nft, widget.address);
+    final result = await widget.wallet.wallet
+        .addNewNFT(nft: nft, address: address, account: widget.account);
     if (result.hasError) throw result.error!;
     return result.result;
   }
 
   Future<void> removeNFT(RippleNFToken nft) async {
-    final result = await widget.wallet.removeNFT(nft, widget.address);
+    final result = await widget.wallet.wallet
+        .removeNFT(nft: nft, address: address, account: widget.account);
     if (result.hasError) throw result.error!;
     return result.result;
   }
@@ -99,7 +103,7 @@ class ___MonitorRippleNFTsViewState extends State<_MonitorRippleNFTsView>
       backToIdle: APPConst.oneSecoundDuration,
       initialWidget:
           ProgressWithTextView(text: "fetching_account_token_please_wait".tr),
-      child: () {
+      child: (c) {
         return EmptyItemWidgetView(
           isEmpty: nfts.isEmpty,
           itemBuilder: () => ConstraintsBoxView(

@@ -1,7 +1,5 @@
-export 'account/account.dart';
-export 'backup/backup.dart';
+export 'chain/account.dart';
 export 'balance/balance.dart';
-export 'keys/keys.dart';
 export 'token/token.dart';
 export 'network/network.dart';
 export 'nfts/nfts.dart';
@@ -9,5 +7,7 @@ export 'contact/contact.dart';
 export 'networks/networks.dart';
 export 'others/others.dart';
 export 'setting/setting.dart';
-export 'signing_request/signing_request.dart';
-export 'backup/mrt_backup.dart';
+export 'signing/signing.dart';
+export 'backup/backup.dart';
+export 'status/status.dart';
+export 'access/wallet_access.dart';

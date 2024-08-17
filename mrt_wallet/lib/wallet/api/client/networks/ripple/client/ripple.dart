@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ripple/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
-import 'package:mrt_wallet/wallet/models/account/address/address.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/address.dart';
 import 'package:mrt_wallet/wallet/models/networks/ripple/models/account_object_signer_list.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
@@ -89,9 +89,10 @@ class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
 
   @override
   Future<bool> onInit() async {
-    final result = await MethodUtils.nullOnException(() async {
+    final result = await MethodUtils.call(() async {
       return await provider.request(RPCServerState());
     });
-    return result?.status == _RippleApiProviderConst.successStatusSr;
+    return result.hasResult &&
+        result.result.status == _RippleApiProviderConst.successStatusSr;
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/page_title_subtitle.dart';
 import 'package:mrt_wallet/future/widgets/widgets/widget_constant.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 typedef OnSelectColor = void Function(Color?);
 

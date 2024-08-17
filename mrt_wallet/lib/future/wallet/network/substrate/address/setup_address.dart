@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/account/address/new/networks/substrate.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/substrate.dart';
 import 'package:mrt_wallet/wroker/keys/models/seed.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SetupSubstrateAddressView extends StatefulWidget {
   final AddressDerivationController controller;

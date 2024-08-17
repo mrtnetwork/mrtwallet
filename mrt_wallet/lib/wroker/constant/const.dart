@@ -36,7 +36,38 @@ class CryptoKeyConst {
   static const List<int> kusamaNetwork = [80, 0, 13];
 
   /// network tags
-  static const List<int> generateToneMenemonic = [80, 1, 0];
-  static const List<int> tonMnemonicToPrivateKey = [80, 1, 1];
+  static const List<int> generateToneMenemonic = [111, 1];
+  static const List<int> tonMnemonicToPrivateKey = [111, 2];
+
+  static const List<int> ethereumPersonalSign = [111, 3];
+  static const List<int> ethereumTypedDataSign = [111, 4];
+  static const List<int> deriveAddress = [111, 5];
+
+  static const List<int> encryptChacha = [111, 10];
+  static const List<int> decryptChacha = [111, 12];
+
+  static const List<int> generateMasterKey = [111, 20];
+  static const List<int> readEncryptedMasterKey = [111, 21];
+  static const List<int> createMasterKey = [111, 22];
+  static const List<int> createWallet = [111, 23];
+  static const List<int> restoreBackup = [111, 24];
+  static const List<int> readPublicKeys = [111, 25];
+  static const List<int> readPrivateKeys = [111, 26];
+  static const List<int> readMnemonic = [111, 27];
+  static const List<int> updateWalletKeys = [111, 28];
+  static const List<int> removeWalletKeys = [111, 29];
+  static const List<int> sign = [111, 30];
+  static const List<int> decodeBackup = [111, 31];
+  static const List<int> encodeBackup = [111, 32];
+  static const List<int> readImportKey = [111, 33];
+  static const List<int> generateBip39Mnemonic = [111, 34];
+  static const List<int> walletKey = [111, 35];
+  static const List<int> randomGenerator = [111, 36];
+  static const List<int> hexToBytes = [111, 37];
+  static const List<int> hashing = [111, 38];
+  static const List<int> walletBackup = [111, 40];
+  static const List<int> setupMasterKey = [111, 41];
+
+  static const List<int> restoreBackModel = [112, 0];
 }
 // PublicKeyData

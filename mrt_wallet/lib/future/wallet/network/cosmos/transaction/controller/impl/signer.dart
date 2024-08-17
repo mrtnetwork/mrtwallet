@@ -1,10 +1,11 @@
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
 import 'transaction.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 mixin CosmosSignerImpl on CosmosTransactiomImpl {
   Future<String> _buildTransaction() async {
@@ -31,7 +32,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
     List<AddressDerivationIndex> signerKeyIndexes =
         signers.map((e) => e.keyIndex).toList();
     final digest = List<int>.unmodifiable(signDoc.toBuffer());
-    final signRequest = SigningRequest(
+    final signRequest = WalletSigningRequest(
       addresses: signers,
       network: network,
       sign: (generateSignature) async {
@@ -47,7 +48,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
       },
     );
     final signatures =
-        await walletProvider.signTransaction(request: signRequest);
+        await walletProvider.wallet.signTransaction(request: signRequest);
     if (signatures.hasError) {
       throw signatures.exception!;
     }

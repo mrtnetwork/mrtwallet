@@ -18,9 +18,8 @@ class SubstrateHttpService extends HTTPService<SubstrateAPIProvider>
   @override
   Future<Map<String, dynamic>> call(SubstrateRequestDetails params,
       [Duration? timeout]) async {
-    final response = await providerPOST<Map<String, dynamic>>(
-        url, params.toRequestBody(),
-        headers: {'Content-Type': 'application/json'});
+    final response =
+        await providerPOST<Map<String, dynamic>>(url, params.toRequestBody());
 
     return response;
   }

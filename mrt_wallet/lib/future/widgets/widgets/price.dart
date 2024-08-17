@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show Live, LiveWidget, QuickContextAccsess, StateConst, Translate;
+import 'package:mrt_wallet/app/core.dart' show Live, StateConst;
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 import 'package:mrt_wallet/app/models/models/currencies.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
-    show BalanceCore, CryptoAddress, IntegerBalance, Token;
+    show BalanceCore, ChainAccount, IntegerBalance, Token;
 import 'assets_image.dart';
 import 'tooltip/widgets/tooltip.dart';
 import 'widget_constant.dart';
@@ -63,7 +63,7 @@ class CoinPriceView extends StatelessWidget {
             "use account or balance with coinName"),
         super(key: key);
 
-  final CryptoAddress? account;
+  final ChainAccount? account;
   final Token token;
   final BalanceCore? balance;
   final Live<BalanceCore>? liveBalance;

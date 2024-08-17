@@ -6,7 +6,6 @@ import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
-import 'package:on_chain/solana/solana.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';

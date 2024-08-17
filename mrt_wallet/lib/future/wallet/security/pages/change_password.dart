@@ -3,6 +3,8 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 
 class ChangeWalletPasswordView extends StatelessWidget {
   const ChangeWalletPasswordView({super.key});
@@ -72,7 +74,8 @@ class _ChangePasswordViewState extends State<_ChangePasswordView>
     if (form.currentState?.validate() ?? false) {
       progressKey.progressText("changing_password".tr);
       final model = context.watch<WalletProvider>(StateConst.main);
-      final result = await model.changePassword(widget.password, password);
+      final result =
+          await model.wallet.changePassword(widget.password, password);
       if (result.hasError) {
         progressKey.errorText(result.error!.tr);
       } else {
@@ -88,7 +91,7 @@ class _ChangePasswordViewState extends State<_ChangePasswordView>
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => UnfocusableChild(
+      child: (c) => UnfocusableChild(
         child: ConstraintsBoxView(
           alignment: Alignment.center,
           padding: WidgetConstant.paddingHorizontal20,

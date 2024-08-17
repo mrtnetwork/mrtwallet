@@ -3,8 +3,7 @@ import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/wroker/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wroker/keys/keys.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
-// import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
-// import 'package:mrt_wallet/wroker/utils/utils.dart';
+import 'dart:math' as math;
 
 class BlockchainUtils {
   static List<int> privateKeyToBytes(
@@ -34,17 +33,6 @@ class BlockchainUtils {
       keyType: CustomKeyType.extendedKey,
     );
   }
-
-  // static PrivateKeyData extendeKeyToPrivateKeyData(
-  //     {required String extendedKey,
-  //     required CryptoCoins coin,
-  //     required String keyName}) {
-  //   if (coin.conf is! BipCoinConfig) {
-  //     throw WalletExceptionConst.invalidCoin;
-  //   }
-  //   final key = extendedKeyToBip32Key(extendedKey: extendedKey, coin: coin);
-  //   return PrivateKeyData.fromBip32(account: key, coin: coin, keyName: keyName);
-  // }
 
   static PrivateKeyData seedToPrivateKeyData(
       {required List<int> seedBytes,
@@ -330,5 +318,14 @@ class BlockchainUtils {
       }
     }
     return null;
+  }
+
+  static String generateRandomString(int length) {
+    const String chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    math.Random random = math.Random();
+
+    return List.generate(length, (index) => chars[random.nextInt(chars.length)])
+        .join('');
   }
 }

@@ -41,12 +41,13 @@ class TransactionListFormField<T> {
     this.subject,
     required this.onChangeForm,
     this.optional = true,
-  });
+    List<T> values = const [],
+  }) : _value = List<T>.from(values);
   final String name;
   final String? id;
   final String? subject;
   final bool optional;
-  final List<T> _value = [];
+  final List<T> _value;
   List<T> get value => _value;
   bool get hasValue => _value.isNotEmpty;
   bool get isCompleted => optional || _value.isNotEmpty;

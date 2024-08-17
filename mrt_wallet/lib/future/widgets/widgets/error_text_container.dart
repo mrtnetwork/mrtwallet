@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show APPConst, QuickContextAccsess, Translate;
+import 'package:mrt_wallet/app/core.dart' show APPConst;
 import 'package:mrt_wallet/app/models/models/typedef.dart' show DynamicVoid;
 import 'package:mrt_wallet/wallet/wallet.dart' show BalanceCore, Token;
 import 'container_with_border.dart';
 import 'widget_constant.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class ErrorTextContainer extends StatelessWidget {
   const ErrorTextContainer(

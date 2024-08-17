@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/bip/substrate/conf/substrate_coins.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
 import 'package:mrt_wallet/wroker/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
 import 'package:mrt_wallet/wroker/keys/models/seed.dart';
@@ -10,7 +10,7 @@ class BipDerivationUtils {
   static const String substrateBaseAccount = "//44//60//0/0/";
   static AddressDerivationIndex generateAccountNextKeyIndex(
       {required CryptoCoins coin,
-      required List<CryptoAddress> addresses,
+      required List<ChainAccount> addresses,
       required SeedTypes seedGenerationType,
       int? coinType}) {
     if (coin.proposal == SubstratePropoosal.substrate) {
@@ -29,7 +29,7 @@ class BipDerivationUtils {
 
   static Bip32AddressIndex findNextBip32Index(
       {required BipCoins coin,
-      required List<CryptoAddress> addresses,
+      required List<ChainAccount> addresses,
       required SeedTypes seedGenerationType,
       int? coinType}) {
     final List<Bip32AddressIndex> existsIndexes = addresses
@@ -74,7 +74,7 @@ class BipDerivationUtils {
 
   static Bip32AddressIndex findNextByronLegacyIndex({
     required CryptoCoins coin,
-    required List<CryptoAddress> addresses,
+    required List<ChainAccount> addresses,
   }) {
     final List<Bip32AddressIndex> addressIndex = addresses
         .map((e) => e.keyIndex)
@@ -93,7 +93,7 @@ class BipDerivationUtils {
 
   static SubstrateAddressIndex findNextSubstratePath({
     required SubstrateCoins coin,
-    required List<CryptoAddress> addresses,
+    required List<ChainAccount> addresses,
   }) {
     final List<SubstrateAddressIndex> addressIndex = addresses
         .map((e) => e.keyIndex)

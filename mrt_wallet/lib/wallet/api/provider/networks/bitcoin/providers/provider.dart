@@ -10,7 +10,11 @@ enum BitcoinAPIProviderType { electrum, explorer }
 abstract class BaseBitcoinAPIProvider extends APIProvider {
   abstract final BitcoinAPIProviderType type;
   const BaseBitcoinAPIProvider(
-      super.serviceName, super.websiteUri, super.protocol, super.auth);
+      {required super.serviceName,
+      required super.websiteUri,
+      required super.protocol,
+      required super.auth,
+      required super.identifier});
 
   factory BaseBitcoinAPIProvider.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {

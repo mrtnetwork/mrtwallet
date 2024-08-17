@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
-import 'package:mrt_wallet/app/core.dart';
+// import 'package:mrt_wallet/app/core.dart';
 import 'package:http/http.dart' as http;
+import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/error/exception.dart';
+
+typedef OnStreamReapose = void Function(
+    int cumulativeBytesLoaded, int expectedTotalBytes);
 
 class MethodUtils {
   static Future<void> wait({int milliseconds = 1000}) async {
@@ -18,17 +23,6 @@ class MethodUtils {
       {Duration milliseconds = Duration.zero}) async {
     return await Future.delayed(milliseconds, t);
   }
-
-  // static Future<void> _callWithCanclable<T>(
-  //   Future<T> Function() t,
-  //   Cancelable canclable,
-  // ) async {
-  //   try {
-  //     canclable.success(() async => await t());
-  //   } catch (e) {
-  //     canclable.cancel(e);
-  //   }
-  // }
 
   static Future<MethodResult<T>> retryCall<T>(
       Future<T> Function() t, bool Function(Object?) onExceptionRetry,
@@ -51,7 +45,7 @@ class MethodUtils {
   }
 
   static Future<MethodResult<T>> call<T>(Future<T> Function() t,
-      {Cancelable? cancelable, Duration? delay}) async {
+      {Cancelable? cancelable, Duration? delay, Duration? timeout}) async {
     try {
       if (delay != null) {
         await Future.delayed(delay);
@@ -67,7 +61,11 @@ class MethodUtils {
         cancelable.success(t);
         r = completer.future;
       }
-      return MethodResult.succsess(await r);
+      if (timeout != null) {
+        r = r.timeout(timeout);
+      }
+      final result = await r;
+      return MethodResult.success(result);
     } catch (e, stackTrace) {
       return MethodResult.error(e, stackTrace);
     }
@@ -95,23 +93,97 @@ class MethodUtils {
       }
       final response = await r;
       if (response.statusCode == 200) {
-        if (T == String) return MethodResult.succsess(response.body as T);
+        if (T == String) return MethodResult.success(response.body as T);
+        if (T == List<int>) {
+          return MethodResult.success(response.bodyBytes as T);
+        }
         final toJson = StringUtils.toJson(response.body);
-        return MethodResult.succsess(toJson as T);
+        return MethodResult.success(toJson as T);
       }
 
       final errorJson =
           nullOnException(() => StringUtils.toJson(response.body));
-      throw ApiProviderException(
-          statusCode: response.statusCode, message: errorJson?.toString());
-    } on http.ClientException catch (e) {
-      throw ApiProviderException(message: e.message);
+      return MethodResult.error(
+          ApiProviderException(
+              statusCode: response.statusCode, message: errorJson?.toString()),
+          null);
+    } on http.ClientException catch (e, s) {
+      return MethodResult.error(ApiProviderException(message: e.message), s);
     } on FormatException {
-      throw const ApiProviderException(message: "invalid_json_response");
-    } on TimeoutException catch (e) {
-      throw ApiProviderException(message: e.message);
+      return MethodResult.error(
+          const ApiProviderException(message: "invalid_json_response"), null);
+    } on TimeoutException catch (e, s) {
+      return MethodResult.error(ApiProviderException(message: e.message), s);
     } catch (e, stackTrace) {
       return MethodResult.error(e, stackTrace);
+    }
+  }
+
+  static Future<MethodResult<List<int>>> httpStreamCaller(
+      Future<http.StreamedResponse> Function() t,
+      {Cancelable? cancelable,
+      Duration? delay,
+      OnStreamReapose? onProgress}) async {
+    StreamSubscription<List<int>>? subscription;
+    try {
+      if (delay != null) {
+        await Future.delayed(delay);
+      }
+      Future<http.StreamedResponse> r;
+      if (cancelable == null) {
+        r = t();
+      } else {
+        Completer<http.StreamedResponse> completer =
+            Completer<http.StreamedResponse>();
+        cancelable.setup(<T>() {
+          return completer;
+        });
+        cancelable.success(t);
+
+        r = completer.future;
+      }
+
+      final response = await r;
+      if (response.statusCode == 200) {
+        Completer<List<int>> completer = Completer();
+        if (cancelable != null) {
+          cancelable.dispose();
+          cancelable.setup(<T>() {
+            return completer;
+          });
+        }
+        List<int> data = List<int>.empty(growable: true);
+        subscription = response.stream.listen((e) {
+          data.addAll(e);
+          if (response.contentLength != null) {
+            onProgress?.call(data.length, response.contentLength!);
+          }
+        }, onDone: () {
+          if (!completer.isCompleted) {
+            completer.complete(data);
+          }
+        }, onError: (s) {
+          completer.completeError(s);
+        }, cancelOnError: true);
+        final result = await completer.future;
+
+        return MethodResult.success(result);
+      }
+      // throw ApiProviderException(code: response.statusCode);
+      return MethodResult.error(
+          ApiProviderException(code: response.statusCode), null);
+    } on http.ClientException catch (e, s) {
+      return MethodResult.error(ApiProviderException(message: e.message), s);
+    } on FormatException {
+      return MethodResult.error(
+          const ApiProviderException(message: "invalid_json_response"), null);
+    } on TimeoutException catch (e, s) {
+      return MethodResult.error(ApiProviderException(message: e.message), s);
+    } catch (e, stackTrace) {
+      return MethodResult.error(e, stackTrace);
+    } finally {
+      subscription?.cancel();
+      subscription = null;
     }
   }
 
@@ -168,47 +240,60 @@ class MethodUtils {
 }
 
 class MethodResult<T> {
-  MethodResult.error(this.exception, this.trace);
-  MethodResult.succsess(this._result)
+  factory MethodResult.success(T result) {
+    return MethodResult._succsess(result);
+  }
+  factory MethodResult.error(Object exception, Object? trace) {
+    final errorMessage = _errorMessage(exception);
+    return MethodResult._error(
+        error: errorMessage.$1,
+        trace: trace,
+        exception: exception,
+        unknownError: errorMessage.$2);
+  }
+  MethodResult._error(
+      {required Object this.exception,
+      required this.error,
+      this.trace,
+      required this.unknownError});
+  MethodResult._succsess(this._result)
       : exception = null,
-        trace = null;
+        trace = null,
+        error = null,
+        unknownError = false;
   late final T _result;
-  String? get error {
-    if (exception == null) return null;
+  static (String, bool) _errorMessage(Object exception) {
     if (exception is AppException ||
         exception is BlockchainUtilsException ||
         exception is ApiProviderException ||
         exception is RPCError ||
         exception is ArgumentError) {
-      return exception!.toString();
+      return (exception.toString(), false);
     }
-
-    return "somthing_wrong";
+    return ("somthing_wrong", true);
   }
 
   final Object? exception;
-  final StackTrace? trace;
+  final Object? trace;
+  final String? error;
+
   bool get hasError => exception != null;
   bool get hasResult => exception == null;
   bool get isCancel => exception is CancelableExption;
+  final bool unknownError;
   T get result {
-    rethrowIfError();
+    if (hasError) {
+      throw exception!;
+    }
     return _result;
   }
 
-  bool get isBadCondition => exception is BadCondition;
   @override
   String toString() {
     if (hasError) {
       return "Error $error";
     }
     return "Success $result";
-  }
-
-  void rethrowIfError() {
-    if (hasError) {
-      throw exception!;
-    }
   }
 }
 
@@ -245,5 +330,18 @@ class Cancelable<T> {
 
   void dispose() {
     _setup = null;
+  }
+}
+
+extension QuickFunction<T> on Function {
+  T? nullOnException({List<dynamic>? positionalArguments}) =>
+      MethodUtils.nullOnException(
+          () => Function.apply(this, positionalArguments));
+
+  T valueOrException(Object exception, {List<dynamic>? positionalArguments}) {
+    final result = MethodUtils.nullOnException(
+        () => Function.apply(this, positionalArguments));
+    if (result == null) throw exception;
+    return result as T;
   }
 }

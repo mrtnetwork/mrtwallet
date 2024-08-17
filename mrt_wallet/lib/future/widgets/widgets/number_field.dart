@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show APPConst, QuickContextAccsess, RangeTextInputFormatter, SafeState;
+import 'package:mrt_wallet/app/core.dart' show APPConst, IntVoid;
 import 'package:mrt_wallet/app/models/models/typedef.dart'
-    show NullStringString, StringVoid;
+    show NullStringString;
+import 'package:mrt_wallet/future/text_field/input_formaters.dart';
 import 'constraints_box_view.dart';
+import 'paste_icon_widget.dart';
 import 'widget_constant.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class NumberTextField extends StatefulWidget {
   const NumberTextField({
@@ -21,11 +23,12 @@ class NumberTextField extends StatefulWidget {
     this.defaultValue,
     required this.max,
     required this.min,
-    this.suffixIcon,
     this.focusNode,
     this.nextFocus,
     this.disableWriting = false,
+    this.showPasteIcon = false,
   });
+  final bool showPasteIcon;
   final int min;
   final int? max;
   final EdgeInsets padding;
@@ -34,12 +37,11 @@ class NumberTextField extends StatefulWidget {
   final String? hintText;
   final String? error;
   final NullStringString? validator;
-  final StringVoid onChange;
+  final IntVoid onChange;
   final int? defaultValue;
   final FocusNode? focusNode;
   final FocusNode? nextFocus;
   final bool disableWriting;
-  final Widget? suffixIcon;
   @override
   State<NumberTextField> createState() => NumberTextFieldState();
 }
@@ -100,7 +102,9 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
   }
 
   void listener() {
-    widget.onChange(controller.text);
+    final value =
+        controller.text.isEmpty ? widget.min : int.parse(controller.text);
+    widget.onChange(value);
   }
 
   void changeIndex(int newIndex) {
@@ -125,6 +129,10 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
     });
   }
 
+  void onPaste(String v) {
+    controller.text = v;
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -132,12 +140,6 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
     controller.removeListener(listener);
     controller.dispose();
     super.dispose();
-  }
-
-  @override
-  void setState(VoidCallback fn) {
-    if (!mounted) return;
-    super.setState(fn);
   }
 
   @override
@@ -196,7 +198,10 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
                         filled: true,
                         hintText: widget.hintText,
                         helperText: widget.helperText,
-                        suffixIcon: widget.suffixIcon,
+                        suffixIcon: widget.showPasteIcon
+                            ? PasteTextIcon(
+                                onPaste: onPaste, isSensitive: false)
+                            : null,
                         errorText: widget.error,
                         labelText: widget.label,
                         border: OutlineInputBorder(

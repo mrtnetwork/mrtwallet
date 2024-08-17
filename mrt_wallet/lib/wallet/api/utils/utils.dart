@@ -1,12 +1,12 @@
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/wallet/api/client/client.dart';
 import 'package:mrt_wallet/wallet/api/constant/constant.dart';
 import 'package:mrt_wallet/wallet/api/provider/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 import 'package:on_chain/on_chain.dart';
-import 'package:on_chain/solana/solana.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
@@ -21,6 +21,11 @@ class APIUtils {
         api: provider.config(btcNetwork),
         service: BitcoinHTTPService(provider));
     return BitcoinExplorerApiProvider(provider: api, network: network);
+  }
+
+  static String getProviderIdentifier(String? identifier) {
+    identifier ??= BlockchainUtils.generateRandomString(8);
+    return identifier;
   }
 
   static BitcoinElectrumClient _buildBitcoinElectrumProvider(
@@ -119,43 +124,57 @@ class APIUtils {
         network: network);
   }
 
-  static NetworkClient? createApiClient<T extends NetworkClient>(
-      WalletNetwork network,
+  static T? createApiClient<T extends NetworkClient>(WalletNetwork network,
       {APIProvider? service}) {
     APIProvider? serviceProvider = network.getProvider(service);
     serviceProvider ??=
         ProvidersConst.getDefaultService(network, service: service);
     if (serviceProvider == null) return null;
+    NetworkClient? client;
     switch (network.type) {
       case NetworkType.bitcoinAndForked:
       case NetworkType.bitcoinCash:
-        return buildBitcoinApiPorivder(serviceProvider, network.toNetwork());
+        client = buildBitcoinApiPorivder(serviceProvider, network.toNetwork());
+        break;
       case NetworkType.cardano:
-        return buildCardanoProvider(
+        client = buildCardanoProvider(
             serviceProvider.toProvider(), network.toNetwork());
+        break;
       case NetworkType.cosmos:
-        return buildTendermintProvider(
+        client = buildTendermintProvider(
             serviceProvider.toProvider(), network.toNetwork());
+        break;
       case NetworkType.ethereum:
-        return buildEthereumProvider(serviceProvider.toProvider(), network);
+        client = buildEthereumProvider(serviceProvider.toProvider(), network);
+        break;
       case NetworkType.xrpl:
-        return buildRippleProvider(
+        client = buildRippleProvider(
             serviceProvider.toProvider(), network.toNetwork());
+        break;
       case NetworkType.solana:
-        return buildSoalanaProvider(
+        client = buildSoalanaProvider(
             serviceProvider.toProvider(), network.toNetwork());
+        break;
       case NetworkType.tron:
-        return buildTronProvider(
+        client = buildTronProvider(
             serviceProvider.toProvider(), network.toNetwork());
+        break;
       case NetworkType.ton:
-        return buildTonApiProvider(
+        client = buildTonApiProvider(
             serviceProvider.toProvider(), network.toNetwork());
+        break;
       case NetworkType.polkadot:
       case NetworkType.kusama:
-        return builSibstrateClient(
+        client = builSibstrateClient(
             serviceProvider.toProvider(), network.toNetwork());
+        break;
       default:
         throw WalletExceptionConst.incorrectNetwork;
     }
+
+    if (client is! T) {
+      return null;
+    }
+    return client;
   }
 }

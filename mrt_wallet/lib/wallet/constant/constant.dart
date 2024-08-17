@@ -6,3 +6,4 @@ export 'networks/solana.dart';
 export 'networks/ton.dart';
 export 'networks/substrate.dart';
 export 'tags/constant.dart';
+export 'chain/const.dart';

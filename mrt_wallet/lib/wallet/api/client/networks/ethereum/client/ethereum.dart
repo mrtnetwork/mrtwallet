@@ -1,17 +1,14 @@
 import 'package:blockchain_utils/exception/exceptions.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ethereum/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
-import 'package:mrt_wallet/wallet/models/account/address/core/address.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/networks.dart';
-import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wallet/models/token/core/core.dart';
-import 'package:mrt_wallet/wallet/models/token/tokens/erc20.dart';
-import 'package:mrt_wallet/wallet/models/token/tokens/trc20.dart';
-import 'package:mrt_wallet/wallet/models/token/token/token.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
+import 'package:mrt_wallet/wallet/web3/networks/ethereum/etherum.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/wroker/utils/solidity/solidity.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solidity/address/core.dart';
 
@@ -23,6 +20,31 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
   @override
   BaseServiceProtocol<EthereumAPIProvider> get service =>
       provider.rpc as BaseServiceProtocol<EthereumAPIProvider>;
+
+  bool get supportSubscribe => service.protocol == ServiceProtocol.websocket;
+
+  void addSubscriptionListener(ONETHSubsribe listener) {
+    if (service.protocol != ServiceProtocol.websocket) {
+      throw WalletExceptionConst.ethSubscribe;
+    }
+    (service as EthereumWebsocketService).addSubscriptionListener(listener);
+  }
+
+  void removeSubscriptionListener(ONETHSubsribe listener) {
+    if (service.protocol != ServiceProtocol.websocket) {
+      throw WalletExceptionConst.ethSubscribe;
+    }
+    (service as EthereumWebsocketService).removeSubscriptionListener(listener);
+  }
+
+  Future<String> subscribe({List<dynamic> params = const []}) async {
+    if (service.protocol != ServiceProtocol.websocket) {
+      throw WalletExceptionConst.ethSubscribe;
+    }
+    final result =
+        await provider.requestDynamic(EthereumMethods.subscribe.value, params);
+    return result;
+  }
 
   @override
   Future<void> updateBalance(IEthAddress account) async {
@@ -76,13 +98,37 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
     return txID;
   }
 
+  Future<bool> isContract(SolidityAddress address) async {
+    final code = await provider.request(RPCGetCode(address: address.toHex()));
+    return code != null;
+  }
+
   Future<Token?> getErc20Details(SolidityAddress contractAddress) async {
     try {
-      final symbol = await provider.request(RPCERC20Symbol(contractAddress));
-      if (symbol == null) return null;
-      final decimal = await provider.request(RPCERC20Decimal(contractAddress));
+      final decimal = await provider.request(RPCERC20Decimal(contractAddress,
+          blockNumber: BlockTagOrNumber.pending));
       if (decimal == null) return null;
-      return Token(name: symbol, symbol: symbol, decimal: decimal);
+      String? name;
+      String? symbol;
+
+      final symbolQuery = await MethodUtils.call(() async =>
+          await provider.request(RPCERC20Symbol(contractAddress,
+              blockNumber: BlockTagOrNumber.pending)));
+      if (symbolQuery.hasResult) {
+        symbol = symbolQuery.result;
+      }
+      final nameQuery = await MethodUtils.call(() async =>
+          await provider.request(RPCERC20Name(contractAddress,
+              blockNumber: BlockTagOrNumber.pending)));
+      if (nameQuery.hasResult) {
+        name = nameQuery.result;
+      }
+      name ??= symbol;
+      symbol ??= name;
+      return Token(
+          name: name ?? "Unknown",
+          symbol: symbol ?? "Unknown",
+          decimal: decimal);
     } on RPCError {
       return null;
     }
@@ -95,7 +141,7 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
     token.updateBalance(balance);
   }
 
-  Future<void> updateAccountTokensBalance(CryptoAddress account) async {
+  Future<void> updateAccountTokensBalance(ChainAccount account) async {
     if (account is! IEthAddress && account is! ITronAddress) return;
     for (final i in account.tokens) {
       try {
@@ -104,6 +150,53 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
         continue;
       }
     }
+  }
+
+  Future<EthereumTransactionDataInfo> getTransactionContractInfo(
+      {required SolidityAddress account,
+      required SolidityAddress contractAddress,
+      required EthereumChain chain,
+      required List<int> data}) async {
+    final selector = SolidityContractUtils.getSelector(data);
+    if (selector == null) {
+      return SolidityUnknownMethodInfo(selector: data);
+    }
+    final token = await getAccountERC20Token(account, contractAddress);
+    EthereumTransactionDataInfo? method;
+    if (token != null) {
+      if (BytesUtils.bytesEqual(
+          selector, SolidityContractUtils.erc20Transfer.selector)) {
+        final decodeTransfer = MethodUtils.nullOnException(() {
+          return SolidityContractUtils.decodeErc20Transfer(data);
+        });
+        if (decodeTransfer != null) {
+          return SolidityERC20TransferMethodInfo(
+              selector: selector,
+              token: token,
+              to: chain.getReceiptAddress(decodeTransfer.a.address) ??
+                  ReceiptAddress<ETHAddress>(
+                      view: decodeTransfer.a.address,
+                      networkAddress: decodeTransfer.a),
+              value: IntegerBalance(decodeTransfer.b, token.token.decimal!));
+        }
+        final erc20Data = await FileUtils.loadAssetText(APPConst.assetErc20Abi);
+        final abi = ContractABI.fromJson(StringUtils.toJson<List>(erc20Data)
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList());
+        method = MethodUtils.nullOnException(() {
+          final method = abi.findFunctionFromSelector(selector);
+          final decodeInput = method?.decodeInput(data);
+          if (decodeInput != null) {
+            return SolidityNameAndInputValues(
+                selector: selector, inputs: decodeInput, name: method!.name);
+          }
+          return null;
+        });
+        method ??= SolidityERC20MethodInfo(selector: selector, token: token);
+      }
+    }
+    method ??= SolidityUnknownMethodInfo(selector: selector);
+    return method;
   }
 
   Future<SolidityToken?> getAccountERC20Token(
@@ -122,14 +215,65 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
         contractAddress: contractAddress as ETHAddress);
   }
 
+  Future<Web3EthereumTransactionRequestInfos> getWeb3TransactionInfos(
+      {required IEthAddress from,
+      required Web3EthreumSendTransaction transaction,
+      required EthereumChain chain}) async {
+    final ReceiptAddress<ETHAddress>? destination = transaction.to != null
+        ? chain.getReceiptAddress(transaction.to!.address) ??
+            ReceiptAddress<ETHAddress>(
+                view: transaction.to!.address, networkAddress: transaction.to!)
+        : null;
+    bool isSmartContract = false;
+    EthereumTransactionDataInfo? contractInfos;
+    if (transaction.to != null) {
+      final bool isSmartContract = await isContract(transaction.to!);
+      if (!isSmartContract) {
+        return Web3EthereumTransactionRequestInfos(
+            isContract: isSmartContract,
+            transaction: transaction,
+            destination: destination,
+            contractInfo: transaction.data.isEmpty
+                ? null
+                : UnknownTransactionData.fromBytes(transaction.data));
+      }
+      contractInfos = await getTransactionContractInfo(
+          account: from.networkAddress,
+          contractAddress: transaction.to!,
+          data: transaction.data,
+          chain: chain);
+    }
+    if (transaction.to == null && transaction.data.isNotEmpty) {
+      contractInfos ??= SolidityCreationContract();
+    } else if (transaction.data.isNotEmpty) {
+      contractInfos ??= UnknownTransactionData.fromBytes(transaction.data);
+    }
+
+    return Web3EthereumTransactionRequestInfos(
+      isContract: isSmartContract,
+      transaction: transaction,
+      destination: destination,
+      contractInfo: contractInfos,
+    );
+  }
+
+  Future<BigInt> getChainId() async {
+    return await provider.request(RPCGetChainId());
+  }
+
+  Future<dynamic> dynamicCall(String method, dynamic params) async {
+    return await provider.requestDynamic(method, params);
+  }
+
   @override
   Future<bool> onInit() async {
     if (network.type == NetworkType.ethereum) {
-      final result = await MethodUtils.nullOnException(() async {
+      final result = await MethodUtils.call(() async {
         final BigInt chainId = await provider.request(RPCGetChainId());
         return chainId;
       });
-      return result == (network as WalletEthereumNetwork).coinParam.chainId;
+      return result.hasResult &&
+          result.result == (network as WalletEthereumNetwork).coinParam.chainId;
     }
     return false;
   }

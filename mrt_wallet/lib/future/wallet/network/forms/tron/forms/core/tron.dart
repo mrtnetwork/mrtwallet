@@ -15,7 +15,7 @@ abstract class TronTransactionForm implements TransactionForm {
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
-      required NetworkAccountCore account});
+      required TronChain account});
 
   TronBaseContract toContract({required ITronAddress owner});
 }

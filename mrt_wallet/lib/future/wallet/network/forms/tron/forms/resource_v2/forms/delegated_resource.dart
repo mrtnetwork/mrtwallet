@@ -5,6 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
 import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronDelegatedResourceV2Form extends TronTransactionForm {
   @override
@@ -149,7 +150,7 @@ class TronDelegatedResourceV2Form extends TronTransactionForm {
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
-      required NetworkAccountCore account}) async {
+      required TronChain account}) async {
     final delegated = await provider.getMaxDelegatedEnergyAndBandwidth(address);
     energy = delegated.$1;
     bandWidthResource = delegated.$2;

@@ -3,7 +3,7 @@ import 'package:mrt_wallet/wallet/api/client/networks/substrate/models/models/fe
 import 'package:mrt_wallet/wallet/api/client/networks/substrate/repository/substrate_repository.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/substrate.dart';
 import 'package:mrt_wallet/wallet/constant/networks/substrate.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/substrate/substrate.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/substrate/substrate.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/services/core/base_service.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -75,10 +75,6 @@ class SubstrateClient
   }
 
   Future<MetadataApi?> _loadApi() async {
-    // final localApi = await super.loadApi();
-    // if (localApi != null) {
-    //   return localApi;
-    // }
     final versions =
         await provider.request(const SubstrateRPCRuntimeMetadataGetVersions());
     final versionIds = versions..sort((a, b) => b.compareTo(a));
@@ -90,20 +86,12 @@ class SubstrateClient
       }
     }
     api ??= await provider.request(const SubstrateGetStateApi());
-    if (api != null) {
-      await writeMetadata(api.$2);
-    }
     return api?.$1;
   }
 
   Future<SubstrateBlockHash> _loadGenesis() async {
-    // final localGenesis = await super.loadGenesis();
-    // if (localGenesis != null) {
-    //   return SubstrateBlockHash.hash(localGenesis);
-    // }
     final genesis =
         await provider.request(const SubstrateRPCChainGetBlockHash(number: 0));
-    await writeGenesis(genesis);
     return SubstrateBlockHash.hash(genesis);
   }
 

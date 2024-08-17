@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
+import 'package:mrt_wallet/future/constant/constant.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -8,6 +8,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 enum _MultiSigPage { account, info }
 
@@ -18,30 +19,18 @@ class SetupRippleMutlisigAddressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress>(
-      title: "setup_address".tr,
-      childBulder: (wallet, account, address, network, switchRippleAccount) {
-        return _SetupRippleMutlisigAddressView(
-          account: account.account,
-          provider: account.provider()!,
-          wallet: wallet,
-          network: account.network as WalletXRPNetwork,
-        );
-      },
+    return MaterialPageView(
+      child: ScaffolPageView(
+        appBar: AppBar(title: Text("multi_sig_addr".tr)),
+        child: _SetupRippleMutlisigAddressView(context.getArgruments()),
+      ),
     );
   }
 }
 
 class _SetupRippleMutlisigAddressView extends StatefulWidget {
-  const _SetupRippleMutlisigAddressView(
-      {required this.account,
-      required this.provider,
-      required this.wallet,
-      required this.network});
-  final NetworkAccountCore account;
-  final RippleClient provider;
-  final WalletProvider wallet;
-  final WalletXRPNetwork network;
+  const _SetupRippleMutlisigAddressView(this.account);
+  final RippleChain account;
   @override
   State<_SetupRippleMutlisigAddressView> createState() =>
       _SetupRippleMutlisigAddressViewState();
@@ -49,6 +38,7 @@ class _SetupRippleMutlisigAddressView extends StatefulWidget {
 
 class _SetupRippleMutlisigAddressViewState
     extends State<_SetupRippleMutlisigAddressView> with SafeState {
+  late WalletProvider wallet;
   final Map<AccountObjectSignerEntry, RippleMultiSigSignerDetais?> signers = {};
   int sumOfWeight = 0;
   bool get sigerListIsReady => sumOfWeight >= signerList!.signerQuorum;
@@ -99,13 +89,16 @@ class _SetupRippleMutlisigAddressViewState
   XRPAccountObjectEntry? signerList;
   bool get hasRegularKey => pickedRegular != null;
   RippleMultiSignatureAddress? pickedRegular;
+  WalletXRPNetwork get network => widget.account.network;
 
   void onAccountInformation() async {
     if (address == null || progressKey.inProgress) return;
     progressKey.progressText("retrieving_account_information".tr);
     final result = await MethodUtils.call(() async {
-      final account = await widget.provider.getAccountRegularAndSignerList(
-          RippleUtils.ensureClassicAddress(address!.view));
+      final account = await widget.account
+          .provider()!
+          .getAccountRegularAndSignerList(
+              RippleUtils.ensureClassicAddress(address!.view));
       return account;
     });
     if (result.hasError) {
@@ -157,13 +150,14 @@ class _SetupRippleMutlisigAddressViewState
     if (!hasRegularKey) return;
     progressKey.progressText("setup_address".tr);
     final rippleAddress = XRPAddress(address!.view);
-    final result =
-        await widget.wallet.deriveNewAccount(RippleMultisigNewAddressParam(
-      coin: widget.network.coins.first,
+    final addrParam = RippleMultiSigNewAddressParams(
+      coin: network.coins.first,
       masterAddress: rippleAddress,
       tag: rippleAddress.tag,
       multiSigAccount: pickedRegular!,
-    ));
+    );
+    final result = await wallet.wallet
+        .deriveNewAccount(newAccountParams: addrParam, chain: widget.account);
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
@@ -174,12 +168,12 @@ class _SetupRippleMutlisigAddressViewState
 
   void onSetupSignerList() async {
     progressKey.progressText("setup_address".tr);
-
+    final wallet = context.watch<WalletProvider>(StateConst.main).wallet;
     final accountParams = await MethodUtils.call(() async {
-      final rippleAddress = XRPAddress(address!.view,
-          isTestnet: !widget.network.coinParam.mainnet);
-      final newAccountParams = RippleMultisigNewAddressParam(
-        coin: widget.network.coins.first,
+      final rippleAddress =
+          XRPAddress(address!.view, isTestnet: !network.coinParam.mainnet);
+      final newAccountParams = RippleMultiSigNewAddressParams(
+        coin: network.coins.first,
         masterAddress: rippleAddress,
         tag: rippleAddress.tag,
         multiSigAccount: RippleMultiSignatureAddress(
@@ -195,7 +189,8 @@ class _SetupRippleMutlisigAddressViewState
     if (accountParams.hasError) {
       progressKey.errorText(accountParams.error!.tr);
     } else {
-      final result = await widget.wallet.deriveNewAccount(accountParams.result);
+      final result = await wallet.deriveNewAccount(
+          newAccountParams: accountParams.result, chain: widget.account);
       if (result.hasError) {
         progressKey.errorText(result.error!.tr);
       } else {
@@ -223,17 +218,23 @@ class _SetupRippleMutlisigAddressViewState
   }
 
   @override
+  void didChangeDependencies() {
+    wallet = context.watch<WalletProvider>(StateConst.main);
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: progressKey.isSuccess || !inInfoPage,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (inInfoPage) onBack();
       },
       child: PageProgress(
         key: progressKey,
         backToIdle: APPConst.oneSecoundDuration,
         initialStatus: PageProgressStatus.idle,
-        child: () => UnfocusableChild(
+        child: (c) => UnfocusableChild(
           child: Center(
             child: CustomScrollView(
               shrinkWrap: true,

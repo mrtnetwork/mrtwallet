@@ -1,5 +1,11 @@
 part of 'package:mrt_native_support/io/io_platforms.dart';
 
+class _IoPlatformConst {
+  static const String desktopEvent = "onEvent";
+  static const String webViewEvent = "webView";
+  static const String barcodeScannerEvent = "onBarcodeScanned";
+}
+
 class IoPlatformInterface extends MrtPlatformInterface {
   static const MethodChannel _methodChannel =
       MethodChannel(MrtNativeConst.channelAuthory);
@@ -15,16 +21,23 @@ class IoPlatformInterface extends MrtPlatformInterface {
   }
 
   Future<void> _methodCallHandler(MethodCall call) async {
+    final Map<String, dynamic> data;
+    try {
+      data = (call.arguments as Map).cast();
+    } catch (e) {
+      return;
+    }
     switch (call.method) {
-      case "onEvent":
+      case _IoPlatformConst.desktopEvent:
         if (Platform.isWindows || Platform.isMacOS) {
-          _desktop._methodCallHandler(call);
-          break;
+          _desktop._methodCallHandler(data);
         }
         break;
-      case "onBarcodeScanned":
-        _barcodeListener?.add(BarcodeScannerResult.fromJson(
-            Map<String, dynamic>.from(call.arguments)));
+      case _IoPlatformConst.webViewEvent:
+        webView._methodCallHandler(data);
+        break;
+      case _IoPlatformConst.barcodeScannerEvent:
+        _barcodeListener?.add(BarcodeScannerResult.fromJson(data));
         break;
       default:
     }
@@ -53,9 +66,13 @@ class IoPlatformInterface extends MrtPlatformInterface {
 
   /// ios
   @override
-  Future<Map<String, String>> readAllSecure() async {
+  Future<Map<String, String>> readAllSecure({String? prefix}) async {
     final data = await _channel
         .invokeMethod(MrtNativeConst.secureStorageMethod, {"type": "readAll"});
+    Map<String, String> values = Map<String, String>.from(data!);
+    if (prefix != null) {
+      values = values..removeWhere((k, v) => !k.startsWith(prefix));
+    }
     return Map<String, String>.from(data!);
   }
 
@@ -198,6 +215,24 @@ class IoPlatformInterface extends MrtPlatformInterface {
   @override
   Future<MRTAPPConfig> getConfig() async {
     final barcode = await hasBarcodeScanner().catchError((e) => false);
-    return MRTAPPConfig(platform: getPlatform(), hasBarcodeScanner: barcode);
+    return MRTAPPConfig(platform: platform, hasBarcodeScanner: barcode);
   }
+
+  @override
+  final WebViewIoInterface webView = WebViewIoInterface();
+  AppPlatform _getPlatform() {
+    if (Platform.isAndroid) {
+      return AppPlatform.android;
+    } else if (Platform.isIOS) {
+      return AppPlatform.ios;
+    } else if (Platform.isWindows) {
+      return AppPlatform.windows;
+    } else if (Platform.isMacOS) {
+      return AppPlatform.macos;
+    }
+    throw const MRTNativePluginException("Unknown platform.");
+  }
+
+  @override
+  late final AppPlatform platform = _getPlatform();
 }

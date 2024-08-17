@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/fee_impl.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/pages/fee_select.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class EthereumGasFeeView extends StatelessWidget {
   const EthereumGasFeeView({super.key, required this.transaction});
@@ -39,15 +39,15 @@ class EthereumGasFeeView extends StatelessWidget {
             onRemoveIcon: transaction.gasInited
                 ? const Icon(Icons.edit)
                 : const Icon(Icons.circle),
-            child: AnimatedSwitcher(
-              duration: APPConst.animationDuraion,
-              child: Row(
-                key: UniqueKey(),
-                children: [
-                  Expanded(
-                    child: transaction.gasInited
-                        ? Column(
+            child: APPAnimatedSwitcher(
+              enable: transaction.gasInited,
+              widgets: {
+                true: (c) => Row(
+                      children: [
+                        Expanded(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.max,
                             children: [
                               if (transaction.network.coinParam.supportEIP1559)
                                 Text(transaction.feeSpeed.value.tr,
@@ -57,14 +57,15 @@ class EthereumGasFeeView extends StatelessWidget {
                                   balance: transaction.currentEIP1559Fee!.fee,
                                   style: context.textTheme.titleLarge)
                             ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [Text("retrieving_network_condition".tr)],
                           ),
-                  ),
-                ],
-              ),
+                        ),
+                      ],
+                    ),
+                false: (c) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [Text("retrieving_network_condition".tr)],
+                    )
+              },
             )),
       ],
     );

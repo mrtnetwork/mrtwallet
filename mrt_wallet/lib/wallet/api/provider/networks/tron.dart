@@ -1,21 +1,24 @@
 import 'package:blockchain_utils/cbor/core/cbor.dart';
 import 'package:blockchain_utils/cbor/types/cbor_tag.dart';
 import 'package:blockchain_utils/cbor/types/list.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
+import 'package:mrt_wallet/wallet/api/utils/utils.dart';
 
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'ethereum.dart';
 
 class TronAPIProvider extends APIProvider {
   const TronAPIProvider({
-    required String serviceName,
-    required String websiteUri,
+    required super.serviceName,
+    required super.websiteUri,
+    super.protocol = ServiceProtocol.http,
+    super.auth,
+    required super.identifier,
     required this.httpNodeUri,
     required this.solidityProvider,
-    ProviderAuth? auth,
-  }) : super(serviceName, websiteUri, ServiceProtocol.http, auth);
+  });
   final String httpNodeUri;
   final EthereumAPIProvider solidityProvider;
 
@@ -33,7 +36,8 @@ class TronAPIProvider extends APIProvider {
         auth: cbor.getCborTag(3)?.to<ProviderAuth, CborTagValue>(
             (e) => ProviderAuth.fromCborBytesOrObject(obj: e)),
         solidityProvider:
-            EthereumAPIProvider.fromCborBytesOrObject(obj: cbor.getCborTag(4)));
+            EthereumAPIProvider.fromCborBytesOrObject(obj: cbor.getCborTag(4)),
+        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(5)));
   }
 
   @override
@@ -44,7 +48,8 @@ class TronAPIProvider extends APIProvider {
           websiteUri,
           httpNodeUri,
           auth?.toCbor(),
-          solidityProvider.toCbor()
+          solidityProvider.toCbor(),
+          identifier
         ]),
         CborTagsConst.tronApiServiceProvider);
   }

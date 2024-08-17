@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:on_chain/on_chain.dart';
 
 mixin CborSerializable {
   CborTagValue toCbor();
@@ -77,12 +78,39 @@ mixin CborSerializable {
     }
   }
 }
+typedef OnKeyValue<T> = T Function(CborObject);
+
+extension ExtractCborMap on CborMapValue {
+  Map<K, V> toMap<K, V>() {
+    try {
+      final Map<CborObject, CborObject> cborMap = value.cast();
+      final entrries = cborMap.entries
+          .map((e) => MapEntry<K, V>(e.key.getValue(), e.value.getValue()));
+      return Map<K, V>.fromEntries(entrries);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Map<K, V> generateMap<K, V>(OnKeyValue<K> onKey, OnKeyValue<V> onValue) {
+    final Map<CborObject, CborObject> cborMap = value.cast();
+    final entrries = cborMap.entries
+        .map((e) => MapEntry<K, V>(onKey(e.key), onValue(e.value)));
+    return Map<K, V>.fromEntries(entrries);
+  }
+}
 
 extension ExtractCborList on CborListValue {
   T elementAt<T>(int index) {
     if (index > value.length - 1) return null as T;
     final cborValue = value[index];
     final dynamic v;
+    if (T == CborMapValue) {
+      if (cborValue is CborMapValue) {
+        return cborValue as T;
+      }
+      return null as T;
+    }
     if (cborValue is CborObject) {
       v = cborValue.value;
     } else {
@@ -90,6 +118,10 @@ extension ExtractCborList on CborListValue {
     }
     if (v is! T) return null as T;
     return v;
+  }
+
+  List<T> cast<T>() {
+    return [for (int i = 0; i < value.length; i++) elementAt<T>(i)];
   }
 
   CborTagValue? getCborTag(int index) {
@@ -146,11 +178,11 @@ extension ExtractCborList on CborListValue {
   }
 }
 
-extension QuickCbor on CborObject {
+extension QuickCbor on CborTagValue {
   /// Converts the value of the [CborObject] to the specified type [E] using the provided function [toe].
   ///
   /// Throws a [WalletException] if the value cannot be converted to type [T].
-  E to<E, T>(E Function(T e) toe) {
+  E to<E, T extends CborObject>(E Function(CborObject e) toe) {
     if (this is T) {
       return toe(this as T);
     }

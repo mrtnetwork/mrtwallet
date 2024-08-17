@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/external/coingeko/coingeko.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class CoingeckoCoin with CborSerializable, JsonSerialization {

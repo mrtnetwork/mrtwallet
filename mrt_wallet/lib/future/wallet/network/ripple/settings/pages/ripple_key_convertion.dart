@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/worker.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 enum _KeyType {
   seed,
@@ -21,9 +22,9 @@ class RippleKeyConversionView extends StatelessWidget {
   const RippleKeyConversionView({super.key});
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress?>(
+    return NetworkAccountControllerView<RippleChain>(
       title: "ripple_key_conversion".tr,
-      childBulder: (wallet, chain, address, sm, switchAccount) {
+      childBulder: (wallet, chain, switchAccount) {
         return _RippleKeyConversionView(chain.network.toNetwork());
       },
     );
@@ -102,7 +103,7 @@ class __RippleKeyConversionViewState extends State<_RippleKeyConversionView>
     }
   }
 
-  void onBackButton(bool didPop) {
+  void onBackButton(bool didPop, _) {
     if (!didPop) {
       generatedKey = null;
       key = "";
@@ -114,11 +115,11 @@ class __RippleKeyConversionViewState extends State<_RippleKeyConversionView>
   Widget build(BuildContext context) {
     return PopScope(
       canPop: generatedKey == null,
-      onPopInvoked: onBackButton,
+      onPopInvokedWithResult: onBackButton,
       child: PageProgress(
         key: progressKey,
         backToIdle: APPConst.oneSecoundDuration,
-        child: () => ConstraintsBoxView(
+        child: (c) => ConstraintsBoxView(
             padding: WidgetConstant.paddingHorizontal20,
             child: Form(
               key: formKey,

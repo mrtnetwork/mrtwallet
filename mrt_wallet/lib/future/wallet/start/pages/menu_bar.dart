@@ -4,12 +4,13 @@ import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class AccountMenuButtonView extends StatelessWidget {
   const AccountMenuButtonView({super.key, required this.wallet});
   final WalletProvider wallet;
-  ChainHandler get chain => wallet.chain;
-  CryptoAddress get account => chain.account.address;
+  Chain get chain => wallet.wallet.chain;
+  ChainAccount get account => chain.address;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +61,7 @@ class AccountMenuButtonView extends StatelessWidget {
                       style: context.textTheme.bodyMedium,
                     ),
                     CoinPriceView(
-                      account: chain.account.address,
+                      account: chain.address,
                       style: context.textTheme.titleMedium,
                       token: chain.network.coinParam.token,
                       enableMarketPrice: true,
@@ -80,8 +81,7 @@ class AccountMenuButtonView extends StatelessWidget {
 class AccountAppbarPopupMenu extends StatelessWidget {
   const AccountAppbarPopupMenu(this.wallet, {Key? key}) : super(key: key);
   final WalletProvider wallet;
-  ChainHandler get chain => wallet.chain;
-  CryptoAddress get account => chain.account.address;
+  Chain get chain => wallet.wallet.chain;
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<int>(
@@ -90,18 +90,19 @@ class AccountAppbarPopupMenu extends StatelessWidget {
           switch (v) {
             case 0:
               context.to(PageRouter.exportPrivateKey,
-                  argruments: wallet.chain.account.address);
+                  argruments: chain.address);
               break;
             case 1:
-              context.to(PageRouter.showPublicKey,
-                  argruments: wallet.chain.account.address);
+              context.to(PageRouter.showPublicKey, argruments: chain.address);
               break;
             case 2:
+              final account = chain;
+              final address = chain.address;
               context
                   .openSliverBottomSheet<String>(
                     "account_name".tr,
                     child: StringWriterView(
-                      defaultValue: wallet.chain.account.address.accountName,
+                      defaultValue: address.accountName,
                       regExp: APPConst.accountNameRegExp,
                       title: PageTitleSubtitle(
                           title: "setup_or_update_account_name".tr,
@@ -117,16 +118,15 @@ class AccountAppbarPopupMenu extends StatelessWidget {
                       label: "account_name".tr,
                     ),
                   )
-                  .then((value) => wallet.setupAccountName(
-                      value, wallet.chain.account.address));
+                  .then((value) => wallet.wallet.setupAccountName(
+                      name: value, account: account, address: address));
               break;
             case 3:
-              context.to(PageRouter.removeAccount,
-                  argruments: wallet.chain.account.address);
+              context.to(PageRouter.removeAccount, argruments: chain);
               break;
             case 4:
               UriUtils.lunch(chain.network.coinParam
-                  .getAccountExplorer(account.address.toAddress));
+                  .getAccountExplorer(chain.address.address.toAddress));
               break;
             case 5:
               UriUtils.lunch(chain.network.coinParam.marketUri!);
@@ -181,8 +181,8 @@ class AccountAppbarPopupMenu extends StatelessWidget {
               PopupMenuItem<int>(
                 value: 5,
                 child: AppListTile(
-                  trailing: const CircleAssetsImgaeView(CoinGeckoUtils.logo,
-                      radius: 12),
+                  trailing:
+                      CircleAssetsImgaeView(CoinGeckoUtils.logo, radius: 12),
                   title: Text("CoinGecko".tr,
                       style: context.textTheme.labelMedium),
                 ),

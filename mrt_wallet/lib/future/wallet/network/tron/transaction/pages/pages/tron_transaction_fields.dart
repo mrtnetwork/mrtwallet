@@ -15,6 +15,7 @@ import 'undelegated_resource.dart';
 import 'unfreez_balance_v2.dart';
 import 'update_account.dart';
 import 'update_account_permission_feilds.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class TronTransactionFieldsView extends StatelessWidget {
   const TronTransactionFieldsView({super.key, this.field});
@@ -23,138 +24,136 @@ class TronTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<TronTransactionForm> validator =
         field ?? context.getArgruments();
-    return NetworkAccountControllerView<WalletTronNetwork, ITronAddress>(
+    return NetworkAccountControllerView<TronChain>(
       title: validator.validator.name.tr,
-      childBulder: (wallet, chain, address, network, switchAccount) =>
-          MrtViewBuilder<TronTransactionStateController>(
-              controller: () => TronTransactionStateController(
-                  walletProvider: wallet,
-                  account: chain.account,
-                  network: network,
-                  apiProvider: chain.provider()!,
-                  address: address,
-                  validator: validator),
-              builder: (controller) {
-                return PageProgress(
-                  key: controller.progressKey,
-                  initialStatus: PageProgressStatus.progress,
-                  initialWidget: ProgressWithTextView(
-                      text: "retrieving_network_condition".tr),
-                  backToIdle: APPConst.oneSecoundDuration,
-                  child: () => CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: ConstraintsBoxView(
-                          padding: WidgetConstant.padding20,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("account".tr,
-                                  style: context.textTheme.titleLarge),
-                              WidgetConstant.height8,
-                              ContainerWithBorder(
-                                onRemoveIcon: const Icon(Icons.edit),
-                                child: AddressDetailsView(
-                                    address: controller.owner,
-                                    key: ValueKey<ITronAddress?>(
-                                        controller.owner)),
-                                onRemove: () {
-                                  context
-                                      .openSliverBottomSheet<ITronAddress>(
-                                        "switch_account".tr,
-                                        child: SwitchOrSelectAccountView(
-                                          account: controller.account,
-                                          showMultiSig: true,
-                                        ),
-                                        minExtent: 0.5,
-                                        maxExtend: 0.9,
-                                        initialExtend: 0.7,
-                                        centerContent: false,
-                                      )
-                                      .then(switchAccount);
-                                },
-                              ),
-                              WidgetConstant.height20,
-                              _TronTransactionFields(
-                                  account: chain.account,
-                                  validator: controller.validator,
-                                  address: controller.address),
-                              WidgetConstant.height20,
-                              Text("setup_memo".tr,
-                                  style: context.textTheme.titleMedium),
-                              WidgetConstant.height8,
-                              ContainerWithBorder(
-                                  onRemoveIcon: controller.hasMemo
-                                      ? const Icon(Icons.remove_circle)
-                                      : const Icon(Icons.add_box),
-                                  onRemove: () {
-                                    controller.onTapMemo((s) async {
-                                      final result = await context
-                                          .openSliverBottomSheet<String>(
-                                        "transaction_memo".tr,
-                                        child: StringWriterView(
-                                          defaultValue: controller.memo,
-                                          title: PageTitleSubtitle(
-                                              title: "setup_memo".tr,
-                                              body: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text("memo_desc1".tr),
-                                                  WidgetConstant.height8,
-                                                  Text("empty_desc".tr),
-                                                ],
-                                              )),
-                                          buttonText: "setup_memo".tr,
-                                          label: "memo".tr,
-                                        ),
-                                      );
-                                      return result;
-                                    });
-                                  },
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: controller.hasMemo
-                                            ? Text(controller.memo ?? "")
-                                            : Text("tap_to_add_memo".tr,
-                                                style: context
-                                                    .textTheme.labelLarge),
-                                      ),
-                                    ],
-                                  )),
-                              WidgetConstant.height20,
-                              TronFeeDetailsView(transaction: controller),
-                              InsufficientBalanceErrorView(
-                                verticalMargin:
-                                    WidgetConstant.paddingVertical10,
-                                balance: controller.remindAmount.$1,
-                                token: controller.remindAmount.$2,
-                              ),
-                              ErrorTextContainer(
-                                  error: controller.error,
-                                  verticalMargin:
-                                      WidgetConstant.paddingVertical10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  FixedElevatedButton(
-                                    padding: WidgetConstant.paddingVertical20,
-                                    onPressed: controller.trIsReady
-                                        ? controller.sedTransaction
-                                        : null,
-                                    child: Text("send_transaction".tr),
+      childBulder: (wallet, chain, switchAccount) => MrtViewBuilder<
+              TronTransactionStateController>(
+          repositoryId: StateConst.tron,
+          controller: () => TronTransactionStateController(
+              walletProvider: wallet,
+              account: chain,
+              network: chain.network,
+              apiProvider: chain.provider()!,
+              address: chain.address,
+              validator: validator),
+          builder: (controller) {
+            return PageProgress(
+              key: controller.progressKey,
+              initialStatus: PageProgressStatus.progress,
+              initialWidget:
+                  ProgressWithTextView(text: "retrieving_network_condition".tr),
+              backToIdle: APPConst.oneSecoundDuration,
+              child: (c) => CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: ConstraintsBoxView(
+                      padding: WidgetConstant.padding20,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("account".tr,
+                              style: context.textTheme.titleLarge),
+                          WidgetConstant.height8,
+                          ContainerWithBorder(
+                            onRemoveIcon: const Icon(Icons.edit),
+                            child: AddressDetailsView(
+                                address: controller.owner,
+                                key: ValueKey<ITronAddress?>(controller.owner)),
+                            onRemove: () {
+                              context
+                                  .openSliverBottomSheet<ITronAddress>(
+                                    "switch_account".tr,
+                                    child: SwitchOrSelectAccountView(
+                                      account: controller.account,
+                                      showMultiSig: true,
+                                    ),
+                                    minExtent: 0.5,
+                                    maxExtend: 0.9,
+                                    initialExtend: 0.7,
+                                    centerContent: false,
                                   )
+                                  .then(switchAccount);
+                            },
+                          ),
+                          WidgetConstant.height20,
+                          _TronTransactionFields(
+                              account: chain,
+                              validator: controller.validator,
+                              address: controller.address),
+                          WidgetConstant.height20,
+                          Text("setup_memo".tr,
+                              style: context.textTheme.titleMedium),
+                          WidgetConstant.height8,
+                          ContainerWithBorder(
+                              onRemoveIcon: controller.hasMemo
+                                  ? const Icon(Icons.remove_circle)
+                                  : const Icon(Icons.add_box),
+                              onRemove: () {
+                                controller.onTapMemo((s) async {
+                                  final result = await context
+                                      .openSliverBottomSheet<String>(
+                                    "transaction_memo".tr,
+                                    child: StringWriterView(
+                                      defaultValue: controller.memo,
+                                      title: PageTitleSubtitle(
+                                          title: "setup_memo".tr,
+                                          body: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text("memo_desc1".tr),
+                                              WidgetConstant.height8,
+                                              Text("empty_desc".tr),
+                                            ],
+                                          )),
+                                      buttonText: "setup_memo".tr,
+                                      label: "memo".tr,
+                                    ),
+                                  );
+                                  return result;
+                                });
+                              },
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: controller.hasMemo
+                                        ? Text(controller.memo ?? "")
+                                        : Text("tap_to_add_memo".tr,
+                                            style:
+                                                context.textTheme.labelLarge),
+                                  ),
                                 ],
+                              )),
+                          WidgetConstant.height20,
+                          TronFeeDetailsView(transaction: controller),
+                          InsufficientBalanceErrorView(
+                            verticalMargin: WidgetConstant.paddingVertical10,
+                            balance: controller.remindAmount.$1,
+                            token: controller.remindAmount.$2,
+                          ),
+                          ErrorTextContainer(
+                              error: controller.error,
+                              verticalMargin: WidgetConstant.paddingVertical10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              FixedElevatedButton(
+                                padding: WidgetConstant.paddingVertical20,
+                                onPressed: controller.trIsReady
+                                    ? controller.sedTransaction
+                                    : null,
+                                child: Text("send_transaction".tr),
                               )
                             ],
-                          ),
-                        ),
+                          )
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                );
-              }),
+                ],
+              ),
+            );
+          }),
     );
   }
 }
@@ -163,7 +162,7 @@ class _TronTransactionFields extends StatelessWidget {
   const _TronTransactionFields(
       {required this.validator, required this.account, required this.address});
   final LiveTransactionForm<TronTransactionForm> validator;
-  final NetworkAccountCore account;
+  final TronChain account;
   final ITronAddress address;
   @override
   Widget build(BuildContext context) {
@@ -209,7 +208,7 @@ class _TronTransactionTransferFields extends StatelessWidget {
   const _TronTransactionTransferFields(
       {required this.field, required this.account});
   final TronTransferForm field;
-  final NetworkAccountCore account;
+  final TronChain account;
   @override
   Widget build(BuildContext context) {
     return Column(

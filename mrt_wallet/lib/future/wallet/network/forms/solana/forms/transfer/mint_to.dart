@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/solana.dart';
 import 'package:on_chain/solana/solana.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class SolanaMintToForm extends SolanaTransactionForm {
   Token _token =

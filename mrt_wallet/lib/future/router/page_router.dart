@@ -37,7 +37,6 @@ class PageRouter {
   static const String cardanoTransaction = "/cardano/transaction";
   static const String cosmosTransaction = "/cosmos/transaction";
 
-  // static const String setupRippleAddress = "/ripple/setup_address";
   static const String setupGenericAddress = "/networks/setup_address";
 
   static const String setupBitcoinMultsig = "/bitcoin/setup_multisig_address";
@@ -63,7 +62,9 @@ class PageRouter {
 
   /// importnetworks
   static const String importEthereumNetwork = "/networks/import";
-  static const String editEvmNetwork = "/networks/edit";
+  // static const String editEvmNetwork = "/networks/edit";
+  static const String updateEthereumProvider = "/networks/ethereum/providers";
+
   static const String updateElectrumProviders = "/networks/bitcoin/providers";
   static const String editSolanaNetwork = "/networks/solana/providers";
 
@@ -77,6 +78,11 @@ class PageRouter {
   static const String importJettons = "ton/import_jettons";
 
   static const String barcodeScanner = "barcode_scanner";
+
+  /// web3
+  static const String web3Ethereum = "web3/ethereum";
+
+  static const String webview = "web/";
 
   static Widget _page(String? name) {
     switch (name) {
@@ -141,8 +147,7 @@ class PageRouter {
         return const TronTransactionFieldsView();
       case importEthereumNetwork:
         return const ImportEthereumNetwork();
-      case editEvmNetwork:
-        return const EditEthereumNetwork();
+
       case updateElectrumProviders:
         return const ImportElectrumProviderView();
       case importSPLTokens:
@@ -173,6 +178,12 @@ class PageRouter {
         return const BarcodeScannerView();
       case substrateTransfer:
         return const SubstrateTransferTransactionView();
+      case web3Ethereum:
+        return const EthereumWeb3FieldsView();
+      case updateEthereumProvider:
+        return const UpdateEthereumProvider();
+      case webview:
+        return const WebView();
       default:
         return const HomeScreen();
     }
@@ -197,7 +208,7 @@ class PageRouter {
   static String providerDetails(WalletNetwork network) {
     switch (network.type) {
       case NetworkType.ethereum:
-        return editEvmNetwork;
+        return importEthereumNetwork;
       case NetworkType.solana:
         return editSolanaNetwork;
       default:
@@ -227,6 +238,15 @@ class PageRouter {
         return substrateTransfer;
       default:
         return rippleTransfer;
+    }
+  }
+
+  static String web3Page(WalletNetwork network) {
+    switch (network.type) {
+      case NetworkType.ethereum:
+        return web3Ethereum;
+      default:
+        throw UnimplementedError();
     }
   }
 

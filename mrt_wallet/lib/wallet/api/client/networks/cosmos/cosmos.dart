@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wroker/utils/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/services/core/base_service.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/cosmos/cosmos.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
 class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider> {
@@ -78,10 +78,10 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider> {
 
   @override
   Future<bool> onInit() async {
-    final result = await MethodUtils.nullOnException(() async {
+    final result = await MethodUtils.call(() async {
       final data = await provider.request(TendermintRequestStatus());
       return data["node_info"]["network"];
     });
-    return result != null;
+    return result.hasResult && result.result != null;
   }
 }

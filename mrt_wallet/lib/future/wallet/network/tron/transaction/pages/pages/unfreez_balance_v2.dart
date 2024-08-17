@@ -5,6 +5,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/resource_v2/forms/unfreez_balance_v2.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronUnFreezBalanceV2FieldsView extends StatelessWidget {
   const TronUnFreezBalanceV2FieldsView(
@@ -12,8 +13,8 @@ class TronUnFreezBalanceV2FieldsView extends StatelessWidget {
       required this.address,
       required this.validator,
       super.key});
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final TronChain account;
   final TronUnFreezBalanceV2Form validator;
 
   @override

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/extention/app_extentions/context.dart';
-import 'package:mrt_wallet/app/models/models/image.dart';
+import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/image/memory_image.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart' show Token;
 import 'widget_constant.dart';
 
@@ -15,9 +16,72 @@ class CircleAssetsImgaeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      backgroundImage: AssetImage(assetPath.uri),
+      backgroundImage: CacheMemoryImageProvider(assetPath),
       radius: radius,
       backgroundColor: backgroundColor,
+      onBackgroundImageError: (e, d) {},
+    );
+  }
+}
+
+class CircleAPPImageView extends StatelessWidget {
+  const CircleAPPImageView(this.image,
+      {this.onProgress,
+      this.onError,
+      this.radius = 120,
+      super.key,
+      this.onNull = "U",
+      this.imageColor});
+  final APPImage? image;
+  final double radius;
+  final String onNull;
+  final FuncWidgetContext? onProgress;
+  final FuncWidgetContext? onError;
+  final Color? imageColor;
+
+  @override
+  Widget build(BuildContext context) {
+    if (image == null) {
+      return _CircleAPPImageView(radius: radius, onNull: onNull, child: null);
+    }
+    return Image(
+        height: radius,
+        color: imageColor,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress != null && onProgress != null) {
+            return onProgress!.call(context);
+          }
+          return _CircleAPPImageView(
+              radius: radius, onNull: onNull, child: child);
+        },
+        image: CacheMemoryImageProvider(image!),
+        errorBuilder: (context, error, stackTrace) => _CircleAPPImageView(
+            radius: radius, onNull: onNull, child: onError?.call(context)));
+  }
+}
+
+class _CircleAPPImageView extends StatelessWidget {
+  const _CircleAPPImageView(
+      {this.child, required this.radius, required this.onNull});
+  final double radius;
+  final String onNull;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      backgroundColor: child != null
+          ? context.colors.transparent
+          : context.colors.primaryContainer,
+      radius: radius,
+      child: child ??
+          Text(
+            onNull,
+            style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: radius,
+                color: context.colors.onPrimaryContainer),
+          ),
     );
   }
 }
@@ -37,8 +101,9 @@ class CircleTokenImgaeView extends StatelessWidget {
           boxShadow:
               token.assetLogo != null ? [] : [WidgetConstant.circleShadow]),
       child: CircleAvatar(
-        backgroundImage:
-            token.assetLogo != null ? AssetImage(token.assetLogo!.uri) : null,
+        backgroundImage: token.assetLogo != null
+            ? CacheMemoryImageProvider(token.assetLogo!)
+            : null,
         radius: radius,
         backgroundColor: token.assetLogo != null
             ? context.colors.surface
@@ -53,6 +118,20 @@ class CircleTokenImgaeView extends StatelessWidget {
                     color: context.colors.onPrimaryContainer),
               ),
       ),
+    );
+  }
+}
+
+class APPImageProvider extends StatelessWidget {
+  final APPImage image;
+  final String? onNull;
+  const APPImageProvider(this.image, {this.onNull, super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Image(
+      image: CacheMemoryImageProvider(image),
+      errorBuilder: (context, error, stackTrace) =>
+          const Icon(Icons.broken_image),
     );
   }
 }

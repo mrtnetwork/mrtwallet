@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/global/app.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show MethodUtils, QuickContextAccsess, SafeState, Translate;
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
+import 'package:mrt_wallet/app/core.dart' show MethodUtils;
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/app/models/models/typedef.dart'
     show DynamicVoid, FutureT;
 import 'constraints_box_view.dart';
 import 'widget_constant.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class DialogView extends StatelessWidget {
   const DialogView(
@@ -29,7 +29,7 @@ class DialogView extends StatelessWidget {
         maxWidth: APPConst.dialogWidth,
         padding: WidgetConstant.padding20,
         child: ClipRRect(
-          borderRadius: WidgetConstant.border8,
+          borderRadius: WidgetConstant.border25,
           child: Material(
             color: context.colors.surface,
             child: child ??

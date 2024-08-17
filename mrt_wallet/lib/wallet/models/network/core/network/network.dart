@@ -1,10 +1,13 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/platform_interface.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/euqatable/equatable.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/wallet/api/api.dart';
 import 'package:mrt_wallet/wroker/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
@@ -15,7 +18,16 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
   abstract final int value;
   abstract final PARAMS coinParam;
   abstract final NetworkType type;
+  bool get isWalletNetwork => value >= 0;
   bool get supportCustomNode;
+  Token get token => coinParam.token;
+
+  int get coinDecimal => token.decimal!;
+
+  WalletNetwork copyWith({int? value, PARAMS? coinParam});
+  String get networkName => token.name;
+  String get networkSymbol => token.symbol;
+
   List<CryptoCoins> get coins;
   List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
 
@@ -69,11 +81,13 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
     }
   }
 
-  Token get token => coinParam.token;
-
-  int get coinDecimal => token.decimal!;
-
-  WalletNetwork copyWith({int? value, PARAMS? coinParam});
+  List<APIProvider> getAllProviders() {
+    return [
+      ...ProvidersConst.getDefaultProvider(this),
+      ...coinParam.providers.where((element) =>
+          element.protocol.platforms.contains(PlatformInterface.appPlatform)),
+    ];
+  }
 }
 
 class WalletBitcoinNetwork extends WalletNetwork<BitcoinParams> {
@@ -229,23 +243,23 @@ class WalletEthereumNetwork extends WalletNetwork<EthereumNetworkParams> {
   final int value;
   @override
   final EthereumNetworkParams coinParam;
-  final int? slip44;
+  // final int? slip44;
 
-  const WalletEthereumNetwork(this.value, this.coinParam, {this.slip44});
+  const WalletEthereumNetwork(this.value, this.coinParam);
   factory WalletEthereumNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor =
         CborSerializable.decodeCborTags(bytes, obj, CborTagsConst.evmNetwork);
-    return WalletEthereumNetwork(cbor.elementAt(0),
-        EthereumNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
-        slip44: cbor.elementAt(2));
+    return WalletEthereumNetwork(
+      cbor.elementAt(0),
+      EthereumNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
   }
   @override
   WalletEthereumNetwork copyWith(
       {int? value, EthereumNetworkParams? coinParam, int? slip44}) {
     return WalletEthereumNetwork(
-        value ?? this.value, coinParam ?? this.coinParam,
-        slip44: slip44 ?? this.slip44);
+        value ?? this.value, coinParam ?? this.coinParam);
   }
 
   @override
@@ -261,8 +275,7 @@ class WalletEthereumNetwork extends WalletNetwork<EthereumNetworkParams> {
 
   @override
   CborTagValue toCbor() {
-    return CborTagValue(
-        CborListValue.fixedLength([value, coinParam.toCbor(), slip44]),
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
         CborTagsConst.evmNetwork);
   }
 
@@ -270,6 +283,21 @@ class WalletEthereumNetwork extends WalletNetwork<EthereumNetworkParams> {
   bool get supportCustomNode => true;
   @override
   NetworkType get type => NetworkType.ethereum;
+
+  static WalletEthereumNetwork create() {
+    return WalletEthereumNetwork(
+      -1,
+      EthereumNetworkParams(
+          transactionExplorer: null,
+          addressExplorer: null,
+          defaultNetwork: false,
+          token: Token(name: "", symbol: "", decimal: 18),
+          providers: [],
+          chainId: BigInt.zero,
+          supportEIP1559: false,
+          mainnet: false),
+    );
+  }
 }
 
 class WalletTronNetwork extends WalletNetwork<TronNetworkParams> {

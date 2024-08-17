@@ -1,26 +1,29 @@
 import 'package:blockchain_utils/cbor/core/cbor.dart';
 import 'package:blockchain_utils/cbor/types/types.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
+import 'package:mrt_wallet/wallet/api/utils/utils.dart';
 
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 class TonAPIProvider extends APIProvider {
   const TonAPIProvider._({
-    required String serviceName,
-    required String websiteUri,
-    required ServiceProtocol protocol,
-    required ProviderAuth? auth,
+    required super.serviceName,
+    required super.websiteUri,
+    required super.protocol,
+    required super.auth,
+    required super.identifier,
     required this.uri,
     required this.apiType,
-  }) : super(serviceName, websiteUri, protocol, auth);
+  });
   factory TonAPIProvider({
     required String serviceName,
     required String websiteUri,
     required String uri,
     required TonApiType apiType,
+    required String identifier,
     ProviderAuth? auth,
   }) {
     return TonAPIProvider._(
@@ -29,7 +32,8 @@ class TonAPIProvider extends APIProvider {
         protocol: ServiceProtocol.fromURI(uri),
         apiType: apiType,
         uri: uri,
-        auth: auth);
+        auth: auth,
+        identifier: identifier);
   }
   final TonApiType apiType;
   final String uri;
@@ -49,7 +53,8 @@ class TonAPIProvider extends APIProvider {
         protocol: ServiceProtocol.fromID(protocolId ?? 0),
         apiType: apiType,
         auth: cbor.getCborTag(5)?.to<ProviderAuth, CborTagValue>(
-            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)));
+            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)),
+        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(6)));
   }
 
   @override
@@ -61,7 +66,8 @@ class TonAPIProvider extends APIProvider {
           uri,
           protocol.id,
           apiType.name,
-          auth?.toCbor()
+          auth?.toCbor(),
+          identifier
         ]),
         CborTagsConst.tonApiServiceProvider);
   }

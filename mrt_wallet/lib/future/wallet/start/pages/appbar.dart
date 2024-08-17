@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/share_account_view.dart';
 import 'package:mrt_wallet/future/wallet/start/pages/menu_bar.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
   final WalletProvider wallet;
   AccountPageSliverHeaderDelegate(this.wallet);
-  ChainHandler get chainAccount => wallet.chain;
-  bool get bottom => wallet.isOpen && wallet.chain.haveAddress;
+  Chain get chainAccount => wallet.wallet.chain;
+  bool get bottom => wallet.wallet.isOpen && chainAccount.haveAddress;
   PreferredSizeWidget get bottomWidget =>
       TabBar(tabs: chainAccount.services.map((e) => Tab(text: e.tr)).toList());
   final double accountSize = 150;
@@ -61,7 +61,7 @@ class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
                                         CrossAxisAlignment.center,
                                     children: [
                                       CoinPriceView(
-                                          account: chainAccount.account.address,
+                                          account: chainAccount.address,
                                           style: context.textTheme.titleLarge,
                                           token: chainAccount
                                               .network.coinParam.token),
@@ -120,7 +120,7 @@ class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
 
 class _AccountButtons extends StatelessWidget {
   const _AccountButtons(this.chainAccount);
-  final ChainHandler chainAccount;
+  final Chain chainAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +132,7 @@ class _AccountButtons extends StatelessWidget {
           onPressed: () {
             context.openSliverDialog(
                 (ctx) => ShareAccountView(
-                      address: chainAccount.account.address,
+                      address: chainAccount.address,
                       network: chainAccount.network,
                     ),
                 "address_sharing".tr);

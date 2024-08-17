@@ -2,25 +2,35 @@ part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
 // ignore: library_private_types_in_public_api
 mixin WalletsManager on _WalletCore {
-  late WalletController _controller;
-  HDWallets _wallets = HDWallets.init();
+  WalletController? _wallet;
 
-  final _crypto = IsolateCryptoWoker();
+  WalletController get _controller {
+    if (_wallet == null) {
+      throw WalletExceptionConst.walletIsNotavailable;
+    }
+    return _wallet!;
+  }
+
+  HDWallets _wallets = HDWallets.init();
 
   WalletStatus _homePageStatus = WalletStatus.setup;
   WalletStatus get homePageStatus => _homePageStatus;
-
+  bool get isSetup => _homePageStatus.isSetup;
   bool get isOpen => homePageStatus.isReady && _controller.isOpen;
-  bool get _isUnlock => homePageStatus.isReady && _controller.isUnlock;
-  bool get _isLock => homePageStatus.isReady && _controller.isLock;
-  bool get _isReadOnly => homePageStatus.isReady && _controller.isReadOnly;
+  bool get isLock => homePageStatus.isReady && _controller.isLock;
+  bool get isUnlock => homePageStatus.isReady && _controller.isUnlock;
+  bool get isReadOnly => homePageStatus.isReady && _controller.isReadOnly;
 
-  Future<void> _initWallet() async {
+  Future<void> _initWallet({bool useIsolate = true}) async {
+    crypto.init(useIsolate);
+    if (_homePageStatus != WalletStatus.setup) {
+      return;
+    }
     _wallets = await _readWallet();
     await _initPage();
   }
 
-  Future<void> _updateWallet(HDWallet wallet, bool? asDefaultWallet) async {
+  Future<void> _updateWallet(HDWallet wallet, {bool? asDefaultWallet}) async {
     _wallets.updateWallet(wallet, asDefaultWallet: asDefaultWallet);
     await _writeHdWallet(_wallets);
   }
@@ -28,13 +38,11 @@ mixin WalletsManager on _WalletCore {
   Future<void> _initPage({HDWallet? slectedWallet}) async {
     if (_wallets.hasWallet) {
       final wallet = _wallets.getInitializeWallet(name: slectedWallet?.name);
-      final controller = await WalletController._setup(wallet, _updateWallet);
-      if (_homePageStatus.isReady) {
-        /// clean up wallet
-        final currentController = _controller;
-        await currentController._dispose();
-      }
-      _controller = controller;
+      final controller =
+          await WalletController._setup(this as WalletCore, wallet);
+      final currentController = _wallet;
+      await currentController?._dispose();
+      _wallet = controller;
       _homePageStatus = WalletStatus.ready;
     } else {
       _homePageStatus = WalletStatus.setup;
@@ -45,7 +53,7 @@ mixin WalletsManager on _WalletCore {
       {required HDWallet hdWallet,
       required String password,
       required WalletUpdateInfosData walletInfos,
-      List<ChainHandler> chains = const []}) async {
+      List<Chain> chains = const []}) async {
     if (!StrUtils.isStrongPassword(password)) {
       throw WalletExceptionConst.incorrectPassword;
     }
@@ -55,11 +63,13 @@ mixin WalletsManager on _WalletCore {
         data: hdWallet._data,
         requiredPassword: walletInfos.requirmentPassword,
         locktime: walletInfos.lockTime,
-        network: 0);
+        network: 0,
+        protectWallet: walletInfos.protectWallet);
     _wallets.validateImport(updatedWallet);
-    final pw = _toWalletPassword(
-        password, BytesUtils.fromHexString(updatedWallet._checksum));
-    await _crypto.generateMasterKey(updatedWallet._data, pw);
+    final pw = await _toWalletPassword(password, updatedWallet._checksum);
+    await crypto.cryptoRequest(CryptoRequestGenerateMasterKey.fromStorage(
+        storageData: updatedWallet._data, key: pw));
+
     _wallets.setupWallet(updatedWallet, asDefault: walletInfos.asDefaultWallet);
     await _initializeWallet(updatedWallet, chains: chains);
     await _initPage(slectedWallet: updatedWallet);
@@ -67,30 +77,26 @@ mixin WalletsManager on _WalletCore {
   }
 
   Future<void> _initializeWallet(HDWallet wallet,
-      {List<ChainHandler> chains = const []}) async {
+      {List<Chain> chains = const []}) async {
     await _removeWalletStorage(wallet);
     await _setupWalletAccounts(chains, wallet);
   }
 
-  List<int> _validatePassword(String password) {
-    return _controller._validatePassword(password);
+  Future<List<int>> _toWalletPassword(
+      String password, String walletCheckSum) async {
+    return await crypto.cryptoRequest(CryptoRequestWalletKey.fromString(
+        key: password, checksum: walletCheckSum));
   }
 
-  List<int> _toWalletPassword(String password, List<int> walletCheckSum) {
-    final List<int> key = SHA3
-        .hash(List.from([...StringUtils.encode(password), ...walletCheckSum]));
-    return List<int>.unmodifiable(
-        key.sublist(0, WalletProviderConst.encryptionKeyLength));
-  }
-
-  Future<void> _switchWallet(HDWallet switchWallet) async {
-    if (switchWallet.name == _controller._wallet.name) return;
+  Future<bool> _switchWallet(HDWallet switchWallet) async {
+    if (switchWallet.name == _controller._wallet.name) return false;
     await _initPage(slectedWallet: switchWallet);
+    return true;
   }
 
   Future<void> _eraseWallet(String password) async {
     final controller = _controller;
-    controller._validatePassword(password);
+    await controller._validatePassword(password);
     await controller._dispose();
     _wallets.removeWallet(controller._wallet);
     await _writeHdWallet(_wallets);
@@ -98,10 +104,8 @@ mixin WalletsManager on _WalletCore {
     await _initPage();
   }
 
-  Future<T> networkRequest<T, A extends MessageArgs,
-          E extends MessageArgsNetwork<T, A>>(
-      {required E networkRequest, required NetworkType network}) async {
-    return _crypto.networkRequest(
-        networkRequest: networkRequest, network: network);
+  Future<T> cryptoRequest<T, A extends MessageArgs,
+      E extends MessageArgsCompleter<T, A>>(E request) async {
+    return crypto.cryptoRequest(request);
   }
 }

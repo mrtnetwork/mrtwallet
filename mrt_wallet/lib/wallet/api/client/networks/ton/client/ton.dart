@@ -1,13 +1,14 @@
 import 'package:blockchain_utils/utils/utils.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/utils/http/utils.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ton/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ton.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/ton/ton.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wallet/models/token/tokens/jetton.dart';
+import 'package:mrt_wallet/wallet/models/token/chains_tokens/jetton.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:ton_dart/ton_dart.dart';
 
@@ -274,7 +275,7 @@ class TonClient extends NetworkClient<ITonAddress, TonAPIProvider> {
 
   @override
   Future<bool> onInit() async {
-    final result = await MethodUtils.nullOnException(() async {
+    final result = await MethodUtils.call(() async {
       if (provider.isTonCenter) {
         final result = await provider.request(TonCenterGetMasterchainInfo());
         return IntUtils.parse(result["last"]["workchain"]);
@@ -284,6 +285,6 @@ class TonClient extends NetworkClient<ITonAddress, TonAPIProvider> {
         return result.workchainId;
       }
     });
-    return result != null;
+    return result.hasResult;
   }
 }

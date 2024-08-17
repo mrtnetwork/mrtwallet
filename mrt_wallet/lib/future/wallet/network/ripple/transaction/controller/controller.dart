@@ -9,9 +9,10 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class RippleTransactionStateController extends RippleTransactionImpl
     with RippleMemoImpl, RippleFeeImpl, RippleSignTransactionImpl {
@@ -89,21 +90,18 @@ class RippleTransactionStateController extends RippleTransactionImpl
       remindAmount = (_remindAmount, network.coinParam.token);
     } else {
       final remindTokenAmounts = _isPayment!.issueToken!.balance.value.balance -
-          (_isPayment!.amount.value?.balance ?? BigRational.zero);
+          (_isPayment.amount.value?.balance ?? BigRational.zero);
       _remindTokenAmount.updateBalance(remindTokenAmounts);
       if (_remindAmount.isNegative) {
         remindAmount = (_remindAmount, network.coinParam.token);
       } else {
-        remindAmount = (_remindTokenAmount, _isPayment!.token);
+        remindAmount = (_remindTokenAmount, _isPayment.token);
       }
     }
   }
 
   String? _fieldError;
   String? get fieldsError => _fieldError;
-
-  @override
-  String get repositoryId => "ripple/transaction";
 
   void sendTr() async {
     _fieldError = null;
@@ -126,7 +124,7 @@ class RippleTransactionStateController extends RippleTransactionImpl
         needMultiSig = !addr.multiSignatureAccount.isRegular;
       }
       await super.signAndSendTransaction(
-          SigningRequest<XRPTransaction>(
+          WalletSigningRequest<XRPTransaction>(
             addresses: [address],
             network: network,
             sign: (generateSignature) async {

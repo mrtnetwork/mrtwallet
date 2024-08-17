@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 
 class SubstrateAccountPageView extends StatelessWidget {
   const SubstrateAccountPageView({required this.chainAccount, super.key});
-  final ChainHandler chainAccount;
+  final SubstrateChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return const TabBarView(children: [

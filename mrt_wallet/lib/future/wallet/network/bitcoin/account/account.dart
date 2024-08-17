@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/chain/handler/chain.dart';
+import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 
 class BitcoinAccountPageView extends StatelessWidget {
   const BitcoinAccountPageView({super.key, required this.chainAccount});
-  final ChainHandler chainAccount;
+  final BitcoinChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    return const TabBarView(children: [
-      _Services(),
+    return TabBarView(children: [
+      _Services(chainAccount),
     ]);
   }
 }
 
 class _Services extends StatelessWidget {
-  const _Services();
+  const _Services(this.chainAccount);
+  final BitcoinChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return AccountTabbarScrollWidget(
@@ -29,7 +30,8 @@ class _Services extends StatelessWidget {
                 subtitle: Text("establishing_multi_sig_addr".tr),
                 trailing: const Icon(Icons.arrow_forward),
                 onTap: () {
-                  context.to(PageRouter.setupBitcoinMultsig);
+                  context.to(PageRouter.setupBitcoinMultsig,
+                      argruments: chainAccount);
                 },
               )
             ],

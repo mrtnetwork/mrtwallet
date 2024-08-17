@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
@@ -24,7 +24,7 @@ class _SetupBitcoinMultiSigAddressViewState
   final Map<String, BitcoinMultiSigSignerDetais> _signers = {};
   List<BitcoinMultiSigSignerDetais> get signers => _signers.values.toList();
   final GlobalKey visibleReview = GlobalKey();
-  late final WalletBitcoinNetwork network;
+  WalletBitcoinNetwork get network => chainAccount.network;
 
   String? _errorText;
   int? _thresHold;
@@ -54,10 +54,8 @@ class _SetupBitcoinMultiSigAddressViewState
     }
   }
 
-  void onChangeSignerWeight(BitcoinMultiSigSignerDetais address, String v) {
+  void onChangeSignerWeight(BitcoinMultiSigSignerDetais address, int weight) {
     if (!_signers.containsKey(address.publicKey)) return;
-    final weight = int.tryParse(v);
-    if (weight == null) return;
     _signers[address.publicKey] = BitcoinMultiSigSignerDetais(
         publicKey: BytesUtils.fromHexString(address.publicKey),
         keyIndex: address.keyIndex,
@@ -86,8 +84,8 @@ class _SetupBitcoinMultiSigAddressViewState
     }
   }
 
-  void onChangeThreshHold(String v) {
-    _thresHold = int.tryParse(v);
+  void onChangeThreshHold(int v) {
+    _thresHold = v;
     _validate();
   }
 
@@ -109,7 +107,7 @@ class _SetupBitcoinMultiSigAddressViewState
   bool isValid() => _thresHold != null && _thresHold! >= 2 && _thresHold! <= 16;
   bool inReview = false;
   final Map<BitcoinAddressType, String> supportedMultisigTypes = {};
-  late final ChainHandler chainAccount;
+  late final BitcoinChain chainAccount;
   BitcoinAddressType multiSigAddressTye = P2shAddressType.p2pkhInP2sh;
   BitcoinMultiSignatureAddress? _multiSigAddress;
   MultiSignatureAddress get multiSigAddress => _multiSigAddress!;
@@ -199,9 +197,8 @@ class _SetupBitcoinMultiSigAddressViewState
     if (accept != true) return;
     progressKey.progressText("setup_address".tr);
 
-    final wallet = context.watch<WalletProvider>(StateConst.main);
+    final wallet = context.watch<WalletProvider>(StateConst.main).wallet;
     final accountParams = await MethodUtils.call(() async {
-      final network = wallet.network as WalletBitcoinNetwork;
       final NewAccountParams newAccountParams;
       if (network.type == NetworkType.bitcoinCash) {
         newAccountParams = BitcoinCashMultiSigNewAddressParams(
@@ -219,7 +216,8 @@ class _SetupBitcoinMultiSigAddressViewState
     if (accountParams.hasError) {
       progressKey.errorText(accountParams.error!.tr);
     } else {
-      final result = await wallet.deriveNewAccount(accountParams.result);
+      final result = await wallet.deriveNewAccount(
+          newAccountParams: accountParams.result, chain: chainAccount);
       if (result.hasError) {
         progressKey.errorText(result.error!.tr);
       } else {
@@ -251,7 +249,7 @@ class _SetupBitcoinMultiSigAddressViewState
     buttonState.process();
     final result = await MethodUtils.call(() async {
       final name =
-          "credentials_${_multiSigViewAddress}_${DateTime.now().toFileName()}.txt";
+          "credentials_${_multiSigViewAddress}_${StrUtils.toFileName(DateTime.now())}.txt";
       final toFile = await FileUtils.writeString(toText, name);
       return await ShareUtils.shareFile(
         toFile,
@@ -273,11 +271,11 @@ class _SetupBitcoinMultiSigAddressViewState
   void init() {
     if (_init) return;
     _init = true;
-    final wallet = context.watch<WalletProvider>(StateConst.main);
-    network = wallet.network as WalletBitcoinNetwork;
+    chainAccount = context.getArgruments();
+
     final List<BitcoinAddressType> supportTyes =
         network.coinParam.transacationNetwork.supportedAddress;
-    chainAccount = wallet.chain;
+
     supportedMultisigTypes[P2shAddressType.p2pkhInP2sh] = "P2SH";
     if (supportTyes.contains(P2shAddressType.p2pkhInP2sh32)) {
       supportedMultisigTypes[P2shAddressType.p2pkhInP2shwt] =
@@ -305,7 +303,7 @@ class _SetupBitcoinMultiSigAddressViewState
   Widget build(BuildContext context) {
     return PopScope(
       canPop: progressKey.isSuccess || !inReview,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
           _onBack();
         }
@@ -316,7 +314,7 @@ class _SetupBitcoinMultiSigAddressViewState
             child: PageProgress(
               key: progressKey,
               backToIdle: APPConst.oneSecoundDuration,
-              child: () => Center(
+              child: (c) => Center(
                 child: CustomScrollView(
                   shrinkWrap: true,
                   slivers: [
@@ -585,7 +583,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                                 minExtent: 0.5,
                                                 child:
                                                     SwitchOrSelectAccountView(
-                                                  account: chainAccount.account,
+                                                  account: chainAccount,
                                                   showMultiSig: false,
                                                 ),
                                                 maxExtend: 0.9,

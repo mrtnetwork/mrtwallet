@@ -1,14 +1,14 @@
 import 'package:blockchain_utils/bip/address/ada/ada_addres_type.dart';
 import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class CardanoMintTokenView extends StatefulWidget {
-  final NetworkAccountCore account;
+  final ADAChain account;
   const CardanoMintTokenView(this.account, {super.key});
   @override
   State<CardanoMintTokenView> createState() => _CardanoMintTokenViewState();

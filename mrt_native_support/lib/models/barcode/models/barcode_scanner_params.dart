@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' show Rect;
+import 'package:mrt_native_support/models/size/models/rect.dart';
 
 abstract class BarcodeScannerParams {
   Map<String, dynamic> toJson();
@@ -19,12 +19,9 @@ class MacBarcodeScannerParams implements BarcodeScannerParams {
   final double height;
   const MacBarcodeScannerParams(
       {required this.width, required this.height, this.x, this.y});
-  factory MacBarcodeScannerParams.fromRect(Rect rect) {
+  factory MacBarcodeScannerParams.fromRect(WidgetRect rect) {
     return MacBarcodeScannerParams(
-        height: rect.height,
-        width: rect.width,
-        x: rect.bottomLeft.dx,
-        y: rect.bottomLeft.dx);
+        height: rect.height, width: rect.width, x: rect.x, y: rect.y);
   }
 
   @override

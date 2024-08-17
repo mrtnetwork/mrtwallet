@@ -4,8 +4,9 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/update_wallet_infos.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/setting/setting.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 
 class UpdateWalletSettingView extends StatelessWidget {
   const UpdateWalletSettingView({super.key});
@@ -42,6 +43,7 @@ class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
   late String name = hdWallet.name;
   late bool reqPassword = hdWallet.requiredPassword;
   late bool defaultWallet = true;
+  late bool protectWallet = hdWallet.protectWallet;
   late WalletLockTime locktime = hdWallet.locktime;
   late List<String> walletIds;
 
@@ -50,10 +52,10 @@ class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
     if (!inited) {
       inited = true;
       final wallet = context.watch<WalletProvider>(StateConst.main);
-      hdWallet = wallet.wallet;
-      walletIds = wallet.wallets.map((e) => e.name).toList();
+      hdWallet = wallet.wallet.wallet;
+      walletIds = wallet.wallet.wallets.map((e) => e.name).toList();
       walletIds.remove(hdWallet.name);
-      defaultWallet = wallet.defaultWalletId == hdWallet.name;
+      defaultWallet = wallet.wallet.defaultWalletId == hdWallet.name;
     }
   }
 
@@ -68,9 +70,10 @@ class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
     locktime = walletInfos.lockTime;
     reqPassword = walletInfos.requirmentPassword;
     defaultWallet = walletInfos.asDefaultWallet;
+    protectWallet = walletInfos.protectWallet;
 
     progressKey.progressText("updating".tr);
-    final model = context.watch<WalletProvider>(StateConst.main);
+    final model = context.watch<WalletProvider>(StateConst.main).wallet;
 
     final result = await model.updateWalletInfos(
         password: widget.password, walletInfos: walletInfos);
@@ -87,7 +90,7 @@ class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => Center(
+      child: (c) => Center(
         child: CustomScrollView(
           shrinkWrap: true,
           slivers: [
@@ -103,6 +106,7 @@ class _ExportSeedViewState extends State<_ExportSeedView> with SafeState {
                   asDefaultWallet: defaultWallet,
                   setupButtonTitle: "update_settings".tr,
                   onUpdate: (update) => setup(update),
+                  protectWallet: protectWallet,
                 ),
               ),
             ),

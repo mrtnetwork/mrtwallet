@@ -4,7 +4,7 @@ export 'networks/cosmos.dart';
 export 'networks/bitcoin/providers/electrum.dart';
 export 'networks/ethereum.dart';
 export 'networks/solana.dart';
-export 'networks/bitcoin/providers/bitcoin.dart';
+export 'networks/bitcoin/bitcoin.dart';
 export 'networks/ton.dart';
 export 'networks/tron.dart';
 export 'networks/ripple.dart';

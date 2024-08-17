@@ -20,11 +20,9 @@ class BitcoinHTTPService extends HTTPService<BitcoinExplorerAPIProvider>
 
   @override
   Future<T> post<T>(String url,
-      {Map<String, String> headers = const {"Content-Type": "application/json"},
-      Object? body}) async {
+      {Map<String, String>? headers, Object? body}) async {
     final response = await providerPOST<T>(url, body as String?,
-        allowStatus: provider.explorerType.isBlockCypher ? [200, 201] : [200],
-        headers: headers);
+        allowStatus: provider.explorerType.isBlockCypher ? [200, 201] : [200]);
     return response;
   }
 }

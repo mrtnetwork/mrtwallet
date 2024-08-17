@@ -7,6 +7,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 import 'fee_info.dart';
 import 'memo.dart';
@@ -18,24 +19,24 @@ class SubstrateTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<SubstrateTransactionForm> validator =
         field ?? context.getArgruments();
-    return NetworkAccountControllerView<WalletPolkadotNetwork,
-        ISubstrateAddress>(
+    return NetworkAccountControllerView<SubstrateChain>(
       title: validator.validator.name.tr,
-      childBulder: (wallet, chain, address, sm, switchAccount) =>
+      childBulder: (wallet, chain, switchAccount) =>
           MrtViewBuilder<SubstrateTransactionStateController>(
+              repositoryId: StateConst.substrate,
               controller: () => SubstrateTransactionStateController(
                   walletProvider: wallet,
-                  account: chain.account,
-                  network: sm,
+                  account: chain,
+                  network: chain.network,
                   apiProvider: chain.provider()!,
-                  address: address,
+                  address: chain.address,
                   validator: validator),
               builder: (controller) {
                 return PageProgress(
                   key: controller.progressKey,
                   backToIdle: APPConst.oneSecoundDuration,
                   initialStatus: StreamWidgetStatus.idle,
-                  child: () => CustomScrollView(
+                  child: (c) => CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(
                         child: ConstraintsBoxView(
@@ -203,10 +204,6 @@ class _SubstrateTransactionTransferFields extends StatelessWidget {
         ContainerWithBorder(
           validate: field.destination.hasValue,
           onRemove: () {
-            if (controller.reachedBatchLimit) {
-              context.showAlert("up_to_4_message_single_transaction".tr);
-              return;
-            }
             context
                 .openSliverBottomSheet<ReceiptAddress<SubstrateAddress>>(
                     "receiver_address".tr,

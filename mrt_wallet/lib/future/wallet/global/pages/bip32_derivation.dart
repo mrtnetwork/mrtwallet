@@ -2,10 +2,10 @@ import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
 import 'package:blockchain_utils/bip/substrate/substrate.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show QuickContextAccsess, Translate, WalletException;
+import 'package:mrt_wallet/app/core.dart' show WalletException;
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wroker/utils/utils.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
     show BlockchainConst, WalletNetwork;

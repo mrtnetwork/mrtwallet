@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/page_progress.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/page_progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
@@ -16,7 +16,7 @@ abstract class SubstrateTransactiomImpl extends StateController {
       required this.validator});
 
   final WalletProvider walletProvider;
-  final NetworkAccountCore account;
+  final SubstrateChain account;
   final WalletPolkadotNetwork network;
   final SubstrateClient apiProvider;
   final ISubstrateAddress address;

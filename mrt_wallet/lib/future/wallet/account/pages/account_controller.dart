@@ -1,44 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show APPConst, SafeState, StateConst, Translate, QuickContextAccsess;
+import 'package:mrt_wallet/app/core.dart' show APPConst, StateConst;
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart'
-    show WalletNetwork, CryptoAddress, ChainHandler;
+    show ChainAccount, Chain, APPCHAIN;
 
-typedef SolanaAccountBuilder<N extends WalletNetwork, A extends CryptoAddress?>
-    = Widget Function(WalletProvider wallet, ChainHandler account, A address,
-        N network, OnNetworkAccountChange onAccountChanged);
+typedef PageChainBuilder<T extends APPCHAIN> = Widget Function(
+    WalletProvider wallet, T chain, OnNetworkAccountChange onAccountChanged);
 
-typedef OnNetworkAccountChange = void Function(CryptoAddress? address);
+typedef OnNetworkAccountChange = void Function(ChainAccount? address);
 
-class NetworkAccountControllerView<N extends WalletNetwork,
-    A extends CryptoAddress?> extends StatefulWidget {
+class NetworkAccountControllerView<T extends APPCHAIN> extends StatefulWidget {
   const NetworkAccountControllerView(
       {super.key, required this.childBulder, required this.title});
-  final SolanaAccountBuilder<N, A> childBulder;
+  final PageChainBuilder<T> childBulder;
   final String title;
   @override
   State<NetworkAccountControllerView> createState() =>
-      _NetworkAccountControllerViewState<N, A>();
+      _NetworkAccountControllerViewState<T>();
 }
 
-class _NetworkAccountControllerViewState<N extends WalletNetwork,
-        A extends CryptoAddress?>
-    extends State<NetworkAccountControllerView<N, A>> with SafeState {
+class _NetworkAccountControllerViewState<T extends APPCHAIN>
+    extends State<NetworkAccountControllerView<T>> with SafeState {
   late WalletProvider wallet;
-  late ChainHandler account;
-  late A address;
+  late Chain account;
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>();
 
-  void switchAccount(CryptoAddress? updateAddress) async {
+  void switchAccount(ChainAccount? updateAddress) async {
     if (updateAddress == null) return;
-    if (!account.account.addresses.contains(updateAddress)) return;
-    if (updateAddress == address) return;
+    if (updateAddress == account.address) return;
     progressKey.progressText("switch_account".tr);
-    final result = await wallet.switchAccount(updateAddress);
+    final result = await wallet.wallet
+        .switchAccount(account: account, address: updateAddress);
     if (result.hasError) {
       progressKey.errorText(result.error!, backToIdle: false);
     } else {
@@ -48,13 +44,7 @@ class _NetworkAccountControllerViewState<N extends WalletNetwork,
   }
 
   void _checkAccounts() {
-    account = wallet.chain;
-
-    if (!account.haveAddress) {
-      address = null as A;
-    } else {
-      address = account.account.address as A;
-    }
+    account = wallet.wallet.chain;
   }
 
   @override
@@ -73,8 +63,8 @@ class _NetworkAccountControllerViewState<N extends WalletNetwork,
       body: PageProgress(
           backToIdle: APPConst.animationDuraion,
           key: progressKey,
-          child: () => widget.childBulder(
-              wallet, account, address, account.network as N, switchAccount)),
+          child: (c) =>
+              widget.childBulder(wallet, account.cast<T>(), switchAccount)),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/substrate/core/substrate.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class SubstrateTransferForm extends SubstrateTransactionForm {
   SubstrateTransferForm({required this.network});
@@ -37,7 +38,7 @@ class SubstrateTransferForm extends SubstrateTransactionForm {
   }
 
   BigInt maxTransfer(
-      {required CryptoAddress account,
+      {required ChainAccount account,
       required SubstrateOutputWithBalance receiver}) {
     return (account.address.balance.value.balance - callValue) +
         receiver.balance.balance;

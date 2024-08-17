@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/impl/transaction.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class BitcoinTransactionUtxoView extends StatelessWidget {
   const BitcoinTransactionUtxoView({required this.controller, super.key});

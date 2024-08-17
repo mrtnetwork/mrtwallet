@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/constant/constant.dart';
 
 class AbountWalletView extends StatelessWidget {
   const AbountWalletView({super.key});
@@ -11,7 +13,7 @@ class AbountWalletView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CircleAssetsImgaeView(APPConst.logo),
@@ -42,7 +44,7 @@ class AbountWalletView extends StatelessWidget {
                 context.textTheme.labelLarge?.copyWith(color: ColorConst.blue),
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                PlatformInterface.interface.launchUri(LinkConst.appGithub);
+                PlatformInterface.instance.launchUri(LinkConst.appGithub);
               },
           ),
           const TextSpan(
@@ -125,7 +127,7 @@ class AbountWalletView extends StatelessWidget {
             text: " GitHub ",
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                PlatformInterface.interface.launchUri(LinkConst.appGithub);
+                PlatformInterface.instance.launchUri(LinkConst.appGithub);
               },
           ),
           const TextSpan(text: "or connect with our community on"),
@@ -133,7 +135,7 @@ class AbountWalletView extends StatelessWidget {
             text: " Telegram.",
             recognizer: TapGestureRecognizer()
               ..onTap = () {
-                PlatformInterface.interface.launchUri(LinkConst.appTelegram);
+                PlatformInterface.instance.launchUri(LinkConst.appTelegram);
               },
             style:
                 context.textTheme.labelLarge?.copyWith(color: ColorConst.blue),
@@ -149,12 +151,12 @@ class AbountWalletView extends StatelessWidget {
             InkWell(
               customBorder: const CircleBorder(),
               onTap: () {
-                PlatformInterface.interface.launchUri(LinkConst.appTelegram);
+                PlatformInterface.instance.launchUri(LinkConst.appTelegram);
               },
               child: Container(
                 decoration: BoxDecoration(
                     color: context.colors.onSurface, shape: BoxShape.circle),
-                child: const CircleAssetsImgaeView(
+                child: CircleAssetsImgaeView(
                   APPConst.telegramLogo,
                   radius: 15,
                 ),
@@ -164,12 +166,12 @@ class AbountWalletView extends StatelessWidget {
             InkWell(
               customBorder: const CircleBorder(),
               onTap: () {
-                PlatformInterface.interface.launchUri(LinkConst.appGithub);
+                PlatformInterface.instance.launchUri(LinkConst.appGithub);
               },
               child: Container(
                 decoration: BoxDecoration(
                     color: context.colors.onSurface, shape: BoxShape.circle),
-                child: const CircleAssetsImgaeView(
+                child: CircleAssetsImgaeView(
                   APPConst.githubLogo,
                   radius: 15,
                 ),

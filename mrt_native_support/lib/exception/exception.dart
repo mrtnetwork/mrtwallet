@@ -3,4 +3,9 @@ class MRTNativePluginException implements Exception {
   const MRTNativePluginException(this.message);
   static MRTNativePluginException unsuported =
       const MRTNativePluginException("Unsuported feature.");
+
+  @override
+  String toString() {
+    return "MRTNativePluginException{$message}";
+  }
 }

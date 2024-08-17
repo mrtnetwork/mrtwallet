@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
 import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronUnFreezBalanceV2Form extends TronTransactionForm {
   TronUnFreezBalanceV2Form({required this.accountInfo});
@@ -113,5 +114,5 @@ class TronUnFreezBalanceV2Form extends TronTransactionForm {
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
-      required NetworkAccountCore account}) async {}
+      required TronChain account}) async {}
 }

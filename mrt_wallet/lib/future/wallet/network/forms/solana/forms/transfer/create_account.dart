@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
@@ -9,6 +9,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/solana/forms/core/solana.
 import 'package:on_chain/solana/src/address/sol_address.dart';
 import 'package:on_chain/solana/src/instructions/instructions.dart';
 import 'package:on_chain/solana/src/models/transaction/instruction.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class SolanaCreateAccountForm extends SolanaTransactionForm {
   bool _manuallyLamports = false;

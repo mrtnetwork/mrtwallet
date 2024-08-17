@@ -7,6 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/resource_v2/fo
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/tron/src/address/tron_address.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronDelegatedResourceFieldsView extends StatelessWidget {
   const TronDelegatedResourceFieldsView(
@@ -14,8 +15,8 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
       required this.address,
       required this.validator,
       super.key});
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final TronChain account;
   final TronDelegatedResourceV2Form validator;
 
   @override

@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/constant/constant.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/wroker/models/networks.dart';
 
 class SelectProviderIcon extends StatelessWidget {
   const SelectProviderIcon({super.key, this.icon});
   final Icon? icon;
   @override
   Widget build(BuildContext context) {
-    final wallet = context.watch<WalletProvider>(StateConst.main);
+    final wallet = context.watch<WalletProvider>(StateConst.main).wallet;
     return LiveWidget(() {
-      final client = wallet.chain.provider();
+      final account = wallet.chain;
+      final client = account.provider();
       final APIServiceTracker? provider = client?.service.tracker;
 
       return IconButton(
@@ -38,7 +41,7 @@ class SelectProviderIcon extends StatelessWidget {
             (value) {
               if (value == null) return;
               if (value is APIProvider) {
-                wallet.changeProvider(value);
+                wallet.changeProvider(provider: value, account: account);
               } else {
                 context.to(PageRouter.providerDetails(wallet.chain.network),
                     argruments: wallet.chain.network);
@@ -72,21 +75,17 @@ class SelectProviderView extends StatelessWidget {
       {super.key, required this.service, required this.network});
   final BaseServiceProtocol? service;
   final WalletNetwork network;
-  bool get isTron => network is WalletTronNetwork;
+  bool get isTron => network.type == NetworkType.tron;
   @override
   Widget build(BuildContext context) {
-    Set<APIProvider> providers = {
-      ...ProvidersConst.getDefaultProvider(network),
-      ...network.coinParam.providers.where((element) =>
-          element.protocol.platforms.contains(PlatformInterface.appPlatform)),
-    };
+    List<APIProvider> providers = network.getAllProviders();
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitleSubtitle(
-              title: "what_is_service_provider".tr,
+              title: "service_provider".tr,
               body: LargeTextView(["what_is_api_provider".tr])),
           Text("network".tr, style: context.textTheme.titleMedium),
           if (isTron) Text("network_tron_provider_desc".tr),
@@ -136,10 +135,13 @@ class SelectProviderView extends StatelessWidget {
                               child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(provider.serviceName,
-                                  style: context.textTheme.labelLarge),
-                              Text(provider.websiteUri),
-                              Text(provider.protocol.value),
+                              Text(provider.protocol.value.tr,
+                                  style: context.colors.onPrimaryContainer
+                                      .lableLarge(context)),
+                              Text(provider.websiteUri,
+                                  style: context.colors.onPrimaryContainer
+                                      .bodyMedium(context),
+                                  maxLines: 2),
                             ],
                           )),
                         ],

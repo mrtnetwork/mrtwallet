@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart' show QuickContextAccsess, Translate;
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class SelectableView extends StatelessWidget {
   const SelectableView({super.key, this.text});

@@ -7,6 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/impl/transac
 import 'package:mrt_wallet/future/wallet/network/bitcoin/transaction/pages/ordering/transaction_ordering_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class BitcoinBuildTransactionView extends StatelessWidget {
   const BitcoinBuildTransactionView({super.key, required this.controller});
@@ -114,7 +115,8 @@ class BitcoinBuildTransactionView extends StatelessWidget {
                       "receiver_address".tr,
                       bodyBuilder: (c) =>
                           SelectRecipientAccountView<BitcoinBaseAddress>(
-                              account: controller.account, scrollController: c),
+                              account: controller.chainAccount,
+                              scrollController: c),
                       maxExtend: 1,
                       minExtent: 0.8,
                       initialExtend: 0.9)
@@ -152,10 +154,10 @@ class BitcoinBuildTransactionView extends StatelessWidget {
               validateText: "transaction_Insufficient_balance".tr,
               onRemove: () {
                 context
-                    .openSliverBottomSheet<CryptoAddress>(
+                    .openSliverBottomSheet<ChainAccount>(
                       "select_account".tr,
                       child: SwitchOrSelectAccountView(
-                        account: controller.account,
+                        account: controller.chainAccount,
                         showMultiSig: true,
                       ),
                       minExtent: 0.5,

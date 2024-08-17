@@ -1,19 +1,15 @@
 import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show
-        APPConst,
-        BigRetionalRangeTextInputFormatter,
-        QuickContextAccsess,
-        SafeState,
-        Translate;
+import 'package:mrt_wallet/app/core.dart' show APPConst;
 import 'package:mrt_wallet/app/models/models/typedef.dart'
     show NullStringString;
+import 'package:mrt_wallet/future/text_field/input_formaters.dart';
 import 'button.dart';
 import 'constraints_box_view.dart';
 import 'paste_icon_widget.dart';
 import 'text_field.dart';
 import 'widget_constant.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class NumberWriteView extends StatefulWidget {
   const NumberWriteView({

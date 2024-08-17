@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/networks/ton/ton.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TonTransactionMessageSettingsView extends StatefulWidget {
   const TonTransactionMessageSettingsView(this.receiver, {super.key});

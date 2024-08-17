@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
 
 class CardanoAccountPageView extends StatelessWidget {
   const CardanoAccountPageView({required this.chainAccount, super.key});
-  final ChainHandler chainAccount;
+  final ADAChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return TabBarView(children: [
-      _CardanoAccountPage(
-          chainAccount: chainAccount.account.address as ICardanoAddress),
+      _CardanoAccountPage(chainAccount: chainAccount.address),
     ]);
   }
 }

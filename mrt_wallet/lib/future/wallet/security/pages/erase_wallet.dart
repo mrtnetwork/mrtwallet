@@ -3,6 +3,8 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 
 class EraseWalletView extends StatelessWidget {
   const EraseWalletView({super.key});
@@ -43,7 +45,7 @@ class _EraseWalletViewState extends State<_EraseWalletView> with SafeState {
     if (accept != true) return;
     progressKey.progressText("deleting_wallet".tr);
     final model = context.watch<WalletProvider>(StateConst.main);
-    final result = await model.eraseWallet(widget.password);
+    final result = await model.wallet.eraseWallet(widget.password);
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
@@ -58,7 +60,7 @@ class _EraseWalletViewState extends State<_EraseWalletView> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => UnfocusableChild(
+      child: (c) => UnfocusableChild(
         child: ConstraintsBoxView(
           padding: WidgetConstant.paddingHorizontal20,
           alignment: Alignment.center,

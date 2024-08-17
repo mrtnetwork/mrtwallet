@@ -1,5 +1,6 @@
 import 'package:mrt_wallet/app/models/models/image.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
+import 'package:mrt_wallet/app/utils/list/extention.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
@@ -18,11 +19,12 @@ abstract class NetworkCoinParams<PROVIDER extends APIProvider>
       required List<PROVIDER> providers,
       required this.mainnet,
       this.bip32CoinType})
-      : providers = List<PROVIDER>.unmodifiable(providers);
+      : _providers = List<PROVIDER>.unmodifiable(providers);
   final String? transactionExplorer;
   final String? addressExplorer;
   final Token token;
-  final List<PROVIDER> providers;
+  List<PROVIDER> _providers;
+  List<PROVIDER> get providers => _providers;
   final bool mainnet;
   int get decimal => token.decimal!;
   final int? bip32CoinType;
@@ -48,4 +50,10 @@ abstract class NetworkCoinParams<PROVIDER extends APIProvider>
 
   NetworkCoinParams<PROVIDER> updateProviders(
       List<APIProvider> updateProviders);
+
+  void addProvider(PROVIDER provider) {
+    _providers = [provider, ..._providers].imutable;
+  }
+
+  void removeProvider(PROVIDER provider) {}
 }

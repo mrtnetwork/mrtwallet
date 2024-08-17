@@ -15,7 +15,7 @@ class WalletException implements AppException {
       return "invalid_request";
     }
     if (_argruments != null) {
-      return "invalid data excepted: ${_argruments![0]} got ${_argruments![1]}";
+      return "invalid data excepted: ${_argruments[0]} got ${_argruments[1]}";
     }
     return message;
   }
@@ -101,6 +101,9 @@ class WalletExceptionConst {
   static final WalletException featureUnavailableForMultiSignature =
       WalletException("feature__unavailable_for_multi_signature");
 
+  static final WalletException decryptionFailed =
+      WalletException("decryption_failed");
+
   static final WalletException condition = WalletException("message");
   static final WalletException emptyThrow = WalletException("");
 
@@ -143,4 +146,11 @@ class WalletExceptionConst {
   static final WalletException walletNameExists =
       WalletException("wallet_name_exists");
   static final WalletException pageClosed = WalletException("page_closed");
+  static final WalletException walletIsNotavailable =
+      WalletException("wallet_is_not_available");
+
+  static final WalletException ethSubscribe =
+      WalletException("eth_subscribe_websocket_requirment");
+  static final WalletException networkDoesNotExist =
+      WalletException("network_does_not_exist");
 }

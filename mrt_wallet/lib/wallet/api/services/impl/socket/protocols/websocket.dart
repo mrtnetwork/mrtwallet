@@ -1,10 +1,13 @@
 import 'dart:async';
 
 import 'package:blockchain_utils/utils/utils.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/synchronized/basic_lock.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/app/websocket/core/core.dart';
 import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/socket/core/socket_provider.dart';
+import 'package:mrt_wallet/wallet/api/services/models/models/protocols.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models/request_completer.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models/socket_status.dart';
 
@@ -40,13 +43,17 @@ class WebSocketService<T extends APIProvider> extends BaseSocketService<T> {
   @override
   void disposeService() => _onClose();
 
-  void _onMessge(String event) {
+  Map<String, dynamic>? onMessge(String event) {
     final Map<String, dynamic> decode = StringUtils.toJson(event);
     if (decode.containsKey("id")) {
       final int id = int.parse(decode["id"]!.toString());
       final request = _requests.remove(id);
       request?.completer.complete(decode);
+      if (request != null) {
+        return null;
+      }
     }
+    return decode;
   }
 
   @override
@@ -61,7 +68,7 @@ class WebSocketService<T extends APIProvider> extends BaseSocketService<T> {
         _status = SocketStatus.connect;
         _socket = result.result;
         _subscription =
-            _socket?.stream.cast<String>().listen(_onMessge, onDone: _onClose);
+            _socket?.stream.cast<String>().listen(onMessge, onDone: _onClose);
       } else {
         _status = SocketStatus.disconnect;
 
@@ -83,4 +90,7 @@ class WebSocketService<T extends APIProvider> extends BaseSocketService<T> {
       _requests.remove(message.id);
     }
   }
+
+  @override
+  ServiceProtocol get protocol => ServiceProtocol.websocket;
 }

@@ -2,9 +2,10 @@ import 'package:mrt_wallet/wallet/api/client/networks/cardano/methods/utxos.dart
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cardano.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/cardano/cardano.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/cardano/cardano.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/cardano/models/utxos.dart';
+import 'package:on_chain/ada/src/provider/exception/blockfrost_api_error.dart';
 import 'package:on_chain/on_chain.dart';
 
 class CardanoClient extends NetworkClient<ICardanoAddress, CardanoAPIProvider> {
@@ -18,9 +19,17 @@ class CardanoClient extends NetworkClient<ICardanoAddress, CardanoAPIProvider> {
 
   @override
   Future<void> updateBalance(ICardanoAddress account) async {
-    final result = await provider
-        .request(BlockfrostRequestAddressUTXOs(account.networkAddress));
-    account.address.updateBalance(result.sumOflovelace);
+    try {
+      final result = await provider
+          .request(BlockfrostRequestAddressUTXOs(account.networkAddress));
+      account.address.updateBalance(result.sumOflovelace);
+    } on BlockfrostError catch (e) {
+      if (e.statusCode == BlockfrostStatusCode.resourceDoesNotExist) {
+        account.address.updateBalance(BigInt.zero);
+        return;
+      }
+      rethrow;
+    }
   }
 
   Future<List<ADAAccountUTXOs>> getUtxos(ADAAddress address) async {

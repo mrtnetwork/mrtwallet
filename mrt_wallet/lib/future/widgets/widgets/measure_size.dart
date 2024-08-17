@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:mrt_wallet/app/models/models/typedef.dart' show FuncVoidSize;
+import 'package:mrt_wallet/future/state_managment/typdef/typedef.dart';
 
 class _MeasureSizeRenderObject extends RenderProxyBox {
   Size? oldSize;

@@ -3,16 +3,18 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class ReceiptAddressView extends StatelessWidget {
   const ReceiptAddressView(
       {this.address,
-      required this.onTap,
+      this.onTap,
       this.title = "recipient",
       super.key,
       this.subtitle,
       this.validate,
       this.onEditIcon,
+      this.onEditWidget,
       this.onTapWhenOnRemove = true});
   final ReceiptAddress? address;
   final DynamicVoid? onTap;
@@ -20,6 +22,7 @@ class ReceiptAddressView extends StatelessWidget {
   final String? subtitle;
   final bool? validate;
   final Icon? onEditIcon;
+  final Widget? onEditWidget;
   final bool onTapWhenOnRemove;
   @override
   Widget build(BuildContext context) {
@@ -36,12 +39,20 @@ class ReceiptAddressView extends StatelessWidget {
             validate: validate ?? (address != null),
             onRemove: onTap,
             onTapWhenOnRemove: onTapWhenOnRemove,
+            onRemoveWidget: onEditWidget,
             onRemoveIcon: address == null
                 ? const Icon(Icons.add)
                 : onEditIcon ?? const Icon(Icons.edit),
             child: address == null
                 ? Text("tap_to_choose_address".tr)
-                : ReceiptAddressDetailsView(address: address!)),
+                : Row(
+                    children: [
+                      Expanded(
+                          child: ReceiptAddressDetailsView(address: address!)),
+                      CopyTextIcon(
+                          dataToCopy: address?.view ?? "", isSensitive: false)
+                    ],
+                  )),
       ],
     );
   }

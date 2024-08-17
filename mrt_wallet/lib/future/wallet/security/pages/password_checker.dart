@@ -4,21 +4,8 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wroker/keys/keys.dart';
-
-enum WalletAccsessType {
-  privateKey,
-  seed,
-  verify,
-  unlock,
-  extendedKey;
-
-  bool get isAccsessKey =>
-      this == WalletAccsessType.privateKey ||
-      this == WalletAccsessType.extendedKey;
-  bool get isAccessMnemonic => this == WalletAccsessType.seed;
-  bool get isExtendedKey => this == WalletAccsessType.extendedKey;
-  bool get isUnlock => this == WalletAccsessType.unlock;
-}
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/constant/constant.dart';
 
 typedef FuncWidgetStringPaagePrgoressKey = Widget Function(
     List<CryptoKeyData> credential, String password, WalletNetwork network);
@@ -28,20 +15,24 @@ class PasswordCheckerView extends StatefulWidget {
       {required this.accsess,
       super.key,
       required this.onAccsess,
-      required this.title,
-      required this.subtitle,
+      this.title,
+      this.subtitle,
       this.account,
       this.password,
       this.customKey,
-      this.controller});
+      this.controller,
+      this.appbar})
+      : assert(appbar != null || title != null,
+            "use appbar or title to build page appbar.");
   final FuncWidgetStringPaagePrgoressKey onAccsess;
   final WalletAccsessType accsess;
-  final String title;
-  final Widget subtitle;
-  final CryptoAddress? account;
+  final String? title;
+  final Widget? subtitle;
+  final ChainAccount? account;
   final String? password;
   final EncryptedCustomKey? customKey;
   final ScrollController? controller;
+  final AppBar? appbar;
 
   @override
   State<PasswordCheckerView> createState() => _PasswordCheckerViewState();
@@ -49,6 +40,14 @@ class PasswordCheckerView extends StatefulWidget {
 
 class _PasswordCheckerViewState extends State<PasswordCheckerView>
     with SafeState {
+  late final WalletAccsessType access = widget.accsess;
+  void _onPause() {
+    credentials = null;
+    updateState();
+  }
+
+  AppLifecycleListener? _lifeCycle;
+
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "ExportSeedView");
   final GlobalKey<StreamWidgetState> progressKey =
@@ -82,35 +81,18 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     await getKey();
   }
 
-  // void checkUnlockAccess() {
-  //   if (widget.accsess == WalletAccsessType.unlock) {
-  //     if (wallet.walletIsUnlock) {
-  //       credentials = [FakeKeyData()];
-  //       updateState();
-  //     }
-  //   }
-  // }
-
-  Future<void> getKey({bool isInit = false}) async {
+  Future<void> getKey() async {
     progressKey.process();
 
-    final result = await wallet.accsess(widget.accsess, _password,
+    final result = await wallet.wallet.accsess(widget.accsess, _password,
         account: widget.account, accountId: widget.customKey?.id);
     if (result.hasError) {
-      if (isInit) {
-        progressKey.idle();
-      } else {
-        error = result.error?.tr;
-        progressKey.error();
-      }
+      error = result.error?.tr;
+      progressKey.error();
     } else {
       credentials = result.result;
       progressKey.success();
     }
-    setState(() {});
-  }
-
-  void onChangeShowMnemonic() {
     setState(() {});
   }
 
@@ -126,36 +108,55 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     setState(() {});
   }
 
-  bool inited = false;
-  void _init() {
-    if (inited) return;
-
-    inited = true;
-    _password = widget.password ?? "";
-    if (_password.isNotEmpty || widget.accsess.isUnlock) {
-      MethodUtils.after(() => getKey(isInit: true));
+  void listener(WalletEventStaus status) {
+    if (status != WalletEventStaus.unlock) {
+      credentials = null;
+      _password = "";
+    } else {
+      if (access.isUnlock) {
+        credentials = [FakeKeyData()];
+      }
     }
+    updateState();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     wallet = context.watch<WalletProvider>(StateConst.main);
+    wallet.wallet.addWalletStatusListener(listener);
+    _password = widget.password ?? "";
+    if (_password.isNotEmpty) {
+      MethodUtils.after(() => getKey());
+    }
+  }
 
-    _init();
+  @override
+  void initState() {
+    if (!widget.accsess.isUnlock) {
+      _lifeCycle = AppLifecycleListener(onHide: _onPause);
+    }
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    wallet.wallet.removeWalletStatusListener(listener);
+    _lifeCycle?.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: widget.appbar ?? AppBar(title: Text(widget.title ?? '')),
       body: UnfocusableChild(
         child: APPAnimatedSwitcher(
           duration: APPConst.animationDuraion,
           enable: credentials != null,
           widgets: {
-            true: (c) =>
-                widget.onAccsess(credentials!, _password, wallet.network),
+            true: (c) => widget.onAccsess(
+                credentials!, _password, wallet.wallet.network),
             false: (c) => _PasswordWriterView(this)
           },
         ),
@@ -182,7 +183,10 @@ class _PasswordWriterView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    state.widget.subtitle,
+                    state.widget.subtitle ??
+                        PageTitleSubtitle(
+                            title: "wallet_password".tr,
+                            body: Text("enter_wallet_password_request".tr)),
                     Form(
                       key: state.form,
                       child: AnimatedSwitcher(

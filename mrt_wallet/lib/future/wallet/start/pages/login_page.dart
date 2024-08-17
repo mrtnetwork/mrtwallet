@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class WalletLoginPageView extends StatefulWidget {
   const WalletLoginPageView({super.key});
@@ -36,7 +37,7 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
 
     if (!(formKey.currentState?.validate() ?? false)) return;
     buttonKey.process();
-    final login = await provider.login(password);
+    final login = await provider.wallet.login(password);
     buttonKey.fromMethodResult(login);
     _error = login.error?.tr;
     setState(() {});
@@ -57,7 +58,7 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
                 children: [
                   PageTitleSubtitle(
                       title: null, body: Text("wallet_login_desc".tr)),
-                  const CircleAssetsImgaeView(APPConst.logo),
+                  CircleAssetsImgaeView(APPConst.logo),
                   WidgetConstant.height20,
                   AppTextField(
                     obscureText: true,
@@ -69,7 +70,7 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
                       if (StrUtils.isStrongPassword(v)) {
                         return null;
                       }
-                      return "password_desc".tr;
+                      return "password_validator".tr;
                     },
                   ),
                   StreamWidget(

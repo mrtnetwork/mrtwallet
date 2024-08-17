@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/wallet/setup/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/setting/setting.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class CreateWalletSettingsView extends StatefulWidget {
   const CreateWalletSettingsView(this.wallet, {Key? key}) : super(key: key);
@@ -21,6 +22,7 @@ class _CreateWalletSettingsViewState extends State<CreateWalletSettingsView>
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
   late String name = widget.wallet.name;
   late bool reqPassword = widget.wallet.requiredPassword;
+  late bool protectWallet = widget.wallet.protectWallet;
   late bool defaultWallet = true;
   late WalletLockTime locktime = widget.wallet.locktime;
   late List<String> walletIds;
@@ -30,11 +32,12 @@ class _CreateWalletSettingsViewState extends State<CreateWalletSettingsView>
     locktime = walletInfos.lockTime;
     reqPassword = walletInfos.requirmentPassword;
     defaultWallet = walletInfos.asDefaultWallet;
+    protectWallet = walletInfos.protectWallet;
 
     progressKey.progressText("launch_the_wallet".tr);
     final result = await MethodUtils.call(
       () async {
-        final model = context.watch<SetupWalletController>("setup_wallet");
+        final model = context.watch<SetupWalletController>(StateConst.setup);
         await model.setupHDWallet(walletInfos);
       },
     );
@@ -52,7 +55,7 @@ class _CreateWalletSettingsViewState extends State<CreateWalletSettingsView>
 
   void _init() {
     final walletProvider = context.watch<WalletProvider>(StateConst.main);
-    walletIds = walletProvider.wallets.map((e) => e.name).toList();
+    walletIds = walletProvider.wallet.wallets.map((e) => e.name).toList();
   }
 
   @override
@@ -66,13 +69,14 @@ class _CreateWalletSettingsViewState extends State<CreateWalletSettingsView>
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => UpdateWalletInfosWidget(
+      child: (c) => UpdateWalletInfosWidget(
         name: name,
         locktime: locktime,
         requrmentPassword: reqPassword,
         exitsIds: walletIds,
         asDefaultWallet: defaultWallet,
         onUpdate: (update) => setup(update),
+        protectWallet: protectWallet,
       ),
     );
   }

@@ -3,11 +3,12 @@ import 'package:bitcoin_base/bitcoin_base.dart'
 import 'package:blockchain_utils/cbor/core/cbor.dart';
 import 'package:blockchain_utils/cbor/types/cbor_tag.dart';
 import 'package:blockchain_utils/cbor/types/list.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/app/utils/string/utils.dart';
 import 'package:mrt_wallet/wallet/api/provider/models/bitcoin_explorer_provider_type.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
+import 'package:mrt_wallet/wallet/api/utils/utils.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-
 import 'provider.dart';
 
 class _BitcoinExplorerAPIProviderUtils {
@@ -50,33 +51,39 @@ class BitcoinExplorerAPIProviderConst {
   static const mempool = BitcoinExplorerAPIProvider._(
       serviceName: "Mempool",
       websiteUri: "https://mempool.space/",
-      explorerType: BitcoinExplorerProviderType.mempool);
+      explorerType: BitcoinExplorerProviderType.mempool,
+      identifier: "mempool");
   static const blockCypher = BitcoinExplorerAPIProvider._(
       serviceName: "BlockCypher",
       websiteUri: "https://www.blockcypher.com/",
-      explorerType: BitcoinExplorerProviderType.blockcypher);
+      explorerType: BitcoinExplorerProviderType.blockcypher,
+      identifier: "blockCypher");
 }
 
 class BitcoinExplorerAPIProvider extends BaseBitcoinAPIProvider {
-  const BitcoinExplorerAPIProvider._(
-      {required String serviceName,
-      required String websiteUri,
-      ProviderAuth? auth,
-      this.uri,
-      required this.explorerType})
-      : super(serviceName, websiteUri, ServiceProtocol.http, auth);
+  const BitcoinExplorerAPIProvider._({
+    required super.serviceName,
+    required super.websiteUri,
+    super.protocol = ServiceProtocol.http,
+    super.auth,
+    required super.identifier,
+    this.uri,
+    required this.explorerType,
+  });
   factory BitcoinExplorerAPIProvider(
       {required String serviceName,
       required String websiteUri,
       required String uri,
       required BitcoinExplorerProviderType type,
-      ProviderAuth? auth}) {
+      ProviderAuth? auth,
+      required String identifier}) {
     return BitcoinExplorerAPIProvider._(
         serviceName: serviceName,
         websiteUri: websiteUri,
         uri: uri,
         auth: auth,
-        explorerType: type);
+        explorerType: type,
+        identifier: identifier);
   }
   final String? uri;
   final BitcoinExplorerProviderType explorerType;
@@ -98,7 +105,9 @@ class BitcoinExplorerAPIProvider extends BaseBitcoinAPIProvider {
         uri: cbor.elementAt(2),
         auth: cbor.getCborTag(3)?.to<ProviderAuth, CborTagValue>(
             (e) => ProviderAuth.fromCborBytesOrObject(obj: e)),
-        explorerType: BitcoinExplorerProviderType.fromName(cbor.elementAt(4)));
+        explorerType: BitcoinExplorerProviderType.fromName(cbor.elementAt(4)),
+        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(5)),
+        protocol: ServiceProtocol.http);
   }
 
   @override

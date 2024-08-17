@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/secure_state/secure_state.dart';
 import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/backup/mrt_backup.dart';
 import 'package:mrt_wallet/wroker/keys/keys.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 
 class ExportSeedView extends StatelessWidget {
   const ExportSeedView({super.key});
@@ -51,7 +53,7 @@ class _ExportSeedViewState extends State<_ExportSeedView>
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => ConstraintsBoxView(
+      child: (c) => ConstraintsBoxView(
         alignment: Alignment.center,
         padding: WidgetConstant.paddingHorizontal20,
         child: AnimatedSwitcher(

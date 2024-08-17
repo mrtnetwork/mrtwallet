@@ -5,19 +5,19 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronAccountPageView extends StatelessWidget {
   const TronAccountPageView({required this.chainAccount, super.key});
-  final ChainHandler chainAccount;
+  final TronChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    final account = chainAccount.account.address as ITronAddress;
     return NotificationListener(
       onNotification: (notification) => false,
       child: TabBarView(children: [
-        _Services(account: account),
-        _TronTokenView(account: account),
-        _TronTokenView(account: account, isTrc10: true),
+        _Services(chainAccount),
+        _TronTokenView(account: chainAccount),
+        _TronTokenView(account: chainAccount, isTrc10: true),
       ]),
     );
   }
@@ -25,11 +25,13 @@ class TronAccountPageView extends StatelessWidget {
 
 class _TronTokenView extends StatelessWidget {
   const _TronTokenView({required this.account, this.isTrc10 = false});
-  final ITronAddress account;
+  final TronChain account;
   final bool isTrc10;
+  ITronAddress get address => account.address;
   @override
   Widget build(BuildContext context) {
-    final tokens = isTrc10 ? account.trc10Tokens : account.tokens;
+    final List<TronToken> tokens =
+        isTrc10 ? address.trc10Tokens : address.tokens;
     return AccountTabbarScrollWidget(slivers: [
       tokens.isEmpty
           ? SliverFillRemaining(
@@ -72,14 +74,15 @@ class _TronTokenView extends StatelessWidget {
             )),
       SliverList.builder(
         itemBuilder: (context, index) {
-          final TokenCore token = tokens[index];
+          final TronToken token = tokens[index];
           return ContainerWithBorder(
             onRemove: () {
               context.openDialogPage<TokenAction>(
                 "token_info".tr,
                 child: (ctx) => TokenDetailsModalView(
                   token: token,
-                  address: account,
+                  address: address,
+                  account: account,
                   transferPath: PageRouter.tronTransfer,
                 ),
               );
@@ -114,8 +117,9 @@ class _TronTokenView extends StatelessWidget {
 }
 
 class _Services extends StatelessWidget {
-  const _Services({required this.account});
-  final ITronAddress account;
+  const _Services(this.chainAccount);
+  final TronChain chainAccount;
+  get account => chainAccount.address;
   @override
   Widget build(BuildContext context) {
     return AccountTabbarScrollWidget(slivers: [
@@ -127,7 +131,8 @@ class _Services extends StatelessWidget {
               title: Text("multi_sig_addr".tr),
               subtitle: Text("establishing_multi_sig_addr".tr),
               onTap: () {
-                context.to(PageRouter.tronMultiSigAddress);
+                context.to(PageRouter.tronMultiSigAddress,
+                    argruments: chainAccount);
               },
             ),
             WidgetConstant.divider,

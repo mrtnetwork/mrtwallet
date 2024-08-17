@@ -11,6 +11,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 import 'signer_list_fields.dart';
 
@@ -21,100 +22,98 @@ class RippleTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<RippleTransactionForm> validator =
         field ?? context.getArgruments();
-    return NetworkAccountControllerView<WalletXRPNetwork, IXRPAddress>(
+    return NetworkAccountControllerView<RippleChain>(
       title: validator.validator.name.tr,
-      childBulder: (wallet, chain, address, network, switchAccount) =>
-          MrtViewBuilder<RippleTransactionStateController>(
-              controller: () => RippleTransactionStateController(
-                  walletProvider: wallet,
-                  account: chain.account,
-                  network: network,
-                  apiProvider: chain.provider()!,
-                  address: address,
-                  validator: validator),
-              builder: (controller) {
-                return PageProgress(
-                  key: controller.progressKey,
-                  initialStatus: PageProgressStatus.progress,
-                  backToIdle: APPConst.oneSecoundDuration,
-                  child: () => CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: ConstraintsBoxView(
-                          padding: WidgetConstant.padding20,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("account".tr,
-                                  style: context.textTheme.titleLarge),
-                              WidgetConstant.height8,
-                              ContainerWithBorder(
-                                onRemoveIcon: const Icon(Icons.edit),
-                                child: AddressDetailsView(
-                                    address: controller.owner,
-                                    key: ValueKey<IXRPAddress?>(
-                                        controller.owner)),
-                                onRemove: () {
-                                  context
-                                      .openSliverBottomSheet<IXRPAddress>(
-                                        "switch_account".tr,
-                                        child: SwitchOrSelectAccountView(
-                                            account: controller.account,
-                                            showMultiSig: true),
-                                        minExtent: 0.5,
-                                        maxExtend: 0.9,
-                                        initialExtend: 0.7,
-                                        centerContent: false,
-                                      )
-                                      .then(switchAccount);
-                                },
-                              ),
-                              WidgetConstant.height20,
-                              PageTitleSubtitle(
-                                  title: validator.validator.name.tr,
-                                  body: TextAndLinkView(
-                                      text: validator
-                                          .validator.validatorDescription.tr,
-                                      url: validator.validator.helperUri)),
-                              _RippleFormFields(
-                                  validator: controller.validator,
-                                  account: chain.account,
-                                  address: address),
-                              RippleMemoAndFeeView(controller: controller),
-                              ErrorTextContainer(
-                                  error: controller.fieldsError?.tr,
-                                  verticalMargin:
-                                      WidgetConstant.paddingVertical10),
-                              InsufficientBalanceErrorView(
-                                verticalMargin:
-                                    WidgetConstant.paddingVertical10,
-                                balance: controller.remindAmount.$1,
-                                token: controller.remindAmount.$2,
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  StreamWidget(
-                                    key: controller.buttonKey,
-                                    backToIdle: APPConst.oneSecoundDuration,
-                                    buttonWidget: FixedElevatedButton(
-                                      padding: WidgetConstant.paddingVertical20,
-                                      onPressed: () {
-                                        controller.sendTr();
-                                      },
-                                      child: Text("send_transaction".tr),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
+      childBulder: (wallet, chain, switchAccount) => MrtViewBuilder<
+              RippleTransactionStateController>(
+          repositoryId: StateConst.ripple,
+          controller: () => RippleTransactionStateController(
+              walletProvider: wallet,
+              account: chain,
+              network: chain.network,
+              apiProvider: chain.provider()!,
+              address: chain.address,
+              validator: validator),
+          builder: (controller) {
+            return PageProgress(
+              key: controller.progressKey,
+              initialStatus: PageProgressStatus.progress,
+              backToIdle: APPConst.oneSecoundDuration,
+              child: (c) => CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: ConstraintsBoxView(
+                      padding: WidgetConstant.padding20,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("account".tr,
+                              style: context.textTheme.titleLarge),
+                          WidgetConstant.height8,
+                          ContainerWithBorder(
+                            onRemoveIcon: const Icon(Icons.edit),
+                            child: AddressDetailsView(
+                                address: controller.owner,
+                                key: ValueKey<IXRPAddress?>(controller.owner)),
+                            onRemove: () {
+                              context
+                                  .openSliverBottomSheet<IXRPAddress>(
+                                    "switch_account".tr,
+                                    child: SwitchOrSelectAccountView(
+                                        account: controller.account,
+                                        showMultiSig: true),
+                                    minExtent: 0.5,
+                                    maxExtend: 0.9,
+                                    initialExtend: 0.7,
+                                    centerContent: false,
+                                  )
+                                  .then(switchAccount);
+                            },
                           ),
-                        ),
+                          WidgetConstant.height20,
+                          PageTitleSubtitle(
+                              title: validator.validator.name.tr,
+                              body: TextAndLinkView(
+                                  text: validator
+                                      .validator.validatorDescription.tr,
+                                  url: validator.validator.helperUri)),
+                          _RippleFormFields(
+                              validator: controller.validator,
+                              account: chain,
+                              address: chain.address),
+                          RippleMemoAndFeeView(controller: controller),
+                          ErrorTextContainer(
+                              error: controller.fieldsError?.tr,
+                              verticalMargin: WidgetConstant.paddingVertical10),
+                          InsufficientBalanceErrorView(
+                            verticalMargin: WidgetConstant.paddingVertical10,
+                            balance: controller.remindAmount.$1,
+                            token: controller.remindAmount.$2,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              StreamWidget(
+                                key: controller.buttonKey,
+                                backToIdle: APPConst.oneSecoundDuration,
+                                buttonWidget: FixedElevatedButton(
+                                  padding: WidgetConstant.paddingVertical20,
+                                  onPressed: () {
+                                    controller.sendTr();
+                                  },
+                                  child: Text("send_transaction".tr),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                );
-              }),
+                ],
+              ),
+            );
+          }),
     );
   }
 }
@@ -126,8 +125,8 @@ class _RippleFormFields extends StatelessWidget {
     required this.account,
   });
   final LiveTransactionForm<RippleTransactionForm> validator;
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final RippleChain account;
   @override
   Widget build(BuildContext context) {
     return LiveWidget(() {

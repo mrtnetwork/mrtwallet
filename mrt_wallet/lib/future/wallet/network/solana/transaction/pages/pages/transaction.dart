@@ -8,6 +8,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:on_chain/solana/solana.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SolanaTransactionFieldsView extends StatelessWidget {
   const SolanaTransactionFieldsView({super.key, this.field});
@@ -16,22 +17,22 @@ class SolanaTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<SolanaTransactionForm> validator =
         field ?? context.getArgruments();
-    return NetworkAccountControllerView<WalletSolanaNetwork, ISolanaAddress>(
-        childBulder: (wallet, chain, address, network, switchAccount) {
+    return NetworkAccountControllerView<SolanaChain>(
+        childBulder: (wallet, chain, switchAccount) {
           return MrtViewBuilder<SolanaTransactionStateController>(
+            repositoryId: StateConst.solana,
             controller: () => SolanaTransactionStateController(
                 walletProvider: wallet,
-                account:
-                    chain.account as NetworkAccountCore<BigInt, SolAddress>,
-                network: network,
-                address: address,
+                account: chain,
+                network: chain.network,
+                address: chain.address,
                 apiProvider: chain.provider()!,
                 validator: validator),
             builder: (controller) {
               return PageProgress(
                 backToIdle: APPConst.oneSecoundDuration,
                 key: controller.progressKey,
-                child: () {
+                child: (c) {
                   return CustomScrollView(
                     slivers: [
                       SliverToBoxAdapter(
@@ -153,6 +154,7 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     FixedElevatedButton(
+                                      padding: WidgetConstant.paddingVertical40,
                                       onPressed: controller.transactionIsReady
                                           ? controller.sendTransaction
                                           : null,

@@ -1,5 +1,5 @@
-import 'package:mrt_wallet/app/core.dart';
-
+import 'package:mrt_wallet/app/live_listener/live.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/models/balance/core/balance.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 

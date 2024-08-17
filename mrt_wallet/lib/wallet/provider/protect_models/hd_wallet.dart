@@ -138,6 +138,7 @@ class HDWallet {
   final String name;
   final String _data;
   final bool requiredPassword;
+  final bool protectWallet;
   final WalletLockTime locktime;
   final int network;
   final DateTime created;
@@ -149,7 +150,8 @@ class HDWallet {
       required this.requiredPassword,
       required this.locktime,
       required this.network,
-      required this.created})
+      required this.created,
+      required this.protectWallet})
       : _data = data,
         _checksum = checksum;
   factory HDWallet({
@@ -159,13 +161,14 @@ class HDWallet {
     required bool requiredPassword,
     required WalletLockTime locktime,
     required int network,
+    bool protectWallet = true,
     DateTime? created,
   }) {
     if (name.trim().isEmpty || name.length < 3 || name.length > 15) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
-    if (requiredPassword && locktime.value == 0 ||
-        !requiredPassword && locktime.value != 0) {
+    final lockTime = locktime.value ~/ 60;
+    if (lockTime < 1 || lockTime > 30) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
     return HDWallet._(
@@ -175,19 +178,24 @@ class HDWallet {
         requiredPassword: requiredPassword,
         locktime: locktime,
         network: network,
-        created: created ?? DateTime.now());
+        created: created ?? DateTime.now(),
+        protectWallet: protectWallet);
   }
 
   factory HDWallet.setup(
-      {required String checksum, required String name, required String data}) {
+      {required String checksum,
+      required String name,
+      required String data,
+      bool protectWallet = true}) {
     return HDWallet(
         checksum: checksum,
         name: name,
         data: data,
         requiredPassword: false,
-        locktime: WalletLockTime.never,
+        locktime: WalletLockTime.fiveMinute,
         network: 0,
-        created: DateTime.now());
+        created: DateTime.now(),
+        protectWallet: protectWallet);
   }
   HDWallet _updateData(String updateData) {
     return HDWallet(
@@ -197,7 +205,8 @@ class HDWallet {
         requiredPassword: requiredPassword,
         network: network,
         locktime: locktime,
-        created: created);
+        created: created,
+        protectWallet: protectWallet);
   }
 
   HDWallet updateNetwork(int updateNetworkId) {
@@ -208,7 +217,8 @@ class HDWallet {
         requiredPassword: requiredPassword,
         network: updateNetworkId,
         locktime: locktime,
-        created: created);
+        created: created,
+        protectWallet: protectWallet);
   }
 
   HDWallet _updateCreated() {
@@ -219,20 +229,20 @@ class HDWallet {
         requiredPassword: requiredPassword,
         network: network,
         locktime: locktime,
-        created: DateTime.now());
+        created: DateTime.now(),
+        protectWallet: protectWallet);
   }
 
   HDWallet _updateSettings({
     required WalletLockTime newLockTime,
     required bool reqPassword,
     required String newName,
+    required bool protectWallet,
   }) {
     if (newName.trim().isEmpty || newName.length < 3 || newName.length > 15) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
-    if (!newLockTime.isValidLockTime(reqPassword)) {
-      throw WalletExceptionConst.dataVerificationFailed;
-    }
+
     return HDWallet(
         checksum: _checksum,
         name: newName,
@@ -240,7 +250,8 @@ class HDWallet {
         requiredPassword: reqPassword,
         network: network,
         locktime: newLockTime,
-        created: created);
+        created: created,
+        protectWallet: protectWallet);
   }
 
   factory HDWallet.fromCborBytesOrObject({List<int>? bytes, CborObject? obj}) {
@@ -248,7 +259,7 @@ class HDWallet {
         CborSerializable.decodeCborTags(bytes, obj, CborTagsConst.wallet);
     final int? setting = cbor.elementAt(5);
     final network = cbor.elementAt<int>(4);
-    WalletLockTime lockTime = WalletLockTime.never;
+    WalletLockTime lockTime = WalletLockTime.fiveMinute;
     if (setting != null) {
       lockTime = WalletLockTime.fromValue(setting);
     }
@@ -259,7 +270,8 @@ class HDWallet {
         requiredPassword: cbor.elementAt(3),
         network: network,
         locktime: lockTime,
-        created: cbor.elementAt<DateTime>(6));
+        created: cbor.elementAt<DateTime>(6),
+        protectWallet: cbor.elementAt<bool?>(7) ?? true);
   }
 
   CborTagValue _toCbor() {
@@ -271,14 +283,18 @@ class HDWallet {
           CborBoleanValue(requiredPassword),
           network,
           locktime.value,
-          CborEpochIntValue(created)
+          CborEpochIntValue(created),
+          protectWallet
         ]),
         CborTagsConst.wallet);
   }
 
+  List<int> get checkSumBytes => BytesUtils.fromHexString(_checksum);
   String get _networkKey => "${StorageConst.walletStorageKey}${_checksum}_";
+  String get _permissionKey =>
+      "${StorageConst.walletStorageKey}$_checksum#permission_";
 
-  String _toKey(String key) {
-    return "$_networkKey$key";
+  String _toPermissionKey(String key) {
+    return "$_permissionKey$key";
   }
 }

@@ -2,7 +2,9 @@ package com.mrtnetwork.mrt_native_support.encryptions
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import android.util.Base64
+import androidx.annotation.RequiresApi
 import java.io.File
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -165,10 +167,12 @@ class Encryption(private val baseEncryption: BaseEncryption) {
 
     companion object {
 
+        @RequiresApi(Build.VERSION_CODES.KITKAT)
         private fun getCurrentCharset(): Charset {
             return StandardCharsets.UTF_8
         }
 
+        @RequiresApi(Build.VERSION_CODES.KITKAT)
         private fun getPreference(
                 context: Context,
                 prefKey: String,
@@ -186,12 +190,15 @@ class Encryption(private val baseEncryption: BaseEncryption) {
             return OwnEncryption(charset, aes, pref)
         }
 
+        @RequiresApi(Build.VERSION_CODES.KITKAT)
         fun create(context: Context, prefKey: String, alias: String? = null) = object {
+            @RequiresApi(Build.VERSION_CODES.KITKAT)
             val pref: BaseEncryption = getPreference(
                     context,
                     prefKey,
                     alias
             )
+            @RequiresApi(Build.VERSION_CODES.KITKAT)
             val enc = Encryption(pref)
 
         }.enc
@@ -202,7 +209,9 @@ class Encryption(private val baseEncryption: BaseEncryption) {
 class AppEncryption(private val enc: Encryption) {
     companion object {
 
+        @RequiresApi(Build.VERSION_CODES.KITKAT)
         fun init(context: Context) = object {
+            @RequiresApi(Build.VERSION_CODES.KITKAT)
             val enc: AppEncryption =
                     AppEncryption(
                             Encryption.create(

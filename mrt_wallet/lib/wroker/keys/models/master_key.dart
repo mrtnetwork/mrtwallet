@@ -1,10 +1,15 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wroker/coins/custom_coins/coins.dart';
+import 'package:mrt_wallet/wroker/keys/access/ada_legacy_public_key.dart';
+import 'package:mrt_wallet/wroker/keys/access/key_data.dart';
+import 'package:mrt_wallet/wroker/keys/access/key_request.dart';
 import 'package:mrt_wallet/wroker/keys/access/private_key_response.dart';
 import 'package:mrt_wallet/wroker/constant/const.dart';
+import 'package:mrt_wallet/wroker/keys/models/key_type.dart';
 import 'package:mrt_wallet/wroker/keys/models/seed.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 import 'imported.dart';
 
 class WalletMasterKeys with CborSerializable {
@@ -42,7 +47,7 @@ class WalletMasterKeys with CborSerializable {
     }
   }
 
-  WalletMasterKeys addKey(List<ImportedKeyStorage> newKey) {
+  WalletMasterKeys _addKey(List<ImportedKeyStorage> newKey) {
     return WalletMasterKeys._(
         mnemonic: mnemonic,
         seedBytes: seed,
@@ -85,10 +90,14 @@ class WalletMasterKeys with CborSerializable {
   }
 
   factory WalletMasterKeys.fromCborBytesOrObject(
-      {List<int>? bytes, CborObject? obj}) {
+      {List<int>? bytes, CborObject? obj, String? hex}) {
     try {
-      final CborListValue cbor =
-          CborSerializable.decodeCborTags(bytes, obj, CryptoKeyConst.mnemonic);
+      final CborListValue cbor = CborSerializable.cborTagValue(
+        cborBytes: bytes,
+        object: obj,
+        hex: hex,
+        tags: CryptoKeyConst.mnemonic,
+      );
       final String mnemonic = cbor.elementAt(0);
       final List<int> seed = cbor.elementAt(1);
       final CborListValue customKeys = cbor.value[2];
@@ -157,5 +166,77 @@ class WalletMasterKeys with CborSerializable {
     final bip32Key = PrivateKeyData.fromSeed(
         seedBytes: seedBytes, coin: key.currencyCoin, keyName: key.name);
     return key.derive(bip32Key, maxLevel: maxLevel);
+  }
+
+  PrivateKeyData getImportedKey(String keyId) {
+    final importedKey = getKeyById(keyId);
+    if (importedKey == null) {
+      throw WalletExceptionConst.privateKeyIsNotAvailable;
+    }
+    final keyInfo = importedKey.toKey(null);
+    return keyInfo;
+  }
+
+  List<CryptoPrivateKeyData> readKeys(
+      List<AccessCryptoPrivateKeyRequest> requestKeys) {
+    final List<CryptoPrivateKeyData> keys = [];
+    for (final i in requestKeys) {
+      final key = toKey(i.index, maxLevel: Bip44Levels.fromInt(i.maxLevel));
+      keys.add(key);
+    }
+    return keys;
+  }
+
+  List<CryptoPublicKeyData> readPublicKeys(
+      List<AccessCryptoPrivateKeyRequest> requestKeys) {
+    final List<CryptoPublicKeyData> pubKeys = [];
+    for (final i in requestKeys) {
+      final bool byronLegacy =
+          i.index.currencyCoin.proposal == CustomProposal.cip0019;
+      final PrivateKeyData privateKey = toKey(i.index,
+          maxLevel:
+              byronLegacy ? Bip44Levels.master : Bip44Levels.addressIndex);
+      if (!byronLegacy) {
+        pubKeys.add(privateKey.publicKey);
+        continue;
+      }
+      Bip32Base bipKey = privateKey.toBipKey();
+      if (byronLegacy) {
+        final legacy = CardanoByronLegacy.fromBip32(bipKey);
+        if (i.index.hdPath != null) {
+          bipKey = legacy.bip32.derivePath(i.index.hdPath!);
+        }
+        pubKeys.add(AdaLegacyPublicKeyData.fromBip32(
+            account: bipKey,
+            keyName: privateKey.keyName,
+            hdPathKey: legacy.hdPathKey));
+        continue;
+      }
+    }
+    return pubKeys;
+  }
+
+  WalletMasterKeys importCustomKey(ImportedKeyStorage newKey,
+      {bool validateChecksum = true}) {
+    final ImportedKeyStorage validateKey;
+    if (newKey.keyType == CustomKeyType.extendedKey) {
+      validateKey = BlockchainUtils.extendeKeyToStorage(
+          extendedKey: newKey.extendedPrivateKey, coin: newKey.coin);
+    } else {
+      validateKey = BlockchainUtils.privateKeyToStorage(
+          privateKey: newKey.extendedPrivateKey, coin: newKey.coin);
+    }
+
+    if (validateKey.publicKey != newKey.publicKey) {
+      throw WalletExceptionConst.invalidAccountDetails;
+    }
+    if (validateChecksum && validateKey.checksum != newKey.checksum) {
+      throw WalletExceptionConst.invalidAccountDetails;
+    }
+    if (customKeys.contains(newKey) ||
+        customKeys.any((e) => e.checksum == newKey.checksum)) {
+      throw WalletExceptionConst.keyAlreadyExist;
+    }
+    return _addKey([newKey]);
   }
 }

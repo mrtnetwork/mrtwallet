@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/wallet/models/account/address/networks/xrp/addresses/xrp.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/xrp/addresses/xrp.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 

@@ -4,23 +4,24 @@ import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 import 'address_details.dart';
 
 class SwitchOrSelectAccountView extends StatelessWidget {
-  const SwitchOrSelectAccountView({
-    super.key,
-    required this.account,
-    this.currentAddress,
-    required this.showMultiSig,
-  });
-  final NetworkAccountCore account;
-  final CryptoAddress? currentAddress;
+  const SwitchOrSelectAccountView(
+      {super.key,
+      required this.account,
+      required this.showMultiSig,
+      this.isSwitch = false});
+  final Chain account;
   final bool showMultiSig;
+  final bool isSwitch;
   @override
   Widget build(BuildContext context) {
     return MrtViewBuilder<WalletProvider>(
         controller: () => context.watch<WalletProvider>(StateConst.main),
+        repositoryId: StateConst.main,
         removable: false,
         builder: (wallet) {
           if (!account.haveAddress) {
@@ -32,10 +33,9 @@ class SwitchOrSelectAccountView extends StatelessWidget {
                   PageTitleSubtitle(
                     title: "setup_network_address"
                         .tr
-                        .replaceOne(wallet.network.coinParam.token.name),
-                    body: Text("setup_network_address_desc"
-                        .tr
-                        .replaceOne(wallet.network.coinParam.token.name)),
+                        .replaceOne(wallet.wallet.network.coinParam.token.name),
+                    body: Text("setup_network_address_desc".tr.replaceOne(
+                        wallet.wallet.network.coinParam.token.name)),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -52,9 +52,13 @@ class SwitchOrSelectAccountView extends StatelessWidget {
               ),
             );
           }
-          final currentAccount = currentAddress ?? account.address;
-          final addresses = List<CryptoAddress>.from(account.addresses)
-            ..sort((a, b) => a == currentAccount ? 0 : 1);
+          final currentAccount = account.address;
+          List<ChainAccount> addresses =
+              List<ChainAccount>.from(account.addresses)
+                ..sort((a, b) => a == currentAccount ? 0 : 1);
+          if (!showMultiSig) {
+            addresses = addresses.where((e) => !e.multiSigAccount).toList();
+          }
 
           return ListView.builder(
               itemCount: addresses.length,
@@ -62,9 +66,9 @@ class SwitchOrSelectAccountView extends StatelessWidget {
               physics: WidgetConstant.noScrollPhysics,
               itemBuilder: (context, index) {
                 final addr = addresses[index];
-                final bool isSelected = addr == currentAccount;
-                if (!showMultiSig && addr.multiSigAccount) {
-                  return WidgetConstant.sizedBox;
+                bool isSelected = false;
+                if (isSwitch) {
+                  isSelected = addr == currentAccount;
                 }
                 return ContainerWithBorder(
                   backgroundColor: isSelected
@@ -74,11 +78,13 @@ class SwitchOrSelectAccountView extends StatelessWidget {
                     children: [
                       Expanded(
                         child: InkWell(
-                          onTap: () {
-                            if (context.mounted) {
-                              context.pop(addr);
-                            }
-                          },
+                          onTap: isSelected
+                              ? null
+                              : () {
+                                  if (context.mounted) {
+                                    context.pop(addr);
+                                  }
+                                },
                           child: AddressDetailsView(
                               address: addr,
                               color: isSelected

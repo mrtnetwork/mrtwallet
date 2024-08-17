@@ -1,10 +1,11 @@
 import 'package:blockchain_utils/bip/address/ada/ada_addres_type.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
-import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
+import 'package:mrt_wallet/wallet/models/signing/signing.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
 import 'package:on_chain/ada/ada.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 import 'transaction.dart';
 
@@ -14,8 +15,8 @@ mixin CardanoSignerImpl on CardanoTransactionImpl {
       final builder = buildTransaction(transactionFee.balance);
       final signers = getTransactionSignerAccounts();
       final signerKeyIndexes = getTransactionSignersKeysIndex();
-      final tr = await walletProvider.signTransaction(
-          request: SigningRequest(
+      final tr = await walletProvider.wallet.signTransaction(
+          request: WalletSigningRequest(
         addresses: signers,
         network: network,
         sign: (generateSignature) {

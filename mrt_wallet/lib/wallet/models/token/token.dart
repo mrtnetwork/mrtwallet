@@ -1,9 +1,9 @@
 export 'core/core.dart';
-export 'tokens/erc20.dart';
-export 'tokens/issue.dart';
-export 'tokens/spl_token.dart';
-export 'tokens/jetton.dart';
-export 'tokens/trc10.dart';
-export 'tokens/trc20.dart';
+export 'chains_tokens/erc20.dart';
+export 'chains_tokens/issue.dart';
+export 'chains_tokens/spl_token.dart';
+export 'chains_tokens/jetton.dart';
+export 'chains_tokens/trc10.dart';
+export 'chains_tokens/trc20.dart';
 export 'token/token.dart';
 export 'coingecko/coin.dart';

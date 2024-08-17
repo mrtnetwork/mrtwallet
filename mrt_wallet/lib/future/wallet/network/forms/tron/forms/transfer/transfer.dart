@@ -2,8 +2,10 @@ import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/wroker/utils/utils.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronTransferForm extends TronTransactionForm {
   TronTransferForm(
@@ -107,7 +109,7 @@ class TronTransferForm extends TronTransactionForm {
       return TriggerSmartContract(
         ownerAddress: owner.networkAddress,
         contractAddress: _trc20Token!.contractAddress,
-        data: ETHConst.erc20Transfer
+        data: SolidityContractUtils.erc20Transfer
             .encode([destination.value!.networkAddress, amount.value!.balance]),
       );
     } else if (type == TransactionContractType.transferAssetContract) {
@@ -129,5 +131,5 @@ class TronTransferForm extends TronTransactionForm {
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
-      required NetworkAccountCore account}) async {}
+      required TronChain account}) async {}
 }

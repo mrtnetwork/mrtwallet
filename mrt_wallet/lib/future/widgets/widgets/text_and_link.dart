@@ -1,7 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show ColorConst, QuickContextAccsess, Translate, UriUtils;
+import 'package:mrt_wallet/app/core.dart' show UriUtils;
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/constant/constant.dart';
 
 class TextAndLinkView extends StatelessWidget {
   const TextAndLinkView(
@@ -20,7 +21,7 @@ class TextAndLinkView extends StatelessWidget {
             ..onTap = () {
               UriUtils.lunch(url);
             },
-          text: linkDesc ?? "end_link".tr,
+          text: linkDesc ?? "read_more".tr,
           style: context.textTheme.titleSmall?.copyWith(color: ColorConst.blue))
     ]));
   }

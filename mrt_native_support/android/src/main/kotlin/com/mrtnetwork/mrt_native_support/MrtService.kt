@@ -9,6 +9,7 @@ import com.mrtnetwork.mrt_native_support.barcode.CaptureActivityPortrait
 import com.mrtnetwork.mrt_native_support.connection.NetworkEvent
 import com.mrtnetwork.mrt_native_support.encryptions.EncryptionImpl
 import com.mrtnetwork.mrt_native_support.share.ShareImpl
+import com.mrtnetwork.mrt_native_support.webview.MrtWebViewInterface
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.embedding.engine.plugins.service.ServiceAware
@@ -19,7 +20,7 @@ import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.ActivityResultListener
 
 
-abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl,
+abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl, MrtWebViewInterface,
     PluginRegistry.NewIntentListener, ServiceAware, ActivityResultListener {
 
 
@@ -28,6 +29,7 @@ abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl,
         binding.addOnNewIntentListener(this)
         MrtCore.liveData.observeForever { handleObs(it) }
         binding.addActivityResultListener(this)
+
 
     }
 
@@ -48,6 +50,9 @@ abstract class MrtService : ActivityAware, EncryptionImpl, ShareImpl,
 
             "startBarcodeScanner" -> {
                 barcodeScan(result);
+            }
+            "webView"-> {
+                super<MrtWebViewInterface>.onMethodCall(call, result)
             }
         }
 

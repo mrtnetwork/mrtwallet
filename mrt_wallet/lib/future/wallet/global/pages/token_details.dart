@@ -3,20 +3,25 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
 
 enum TokenAction { delete, transfer }
 
-class TokenDetailsModalView extends StatelessWidget {
+class TokenDetailsModalView<NETWORKADDRESS, TOKEN extends TokenCore,
+        CHAINACCOUNT extends ChainAccount<NETWORKADDRESS, TOKEN, NFTCore>>
+    extends StatelessWidget {
   const TokenDetailsModalView(
       {super.key,
       required this.token,
       required this.address,
       required this.transferPath,
+      required this.account,
       this.transferArgruments});
-  final TokenCore token;
-  final CryptoAddress address;
+  final TOKEN token;
+  final CHAINACCOUNT address;
+  final APPCHAINACCOUNT<CHAINACCOUNT> account;
   final String transferPath;
   final Object? transferArgruments;
   @override
@@ -36,8 +41,11 @@ class TokenDetailsModalView extends StatelessWidget {
                   context
                       .openSliverBottomSheet<bool>(
                     "update_token".tr,
-                    child:
-                        UpdateTokenDetailsView(token: token, account: address),
+                    child: UpdateTokenDetailsView(
+                      token: token,
+                      account: account,
+                      address: address,
+                    ),
                   )
                       .then((v) {
                     if (v == true) context.pop();
@@ -49,8 +57,11 @@ class TokenDetailsModalView extends StatelessWidget {
                   context.openSliverDialog(
                       (ctx) => DialogTextView(
                           buttonWidget: AsyncDialogDoubleButtonView(
-                            firstButtonPressed: () => wallet
-                                .removeToken(token, address)
+                            firstButtonPressed: () => wallet.wallet
+                                .removeToken(
+                                    token: token,
+                                    address: address,
+                                    account: account)
                                 .then((value) {
                               if (value.hasError) return;
                               context.pop();
@@ -89,7 +100,7 @@ class _TokenDetailsView extends StatelessWidget {
       required this.transferPath,
       this.transferArgruments});
   final TokenCore token;
-  final CryptoAddress address;
+  final ChainAccount address;
   final WalletProvider wallet;
   final String transferPath;
   final Object? transferArgruments;
@@ -98,7 +109,13 @@ class _TokenDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AddressDetailsView(address: address, showBalance: false),
+        Row(
+          children: [
+            Expanded(
+                child:
+                    AddressDetailsView(address: address, showBalance: false)),
+          ],
+        ),
         const Divider(),
         CircleTokenImgaeView(token.token, radius: 60),
         WidgetConstant.height8,
@@ -113,7 +130,7 @@ class _TokenDetailsView extends StatelessWidget {
               WidgetSpan(
                   alignment: PlaceholderAlignment.middle,
                   child: LaunchBrowserIcon(
-                      url: wallet.network.coinParam
+                      url: wallet.wallet.network.coinParam
                           .getAccountExplorer(token.issuer!),
                       size: APPConst.double20)),
           ], style: context.textTheme.labelLarge),

@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 
 class CosmosAccountPageView extends StatelessWidget {
   const CosmosAccountPageView({required this.chainAccount, super.key});
-  final ChainHandler chainAccount;
+  final CosmosChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return const TabBarView(children: [

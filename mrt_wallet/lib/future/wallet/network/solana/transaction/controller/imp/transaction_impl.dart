@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
-import 'package:on_chain/solana/src/address/sol_address.dart';
+import 'package:on_chain/solana/solana.dart';
 import 'package:on_chain/solana/src/instructions/memo/program.dart';
 
 abstract class SolanaTransactionImpl extends StateController {
@@ -16,7 +16,7 @@ abstract class SolanaTransactionImpl extends StateController {
       required this.apiProvider,
       required this.validator});
   final WalletProvider walletProvider;
-  final NetworkAccountCore<BigInt, SolAddress> account;
+  final SolanaChain account;
   final WalletSolanaNetwork network;
   final SolanaClient apiProvider;
   final ISolanaAddress address;

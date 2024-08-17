@@ -27,11 +27,9 @@ class TonHTTPService extends HTTPService<TonAPIProvider>
   Future<String> get(TonRequestInfo params, {Duration? timeout}) async {
     final String uri =
         params.url(tonApiUrl: tonApiUrl, tonCenterUrl: tonCenter);
-    return await providerGET<String>(uri, timeout: timeout, headers: {
-      "Accept": "application/json",
-      ...params.header,
-      if (auth != null) ...{auth!.key: auth!.value}
-    });
+    return await providerGET<String>(uri,
+        timeout: timeout,
+        headers: {"Accept": "application/json", ...params.header});
   }
 
   @override
@@ -39,12 +37,7 @@ class TonHTTPService extends HTTPService<TonAPIProvider>
     final String uri =
         params.url(tonApiUrl: tonApiUrl, tonCenterUrl: tonCenter);
     return await providerPOST<String>(uri, params.body,
-        headers: {
-          if (auth != null) ...{auth!.key: auth!.value},
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-          ...params.header
-        },
+        headers: {"Accept": "application/json", ...params.header},
         timeout: timeout);
   }
 }

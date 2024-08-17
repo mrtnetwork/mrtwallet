@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class CardanoTransactionCertificateView extends StatefulWidget {
-  final NetworkAccountCore account;
+  final ADAChain account;
   const CardanoTransactionCertificateView(this.account, {super.key});
 
   @override
@@ -45,7 +45,7 @@ class _CardanoTransactionCertificateViewState
           view: addr.rewardAddress!.address,
           type: addr.rewardAddress!.addressType.name,
           networkAddress: addr.rewardAddress!,
-          account: addr);
+          account: addr as NETWORKCHAINACCOUNT<ADARewardAddress>);
       setState(() {});
     }
   }

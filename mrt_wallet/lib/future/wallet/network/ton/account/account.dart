@@ -4,27 +4,28 @@ import 'package:mrt_wallet/future/wallet/global/pages/token_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TonAccountPageView extends StatelessWidget {
   const TonAccountPageView({required this.chainAccount, super.key});
-  final ChainHandler chainAccount;
+  final TonChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return TabBarView(children: [
       const _TonServices(),
-      _TonJettonsView(chainAccount: chainAccount),
+      _TonJettonsView(account: chainAccount),
     ]);
   }
 }
 
 class _TonJettonsView extends StatelessWidget {
-  const _TonJettonsView({required this.chainAccount});
-  final ChainHandler chainAccount;
-  ITonAddress get account => chainAccount.account.address as ITonAddress;
+  const _TonJettonsView({required this.account});
+  final TonChain account;
+  ITonAddress get address => account.address;
 
   @override
   Widget build(BuildContext context) {
-    final tokens = account.tokens;
+    final tokens = address.tokens;
     return AccountTabbarScrollWidget(slivers: [
       tokens.isEmpty
           ? SliverFillRemaining(
@@ -63,15 +64,17 @@ class _TonJettonsView extends StatelessWidget {
             )),
       SliverList.builder(
         itemBuilder: (context, index) {
-          final TonJettonToken token = account.tokens[index];
+          final TonJettonToken token = address.tokens[index];
           return ContainerWithBorder(
             onRemove: () {
               context.openDialogPage<TonJettonToken>("token_info".tr,
                   child: (ctx) => TokenDetailsModalView(
-                      token: token,
-                      address: account,
-                      transferPath: PageRouter.tonTransfer,
-                      transferArgruments: chainAccount));
+                        token: token,
+                        address: address,
+                        transferPath: PageRouter.tonTransfer,
+                        transferArgruments: account,
+                        account: account,
+                      ));
             },
             onRemoveWidget: WidgetConstant.sizedBox,
             child: Row(
@@ -94,7 +97,7 @@ class _TonJettonsView extends StatelessWidget {
             ),
           );
         },
-        itemCount: account.tokens.length,
+        itemCount: address.tokens.length,
         addAutomaticKeepAlives: false,
         addRepaintBoundaries: false,
       )

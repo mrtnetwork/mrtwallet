@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/transaction/controller/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
@@ -29,10 +29,6 @@ class SubstrateTransactionMemoView extends StatelessWidget {
         ContainerWithBorder(
             onRemoveIcon: const Icon(Icons.add_box),
             onRemove: () {
-              if (controller.reachedBatchLimit) {
-                context.showAlert("up_to_4_message_single_transaction".tr);
-                return;
-              }
               controller.onTapMemo(() async {
                 final result = await context.openSliverBottomSheet<String>(
                   "transaction_memo".tr,

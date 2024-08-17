@@ -1,4 +1,7 @@
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/constant/global/repository.dart';
+import 'package:mrt_wallet/app/live_listener/live.dart';
+import 'package:mrt_wallet/app/synchronized/basic_lock.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/repository/repository.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
@@ -14,6 +17,7 @@ enum NodeClientStatus {
   bool get isDisconnect => this == NodeClientStatus.disconnect;
 }
 
+/// with BaseRepository
 abstract class NetworkClient<T, P extends APIProvider> with BaseRepository {
   NetworkClient();
   abstract final WalletNetwork network;
@@ -47,6 +51,10 @@ abstract class NetworkClient<T, P extends APIProvider> with BaseRepository {
 
   Future<void> init() async {
     await _lock.synchronized(() async => await _init());
+  }
+
+  void dispose() {
+    service.disposeService();
   }
 
   @override

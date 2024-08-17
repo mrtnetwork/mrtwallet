@@ -3,6 +3,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronUnDelegatedResourceV2Form extends TronTransactionForm {
   @override
@@ -157,13 +158,13 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
-      required NetworkAccountCore account}) async {
+      required TronChain account}) async {
     _provider ??= provider;
     _address ??= address;
     final delegated = await _provider!.getDelegatedResourceAddresses(address);
     resourceAddresses = delegated
         .map((e) =>
-            account.getReceiptAddress(e) as ReceiptAddress<TronAddress>? ??
+            account.getReceiptAddress(e) ??
             ReceiptAddress<TronAddress>(
                 view: e, type: null, networkAddress: TronAddress(e)))
         .toList();

@@ -1,7 +1,8 @@
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'transaction.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 mixin CosmosTransactionConditions on CosmosTransactiomImpl {
   late final BaseAccount _ownerAccount;

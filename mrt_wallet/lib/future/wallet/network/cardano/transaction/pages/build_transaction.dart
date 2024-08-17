@@ -8,23 +8,25 @@ import 'package:mrt_wallet/future/wallet/network/cardano/transaction/pages/utxo_
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'send_transaction.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SendCardanoTransactionView extends StatelessWidget {
   const SendCardanoTransactionView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletCardanoNetwork, ICardanoAddress>(
-        childBulder: (wallet, account, address, network, onAccountChanged) {
+    return NetworkAccountControllerView<ADAChain>(
+        childBulder: (wallet, account, onAccountChanged) {
           return MrtViewBuilder<CardanoTransactionStateController>(
             controller: () => CardanoTransactionStateController(
                 walletProvider: wallet, chainAccount: account),
+            repositoryId: StateConst.cardano,
             builder: (controller) {
               return PageProgress(
                 key: controller.progressKey,
                 initialStatus: StreamWidgetStatus.progress,
                 backToIdle: APPConst.oneSecoundDuration,
-                child: () => CustomScrollView(
+                child: (c) => CustomScrollView(
                   slivers: [
                     SliverToBoxAdapter(
                       child: ConstraintsBoxView(
@@ -84,7 +86,7 @@ class _SelectAccountUtxoState extends State<_SelectAccountUtxo> {
   late final List<ICardanoAddress> addresses =
       List.from(widget.controller.addresses)
         ..sort(
-          (a, b) => a == widget.controller.account.address ? 0 : 1,
+          (a, b) => a == widget.controller.chainAccount.address ? 0 : 1,
         );
   late final ICardanoAddress currentAccount = addresses.first;
 

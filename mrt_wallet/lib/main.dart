@@ -2,10 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mrt_native_support/models/size/models/size.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+
+import 'dart:ui' as ui;
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -17,25 +21,28 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() async {
+  // run();
   runZonedGuarded(run, (error, stack) {
-    WalletLogging.debugPrint("zone error $error $stack");
+    WalletLogging.log("zone error $error $stack");
   });
 }
 
 void run() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
-
   if (PlatformInterface.appPlatform.isDesktop) {
-    await PlatformInterface.interface.desktop.init();
-    await PlatformInterface.interface.desktop.waitUntilReadyToShow();
-    await PlatformInterface.interface.desktop
-        .setBounds(null, size: const Size(500, 700));
-    await PlatformInterface.interface.desktop.setResizable(false);
+    await PlatformInterface.instance.desktop.init();
+    await PlatformInterface.instance.desktop.waitUntilReadyToShow();
+    final pixelRatio =
+        ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+    await PlatformInterface.instance.desktop.setBounds(
+        pixelRatio: pixelRatio,
+        size: const WidgetSize(width: 500, height: 700));
+    await PlatformInterface.instance.desktop.setResizable(false);
   }
+  final config = await PlatformInterface.instance.getConfig();
   final materialData =
-      await PlatformInterface.interface.readSecure(StorageConst.setting);
-  final config = await PlatformInterface.interface.getConfig();
+      await PlatformInterface.instance.readSecure(StorageConst.setting);
   final setting = APPSetting.fromHex(materialData, config);
   ThemeController.fromAppSetting(setting);
   runApp(StateRepository(child: MyBTC(setting: setting)));
@@ -52,6 +59,7 @@ class MyBTC extends StatelessWidget {
           WalletProvider(StateRepository.navigatorKey(context), setting),
       removable: false,
       stateId: StateConst.main,
+      repositoryId: StateConst.main,
       builder: (m) {
         return MaterialApp(
           scaffoldMessengerKey: StateRepository.messengerKey(context),

@@ -1,5 +1,6 @@
-import 'package:mrt_wallet/app/core.dart';
-import '../core/balance.dart';
+import 'package:mrt_wallet/app/utils/price/utils.dart';
+import 'package:mrt_wallet/app/utils/string/utils.dart';
+import 'package:mrt_wallet/wallet/models/balance/core/balance.dart';
 
 class IntegerBalance implements BalanceCore<BigInt> {
   factory IntegerBalance.zero(int currencyDecimal,
@@ -30,7 +31,7 @@ class IntegerBalance implements BalanceCore<BigInt> {
     _price = PriceUtils.encodePrice(updateBalance, currencyDecimal,
         amoutDecimal: showDecimal);
     _balance = updateBalance;
-    _viewPrice = _price.to3Digits;
+    _viewPrice = StrUtils.to3Digits(_price, separator: ",");
   }
 
   @override

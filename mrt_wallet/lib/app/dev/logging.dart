@@ -1,16 +1,22 @@
-class WalletLogging {
-  static bool get isDebug => false;
-  static debugPrint(dynamic message, {dynamic prefix, bool usePrint = false}) {}
+// ignore_for_file: avoid_print
 
-  static void debug<T>(T? Function() t, {bool trace = false}) {
-    try {
-      t();
-    } catch (e, s) {
-      String message = "${e.runtimeType}: ${e.toString()}";
-      if (trace) {
-        message += "\n $s";
-      }
-      WalletLogging.debugPrint(message, prefix: "DEBUG-");
-    }
+class WalletLogging {
+  static bool get isDebug => true;
+
+  static void log(String text) {
+    // print('\x1B[31m$text\x1B[0m');
+    print(text);
+  }
+
+  static void warning(String text) {
+    // print('\x1B[33m$text\x1B[0m');
+    print(text);
+  }
+
+  static void webview(String text) {
+    // print('\x1B[32m$text\x1B[0m');
+    print(text);
   }
 }
+
+///printWarning

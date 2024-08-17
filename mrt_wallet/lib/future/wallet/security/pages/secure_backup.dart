@@ -3,7 +3,8 @@ import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/backup/mrt_backup.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/wallet/models/backup/backup.dart';
 
 class GenerateBackupView extends StatefulWidget {
   const GenerateBackupView(
@@ -38,9 +39,9 @@ class _SecureBackupViewState extends State<GenerateBackupView> with SafeState {
     progressKey.progressText("creating_backup_desc".tr, sliver: false);
     final MethodResult<String> result;
     if (widget.type == MrtBackupTypes.wallet) {
-      result = await wallet.generateWalletBackup(widget.password);
+      result = await wallet.wallet.generateWalletBackup(widget.password);
     } else {
-      result = await wallet.generateMrtBackup(
+      result = await wallet.wallet.generateMrtBackup(
         data: widget.data,
         type: useKeyStore ? MrtBackupTypes.keystore : widget.type,
         password: widget.password,
@@ -65,7 +66,7 @@ class _SecureBackupViewState extends State<GenerateBackupView> with SafeState {
     }
     buttonState.process();
     final result = await MethodUtils.call(() async {
-      final name = "credentials_${DateTime.now().toFileName()}.txt";
+      final name = "credentials_${StrUtils.toFileName(DateTime.now())}.txt";
       final toFile = await FileUtils.writeString(backup!, name);
       return await ShareUtils.shareFile(
         toFile,
@@ -119,7 +120,7 @@ class _SecureBackupViewState extends State<GenerateBackupView> with SafeState {
         PageProgress(
             key: progressKey,
             backToIdle: APPConst.oneSecoundDuration,
-            child: () => backup == null
+            child: (c) => backup == null
                 ? Column(
                     children: [
                       if (canUseKeyStore)

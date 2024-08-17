@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+
 import 'package:mrt_wallet/app/core.dart'
-    show APPConst, MethodUtils, QuickContextAccsess, StateConst, Translate;
+    show APPConst, MethodUtils, StateConst;
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/network/network.dart';
-
-import 'package:mrt_wallet/wallet/wallet.dart'
-    show CryptoAddress, ICardanoAddress;
+import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wroker/keys/keys.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
@@ -18,7 +17,7 @@ class AccountPublicKeyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CryptoAddress account = context.getArgruments();
+    final ChainAccount account = context.getArgruments();
     return PasswordCheckerView(
         accsess: WalletAccsessType.unlock,
         onAccsess: (credential, password, network) =>
@@ -31,7 +30,7 @@ class AccountPublicKeyView extends StatelessWidget {
 
 class _BipAccountPublicKey extends StatefulWidget {
   const _BipAccountPublicKey({required this.account, required this.network});
-  final CryptoAddress account;
+  final ChainAccount account;
   final WalletNetwork network;
   @override
   State<_BipAccountPublicKey> createState() => __BipAccountPublicKeyState();
@@ -58,7 +57,7 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
     if (inited) return;
     inited = true;
 
-    final wallet = context.watch<WalletProvider>(StateConst.main);
+    final wallet = context.watch<WalletProvider>(StateConst.main).wallet;
     final result = await wallet.getAccountPubKys(account: widget.account);
     if (result.hasResult) {
       pubKeys.addAll(result.result);
@@ -107,7 +106,7 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
       initialStatus: StreamWidgetStatus.progress,
       backToIdle: APPConst.oneSecoundDuration,
       initialWidget: ProgressWithTextView(text: "retrieve_the_public".tr),
-      child: () => CustomScrollView(
+      child: (c) => CustomScrollView(
         shrinkWrap: true,
         slivers: [
           WidgetConstant.sliverPaddingVertial20,

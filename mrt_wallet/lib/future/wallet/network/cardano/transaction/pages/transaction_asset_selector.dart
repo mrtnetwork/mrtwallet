@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/setup_amount.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 typedef _OnSelectAssets = Future<BigInt?> Function(BigInt? value);
 
@@ -70,7 +70,7 @@ class _CardanoTransactionAssetSelectorViewState
           (r?.balance ?? BigInt.zero);
       final val = await onSelectAssets(
           rAssets + (assetsToTransfer[assets]?.balance ?? BigInt.zero));
-      if (val == null || val.isNegative) return;
+      if (val == null || val <= BigInt.zero) return;
       assetsToTransfer[assets] = IntegerBalance(val, assets.decimal);
     } finally {
       setState(() {});
@@ -141,7 +141,6 @@ class _CardanoTransactionAssetSelectorViewState
                           shrinkWrap: true,
                           itemCount: assets.length,
                           physics: WidgetConstant.noScrollPhysics,
-                          // controller: widget.controller,
                           itemBuilder: (c, index) {
                             final asset = assets[index];
                             return ContainerWithCheckBoxAndBorder(
@@ -186,26 +185,37 @@ class _CardanoTransactionAssetSelectorViewState
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Flexible(
-                                        child: Text(
-                                          asset.name.name,
-                                          maxLines: 1,
-                                          style: context.textTheme.bodySmall,
+                                      CircleTokenImgaeView(asset.token,
+                                          radius: 25),
+                                      WidgetConstant.width8,
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(asset.token.nameView,
+                                                maxLines: 1,
+                                                style: context
+                                                    .textTheme.labelLarge),
+                                            if (assetsToTransfer
+                                                .containsKey(asset)) ...[
+                                              CoinPriceView(
+                                                token: asset.token,
+                                                balance:
+                                                    assetsToTransfer[asset],
+                                                style: context
+                                                    .textTheme.titleMedium,
+                                              )
+                                            ]
+                                          ],
                                         ),
                                       ),
                                       CoinPriceView(
                                           token: asset.token,
-                                          balance: asset.balance)
+                                          balance: asset.balance,
+                                          style: context.textTheme.titleMedium)
                                     ],
                                   ),
-                                  if (assetsToTransfer.containsKey(asset)) ...[
-                                    CoinPriceView(
-                                      token: asset.token,
-                                      balance: assetsToTransfer[asset],
-                                      style: context.textTheme.titleMedium
-                                          ?.copyWith(color: Colors.red),
-                                    )
-                                  ]
                                 ],
                               ),
                             );

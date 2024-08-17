@@ -2,8 +2,10 @@ import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
 import 'package:flutter/material.dart';
 
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/text_field/input_formaters.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SetupNetworkAmount extends StatefulWidget {
   SetupNetworkAmount(
@@ -306,14 +308,8 @@ class _SetupDecimalTokenAmountViewState
               Column(
                 children: [
                   CircleTokenImgaeView(widget.token, radius: 60),
-                  Row(
-                    children: [
-                      Flexible(
-                          flex: 3,
-                          child: Text(widget.token.name,
-                              style: context.textTheme.labelLarge)),
-                    ],
-                  )
+                  OneLineTextWidget(widget.token.nameView,
+                      style: context.textTheme.labelLarge)
                 ],
               ),
             ],

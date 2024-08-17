@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/extention/app_extentions/context.dart'
+import 'package:mrt_wallet/future/state_managment/extention/app_extentions/context.dart'
     show QuickContextAccsess;
 import 'package:mrt_wallet/app/models/models/typedef.dart';
 
@@ -22,7 +22,8 @@ class ContainerWithBorder extends StatelessWidget {
       this.shadow = false,
       this.onTapWhenOnRemove = true,
       this.iconAlginment = CrossAxisAlignment.center,
-      this.onTapError});
+      this.onTapError,
+      this.constraints = WidgetConstant.constraintsMinHeight60});
   final Widget child;
   final EdgeInsets padding;
   final EdgeInsets margin;
@@ -37,6 +38,7 @@ class ContainerWithBorder extends StatelessWidget {
   final bool onTapWhenOnRemove;
   final CrossAxisAlignment iconAlginment;
   final DynamicVoid? onTapError;
+  final BoxConstraints? constraints;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -48,6 +50,7 @@ class ContainerWithBorder extends StatelessWidget {
           child: Container(
             padding: padding,
             margin: margin,
+            constraints: constraints,
             decoration: BoxDecoration(
                 color: backgroundColor ?? context.colors.primaryContainer,
                 borderRadius: borderRadius ?? WidgetConstant.border8,
@@ -67,6 +70,7 @@ class ContainerWithBorder extends StatelessWidget {
                         strokeAlign: 2)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
                   crossAxisAlignment: iconAlginment,

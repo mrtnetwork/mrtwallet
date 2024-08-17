@@ -1,23 +1,24 @@
 import 'package:blockchain_utils/cbor/core/cbor.dart';
 import 'package:blockchain_utils/cbor/types/cbor_tag.dart';
 import 'package:blockchain_utils/cbor/types/list.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 
 import 'package:mrt_wallet/wallet/api/services/service.dart';
+import 'package:mrt_wallet/wallet/api/utils/utils.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 import 'provider.dart';
 
 class ElectrumAPIProvider extends BaseBitcoinAPIProvider {
   const ElectrumAPIProvider._(
-      {required String serviceName,
-      required String websiteUri,
-      required ServiceProtocol protocol,
-      required ProviderAuth? auth,
+      {required super.serviceName,
+      required super.websiteUri,
+      required super.protocol,
+      required super.auth,
+      required super.identifier,
       this.websocket,
       this.tcp,
-      this.ssl})
-      : super(serviceName, websiteUri, protocol, auth);
+      this.ssl});
   final String? websocket;
   final String? tcp;
   final String? ssl;
@@ -49,6 +50,7 @@ class ElectrumAPIProvider extends BaseBitcoinAPIProvider {
     required String websiteUri,
     required String url,
     required ServiceProtocol protocol,
+    required String identifier,
     ProviderAuth? auth,
   }) {
     switch (protocol) {
@@ -57,6 +59,7 @@ class ElectrumAPIProvider extends BaseBitcoinAPIProvider {
             serviceName: serviceName,
             websiteUri: websiteUri,
             tcp: url,
+            identifier: identifier,
             protocol: protocol,
             auth: auth);
       case ServiceProtocol.ssl:
@@ -64,6 +67,7 @@ class ElectrumAPIProvider extends BaseBitcoinAPIProvider {
             serviceName: serviceName,
             websiteUri: websiteUri,
             ssl: url,
+            identifier: identifier,
             protocol: protocol,
             auth: auth);
       default:
@@ -72,6 +76,7 @@ class ElectrumAPIProvider extends BaseBitcoinAPIProvider {
             websiteUri: websiteUri,
             websocket: url,
             protocol: protocol,
+            identifier: identifier,
             auth: auth);
     }
   }
@@ -99,7 +104,8 @@ class ElectrumAPIProvider extends BaseBitcoinAPIProvider {
         ssl: ssl,
         protocol: protocol,
         auth: cbor.getCborTag(5)?.to<ProviderAuth, CborTagValue>(
-            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)));
+            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)),
+        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(6)));
   }
 
   @override

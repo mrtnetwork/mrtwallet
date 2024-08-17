@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:blockchain_utils/crypto/crypto/crc32/crc32.dart';
 import 'package:blockchain_utils/utils/utils.dart';
+import 'package:flutter/services.dart';
+import 'package:mrt_wallet/app/error/exception/generic_exception.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/native_impl/io/path_provider.dart';
 
@@ -40,5 +42,23 @@ Future<void> _validate(String path, int checksum) async {
   final currentChecksum = Crc32.quickIntDigest(fileBytes);
   if (currentChecksum != checksum) {
     throw WalletExceptionConst.fileVerificationFiled;
+  }
+}
+
+Future<List<int>> loadAssetBuffer(String assetPath) async {
+  try {
+    final buffer = await rootBundle.load(assetPath);
+    return buffer.buffer.asUint8List();
+  } catch (e) {
+    throw const GenericException("file_does_not_exist");
+  }
+}
+
+Future<String> loadAssetText(String assetPath) async {
+  try {
+    final data = await rootBundle.loadString(assetPath);
+    return data;
+  } catch (e) {
+    throw const GenericException("file_does_not_exist");
   }
 }

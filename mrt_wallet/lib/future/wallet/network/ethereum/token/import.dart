@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:on_chain/on_chain.dart';
 
 class ImportERC20TokenView extends StatelessWidget {
@@ -13,15 +13,10 @@ class ImportERC20TokenView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletEthereumNetwork, IEthAddress>(
-        childBulder:
-            (walletProvider, account, address, network, switchRippleAccount) {
+    return NetworkAccountControllerView<EthereumChain>(
+        childBulder: (walletProvider, account, switchRippleAccount) {
           return _ImportErc20TokenView(
-              walletProvider: walletProvider,
-              account: account.account,
-              network: network,
-              apiProvider: account.provider()!,
-              address: address);
+              account: account, apiProvider: account.provider()!);
         },
         title: "import_token".tr);
   }
@@ -29,22 +24,16 @@ class ImportERC20TokenView extends StatelessWidget {
 
 class _ImportErc20TokenView extends StatefulWidget {
   const _ImportErc20TokenView(
-      {required this.walletProvider,
-      required this.account,
-      required this.network,
-      required this.apiProvider,
-      required this.address});
-  final WalletProvider walletProvider;
-  final NetworkAccountCore account;
-  final WalletEthereumNetwork network;
+      {required this.account, required this.apiProvider});
+  final EthereumChain account;
   final EthereumClient apiProvider;
-  final IEthAddress address;
 
   @override
   State<_ImportErc20TokenView> createState() => __ImportErc20TokenViewState();
 }
 
 class __ImportErc20TokenViewState extends State<_ImportErc20TokenView> {
+  late final address = widget.account.address;
   ReceiptAddress<ETHAddress>? contractAddress;
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>(debugLabel: "__ImportErc20TokenViewState");
@@ -62,7 +51,7 @@ class __ImportErc20TokenViewState extends State<_ImportErc20TokenView> {
     progressKey.progressText("retrieving_contract_detauls".tr);
     final result = await MethodUtils.call(() async {
       final data = await widget.apiProvider.getAccountERC20Token(
-          widget.address.networkAddress, contractAddress!.networkAddress);
+          address.networkAddress, contractAddress!.networkAddress);
       return data;
     });
     if (result.hasError) {
@@ -70,8 +59,8 @@ class __ImportErc20TokenViewState extends State<_ImportErc20TokenView> {
     } else if (result.result == null) {
       progressKey.errorText("smart_contract_not_found".tr);
     } else {
-      final addResult =
-          await wallet.addNewToken(result.result!, widget.address);
+      final addResult = await wallet.wallet.addNewToken(
+          account: widget.account, address: address, token: result.result!);
 
       if (addResult.hasError) {
         progressKey.errorText(addResult.error!.tr);
@@ -93,7 +82,7 @@ class __ImportErc20TokenViewState extends State<_ImportErc20TokenView> {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => ConstraintsBoxView(
+      child: (c) => ConstraintsBoxView(
           padding: WidgetConstant.padding20,
           alignment: Alignment.center,
           child: token != null

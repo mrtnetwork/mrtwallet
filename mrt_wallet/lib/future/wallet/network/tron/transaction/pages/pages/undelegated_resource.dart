@@ -5,6 +5,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/resource_v2/forms/undelegated_resource.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronUnDelegatedResourceFieldsView extends StatelessWidget {
   const TronUnDelegatedResourceFieldsView(
@@ -12,8 +13,8 @@ class TronUnDelegatedResourceFieldsView extends StatelessWidget {
       required this.address,
       required this.validator,
       super.key});
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final TronChain account;
   final TronUnDelegatedResourceV2Form validator;
 
   @override
@@ -145,7 +146,7 @@ class _ResourceDetailsView extends StatelessWidget {
       required this.onChanged,
       required this.selected});
   final DelegatedAccountResourceInfo resource;
-  final NetworkAccountCore account;
+  final TronChain account;
   final _OnChangeResource onChanged;
   final DelegateResourceDetailsCore? selected;
   @override

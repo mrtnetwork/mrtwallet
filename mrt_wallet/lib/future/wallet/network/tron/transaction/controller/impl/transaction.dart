@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -16,7 +16,7 @@ abstract class TronTransactionImpl extends StateController {
   TronChainParameters get tronChainParameters;
   TronTransactionForm get field;
   final WalletProvider walletProvider;
-  final NetworkAccountCore account;
+  final TronChain account;
   final WalletTronNetwork network;
   final TronClient apiProvider;
   final ITronAddress address;

@@ -1,18 +1,18 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/wallet/constant/networks/ethereum.dart';
+import 'package:mrt_wallet/wroker/utils/solidity/solidity.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solidity/address/core.dart';
 
-class RPCERC20Symbol extends ETHRPCRequest<String?> {
-  RPCERC20Symbol(this.contractAddress, {BlockTagOrNumber? blockNumber})
-      : super(blockNumber: blockNumber ?? BlockTagOrNumber.latest);
+class RPCERC20Name extends ETHRPCRequest<String?> {
+  RPCERC20Name(this.contractAddress, {BlockTagOrNumber? blockNumber})
+      : super(blockNumber: blockNumber ?? BlockTagOrNumber.pending);
 
   @override
   EthereumMethods get method => EthereumMethods.call;
 
   final SolidityAddress contractAddress;
 
-  final AbiFunctionFragment _function = ETHConst.erc20Symbol;
+  final AbiFunctionFragment _function = SolidityContractUtils.erc20Name;
 
   @override
   String? onResonse(result) {

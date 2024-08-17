@@ -7,8 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/bch/transaction/transaction/bui
 import 'package:mrt_wallet/future/wallet/network/bitcoin/transaction/pages/send_transaction.dart';
 import 'package:mrt_wallet/future/wallet/network/bitcoin/transaction/pages/utxo_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
-import 'package:mrt_wallet/wallet/chain/handler/chain.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SendBitcoinCashTransactionView extends StatelessWidget {
   const SendBitcoinCashTransactionView({super.key});
@@ -16,14 +15,15 @@ class SendBitcoinCashTransactionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
-    final ChainHandler appChain = context.getArgruments();
+    final BitcoinChain appChain = context.getArgruments();
     return MrtViewBuilder<BitcoinCashStateController>(
       controller: () => BitcoinCashStateController(
           walletProvider: wallet, chainAccount: appChain),
+      repositoryId: StateConst.bitcoin,
       builder: (controller) {
         return PopScope(
           canPop: controller.canPopPage,
-          onPopInvoked: (didPop) {
+          onPopInvokedWithResult: (didPop, _) {
             if (!didPop) {
               controller.onBackButton();
             }
@@ -35,7 +35,7 @@ class SendBitcoinCashTransactionView extends StatelessWidget {
             body: PageProgress(
               key: controller.progressKey,
               backToIdle: APPConst.oneSecoundDuration,
-              child: () => CustomScrollView(
+              child: (c) => CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
                     child: ConstraintsBoxView(

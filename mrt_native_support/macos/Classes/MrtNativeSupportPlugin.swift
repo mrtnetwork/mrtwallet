@@ -17,6 +17,7 @@ public class MrtNativeSupportPlugin: NSObject, FlutterPlugin {
     let channel = FlutterMethodChannel(name: "com.metnetwork.mrt_n.methodChannel", binaryMessenger: registrar.messenger)
     let instance = MrtNativeSupportPlugin(registrar, channel)
     registrar.addMethodCallDelegate(instance, channel: channel)
+
   }
 
   private var windowManager: WindowManager = WindowManager()

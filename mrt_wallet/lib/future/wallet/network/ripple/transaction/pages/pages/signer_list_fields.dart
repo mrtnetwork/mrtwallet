@@ -8,6 +8,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class RippleSetSignerListFieldsView extends StatelessWidget {
   const RippleSetSignerListFieldsView(
@@ -15,8 +16,8 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
       required this.address,
       required this.validator,
       super.key});
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final RippleChain account;
   final RippleSignerListForm validator;
 
   @override
@@ -122,7 +123,7 @@ class _SignerEntryView extends StatelessWidget {
 
 class _SetupRippleSignerEntries extends StatefulWidget {
   const _SetupRippleSignerEntries({required this.account});
-  final NetworkAccountCore account;
+  final RippleChain account;
 
   @override
   State<_SetupRippleSignerEntries> createState() =>
@@ -131,7 +132,7 @@ class _SetupRippleSignerEntries extends StatefulWidget {
 
 class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
     with SafeState {
-  ReceiptAddress? address;
+  ReceiptAddress<XRPAddress>? address;
   BigRational? signerWegith;
   String? walletLocator;
 
@@ -142,7 +143,7 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
     setState(() {});
   }
 
-  void onSelectAddress(ReceiptAddress? newAddress) {
+  void onSelectAddress(ReceiptAddress<XRPAddress>? newAddress) {
     address = newAddress;
     _isReady();
   }

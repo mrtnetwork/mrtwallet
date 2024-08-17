@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/xrp/addresses/xrp.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/xrp/addresses/xrp.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleUtils {

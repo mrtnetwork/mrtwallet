@@ -4,13 +4,13 @@ import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
 
-class BItcoinAccountUtxos {
-  BItcoinAccountUtxos._(
+class BitcoinAccountUtxos {
+  BitcoinAccountUtxos._(
       {required this.address,
       required this.utxoAddressDetails,
       this.utxosWithBalance,
       this.sumOfUtxos});
-  factory BItcoinAccountUtxos(
+  factory BitcoinAccountUtxos(
       {required String address,
       required UtxoAddressDetails addressDetails,
       List<UtxoWithAddress>? utxos,
@@ -23,14 +23,14 @@ class BItcoinAccountUtxos {
           utxos.fold(BigInt.zero,
               (previousValue, element) => previousValue + element.utxo.value),
           network.coinParam.decimal);
-      return BItcoinAccountUtxos._(
+      return BitcoinAccountUtxos._(
           address: address,
           sumOfUtxos: sumOfUtxos,
           // utxos: utxos,
           utxosWithBalance: utxosWithBalance,
           utxoAddressDetails: addressDetails);
     }
-    return BItcoinAccountUtxos._(
+    return BitcoinAccountUtxos._(
         address: address, utxoAddressDetails: addressDetails);
   }
   final String address;

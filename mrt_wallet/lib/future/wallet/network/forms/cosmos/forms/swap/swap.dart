@@ -1,5 +1,5 @@
 import 'package:cosmos_sdk/cosmos_sdk.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/cosmos/cosmos.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/cosmos/cosmos.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/cosmos/forms/core/cosmos.dart';
 

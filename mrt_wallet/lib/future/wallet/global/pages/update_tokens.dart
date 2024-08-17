@@ -4,12 +4,19 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
-class UpdateTokenDetailsView extends StatefulWidget {
+class UpdateTokenDetailsView<NETWORKADDRESS, TOKEN extends TokenCore,
+        CHAINACCOUNT extends ChainAccount<NETWORKADDRESS, TOKEN, NFTCore>>
+    extends StatefulWidget {
   const UpdateTokenDetailsView(
-      {super.key, required this.token, required this.account});
-  final TokenCore token;
-  final CryptoAddress account;
+      {super.key,
+      required this.token,
+      required this.account,
+      required this.address});
+  final TOKEN token;
+  final APPCHAINACCOUNT<CHAINACCOUNT> account;
+  final CHAINACCOUNT address;
 
   @override
   State<UpdateTokenDetailsView> createState() => _UpdateTokenDetailsViewState();
@@ -44,8 +51,8 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
     return null;
   }
 
-  void onChangeDicmal(String? v) {
-    decimal = int.tryParse(v ?? "") ?? 0;
+  void onChangeDicmal(int v) {
+    decimal = v;
   }
 
   void onChangeApiId(String v) {
@@ -132,7 +139,7 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
       market = null;
     }
     progressKey.progressText("updating_token".tr);
-    final update = await wallet.updateToken(
+    final update = await wallet.wallet.updateToken(
         token: widget.token,
         updatedToken: Token(
           name: tokenName,
@@ -141,7 +148,8 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
           market: market,
           assetLogo: token.assetLogo,
         ),
-        address: widget.account);
+        address: widget.address,
+        account: widget.account);
     if (update.hasError) {
       progressKey.errorText(update.error!);
       return;
@@ -157,7 +165,7 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
       initialStatus: StreamWidgetStatus.idle,
       initialWidget:
           ProgressWithTextView(text: "retrieving_token_information".tr),
-      child: () => Form(
+      child: (c) => Form(
         key: formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

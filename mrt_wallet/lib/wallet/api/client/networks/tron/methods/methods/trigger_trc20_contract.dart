@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/wallet/constant/networks/ethereum.dart';
+import 'package:mrt_wallet/wroker/utils/solidity/solidity.dart';
 import 'package:on_chain/solidity/contract/fragments.dart';
 import 'package:on_chain/tron/tron.dart';
 
@@ -18,7 +18,7 @@ class TronRequestTriggerTRC20TransferContract
 
   @override
   final bool visible;
-  final AbiFunctionFragment _fragment = ETHConst.erc20Transfer;
+  final AbiFunctionFragment _fragment = SolidityContractUtils.erc20Transfer;
 
   /// wallet/triggerconstantcontract
   @override

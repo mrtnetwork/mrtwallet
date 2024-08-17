@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/theme/theme.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/wallet/setting/color_selector.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/others/models/status.dart';
 import 'package:mrt_wallet/wallet/wallet.dart' show HDWallet;
@@ -8,6 +10,7 @@ import 'account_page.dart';
 import 'login_page.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'setup.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -15,35 +18,36 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
-
     return MrtViewBuilder<WalletProvider>(
       removable: false,
       controller: () => wallet,
+      repositoryId: StateConst.main,
       builder: (model) {
         return MaterialPageView(
           child: RefreshIndicator(
+            key: wallet.wallet.refreshState,
             notificationPredicate: (notification) {
-              return model.isOpen && notification.metrics.pixels == 0;
+              return wallet.wallet.isOpen;
             },
-            onRefresh: model.updateBalance,
+            onRefresh: wallet.wallet.updateBalance,
             child: CustomScrollView(
               physics: WidgetConstant.noScrollPhysics,
               slivers: [
                 _AccountAppBar(wallet),
                 SliverFillRemaining(
                   child: PageProgress(
-                    key: wallet.pageStatusHandler,
+                    key: wallet.wallet.pageStatusHandler,
                     backToIdle: APPConst.oneSecoundDuration,
                     initialStatus: StreamWidgetStatus.progress,
                     initialWidget:
                         ProgressWithTextView(text: "launch_the_wallet".tr),
-                    child: () => APPAnimatedSwitcher(
-                        enable: wallet.homePageStatus,
+                    child: (c) => APPAnimatedSwitcher(
+                        enable: wallet.wallet.homePageStatus,
                         widgets: {
                           WalletStatus.setup: (c) =>
                               const WalletSetupPageWidget(),
                           WalletStatus.ready: (c) => APPAnimatedSwitcher(
-                                  enable: wallet.isOpen,
+                                  enable: wallet.wallet.isOpen,
                                   widgets: {
                                     true: (c) =>
                                         NetworkAccountPageView(wallet: model),
@@ -66,17 +70,30 @@ class _AccountAppBar extends StatelessWidget {
   final WalletProvider wallet;
   @override
   Widget build(BuildContext context) {
-    bool isReady = wallet.homePageStatus.isReady;
+    bool isReady = wallet.wallet.homePageStatus.isReady;
+    bool isLock = wallet.wallet.isLock;
     return SliverAppBar(
       centerTitle: false,
       toolbarHeight: isReady ? kToolbarHeight : 0,
-      title: isReady ? Text(wallet.wallet.name) : null,
+      title: isReady ? Text(wallet.wallet.wallet.name) : null,
+      pinned: true,
       actions: [
-        IconButton(
-            onPressed: () {
-              context.to(PageRouter.setting);
+        if (isLock) ...[
+          BrightnessToggleIcon(
+              onToggleBrightness: () => wallet.toggleBrightness(),
+              brightness: ThemeController.appTheme.brightness),
+          ColorSelectorIconView(
+            (p0) {
+              if (p0 == null) return;
+              return wallet.changeColor(p0);
             },
-            icon: const Icon(Icons.settings)),
+          ),
+        ] else
+          IconButton(
+              onPressed: () {
+                context.to(PageRouter.setting);
+              },
+              icon: const Icon(Icons.settings)),
         WidgetConstant.width8,
       ],
       leading: IconButton(
@@ -84,8 +101,8 @@ class _AccountAppBar extends StatelessWidget {
             context
                 .openSliverDialog<HDWallet>(
                     (c) => SwitchWalletView(
-                          wallets: wallet.wallets,
-                          selectedWallet: wallet.wallet,
+                          wallets: wallet.wallet.wallets,
+                          selectedWallet: wallet.wallet.wallet,
                         ),
                     "switch_wallets".tr,
                     content: (c) => [
@@ -95,7 +112,7 @@ class _AccountAppBar extends StatelessWidget {
                               },
                               icon: const Icon(Icons.add))
                         ])
-                .then(wallet.switchWallet);
+                .then(wallet.wallet.switchWallet);
           },
           icon: const Icon(Icons.account_balance_wallet_rounded)),
     );

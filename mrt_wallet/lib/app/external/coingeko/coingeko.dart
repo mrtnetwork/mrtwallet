@@ -7,7 +7,7 @@ class CoinGeckoUtils {
       "https://www.coingecko.com/en/coins/#id";
   static const String coinGeckoCoinListURL =
       "https://api.coingecko.com/api/v3/coins/list";
-  static const APPImage logo = APPImage.local("assets/image/coingeko.png");
+  static final APPImage logo = APPImage.local("assets/image/coingeko.png");
   static String? getTokenCoinGeckoURL(String id) {
     return coinGeckoCoinURL.replaceFirst("#id", id);
   }

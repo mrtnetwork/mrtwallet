@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/marketcap/prices/coingecko.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin LiveCurrencies on WalletStateController {
+mixin LiveCurrencies on StateController {
+  WalletCore get wallet;
   Future<CoingeckoPriceHandler> _getCoinPrices(List<String> coins) async {
     final url = CoinGeckoUtils.toCoingeckoPriceUri(
         Currency.toApiCall(), coins.join(","));
@@ -55,7 +57,7 @@ mixin LiveCurrencies on WalletStateController {
   void _startListening() async {
     if (_streamPrices != null) return;
     await _lock.synchronized(() {
-      _coinIds ??= coinIds();
+      _coinIds ??= wallet.coinIds();
       _streamPrices = MethodUtils.prediocCaller<CoingeckoPriceHandler>(
               () async {
         final result = await MethodUtils.call(() async {
@@ -89,12 +91,12 @@ mixin LiveCurrencies on WalletStateController {
   @override
   void ready() {
     super.ready();
-    addWalletListener(_listenOnWallet);
+    wallet.addWalletStatusListener(_listenOnWallet);
   }
 
   @override
   void close() {
-    removeWalletListener(_listenOnWallet);
+    wallet.removeWalletStatusListener(_listenOnWallet);
     super.close();
   }
 }

@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/worker.dart' show AddressDerivationIndex;
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class WalletSigningPassword extends StatefulWidget {
   const WalletSigningPassword(
@@ -12,7 +13,7 @@ class WalletSigningPassword extends StatefulWidget {
       required this.addresses,
       required this.onPasswordForm});
   final Set<AddressDerivationIndex> keys;
-  final Set<CryptoAddress> addresses;
+  final Set<ChainAccount> addresses;
   final FuncFutureBoolString onPasswordForm;
 
   @override

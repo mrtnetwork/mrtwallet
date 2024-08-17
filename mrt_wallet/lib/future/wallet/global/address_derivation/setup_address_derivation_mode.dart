@@ -1,11 +1,11 @@
 import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show QuickContextAccsess, QuickDateTimeFormater, SafeState, Translate;
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/utils/utils.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart' show WalletNetwork, ChainHandler;
+import 'package:mrt_wallet/wallet/wallet.dart' show Chain, WalletNetwork;
 import 'package:mrt_wallet/wroker/worker.dart';
 
 typedef _OnGenerateDerivation = Future<AddressDerivationIndex?> Function();
@@ -13,7 +13,7 @@ typedef _OnGenerateDerivation = Future<AddressDerivationIndex?> Function();
 class SetupDerivationModeView extends StatefulWidget {
   final CryptoCoins coin;
   final List<CryptoCoins> networkCoins;
-  final ChainHandler chainAccout;
+  final Chain chainAccout;
   final AddressDerivationIndex? defaultDerivation;
   final Widget? title;
   final List<EncryptedCustomKey> customKeys;
@@ -37,7 +37,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     with SafeState {
   EncryptedCustomKey? selectedCustomKey;
   WalletNetwork get network => chainAccount.network;
-  ChainHandler get chainAccount => widget.chainAccout;
+  Chain get chainAccount => widget.chainAccout;
   late CryptoCoins coin = widget.coin;
   late final bool useByronLegacyDeriavation =
       coin.proposal == CustomProposal.cip0019;
@@ -56,8 +56,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     if (widget.defaultDerivation != null) {
       return widget.defaultDerivation!;
     }
-    final nextDerive =
-        chainAccount.account.nextDerive(coin, widget.seedGenerationType);
+    final nextDerive = chainAccount.nextDerive(coin, widget.seedGenerationType);
     return nextDerive;
   }
 

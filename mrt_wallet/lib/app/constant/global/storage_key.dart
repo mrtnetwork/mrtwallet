@@ -9,4 +9,6 @@ class StorageConst {
   static const String external = "external";
   static const String app = "app";
   static const String hdWallets = "hdWallet";
+  static const String checksum = "checksum";
+  static const String webview = "webview";
 }

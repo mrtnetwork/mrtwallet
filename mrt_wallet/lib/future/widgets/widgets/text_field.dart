@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show TextInputFormatter;
 import 'package:mrt_wallet/app/models/models/typedef.dart'
     show NullStringString, StringVoid;
-import 'package:mrt_wallet/app/core.dart' show SafeState, StrUtils;
-import 'obscure_icon.dart';
-import 'widget_constant.dart';
+import 'package:mrt_wallet/app/core.dart' show StrUtils;
+import 'package:mrt_wallet/future/future.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class AppTextField extends StatefulWidget {
   const AppTextField(
@@ -35,11 +35,14 @@ class AppTextField extends StatefulWidget {
       this.style,
       this.textAlign = TextAlign.start,
       this.readOnly = false,
-      this.helperStyle});
+      this.pasteIcon = false,
+      this.helperStyle,
+      this.onSubmitField});
   final String? label;
   final String? hint;
   final String? error;
   final StringVoid? onChanged;
+  final StringVoid? onSubmitField;
   final NullStringString? validator;
   final List<TextInputFormatter>? inputFormatters;
   final Widget? suffix;
@@ -62,6 +65,7 @@ class AppTextField extends StatefulWidget {
   final TextStyle? style;
   final TextAlign textAlign;
   final bool readOnly;
+  final bool pasteIcon;
   final TextStyle? helperStyle;
   @override
   State<AppTextField> createState() => AppTextFieldState();
@@ -103,8 +107,9 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
   }
 
   void onSubmitField(String v) {
-    if (widget.nextFocus != null) {
-      if (mounted) widget.nextFocus?.requestFocus();
+    if (mounted) {
+      widget.nextFocus?.requestFocus();
+      widget.onSubmitField?.call(v);
     }
   }
 
@@ -158,12 +163,14 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
         textInputAction: widget.textInputAction,
         onFieldSubmitted: onSubmitField,
         minLines: widget.minlines,
+        selectionControls: MaterialTextSelectionControls(),
         maxLines: widget.obscureText ? 1 : widget.maxLines,
         contextMenuBuilder: widget.disableContextMenu
             ? null
-            : (context, editableTextState) =>
-                AdaptiveTextSelectionToolbar.editableText(
-                    editableTextState: editableTextState),
+            : (context, editableTextState) {
+                return AdaptiveTextSelectionToolbar.editableText(
+                    editableTextState: editableTextState);
+              },
         decoration: InputDecoration(
             filled: widget.filled,
             prefix: widget.prefix,
@@ -181,6 +188,8 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
               children: [
                 if (widget.obscureText)
                   ObscureIcon(show: obscureText, onTap: onChaangeObscureText),
+                if (widget.pasteIcon)
+                  PasteTextIcon(onPaste: updateText, isSensitive: false),
                 if (widget.suffixIcon != null) widget.suffixIcon!,
               ],
             ),

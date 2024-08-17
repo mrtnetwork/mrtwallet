@@ -1,30 +1,33 @@
 import 'package:blockchain_utils/cbor/core/cbor.dart';
 import 'package:blockchain_utils/cbor/types/types.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/api/services/service.dart';
+import 'package:mrt_wallet/wallet/api/utils/utils.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class CardanoAPIProvider extends APIProvider {
-  const CardanoAPIProvider._({
-    required String serviceName,
-    required String websiteUri,
-    required ServiceProtocol protocol,
-    required this.uri,
-    required ProviderAuth? auth,
-  }) : super(serviceName, websiteUri, protocol, auth);
+  const CardanoAPIProvider._(
+      {required super.serviceName,
+      required super.websiteUri,
+      required super.protocol,
+      required this.uri,
+      required super.auth,
+      required super.identifier});
   factory CardanoAPIProvider(
       {required String serviceName,
       required String websiteUri,
       required String uri,
-      ProviderAuth? auth}) {
+      ProviderAuth? auth,
+      required String identifier}) {
     return CardanoAPIProvider._(
         serviceName: serviceName,
         websiteUri: websiteUri,
         protocol: ServiceProtocol.fromURI(uri),
         uri: uri,
-        auth: auth);
+        auth: auth,
+        identifier: identifier);
   }
   final String uri;
   @override
@@ -42,12 +45,11 @@ class CardanoAPIProvider extends APIProvider {
         protocol: ServiceProtocol.fromID(protocolId ?? 0),
         auth: cbor.getCborTag(5)?.to<ProviderAuth, CborTagValue>(
                 (e) => ProviderAuth.fromCborBytesOrObject(obj: e)) ??
-            cbor.elementAt<CborObject?>(4)?.to<ProviderAuth, String>(
-                  (e) => ProviderAuth(
-                      type: ProviderAuthType.header,
-                      key: "project_id",
-                      value: e),
-                ));
+            ProviderAuth(
+                type: ProviderAuthType.header,
+                key: "project_id",
+                value: cbor.elementAt(4)),
+        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(6)));
   }
 
   @override

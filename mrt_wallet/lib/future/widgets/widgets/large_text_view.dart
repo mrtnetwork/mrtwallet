@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show APPConst, QuickContextAccsess, SafeState, Translate;
+import 'package:mrt_wallet/app/core.dart' show APPConst;
 import 'dart:ui' as ui;
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class LargeTextView extends StatefulWidget {
   const LargeTextView(this.text, {super.key, this.style, this.maxLine = 3});
@@ -32,20 +32,25 @@ class _LargeTextViewState extends State<LargeTextView> with SafeState {
           final tp = TextPainter(text: span, textDirection: TextDirection.ltr);
           tp.layout(maxWidth: constraints.maxWidth);
           List<ui.LineMetrics> lines = tp.computeLineMetrics();
-          if (lines.length > 3 && !showMore) {
-            return Wrap(
-              alignment: WrapAlignment.end,
-              runAlignment: WrapAlignment.end,
-              crossAxisAlignment: WrapCrossAlignment.end,
-              children: [
-                Text(text, maxLines: widget.maxLine),
-                GestureDetector(
-                  onTap: onTap,
-                  child: Text("read_more".tr,
+          if (lines.length > widget.maxLine && !showMore) {
+            return InkWell(
+              onTap: onTap,
+              splashFactory: NoSplash.splashFactory,
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                runAlignment: WrapAlignment.end,
+                crossAxisAlignment: WrapCrossAlignment.end,
+                children: [
+                  Text(text, maxLines: widget.maxLine),
+                  // GestureDetector(
+                  //   onTap: onTap,
+                  //   child: ,
+                  // ),
+                  Text("read_more".tr,
                       style: context.textTheme.bodySmall
-                          ?.copyWith(color: context.colors.tertiary)),
-                ),
-              ],
+                          ?.copyWith(color: context.colors.tertiary))
+                ],
+              ),
             );
           }
           return GestureDetector(

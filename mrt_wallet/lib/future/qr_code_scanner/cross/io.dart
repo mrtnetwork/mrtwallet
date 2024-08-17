@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/qr_code_scanner/state/barcode_scanner.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 State<BarcodeScannerView> barcodeScannerState() =>
@@ -23,7 +23,11 @@ class _MacosBarcodeScannerViewState extends State<BarcodeScannerView>
       final rect = globalKey.getPosition();
 
       if (rect != null) {
-        params = MacBarcodeScannerParams.fromRect(rect);
+        params = MacBarcodeScannerParams.fromRect(WidgetRect(
+            height: rect.height,
+            width: rect.width,
+            x: rect.bottomLeft.dx,
+            y: rect.bottomLeft.dx));
       }
       params ??= MacBarcodeScannerParams(
           width: context.mediaQuery.size.width - 20,
@@ -130,7 +134,7 @@ class _MacosBarcodeScannerViewState extends State<BarcodeScannerView>
                         initialWidget: ProgressWithTextView(
                             text: "getting_scanner_ready".tr),
                         key: progressKey,
-                        child: () => const Column(
+                        child: (c) => const Column(
                           mainAxisSize: MainAxisSize.max,
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,

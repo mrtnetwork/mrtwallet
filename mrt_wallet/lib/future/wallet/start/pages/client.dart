@@ -5,11 +5,12 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class NetworkClientConnectionSliverHeaderDelegate extends StatelessWidget {
   final WalletProvider wallet;
   const NetworkClientConnectionSliverHeaderDelegate(this.wallet, {super.key});
-  ChainHandler get chainAccount => wallet.chain;
+  Chain get chainAccount => wallet.wallet.chain;
   WalletNetwork get network => chainAccount.network;
   NetworkClient? get client => chainAccount.provider();
   bool get hasProvider => client != null;
@@ -18,10 +19,10 @@ class NetworkClientConnectionSliverHeaderDelegate extends StatelessWidget {
   void onSwitchNetwork(BuildContext context) {
     context.openSliverDialog(
         (ctx) => SelectProviderView(
-              network: wallet.network,
+              network: network,
               service: client?.service,
             ), content: (context) {
-      return wallet.network.supportCustomNode
+      return network.supportCustomNode
           ? [
               WidgetConstant.width8,
               IconButton(
@@ -35,10 +36,9 @@ class NetworkClientConnectionSliverHeaderDelegate extends StatelessWidget {
       (value) {
         if (value == null) return;
         if (value is APIProvider) {
-          wallet.changeProvider(value);
+          wallet.wallet.changeProvider(account: chainAccount, provider: value);
         } else {
-          context.to(PageRouter.providerDetails(wallet.chain.network),
-              argruments: wallet.chain.network);
+          context.to(PageRouter.providerDetails(network), argruments: network);
         }
       },
     );

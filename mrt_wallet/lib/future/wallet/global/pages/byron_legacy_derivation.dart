@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wroker/worker.dart' show Bip32AddressIndex;
@@ -42,12 +42,12 @@ class _ByronLegacyKeyDerivationViewState
     Bip44Levels.change: null,
     Bip44Levels.addressIndex: null,
   };
-  void onChangedValue(String? v, Bip44Levels level) {
+  void onChangedValue(int? v, Bip44Levels level) {
     if (v == null) return;
     try {
-      final index = Bip44LevelsDetails.fromIntIndex(int.parse(v), level);
+      final index = Bip44LevelsDetails.fromIntIndex(v, level);
       if (!index.isHardened && !isSupportNoneHardend) return;
-      levels[level] = Bip44LevelsDetails.fromIntIndex(int.parse(v), level);
+      levels[level] = Bip44LevelsDetails.fromIntIndex(v, level);
     } on Exception {
       levels[level] = null;
     } finally {
@@ -155,11 +155,11 @@ class _ByronLegacyKeyDerivationViewState
             max: Bip32KeyDataConst.keyIndexMaxVal,
             helperText: helperText(Bip44Levels.change),
             key: stateKey(Bip44Levels.change),
-            suffixIcon: _HardenIconView(
-              isHarden: (level) => isHardened(level),
-              level: Bip44Levels.change,
-              onTap: (level) => onTapHardened(level),
-            ),
+            // suffixIcon: _HardenIconView(
+            //   isHarden: (level) => isHardened(level),
+            //   level: Bip44Levels.change,
+            //   onTap: (level) => onTapHardened(level),
+            // ),
             min: minIndex,
             onChange: (v) {
               onChangedValue(v, Bip44Levels.change);
@@ -171,11 +171,11 @@ class _ByronLegacyKeyDerivationViewState
             max: Bip32KeyDataConst.keyIndexMaxVal,
             helperText: helperText(Bip44Levels.addressIndex),
             key: stateKey(Bip44Levels.addressIndex),
-            suffixIcon: _HardenIconView(
-              isHarden: (level) => isHardened(level),
-              level: Bip44Levels.addressIndex,
-              onTap: (level) => onTapHardened(level),
-            ),
+            // suffixIcon: _HardenIconView(
+            //   isHarden: (level) => isHardened(level),
+            //   level: Bip44Levels.addressIndex,
+            //   onTap: (level) => onTapHardened(level),
+            // ),
             min: minIndex,
             onChange: (v) {
               onChangedValue(v, Bip44Levels.addressIndex);
@@ -193,36 +193,6 @@ class _ByronLegacyKeyDerivationViewState
             ],
           )
         ],
-      ),
-    );
-  }
-}
-
-typedef _IsHarden = bool Function(Bip44Levels);
-typedef _OnTapLevel = void Function(Bip44Levels);
-
-class _HardenIconView extends StatelessWidget {
-  const _HardenIconView(
-      {required this.level, required this.isHarden, required this.onTap});
-  final Bip44Levels level;
-  final _IsHarden isHarden;
-  final _OnTapLevel onTap;
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: WidgetConstant.border8,
-      onTap: () => onTap(level),
-      child: IgnorePointer(
-        ignoring: true,
-        child: Padding(
-          padding: WidgetConstant.padding5,
-          child: Column(
-            children: [
-              Text("harden".tr, style: context.textTheme.bodySmall),
-              Checkbox(value: isHarden(level), onChanged: (v) {})
-            ],
-          ),
-        ),
       ),
     );
   }

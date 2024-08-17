@@ -1,24 +1,26 @@
 import 'package:blockchain_utils/cbor/core/cbor.dart';
 import 'package:blockchain_utils/cbor/types/types.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/api/services/service.dart';
+import 'package:mrt_wallet/wallet/api/utils/utils.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class SubstrateAPIProvider extends APIProvider {
   const SubstrateAPIProvider._(
-      {required String serviceName,
-      required String websiteUri,
-      required ServiceProtocol protocol,
-      required ProviderAuth? auth,
+      {required super.serviceName,
+      required super.websiteUri,
+      required super.protocol,
+      required super.auth,
+      required super.identifier,
       required this.uri,
-      required this.nodeUri})
-      : super(serviceName, websiteUri, protocol, auth);
+      required this.nodeUri});
   factory SubstrateAPIProvider(
       {required String serviceName,
       required String websiteUri,
       required String uri,
+      required String identifier,
       String? nodeUri,
       ProviderAuth? auth}) {
     return SubstrateAPIProvider._(
@@ -27,7 +29,8 @@ class SubstrateAPIProvider extends APIProvider {
         protocol: ServiceProtocol.fromURI(uri),
         uri: uri,
         nodeUri: nodeUri,
-        auth: auth);
+        auth: auth,
+        identifier: identifier);
   }
   final String uri;
   final String? nodeUri;
@@ -46,7 +49,8 @@ class SubstrateAPIProvider extends APIProvider {
         protocol: ServiceProtocol.fromID(protocolId ?? 0),
         nodeUri: cbor.elementAt(4),
         auth: cbor.getCborTag(5)?.to<ProviderAuth, CborTagValue>(
-            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)));
+            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)),
+        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(6)));
   }
 
   @override
@@ -58,7 +62,8 @@ class SubstrateAPIProvider extends APIProvider {
           uri,
           protocol.id,
           nodeUri ?? const CborNullValue(),
-          auth?.toCbor()
+          auth?.toCbor(),
+          identifier
         ]),
         CborTagsConst.substrateApiServiceProvider);
   }

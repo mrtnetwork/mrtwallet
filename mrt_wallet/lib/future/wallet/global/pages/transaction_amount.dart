@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TransactionAmountView extends StatelessWidget {
   const TransactionAmountView(
       {super.key,
       required this.amount,
       required this.token,
-      required this.onTap,
+      this.onTap,
       this.onRemoveIcon,
       this.title,
       this.subtitle,
@@ -16,7 +17,7 @@ class TransactionAmountView extends StatelessWidget {
       this.validateError});
   final BalanceCore? amount;
   final Token token;
-  final DynamicVoid onTap;
+  final DynamicVoid? onTap;
   final bool validate;
   final String? validateError;
   final String? subtitle;
@@ -28,7 +29,7 @@ class TransactionAmountView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title ?? "Transaction Amount",
+        Text(title ?? "transfer_amount".tr,
             style: context.textTheme.titleMedium),
         if (subtitle != null) Text(subtitle!.tr),
         WidgetConstant.height8,

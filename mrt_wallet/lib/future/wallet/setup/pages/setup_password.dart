@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/setup/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SetupWalletPassword extends StatefulWidget {
   const SetupWalletPassword({super.key});
@@ -44,7 +45,7 @@ class _SetupWalletPasswordState extends State<SetupWalletPassword>
 
   void setupPassword() {
     if (formKey.currentState?.validate() ?? false) {
-      final model = context.watch<SetupWalletController>("setup_wallet");
+      final model = context.watch<SetupWalletController>(StateConst.setup);
       model.setPassword(password);
     }
   }

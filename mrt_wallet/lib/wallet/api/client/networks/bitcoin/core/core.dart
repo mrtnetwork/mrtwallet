@@ -1,7 +1,7 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/bitcoin/addresses/bitcoin.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/bitcoin/addresses/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 
 abstract class BitcoinClient<T extends IBitcoinAddress>

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/pages/pages/tron_transaction_fields.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
@@ -9,7 +9,7 @@ class TronTransferTransactionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ChainHandler? token = context.getNullArgruments();
+    final TronChain? token = context.getNullArgruments();
     final TronTRC20Token? trc20token = context.getNullArgruments();
     final TronTRC10Token? trc10Token = context.getNullArgruments();
     return TronTransactionFieldsView(

@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/live_listener/live.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
 
 class APIServiceTracker {

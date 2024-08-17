@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/setup/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
 import 'package:mrt_wallet/wroker/utils/global/utils.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class EnterMnemonicView extends StatefulWidget {
   const EnterMnemonicView({super.key});
@@ -62,7 +62,7 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
 
   void setup() async {
     if (!(form.currentState?.validate() ?? false)) return;
-    final model = context.watch<SetupWalletController>("setup_wallet");
+    final model = context.watch<SetupWalletController>(StateConst.setup);
 
     progressKey.progressText("launch_the_wallet".tr);
     final result = await MethodUtils.call(() async {
@@ -85,7 +85,7 @@ class _EnterMnemonicViewState extends State<EnterMnemonicView> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => Form(
+      child: (c) => Form(
         key: form,
         child: Column(
           children: [

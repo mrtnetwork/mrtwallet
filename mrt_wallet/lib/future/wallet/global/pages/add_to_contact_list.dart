@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 
-import 'package:mrt_wallet/wallet/wallet.dart' show WalletNetwork, ContactCore;
-
-class AddToContactListView extends StatefulWidget {
+class AddToContactListView<NETWORKADDRESS> extends StatefulWidget {
   const AddToContactListView(
-      {super.key, required this.contact, required this.network});
-  final ContactCore contact;
-  final WalletNetwork network;
+      {super.key, required this.contact, required this.chain});
+  final ContactCore<NETWORKADDRESS> contact;
+  final APPCHAINNETWORK<NETWORKADDRESS> chain;
 
   @override
-  State<AddToContactListView> createState() => _AddToContactListViewState();
+  State<AddToContactListView<NETWORKADDRESS>> createState() =>
+      _AddToContactListViewState<NETWORKADDRESS>();
 }
 
-class _AddToContactListViewState extends State<AddToContactListView> {
+class _AddToContactListViewState<NETWORKADDRESS>
+    extends State<AddToContactListView<NETWORKADDRESS>> {
   final GlobalKey<FormState> formKey = GlobalKey(debugLabel: "SelectAddress_1");
   final GlobalKey<AppTextFieldState> textFieldKey =
       GlobalKey(debugLabel: "SelectAddress");
@@ -48,11 +50,13 @@ class _AddToContactListViewState extends State<AddToContactListView> {
     if (!(formKey.currentState?.validate() ?? false)) return;
     buttonProgressKey.process();
     final wallet = context.watch<WalletProvider>(StateConst.main);
-    final newContact = ContactCore.newContact(
-        network: widget.network,
-        address: widget.contact.addressObject,
-        name: name);
-    final result = await wallet.addNewContact(newContact);
+    final ContactCore<NETWORKADDRESS> newContact =
+        ContactCore.newContact<NETWORKADDRESS>(
+            network: widget.chain.network,
+            address: widget.contact.addressObject,
+            name: name);
+    final result = await wallet.wallet
+        .addNewContact(account: widget.chain, newContact: newContact);
     if (result.hasError) {
       buttonProgressKey.error();
       _error = result.error?.tr;
@@ -78,7 +82,7 @@ class _AddToContactListViewState extends State<AddToContactListView> {
                 children: [
                   Text("contact_desc_1"
                       .tr
-                      .replaceOne(widget.network.coinParam.token.name))
+                      .replaceOne(widget.chain.network.token.name))
                 ],
               )),
           Text("address".tr, style: context.textTheme.titleMedium),

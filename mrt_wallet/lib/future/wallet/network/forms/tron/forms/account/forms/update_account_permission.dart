@@ -5,6 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
 import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronAccountUpdatePermissionForm extends TronTransactionForm {
   TronAccountUpdatePermissionForm({required this.permissions});
@@ -115,10 +116,9 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
     _onChangeForm();
   }
 
-  void onUpdateTheresHold(String? v) {
-    if (v == null) return;
-    final threshHold = BigInt.tryParse(v);
-    if (threshHold == null || _selectedPermission?.threshold == threshHold) {
+  void onUpdateTheresHold(int v) {
+    final threshHold = BigInt.from(v);
+    if (_selectedPermission?.threshold == threshHold) {
       return;
     }
     _permissionError = null;
@@ -153,10 +153,9 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
     _onChangeForm();
   }
 
-  void updateKeyThereshHold(PermissionKeys? key, String? v) {
-    if (key == null || v == null) return;
-    final weight = BigInt.tryParse(v);
-    if (weight == null) return;
+  void updateKeyThereshHold(PermissionKeys? key, int v) {
+    if (key == null) return;
+    final weight = BigInt.from(v);
     _permissionError = null;
     if (key.weight == weight) return;
     final keyIndex = selectedPermission!.keys.indexWhere(
@@ -283,5 +282,5 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
-      required NetworkAccountCore account}) async {}
+      required TronChain account}) async {}
 }

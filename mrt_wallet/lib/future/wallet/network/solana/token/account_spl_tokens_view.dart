@@ -5,18 +5,19 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:on_chain/solana/src/instructions/spl_token/constant.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class SolanaImportSPLTokensView extends StatelessWidget {
   const SolanaImportSPLTokensView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletSolanaNetwork, ISolanaAddress>(
+    return NetworkAccountControllerView<SolanaChain>(
       title: "import_spl_tokens".tr,
-      childBulder: (wallet, account, address, network, onAccountChanged) {
+      childBulder: (wallet, account, onAccountChanged) {
         return _SolanaImportSPLTokensView(
           apiProvider: account.provider()!,
-          account: address,
+          account: account,
           wallet: wallet,
         );
       },
@@ -28,7 +29,7 @@ class _SolanaImportSPLTokensView extends StatefulWidget {
   const _SolanaImportSPLTokensView(
       {required this.apiProvider, required this.account, required this.wallet});
   final SolanaClient apiProvider;
-  final ISolanaAddress account;
+  final SolanaChain account;
   final WalletProvider wallet;
   @override
   State<_SolanaImportSPLTokensView> createState() =>
@@ -37,16 +38,17 @@ class _SolanaImportSPLTokensView extends StatefulWidget {
 
 class __SolanaImportSPLTokensViewState
     extends State<_SolanaImportSPLTokensView> {
+  late final address = widget.account.address;
   final List<SolanaSPLToken> tokens = [];
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>(debugLabel: "_SolanaImportSPLTokensView");
   void fetchTokens() async {
     if (progressKey.isSuccess || progressKey.inProgress) return;
     final result = await MethodUtils.call(() async {
-      final spltoken = await widget.apiProvider
-          .getAccountTokens(widget.account.networkAddress);
+      final spltoken =
+          await widget.apiProvider.getAccountTokens(address.networkAddress);
       final splTokens2022 = await widget.apiProvider.getAccountTokens(
-          widget.account.networkAddress,
+          address.networkAddress,
           tokenProgram: SPLTokenProgramConst.token2022ProgramId);
       return [...spltoken, ...splTokens2022];
     });
@@ -73,13 +75,18 @@ class __SolanaImportSPLTokensViewState
   }
 
   Future<void> add(SolanaSPLToken token) async {
-    final result = await widget.wallet.addNewToken(token, widget.account);
+    final result = await widget.wallet.wallet
+        .addNewToken(token: token, address: address, account: widget.account);
     if (result.hasError) throw result.error!;
     return result.result;
   }
 
   Future<void> removeToken(SolanaSPLToken token) async {
-    final result = await widget.wallet.removeToken(token, widget.account);
+    final result = await widget.wallet.wallet.removeToken(
+      token: token,
+      address: address,
+      account: widget.account,
+    );
     if (result.hasError) throw result.error!;
     return result.result;
   }
@@ -110,7 +117,7 @@ class __SolanaImportSPLTokensViewState
       backToIdle: APPConst.oneSecoundDuration,
       initialWidget:
           ProgressWithTextView(text: "fetching_account_token_please_wait".tr),
-      child: () {
+      child: (c) {
         return CustomScrollView(
           slivers: [
             EmptyItemSliverWidgetView(
@@ -122,7 +129,7 @@ class __SolanaImportSPLTokensViewState
                     physics: WidgetConstant.noScrollPhysics,
                     itemBuilder: (context, index) {
                       final token = tokens.elementAt(index);
-                      final bool exist = widget.account.tokens.contains(token);
+                      final bool exist = address.tokens.contains(token);
                       return Column(
                         children: [
                           ContainerWithBorder(

@@ -1,20 +1,19 @@
 import 'dart:async';
-import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/fee_impl.dart';
-import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/memo_impl.dart';
-import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/signer_impl.dart';
-import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/transaction_impl.dart';
+import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/future/future.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 
 class EthereumTransactionStateController extends EthTransactionImpl
     with ETHTransactionFeeImpl, ETHSignerImpl, ETHMemoImpl {
   EthereumTransactionStateController(
       {required super.walletProvider,
       required super.account,
-      required super.network,
-      required super.apiProvider,
-      required super.address,
       required this.validator});
+
+  final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
+      debugLabel: "progressKey_EthTransactionImpl");
   final LiveTransactionForm<EthereumTransactionForm> validator;
   IntegerBalance? _remindTokenAmount;
   late final IntegerBalance _remindAmount =
@@ -46,12 +45,13 @@ class EthereumTransactionStateController extends EthTransactionImpl
         remindAmount = (_remindTokenAmount!, tokenTransferFiled.token);
       }
     }
-
-    return _error == null &&
+    final ready = _error == null &&
         !_remindAmount.isNegative &&
         !(_remindTokenAmount?.isNegative ?? false) &&
         gasInited &&
         (feeSpeed == EIP1559FeeSpeed.customFee || !updatingGas);
+
+    return ready;
   }
 
   @override
@@ -73,13 +73,27 @@ class EthereumTransactionStateController extends EthTransactionImpl
 
   void sedTransaction() async {
     try {
-      if (!trIsReady) return;
+      final fee = currentEIP1559Fee?.clone();
+      if (fee == null || !trIsReady) return;
       final transaction = validator.validator.toTransaction(
-          address: address,
-          network: network,
-          fee: currentEIP1559Fee?.clone(),
-          memo: memo);
-      await signAndSendTransaction(transaction);
+          address: address, network: network, fee: fee, memo: memo);
+      progressKey.progressText("create_send_transaction"
+          .tr
+          .replaceOne(network.coinParam.token.name));
+      final result = await MethodUtils.call(
+          () async => await signAndBroadCastTransaction(transaction));
+      if (result.hasError) {
+        progressKey.errorText(result.error!.tr,
+            showBackButton: true, backToIdle: false);
+      } else {
+        stopGasEstimate();
+        progressKey.success(
+            progressWidget: SuccessTransactionTextView(
+              network: network,
+              txId: result.result,
+            ),
+            backToIdle: false);
+      }
     } finally {
       notify();
     }
@@ -108,7 +122,6 @@ class EthereumTransactionStateController extends EthTransactionImpl
 
   @override
   void init() {
-    _init();
     super.init();
 
     validator.addListener(_onFormListener);
@@ -118,6 +131,8 @@ class EthereumTransactionStateController extends EthTransactionImpl
   @override
   void ready() {
     super.ready();
+    startGasListening();
+    _init();
     estimateGasLimit();
   }
 
@@ -132,7 +147,4 @@ class EthereumTransactionStateController extends EthTransactionImpl
     super.close();
     _close();
   }
-
-  @override
-  String get repositoryId => "ethereum/transaction";
 }

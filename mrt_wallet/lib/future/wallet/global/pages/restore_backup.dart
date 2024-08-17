@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/wallet/models/backup/backup.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 enum _Pages { restore, content }
 
@@ -67,8 +69,8 @@ class _RestoreBackupViewState extends State<RestoreBackupView> with SafeState {
     if (!(form.currentState?.validate() ?? false)) return;
     progressKey.progressText("restoring_backup_please_wait".tr);
     final wallet = context.watch<WalletProvider>(StateConst.main);
-    final result = await MethodUtils.call(() async =>
-        await wallet.restoreMRTBackup(password: password, backup: backup));
+    final result = await MethodUtils.call(() async => await wallet.wallet
+        .restoreMRTBackup(password: password, backup: backup));
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
@@ -101,7 +103,7 @@ class _RestoreBackupViewState extends State<RestoreBackupView> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.twoSecoundDuration,
-      child: () => ConstraintsBoxView(
+      child: (c) => ConstraintsBoxView(
         padding: WidgetConstant.paddingHorizontal20,
         child: Column(
           children: [

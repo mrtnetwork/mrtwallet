@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show APPConst, QuickContextAccsess, SafeState, Translate;
+import 'package:mrt_wallet/app/core.dart' show APPConst;
 import 'package:mrt_wallet/app/models/models/typedef.dart' show StringVoid;
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class PasteTextIcon extends StatefulWidget {
   const PasteTextIcon(

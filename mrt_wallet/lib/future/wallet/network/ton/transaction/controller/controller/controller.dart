@@ -69,7 +69,4 @@ class TonTransactionStateController extends TonTransactionImpl
     super.close();
     _close();
   }
-
-  @override
-  String get repositoryId => "ton/transaction";
 }

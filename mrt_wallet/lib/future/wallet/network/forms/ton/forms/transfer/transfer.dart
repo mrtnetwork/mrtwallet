@@ -5,6 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart
 import 'package:mrt_wallet/future/wallet/network/forms/ton/forms/core/ton.dart';
 import 'package:mrt_wallet/wroker/utils/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TonTransferForm extends TonTransactionForm {
   final WalletTonNetwork network;

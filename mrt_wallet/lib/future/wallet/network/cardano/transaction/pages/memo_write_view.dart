@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class CardanoTransactionMemoWriteView extends StatefulWidget {
   const CardanoTransactionMemoWriteView({
@@ -45,9 +46,8 @@ class _CardanoTransactionMemoWriteViewState
     return l;
   }
 
-  void onChangeLabel(String v) {
-    final val = int.tryParse(v);
-    if (val == null || val.isNegative) return;
+  void onChangeLabel(int val) {
+    if (val.isNegative) return;
     label = BigInt.from(val);
   }
 

@@ -1,5 +1,5 @@
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/stream_bottun.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/stream_bottun.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
 import 'signer_impl.dart';

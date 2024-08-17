@@ -1,6 +1,5 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/layout/constant/constant.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
 /// Returns the metadata at a given version
@@ -30,7 +29,6 @@ class SubstrateGetApiAt
       final api = VersionedMetadata.fromBytes(decode).toApi();
       return (api, BytesUtils.toHexString(decode));
     } catch (e) {
-      WalletLogging.debugPrint("cannot load substrate metadata $e");
       return null;
     }
   }
@@ -42,7 +40,6 @@ class SubstrateGetStateApi
 
   final String? atBlockHash;
 
-  /// state_getMetadata
   @override
   String get rpcMethod => SubstrateRPCMethods.getMetadata.value;
 

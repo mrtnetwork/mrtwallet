@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class RippeBurnTokenForm implements RippleTransactionForm {
   RippeBurnTokenForm({String? offerID}) {

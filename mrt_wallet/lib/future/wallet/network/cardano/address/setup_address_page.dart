@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
@@ -81,7 +82,8 @@ enum _GenerateAddressPage {
 }
 
 class SetupCardanoAddressView extends StatefulWidget {
-  const SetupCardanoAddressView({super.key});
+  const SetupCardanoAddressView(this.chain, {super.key});
+  final ADAChain chain;
 
   @override
   State<SetupCardanoAddressView> createState() =>
@@ -109,10 +111,8 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     updateState();
   }
 
-  late final ChainHandler chainAccount;
-  NetworkAccountCore get networkAccounts => chainAccount.account;
-  WalletCardanoNetwork get network =>
-      networkAccounts.network as WalletCardanoNetwork;
+  late final ADAChain chainAccount = widget.chain;
+  WalletCardanoNetwork get network => chainAccount.network;
   List<CryptoCoins> get coins => network.coins;
   late CryptoCoins coin = coins.first;
   bool inited = false;
@@ -251,18 +251,12 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
     setState(() {});
   }
 
-  void _setupIAccount() {
-    if (inited) return;
-    final model = context.watch<WalletProvider>(StateConst.main);
-    chainAccount = model.chain;
-  }
-
   void generateAddress() async {
     if (!(form.currentState?.validate() ?? false)) return;
     final result = await MethodUtils.call(() async {
       pageProgressKey.progressText("generating_new_addr".tr);
       final model = context.watch<WalletProvider>(StateConst.main);
-      final customKeys = model.getCustomKeysForCoin([coin]);
+      final customKeys = await model.wallet.getCustomKeysForCoin([coin]);
       Bip32AddressIndex? keyIndex = await context
           .openSliverBottomSheet<Bip32AddressIndex>("setup_derivation".tr,
               child: SetupDerivationModeView(
@@ -334,8 +328,10 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
           customHdPath: hdPath,
           customHdPathKey: hdPathKey,
           coin: coin);
-      final result = await model.deriveNewAccount(newAccount);
+      final result = await model.wallet
+          .deriveNewAccount(newAccountParams: newAccount, chain: chainAccount);
       if (result.hasError) throw result.exception!;
+
       return result.result;
     });
 
@@ -362,102 +358,93 @@ class _SetupCardanoAddressViewState extends State<SetupCardanoAddressView>
   }
 
   @override
-  void didChangeDependencies() {
-    _setupIAccount();
-    super.didChangeDependencies();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return PopScope(
+    return Form(
+      key: form,
       canPop: pageProgressKey.isSuccess ||
           page == _GenerateAddressPage.seedGeneration,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) backToDefault();
       },
       child: PageProgress(
         key: pageProgressKey,
         backToIdle: APPConst.twoSecoundDuration,
         initialStatus: PageProgressStatus.idle,
-        child: () => Center(
+        child: (c) => Center(
           child: CustomScrollView(
             shrinkWrap: true,
             slivers: [
               SliverToBoxAdapter(
                   child: ConstraintsBoxView(
                 padding: WidgetConstant.paddingHorizontal20,
-                child: Form(
-                  key: form,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    key: const ValueKey<bool>(true),
-                    children: [
-                      PageTitleSubtitle(
-                          title: "setup_network_address"
-                              .tr
-                              .replaceOne(network.coinParam.token.name),
-                          body: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("disable_standard_derivation".tr),
-                              WidgetConstant.height8,
-                              Text("setup_address_derivation_keys_desc".tr),
-                              WidgetConstant.height8,
-                              Text("please_following_steps_to_generate_address"
-                                  .tr),
-                            ],
-                          )),
-                      AnimatedSwitcher(
-                        duration: APPConst.animationDuraion,
-                        child: page == _GenerateAddressPage.seedGeneration
-                            ? _SelectSeedGenerationType(
-                                seedGenerationType: seedGenerationType,
-                                onChageSeedGeneration: onChangeSeedGeneration,
-                                onContinue: onContinueFromSeedGeneration,
-                                custom: customDervation,
-                                onCustom: onChageCustomDerivation,
-                              )
-                            : page == _GenerateAddressPage.era
-                                ? _SelectEra(
-                                    era: era,
-                                    onChangeEra: onChangeEra,
-                                    onContinue: onContinueFromEra)
-                                : page ==
-                                        _GenerateAddressPage.masterKeyGeneration
-                                    ? _SelectMasterKeyGeneration(
-                                        keyGenerationType: keyGenerationType,
-                                        era: era,
-                                        onChangeKeyGeneration:
-                                            onChangeMasterKeyGeneration,
-                                        onContinue:
-                                            onContinueFromMasterkeyGeneration,
-                                        seedGeneration: seedGenerationType,
-                                      )
-                                    : _GenerateAddress(
-                                        network: network,
-                                        addrType: addrType,
-                                        generateAddress: generateAddress,
-                                        coin: coin,
-                                        era: era,
-                                        hdPathKeyKey: hdPathKeyKey,
-                                        keyGeneratorType: keyGenerationType,
-                                        hdpathKey: hdPathKey,
-                                        onChangedHdPath: onChageHdPath,
-                                        onChangedHdPathKey: onChangeHdPathKey,
-                                        validatorHdPath: onValidateHdPath,
-                                        validatorHdPathKey: onValidateHdPathKey,
-                                        onChangeShellyddrType:
-                                            onChangeShellyddrType,
-                                        hdPath: manuallyHdPath,
-                                        hdPathKey: manuallyHdPathKey,
-                                        manuallySetHdPathKey:
-                                            manuallySetLegacyHdPathKey,
-                                        onChangeManuallySetHdPathKey:
-                                            onChangeManuallySetHdPathKey,
-                                      ),
-                      ),
-                    ],
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  key: const ValueKey<bool>(true),
+                  children: [
+                    PageTitleSubtitle(
+                        title: "setup_network_address"
+                            .tr
+                            .replaceOne(network.coinParam.token.name),
+                        body: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("disable_standard_derivation".tr),
+                            WidgetConstant.height8,
+                            Text("setup_address_derivation_keys_desc".tr),
+                            WidgetConstant.height8,
+                            Text("please_following_steps_to_generate_address"
+                                .tr),
+                          ],
+                        )),
+                    AnimatedSwitcher(
+                      duration: APPConst.animationDuraion,
+                      child: page == _GenerateAddressPage.seedGeneration
+                          ? _SelectSeedGenerationType(
+                              seedGenerationType: seedGenerationType,
+                              onChageSeedGeneration: onChangeSeedGeneration,
+                              onContinue: onContinueFromSeedGeneration,
+                              custom: customDervation,
+                              onCustom: onChageCustomDerivation,
+                            )
+                          : page == _GenerateAddressPage.era
+                              ? _SelectEra(
+                                  era: era,
+                                  onChangeEra: onChangeEra,
+                                  onContinue: onContinueFromEra)
+                              : page == _GenerateAddressPage.masterKeyGeneration
+                                  ? _SelectMasterKeyGeneration(
+                                      keyGenerationType: keyGenerationType,
+                                      era: era,
+                                      onChangeKeyGeneration:
+                                          onChangeMasterKeyGeneration,
+                                      onContinue:
+                                          onContinueFromMasterkeyGeneration,
+                                      seedGeneration: seedGenerationType,
+                                    )
+                                  : _GenerateAddress(
+                                      network: network,
+                                      addrType: addrType,
+                                      generateAddress: generateAddress,
+                                      coin: coin,
+                                      era: era,
+                                      hdPathKeyKey: hdPathKeyKey,
+                                      keyGeneratorType: keyGenerationType,
+                                      hdpathKey: hdPathKey,
+                                      onChangedHdPath: onChageHdPath,
+                                      onChangedHdPathKey: onChangeHdPathKey,
+                                      validatorHdPath: onValidateHdPath,
+                                      validatorHdPathKey: onValidateHdPathKey,
+                                      onChangeShellyddrType:
+                                          onChangeShellyddrType,
+                                      hdPath: manuallyHdPath,
+                                      hdPathKey: manuallyHdPathKey,
+                                      manuallySetHdPathKey:
+                                          manuallySetLegacyHdPathKey,
+                                      onChangeManuallySetHdPathKey:
+                                          onChangeManuallySetHdPathKey,
+                                    ),
+                    ),
+                  ],
                 ),
               ))
             ],

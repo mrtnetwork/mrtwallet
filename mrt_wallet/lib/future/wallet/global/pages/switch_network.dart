@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/models/networks.dart';
 
@@ -28,19 +28,19 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
     }
   }
 
-  late List<ChainHandler> bitcoinNetworks;
-  late List<ChainHandler> rippleNetworks;
-  late List<ChainHandler> evmNetworks;
-  late List<ChainHandler> tvmNetworks;
-  late List<ChainHandler> solNetworks;
-  late List<ChainHandler> cardanoNetworks;
-  late List<ChainHandler> cosmosNetworks;
-  late List<ChainHandler> tonNetworks;
-  late List<ChainHandler> polkadotNetworks;
-  late List<ChainHandler> kusamaNetworks;
+  late List<Chain> bitcoinNetworks;
+  late List<Chain> rippleNetworks;
+  late List<Chain> evmNetworks;
+  late List<Chain> tvmNetworks;
+  late List<Chain> solNetworks;
+  late List<Chain> cardanoNetworks;
+  late List<Chain> cosmosNetworks;
+  late List<Chain> tonNetworks;
+  late List<Chain> polkadotNetworks;
+  late List<Chain> kusamaNetworks;
 
   void initNetwork() {
-    final wallet = context.watch<WalletProvider>(StateConst.main);
+    final wallet = context.watch<WalletProvider>(StateConst.main).wallet;
     final networks = wallet.getChains();
     int initialIndex;
     bitcoinNetworks = networks
@@ -164,98 +164,74 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
   Widget build(BuildContext context) {
     return Center(
       child: ConstraintsBoxView(
-        alignment: Alignment.center,
-        maxWidth: APPConst.dialogWidth,
+        maxHeight: 600,
         padding: WidgetConstant.padding20,
+        maxWidth: APPConst.dialogWidth,
         child: ClipRRect(
-          borderRadius: WidgetConstant.border8,
-          child: Material(
-            color: context.colors.surface,
-            child: CustomScrollView(
-              shrinkWrap: true,
-              slivers: [
-                SliverAppBar(
-                  title: Text("switch_network".tr),
-                  leading: const SizedBox(),
-                  leadingWidth: 0,
-                  bottom: TabBar(
-                      controller: tabController,
-                      tabAlignment: TabAlignment.start,
-                      isScrollable: true,
-                      tabs: const [
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.btc,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.xrp,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.eth,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.trx,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.sol,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.ada,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.atom,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.ton,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.polkadot,
-                                radius: 15)),
-                        Tab(
-                            icon: CircleAssetsImgaeView(APPConst.kusama,
-                                radius: 15)),
-                      ]),
-                  pinned: true,
-                  actions: [
-                    APPAnimatedSwitcher(
-                        duration: APPConst.animationDuraion,
-                        enable: showImport,
-                        widgets: {
-                          true: (c) => IconButton(
-                              tooltip: "import".tr,
-                              onPressed: () {
-                                context.pop(-1);
-                              },
-                              icon: const Icon(Icons.add)),
-                          false: (c) => WidgetConstant.sizedBox
-                        }),
-                    const CloseButton(),
-                  ],
-                ),
-                SliverToBoxAdapter(
-                  child: ConstraintsBoxView(
-                    maxHeight: 400,
-                    // padding: WidgetConstant.paddingHorizontal10,
-                    child: PageProgress(
-                      backToIdle: APPConst.milliseconds100,
-                      initialStatus: StreamWidgetStatus.progress,
-                      key: progressKey,
-                      child: () =>
-                          TabBarView(controller: tabController, children: [
-                        _NetworksView(widget.selectedNetwork, bitcoinNetworks),
-                        _NetworksView(widget.selectedNetwork, rippleNetworks),
-                        _NetworksView(widget.selectedNetwork, evmNetworks),
-                        _NetworksView(widget.selectedNetwork, tvmNetworks),
-                        _NetworksView(widget.selectedNetwork, solNetworks),
-                        _NetworksView(widget.selectedNetwork, cardanoNetworks),
-                        _NetworksView(widget.selectedNetwork, cosmosNetworks),
-                        _NetworksView(widget.selectedNetwork, tonNetworks),
-                        _NetworksView(widget.selectedNetwork, polkadotNetworks),
-                        _NetworksView(widget.selectedNetwork, kusamaNetworks)
-                      ]),
-                    ),
-                  ),
-                ),
+          borderRadius: WidgetConstant.border25,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text("switch_network".tr),
+              leading: const SizedBox(),
+              leadingWidth: 0,
+              bottom: TabBar(
+                  controller: tabController,
+                  tabAlignment: TabAlignment.start,
+                  isScrollable: true,
+                  physics: const PageScrollPhysics(),
+                  tabs: [
+                    Tab(icon: CircleAssetsImgaeView(APPConst.btc, radius: 15)),
+                    Tab(icon: CircleAssetsImgaeView(APPConst.xrp, radius: 15)),
+                    Tab(icon: CircleAssetsImgaeView(APPConst.eth, radius: 15)),
+                    Tab(icon: CircleAssetsImgaeView(APPConst.trx, radius: 15)),
+                    Tab(icon: CircleAssetsImgaeView(APPConst.sol, radius: 15)),
+                    Tab(icon: CircleAssetsImgaeView(APPConst.ada, radius: 15)),
+                    Tab(icon: CircleAssetsImgaeView(APPConst.atom, radius: 15)),
+                    Tab(icon: CircleAssetsImgaeView(APPConst.ton, radius: 15)),
+                    Tab(
+                        icon: CircleAssetsImgaeView(APPConst.polkadot,
+                            radius: 15)),
+                    Tab(
+                        icon:
+                            CircleAssetsImgaeView(APPConst.kusama, radius: 15)),
+                  ]),
+              // pinned: false,
+              // floating: true,
+              actions: [
+                APPAnimatedSwitcher(
+                    duration: APPConst.animationDuraion,
+                    enable: showImport,
+                    widgets: {
+                      true: (c) => IconButton(
+                          tooltip: "import".tr,
+                          onPressed: () {
+                            context.pop(-1);
+                          },
+                          icon: const Icon(Icons.add)),
+                      false: (c) => WidgetConstant.sizedBox
+                    }),
+                const CloseButton(),
               ],
+            ),
+            // shrinkWrap: true,
+            body: ConstraintsBoxView(
+              child: PageProgress(
+                backToIdle: APPConst.milliseconds100,
+                initialStatus: StreamWidgetStatus.progress,
+                key: progressKey,
+                child: (c) => TabBarView(controller: tabController, children: [
+                  _NetworksView(widget.selectedNetwork, bitcoinNetworks),
+                  _NetworksView(widget.selectedNetwork, rippleNetworks),
+                  _NetworksView(widget.selectedNetwork, evmNetworks),
+                  _NetworksView(widget.selectedNetwork, tvmNetworks),
+                  _NetworksView(widget.selectedNetwork, solNetworks),
+                  _NetworksView(widget.selectedNetwork, cardanoNetworks),
+                  _NetworksView(widget.selectedNetwork, cosmosNetworks),
+                  _NetworksView(widget.selectedNetwork, tonNetworks),
+                  _NetworksView(widget.selectedNetwork, polkadotNetworks),
+                  _NetworksView(widget.selectedNetwork, kusamaNetworks)
+                ]),
+              ),
             ),
           ),
         ),
@@ -267,7 +243,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
 class _NetworksView extends StatelessWidget {
   const _NetworksView(this.selected, this.networks);
   final WalletNetwork selected;
-  final List<ChainHandler> networks;
+  final List<Chain> networks;
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
@@ -276,7 +252,7 @@ class _NetworksView extends StatelessWidget {
         final len = networks.length;
         final lastIndex = index + 1 == len;
         final net = networks[index].network;
-        final balance = networks[index].account.totalBalance.value;
+        final balance = networks[index].totalBalance.value;
         return Padding(
           padding: WidgetConstant.paddingHorizontal20,
           child: Column(

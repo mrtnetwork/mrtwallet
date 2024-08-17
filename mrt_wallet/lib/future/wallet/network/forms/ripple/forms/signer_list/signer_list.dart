@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.dart';
@@ -54,7 +54,7 @@ class RippleSignerListForm implements RippleTransactionForm {
     return SignerListSet(
       signerEntries: signerEntries.value!
           .map((e) => SignerEntry(
-              account: e.address.view,
+              account: e.address.networkAddress.address,
               signerWeight: e.weight.toBigInt().toInt()))
           .toList(),
       signerQuorum: signerQuorum.value!.toBigInt().toInt(),

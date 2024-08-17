@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/account/forms/
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class TronAccountUpdatePermissionFieldsView extends StatelessWidget {
   const TronAccountUpdatePermissionFieldsView(
@@ -13,8 +14,8 @@ class TronAccountUpdatePermissionFieldsView extends StatelessWidget {
       required this.address,
       required this.validator,
       super.key});
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final TronChain account;
   final TronAccountUpdatePermissionForm validator;
 
   @override
@@ -82,7 +83,7 @@ class _EditPermissionView extends StatelessWidget {
       required this.account});
   final AccountPermission permission;
   final TronAccountUpdatePermissionForm validator;
-  final NetworkAccountCore account;
+  final TronChain account;
   @override
   Widget build(BuildContext context) {
     return Column(

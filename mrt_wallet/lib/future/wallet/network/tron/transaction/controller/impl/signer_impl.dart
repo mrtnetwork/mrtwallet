@@ -4,9 +4,10 @@ import 'package:mrt_wallet/future/wallet/network/tron/transaction/controller/imp
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 mixin TronSignerImpl on TronTransactionImpl {
   Future<void> signAndSendTransaction(TronBaseContract transaction) async {
@@ -41,8 +42,8 @@ mixin TronSignerImpl on TronTransactionImpl {
           ],
           timestamp: block.blockHeader.rawData.timestamp);
 
-      final SigningRequest<List<List<int>>> request =
-          SigningRequest<List<List<int>>>(
+      final WalletSigningRequest<List<List<int>>> request =
+          WalletSigningRequest<List<List<int>>>(
         addresses: [address],
         network: network,
         sign: (generateSignature) async {
@@ -79,7 +80,8 @@ mixin TronSignerImpl on TronTransactionImpl {
           return [sss.signature];
         },
       );
-      final signature = await walletProvider.signTransaction(request: request);
+      final signature =
+          await walletProvider.wallet.signTransaction(request: request);
       if (signature.hasError) {
         throw signature.exception!;
       }

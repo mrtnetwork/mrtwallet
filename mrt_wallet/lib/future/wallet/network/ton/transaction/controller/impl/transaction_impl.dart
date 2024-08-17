@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
@@ -15,7 +15,7 @@ abstract class TonTransactionImpl extends StateController {
       required this.apiProvider,
       required this.validator});
   final WalletProvider walletProvider;
-  final NetworkAccountCore<BigInt, TonAddress> account;
+  final TonChain account;
   final WalletTonNetwork network;
   final TonClient apiProvider;
   final ITonAddress address;

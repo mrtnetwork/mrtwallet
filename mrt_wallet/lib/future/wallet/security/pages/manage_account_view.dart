@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/wroker/keys/models/encrypted_imported.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class ManageImportedKeysView extends StatelessWidget {
   const ManageImportedKeysView({super.key});
@@ -42,7 +43,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   final Set<EncryptedCustomKey> importedKeys = {};
   void getAccounts() async {
     final wallet = context.watch<WalletProvider>(StateConst.main);
-    final result = await wallet.getImportedAccounts(widget.password);
+    final result = await wallet.wallet.getImportedAccounts(widget.password);
     if (result.hasError) {
       progressKey.errorText(result.error!.tr, backToIdle: false);
     } else {
@@ -62,7 +63,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   void removeKey(EncryptedCustomKey key) async {
     progressKey.progressText("deleting_key".tr);
     final wallet = context.watch<WalletProvider>(StateConst.main);
-    final result = await wallet.removeImportedKey(key, widget.password);
+    final result = await wallet.wallet.removeImportedKey(key, widget.password);
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
       return;
@@ -90,7 +91,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
           ProgressWithTextView(text: "retrieving_imported_keys_wait".tr),
       initialStatus: StreamWidgetStatus.progress,
       backToIdle: APPConst.oneSecoundDuration,
-      child: () => UnfocusableChild(
+      child: (c) => UnfocusableChild(
         child: ConstraintsBoxView(
           padding: WidgetConstant.paddingHorizontal20,
           child: Form(

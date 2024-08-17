@@ -5,21 +5,18 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:ton_dart/ton_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class TonImportJettonsView extends StatelessWidget {
   const TonImportJettonsView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<WalletTonNetwork, ITonAddress>(
+    return NetworkAccountControllerView<TonChain>(
       title: "import_jettons".tr,
-      childBulder: (wallet, account, address, network, onAccountChanged) {
+      childBulder: (wallet, account, onAccountChanged) {
         return _TonImportJettonsView(
-          apiProvider: account.provider()!,
-          account: address,
-          wallet: wallet,
-          network: network,
-        );
+            apiProvider: account.provider()!, account: account, wallet: wallet);
       },
     );
   }
@@ -27,21 +24,20 @@ class TonImportJettonsView extends StatelessWidget {
 
 class _TonImportJettonsView extends StatefulWidget {
   const _TonImportJettonsView(
-      {required this.apiProvider,
-      required this.account,
-      required this.wallet,
-      required this.network});
+      {required this.apiProvider, required this.account, required this.wallet});
   final TonClient apiProvider;
-  final ITonAddress account;
+  final TonChain account;
   final WalletProvider wallet;
-  final WalletTonNetwork network;
   @override
   State<_TonImportJettonsView> createState() => __TonImportJettonsViewState();
 }
 
 class __TonImportJettonsViewState extends State<_TonImportJettonsView>
     with SafeState {
-  List<TonJettonToken> get accountTokens => widget.account.tokens.cast();
+  late final ITonAddress address = widget.account.address;
+  WalletTonNetwork get network => widget.account.network;
+
+  List<TonJettonToken> get accountTokens => address.tokens.cast();
   final List<TonAccountJettonResponse> tokens = [];
 
   final GlobalKey<PageProgressState> progressKey =
@@ -50,8 +46,8 @@ class __TonImportJettonsViewState extends State<_TonImportJettonsView>
   void fetchTokens() async {
     if (progressKey.isSuccess || progressKey.inProgress) return;
     final result = await MethodUtils.call(() async {
-      final jettons = await widget.apiProvider
-          .getAccountJettons(widget.account.networkAddress);
+      final jettons =
+          await widget.apiProvider.getAccountJettons(address.networkAddress);
       return jettons;
     });
     if (result.hasError) {
@@ -127,13 +123,21 @@ class __TonImportJettonsViewState extends State<_TonImportJettonsView>
   }
 
   Future<void> add(TonJettonToken token) async {
-    final result = await widget.wallet.addNewToken(token, widget.account);
+    final result = await widget.wallet.wallet.addNewToken(
+      token: token,
+      address: address,
+      account: widget.account,
+    );
     if (result.hasError) throw result.error!;
     return result.result;
   }
 
   Future<void> removeToken(TonJettonToken token) async {
-    final result = await widget.wallet.removeToken(token, widget.account);
+    final result = await widget.wallet.wallet.removeToken(
+      token: token,
+      address: address,
+      account: widget.account,
+    );
     if (result.hasError) throw result.error!;
     return result.result;
   }
@@ -164,7 +168,7 @@ class __TonImportJettonsViewState extends State<_TonImportJettonsView>
       backToIdle: APPConst.oneSecoundDuration,
       initialWidget:
           ProgressWithTextView(text: "fetching_account_token_please_wait".tr),
-      child: () {
+      child: (c) {
         return CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
@@ -182,7 +186,7 @@ class __TonImportJettonsViewState extends State<_TonImportJettonsView>
                   itemBuilder: (context, index) {
                     final TonAccountJettonResponse token = tokens[index];
                     final bool exist =
-                        widget.account.tokens.contains(token.jettonToken);
+                        address.tokens.contains(token.jettonToken);
                     getContent(token);
                     return Column(
                       children: [
@@ -269,7 +273,7 @@ class _NonContentJettonView extends StatelessWidget {
                   backgroundColor: context.colors.onPrimaryContainer),
           WidgetConstant.height8,
           LaunchBrowserIcon(
-              url: state.widget.network.coinParam.getAccountExplorer(
+              url: state.network.coinParam.getAccountExplorer(
                       token.tokenAddress.toFriendlyAddress()) ??
                   "")
         ],

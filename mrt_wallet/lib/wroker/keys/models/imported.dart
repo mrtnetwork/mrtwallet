@@ -70,8 +70,6 @@ class ImportedKeyStorage with CborSerializable, Equatable {
 
   PrivateKeyData _toBip32KeyKey(AddressDerivationIndex? key) {
     final currentCoin = key?.currencyCoin ?? coin;
-    // print(
-    //     "key ${keyType.isPrivateKey} ${key} ${extendedPrivateKey} ${currentCoin} ${coin}");
     if (keyType.isPrivateKey) {
       return PrivateKeyData(
           coin: coin,

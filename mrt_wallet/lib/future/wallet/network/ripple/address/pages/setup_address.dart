@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/keys/models/seed.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SetupRippleAddressView extends StatefulWidget {
   final AddressDerivationController controller;
@@ -19,9 +20,8 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
   XrpAddressType addressTyoe = XrpAddressType.classic;
   bool get isXAddress => addressTyoe == XrpAddressType.xAddress;
   int tag = 0;
-  void onChangeTag(String v) {
-    final newTag = int.tryParse(v);
-    if (newTag == null || newTag < 0 || newTag > mask32 - 1) return;
+  void onChangeTag(int newTag) {
+    if (newTag < 0 || newTag > mask32 - 1) return;
     tag = newTag;
   }
 
@@ -44,7 +44,7 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
         .getCoin(context: context, seedGeneration: SeedTypes.bip39);
     if (keyIndex == null) return;
 
-    final newAccount = RippleNewAddressParam(
+    final newAccount = RippleNewAddressParams(
       deriveIndex: keyIndex,
       tag: isXAddress ? tag : null,
       coin: widget.controller.network.coins.firstWhere(

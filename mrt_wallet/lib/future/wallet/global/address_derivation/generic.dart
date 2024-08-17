@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart' show Translate;
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/address/pages/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/address/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/address/address.dart';
@@ -38,13 +38,13 @@ class _GenericNetworkAddressGenerationView extends StatelessWidget {
       Bip32AddressIndex keyIndex, WalletNetwork network, CryptoCoins coin) {
     switch (network.type) {
       case NetworkType.ethereum:
-        return EthereumNewAddressParam(deriveIndex: keyIndex, coin: coin);
+        return EthereumNewAddressParams(deriveIndex: keyIndex, coin: coin);
       case NetworkType.solana:
-        return SolanaNewAddressParam(deriveIndex: keyIndex, coin: coin);
+        return SolanaNewAddressParams(deriveIndex: keyIndex, coin: coin);
       case NetworkType.cosmos:
         return CosmosNewAddressParams(deriveIndex: keyIndex, coin: coin);
       case NetworkType.tron:
-        return TronNewAddressParam(deriveIndex: keyIndex, coin: coin);
+        return TronNewAddressParams(deriveIndex: keyIndex, coin: coin);
       default:
         throw UnimplementedError();
     }

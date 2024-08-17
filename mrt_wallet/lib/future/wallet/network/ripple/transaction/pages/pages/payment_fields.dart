@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -14,8 +14,8 @@ class RipplePaymentFieldsView extends StatelessWidget {
       required this.address,
       required this.validator,
       super.key});
-  final CryptoAddress address;
-  final NetworkAccountCore account;
+  final ChainAccount address;
+  final RippleChain account;
   final RipplePaymentForm validator;
 
   @override

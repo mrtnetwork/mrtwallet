@@ -1,10 +1,11 @@
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/transaction/controller/impl/transaction_impl.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
-import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
+import 'package:mrt_wallet/wallet/models/signing/signing.dart';
 import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
 import 'package:ton_dart/ton_dart.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 mixin TonSignerImpl on TonTransactionImpl {
   int? _seqno;
@@ -26,8 +27,8 @@ mixin TonSignerImpl on TonTransactionImpl {
     if (fakeSignature) {
       sig = List<int>.unmodifiable(List<int>.filled(64, 0));
     } else {
-      final signature = await walletProvider.signTransaction(
-          request: SigningRequest(
+      final signature = await walletProvider.wallet.signTransaction(
+          request: WalletSigningRequest(
         addresses: [address],
         network: network,
         sign: (generateSignature) async {
@@ -68,7 +69,8 @@ mixin TonSignerImpl on TonTransactionImpl {
       return await apiProvider.sendMessage(exMessage);
     });
     if (result.hasError) {
-      progressKey.errorText(result.error!.tr);
+      progressKey.errorText(result.error!.tr,
+          backToIdle: false, showBackButton: true);
     } else {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(

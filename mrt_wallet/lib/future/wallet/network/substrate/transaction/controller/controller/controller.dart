@@ -4,7 +4,6 @@ import 'package:mrt_wallet/future/wallet/network/substrate/transaction/controlle
 import 'package:mrt_wallet/future/wallet/network/substrate/transaction/controller/impl/transaction.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/transaction/controller/impl/transaction_builder.dart';
 import 'package:blockchain_utils/utils/compare/compare.dart';
-import 'package:mrt_wallet/wallet/constant/networks/substrate.dart';
 
 class SubstrateTransactionStateController extends SubstrateTransactiomImpl
     with
@@ -25,8 +24,6 @@ class SubstrateTransactionStateController extends SubstrateTransactiomImpl
 
   String? _error;
   String? get error => _error;
-  bool _reachedBatchLimit = false;
-  bool get reachedBatchLimit => _reachedBatchLimit;
 
   @override
   Future<void> onTapMemo(OnAddSubstrateMemo onAddMemo) async {
@@ -60,11 +57,6 @@ class SubstrateTransactionStateController extends SubstrateTransactiomImpl
 
   bool _isReady() {
     _error = validator.validator.validateError();
-    if (validator.validator.methodsLength + memos.length >
-        SubstrateConst.maximumBatchLimit) {
-      _error ??= "up_to_4_message_single_transaction";
-    }
-
     return !remindAmount.isNegative && _error == null;
   }
 
@@ -73,8 +65,7 @@ class SubstrateTransactionStateController extends SubstrateTransactiomImpl
     final totalAmounts = validator.validator.callValue;
     final remind = address.address.balance.value.balance - totalAmounts;
     remindAmount.updateBalance(remind);
-    _reachedBatchLimit = validator.validator.methodsLength + memos.length >=
-        SubstrateConst.maximumBatchLimit;
+
     _trIsReady = _isReady();
     notify();
   }
@@ -111,7 +102,4 @@ class SubstrateTransactionStateController extends SubstrateTransactiomImpl
     super.close();
     _close();
   }
-
-  @override
-  String get repositoryId => "substrate";
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/transaction/controller/impl/memo_impl.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/page_progress.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/page_progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 abstract class RippleTransactionImpl extends StateController {
   RippleTransactionImpl(
@@ -14,7 +14,7 @@ abstract class RippleTransactionImpl extends StateController {
       required this.address,
       required this.apiProvider});
   final WalletProvider walletProvider;
-  final NetworkAccountCore account;
+  final RippleChain account;
   final WalletXRPNetwork network;
   final RippleClient apiProvider;
   final IXRPAddress address;

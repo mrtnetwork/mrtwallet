@@ -5,12 +5,13 @@ import 'package:mrt_wallet/wroker/constant/const.dart';
 class NetworkType {
   final String name;
   final List<int> tag;
+  static const int tagLength = 3;
 
   const NetworkType._({required this.name, required this.tag});
   static const NetworkType bitcoinAndForked =
       NetworkType._(name: "Bitcoin", tag: CryptoKeyConst.bitconNetwork);
-  static const NetworkType bitcoinCash =
-      NetworkType._(name: "Bitcoin", tag: CryptoKeyConst.bitcoinCashNetwork);
+  static const NetworkType bitcoinCash = NetworkType._(
+      name: "BitcoinCash", tag: CryptoKeyConst.bitcoinCashNetwork);
   static const NetworkType xrpl =
       NetworkType._(name: "XRPL", tag: CryptoKeyConst.xrpNetwork);
   static const NetworkType ethereum =
@@ -45,7 +46,15 @@ class NetworkType {
   ];
 
   static NetworkType fromTag(List<int>? tag) {
+    if (tag != null && tag.length > tagLength) {
+      tag = tag.sublist(0, tagLength);
+    }
     return values.firstWhere((e) => BytesUtils.bytesEqual(tag, e.tag),
+        orElse: () => throw WalletExceptionConst.incorrectNetwork);
+  }
+
+  static NetworkType fromName(String? name) {
+    return values.firstWhere((e) => e.name == name,
         orElse: () => throw WalletExceptionConst.incorrectNetwork);
   }
 }

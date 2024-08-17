@@ -14,10 +14,8 @@ class ThorNodeHTTPService extends HTTPService<CosmosAPIProvider>
   @override
   Future<dynamic> get(ThorNodeRequestDetails params,
       [Duration? timeout]) async {
-    return await providerGET<Map<String, dynamic>>(params.url(url), headers: {
-      'Content-Type': 'application/json',
-      "Accept": "application/json"
-    });
+    return await providerGET<Map<String, dynamic>>(params.url(url),
+        headers: {'Content-Type': 'application/json'});
   }
 
   @override

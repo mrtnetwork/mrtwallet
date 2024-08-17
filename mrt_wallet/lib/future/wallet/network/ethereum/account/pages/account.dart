@@ -4,25 +4,27 @@ import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class ETHAccountPageView extends StatelessWidget {
   const ETHAccountPageView({required this.chainAccount, super.key});
-  final ChainHandler chainAccount;
+  final EthereumChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return TabBarView(children: [
-      _EthereumTokenView(account: chainAccount.account.address as IEthAddress),
+      _EthereumTokenView(account: chainAccount),
     ]);
   }
 }
 
 class _EthereumTokenView extends StatelessWidget {
   const _EthereumTokenView({required this.account});
-  final IEthAddress account;
+  final EthereumChain account;
+  IEthAddress get address => account.address;
 
   @override
   Widget build(BuildContext context) {
-    final tokens = account.tokens;
+    final tokens = address.tokens;
     return AccountTabbarScrollWidget(slivers: [
       tokens.isEmpty
           ? SliverFillRemaining(
@@ -61,14 +63,15 @@ class _EthereumTokenView extends StatelessWidget {
             )),
       SliverList.builder(
         itemBuilder: (context, index) {
-          final ETHERC20Token token = account.tokens[index];
+          final ETHERC20Token token = address.tokens[index];
           return ContainerWithBorder(
             onRemove: () {
               context.openDialogPage<TokenAction>(
                 "token_info".tr,
                 child: (ctx) => TokenDetailsModalView(
                   token: token,
-                  address: account,
+                  address: address,
+                  account: account,
                   transferPath: PageRouter.ethereumTransaction,
                 ),
               );
@@ -94,7 +97,7 @@ class _EthereumTokenView extends StatelessWidget {
             ),
           );
         },
-        itemCount: account.tokens.length,
+        itemCount: address.tokens.length,
         addAutomaticKeepAlives: false,
         addRepaintBoundaries: false,
       )

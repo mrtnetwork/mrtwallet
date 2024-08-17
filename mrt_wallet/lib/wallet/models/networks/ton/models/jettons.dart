@@ -1,6 +1,6 @@
 import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
-import 'package:mrt_wallet/wallet/models/token/tokens/jetton.dart';
+import 'package:mrt_wallet/wallet/models/token/chains_tokens/jetton.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 class TonAccountJettonResponse {

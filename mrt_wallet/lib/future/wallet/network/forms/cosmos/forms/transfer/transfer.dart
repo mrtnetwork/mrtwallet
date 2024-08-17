@@ -3,6 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/cosmos/forms/core/cosmos.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class CosmosTransferForm extends CosmosTransactionForm {
   CosmosTransferForm({required this.network});

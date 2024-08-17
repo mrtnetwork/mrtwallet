@@ -16,9 +16,6 @@ class CardanoTransactionStateController extends CardanoTransactionImpl
       {required super.walletProvider, required super.chainAccount});
 
   @override
-  String get repositoryId => "cardano";
-
-  @override
   void buildAndBroadcastTransaction() {
     if (!trReady) return;
     super.buildAndBroadcastTransaction();

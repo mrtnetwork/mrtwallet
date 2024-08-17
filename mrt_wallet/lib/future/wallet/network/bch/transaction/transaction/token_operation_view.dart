@@ -7,17 +7,17 @@ import 'package:mrt_wallet/future/wallet/network/bch/transaction/cotnroller/bitc
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wroker/utils/bitcoin_cash/bitcoin_cash_utils.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class TokenCashOperationView extends StatefulWidget {
-  const TokenCashOperationView({
-    super.key,
-    required this.token,
-    required this.account,
-    required this.network,
-    required this.remindAmount,
-  });
+  const TokenCashOperationView(
+      {super.key,
+      required this.token,
+      required this.account,
+      required this.network,
+      required this.remindAmount});
   final BitcoinCashTransactionTokenOperation token;
-  final NetworkAccountCore account;
+  final BitcoinChain account;
   final WalletBitcoinCashNetwork network;
   final BigInt remindAmount;
 

@@ -5,9 +5,10 @@ import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/wallet/setup/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/backup/mrt_backup.dart';
+import 'package:mrt_wallet/wallet/models/backup/backup.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/wroker/utils/global/utils.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 enum _BackupPage { fields, verify }
 
@@ -81,18 +82,18 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
 
   void onSetupBackup() {
     if (restoredBackup == null) return;
-    final model = context.watch<SetupWalletController>("setup_wallet");
+    final model = context.watch<SetupWalletController>(StateConst.setup);
     model.setupBackup(restoredBackup!);
   }
 
   void setup() async {
     if (!(form.currentState?.validate() ?? false)) return;
-    final model = context.watch<SetupWalletController>("setup_wallet");
+    final model = context.watch<SetupWalletController>(StateConst.setup);
     progressKey.progressText("decrypting_backup_please_wait".tr);
     final result = await MethodUtils.call(() async {
       final walletProvider = context.watch<WalletProvider>(StateConst.main);
-      return await walletProvider.restoreMRTBackup(
-          password: _backupPassword, backup: _backup);
+      return await walletProvider.wallet
+          .restoreMRTBackup(password: _backupPassword, backup: _backup);
     });
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
@@ -129,13 +130,16 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
 
   @override
   Widget build(BuildContext context) {
-    return PageProgress(
-      backToIdle: APPConst.animationDuraion,
-      key: progressKey,
-      child: () => APPAnimatedSwitcher(enable: page, widgets: {
-        _BackupPage.fields: (c) => _BackupFieldsWidget(this),
-        _BackupPage.verify: (c) => _BackupVerifyReview(this),
-      }),
+    return Form(
+      key: form,
+      child: PageProgress(
+        backToIdle: APPConst.animationDuraion,
+        key: progressKey,
+        child: (c) => APPAnimatedSwitcher(enable: page, widgets: {
+          _BackupPage.fields: (c) => _BackupFieldsWidget(this),
+          _BackupPage.verify: (c) => _BackupVerifyReview(this),
+        }),
+      ),
     );
   }
 }
@@ -146,64 +150,60 @@ class _BackupVerifyReview extends StatelessWidget {
   WalletRestoreV2 get backup => state.restoredBackup!;
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: state.form,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PageTitleSubtitle(
-            title: "verification_backup_review".tr,
-            body: Text("verification_backup_desc".tr),
-          ),
-          Text("status".tr, style: context.textTheme.titleMedium),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PageTitleSubtitle(
+          title: "verification_backup_review".tr,
+          body: Text("verification_backup_desc".tr),
+        ),
+        Text("status".tr, style: context.textTheme.titleMedium),
+        WidgetConstant.height8,
+        ContainerWithBorder(
+          onRemove: () {},
+          onTapWhenOnRemove: false,
+          onRemoveWidget: _BackupStatusIcon(backup.verifiedChecksum),
+          child: _BackupStatusText(backup.verifiedChecksum),
+        ),
+        if (backup.verifiedChecksum != false) ...[
+          WidgetConstant.height20,
+          Text("total_accounts".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           ContainerWithBorder(
-            onRemove: () {},
-            onTapWhenOnRemove: false,
-            onRemoveWidget: _BackupStatusIcon(backup.verifiedChecksum),
-            child: _BackupStatusText(backup.verifiedChecksum),
+            child: Text(backup.totalAccounts.toString(),
+                style: context.textTheme.bodyLarge),
           ),
-          if (backup.verifiedChecksum != false) ...[
+          if (backup.hasFailedAccount) ...[
             WidgetConstant.height20,
-            Text("total_accounts".tr, style: context.textTheme.titleMedium),
+            Text("unverified_account".tr, style: context.textTheme.titleMedium),
+            Text("unverified_account_desc".tr),
             WidgetConstant.height8,
             ContainerWithBorder(
-              child: Text(backup.totalAccounts.toString(),
-                  style: context.textTheme.bodyLarge),
-            ),
-            if (backup.hasFailedAccount) ...[
-              WidgetConstant.height20,
-              Text("unverified_account".tr,
-                  style: context.textTheme.titleMedium),
-              Text("unverified_account_desc".tr),
-              WidgetConstant.height8,
-              ContainerWithBorder(
-                child: Column(
-                  children: List.generate(
-                      backup.invalidAddresses.length,
-                      (i) => ContainerWithBorder(
-                          backgroundColor: context.colors.onPrimaryContainer,
-                          child: AddressDetailsView(
-                            address: backup.invalidAddresses[i],
-                            color: context.colors.primaryContainer,
-                            showBalance: false,
-                          ))),
-                ),
-              )
-            ],
-          ],
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical40,
-                onPressed: state.onSetupBackup,
-                child: Text("setup".tr),
+              child: Column(
+                children: List.generate(
+                    backup.invalidAddresses.length,
+                    (i) => ContainerWithBorder(
+                        backgroundColor: context.colors.onPrimaryContainer,
+                        child: AddressDetailsView(
+                          address: backup.invalidAddresses[i],
+                          color: context.colors.primaryContainer,
+                          showBalance: false,
+                        ))),
               ),
-            ],
-          )
+            )
+          ],
         ],
-      ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FixedElevatedButton(
+              padding: WidgetConstant.paddingVertical40,
+              onPressed: state.onSetupBackup,
+              child: Text("setup".tr),
+            ),
+          ],
+        )
+      ],
     );
   }
 }
@@ -246,101 +246,87 @@ class _BackupFieldsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<SetupWalletController>("setup_wallet");
-    return Form(
-      key: state.form,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PageTitleSubtitle(
-            title: "restore_wallet_from_bcakup".tr,
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("restore_mnemonic_desc".tr),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PageTitleSubtitle(
+          title: "restore_wallet_from_bcakup".tr,
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("restore_mnemonic_desc".tr),
+            ],
           ),
-          WidgetConstant.height8,
-          AppTextField(
-            label: "enter_backup".tr,
-            validator: state.bcakupForm,
-            onChanged: state.onChange,
-            key: state.backupTextField,
-            minlines: 3,
-            maxLines: 5,
-            initialValue: state._backup,
-            suffixIcon: PasteTextIcon(
-                onPaste: state.onPaseBackupText, isSensitive: false),
-          ),
-          AppTextField(
-            label: "input_backup_password".tr,
-            validator: state.passwordForm,
-            onChanged: state.onChangeBackupPassword,
-            initialValue: state._backupPassword,
-            error: state._error,
-            obscureText: true,
-          ),
-          WidgetConstant.height20,
-          Text("mn_password".tr, style: context.textTheme.titleMedium),
-          Text("enter_passphrase_desc".tr),
-          WidgetConstant.height8,
-          AppSwitchListTile(
-            title: Text("passphrase".tr),
-            value: state.passphrase,
-            onChanged: state.usePassphrase,
-            subtitle: Text("enable_mnemonic_password".tr),
-          ),
-          AnimatedSize(
-            duration: APPConst.animationDuraion,
-            alignment: Alignment.centerLeft,
-            child: !state.passphrase
-                ? WidgetConstant.sizedBox
-                : Padding(
-                    padding: WidgetConstant.paddingHorizontal20,
-                    child: Column(
-                      children: [
-                        WidgetConstant.height8,
-                        AppTextField(
-                          label: "mn_password".tr,
-                          obscureText: true,
-                          disableContextMenu: true,
-                          initialValue: state._passphrase,
-                          onChanged: state.onChangePassphrase,
-                          validator: (p0) {
-                            if (!state.passphrase) return null;
-                            if (p0?.isEmpty ?? true) {
-                              return "password_should_not_be_empty".tr;
-                            }
-                            return null;
-                          },
-                        ),
-                      ],
-                    ),
+        ),
+        WidgetConstant.height8,
+        AppTextField(
+          label: "enter_backup".tr,
+          validator: state.bcakupForm,
+          onChanged: state.onChange,
+          key: state.backupTextField,
+          minlines: 3,
+          maxLines: 5,
+          initialValue: state._backup,
+          suffixIcon: PasteTextIcon(
+              onPaste: state.onPaseBackupText, isSensitive: false),
+        ),
+        AppTextField(
+          label: "input_backup_password".tr,
+          validator: state.passwordForm,
+          onChanged: state.onChangeBackupPassword,
+          initialValue: state._backupPassword,
+          error: state._error,
+          obscureText: true,
+        ),
+        WidgetConstant.height20,
+        Text("mn_password".tr, style: context.textTheme.titleMedium),
+        Text("enter_passphrase_desc".tr),
+        WidgetConstant.height8,
+        AppSwitchListTile(
+          title: Text("passphrase".tr),
+          value: state.passphrase,
+          onChanged: state.usePassphrase,
+          subtitle: Text("enable_mnemonic_password".tr),
+        ),
+        AnimatedSize(
+          duration: APPConst.animationDuraion,
+          alignment: Alignment.centerLeft,
+          child: !state.passphrase
+              ? WidgetConstant.sizedBox
+              : Padding(
+                  padding: WidgetConstant.paddingHorizontal20,
+                  child: Column(
+                    children: [
+                      WidgetConstant.height8,
+                      AppTextField(
+                        label: "mn_password".tr,
+                        obscureText: true,
+                        disableContextMenu: true,
+                        initialValue: state._passphrase,
+                        onChanged: state.onChangePassphrase,
+                        validator: (p0) {
+                          if (!state.passphrase) return null;
+                          if (p0?.isEmpty ?? true) {
+                            return "password_should_not_be_empty".tr;
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                   ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical40,
-                onPressed: state.setup,
-                child: Text("setup".tr),
-              ),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: model.toggleLegacy,
-                child: Text("legacy_backup".tr),
-              ),
-            ],
-          ),
-          WidgetConstant.height15,
-        ],
-      ),
+                ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            FixedElevatedButton(
+              padding: WidgetConstant.paddingVertical40,
+              onPressed: state.setup,
+              child: Text("setup".tr),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

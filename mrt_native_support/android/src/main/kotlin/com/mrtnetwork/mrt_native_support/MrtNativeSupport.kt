@@ -9,6 +9,7 @@ import android.view.WindowManager
 import com.mrtnetwork.mrt_native_support.connection.ConnectionBroadcast
 import com.mrtnetwork.mrt_native_support.connection.NetworkEvent
 import com.mrtnetwork.mrt_native_support.encryptions.EncryptionImpl
+import com.mrtnetwork.mrt_native_support.webview.WebViewFactory
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -20,6 +21,8 @@ import io.flutter.util.PathUtils
 class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtService() {
     override lateinit var methodChannel: MethodChannel
     override lateinit var applicationContext: Context
+    override var flutterPluginBinding: FlutterPlugin.FlutterPluginBinding? = null
+
 
     override fun onNewIntent(intent: Intent): Boolean {
         return false;
@@ -39,8 +42,7 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
         this.methodChannel.setMethodCallHandler(this)
         EncryptionImpl.init(applicationContext)
         connectionManager.listenOnNetwork(applicationContext)
-
-
+        this.flutterPluginBinding = flutterPluginBinding
     }
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -51,7 +53,6 @@ class MrtNativeSupport : FlutterPlugin, MethodChannel.MethodCallHandler, MrtServ
 
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        MrtCore.logging(call.method);
         when (call.method) {
 
             "logging" -> {

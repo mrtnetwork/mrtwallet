@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/core/core.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/methods/script_hash_balance.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/bitcoin/addresses/bitcoin.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/bitcoin/addresses/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/networks/bitcoin/models/electrum_server_infos.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
@@ -81,11 +81,11 @@ class BitcoinElectrumClient extends BitcoinClient<IBitcoinAddress> {
 
   @override
   Future<String> genesis() async {
-    final result = await MethodUtils.nullOnException(() async {
+    final result = await MethodUtils.call(() async {
       final features = await serverFeatures();
       return (features["genesis_hash"] as String);
     });
-    if (result != null) return result;
+    if (result.hasResult) return result.result;
     final header = await provider
         .request(ElectrumBlockHeader(startHeight: 0, cpHeight: 0));
     return BytesUtils.toHexString(

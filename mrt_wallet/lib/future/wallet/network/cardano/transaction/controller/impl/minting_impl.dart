@@ -23,9 +23,9 @@ mixin CardanoMintingImpl on CardanoTransactionImpl {
   void _cleanUpUsedMint(ADAMintInfo mint) {
     final mintingAsset = mint.toMultiAsset;
     setTotalAssets(totalAssets - mintingAsset);
-    changeAssetOutput.setAsset(changeAssetOutput.asset - mintingAsset);
+    changeAssetOutput.updateAssets(changeAssetOutput.asset - mintingAsset);
     for (final i in receivers) {
-      i.setAsset(i.asset - mintingAsset);
+      i.updateAssets(i.asset - mintingAsset);
     }
     calculateFee();
   }

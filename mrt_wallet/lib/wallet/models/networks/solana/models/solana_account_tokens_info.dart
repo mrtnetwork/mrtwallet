@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/wallet/models/token/tokens/spl_token.dart';
+import 'package:mrt_wallet/wallet/models/token/chains_tokens/spl_token.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:on_chain/solana/solana.dart';
 

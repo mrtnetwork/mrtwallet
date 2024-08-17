@@ -1,6 +1,8 @@
 import 'package:blockchain_utils/utils/utils.dart';
-import 'package:mrt_wallet/app/core.dart';
+// import 'package:mrt_wallet/app/core.dart';
 import 'dart:math' as math;
+
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 
 class StrUtils {
   static bool isStrongPassword(String? password) {
@@ -53,6 +55,51 @@ class StrUtils {
     return val;
   }
 
+  static String toRawString(String string) {
+    return string
+        .replaceAll('\\', '\\\\')
+        .replaceAll('\n', r'\n')
+        .replaceAll('\r', r'\r')
+        .replaceAll('\t', r'\t')
+        .replaceAll('\$', r'\$')
+        .replaceAll('"', r'\"')
+        .replaceAll("'", r"\'")
+        .replaceAll('\f', r'\f')
+        .replaceAll('\u0000', r'\u0000')
+        .replaceAll('\u0001', r'\u0001')
+        .replaceAll('\u0002', r'\u0002')
+        .replaceAll('\u0003', r'\u0003')
+        .replaceAll('\u0004', r'\u0004')
+        .replaceAll('\u0005', r'\u0005')
+        .replaceAll('\u0006', r'\u0006')
+        .replaceAll('\u0007', r'\u0007')
+        .replaceAll('\u0008', r'\u0008')
+        .replaceAll('\u0009', r'\u0009')
+        .replaceAll('\u000A', r'\u000A')
+        .replaceAll('\u000B', r'\u000B')
+        .replaceAll('\u000C', r'\u000C')
+        .replaceAll('\u000D', r'\u000D')
+        .replaceAll('\u000E', r'\u000E')
+        .replaceAll('\u000F', r'\u000F')
+        .replaceAll('\u0010', r'\u0010')
+        .replaceAll('\u0011', r'\u0011')
+        .replaceAll('\u0012', r'\u0012')
+        .replaceAll('\u0013', r'\u0013')
+        .replaceAll('\u0014', r'\u0014')
+        .replaceAll('\u0015', r'\u0015')
+        .replaceAll('\u0016', r'\u0016')
+        .replaceAll('\u0017', r'\u0017')
+        .replaceAll('\u0018', r'\u0018')
+        .replaceAll('\u0019', r'\u0019')
+        .replaceAll('\u001A', r'\u001A')
+        .replaceAll('\u001B', r'\u001B')
+        .replaceAll('\u001C', r'\u001C')
+        .replaceAll('\u001D', r'\u001D')
+        .replaceAll('\u001E', r'\u001E')
+        .replaceAll('\u001F', r'\u001F')
+        .replaceAll('\u007F', r'\u007F');
+  }
+
   static String to3Digits(String number, {String separator = ","}) {
     String integerPart = '';
     String fractionalPart = '';
@@ -93,7 +140,7 @@ class StrUtils {
     if (uri == null) return null;
     if (uri.host.isEmpty) return null;
     if (!schame.contains(uri.scheme.toLowerCase())) return null;
-    if (!uri.host.contains(".")) return null;
+    // if (!uri.host.contains(".")) return null;
     return uri.normalizePath().toString();
   }
 
@@ -132,6 +179,19 @@ class StrUtils {
     }
 
     return result;
+  }
+
+  static String _twoDigits(int n) {
+    if (n >= 10) {
+      return "$n";
+    } else {
+      return "0$n";
+    }
+  }
+
+  static String toFileName(DateTime time) {
+    return "${time.year}_${_twoDigits(time.month)}_${_twoDigits(time.day)}"
+        "${_twoDigits(time.hour)}-${_twoDigits(time.minute)}-${_twoDigits(time.second)}";
   }
 
   static String removeSchame(String uri) {
@@ -184,4 +244,26 @@ class StrUtils {
     if (v.endsWith("/")) return v.substring(v.length - 1);
     return v;
   }
+
+  static String toSnakeCase(String input) {
+    // Replace all uppercase letters with _letter (lowercase)
+    String snakeCase = input.replaceAllMapped(
+        RegExp(r'[A-Z]'), (Match match) => '_${match.group(0)!.toLowerCase()}');
+
+    // Remove any leading underscores that might have been added
+    snakeCase = snakeCase.startsWith('_') ? snakeCase.substring(1) : snakeCase;
+
+    // Replace spaces and special characters with underscores
+    snakeCase = snakeCase.replaceAll(RegExp(r'\s+|[^a-zA-Z0-9]+'), '_');
+
+    return snakeCase;
+  }
+
+  static final _domainRegex = RegExp(
+      r"(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)");
+  static bool isDomain(String? url) {
+    if (url == null) return false;
+    return _domainRegex.hasMatch(url);
+  }
+  // final r = RegExp(validHostnameRegex, unicode: true);
 }

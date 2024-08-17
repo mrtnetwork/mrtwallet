@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/utils/utils.dart';
+import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
 import 'package:mrt_wallet/app/constant/global/rational.dart';
 
 class PriceUtils {

@@ -1,5 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/euqatable/equatable.dart';
+import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/providers/provider.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cardano.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
@@ -15,11 +17,18 @@ import 'package:mrt_wallet/wroker/models/networks.dart';
 
 abstract class APIProvider with Equatable, CborSerializable {
   const APIProvider(
-      this.serviceName, this.websiteUri, this.protocol, this.auth);
+      {required this.serviceName,
+      required this.websiteUri,
+      required this.protocol,
+      this.auth,
+      required this.identifier,
+      this.allowInWeb3 = true});
+  final String identifier;
   final ServiceProtocol protocol;
   final String serviceName;
   final String websiteUri;
   final ProviderAuth? auth;
+  final bool allowInWeb3;
 
   T toProvider<T extends APIProvider>() {
     if (this is! T) throw WalletExceptionConst.invalidProviderInformation;

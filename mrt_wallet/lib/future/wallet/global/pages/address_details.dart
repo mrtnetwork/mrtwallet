@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
-import 'package:mrt_wallet/app/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/wallet.dart' show ContactCore, CryptoAddress;
+import 'package:mrt_wallet/wallet/wallet.dart' show ContactCore, ChainAccount;
 import 'package:mrt_wallet/wroker/derivation/core/derivation.dart';
 
 class AddressDetailsView extends StatelessWidget {
@@ -14,7 +14,7 @@ class AddressDetailsView extends StatelessWidget {
     this.color,
   });
 
-  final CryptoAddress address;
+  final ChainAccount address;
   final bool showBalance;
   final Color? color;
 
@@ -51,7 +51,7 @@ class AddressDetailsView extends StatelessWidget {
           CoinPriceView(
               account: address,
               style: context.textTheme.titleLarge?.copyWith(color: color),
-              token: wallet.network.coinParam.token,
+              token: wallet.wallet.network.coinParam.token,
               symbolColor: color),
       ],
     );

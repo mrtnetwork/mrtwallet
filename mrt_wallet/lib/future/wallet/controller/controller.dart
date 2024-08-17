@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
-    show APPSetting, RepositoryConst, StateConst, ThemeController;
-import 'package:mrt_wallet/future/widgets/custom_widgets.dart'
-    show PageProgressBaseState;
+    show APPSetting, RepositoryConst, StateConst;
+import 'package:mrt_wallet/future/future.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/app/models/models/currencies.dart';
 import 'package:mrt_wallet/marketcap/prices/live_currency.dart';
 import 'package:mrt_wallet/repository/repository.dart';
-import 'package:mrt_wallet/wallet/provider/wallet_provider.dart'
-    show WalletCore;
+import 'wallet/ui_wallet.dart';
 
-class WalletProvider extends WalletCore with APPRepository, LiveCurrencies {
-  WalletProvider(super._navigatorKey, this._appSetting);
+import 'wallet/cross/cross.dart'
+    if (dart.library.js_interop) 'wallet/cross/web.dart'
+    if (dart.library.io) 'wallet/cross/io.dart';
 
+class WalletProvider extends StateController
+    with BaseRepository, APPRepository, LiveCurrencies {
+  WalletProvider(GlobalKey<NavigatorState> navigatorKey, this._appSetting)
+      : wallet = uiWallet(navigatorKey);
+
+  ThemeData get theme => ThemeController.appTheme;
+  GlobalKey<NavigatorState> get navigatorKey => wallet.navigatorKey;
   @override
-  final GlobalKey<PageProgressBaseState> pageStatusHandler =
-      GlobalKey<PageProgressBaseState>(debugLabel: "WalletProvider");
+  final UIWallet wallet;
+
   APPSetting _appSetting;
   @override
   APPSetting get appSetting => _appSetting;
@@ -46,8 +53,17 @@ class WalletProvider extends WalletCore with APPRepository, LiveCurrencies {
   }
 
   @override
-  String get repositoryId => StateConst.main;
+  String get repositoryStorageId => RepositoryConst.appStorageKeyId;
 
   @override
-  String get repositoryStorageId => RepositoryConst.appStorageKeyId;
+  void init() {
+    super.init();
+    wallet.init(notify);
+  }
+
+  @override
+  void close() {
+    super.close();
+    wallet.close();
+  }
 }

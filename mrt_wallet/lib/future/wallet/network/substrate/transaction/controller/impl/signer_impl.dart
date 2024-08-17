@@ -1,9 +1,9 @@
 import 'package:blockchain_utils/crypto/crypto/schnorrkel/keys/keys.dart';
-import 'package:mrt_wallet/app/extention/app_extentions/string.dart';
+import 'package:mrt_wallet/future/state_managment/extention/app_extentions/string.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/signing_request/signing_request.dart';
-import 'package:mrt_wallet/wroker/messages/request/requests/signing.dart';
+import 'package:mrt_wallet/wallet/models/signing/signing.dart';
+import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/wroker/utils/substrate/substrate.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
@@ -17,15 +17,15 @@ mixin SubstrateSignerImpl on SubstrateTransactiomImpl {
   Future<Extrinsic> _buildAndSignTransaction(
       {bool fakeSignature = false}) async {
     final transaction = await buildTransaction();
-    final digest = transaction.serialize();
+    final digest = transaction.serialzeSign();
     final SubstrateMultiSignature signature;
     final algorithm = address.keyIndex.currencyCoin.conf.type;
     if (fakeSignature) {
       signature = SubstrateMultiSignature(SubstrateSr25519Signature(
           List<int>.filled(SchnorrkelKeyCost.signatureLength, 0)));
     } else {
-      final sig = await walletProvider.signTransaction(
-          request: SigningRequest<SubstrateMultiSignature>(
+      final sig = await walletProvider.wallet.signTransaction(
+          request: WalletSigningRequest<SubstrateMultiSignature>(
         addresses: [address],
         network: network,
         sign: (generateSignature) async {

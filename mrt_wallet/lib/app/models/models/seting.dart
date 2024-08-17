@@ -1,7 +1,10 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_native_support/models/models.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/constant/global/serialization.dart';
+import 'package:mrt_wallet/app/models/models/currencies.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
+// import 'package:mrt_wallet/app/core.dart';
 
 class APPSetting with CborSerializable {
   APPSetting._(

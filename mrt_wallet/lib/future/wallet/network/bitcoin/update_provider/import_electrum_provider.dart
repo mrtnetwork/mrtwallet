@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/select_provider.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class ImportElectrumProviderView extends StatelessWidget {
   const ImportElectrumProviderView({super.key});
@@ -154,7 +155,8 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
         serviceName: serviceName,
         websiteUri: websiteurl,
         url: url,
-        protocol: protocol);
+        protocol: protocol,
+        identifier: APIUtils.getProviderIdentifier(null));
     return BitcoinElectrumClient(
         provider: ElectrumApiProvider(
             ElectrumService.fromProvider(provider: service, service: service)),
@@ -237,7 +239,7 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
       final services = providers.map((e) => e.service.provider).toList();
       final updatedNetwork = network.copyWith(
           coinParam: network.coinParam.copyWith(providers: services));
-      return await wallet.updateImportNetwork(updatedNetwork);
+      return await wallet.wallet.updateImportNetwork(updatedNetwork);
     });
     if (result.hasError) {
       pageProgressKey.errorText(result.error!.tr);
@@ -286,7 +288,7 @@ class __ImportElectrumProviderState extends State<_ImportElectrumProvider> {
       child: PageProgress(
         key: pageProgressKey,
         backToIdle: APPConst.twoSecoundDuration,
-        child: () => CustomScrollView(
+        child: (c) => CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
               child: ConstraintsBoxView(

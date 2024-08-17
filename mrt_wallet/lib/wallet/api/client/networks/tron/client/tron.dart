@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/api/client/networks/ethereum/client/ethereum.d
 import 'package:mrt_wallet/wallet/api/client/networks/tron/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/tron.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
-import 'package:mrt_wallet/wallet/models/account/address/networks/networks.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/networks.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
 import 'package:on_chain/on_chain.dart';
@@ -114,10 +114,10 @@ class TronClient extends NetworkClient<ITronAddress, TronAPIProvider> {
 
   @override
   Future<bool> onInit() async {
-    final genesis = await MethodUtils.nullOnException(() async {
+    final result = await MethodUtils.call<String>(() async {
       final block = await provider.request(TronRequestGetBlockByNum(num: 0));
       return block["blockID"];
     });
-    return genesis == network.coinParam.genesis;
+    return result.hasResult && result.result == network.coinParam.genesis;
   }
 }

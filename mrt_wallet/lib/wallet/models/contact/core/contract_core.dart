@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/cbor/core/cbor.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/cardano.dart';
@@ -18,60 +19,84 @@ abstract class ContactCore<T> with CborSerializable {
   abstract final String name;
   abstract final DateTime created;
   abstract final String? type;
-  static ContactCore fromCborBytesOrObject(WalletNetwork network,
+  static ContactCore<T> fromCborBytesOrObject<T>(WalletNetwork network,
       {List<int>? bytes, CborObject? obj}) {
+    ContactCore contact;
     switch (network.type) {
       case NetworkType.bitcoinAndForked:
       case NetworkType.bitcoinCash:
-        return BitcoinContact.fromCborBytesOrObject(
+        contact = BitcoinContact.fromCborBytesOrObject(
             network as WalletBitcoinNetwork,
             bytes: bytes,
             obj: obj);
+        break;
       case NetworkType.ethereum:
-        return EthereumContract.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        contact =
+            EthereumContract.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
       case NetworkType.tron:
-        return TronContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        contact = TronContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
       case NetworkType.solana:
-        return SolanaContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        contact = SolanaContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
       case NetworkType.cardano:
-        return CardanoContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        contact = CardanoContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
       case NetworkType.cosmos:
-        return CosmosContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        contact = CosmosContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
       case NetworkType.ton:
-        return TonContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        contact = TonContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
       case NetworkType.xrpl:
-        return RippleContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        contact = RippleContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
       default:
-        return SubstrateContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        contact =
+            SubstrateContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
     }
+    if (contact is! ContactCore<T>) {
+      throw WalletExceptionConst.invalidArgruments(
+          "${ContactCore<T>}", contact.runtimeType.toString());
+    }
+    return contact;
   }
 
-  static ContactCore newContact<T>(
+  static ContactCore<T> newContact<T>(
       {required WalletNetwork network,
       required dynamic address,
       required String name}) {
+    ContactCore contact;
     switch (network.type) {
       case NetworkType.bitcoinAndForked:
       case NetworkType.bitcoinCash:
-        return BitcoinContact.newContact(
+        contact = BitcoinContact.newContact(
             address: address, network: network.toNetwork(), name: name);
       case NetworkType.ethereum:
-        return EthereumContract.newContact(address: address, name: name);
+        contact = EthereumContract.newContact(address: address, name: name);
       case NetworkType.tron:
-        return TronContact.newContact(address: address, name: name);
+        contact = TronContact.newContact(address: address, name: name);
       case NetworkType.cardano:
-        return CardanoContact.newContact(address: address, name: name);
+        contact = CardanoContact.newContact(address: address, name: name);
       case NetworkType.cosmos:
-        return CosmosContact.newContact(address: address, name: name);
+        contact = CosmosContact.newContact(address: address, name: name);
       case NetworkType.solana:
-        return SolanaContact.newContact(address: address, name: name);
+        contact = SolanaContact.newContact(address: address, name: name);
       case NetworkType.ton:
-        return TonContact.newContact(address: address, name: name);
+        contact = TonContact.newContact(address: address, name: name);
       case NetworkType.polkadot:
       case NetworkType.kusama:
-        return SubstrateContact.newContact(address: address, name: name);
+        contact = SubstrateContact.newContact(address: address, name: name);
+      case NetworkType.xrpl:
+        contact = RippleContact.newContact(address: address, name: name);
       default:
-        return RippleContact.newContact(address: address, name: name);
+        throw WalletExceptionConst.networkDoesNotExist;
     }
+    if (contact is! ContactCore<T>) {
+      throw WalletExceptionConst.dataVerificationFailed;
+    }
+    return contact;
   }
 }

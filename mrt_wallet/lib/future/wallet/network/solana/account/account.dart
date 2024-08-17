@@ -5,26 +5,28 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 class SolanaAccountPageView extends StatelessWidget {
   const SolanaAccountPageView({required this.chainAccount, super.key});
-  final ChainHandler chainAccount;
+  final SolanaChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return TabBarView(children: [
       const _SolanaServices(),
-      _SolanaTokenView(account: chainAccount.account.address as ISolanaAddress),
+      _SolanaTokenView(account: chainAccount),
     ]);
   }
 }
 
 class _SolanaTokenView extends StatelessWidget {
   const _SolanaTokenView({required this.account});
-  final ISolanaAddress account;
+  final SolanaChain account;
+  ISolanaAddress get address => account.address;
 
   @override
   Widget build(BuildContext context) {
-    final tokens = account.tokens;
+    final tokens = address.tokens;
     return AccountTabbarScrollWidget(slivers: [
       tokens.isEmpty
           ? SliverFillRemaining(
@@ -63,13 +65,14 @@ class _SolanaTokenView extends StatelessWidget {
             )),
       SliverList.builder(
         itemBuilder: (context, index) {
-          final SolanaSPLToken token = account.tokens[index];
+          final SolanaSPLToken token = address.tokens[index];
           return ContainerWithBorder(
             onRemove: () {
               context.openDialogPage<TokenAction>("token_info".tr,
                   child: (ctx) => TokenDetailsModalView(
                         token: token,
-                        address: account,
+                        address: address,
+                        account: account,
                         transferPath: PageRouter.solanaTransfer,
                       ));
             },
@@ -94,7 +97,7 @@ class _SolanaTokenView extends StatelessWidget {
             ),
           );
         },
-        itemCount: account.tokens.length,
+        itemCount: address.tokens.length,
         addAutomaticKeepAlives: false,
         addRepaintBoundaries: false,
       )

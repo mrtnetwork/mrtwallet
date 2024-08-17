@@ -1,11 +1,11 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class BuildRippleCurrencyAmountView extends StatefulWidget {
   const BuildRippleCurrencyAmountView({
@@ -16,7 +16,7 @@ class BuildRippleCurrencyAmountView extends StatefulWidget {
     this.supportXRP = true,
     required this.title,
   });
-  final NetworkAccountCore account;
+  final RippleChain account;
   final ScrollController scrollController;
   final bool acceptZero;
   final bool supportXRP;
@@ -122,201 +122,224 @@ class _BuildRippleCurrencyAmountViewState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        bottom: ReadOnlyTabbar(
-          isEnabled: widget.supportXRP,
-          child: TabBar(controller: controller, tabs: [
-            Tab(text: "xrp_amount".tr),
-            Tab(text: "token_amount".tr),
-          ]),
-        ),
-      ),
-      body: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [],
-          body: TabBarView(
-              physics:
-                  widget.supportXRP ? null : WidgetConstant.noScrollPhysics,
-              controller: controller,
-              children: [
-                Padding(
-                  padding: WidgetConstant.padding20,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("currency".tr,
-                            style: context.textTheme.titleMedium),
-                        WidgetConstant.height8,
-                        ContainerWithBorder(
-                          onRemove: () {},
-                          onRemoveIcon: WidgetConstant.sizedBox,
-                          child: const Text("XRP"),
-                        ),
-                        WidgetConstant.height20,
-                        Text("trust_set_value".tr,
-                            style: context.textTheme.titleMedium),
-                        Text("token_value".tr),
-                        WidgetConstant.height8,
-                        ContainerWithBorder(
-                            validate: widget.acceptZero
-                                ? !xrpAmount.isNegative
-                                : !xrpAmount.isNegative && !xrpAmount.isZero,
-                            onRemoveIcon: value != null
-                                ? const Icon(Icons.edit)
-                                : const Icon(Icons.add),
-                            onRemove: () {
-                              context
-                                  .openSliverBottomSheet<BigInt>(
-                                    "xrp_amount".tr,
-                                    child: SetupNetworkAmount(
-                                      min: BigInt.zero,
-                                      token: widget
-                                          .account.network.coinParam.token,
-                                      subtitle: const SizedBox(),
-                                    ),
-                                  )
-                                  .then(setupXrpAmount);
-                            },
-                            child: CoinPriceView(
-                              balance: xrpAmount,
-                              token: widget.account.network.coinParam.token,
-                              style: context.textTheme.titleLarge,
-                            )),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FixedElevatedButton(
-                              padding: WidgetConstant.paddingVertical20,
-                              onPressed: isReady ? onSetup : null,
-                              child: Text("setup_currency_amount".tr),
-                            )
-                          ],
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: WidgetConstant.padding20,
-                  child: SingleChildScrollView(
+    return MaterialPageView(
+      child: NestedScrollView(
+        controller: widget.scrollController,
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverAppBar(
+            title: Text(widget.title),
+            bottom: ReadOnlyTabbar(
+              isEnabled: widget.supportXRP,
+              child: TabBar(controller: controller, tabs: [
+                Tab(text: "xrp_amount".tr),
+                Tab(text: "token_amount".tr),
+              ]),
+            ),
+          )
+        ],
+        body: Builder(builder: (context) {
+          return ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(
+                scrollbars: false, physics: const ClampingScrollPhysics()),
+            child: TabBarView(
+                physics:
+                    widget.supportXRP ? null : WidgetConstant.noScrollPhysics,
+                controller: controller,
+                children: [
+                  CustomScrollView(
                     controller: widget.scrollController,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PageTitleSubtitle(
-                            title: "token_amount".tr,
-                            body: Text("token_amount_desc".tr)),
-                        ReceiptAddressView(
-                          address: issuer,
-                          title: "issuer",
-                          subtitle: "token_issuer".tr,
-                          onTap: () {
-                            context
-                                .openSliverBottomSheet<
-                                        ReceiptAddress<XRPAddress>>(
-                                    "token_amount".tr,
-                                    maxExtend: 1,
-                                    minExtent: 0.8,
-                                    initialExtend: 0.9,
-                                    bodyBuilder: (c) =>
-                                        SelectRecipientAccountView<XRPAddress>(
-                                          account: widget.account,
-                                          scrollController: c,
-                                          subtitle: PageTitleSubtitle(
-                                              title: "issuer".tr,
-                                              body: Text("token_issuer".tr)),
-                                        ))
-                                .then(onSelectIssuer);
-                          },
-                        ),
-                        WidgetConstant.height20,
-                        Text("currency".tr,
-                            style: context.textTheme.titleMedium),
-                        Text("token_currency".tr),
-                        WidgetConstant.height8,
-                        ContainerWithBorder(
-                          onRemove: () {
-                            context
-                                .openSliverBottomSheet<String>(
-                                  "token_amount".tr,
-                                  child: StringWriterView(
-                                    defaultValue: currency,
-                                    regExp: RippleConst.currencyCodeRegex,
-                                    title: PageTitleSubtitle(
-                                        title: "currency".tr,
-                                        body: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text("token_currency".tr),
-                                          ],
-                                        )),
-                                    buttonText: "setup_input".tr,
-                                    label: "currency".tr,
-                                  ),
-                                )
-                                .then(setCurrency);
-                          },
-                          onRemoveIcon: currency != null
-                              ? const Icon(Icons.edit)
-                              : const Icon(Icons.add),
-                          validate: currency != null,
-                          child:
-                              Text(currency ?? "tap_to_enter_currency_code".tr),
-                        ),
-                        WidgetConstant.height20,
-                        Text("trust_set_value".tr,
-                            style: context.textTheme.titleMedium),
-                        Text("token_value".tr),
-                        WidgetConstant.height8,
-                        ContainerWithBorder(
-                            validate: value != null,
-                            onRemoveIcon: value != null
-                                ? const Icon(Icons.edit)
-                                : const Icon(Icons.add),
-                            onRemove: () {
-                              if (currency == null) {
-                                context
-                                    .showAlert("plese_enter_currency_first".tr);
-                              } else {
-                                context
-                                    .openSliverBottomSheet<BigRational>(
-                                      "token_amount".tr,
-                                      child: SetupDecimalTokenAmountView(
-                                        token: Token(
-                                            name: currency!, symbol: currency!),
-                                        subtitle: const SizedBox(),
-                                      ),
-                                    )
-                                    .then(setupIssueAmount);
-                              }
-                            },
-                            child: value == null
-                                ? Text("tap_to_input_value".tr)
-                                : CoinPriceView(
-                                    balance: value,
-                                    token: Token(
-                                        name: currency ?? "",
-                                        symbol: currency ?? ""),
+                    slivers: [
+                      SliverConstraintsBoxView(
+                        padding: WidgetConstant.paddingHorizontal20,
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("currency".tr,
+                                  style: context.textTheme.titleMedium),
+                              WidgetConstant.height8,
+                              ContainerWithBorder(
+                                onRemove: () {},
+                                onRemoveIcon: WidgetConstant.sizedBox,
+                                child: const Text("XRP"),
+                              ),
+                              WidgetConstant.height20,
+                              Text("trust_set_value".tr,
+                                  style: context.textTheme.titleMedium),
+                              Text("token_value".tr),
+                              WidgetConstant.height8,
+                              ContainerWithBorder(
+                                  validate: widget.acceptZero
+                                      ? !xrpAmount.isNegative
+                                      : !xrpAmount.isNegative &&
+                                          !xrpAmount.isZero,
+                                  onRemoveIcon: value != null
+                                      ? const Icon(Icons.edit)
+                                      : const Icon(Icons.add),
+                                  onRemove: () {
+                                    context
+                                        .openSliverBottomSheet<BigInt>(
+                                          "xrp_amount".tr,
+                                          child: SetupNetworkAmount(
+                                            min: BigInt.zero,
+                                            token: widget.account.network
+                                                .coinParam.token,
+                                            subtitle: const SizedBox(),
+                                          ),
+                                        )
+                                        .then(setupXrpAmount);
+                                  },
+                                  child: CoinPriceView(
+                                    balance: xrpAmount,
+                                    token:
+                                        widget.account.network.coinParam.token,
                                     style: context.textTheme.titleLarge,
                                   )),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            FixedElevatedButton(
-                              padding: WidgetConstant.paddingVertical20,
-                              onPressed: isReady ? onSetup : null,
-                              child: Text("setup_currency_amount".tr),
-                            )
-                          ],
-                        )
-                      ],
-                    ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FixedElevatedButton(
+                                    padding: WidgetConstant.paddingVertical20,
+                                    onPressed: isReady ? onSetup : null,
+                                    child: Text("setup_currency_amount".tr),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                )
-              ])),
+                  CustomScrollView(
+                    controller: widget.scrollController,
+                    slivers: [
+                      SliverConstraintsBoxView(
+                        padding: WidgetConstant.paddingHorizontal20,
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              PageTitleSubtitle(
+                                  title: "token_amount".tr,
+                                  body: Text("token_amount_desc".tr)),
+                              ReceiptAddressView(
+                                address: issuer,
+                                title: "issuer",
+                                subtitle: "token_issuer".tr,
+                                onTap: () {
+                                  context
+                                      .openSliverBottomSheet<
+                                              ReceiptAddress<XRPAddress>>(
+                                          "token_amount".tr,
+                                          maxExtend: 1,
+                                          minExtent: 0.8,
+                                          initialExtend: 0.9,
+                                          bodyBuilder: (c) =>
+                                              SelectRecipientAccountView<
+                                                  XRPAddress>(
+                                                account: widget.account,
+                                                scrollController: c,
+                                                subtitle: PageTitleSubtitle(
+                                                    title: "issuer".tr,
+                                                    body: Text(
+                                                        "token_issuer".tr)),
+                                              ))
+                                      .then(onSelectIssuer);
+                                },
+                              ),
+                              WidgetConstant.height20,
+                              Text("currency".tr,
+                                  style: context.textTheme.titleMedium),
+                              Text("token_currency".tr),
+                              WidgetConstant.height8,
+                              ContainerWithBorder(
+                                onRemove: () {
+                                  context
+                                      .openSliverBottomSheet<String>(
+                                        "token_amount".tr,
+                                        child: StringWriterView(
+                                          defaultValue: currency,
+                                          regExp: RippleConst.currencyCodeRegex,
+                                          title: PageTitleSubtitle(
+                                              title: "currency".tr,
+                                              body: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text("token_currency".tr),
+                                                ],
+                                              )),
+                                          buttonText: "setup_input".tr,
+                                          label: "currency".tr,
+                                        ),
+                                      )
+                                      .then(setCurrency);
+                                },
+                                onRemoveIcon: currency != null
+                                    ? const Icon(Icons.edit)
+                                    : const Icon(Icons.add),
+                                validate: currency != null,
+                                child: Text(currency ??
+                                    "tap_to_enter_currency_code".tr),
+                              ),
+                              WidgetConstant.height20,
+                              Text("trust_set_value".tr,
+                                  style: context.textTheme.titleMedium),
+                              Text("token_value".tr),
+                              WidgetConstant.height8,
+                              ContainerWithBorder(
+                                  validate: value != null,
+                                  onRemoveIcon: value != null
+                                      ? const Icon(Icons.edit)
+                                      : const Icon(Icons.add),
+                                  onRemove: () {
+                                    if (currency == null) {
+                                      context.showAlert(
+                                          "plese_enter_currency_first".tr);
+                                    } else {
+                                      context
+                                          .openSliverBottomSheet<BigRational>(
+                                            "token_amount".tr,
+                                            child: SetupDecimalTokenAmountView(
+                                              token: Token(
+                                                  name: currency!,
+                                                  symbol: currency!),
+                                              subtitle: const SizedBox(),
+                                            ),
+                                          )
+                                          .then(setupIssueAmount);
+                                    }
+                                  },
+                                  child: value == null
+                                      ? Text("tap_to_input_value".tr)
+                                      : CoinPriceView(
+                                          balance: value,
+                                          token: Token(
+                                              name: currency ?? "",
+                                              symbol: currency ?? ""),
+                                          style: context.textTheme.titleLarge,
+                                        )),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  FixedElevatedButton(
+                                    padding: WidgetConstant.paddingVertical40,
+                                    onPressed: isReady ? onSetup : null,
+                                    child: Text("setup_currency_amount".tr),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ]),
+          );
+        }),
+      ),
     );
   }
 }

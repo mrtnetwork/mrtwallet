@@ -24,4 +24,11 @@ class LinkConst {
   static const String reviewRippleXAddress = "https://xrpaddress.info/";
   static const String reviewSubstrateSignatureSchame =
       "https://docs.substrate.io/deploy/keys-and-network-operations/#:~:text=The%20Sr25519%20signature%20scheme%20is,signatures%20with%20Ristretto%20point%20compression.";
+
+  static const String aboutEthereumPersonalSign =
+      "https://eips.ethereum.org/EIPS/eip-191";
+  static const String aboutEthereumTypedData =
+      "https://eips.ethereum.org/EIPS/eip-712";
+  static const String faviIconGenerator =
+      "https://s2.googleusercontent.com/s2/favicons?sz=64&domain=";
 }

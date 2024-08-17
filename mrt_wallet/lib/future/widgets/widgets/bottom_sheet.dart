@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart'
-    show APPConst, QuickDouble, QuickContextAccsess;
+import 'package:mrt_wallet/app/core.dart' show APPConst;
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'constraints_box_view.dart';
 import 'widget_constant.dart';
 

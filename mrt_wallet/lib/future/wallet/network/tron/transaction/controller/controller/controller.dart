@@ -91,9 +91,6 @@ class TronTransactionStateController extends TronTransactionImpl
   }
 
   @override
-  String get repositoryId => "tron/transaction";
-
-  @override
   void ready() {
     super.ready();
     initNetworkCondition();

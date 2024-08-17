@@ -98,7 +98,4 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
     validator.validator.setProvider(null);
     super.close();
   }
-
-  @override
-  String get repositoryId => "solana/transaction";
 }
