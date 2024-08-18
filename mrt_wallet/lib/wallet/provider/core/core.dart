@@ -124,7 +124,12 @@ abstract class WalletCore extends _WalletCore
       Web3ClientInfo info) async {
     final result = await _callSynchronized(() async {
       return await _controller._getWeb3Authenticated(info);
-    }, conditionStatus: true, refresh: false, update: false, lock: _lockWeb3);
+    },
+        conditionStatus: true,
+        refresh: false,
+        update: false,
+        lock: _lockWeb3,
+        delay: null);
     return result;
   }
 
@@ -663,9 +668,8 @@ abstract class WalletCore extends _WalletCore
         throw WalletExceptionConst.invalidMnemonicPassphrase;
       }
       final WalletMasterKeys backupkey =
-          WalletMasterKeys.fromCborBytesOrObject(hex: backup.key);
+          WalletMasterKeys.deserializeBackup(hex: backup.key);
       final String mnemonic = backupkey.mnemonic.toStr();
-      BlockchainUtils.validateMnemonic(mnemonic);
       WalletMasterKeys masterKey = await crypto.cryptoRequest(
           CryptoRequestCreateMasterKey(
               mnemonic: mnemonic, passphrase: passhphrase));

@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/wroker/keys/models/encrypted_imported.dart';
+import 'package:mrt_wallet/crypto/keys/models/encrypted_imported.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class ManageImportedKeysView extends StatelessWidget {

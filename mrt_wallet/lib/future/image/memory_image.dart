@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/wroker/impl/worker_impl.dart';
+import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
 
 class CacheMemoryImageProvider extends ImageProvider<CacheMemoryImageProvider>
     with CryptoWokerImpl {

@@ -1,6 +1,6 @@
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/repository/repository.dart';
-import 'package:mrt_wallet/wroker/impl/worker_impl.dart';
+import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
 
 class WebViewRepository
     with BaseRepository, CryptoWokerImpl, WebViewRepositoryImpl {

@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';

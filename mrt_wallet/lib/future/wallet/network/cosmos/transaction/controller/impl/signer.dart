@@ -2,8 +2,8 @@ import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'transaction.dart';
 import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 

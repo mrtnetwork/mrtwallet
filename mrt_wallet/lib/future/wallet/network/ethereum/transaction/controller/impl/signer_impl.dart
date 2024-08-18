@@ -2,8 +2,8 @@ import 'package:blockchain_utils/signer/eth/eth_signature.dart';
 import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/transaction_impl.dart';
 import 'package:mrt_wallet/wallet/models/signing/signing.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:on_chain/on_chain.dart';
 
 mixin ETHSignerImpl on EthTransactionImpl {

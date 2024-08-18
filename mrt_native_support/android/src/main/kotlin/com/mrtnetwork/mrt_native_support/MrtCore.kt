@@ -26,7 +26,7 @@ interface MrtCore {
         }
 
         fun logging(message: String, TAG: String? = null) {
-            if (TAG != "debug") return
+//            if (TAG != "debug") return
 //            return
             Log.e(TAG ?: "mrt_service", message)
         }

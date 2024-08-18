@@ -14,7 +14,7 @@ import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/substrate.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/ton.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/tron.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
 enum NewAccountParamsType {

@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:js_interop';
 import 'package:mrt_native_support/models/events/events.dart';
-import 'package:mrt_native_support/web/wallet/event.dart';
-import 'events.dart';
-import 'runtime.dart';
+import 'package:mrt_native_support/web/mrt_native_web.dart';
 
 extension type Tabs._(JSObject _) {
   @JS("query")
@@ -47,7 +45,8 @@ extension type Tabs._(JSObject _) {
       bool? pinned,
       int? windowId,
       String? windowType,
-      List<String>? urls}) async {
+      List<String>? urls,
+      String? host}) async {
     JSAny? url;
     if (urls != null) {
       if (urls.length == 1) {
@@ -55,7 +54,20 @@ extension type Tabs._(JSObject _) {
       } else {
         url = urls.map((e) => e.toJS).toList().toJS;
       }
+    } else if (host != null) {
+      final uri = Uri.parse(host);
+      host = uri.host;
+      if (uri.hasPort) {
+        host = "$host:${uri.port}";
+      }
+      if (jsWindow.navigator.isFirefox) {
+        host = "*://$host/*";
+      } else {
+        host = "${uri.scheme}://$host/*";
+      }
+      url = host.toJS;
     }
+
     final future = queryAsync(QueryInfo(
             active: active,
             audible: audible,

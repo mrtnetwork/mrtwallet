@@ -3,7 +3,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/web3/controller/impl/web3.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/crypto/worker.dart';
 
 class Web3EthereumGlobalRequestController<RESPONSE,
         T extends Web3EthereumRequestParam<RESPONSE>>

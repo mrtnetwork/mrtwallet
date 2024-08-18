@@ -4,7 +4,7 @@ import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/activity.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/chain.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
 import 'account.dart';
 

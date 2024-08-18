@@ -31,12 +31,13 @@ mixin WalletManager on _WalletController {
   }
 
   Future<void> _login(String password) async {
-    final keyBytes = await _core._toWalletPassword(password, _wallet._checksum);
     final storageKey = await crypto.cryptoRequest(
-        CryptoRequestGenerateMasterKey.fromStorage(
-            storageData: _wallet._data, key: keyBytes));
+        CryptoRequestGenerateMasterKey.fromStorageWithStringKey(
+            storageData: _wallet._data,
+            key: password,
+            checksum: _wallet._checksum));
     _massterKey = storageKey.masterKey;
-    _walletKey = keyBytes;
+    _walletKey = storageKey.walletKey;
     _status = HDWalletStatus.unlock;
     _timeout.init();
   }
@@ -442,7 +443,6 @@ mixin WalletManager on _WalletController {
   }
 
   void _streamBalances() {
-    return;
     final chains = _appChains.chains();
     _balanceUpdaterStream = MethodUtils.prediocCaller(
             () async => await MethodUtils.call(() async {

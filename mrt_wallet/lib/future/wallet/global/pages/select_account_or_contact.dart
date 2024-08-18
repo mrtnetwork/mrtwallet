@@ -4,8 +4,8 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
-import 'package:mrt_wallet/wroker/utils/address/utils.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/crypto/utils/address/utils.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SelectRecipientAccountView<NETWORKADDRESS> extends StatefulWidget {

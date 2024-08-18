@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
-import 'package:mrt_wallet/wroker/utils/cosmos/cosmos.dart';
+import 'package:mrt_wallet/crypto/utils/cosmos/cosmos.dart';
 import 'transaction.dart';
 
 enum CosmosFeeTypes {

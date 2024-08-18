@@ -2,6 +2,7 @@ import 'package:mrt_wallet/app/models/models/image.dart';
 
 class APPConst {
   static const String assetErc20Abi = "assets/solidity/erc20.json";
+  static const String assetWebviewScript = "assets/webview/script.js";
   static final APPImage logo = APPImage.local("assets/image/mrt_wallet.png");
   static final APPImage telegramLogo = APPImage.local("assets/image/t.png");
   static final APPImage githubLogo = APPImage.local("assets/image/g.png");

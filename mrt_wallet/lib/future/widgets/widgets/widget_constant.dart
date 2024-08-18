@@ -4,6 +4,7 @@ import 'package:mrt_wallet/future/theme/theme.dart';
 
 class WidgetConstant {
   static const Widget height8 = SizedBox(height: 8);
+  static const Widget height5 = SizedBox(height: 5);
   static const Widget width8 = SizedBox(width: 8);
   static const Widget height20 = SizedBox(height: 20);
   static const Widget height15 = SizedBox(height: 15);
@@ -39,24 +40,14 @@ class WidgetConstant {
   static const BoxShadow circleShadow =
       BoxShadow(blurRadius: 0.3, spreadRadius: 0.1);
   static const Divider divider = Divider();
-  static const Icon checkCircle = Icon(
-    Icons.check_circle,
-    color: ColorConst.green,
-    size: 40,
-  );
-  static const Icon checkCircleLarge = Icon(
-    Icons.check_circle,
-    color: ColorConst.green,
-    size: 80,
-  );
-  static final Icon errorIcon = Icon(
-    Icons.error,
-    color: ThemeController.appTheme.colorScheme.error,
-    size: 40,
-  );
-  static final Icon errorIconLarge = Icon(
-    Icons.error,
-    color: ThemeController.appTheme.colorScheme.error,
-    size: 80,
-  );
+  static const Icon checkCircle =
+      Icon(Icons.check_circle, color: ColorConst.green, size: 40);
+  static const Icon check =
+      Icon(Icons.check, color: ColorConst.green, size: 40);
+  static const Icon checkCircleLarge =
+      Icon(Icons.check_circle, color: ColorConst.green, size: 80);
+  static final Icon errorIcon = Icon(Icons.error,
+      color: ThemeController.appTheme.colorScheme.error, size: 40);
+  static final Icon errorIconLarge = Icon(Icons.error,
+      color: ThemeController.appTheme.colorScheme.error, size: 80);
 }

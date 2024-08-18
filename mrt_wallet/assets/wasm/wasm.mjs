@@ -6,7 +6,9 @@ self.addEventListener('message', async (event) => {
         self.postMessage(data);
         return;
     }
+  
     let module;
+    console.log("moudled ",JSON.stringify(event));
     if (event.module == null) {
         // This is a Chrome extension
         module = await import("./crypto.mjs");

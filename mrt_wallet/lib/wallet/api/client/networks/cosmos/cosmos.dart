@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
-import 'package:mrt_wallet/wroker/utils/cosmos/cosmos.dart';
+import 'package:mrt_wallet/crypto/utils/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/services/core/base_service.dart';

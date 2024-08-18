@@ -10,7 +10,7 @@ import 'package:mrt_wallet/wallet/web3/networks/ethereum/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/params/core/request.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/validator/validator.dart';
 import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
-import 'package:mrt_wallet/wroker/utils/ethereum/utils.dart';
+import 'package:mrt_wallet/crypto/utils/ethereum/utils.dart';
 import 'package:on_chain/ethereum/src/address/evm_address.dart';
 
 class Web3EthereumAddNewChain extends Web3EthereumRequestParam<String> {

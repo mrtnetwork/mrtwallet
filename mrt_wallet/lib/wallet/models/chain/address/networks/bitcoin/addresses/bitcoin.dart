@@ -11,8 +11,8 @@ import 'package:bitcoin_base/bitcoin_base.dart'
     show BitcoinBaseAddress, BitcoinAddressType;
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
-import 'package:mrt_wallet/wroker/utils/address/utils.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/utils/address/utils.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'multisig.dart';
 
 class IBitcoinAddress

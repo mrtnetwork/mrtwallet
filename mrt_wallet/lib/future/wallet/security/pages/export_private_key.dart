@@ -7,9 +7,9 @@ import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/wroker/keys/keys.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
-import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class AccountPrivteKeyView extends StatelessWidget {

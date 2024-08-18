@@ -13,7 +13,7 @@ import 'package:mrt_wallet/wallet/api/provider/networks/ton.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/tron.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 abstract class APIProvider with Equatable, CborSerializable {
   const APIProvider(

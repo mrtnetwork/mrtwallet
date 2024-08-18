@@ -9,7 +9,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/crypto/worker.dart';
 
 typedef _OnChangeShellyAddrType = void Function(ADAAddressType? addrType);
 

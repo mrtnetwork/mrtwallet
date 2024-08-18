@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/worker.dart' show AddressDerivationIndex;
+import 'package:mrt_wallet/crypto/worker.dart' show AddressDerivationIndex;
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class WalletSigningPassword extends StatefulWidget {

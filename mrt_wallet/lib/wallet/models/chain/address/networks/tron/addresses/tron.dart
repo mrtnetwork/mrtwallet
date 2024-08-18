@@ -7,7 +7,7 @@ import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:on_chain/tron/tron.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
 
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';

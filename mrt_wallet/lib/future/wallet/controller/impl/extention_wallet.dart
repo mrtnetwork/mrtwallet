@@ -9,7 +9,7 @@ import 'package:mrt_wallet/future/wallet/controller/models/key.dart';
 import 'package:mrt_wallet/future/wallet/controller/models/login_history.dart';
 import 'package:mrt_wallet/future/wallet/controller/impl/web3_request_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'package:mrt_wallet/wroker/requets/messages/crypto/requests/chacha.dart';
+import 'package:mrt_wallet/crypto/requets/messages/crypto/requests/chacha.dart';
 
 class ExtentionSessionStorageConst {
   static const String key = "extention_setting";
@@ -254,12 +254,8 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
   Future<void> updatePermission(Web3APPAuthentication updatePermission) async {
     final update =
         (await walletCore.updateWeb3Application(updatePermission)).result;
-    final uri = Uri.parse(updatePermission.applicationId);
-    String url = "*://${uri.host}";
-    if (uri.hasPort) {
-      url = "$url:${uri.port}";
-    }
-    final tabs = await extention.tabs.query_(urls: ["$url/*"]);
+    final tabs =
+        await extention.tabs.query_(host: updatePermission.applicationId);
     if (tabs.isNotEmpty) {
       for (final i in tabs) {
         if (i.id == null) continue;

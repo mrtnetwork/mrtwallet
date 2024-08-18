@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wroker/worker.dart' show Bip32AddressIndex;
+import 'package:mrt_wallet/crypto/worker.dart' show Bip32AddressIndex;
 
 class ByronLegacyKeyDerivationView extends StatefulWidget {
   const ByronLegacyKeyDerivationView(

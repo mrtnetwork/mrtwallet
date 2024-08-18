@@ -4,7 +4,7 @@ import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/wallet/setup/setup.dart';
 import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/crypto/worker.dart';
 import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
 enum _MnemonicOption { import, generate }

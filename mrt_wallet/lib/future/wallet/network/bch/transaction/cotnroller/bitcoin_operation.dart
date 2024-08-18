@@ -1,6 +1,6 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/utils/bitcoin/bitcoin.dart';
+import 'package:mrt_wallet/crypto/utils/bitcoin/bitcoin.dart';
 
 enum BitcoinCashOprations { mint, burn, send }
 

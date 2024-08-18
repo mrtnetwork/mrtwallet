@@ -7,8 +7,8 @@ import 'package:mrt_wallet/wallet/api/provider/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/etherum.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
-import 'package:mrt_wallet/wroker/utils/solidity/solidity.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/crypto/utils/solidity/solidity.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solidity/address/core.dart';
 

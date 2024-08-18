@@ -7,7 +7,7 @@ import 'package:mrt_wallet/wallet/web3/core/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/params/core/request.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/global.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'web_request.dart';
 
 abstract class Web3GlobalRequestParams<RESPONSE> extends Web3MessageCore

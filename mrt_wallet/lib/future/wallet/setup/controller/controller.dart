@@ -9,7 +9,7 @@ import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/wroker/requets/messages/crypto/requests/generate_mnemonic.dart';
+import 'package:mrt_wallet/crypto/requets/messages/crypto/requests/generate_mnemonic.dart';
 
 enum SetupWalletPage {
   password,

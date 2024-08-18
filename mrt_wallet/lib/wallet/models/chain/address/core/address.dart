@@ -11,7 +11,7 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/nfts/nfts.dart';
 import 'package:mrt_wallet/wallet/models/token/core/core.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
-import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/crypto/worker.dart';
 
 typedef NETWORKCHAINACCOUNT<NETWORKADDRESS>
     = ChainAccount<NETWORKADDRESS, TokenCore, NFTCore>;

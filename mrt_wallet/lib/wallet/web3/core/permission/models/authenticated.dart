@@ -9,7 +9,7 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 class Web3APPAuthentication with CborSerializable {
   final String applicationId;

@@ -6,11 +6,11 @@ import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/api.dart';
-import 'package:mrt_wallet/wroker/coins/custom_coins/coins.dart';
+import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
     with Equatable, CborSerializable {

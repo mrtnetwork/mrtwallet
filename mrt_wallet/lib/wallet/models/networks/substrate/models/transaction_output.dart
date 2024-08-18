@@ -1,7 +1,7 @@
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wroker/utils/substrate/substrate.dart';
+import 'package:mrt_wallet/crypto/utils/substrate/substrate.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
 class SubstrateOutputWithBalance {

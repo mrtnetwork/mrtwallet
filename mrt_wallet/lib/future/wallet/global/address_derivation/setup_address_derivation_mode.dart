@@ -6,7 +6,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart' show Chain, WalletNetwork;
-import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/crypto/worker.dart';
 
 typedef _OnGenerateDerivation = Future<AddressDerivationIndex?> Function();
 

@@ -100,6 +100,7 @@ class WebViewTabStorage extends WebViewStorage {
       addNewTab(newTab);
       return;
     }
+
     final tabs = List<WebViewTab>.from(_tabs);
     tabs[find] = newTab;
     tabs.sort((a, b) => b.lastVisit.compareTo(a.lastVisit));

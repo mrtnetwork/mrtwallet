@@ -1,8 +1,8 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
-import 'package:mrt_wallet/wroker/coins/coins.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/coins/coins.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';

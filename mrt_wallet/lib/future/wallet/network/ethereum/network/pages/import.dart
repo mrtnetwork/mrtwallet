@@ -9,8 +9,8 @@ import 'package:mrt_wallet/future/wallet/network/forms/ethereum/forms/core/ether
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'package:mrt_wallet/wroker/utils/ethereum/utils.dart';
-import 'package:mrt_wallet/wroker/utils/utils.dart';
+import 'package:mrt_wallet/crypto/utils/ethereum/utils.dart';
+import 'package:mrt_wallet/crypto/utils/utils.dart';
 
 enum _Page { chainId, infos }
 

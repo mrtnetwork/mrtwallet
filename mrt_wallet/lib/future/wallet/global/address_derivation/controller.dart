@@ -7,9 +7,9 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
-import 'package:mrt_wallet/wroker/keys/models/encrypted_imported.dart';
-import 'package:mrt_wallet/wroker/keys/models/seed.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/keys/models/encrypted_imported.dart';
+import 'package:mrt_wallet/crypto/keys/models/seed.dart';
 
 typedef OnGenerateDerivation = Future<Bip32AddressIndex?> Function();
 

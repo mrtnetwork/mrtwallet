@@ -21,18 +21,22 @@ class WebView extends StatelessWidget {
             context.watch<WalletProvider>(StateConst.main)),
         repositoryId: StateConst.webview,
         builder: (model) {
-          return PopScope(
-            canPop: model.inBrowser,
+          return PopScope<bool>(
+            canPop: false,
             onPopInvokedWithResult: (inBrowser, s) {
-              if (!inBrowser) {
-                model.backToBorwser();
-              }
+              if (s == true) return;
+              model.onBackButton(() {
+                if (context.mounted) {
+                  context.pop(true);
+                }
+              });
             },
             child: MaterialPageView(
                 child: UnfocusableChild(
-              child: SizedBox(
-                width: context.mediaQuery.size.height,
-                child: PageProgress(
+              child: Scaffold(
+                appBar: model.inited ? null : AppBar(),
+                // width: context.mediaQuery.size.height,
+                body: PageProgress(
                   key: model.progressKey,
                   initialStatus: StreamWidgetStatus.progress,
                   initialWidget: const PageProgressChildWidget(
@@ -45,6 +49,13 @@ class WebView extends StatelessWidget {
                           SliverAppBar(
                             pinned: true,
                             centerTitle: false,
+                            leading: IconButton(
+                                onPressed: () {
+                                  model.onPop(() {
+                                    context.pop(true);
+                                  });
+                                },
+                                icon: const Icon(Icons.arrow_back)),
                             actions: [
                               APPAnimatedSwitcher(enable: model.page, widgets: {
                                 WebViewTabPage.tabs: (c) => TextButton.icon(
@@ -118,6 +129,7 @@ class WebView extends StatelessWidget {
                                                 )
                                               ],
                                             )),
+                                        WebViewPopupMenu(model),
                                       ],
                                     ),
                                 WebViewTabPage.history: (c) => TextButton.icon(
@@ -133,68 +145,84 @@ class WebView extends StatelessWidget {
                                     ),
                               }),
                             ],
-                            bottom: PreferredSize(
-                                preferredSize: const Size.fromHeight(80),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        WidgetConstant.width8,
-                                        Expanded(
-                                          child: AppTextField(
-                                            key: model.textField,
-                                            focusNode: model.focusNode,
-                                            maxLines: 1,
-                                            keyboardType: TextInputType.url,
-                                            initialValue:
-                                                model.controller.tab.value.url,
-                                            prefixIcon: LiveWidget(() {
-                                              return CircleAPPImageView(
-                                                model.controller.image,
-                                                radius: 15,
-                                                onError: (c) => const Icon(Icons
-                                                    .travel_explore_rounded),
-                                                onProgress: (c) => const Icon(
-                                                    Icons
-                                                        .travel_explore_rounded),
-                                              );
+                            bottom: APPPreferredSizeWidget(
+                                height: model.inBrowser ? 80 : 0,
+                                child: APPAnimatedContainer(
+                                    isActive: model.inBrowser,
+                                    onActive: (c) => Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                WidgetConstant.width8,
+                                                Flexible(
+                                                  child: AppTextField(
+                                                    key: model.textField,
+                                                    focusNode: model.focusNode,
+                                                    maxLines: 1,
+                                                    keyboardType:
+                                                        TextInputType.url,
+                                                    initialValue: model
+                                                        .controller
+                                                        .tab
+                                                        .value
+                                                        .url,
+                                                    prefixIcon: LiveWidget(() {
+                                                      return CircleAPPImageView(
+                                                        model.controller.image,
+                                                        radius: 15,
+                                                        onError: (c) =>
+                                                            const Icon(Icons
+                                                                .travel_explore_rounded),
+                                                        onProgress: (c) =>
+                                                            const Icon(Icons
+                                                                .travel_explore_rounded),
+                                                      );
+                                                    }),
+                                                  ),
+                                                ),
+                                                LiveWidget(() {
+                                                  return Row(
+                                                    key: ValueKey(model
+                                                        .liveNotifier.value),
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      _BooleanFutureIcon(
+                                                          callBack:
+                                                              model.goBack,
+                                                          icon:
+                                                              Icons.arrow_back,
+                                                          onLoading: model
+                                                              .canGoBack()),
+                                                      _BooleanFutureIcon(
+                                                          callBack:
+                                                              model.goForward,
+                                                          icon: Icons
+                                                              .arrow_forward,
+                                                          onLoading: model
+                                                              .canGoForward()),
+                                                    ],
+                                                  );
+                                                })
+                                              ],
+                                            ),
+                                            LiveWidget(() {
+                                              if (model.progress.value !=
+                                                  null) {
+                                                return SizedBox(
+                                                  height: 8,
+                                                  child:
+                                                      LinearProgressIndicator(
+                                                          value: model
+                                                              .progress.value),
+                                                );
+                                              }
+                                              return WidgetConstant.height8;
                                             }),
-                                            suffixIcon: LiveWidget(() {
-                                              return Row(
-                                                key: ValueKey(
-                                                    model.liveNotifier.value),
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  _BooleanFutureIcon(
-                                                      callBack: model.goBack,
-                                                      icon: Icons.arrow_back,
-                                                      onLoading:
-                                                          model.canGoBack()),
-                                                  _BooleanFutureIcon(
-                                                      callBack: model.goForward,
-                                                      icon: Icons.arrow_forward,
-                                                      onLoading:
-                                                          model.canGoForward()),
-                                                ],
-                                              );
-                                            }),
-                                          ),
+                                          ],
                                         ),
-                                        WebViewPopupMenu(model),
-                                      ],
-                                    ),
-                                    LiveWidget(() {
-                                      if (model.progress.value != null) {
-                                        return SizedBox(
-                                          height: 5,
-                                          child: LinearProgressIndicator(
-                                              value: model.progress.value),
-                                        );
-                                      }
-                                      return const SizedBox(height: 5);
-                                    }),
-                                  ],
-                                )),
+                                    onDeactive: (c) =>
+                                        WidgetConstant.sizedBox)),
                           )
                         ];
                       },
@@ -369,6 +397,9 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
             shrinkWrap: true,
             key: listKey,
             itemBuilder: (context, int pos, animated, [bool? inRemove]) {
+              if (inRemove == true && tabs.isEmpty) {
+                return WidgetConstant.sizedBox;
+              }
               final tab = tabs[pos];
               DateTime dateKey = tab.lastVisit.toOnlyDate();
               final index = histories[dateKey]?.indexOf(tab) ?? -1;
@@ -378,17 +409,14 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
                 children: [
                   if (inRemove != true) ...[
                     if (pos > 0 && index == 0) WidgetConstant.height20,
-                    if (index == 0)
-                      Column(
-                        children: [
-                          Text(dateKey.toOnlyDateStr(),
-                              style: context.textTheme.titleMedium),
-                          WidgetConstant.height8,
-                        ],
-                      ),
+                    if (index == 0) ...[
+                      WidgetConstant.height8,
+                      Text(dateKey.toOnlyDateStr(),
+                          style: context.textTheme.titleMedium),
+                    ],
                   ],
-                  SizeTransition(
-                    sizeFactor: animated,
+                  FadeTransition(
+                    opacity: animated,
                     child: ContainerWithBorder(
                       padding: WidgetConstant.padding10,
                       onRemove: () {},
@@ -455,7 +483,6 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
                 ],
               );
             },
-            // itemCount: tabs.length,
           ),
         ),
       ),
@@ -514,14 +541,6 @@ class _TabsPage extends StatelessWidget {
                   onTap: () => controller.switchTab(view),
                   borderRadius: WidgetConstant.border8,
                   child: Card(
-                    shape: selected
-                        ? RoundedRectangleBorder(
-                            borderRadius: WidgetConstant.border8,
-                            side: BorderSide(
-                              color: context.colors.primary,
-                              width: 1,
-                            ))
-                        : null,
                     margin: WidgetConstant.padding5,
                     child: ClipRRect(
                       borderRadius: WidgetConstant.border8,
@@ -533,6 +552,7 @@ class _TabsPage extends StatelessWidget {
                           Align(
                             alignment: Alignment.bottomCenter,
                             child: Container(
+                              padding: WidgetConstant.padding5,
                               decoration: BoxDecoration(
                                   color: context.colors.primaryContainer,
                                   borderRadius: const BorderRadius.only(
@@ -562,30 +582,26 @@ class _TabsPage extends StatelessWidget {
                                           OneLineTextWidget(
                                               view.tab.value.title ?? "",
                                               style:
-                                                  context.textTheme.labelLarge),
+                                                  context.textTheme.bodySmall),
                                       ],
                                     ),
                                   ),
+                                  if (selected) WidgetConstant.check
                                 ],
                               ),
                             ),
                           ),
                           Align(
                             alignment: Alignment.topRight,
-                            child: Material(
-                              shape: const CircleBorder(),
-                              color: context.colors.surface.opacity5,
-                              child: InkWell(
-                                  onTap: () {
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: context.colors.surface.opacity5),
+                              child: IconButton(
+                                  onPressed: () {
                                     controller.removeTab(view);
                                   },
-                                  child: Padding(
-                                    padding: WidgetConstant.padding5,
-                                    child: Icon(
-                                      Icons.close,
-                                      color: context.colors.onSurface,
-                                    ),
-                                  )),
+                                  icon: const Icon(Icons.close)),
                             ),
                           )
                         ],

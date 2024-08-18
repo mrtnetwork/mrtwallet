@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:on_chain/ethereum/ethereum.dart';
 
 class Web3EthereumChainAccount extends Web3ChainAccount<ETHAddress> {

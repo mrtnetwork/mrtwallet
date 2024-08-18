@@ -28,12 +28,11 @@ class WebViewPlatformView(
         webView.settings.javaScriptEnabled = true
         webView.webViewClient = CustomWebViewClient(channel, id)
         webView.webChromeClient = CustomWebChromeClient(channel, id)
+
         if (url != null) {
             webView.loadUrl(url)
         }
-        if(jsInterface!= null){
-            webView.addJavascriptInterface(WebAppInterface(channel,id,webView), jsInterface)
-        }
+
     }
 
     override fun getView(): View {

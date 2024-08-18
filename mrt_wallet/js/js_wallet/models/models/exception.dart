@@ -8,9 +8,9 @@ extension type JSError._(JSAny _) implements JSAny {
   external String? get message;
 }
 
-@JS("MRTWalletError")
-extension type MRTWalletError._(JSAny _) implements JSError {
-  external factory MRTWalletError(
+@JS("JSWalletError")
+extension type JSWalletError._(JSAny _) implements JSError {
+  external factory JSWalletError(
       {required String message,
       required int code,
       required String walletCode,
@@ -24,22 +24,22 @@ extension type MRTWalletError._(JSAny _) implements JSError {
   @JS("toString")
   external set toStr(JSFunction f);
 
-  factory MRTWalletError.fromMessage(
+  factory JSWalletError.fromMessage(
       {required Web3ExceptionMessage message, String? stack}) {
     final json = message.toJson();
     json["stack"] ??= stack;
-    final error = MRTWalletError._(json.jsify() ?? JSObject());
+    final error = JSWalletError._(json.jsify() ?? JSObject());
     String toString() {
-      return message.message;
+      return "MRT: ${message.message}";
     }
 
     error.toStr = toString.toJS;
     return error;
   }
-  factory MRTWalletError.fromJson(
+  factory JSWalletError.fromJson(
       {required Map<String, dynamic> message, String? stack}) {
     message["stack"] ??= stack;
-    final error = MRTWalletError._(message.jsify() ?? JSObject());
+    final error = JSWalletError._(message.jsify() ?? JSObject());
     String toString() {
       return message.toString();
     }
@@ -50,25 +50,7 @@ extension type MRTWalletError._(JSAny _) implements JSError {
 }
 
 extension ToWalletError on Web3ExceptionMessage {
-  MRTWalletError toWalletError({String? stack}) {
-    return MRTWalletError.fromMessage(message: this, stack: stack);
-  }
-}
-
-extension WalletPromise<T extends JSAny?> on Future<T> {
-  JSPromise<T> get toPromise {
-    return JSPromise<T>((JSFunction resolve, JSFunction reject) {
-      then((JSAny? value) {
-        resolve.callAsFunction(resolve, value);
-        return value;
-      }, onError: (MRTWalletError error, StackTrace stackTrace) {
-        error.stack = stackTrace.toString();
-        reject.callAsFunction(reject, error);
-        return error;
-      }).catchError((e) {
-        reject.callAsFunction(resolve, e);
-        return e;
-      });
-    }.toJS);
+  JSWalletError toWalletError({String? stack}) {
+    return JSWalletError.fromMessage(message: this, stack: stack);
   }
 }

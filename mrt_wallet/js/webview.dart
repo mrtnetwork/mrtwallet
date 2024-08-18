@@ -4,11 +4,8 @@ import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/models/models/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart';
-
-import 'js_wallet/handler/handler.dart';
 import 'js_wallet/js_wallet.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
-import 'js_wallet/models/models/exception.dart';
 
 void main(List<String> args) async {
   final applicationId =
@@ -17,7 +14,7 @@ void main(List<String> args) async {
     throw Web3RequestExceptionConst.invalidHost;
   }
 
-  final completer = Completer<JSWalletHandler>();
+  final completer = Completer<JSWebviewWallet>();
   bool onActivation(JSWalletEvent data) {
     final String clientId = mrt.scriptId();
 
@@ -31,7 +28,7 @@ void main(List<String> args) async {
     if (walletEvent.type != WalletEventTypes.activation) {
       return false;
     }
-    final wallet = JSWalletHandler.initialize(
+    final wallet = JSWebviewWallet.initialize(
         request: walletEvent, clientId: mrt.scriptId());
     completer.complete(wallet);
     return true;

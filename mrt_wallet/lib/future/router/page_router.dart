@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/wallet/setup/pages/setup_wallet.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 class PageRouter {
   /// bitcoin casah

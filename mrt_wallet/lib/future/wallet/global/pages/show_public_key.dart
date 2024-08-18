@@ -8,9 +8,9 @@ import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
-import 'package:mrt_wallet/wroker/keys/keys.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
-import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 
 class AccountPublicKeyView extends StatelessWidget {
   const AccountPublicKeyView({super.key});

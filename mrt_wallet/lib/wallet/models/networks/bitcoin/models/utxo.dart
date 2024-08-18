@@ -2,7 +2,7 @@ import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 class BitcoinAccountUtxos {
   BitcoinAccountUtxos._(

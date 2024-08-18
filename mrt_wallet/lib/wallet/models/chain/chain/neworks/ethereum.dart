@@ -63,8 +63,9 @@ class EthereumChain extends Chain<
     final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
     List<IEthAddress> toAccounts = [];
     for (final i in accounts) {
-      final acc = MethodUtils.nullOnException(
-          () => CryptoAddress.fromCbor(network, i).cast<IEthAddress>());
+      final acc = MethodUtils.nullOnException(() {
+        return CryptoAddress.fromCbor(network, i).cast<IEthAddress>();
+      });
       if (acc != null) {
         toAccounts.add(acc);
       }

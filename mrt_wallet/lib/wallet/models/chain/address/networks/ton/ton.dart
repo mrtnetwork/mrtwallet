@@ -2,13 +2,13 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
 
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wroker/utils/ton/ton.dart';
+import 'package:mrt_wallet/crypto/utils/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';

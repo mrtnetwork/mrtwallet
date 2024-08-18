@@ -2,8 +2,8 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/transaction/controller/impl/transaction_impl.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/models/signing/signing.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 

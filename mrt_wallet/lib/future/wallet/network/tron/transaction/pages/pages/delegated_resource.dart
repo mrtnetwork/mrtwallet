@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/resource_v2/forms/delegated_resource.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
+import 'package:mrt_wallet/crypto/utils/tron/tron.dart';
 import 'package:on_chain/tron/src/address/tron_address.dart';
 import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 

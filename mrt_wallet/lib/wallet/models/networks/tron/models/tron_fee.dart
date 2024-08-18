@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/wroker/utils/tron/tron.dart';
+import 'package:mrt_wallet/crypto/utils/tron/tron.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:on_chain/on_chain.dart';
 

@@ -6,6 +6,7 @@ typedef StringVoid = void Function(String);
 typedef NullStringString = String? Function(String?);
 typedef NullStringT<T> = String? Function(T?);
 typedef NullBoolVoid = void Function(bool?);
+
 typedef FutureVoid = Future<void> Function();
 typedef FutureT<T> = Future<T> Function();
 typedef VoidSetT<T> = Function(Set<T>);

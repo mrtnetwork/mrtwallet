@@ -11,7 +11,7 @@ import 'package:mrt_wallet/wallet/models/contact/networks/solana.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/ton.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/tron.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 abstract class ContactCore<T> with CborSerializable {
   abstract final T addressObject;

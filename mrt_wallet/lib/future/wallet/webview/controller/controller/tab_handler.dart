@@ -8,12 +8,13 @@ import 'package:mrt_wallet/future/wallet/webview/controller/controller/tab_contr
 import 'package:mrt_wallet/future/wallet/webview/view/android.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/repository/models/models/webview_repository.dart';
-import 'package:mrt_wallet/wroker/impl/worker_impl.dart';
+import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
 
 class _WebViewStateControllerConst {
   static const int viewIdLength = 12;
   static const String googleSerchUrl = "https://www.google.com/search?q=";
   static const String webSite = "http://10.0.2.2:3000/";
+  static const String interfaceName = "MRT";
 }
 
 enum WebViewTabPage {
@@ -24,6 +25,8 @@ enum WebViewTabPage {
 }
 
 mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
+  bool _inited = false;
+  bool get inited => _inited;
   late final FocusNode focusNode = FocusNode()
     ..addListener(_textFieldFocusNode);
 
@@ -184,7 +187,9 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
     }
     _currentViewId = tab.viewType;
     if (!tab.inited) {
-      await webViewController.init(tab.viewType, url: tab.url);
+      await webViewController.init(tab.viewType,
+          url: tab.url,
+          jsInterface: _WebViewStateControllerConst.interfaceName);
       tab.init();
     }
     webViewController.addListener(this);
@@ -203,14 +208,23 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
       final auth = WebViewController(
           controller: controller, viewType: tabId, key: key, tab: i);
       tabsAuthenticated[tabId] = auth;
-      await webViewController.init(tabId, url: i.url, jsInterface: "MRT");
+      await webViewController.init(tabId,
+          url: i.url, jsInterface: _WebViewStateControllerConst.interfaceName);
       auth.init();
     }
-    final lastest = _storage.lastTab;
-    final lastController =
-        tabsAuthenticated.values.firstWhere((e) => e.tab.value == lastest);
-    await _initializeController(lastController);
+    WebViewController controller;
+    if (tabsAuthenticated.isNotEmpty) {
+      final lastest = _storage.lastTab;
+      controller = tabsAuthenticated.values.firstWhere(
+          (e) => e.tab.value == lastest,
+          orElse: () => tabsAuthenticated.values.first);
+    } else {
+      controller = await _buildController();
+      await _storage.updateTab(controller.tab.value);
+    }
+    await _initializeController(controller);
     progressKey.backToIdle();
+    _inited = true;
     notify();
   }
 
@@ -228,6 +242,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
     } else {
       await newTab((v) {});
     }
+    notify();
   }
 
   Future<void> addOrRemoveFromBookMark(WebViewTab newTab) async {
@@ -250,8 +265,11 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
 
   Future<void> switchTab(WebViewController controller) async {
     await _tabLocker.synchronized(() async {
-      if (!tabsAuthenticated.containsKey(controller.viewType) ||
-          controller.viewType == viewType) return;
+      if (controller.viewType == viewType) {
+        backToBorwser();
+        return;
+      }
+      if (!tabsAuthenticated.containsKey(controller.viewType)) return;
       await _initializeController(controller);
       backToBorwser();
     });
@@ -260,6 +278,10 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   void onSubmitTextField() {
     String v = (textField.currentState?.getValue() ?? "").trim();
     if (v.isEmpty || _event?.url == v) {
+      return;
+    }
+    if (StrUtils.isValidIPv4WithPort(v)) {
+      webViewController.openUrl(viewType: viewType!, url: v);
       return;
     }
     final lower = v.toLowerCase();
@@ -276,17 +298,39 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
     textField.currentState?.updateText(v);
   }
 
+  Future<void> onBackButton(DynamicVoid callBack) async {
+    if (!inBrowser) {
+      backToBorwser();
+      return;
+    }
+    if (await canGoBack()) {
+      await goBack();
+      return;
+    }
+    callBack();
+  }
+
+  Future<void> onPop(DynamicVoid callBack) async {
+    if (!inBrowser) {
+      backToBorwser();
+      return;
+    }
+    callBack();
+  }
+
   @override
   void onPageStart(WebViewEvent event) {
-    _event = event;
     final String? url = event.url;
+    final lastUrl = lastEvent?.url;
+
+    _event = event;
     if (url == null) return;
     textField.currentState?.updateText(url);
     _tabLocker.synchronized(() async {
       final WebViewTab tab = await _eventToTab(event);
       _inBokmark = _storage.inBokmark(tab);
       controller.setTab(tab);
-      final bool changed = url != _event?.url;
+      final bool changed = url != lastUrl;
       if (changed) {
         _storage.updateTab(tab);
       }

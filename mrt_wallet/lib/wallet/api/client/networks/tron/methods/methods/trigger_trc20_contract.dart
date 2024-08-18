@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/wroker/utils/solidity/solidity.dart';
+import 'package:mrt_wallet/crypto/utils/solidity/solidity.dart';
 import 'package:on_chain/solidity/contract/fragments.dart';
 import 'package:on_chain/tron/tron.dart';
 

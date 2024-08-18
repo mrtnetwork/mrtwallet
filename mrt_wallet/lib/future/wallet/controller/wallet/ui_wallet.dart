@@ -10,8 +10,8 @@ import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
-import 'package:mrt_wallet/wroker/derivation/core/derivation.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 abstract class UIWallet extends WalletCore {
   UIWallet(this.navigatorKey);

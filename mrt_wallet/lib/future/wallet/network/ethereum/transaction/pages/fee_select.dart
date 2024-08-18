@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/text_field/input_formaters.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/fee_impl.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/utils/ethereum/utils.dart';
+import 'package:mrt_wallet/crypto/utils/ethereum/utils.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 typedef _OnCustomFee = Future<EthereumFee?> Function(EthereumFee);

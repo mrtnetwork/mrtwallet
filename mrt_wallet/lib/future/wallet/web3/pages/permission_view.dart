@@ -8,7 +8,7 @@ import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/access/wallet_access.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 typedef OnUpdateChainPermission = void Function(Web3Chain update);
 

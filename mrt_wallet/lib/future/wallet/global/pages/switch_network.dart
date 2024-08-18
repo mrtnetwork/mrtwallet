@@ -4,7 +4,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 class SwitchNetworkView extends StatefulWidget {
   const SwitchNetworkView({required this.selectedNetwork, super.key});
@@ -162,77 +162,72 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ConstraintsBoxView(
-        maxHeight: 600,
-        padding: WidgetConstant.padding20,
-        maxWidth: APPConst.dialogWidth,
-        child: ClipRRect(
-          borderRadius: WidgetConstant.border25,
-          child: Scaffold(
-            appBar: AppBar(
-              title: Text("switch_network".tr),
-              leading: const SizedBox(),
-              leadingWidth: 0,
-              bottom: TabBar(
-                  controller: tabController,
-                  tabAlignment: TabAlignment.start,
-                  isScrollable: true,
-                  physics: const PageScrollPhysics(),
-                  tabs: [
-                    Tab(icon: CircleAssetsImgaeView(APPConst.btc, radius: 15)),
-                    Tab(icon: CircleAssetsImgaeView(APPConst.xrp, radius: 15)),
-                    Tab(icon: CircleAssetsImgaeView(APPConst.eth, radius: 15)),
-                    Tab(icon: CircleAssetsImgaeView(APPConst.trx, radius: 15)),
-                    Tab(icon: CircleAssetsImgaeView(APPConst.sol, radius: 15)),
-                    Tab(icon: CircleAssetsImgaeView(APPConst.ada, radius: 15)),
-                    Tab(icon: CircleAssetsImgaeView(APPConst.atom, radius: 15)),
-                    Tab(icon: CircleAssetsImgaeView(APPConst.ton, radius: 15)),
-                    Tab(
-                        icon: CircleAssetsImgaeView(APPConst.polkadot,
-                            radius: 15)),
-                    Tab(
-                        icon:
-                            CircleAssetsImgaeView(APPConst.kusama, radius: 15)),
-                  ]),
-              // pinned: false,
-              // floating: true,
-              actions: [
-                APPAnimatedSwitcher(
-                    duration: APPConst.animationDuraion,
-                    enable: showImport,
-                    widgets: {
-                      true: (c) => IconButton(
-                          tooltip: "import".tr,
-                          onPressed: () {
-                            context.pop(-1);
-                          },
-                          icon: const Icon(Icons.add)),
-                      false: (c) => WidgetConstant.sizedBox
-                    }),
-                const CloseButton(),
-              ],
-            ),
-            // shrinkWrap: true,
-            body: ConstraintsBoxView(
-              child: PageProgress(
-                backToIdle: APPConst.milliseconds100,
-                initialStatus: StreamWidgetStatus.progress,
-                key: progressKey,
-                child: (c) => TabBarView(controller: tabController, children: [
-                  _NetworksView(widget.selectedNetwork, bitcoinNetworks),
-                  _NetworksView(widget.selectedNetwork, rippleNetworks),
-                  _NetworksView(widget.selectedNetwork, evmNetworks),
-                  _NetworksView(widget.selectedNetwork, tvmNetworks),
-                  _NetworksView(widget.selectedNetwork, solNetworks),
-                  _NetworksView(widget.selectedNetwork, cardanoNetworks),
-                  _NetworksView(widget.selectedNetwork, cosmosNetworks),
-                  _NetworksView(widget.selectedNetwork, tonNetworks),
-                  _NetworksView(widget.selectedNetwork, polkadotNetworks),
-                  _NetworksView(widget.selectedNetwork, kusamaNetworks)
+    return ConstraintsBoxView(
+      alignment: Alignment.center,
+      maxHeight: 600,
+      padding: WidgetConstant.padding20,
+      maxWidth: APPConst.dialogWidth,
+      child: ClipRRect(
+        borderRadius: WidgetConstant.border25,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text("switch_network".tr),
+            leading: const SizedBox(),
+            leadingWidth: 0,
+            bottom: TabBar(
+                controller: tabController,
+                tabAlignment: TabAlignment.start,
+                isScrollable: true,
+                physics: const PageScrollPhysics(),
+                tabs: [
+                  Tab(icon: CircleAssetsImgaeView(APPConst.btc, radius: 15)),
+                  Tab(icon: CircleAssetsImgaeView(APPConst.xrp, radius: 15)),
+                  Tab(icon: CircleAssetsImgaeView(APPConst.eth, radius: 15)),
+                  Tab(icon: CircleAssetsImgaeView(APPConst.trx, radius: 15)),
+                  Tab(icon: CircleAssetsImgaeView(APPConst.sol, radius: 15)),
+                  Tab(icon: CircleAssetsImgaeView(APPConst.ada, radius: 15)),
+                  Tab(icon: CircleAssetsImgaeView(APPConst.atom, radius: 15)),
+                  Tab(icon: CircleAssetsImgaeView(APPConst.ton, radius: 15)),
+                  Tab(
+                      icon:
+                          CircleAssetsImgaeView(APPConst.polkadot, radius: 15)),
+                  Tab(icon: CircleAssetsImgaeView(APPConst.kusama, radius: 15)),
                 ]),
-              ),
-            ),
+            // pinned: false,
+            // floating: true,
+            actions: [
+              APPAnimatedSwitcher(
+                  duration: APPConst.animationDuraion,
+                  enable: showImport,
+                  widgets: {
+                    true: (c) => IconButton(
+                        tooltip: "import".tr,
+                        onPressed: () {
+                          context.pop(-1);
+                        },
+                        icon: const Icon(Icons.add)),
+                    false: (c) => WidgetConstant.sizedBox
+                  }),
+              const CloseButton(),
+            ],
+          ),
+          // shrinkWrap: true,
+          body: PageProgress(
+            backToIdle: APPConst.milliseconds100,
+            initialStatus: StreamWidgetStatus.progress,
+            key: progressKey,
+            child: (c) => TabBarView(controller: tabController, children: [
+              _NetworksView(widget.selectedNetwork, bitcoinNetworks),
+              _NetworksView(widget.selectedNetwork, rippleNetworks),
+              _NetworksView(widget.selectedNetwork, evmNetworks),
+              _NetworksView(widget.selectedNetwork, tvmNetworks),
+              _NetworksView(widget.selectedNetwork, solNetworks),
+              _NetworksView(widget.selectedNetwork, cardanoNetworks),
+              _NetworksView(widget.selectedNetwork, cosmosNetworks),
+              _NetworksView(widget.selectedNetwork, tonNetworks),
+              _NetworksView(widget.selectedNetwork, polkadotNetworks),
+              _NetworksView(widget.selectedNetwork, kusamaNetworks)
+            ]),
           ),
         ),
       ),

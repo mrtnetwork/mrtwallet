@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:js_interop';
 import 'dart:typed_data';
+import 'package:mrt_native_support/web/api/chrome/chrome.dart';
+
 import 'html.dart';
 import 'media_stream.dart';
 // import '../chrome/api/core.dart';
@@ -10,8 +12,8 @@ external T _cloneInto<T extends JSAny>(T? object, JSAny? where);
 
 @JS("cloneInto")
 external JSFunction? get cloneInto;
-@JS("browser")
-external JSAny? get _browser;
+// @JS("browser")
+// external JSAny? get _browser;
 
 @JS("console")
 external JSConsole get jsConsole;
@@ -93,7 +95,7 @@ extension type JSNavigator._(JSObject _) implements JSObject {
   external factory JSNavigator();
   external MediaDevices get mediaDevices;
   external String? get userAgent;
-
+  bool get isFirefox => userAgent?.contains("Firefox") ?? false;
   external JSPromise share(
       String? url, String? text, String? title, JSArray<JSFile>? files);
 
@@ -314,7 +316,7 @@ extension type CustomEvent._(JSObject _) implements WebEvent {
       bool cancelable = false,
       bool clone = false}) {
     JSAny? eventData = data.jsify();
-    if (clone && _browser != null && cloneInto != null) {
+    if (clone && isExtention && cloneInto != null) {
       eventData = _cloneInto(eventData, jsWindow.document.defaultView);
     }
 

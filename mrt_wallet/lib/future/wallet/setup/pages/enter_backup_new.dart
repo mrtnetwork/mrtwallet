@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/backup/backup.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
-import 'package:mrt_wallet/wroker/utils/global/utils.dart';
+import 'package:mrt_wallet/crypto/utils/global/utils.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 enum _BackupPage { fields, verify }

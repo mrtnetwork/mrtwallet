@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
-import 'package:mrt_wallet/wroker/coins/coins.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/coins/coins.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/xrp/addresses/multisig.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/xrp/addresses/xrp.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/core/core.dart';

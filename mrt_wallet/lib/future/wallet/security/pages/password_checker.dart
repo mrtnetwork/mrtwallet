@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/wroker/keys/keys.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/constant/constant.dart';
 
@@ -41,8 +41,13 @@ class PasswordCheckerView extends StatefulWidget {
 class _PasswordCheckerViewState extends State<PasswordCheckerView>
     with SafeState {
   late final WalletAccsessType access = widget.accsess;
+  String _entredPassword = "";
+  String _correctPassword = "";
+
   void _onPause() {
     credentials = null;
+    _entredPassword = "";
+    _correctPassword = "";
     updateState();
   }
 
@@ -54,7 +59,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
       GlobalKey<StreamWidgetState>(debugLabel: "ExportSeedView");
   final GlobalKey<AppTextFieldState> textFildState =
       GlobalKey<AppTextFieldState>(debugLabel: "AppTextFieldState");
-  String _password = "";
+  // String _password = "";
   late WalletProvider wallet;
 
   List<CryptoKeyData>? credentials;
@@ -65,7 +70,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
   }
 
   void onChange(String v) {
-    _password = v;
+    _entredPassword = v;
     if (error != null) {
       error = null;
       setState(() {});
@@ -81,16 +86,19 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     await getKey();
   }
 
-  Future<void> getKey() async {
+  Future<void> getKey({String? password}) async {
+    password ??= textFildState.currentState?.getValue();
+    if (password == null || password.isEmpty) return;
     progressKey.process();
 
-    final result = await wallet.wallet.accsess(widget.accsess, _password,
+    final result = await wallet.wallet.accsess(widget.accsess, password,
         account: widget.account, accountId: widget.customKey?.id);
     if (result.hasError) {
       error = result.error?.tr;
       progressKey.error();
     } else {
       credentials = result.result;
+      _correctPassword = password;
       progressKey.success();
     }
     setState(() {});
@@ -111,7 +119,8 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
   void listener(WalletEventStaus status) {
     if (status != WalletEventStaus.unlock) {
       credentials = null;
-      _password = "";
+      _entredPassword = "";
+      _correctPassword = "";
     } else {
       if (access.isUnlock) {
         credentials = [FakeKeyData()];
@@ -125,10 +134,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     super.didChangeDependencies();
     wallet = context.watch<WalletProvider>(StateConst.main);
     wallet.wallet.addWalletStatusListener(listener);
-    _password = widget.password ?? "";
-    if (_password.isNotEmpty) {
-      MethodUtils.after(() => getKey());
-    }
+    MethodUtils.after(() => getKey(password: widget.password));
   }
 
   @override
@@ -156,7 +162,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
           enable: credentials != null,
           widgets: {
             true: (c) => widget.onAccsess(
-                credentials!, _password, wallet.wallet.network),
+                credentials!, _correctPassword, wallet.wallet.network),
             false: (c) => _PasswordWriterView(this)
           },
         ),
@@ -213,7 +219,7 @@ class _PasswordWriterView extends StatelessWidget {
                                   obscureText: true,
                                   key: state.textFildState,
                                   validator: state.psaswordForm,
-                                  initialValue: state._password,
+                                  initialValue: state._entredPassword,
                                   onChanged: state.onChange,
                                   error: state.error,
                                   helperText:

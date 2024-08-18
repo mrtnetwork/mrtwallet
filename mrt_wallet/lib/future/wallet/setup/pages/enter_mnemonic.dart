@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/setup/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wroker/utils/global/utils.dart';
+import 'package:mrt_wallet/crypto/utils/global/utils.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class EnterMnemonicView extends StatefulWidget {

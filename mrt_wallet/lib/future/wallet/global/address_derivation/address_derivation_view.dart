@@ -8,7 +8,7 @@ import 'package:mrt_wallet/future/wallet/network/bitcoin/address/setup_address.d
 import 'package:mrt_wallet/future/wallet/network/cardano/address/setup_address_page.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';

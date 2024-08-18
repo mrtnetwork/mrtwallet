@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/wroker/utils/ton/ton.dart';
+import 'package:mrt_wallet/crypto/utils/ton/ton.dart';
 import 'package:mrt_wallet/app/utils/string/utils.dart';
 import 'package:ton_dart/ton_dart.dart';
 

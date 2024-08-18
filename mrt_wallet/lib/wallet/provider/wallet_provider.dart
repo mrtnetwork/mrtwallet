@@ -9,7 +9,7 @@ import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/models/others/models/life_cycle.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/global.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/crypto/worker.dart';
 
 part 'controller/wallet_controller.dart';
 part 'controller/manager.dart';

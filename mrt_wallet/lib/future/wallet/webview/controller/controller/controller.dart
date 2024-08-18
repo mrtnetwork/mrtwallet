@@ -1,13 +1,15 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/wallet/ui_wallet.dart';
+import 'package:mrt_wallet/future/wallet/webview/controller/controller/tab_controller.dart';
 import 'package:mrt_wallet/future/wallet/webview/controller/controller/tab_handler.dart';
 import 'package:mrt_wallet/future/wallet/controller/impl/web3_request_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'package:mrt_wallet/wroker/impl/worker_impl.dart';
+import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
 
 enum MRTScriptWalletStatus {
   progress,
@@ -34,21 +36,21 @@ class WebViewStateController extends StateController
 
   Future<bool> _postEvent(WalletEvent event) async {
     try {
-      final result = await _loadScript(
+      final result = await _loadScript<bool>(
           script: "MRT.onMrtMessage(${StringUtils.fromJson(event.toJson())})",
           viewType: event.clientId);
-      final toJson = StringUtils.toJson<bool>(result!);
-      return toJson;
+      return result!;
     } catch (e) {
       return false;
     }
   }
 
-  Future<String?> _loadScript<T>(
+  Future<T?> _loadScript<T>(
       {required String viewType, required String script}) async {
     final result =
         await webViewController.loadScript(viewType: viewType, script: script);
-    return result as String?;
+    if (result == null) return null;
+    return StringUtils.tryToJson(result as String);
   }
 
   @override
@@ -84,6 +86,12 @@ class WebViewStateController extends StateController
     });
   }
 
+  Future<bool> _mrtInitialized(String viewType) async {
+    final result =
+        await _loadScript(script: "MRT.ethereum", viewType: viewType);
+    return result != null;
+  }
+
   final Live<MRTScriptWalletStatus> _web3Status =
       Live(MRTScriptWalletStatus.progress);
   Live<MRTScriptWalletStatus> get web3Status => _web3Status;
@@ -94,19 +102,19 @@ class WebViewStateController extends StateController
           Web3APPAuthentication.toApplicationId(lastEvent?.url);
       onCloseClinet(applicationId);
       final auth = tabsAuthenticated[event.viewId];
-
       if (auth == null) return MRTScriptWalletStatus.failed;
       final client = await createClientInfos(
           clientId: event.viewId,
           url: event.url,
           title: event.title,
           faviIcon: event.favicon);
-      final String script =
-          (await HttpUtils.get<String>("http://10.0.2.2:3000/a")).result;
+      String script;
+      if (kDebugMode) {
+        script = (await HttpUtils.get<String>("http://10.0.2.2:3000/a")).result;
+      } else {
+        script = await FileUtils.loadAssetText(APPConst.assetWebviewScript);
+      }
       await _loadScript(viewType: event.viewId, script: script);
-      await webViewController
-          .addJsInterface(viewType: event.viewId, name: "MRT")
-          .catchError((e) {});
       final responseEvent =
           await getPageAuthenticated(clientId: auth.viewType, info: client);
       final result = await _postEvent(responseEvent);
@@ -115,6 +123,15 @@ class WebViewStateController extends StateController
       }
       return MRTScriptWalletStatus.failed;
     });
+  }
+
+  @override
+  Future<void> switchTab(WebViewController controller) async {
+    await super.switchTab(controller);
+    final viewType = this.viewType;
+    if (viewType == null) return;
+    final inited = await _mrtInitialized(viewType);
+    if (!inited) reload();
   }
 
   @override
@@ -162,14 +179,14 @@ class WebViewStateController extends StateController
   }
 
   @override
+  Future<void> sendToClient(WalletEvent event) async {
+    await _postEvent(event);
+  }
+
+  @override
   void close() {
     super.close();
     webViewController.removeListener(this);
     _web3Status.dispose();
-  }
-
-  @override
-  Future<void> sendToClient(WalletEvent event) async {
-    await _postEvent(event);
   }
 }

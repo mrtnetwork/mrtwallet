@@ -5,7 +5,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/contact/core/contract_core.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wroker/utils/address/utils.dart';
+import 'package:mrt_wallet/crypto/utils/address/utils.dart';
 
 class BitcoinContact with Equatable implements ContactCore<BitcoinBaseAddress> {
   BitcoinContact._(

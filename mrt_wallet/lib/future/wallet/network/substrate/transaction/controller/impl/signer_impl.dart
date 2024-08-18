@@ -3,8 +3,8 @@ import 'package:mrt_wallet/future/state_managment/extention/app_extentions/strin
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/signing/signing.dart';
-import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
-import 'package:mrt_wallet/wroker/utils/substrate/substrate.dart';
+import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
+import 'package:mrt_wallet/crypto/utils/substrate/substrate.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
 import 'transaction.dart';

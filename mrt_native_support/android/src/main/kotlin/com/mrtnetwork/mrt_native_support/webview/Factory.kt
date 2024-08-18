@@ -1,6 +1,7 @@
 package com.mrtnetwork.mrt_native_support.webview
 
 import android.content.Context
+import com.mrtnetwork.mrt_native_support.MrtCore
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.StandardMessageCodec
@@ -80,6 +81,10 @@ class WebViewHandlers() {
             val platformView = WebViewPlatformView(context, url, jsInterface, channel, id)
             val webViewFactory = WebViewFactory(platformView)
             binding.platformViewRegistry.registerViewFactory(id, webViewFactory)
+            if(jsInterface!= null){
+                platformView.addMrtJsInterface( jsInterface)
+            }
+            MrtCore.logging("addjs interface:${jsInterface} ")
             webViewFactories[id] = webViewFactory
             return true
         }

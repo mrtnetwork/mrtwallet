@@ -14,7 +14,7 @@ import 'package:mrt_wallet/future/wallet/network/tron/transaction/account/accoun
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'account_not_adress.dart';
 import 'appbar.dart';
 import 'client.dart';

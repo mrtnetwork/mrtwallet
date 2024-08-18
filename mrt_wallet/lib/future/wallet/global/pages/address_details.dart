@@ -4,7 +4,7 @@ import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart' show ContactCore, ChainAccount;
-import 'package:mrt_wallet/wroker/derivation/core/derivation.dart';
+import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
 
 class AddressDetailsView extends StatelessWidget {
   const AddressDetailsView({

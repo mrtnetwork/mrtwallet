@@ -121,11 +121,10 @@ packages:
   cosmos_sdk:
     dependency: "direct main"
     description:
-      name: cosmos_sdk
-      sha256: "5c2287cd7f0f4f7cd687609fa898a1dee6d5d154b3340c14e1d76b6dc238bbed"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
+      path: "../../../cosmos_sdk"
+      relative: true
+    source: path
+    version: "1.1.0"
   coverage:
     dependency: transitive
     description:

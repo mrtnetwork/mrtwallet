@@ -8,9 +8,9 @@ import 'package:mrt_wallet/future/wallet/network/ripple/transaction/controller/i
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
-import 'package:mrt_wallet/wroker/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/wroker/requets/messages/models/models/signing.dart';
-import 'package:mrt_wallet/wroker/utils/ripple/ripple.dart';
+import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
+import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 

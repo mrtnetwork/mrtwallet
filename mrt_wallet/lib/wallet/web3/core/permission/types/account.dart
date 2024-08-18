@@ -1,5 +1,5 @@
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/wroker/derivation/core/derivation.dart';
+import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
 
 abstract class Web3ChainAccount<NETWORKADDRESS>
     with CborSerializable, Equatable {

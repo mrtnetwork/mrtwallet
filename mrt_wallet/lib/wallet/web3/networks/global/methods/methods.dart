@@ -2,7 +2,7 @@ import 'package:mrt_wallet/app/utils/list/extention.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/constant/constant.dart';
-import 'package:mrt_wallet/wroker/models/networks.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 
 class Web3GlobalRequestMethods extends Web3RequestMethods {
   const Web3GlobalRequestMethods._(

@@ -8,7 +8,7 @@ void main() async {
   final List<String> arguments = [
     'build',
     'web',
-    // '--wasm',
+    '--wasm',
     '--profile',
     '--csp'
   ];

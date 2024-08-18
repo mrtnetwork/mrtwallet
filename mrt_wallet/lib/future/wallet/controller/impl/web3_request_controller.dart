@@ -3,7 +3,7 @@ import 'package:mrt_native_support/models/events/models/wallet_event.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'package:mrt_wallet/wroker/worker.dart';
+import 'package:mrt_wallet/crypto/worker.dart';
 
 mixin Web3RequestControllerImpl on CryptoWokerImpl {
   Future<void> updatePermission(Web3APPAuthentication updatePermission);
@@ -103,8 +103,6 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
     final remove = _requets[request.applicationId]?.remove(request);
     assert(remove == true, "request not found.");
     r?.errorRequest();
-    WalletLogging.webview(
-        "Request error. removed $remove ${r?.request.requestId}");
   }
 
   Future<void> _doRequest(Web3RequestApplicationInformation request) async {
