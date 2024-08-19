@@ -62,3 +62,7 @@ Future<String> loadAssetText(String assetPath) async {
     throw const GenericException("file_does_not_exist");
   }
 }
+
+String toAssetPath(String assetPath) {
+  return assetPath;
+}

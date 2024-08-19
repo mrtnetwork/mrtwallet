@@ -46,26 +46,26 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
   }
 
   Future<ByteBuffer> loadFileBinary(String path) async {
-    final f = await jsWindow.fetch_(path);
-    return await f.arrayBuffer_();
+    final f = await FileUtils.loadAssets(path);
+    return Uint8List.fromList(f).buffer;
   }
 
-  String _getAssetPath(String assetPath) {
-    assetPath = "assets/$assetPath";
-    if (isExtention) {
-      final path = web.extention.runtime.getURL(assetPath);
-      return path;
-    }
-    return assetPath;
-  }
+  // String _getAssetPath(String assetPath) {
+  //   assetPath = "assets/$assetPath";
+  //   if (isExtention) {
+  //     final path = web.extention.runtime.getURL(assetPath);
+  //     return path;
+  //   }
+  //   return assetPath;
+  // }
 
   Future<ByteBuffer> _loadWasm() async {
-    final file = await loadFileBinary(_getAssetPath(_wasmPath));
+    final file = await loadFileBinary(_wasmPath);
     return file;
   }
 
   Future<web.Worker> _buildExtentionWorker() async {
-    final url = _getAssetPath(_extentionJs);
+    final url = FileUtils.assetPath(_extentionJs);
     return web.Worker(url, WorkerOptions()..type = "module");
   }
 
@@ -75,7 +75,7 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
 
   Future<String?> _loadModuleScript() async {
     if (isExtention) return null;
-    final file = await loadFileText(_getAssetPath(_scryptPath));
+    final file = await loadFileText(FileUtils.assetPath(_scryptPath));
     return file;
   }
 

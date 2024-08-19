@@ -22,4 +22,8 @@ class FileUtils {
   static Future<String> loadAssetText(String assetPath) async {
     return await CrossFileWriter.loadAssetsText(assetPath);
   }
+
+  static String assetPath(String assetPath) {
+    return CrossFileWriter.assetPath(assetPath);
+  }
 }

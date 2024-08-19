@@ -23,4 +23,8 @@ class CrossFileWriter {
   static Future<String> loadAssetsText(String assetPath) async {
     return await loadAssetText(assetPath);
   }
+
+  static String assetPath(String assetPath) {
+    return toAssetPath(assetPath);
+  }
 }

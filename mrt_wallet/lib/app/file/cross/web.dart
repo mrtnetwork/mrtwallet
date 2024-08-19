@@ -18,8 +18,9 @@ Future<String> bytesToFile(
 }
 
 Future<List<int>> loadAssetBuffer(String assetPath) async {
+  assetPath = toAssetPath(assetPath);
   if (isExtention) {
-    assetPath = extention.runtime.getURL("assets/$assetPath");
+    assetPath = extention.runtime.getURL(assetPath);
   }
   final data = await jsWindow.fetch_(assetPath);
   if (!data.ok) {
@@ -30,12 +31,17 @@ Future<List<int>> loadAssetBuffer(String assetPath) async {
 }
 
 Future<String> loadAssetText(String assetPath) async {
+  assetPath = toAssetPath(assetPath);
   if (isExtention) {
-    assetPath = extention.runtime.getURL("assets/$assetPath");
+    assetPath = extention.runtime.getURL(assetPath);
   }
   final data = await jsWindow.fetch_(assetPath);
   if (!data.ok) {
     throw const GenericException("file_does_not_exist");
   }
   return await data.text_();
+}
+
+String toAssetPath(String assetPath) {
+  return assetPath;
 }
