@@ -36,20 +36,18 @@ Future<void> buildCrypto() async {
 Future<void> buildWebView({bool minify = false}) async {
   print("Building webview script. please wait...");
   const String command = 'dart';
-  final List<String> arguments = [
+  final List<String> args = [
     'compile',
     'js',
     "--no-source-maps",
     if (minify) '-m',
     '-o',
-    '/Users/macbookpro/Documents/bitcoin/nod_server/public/a.js',
+    'assets/webview/script.js',
     'js/webview.dart'
   ];
-
-  final process = await Process.start(command, arguments);
-  await stdout.addStream(process.stdout);
-  await stderr.addStream(process.stderr);
-  await process.exitCode;
+  await _doProcess(command, args);
+  final file = File("assets/webview/script.js.deps");
+  file.deleteSync(recursive: true);
 }
 
 Future<void> buildContent({bool minify = false, bool isMozila = false}) async {
@@ -231,6 +229,8 @@ void main(List<String> args) async {
       baseHref = fixedArgs.elementAt(baseHrefIndex);
     }
     await _buildWeb(minify: minify, baseHref: baseHref);
+  } else if (fixedArgs.contains("-webview")) {
+    await buildWebView(minify: minify);
   }
 
   return;

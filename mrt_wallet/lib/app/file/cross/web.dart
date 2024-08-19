@@ -43,5 +43,5 @@ Future<String> loadAssetText(String assetPath) async {
 }
 
 String toAssetPath(String assetPath) {
-  return assetPath;
+  return "assets/$assetPath";
 }
