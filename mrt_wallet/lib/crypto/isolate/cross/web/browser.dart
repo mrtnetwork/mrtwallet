@@ -1,13 +1,13 @@
 part of 'package:mrt_wallet/crypto/isolate/cross/web/web.dart';
 
-@JS("#workerListener")
+@JS("workerListener_")
 external set workerListener(JSFunction? f);
-@JS("#workerListener")
+@JS("workerListener_")
 external JSFunction get workerListener;
 
-@JS("#errorListener")
+@JS("errorListener_")
 external set onWorkerErrorListener(JSFunction? f);
-@JS("#errorListener")
+@JS("errorListener_")
 external JSFunction get onWorkerErrorListener;
 
 class BrowserCryptoWorker extends IsolateCryptoWoker {

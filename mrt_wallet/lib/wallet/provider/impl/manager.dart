@@ -69,7 +69,6 @@ mixin WalletsManager on _WalletCore {
     final pw = await _toWalletPassword(password, updatedWallet._checksum);
     await crypto.cryptoRequest(CryptoRequestGenerateMasterKey.fromStorage(
         storageData: updatedWallet._data, key: pw));
-
     _wallets.setupWallet(updatedWallet, asDefault: walletInfos.asDefaultWallet);
     await _initializeWallet(updatedWallet, chains: chains);
     await _initPage(slectedWallet: updatedWallet);

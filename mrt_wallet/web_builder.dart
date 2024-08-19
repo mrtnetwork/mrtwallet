@@ -151,13 +151,16 @@ Future<void> _build(
   List<String> args = [
     'build',
     'web',
-    if (wasm) '--wasm',
-    if (!minify) '--profile' else '--release',
+    '--wasm',
+    // if (wasm) '--wasm',
+    // if (wasm) '-O0',
+    // '--profile',
+    // if (!minify) '--profile' else '--release',
     if (csp) '--csp',
-    if (baseHref != null) baseHref
+    if (baseHref != null) baseHref,
   ];
   await _doProcess(command, args);
-  if (wasm && csp) {
+  if (csp) {
     const canvasUri =
         r"https://www\.gstatic\.com/flutter-canvaskit/([a-f0-9]+)/";
     final file = File("build/web/main.dart.js");
@@ -186,7 +189,7 @@ Future<void> _buildWeb(
   if (clean) {
     await _clean();
   }
-  await buildCrypto();
+  // await buildCrypto();
   final r = Directory("web");
   if (r.existsSync()) {
     await r.delete(recursive: true);
@@ -228,7 +231,7 @@ void main(List<String> args) async {
     if (baseHrefIndex > 0) {
       baseHref = fixedArgs.elementAt(baseHrefIndex);
     }
-    await _buildWeb(minify: minify, baseHref: baseHref);
+    await _buildWeb(minify: minify, baseHref: baseHref, clean: clean);
   } else if (fixedArgs.contains("-webview")) {
     await buildWebView(minify: minify);
   }

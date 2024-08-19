@@ -375,10 +375,9 @@ packages:
   on_chain:
     dependency: "direct main"
     description:
-      name: on_chain
-      sha256: "9ccf63f4d42276efc5a31c4d80edcb0318917eb3579dd1c8f5f3f709f59b4a1a"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../../on_chain"
+      relative: true
+    source: path
     version: "3.8.0"
   package_config:
     dependency: transitive
@@ -636,10 +635,9 @@ packages:
   xrpl_dart:
     dependency: "direct main"
     description:
-      name: xrpl_dart
-      sha256: "38dbf171d8ad3a7229c7abd5b9c61a00e2203e2263b6e76861b0f0d26ad4430c"
-      url: "https://pub.dev"
-    source: hosted
+      path: "../../../xrpl_dart"
+      relative: true
+    source: path
     version: "4.5.0"
   yaml:
     dependency: transitive

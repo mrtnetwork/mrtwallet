@@ -1,5 +1,7 @@
 import 'dart:js_interop';
 
+import 'package:mrt_native_support/web/mrt_native_web.dart';
+
 @JS("localStorage")
 external LocalStorage get localStorage;
 
@@ -24,7 +26,15 @@ extension type LocalStorage._(JSObject _) implements JSAny {
   external void clear();
 
   Map<String, String> getAll() {
-    return Map<String, String>.from(localStorage as Map);
+    final toDart = MRTJsObject.entries(localStorage).dartify() as List;
+    return Map<String, String>.fromEntries(toDart.map((e) {
+      try {
+        final str = List<String>.from(e);
+        return MapEntry<String, String>(str[0], str[1]);
+      } catch (e) {
+        return null;
+      }
+    }).whereType<MapEntry<String, String>>());
   }
 
   Map<String, String> getItems(List<String> keys) {

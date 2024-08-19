@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/isolate/cross/exception.dart';
 import 'package:mrt_wallet/crypto/requets/messages.dart';
 import '../cross/cross.dart'

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/mrt_native_support.dart';
@@ -13,8 +14,9 @@ import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
 class _WebViewStateControllerConst {
   static const int viewIdLength = 12;
   static const String googleSerchUrl = "https://www.google.com/search?q=";
-  static const String webSite = "http://10.0.2.2:3000/";
   static const String interfaceName = "MRT";
+  static const String debug = "http://10.0.2.2:3000/";
+  static const String google = "https://google.com/";
 }
 
 enum WebViewTabPage {
@@ -27,6 +29,13 @@ enum WebViewTabPage {
 mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   bool _inited = false;
   bool get inited => _inited;
+  String get _website {
+    if (kDebugMode) {
+      return _WebViewStateControllerConst.debug;
+    }
+    return _WebViewStateControllerConst.google;
+  }
+
   late final FocusNode focusNode = FocusNode()
     ..addListener(_textFieldFocusNode);
 
@@ -172,9 +181,9 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
     final controller = MRTAndroidViewController.create(viewType: viewId);
     final tab = WebViewTab(
         id: viewId,
-        url: _WebViewStateControllerConst.webSite,
+        url: _website,
         title: null,
-        image: APPImage.faviIcon(_WebViewStateControllerConst.webSite));
+        image: APPImage.faviIcon(_website));
     final auth = WebViewController(
         controller: controller, viewType: viewId, key: key, tab: tab);
     tabsAuthenticated[auth.viewType] = auth;

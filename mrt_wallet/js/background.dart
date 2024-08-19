@@ -10,10 +10,10 @@ import 'package:mrt_wallet/wallet/web3/web3.dart';
 
 import 'js_wallet/constant/constant.dart';
 
-@JS("#OnBackgroundListener")
+@JS("OnBackgroundListener_")
 external set _OnContentListener(JSFunction? f);
 
-@JS("#OnBackgroundListener")
+@JS("OnBackgroundListener_")
 external JSFunction get _OnContentListener;
 
 class _Wallet extends WalletCore {

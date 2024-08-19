@@ -40,7 +40,7 @@ extension type EIP1193(JSObject _) implements MRTJsObject {
     if (enable != null) {
       eip.enable = enable;
     }
-    final eth = JSObjectFreez.freeze(eip);
+    final eth = MRTJsObject.freeze(eip);
 
     return eth;
   }
@@ -75,7 +75,7 @@ extension type EIP6963ProviderDetail._(JSObject _) implements MRTJsObject {
         EventInit(
             bubbles: true,
             cancelable: false,
-            detail: JSObjectFreez.freeze(EIP6963ProviderDetail(
+            detail: MRTJsObject.freeze(EIP6963ProviderDetail(
                 info: ethereum.providerInfo, provider: ethereum))));
     jsWindow.addEventListener(
         "eip6963:requestProvider",
@@ -147,16 +147,6 @@ extension type EthereumRequestParams._(JSObject o)
     }
     return toDart;
   }
-}
-@JS("Object")
-extension type JSObjectFreez(JSObject _) implements MRTJsObject {
-  @JS("freeze")
-  external static T freeze<T extends JSObject>(T obj);
-  @JS("defineProperty")
-  external static void defineProperty(
-      JSObject obj, String prop, JSObject descriptor);
-  @JS("isFrozen")
-  external static bool isFrozen(JSObject obj);
 }
 
 class ClientMessageEthereum implements ClientMessage {

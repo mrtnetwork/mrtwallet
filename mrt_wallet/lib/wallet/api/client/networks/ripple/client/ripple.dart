@@ -12,7 +12,6 @@ import 'package:xrpl_dart/xrpl_dart.dart';
 
 class _RippleApiProviderConst {
   static const int accountNotFound = 19;
-  static const String successStatusSr = "success";
 }
 
 class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
@@ -92,7 +91,6 @@ class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
     final result = await MethodUtils.call(() async {
       return await provider.request(RPCServerState());
     });
-    return result.hasResult &&
-        result.result.status == _RippleApiProviderConst.successStatusSr;
+    return result.hasResult;
   }
 }

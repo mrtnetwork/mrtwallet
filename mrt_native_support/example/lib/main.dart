@@ -1,8 +1,22 @@
+import 'dart:js_interop';
+
 import 'package:flutter/material.dart';
 
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'dart:ui' as ui;
+
+import 'package:mrt_native_support/web/api/api.dart';
+import 'package:mrt_native_support/web/mrt_native_web.dart';
+
+@JS("localStorage")
+extension type LocalStorage._(JSObject _) implements JSAny {
+  external factory LocalStorage();
+}
+Map<String, String> getAll() {
+  return Map<String, String>.from(localStorage.dartify() as Map);
+}
+// import 'package:mrt_native_support/web/api/mozila/api/storage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,7 +51,23 @@ class _MyWidgetState extends State<MyWidget> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ElevatedButton(onPressed: () async {}, child: const Text("test"))
+          ElevatedButton(
+              onPressed: () async {
+                // test();
+                try {
+                  final d = await PlatformInterface.instance.readAllSecure();
+                  // print(d);
+                  // test();
+                  final r = await PlatformInterface.instance
+                      .writeSecure("qweqwe", "qweqwe");
+                  final b = await PlatformInterface.instance.readAllSecure();
+                  print("b $b");
+                  // test();
+                } catch (e) {
+                  print("error $e");
+                }
+              },
+              child: const Text("test"))
         ],
       ),
     ));

@@ -109,7 +109,7 @@ class WebViewStateController extends StateController
           title: event.title,
           faviIcon: event.favicon);
       String script;
-      if (kDebugMode) {
+      if (kDebugMode && false) {
         script = (await HttpUtils.get<String>("http://10.0.2.2:3000/a")).result;
       } else {
         script = await FileUtils.loadAssetText(APPConst.assetWebviewScript);

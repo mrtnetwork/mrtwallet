@@ -1,13 +1,13 @@
 part of 'core/wallet.dart';
 
-@JS("#PINGREFRENCE")
+@JS("PINGREFRENCE_")
 external set _pingRefrence(JSFunction? f);
-@JS("#PINGREFRENCE")
+@JS("PINGREFRENCE_")
 external JSFunction get pringRefrence;
 
-@JS("#OnBackgroundListener")
+@JS("OnBackgroundListener_")
 external set _OnBackgroundListener(JSFunction? f);
-@JS("#OnBackgroundListener")
+@JS("OnBackgroundListener_")
 external JSFunction get _OnBackgroundListener;
 
 class JSExtentionWallet extends JSWalletHandler {
