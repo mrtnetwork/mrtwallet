@@ -2,3 +2,4 @@
 *.zip
 *.apk
 *.msix
+/repo/

@@ -99,8 +99,6 @@ Future<void> buildBackground({bool minify = false}) async {
   await _doProcess(command, args);
   final file = File("web/background.js.deps");
   file.deleteSync(recursive: true);
-  // final file = File("extention/background.js");
-  // await file.copy("build/web/background.js");
 }
 
 Future<void> buildPage({bool minify = false}) async {
@@ -118,9 +116,6 @@ Future<void> buildPage({bool minify = false}) async {
   await _doProcess(command, args);
   File file = File("web/page.js.deps");
   file.deleteSync(recursive: true);
-
-  // final file = File("extention/page.js");
-  // await file.copy("build/web/page.js");
 }
 
 Future<void> _doProcess(String command, List<String> args) async {
@@ -142,6 +137,7 @@ Future<void> _clean() async {
   await _doProcess(command, args);
 }
 
+///  'build','web','--wasm', fix
 Future<void> _build(
     {bool wasm = true,
     bool csp = false,
@@ -151,14 +147,13 @@ Future<void> _build(
   List<String> args = [
     'build',
     'web',
-    '--wasm',
-    // if (wasm) '--wasm',
-    // if (wasm) '-O0',
-    // '--profile',
-    // if (!minify) '--profile' else '--release',
+    if (wasm) '--wasm',
+    if (!csp) '-O0',
+    if (!minify) '--profile' else '--release',
     if (csp) '--csp',
     if (baseHref != null) baseHref,
   ];
+  print("is csp $csp");
   await _doProcess(command, args);
   if (csp) {
     const canvasUri =
@@ -235,8 +230,6 @@ void main(List<String> args) async {
   } else if (fixedArgs.contains("-webview")) {
     await buildWebView(minify: minify);
   }
-
-  return;
 
   if (fixedArgs.isEmpty) {
     await buildContent();

@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "MRT Wallet",
     "version": "1.0",
-    "description": "MRT browser extension.",
+    "description": "MRT Wallet Chrome extension.",
     "action": {
       "default_popup": "popup.html",
       "default_icon": {
@@ -43,7 +43,7 @@
       }
     ],
     "background": {
-      "service_worker": "background.js"
+      "scripts": ["background.js"]
     }
   }
   
