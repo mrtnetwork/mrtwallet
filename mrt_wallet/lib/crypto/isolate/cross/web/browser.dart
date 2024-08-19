@@ -51,8 +51,9 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
   }
 
   String _getAssetPath(String assetPath) {
+    assetPath = "assets/$assetPath";
     if (isExtention) {
-      final path = web.extention.runtime.getURL("assets/$assetPath");
+      final path = web.extention.runtime.getURL(assetPath);
       return path;
     }
     return assetPath;
