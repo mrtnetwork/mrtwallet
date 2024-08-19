@@ -126,7 +126,6 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
       try {
         _connector ??= await _loadMoudle();
       } catch (e) {
-        print("has error $e");
         _hasIsolate = false;
         throw FailedIsolateInitialization.failed;
       }

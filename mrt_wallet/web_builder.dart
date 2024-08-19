@@ -145,14 +145,18 @@ Future<void> _clean() async {
 }
 
 Future<void> _build(
-    {bool wasm = true, bool csp = false, bool minify = false}) async {
+    {bool wasm = true,
+    bool csp = false,
+    bool minify = false,
+    String? baseHref}) async {
   const String command = 'flutter';
   List<String> args = [
     'build',
     'web',
     if (wasm) '--wasm',
     if (!minify) '--profile' else '--release',
-    if (csp) '--csp'
+    if (csp) '--csp',
+    if (baseHref != null) baseHref
   ];
   await _doProcess(command, args);
   if (wasm && csp) {
@@ -177,8 +181,10 @@ Future<void> _buildWeb(
     {bool extention = false,
     bool mozila = false,
     bool minify = false,
-    bool clean = false}) async {
+    bool clean = false,
+    String? baseHref}) async {
   print("come build $extention $mozila $minify");
+
   if (clean) {
     await _clean();
   }
@@ -202,15 +208,14 @@ Future<void> _buildWeb(
     await file.copy("web/popup.html");
     file = File(mozila
         ? "extentions/mozila_manifest.json"
-        : "extentions/manifest.json");
+        : "extentions/chrome_manifest.json");
     await file.copy("web/manifest.json");
   }
-  await _build(minify: minify, csp: extention, wasm: true);
+  await _build(minify: minify, csp: extention, wasm: true, baseHref: baseHref);
 }
 
 void main(List<String> args) async {
-  final fixedArgs = List.from(args);
-  print(fixedArgs);
+  final fixedArgs = List<String>.from(args);
   bool minify = fixedArgs.contains("--release");
   bool clean = fixedArgs.contains("--clean");
 
@@ -219,7 +224,13 @@ void main(List<String> args) async {
     await _buildWeb(
         extention: true, mozila: mozila, minify: minify, clean: clean);
   } else if (fixedArgs.contains("-web")) {
-    await _buildWeb(minify: minify);
+    final baseHrefIndex =
+        fixedArgs.indexWhere((e) => e.startsWith("--base-href="));
+    String? baseHref;
+    if (baseHrefIndex > 0) {
+      baseHref = fixedArgs.elementAt(baseHrefIndex);
+    }
+    await _buildWeb(minify: minify, baseHref: baseHref);
   }
 
   return;
