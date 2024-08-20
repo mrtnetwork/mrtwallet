@@ -53,19 +53,6 @@ class _MyWidgetState extends State<MyWidget> {
         children: [
           ElevatedButton(
               onPressed: () async {
-                // test();
-                try {
-                  final d = await PlatformInterface.instance.readAllSecure();
-                  // print(d);
-                  // test();
-                  final r = await PlatformInterface.instance
-                      .writeSecure("qweqwe", "qweqwe");
-                  final b = await PlatformInterface.instance.readAllSecure();
-                  print("b $b");
-                  // test();
-                } catch (e) {
-                  print("error $e");
-                }
               },
               child: const Text("test"))
         ],

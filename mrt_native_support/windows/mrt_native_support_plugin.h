@@ -123,9 +123,14 @@ private:
     std::optional<std::string> GetStringArgOrEmpty(
         const std::string& param,
         const flutter::EncodableMap* args);
+    std::optional<std::vector<std::string>> GetStringListArg(
+        const std::string& key,
+        const flutter::EncodableMap* args);
 
     // Derive the key for a value given a method argument map.
     std::optional<std::string> MrtNativeSupport::GetValueKey(const flutter::EncodableMap* args);
+
+    std::optional<std::vector<std::string>> GetListValueKey(const flutter::EncodableMap* args);
 
     // Removes prefix of the given storage key.
     // 

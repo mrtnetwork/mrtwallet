@@ -54,12 +54,10 @@ dependencies:
 
   bitcoin_base: ^4.7.0
 
-  xrpl_dart:
-    path: ../../../xrpl_dart
+  xrpl_dart: '^4.6.0'
 
-  # on_chain: ^3.8.0
-  on_chain:
-    path: ../../on_chain
+  on_chain: ^3.9.0
+
 
   cosmos_sdk: ^1.1.0
 
@@ -154,5 +152,6 @@ msix_config:
     display_name: MRT Wallet
     publisher_display_name: MRT NETWORK
     identity_name: com.mrtnetwork.wallet
-    msix_version: 5.0.0.0
-    logo_path: C:\in_work\bitcoin\mrt_wallet\docs\icons\Icon-512.png
+    msix_version: 5.6.0.0
+    logo_path: C:\in_work\bitcoin\mrt_wallet\mrt_wallet\assets\image\mrt_wallet.png
+    publish_folder_path: C:\in_work\bitcoin\mrt_wallet\mrt_wallet\build\msix\

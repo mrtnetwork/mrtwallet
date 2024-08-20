@@ -73,6 +73,8 @@ mixin WalletsManager on _WalletCore {
     await _initializeWallet(updatedWallet, chains: chains);
     await _initPage(slectedWallet: updatedWallet);
     await _writeHdWallet(_wallets);
+  
+
   }
 
   Future<void> _initializeWallet(HDWallet wallet,
