@@ -54,7 +54,8 @@ dependencies:
 
   bitcoin_base: ^4.7.0
 
-  xrpl_dart: '^4.6.0'
+
+  xrpl_dart: ^4.6.0
 
   on_chain: ^3.9.0
 

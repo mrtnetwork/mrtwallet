@@ -148,7 +148,7 @@ Future<void> _build(
     'build',
     'web',
     if (wasm) '--wasm',
-    if (!csp) '-O0',
+    // if (!csp) '-O0',
     if (!minify) '--profile' else '--release',
     if (csp) '--csp',
     if (baseHref != null) baseHref,
