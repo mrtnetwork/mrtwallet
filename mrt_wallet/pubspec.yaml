@@ -54,12 +54,10 @@ dependencies:
 
   bitcoin_base: ^4.7.0
 
-  xrpl_dart:
-    path: ../../../xrpl_dart
+  xrpl_dart: ^4.6.0
 
-  # on_chain: ^3.8.0
-  on_chain:
-    path: ../../on_chain
+  on_chain: ^3.9.0
+
 
   cosmos_sdk: ^1.1.0
 
