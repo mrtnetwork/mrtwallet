@@ -1,7 +1,6 @@
 # About MRT Wallet
 
-Welcome to MRT Wallet, the open-source wallet designed for the decentralized future of finance. Our mission is to empower users with a secure and versatile solution that supports both Bitcoin mainnet and testnet, as well as networks such as
-Ethereum, Tron, Ripple, Dogecoin, Litecoin, Solana, Cardano, Cosmos and Dash, with a roadmap set to embrace a broad spectrum of cryptocurrencies.
+Welcome to MRT Wallet, the open-source wallet crafted for the decentralized future of finance. Our mission is to provide users with a secure and versatile solution supporting a wide range of cryptocurrencies, including Bitcoin, Bitcoin Cash, Litecoin, Dogecoin, Dash, Ethereum, Tron, Ripple, Solana, Cardano, Cosmos, Polkadot, and Kusama. Our roadmap includes cross-platform support across Android, Windows, macOS, web, and extensions for Chrome, Brave, and Mozilla Firefox.
 
 ## Networks
 
@@ -71,6 +70,7 @@ Ethereum, Tron, Ripple, Dogecoin, Litecoin, Solana, Cardano, Cosmos and Dash, wi
 
 - **Features:** Support for Ethereum transactions.
 - **Highlights:** Compatibility with both legacy and EIP-1559 transactions. Import and manage ERC-20 assets effortlessly, and execute ERC-20 token transfers with ease.
+- **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, and Android platforms.
 
 ### Tron
 
@@ -121,9 +121,8 @@ MRT Wallet is available on multiple platforms to provide a seamless experience:
 
 - **Web:** Access your wallet from any web browser with our web platform. Manage your assets with ease, all while enjoying the security and privacy MRT Wallet provides.
 
-## Roadmap: Embracing a Diverse Crypto Landscape
+- **Browser Extensions:** Integrate seamlessly with your browser using our extensions for Chrome, Brave, and Mozilla Firefox, enhancing your web-based financial interactions.
 
-Our journey doesn't end with Bitcoin. The MRT Wallet roadmap is a dynamic chart that outlines our commitment to support a wide range of cryptocurrencies. We're dedicated to staying at the forefront of innovation, adapting to new technologies, and expanding our capabilities to serve the evolving needs of the crypto community.
 
 ## Community-Driven Development
 
@@ -140,9 +139,25 @@ Clone the repository and build using Flutter:
 ```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
-flutter pub get
-flutter build web --release
+dart run web_builder -web --release --clean
 ```
+
+- **Chrome/Brave extention**
+
+```shell
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+dart run web_builder -extention --release --clean
+```
+
+- **Firefox extention**
+
+```shell
+gh repo clone mrtnetwork/mrtwallet
+cd mrt_wallet
+dart run web_builder -extention --mozila --release --clean
+```
+
 
 - **Android**
 
