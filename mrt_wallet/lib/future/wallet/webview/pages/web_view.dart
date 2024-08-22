@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/permission_view.dart';
 import 'package:mrt_wallet/future/wallet/webview/controller/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/webview/controller/controller/tab_handler.dart';
-import 'package:mrt_wallet/future/wallet/webview/view/android.dart';
+import 'package:mrt_wallet/future/wallet/webview/view/native_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'menu.dart';
 
@@ -230,7 +230,7 @@ class WebView extends StatelessWidget {
                         enable: model.page,
                         widgets: {
                           WebViewTabPage.tabs: (c) => _TabsPage(model),
-                          WebViewTabPage.browser: (c) => MRTAndroidView(
+                          WebViewTabPage.browser: (c) => APPNativeView(
                                 controller: model.controller.controller,
                                 gestureRecognizers: {
                                   Factory<OneSequenceGestureRecognizer>(
@@ -547,7 +547,7 @@ class _TabsPage extends StatelessWidget {
                       child: Stack(
                         children: [
                           IgnorePointer(
-                            child: MRTAndroidView(controller: view.controller),
+                            child: APPNativeView(controller: view.controller),
                           ),
                           Align(
                             alignment: Alignment.bottomCenter,

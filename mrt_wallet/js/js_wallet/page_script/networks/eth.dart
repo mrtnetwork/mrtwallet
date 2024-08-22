@@ -1,36 +1,21 @@
-import 'dart:js_interop';
-import 'package:blockchain_utils/uuid/uuid.dart';
-import '../../models/models.dart';
-import '../../utils/utils.dart';
-import 'dart:async';
-import 'package:mrt_native_support/web/mrt_native_web.dart';
+part of '../scripts.dart';
 
-class _Requests {
-  _Requests(this.message);
-  final Completer<JSAny?> completer = Completer();
-  final EthereumRequestParams? message;
-  void completeMessage(Object? object) {
-    completer.complete(object.jsify());
-  }
+mixin EthereumPageController on JSBasePageController {
+  final Map<EthereumEvnetTypes, List<JSFunction>> _onEvents = {
+    EthereumEvnetTypes.accountsChanged: [],
+    EthereumEvnetTypes.chainChanged: [],
+    EthereumEvnetTypes.connect: [],
+    EthereumEvnetTypes.message: [],
+    EthereumEvnetTypes.disconnect: [],
+  };
 
-  void completerError(Map<String, dynamic> error) {
-    final walletError = JSWalletError.fromJson(message: error);
-    completer.completeError(walletError);
-  }
-}
-
-class EthereumJsController {
-  final String clientId;
-  late final String _id = JsUtils.toEthereumClientId(clientId);
-  late final String _walletId = JsUtils.toWalletId(clientId);
-  EthereumJsController._(this.clientId);
   void _initEthereum() {
     final eip = EIP1193.setup(
-        request: onEthereumRequest.toJS,
-        on: onEvent.toJS,
-        removeListener: removeEvent.toJS,
-        disconnect: disconnect.toJS,
-        enable: enable.toJS);
+        request: _onEthereumRequest.toJS,
+        on: _onEthereumEvent.toJS,
+        removeListener: _removeEthereumEvent.toJS,
+        disconnect: _disconnectEthereum.toJS,
+        enable: _enableEthereum.toJS);
     mrt.ethereum = eip;
     ethereum = eip;
     EIP6963ProviderDetail.setup(ethereum);
@@ -41,22 +26,17 @@ class EthereumJsController {
     jsConsole.error(message);
   }
 
-  factory EthereumJsController.setup(String clientId) {
-    final controller = EthereumJsController._(clientId);
-    controller._listenOnWallet();
-    final eip = EIP1193.setup(
-        request: controller.onEthereumRequest.toJS,
-        on: controller.onEvent.toJS,
-        removeListener: controller.removeEvent.toJS,
-        disconnect: controller.disconnect.toJS,
-        enable: controller.enable.toJS);
-    mrt.ethereum = eip;
-    ethereum = eip;
-    return controller;
-  }
-
-  void _listenOnWallet() {
-    jsWindow.addEventListener(_id, _onWalletEvent.toJS);
+  void _onEthereumWalletEvent(JSWalletMessage walletResponse) {
+    switch (walletResponse.type) {
+      case JSWalletMessageType.event:
+        _parseEvents(walletResponse.cast());
+        break;
+      case JSWalletMessageType.response:
+        _parseRequestResponse(walletResponse.cast());
+        break;
+      default:
+        throw UnimplementedError("Wrong response in page.");
+    }
   }
 
   void _parseRequestResponse(JSWalletMessageResponse message) {
@@ -112,44 +92,6 @@ class EthereumJsController {
     _eventListeners(eventMessage.event, object: message.data);
   }
 
-  void _onWalletEvent(CustomEvent response) {
-    final walletResponse =
-        JSWalletMessage.deserialize(bytes: response.detailBytes());
-
-    switch (walletResponse.type) {
-      case JSWalletMessageType.event:
-        _parseEvents(walletResponse.cast());
-        break;
-      case JSWalletMessageType.response:
-        _parseRequestResponse(walletResponse.cast());
-        break;
-      default:
-        throw UnimplementedError("Wrong response in page.");
-    }
-  }
-
-  void _postWalletEvent(ClientMessage params) {
-    final event =
-        CustomEvent.create(type: _walletId, data: params.toCbor().encode());
-    jsWindow.dispatchEvent(event);
-  }
-
-  final Map<String, _Requests> _waitingRequest = {};
-  Future<JSAny?> onRequest(String id) async {
-    try {
-      return await _waitingRequest[id]!.completer.future;
-    } finally {
-      _waitingRequest.remove(id);
-    }
-  }
-
-  final Map<EthereumEvnetTypes, List<JSFunction>> _onEvents = {
-    EthereumEvnetTypes.accountsChanged: [],
-    EthereumEvnetTypes.chainChanged: [],
-    EthereumEvnetTypes.connect: [],
-    EthereumEvnetTypes.message: [],
-    EthereumEvnetTypes.disconnect: [],
-  };
   void _eventListeners(EthereumEvnetTypes type,
       {Object? object, JSAny? jsObject}) {
     jsObject ??= object.jsify();
@@ -160,9 +102,9 @@ class EthereumJsController {
     }
   }
 
-  void disconnect() {}
+  void _disconnectEthereum() {}
 
-  void onEvent(String type, JSFunction listener) {
+  void _onEthereumEvent(String type, JSFunction listener) {
     final event = EthereumEvnetTypes.fromName(type);
     if (event == null) return;
     _onEvents[event]?.add(listener);
@@ -174,39 +116,29 @@ class EthereumJsController {
     }
   }
 
-  void removeEvent(String type, JSFunction listener) {
+  void _removeEthereumEvent(String type, JSFunction listener) {
     final event = EthereumEvnetTypes.fromName(type);
     _onEvents[event]?.remove(listener);
   }
 
-  /// ClientMessageEthereum
   Future<JSAny?> _getEventResult(EthereumEvnetTypes event) async {
     final id = UUID.generateUUIDv4();
     final toWalletRequest =
         ClientMessageEthereum.event(event: event, requestId: id);
     _postWalletEvent(toWalletRequest);
-    final _Requests request = _Requests(null);
-    _waitingRequest[id] = request;
-    return await request.completer.future;
+    final PageRequestCompeleter request = PageRequestCompeleter(id);
+    return _onRequest(request);
   }
 
-  Future<JSAny?> _getResult(EthereumRequestParams params) async {
-    final id = UUID.generateUUIDv4();
-    final toWalletRequest = params.toWalletRequest(id);
-    _postWalletEvent(toWalletRequest!);
-    final _Requests request = _Requests(params);
-    _waitingRequest[id] = request;
-    return await request.completer.future;
-  }
-
-  JSPromise<JSAny?> enable() {
+  JSPromise<JSAny?> _enableEthereum() {
     final params = EthereumRequestParams(method: "eth_requestAccounts");
     final promise = _getResult(params).toPromise;
     return promise;
   }
 
-  JSPromise<JSAny?> onEthereumRequest(EthereumRequestParams params) {
+  JSPromise<JSAny?> _onEthereumRequest(EthereumRequestParams params) {
     final promise = _getResult(params).toPromise;
+
     return promise;
   }
 }

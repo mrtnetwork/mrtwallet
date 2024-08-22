@@ -38,7 +38,7 @@ void run() async {
     await PlatformInterface.instance.desktop.setBounds(
         pixelRatio: pixelRatio,
         size: const WidgetSize(width: 500, height: 700));
-    await PlatformInterface.instance.desktop.setResizable(false);
+    // await PlatformInterface.instance.desktop.setResizable(false);
   }
   final config = await PlatformInterface.instance.getConfig();
   final materialData =
@@ -68,7 +68,10 @@ class MyBTC extends StatelessWidget {
           builder: (context, child) {
             if (PlatformInterface.appPlatform.isDesktop ||
                 PlatformInterface.isWeb) {
-              return ConstraintsBoxView(child: child!);
+              return ConstraintsBoxView(
+                maxWidth: 1200,
+                child: child!,
+              );
             }
             return child!;
           },

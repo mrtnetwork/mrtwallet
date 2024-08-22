@@ -23,7 +23,8 @@ external EIP1193 get ethereum;
 
 @JS("MRT")
 extension type MRTWallet(JSObject _) implements MRTJsObject {
-  external String scriptId();
+  external String get scriptId;
+  // external String scriptId();
 
   @JS("ethereum")
   external set ethereum(EIP1193 ethereum);
@@ -44,8 +45,18 @@ extension type MRTWallet(JSObject _) implements MRTJsObject {
 extension type Web3JSRequestParams._(JSObject o) implements MRTJsObject {
   external String? get method;
   external String? get id;
+  external JSAny? get params;
 
   Map<String, dynamic> toJson() {
-    return {"method": method};
+    return {"method": method, "params": params == null ? [] : params.dartify()};
+  }
+
+  ClientMessageEthereum? toWalletRequest(String requestId) {
+    try {
+      return ClientMessageEthereum(
+          method: method!, params: params.dartify(), id: requestId);
+    } catch (e) {
+      return null;
+    }
   }
 }

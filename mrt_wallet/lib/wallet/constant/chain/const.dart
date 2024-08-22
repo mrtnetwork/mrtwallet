@@ -624,9 +624,12 @@ class ChainConst {
     400: WalletPolkadotNetwork(400, _DefaultAppCoins.polkadot),
     450: WalletKusamaNetwork(450, _DefaultAppCoins.kusama),
     451: WalletKusamaNetwork(451, _DefaultAppCoins.westend),
-    1001: WalletTronNetwork(1001, _DefaultAppCoins.tron),
-    1002: WalletTronNetwork(1002, _DefaultAppCoins.tronShasta),
-    1003: WalletTronNetwork(1003, _DefaultAppCoins.tronNile),
+    TronChainType.mainnet.id:
+        WalletTronNetwork(TronChainType.mainnet.id, _DefaultAppCoins.tron),
+    TronChainType.shasta.id:
+        WalletTronNetwork(TronChainType.shasta.id, _DefaultAppCoins.tronShasta),
+    TronChainType.nile.id:
+        WalletTronNetwork(TronChainType.nile.id, _DefaultAppCoins.tronNile),
   });
 
   static WalletNetwork updateNetwork({int? networkId, WalletNetwork? network}) {

@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:mrt_wallet/app/live_listener/live.dart';
 import 'package:mrt_wallet/app/models/models.dart';
-import 'package:mrt_wallet/future/wallet/webview/view/android.dart';
+import 'package:mrt_wallet/future/wallet/webview/view/native_view.dart';
 
 class WebViewController {
   final MRTAndroidViewController controller;
@@ -16,8 +16,8 @@ class WebViewController {
       : viewTypeBytes = BytesUtils.fromHexString(viewType),
         _tab = Live<WebViewTab>(tab);
 
-  bool _inited = false;
-  bool get inited => _inited;
+  // bool _inited = false;
+  // bool get inited => _inited;
   Live<WebViewTab> get tab => _tab;
 
   String get url => tab.value.url;
@@ -30,9 +30,9 @@ class WebViewController {
     _tab.value = tab;
   }
 
-  void init() {
-    _inited = true;
-  }
+  // void init() {
+  //   _inited = true;
+  // }
 
   void dispose() {
     controller.dispose();

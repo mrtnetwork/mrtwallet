@@ -2,7 +2,6 @@ import 'dart:js_interop';
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../../../constant/constant.dart';
@@ -95,68 +94,11 @@ extension type EthereumRequestParams._(JSObject o)
   external JSAny? get params;
   external String? get id;
   external set id(String? id);
-
-  ClientMessageEthereum? toWalletRequest(String requestId) {
-    try {
-      return ClientMessageEthereum(
-          method: method!, params: params.dartify(), id: requestId);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  bool get isValidRequest => method != null && method!.trim().isNotEmpty;
-
-  Map<String, dynamic> toJson() {
-    return {"method": method, "params": params == null ? [] : params.dartify()};
-  }
-
-  List<String> toStringListParam({required String methodName, int? length}) {
-    final toDart = toListParams(methodName, length: length);
-    final toListString =
-        MethodUtils.nullOnException(() => List<String>.from(toDart));
-    if (toListString == null) {
-      throw Web3RequestExceptionConst.invalidList(methodName);
-    }
-    return toListString;
-  }
-
-  List<dynamic>? tryParamsToList({int? length}) {
-    try {
-      if (params == null) return null;
-
-      final toDart = params.dartify();
-      if (toDart == null ||
-          toDart is! List ||
-          length != null && toDart.length < length) {
-        return null;
-      }
-      return toDart;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  List<dynamic> toListParams(String name, {int? length}) {
-    final toDart = params?.dartify();
-    if (toDart == null || toDart is! List) {
-      throw Web3RequestExceptionConst.invalidList(name);
-    }
-    if (length != null && toDart.length < length) {
-      throw Web3RequestExceptionConst.invalidList(name);
-    }
-    return toDart;
-  }
 }
 
-class ClientMessageEthereum implements ClientMessage {
-  @override
-  final String method;
-  final dynamic params;
-  @override
-  final String id;
+class ClientMessageEthereum extends ClientMessage {
   const ClientMessageEthereum(
-      {required this.method, required this.params, required this.id});
+      {required super.method, required super.params, required super.id});
   factory ClientMessageEthereum.event(
       {required EthereumEvnetTypes event, required String requestId}) {
     return ClientMessageEthereum(
@@ -165,21 +107,10 @@ class ClientMessageEthereum implements ClientMessage {
   @override
   JSClientType get type => JSClientType.ethereum;
 
-  List<T>? paramsAsList<T>({int? length}) {
-    try {
-      final listParam = List<T>.from(params);
-      if (length != null && listParam.length < length) {
-        return null;
-      }
-      return listParam;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  factory ClientMessageEthereum.deserialize(List<int> bytes) {
-    final CborTagValue object = CborObject.fromCbor(bytes) as CborTagValue;
-    final CborListValue values = object.value as CborListValue;
+  factory ClientMessageEthereum.deserialize(
+      {List<int>? bytes, String? cborHex, CborObject? object}) {
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes, tags: JSClientType.ethereum.tag, object: object);
     final params = StringUtils.toJson(values.elementAt(1));
     return ClientMessageEthereum(
         method: values.elementAt(0),
@@ -194,7 +125,7 @@ class ClientMessageEthereum implements ClientMessage {
           StringUtils.fromJson({"result": params}),
           id,
         ]),
-        [100, 101]);
+        type.tag);
   }
 }
 

@@ -25,7 +25,7 @@ class JSWebviewWallet extends JSWalletHandler {
         crypto: ChaCha20Poly1305(message.authenticated.token),
         chain: ChainsHandler.deserialize(bytes: message.message),
         clientId: clientId);
-    EthereumJsController.setup(clientId);
+    JSPageController.setup(clientId);
     mrt.onMrtMessage = handler._onResponse.toJS;
     handler._listenOnClients();
     handler._updateAuthenticated(message.authenticated, initChain: true);
@@ -36,6 +36,15 @@ class JSWebviewWallet extends JSWalletHandler {
   Future<void> _sendMessageToWallet(
       {required Web3MessageCore message, required String requestId}) async {
     final encryptedMessage = _encryptMessage(message);
+    if (jsWindow.navigator.isWebKit) {
+      jsWindow.webkit.messageHandlers.mrt.postMessage({
+        "id": clientId,
+        "requestId": requestId,
+        "data": encryptedMessage.toCbor().toCborHex(),
+        "type": WalletEventTypes.message.name
+      }.jsify());
+      return;
+    }
     mrt.onMrtJsRequest(clientId, encryptedMessage.toCbor().toCborHex(),
         requestId, WalletEventTypes.message.name);
   }

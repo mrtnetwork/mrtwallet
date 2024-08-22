@@ -41,6 +41,9 @@ extension type Window._(JSObject _) implements WebEventStream {
   @JS("fetch")
   external JSPromise<Response> fetch(String resource);
 
+  @JS("webkit")
+  external WebKit get webkit;
+
   @JS("postMessage")
   external void postMessage(JSAny message);
 
@@ -49,6 +52,21 @@ extension type Window._(JSObject _) implements WebEventStream {
     final result = await future.toDart;
     return result;
   }
+}
+
+@JS()
+extension type WebKitMrt._(JSObject _) implements JSAny {
+  external void postMessage(JSAny? message);
+}
+@JS()
+extension type WebKitMessageHandlers._(JSObject _) implements JSAny {
+  @JS("MRT")
+  external WebKitMrt get mrt;
+}
+@JS("webkit")
+extension type WebKit._(JSObject _) implements JSAny {
+  @JS("messageHandlers")
+  external WebKitMessageHandlers get messageHandlers;
 }
 
 @JS("location")
@@ -96,6 +114,7 @@ extension type JSNavigator._(JSObject _) implements JSObject {
   external MediaDevices get mediaDevices;
   external String? get userAgent;
   bool get isFirefox => userAgent?.contains("Firefox") ?? false;
+  bool get isWebKit => userAgent?.contains("AppleWebKit") ?? false;
   external JSPromise share(
       String? url, String? text, String? title, JSArray<JSFile>? files);
 

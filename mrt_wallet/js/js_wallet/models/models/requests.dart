@@ -1,8 +1,10 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 
 import 'ethreum/ethereum.dart';
+import 'tron/tron.dart';
 
 enum JSWalletMessageType {
   response([100]),
@@ -134,7 +136,8 @@ class JSWalletMessageResponse extends JSWalletMessage {
 
 enum JSClientType {
   global([110]),
-  ethereum([111]);
+  ethereum([111]),
+  tron([112]);
 
   final List<int> tag;
   const JSClientType(this.tag);
@@ -145,9 +148,37 @@ enum JSClientType {
   }
 }
 
-abstract class ClientMessage {
-  abstract final String method;
-  abstract final String id;
+abstract class ClientMessage with CborSerializable {
+  final String method;
+  final String id;
   abstract final JSClientType type;
-  CborTagValue toCbor();
+  final Object? params;
+  const ClientMessage(
+      {required this.method, required this.params, required this.id});
+  factory ClientMessage.deserialize(
+      {List<int>? bytes, String? cborHex, CborObject? object}) {
+    final CborTagValue tag =
+        CborSerializable.decode(cborBytes: bytes, hex: cborHex, object: object);
+    final type = JSClientType.fromTag(tag.tags);
+    switch (type) {
+      case JSClientType.ethereum:
+        return ClientMessageEthereum.deserialize(object: tag);
+      case JSClientType.tron:
+        return ClientMessageTron.deserialize(object: tag);
+      default:
+        throw Web3RequestExceptionConst.internalError;
+    }
+  }
+
+  List<T>? paramsAsList<T>({int? length}) {
+    try {
+      final listParam = List<T>.from(params as List);
+      if (length != null && listParam.length < length) {
+        return null;
+      }
+      return listParam;
+    } catch (e) {
+      return null;
+    }
+  }
 }

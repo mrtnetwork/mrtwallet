@@ -122,6 +122,7 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
         _reject(request);
         return;
       } catch (e) {
+        print("exception here ?$e");
         Web3ExceptionMessage exception;
         if (e is Web3RequestException) {
           exception = e.toResponseMessage(requestId: request.request.requestId);

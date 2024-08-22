@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mrt_native_support/models/models.dart';
+import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
@@ -49,6 +50,7 @@ class WebViewStateController extends StateController
       {required String viewType, required String script}) async {
     final result =
         await webViewController.loadScript(viewType: viewType, script: script);
+
     if (result == null) return null;
     return StringUtils.tryToJson(result as String);
   }
@@ -109,12 +111,19 @@ class WebViewStateController extends StateController
           title: event.title,
           faviIcon: event.favicon);
       String script;
-      if (kDebugMode && false) {
-        script = (await HttpUtils.get<String>("http://10.0.2.2:3000/a")).result;
+      if (false && kDebugMode) {
+        if (PlatformInterface.appPlatform == AppPlatform.android) {
+          script =
+              (await HttpUtils.get<String>("http://10.0.2.2:3000/a")).result;
+        } else {
+          script =
+              (await HttpUtils.get<String>("http://localhost:3000/a")).result;
+        }
       } else {
         script = await FileUtils.loadAssetText(APPConst.assetWebviewScript);
       }
       await _loadScript(viewType: event.viewId, script: script);
+
       final responseEvent =
           await getPageAuthenticated(clientId: auth.viewType, info: client);
       final result = await _postEvent(responseEvent);
@@ -124,6 +133,13 @@ class WebViewStateController extends StateController
       return MRTScriptWalletStatus.failed;
     });
   }
+
+  // void check() async {
+  //   final r = await webViewController.loadScript(
+  //       viewType: viewType ?? "",
+  //       script:
+  //           "console.log(ethereum.request({method:'eth_requestAccounts'}))");
+  // }
 
   @override
   Future<void> switchTab(WebViewController controller) async {

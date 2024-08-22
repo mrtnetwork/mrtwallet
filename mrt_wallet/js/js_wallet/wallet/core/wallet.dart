@@ -1,42 +1,38 @@
 import 'dart:async';
 import 'dart:js_interop';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/models/events/models/wallet_event.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'package:mrt_wallet/crypto/models/networks.dart';
-import 'package:on_chain/ethereum/src/rpc/core/methods.dart';
-import 'package:on_chain/ethereum/src/transaction/eth_transaction.dart';
-import 'package:on_chain/solidity/abi/abi.dart';
 import '../../constant/constant.dart';
 import '../../models/models.dart';
-import '../../page_script/networks/eth.dart';
+import '../../page_script/scripts.dart';
 import '../../utils/utils.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
+
+import '../networks/ethereum.dart';
 part "../webview.dart";
-part "../networks/ethereum.dart";
+// part "../networks/ethereum.dart";
 part "../extention.dart";
 
-abstract class JSWalletNetworks {
-  abstract Web3APPAuthentication _auth;
-  void _sendMessageToClient(JSWalletMessage response);
-}
+typedef SendMessageToClient = void Function(JSWalletMessage);
 
-abstract class JSWalletHandler extends JSWalletNetworks with JsEthereumHandler {
+abstract class JSWalletHandler {
+  late final JsEthereumHandler ethereumHandler =
+      JsEthereumHandler(_sendMessageToClient);
+
   String get clientId;
   late final String _id = JsUtils.toWalletId(clientId);
   final MessageCompleterHandler completer = MessageCompleterHandler();
   final ChaCha20Poly1305 _crypto;
-  @override
-  late Web3APPAuthentication _auth;
-  @override
   abstract ChainsHandler _chain;
   JSWalletHandler._(this._crypto);
 
   void _onClientEvent(CustomEvent response) {
-    final ClientMessageEthereum request = ClientMessageEthereum.deserialize(
-        List<int>.from(response.detail.dartify() as List));
+    final ClientMessage request =
+        ClientMessage.deserialize(bytes: response.detailBytes());
     final result = _completeJsRequest(request);
     result.then(_sendMessageToClient);
   }
@@ -45,7 +41,6 @@ abstract class JSWalletHandler extends JSWalletNetworks with JsEthereumHandler {
     jsWindow.addEventListener(_id, _onClientEvent.toJS);
   }
 
-  @override
   void _sendMessageToClient(JSWalletMessage response) {
     final event = CustomEvent.create(
         type: JsUtils.toEthereumClientId(clientId),
@@ -94,7 +89,12 @@ abstract class JSWalletHandler extends JSWalletNetworks with JsEthereumHandler {
       final result = await request.completer.future;
       return result;
     } finally {
-      _onDone(params);
+      switch (params.type) {
+        case JSClientType.ethereum:
+          ethereumHandler.onRequestDone(params as ClientMessageEthereum);
+          break;
+        default:
+      }
     }
   }
 
@@ -113,11 +113,16 @@ abstract class JSWalletHandler extends JSWalletNetworks with JsEthereumHandler {
 
   void _updateAuthenticated(Web3APPAuthentication authenticated,
       {bool initChain = false}) {
-    _auth = authenticated;
     if (initChain) {
-      _initChain();
+      ethereumHandler.initChain(
+          chains: _chain.chains().whereType<EthereumChain>().toList(),
+          permission:
+              authenticated.getChainFromNetworkType(NetworkType.ethereum) ??
+                  Web3EthereumChain.create());
     } else {
-      _authChanged();
+      ethereumHandler.updateChain(
+          authenticated.getChainFromNetworkType(NetworkType.ethereum) ??
+              Web3EthereumChain.create());
     }
   }
 
@@ -185,8 +190,8 @@ abstract class JSWalletHandler extends JSWalletNetworks with JsEthereumHandler {
   }
 
   Future<Web3MessageCore> _createMessage(ClientMessage params) async {
-    if (params is ClientMessageEthereum) {
-      return await _buildEthereumRequest(params);
+    if (params.type == JSClientType.ethereum) {
+      return await ethereumHandler.request(params as ClientMessageEthereum);
     }
     throw Web3RequestExceptionConst.invalidRequest;
   }

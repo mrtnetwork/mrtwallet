@@ -9,6 +9,7 @@ import 'package:mrt_wallet/wallet/api/api.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:mrt_wallet/wallet/models/networks/tron/models/chain_type.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 
@@ -306,6 +307,8 @@ class WalletTronNetwork extends WalletNetwork<TronNetworkParams> {
   @override
   final TronNetworkParams coinParam;
   const WalletTronNetwork(this.value, this.coinParam);
+
+  TronChainType get tronNetworkType => TronChainType.fromId(value);
 
   factory WalletTronNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {

@@ -6,7 +6,7 @@ import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/webview/controller/controller/tab_controller.dart';
-import 'package:mrt_wallet/future/wallet/webview/view/android.dart';
+import 'package:mrt_wallet/future/wallet/webview/view/native_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/repository/models/models/webview_repository.dart';
 import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
@@ -172,13 +172,25 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
         image: image);
   }
 
+  Future<MRTAndroidViewController> _initContiller(String viewId,
+      {String? url}) async {
+    await webViewController.init(viewId,
+        url: url ?? _website,
+        jsInterface: _WebViewStateControllerConst.interfaceName);
+    final controller = await MRTAndroidViewController.create(viewType: viewId);
+    return controller;
+    // await webViewController.init(viewId,
+    //     url: url ?? _website,
+    //     jsInterface: _WebViewStateControllerConst.interfaceName);
+  }
+
   Future<WebViewController> _buildController() async {
     final viewId = await crypto.generateRandomHex(
         length: _WebViewStateControllerConst.viewIdLength,
         existsKeys:
             tabsAuthenticated.values.map((e) => e.viewTypeBytes).toList());
     final key = await crypto.generateRandomBytes();
-    final controller = MRTAndroidViewController.create(viewType: viewId);
+    final controller = await _initContiller(viewId);
     final tab = WebViewTab(
         id: viewId,
         url: _website,
@@ -195,12 +207,6 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
       webViewController.removeListener(this);
     }
     _currentViewId = tab.viewType;
-    if (!tab.inited) {
-      await webViewController.init(tab.viewType,
-          url: tab.url,
-          jsInterface: _WebViewStateControllerConst.interfaceName);
-      tab.init();
-    }
     webViewController.addListener(this);
   }
 
@@ -213,13 +219,10 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
           length: _WebViewStateControllerConst.viewIdLength,
           existsKeys:
               tabsAuthenticated.values.map((e) => e.viewTypeBytes).toList());
-      final controller = MRTAndroidViewController.create(viewType: tabId);
+      final controller = await _initContiller(tabId, url: i.url);
       final auth = WebViewController(
           controller: controller, viewType: tabId, key: key, tab: i);
       tabsAuthenticated[tabId] = auth;
-      await webViewController.init(tabId,
-          url: i.url, jsInterface: _WebViewStateControllerConst.interfaceName);
-      auth.init();
     }
     WebViewController controller;
     if (tabsAuthenticated.isNotEmpty) {

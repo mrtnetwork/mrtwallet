@@ -1,4 +1,4 @@
-export 'networks/ethereum/etherum.dart';
+export 'networks/networks.dart';
 export 'core/core.dart';
 export 'models/models.dart';
 export 'constant/constant/exception.dart';

@@ -146,6 +146,7 @@ class CborTagsConst {
   ///
   static const List<int> web3App = [161, 0, 0];
   static const List<int> web3EthereumAccount = [161, 1, 1];
+  static const List<int> web3TronAccount = [161, 2, 1];
 
   /// address params
   static const List<int> bitcoinCashNewAddressParams = [12, 0];

@@ -35,6 +35,7 @@ interface MrtWebViewInterface : MrtCore {
                             return
                         }
                         webViewFactory.openPage(url);
+                        result.success(true)
                     }
 
                     WebViewConst.addInterface -> {

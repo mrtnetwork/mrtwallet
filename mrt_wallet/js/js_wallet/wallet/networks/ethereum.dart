@@ -1,53 +1,83 @@
-part of '../core/wallet.dart';
+import 'package:on_chain/on_chain.dart';
+import 'dart:async';
+import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/web3/web3.dart';
+import '../../models/models.dart';
+import '../../utils/utils.dart';
+import '../core/wallet.dart';
 
-mixin JsEthereumHandler on JSWalletNetworks {
+abstract class JSNetworkHandler<
+    NETWORKADDRESS,
+    CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
+    WEB3CHAIN extends Web3ChainNetwork<NETWORKADDRESS>,
+    MESSAGE extends ClientMessage> {
+  abstract final APPCHAINNETWORK<NETWORKADDRESS>? chain;
+
+  void initChain({WEB3CHAIN? permission, required List<CHAIN> chains});
+  void updateChain(WEB3CHAIN? chain);
+  Future<Web3MessageCore> request(MESSAGE message);
+  void onRequestDone(MESSAGE message);
+}
+
+class JsEthereumHandler
+    implements
+        JSNetworkHandler<ETHAddress, EthereumChain, Web3EthereumChain,
+            ClientMessageEthereum> {
+  List<EthereumChain> _chains = [];
   Web3EthereumChain? _ethereumPermission;
   EthereumClient? _client;
-  late EthereumChain _ethereumChain;
+  @override
+  EthereumChain? chain;
+
   BigInt get currentEthereumChain =>
       _ethereumPermission?.currentChain ?? BigInt.one;
-  ChainsHandler get _chain;
   List<String> _accounts = [];
 
+  final SendMessageToClient sendMessageToClient;
+  JsEthereumHandler(this.sendMessageToClient);
+
   void _onSubscribe(EthereumSubscribeResult result) {
-    _sendMessageToClient(JSWalletMessageResponseEthereum(
+    sendMessageToClient(JSWalletMessageResponseEthereum(
         event: EthereumEvnetTypes.message, data: result.toJson()));
   }
 
-  void _initChain() {
-    _toggleEthereum();
+  @override
+  void initChain(
+      {Web3EthereumChain? permission, required List<EthereumChain> chains}) {
     _disconnect();
-    _ethereumPermission =
-        _auth.getChainFromNetworkType<Web3EthereumChain>(NetworkType.ethereum);
-
-    _ethereumChain = _chain
-        .chains()
-        .whereType<EthereumChain>()
-        .firstWhere((e) => e.chainId == currentEthereumChain);
+    _ethereumPermission = permission;
+    _chains = chains;
+    chain = _chains.firstWhere((e) => e.chainId == currentEthereumChain);
     _client?.dispose();
-    _client = _ethereumChain.provider();
+    _client = chain?.provider();
     _client?.init();
+    _toggleEthereum();
+
     if (_client?.supportSubscribe ?? false) {
       _client?.addSubscriptionListener(_onSubscribe);
     }
     final accounts = _ethereumPermission
-        ?.currentChainAccounts(_ethereumChain)
+        ?.currentChainAccounts(chain!)
         .map((e) => e.address.address)
         .toList();
     _accounts = List<String>.unmodifiable(accounts ?? []);
+    if (permission != null) {
+      _connect();
+      _chainChanged();
+    }
 
-    _connect();
-    _chainChanged();
     _accountChanged();
   }
 
-  void _authChanged() {
+  @override
+  void updateChain(Web3EthereumChain? permission) {
     final BigInt chainId = currentEthereumChain;
-    _ethereumPermission =
-        _auth.getChainFromNetworkType<Web3EthereumChain>(NetworkType.ethereum);
+    _ethereumPermission = permission;
     if (chainId == currentEthereumChain) {
       final accounts = _ethereumPermission
-          ?.currentChainAccounts(_ethereumChain)
+          ?.currentChainAccounts(chain!)
           .map((e) => e.address.address)
           .toList();
       bool changed = false;
@@ -60,38 +90,38 @@ mixin JsEthereumHandler on JSWalletNetworks {
       }
       return;
     }
-    _initChain();
+    initChain(chains: _chains, permission: permission);
   }
 
   void _disconnect() async {
-    _sendMessageToClient(JSWalletMessageResponseEthereum(
+    sendMessageToClient(JSWalletMessageResponseEthereum(
         event: EthereumEvnetTypes.disconnect,
         data: Web3RequestExceptionConst.disconnectedChain.toJson()));
   }
 
   void _connect() async {
-    _sendMessageToClient(JSWalletMessageResponseEthereum(
+    sendMessageToClient(JSWalletMessageResponseEthereum(
         event: EthereumEvnetTypes.connect,
         data: <String, dynamic>{"chainId": currentEthereumChain.toRadix16}));
   }
 
   void _accountChanged() async {
-    _sendMessageToClient(JSWalletMessageResponseEthereum(
+    sendMessageToClient(JSWalletMessageResponseEthereum(
         event: EthereumEvnetTypes.accountsChanged, data: _accounts));
   }
 
   void _chainChanged() async {
-    _sendMessageToClient(JSWalletMessageResponseEthereum(
+    sendMessageToClient(JSWalletMessageResponseEthereum(
         event: EthereumEvnetTypes.chainChanged,
         data: currentEthereumChain.toRadix16));
   }
 
   void _toggleEthereum() {
-    if (_auth.active) {
-      _sendMessageToClient(JSWalletMessageResponseEthereum(
+    if (chain != null) {
+      sendMessageToClient(JSWalletMessageResponseEthereum(
           event: EthereumEvnetTypes.active, data: null));
     } else {
-      _sendMessageToClient(JSWalletMessageResponseEthereum(
+      sendMessageToClient(JSWalletMessageResponseEthereum(
           event: EthereumEvnetTypes.disable,
           data: Web3RequestExceptionConst.bannedHost.data));
     }
@@ -118,8 +148,8 @@ mixin JsEthereumHandler on JSWalletNetworks {
     }
   }
 
-  Future<Web3MessageCore> _buildEthereumRequest(
-      ClientMessageEthereum params) async {
+  @override
+  Future<Web3MessageCore> request(ClientMessageEthereum params) async {
     final isEvent = EthereumEvnetTypes.fromName(params.method);
     if (isEvent != null) {
       return _eventMessage(isEvent);
@@ -137,10 +167,8 @@ mixin JsEthereumHandler on JSWalletNetworks {
         if (parse.chainId == currentEthereumChain) {
           return Web3ResponseMessage(parse.chainId.toRadix16);
         }
-        final chain = _chain
-            .chains()
-            .whereType<EthereumChain>()
-            .firstWhereOrNull((e) => e.chainId == parse.chainId);
+        final chain =
+            _chains.firstWhereOrNull((e) => e.chainId == parse.chainId);
         if (chain == null) {
           throw Web3RequestExceptionConst.ethereumNetworkDoesNotExist;
         }
@@ -154,7 +182,7 @@ mixin JsEthereumHandler on JSWalletNetworks {
       case Web3EthereumRequestMethods.sendTransaction:
         final transaction = _parseTransaction(params, currentEthereumChain);
         if (transaction.transactionType == ETHTransactionType.eip1559 &&
-            !_ethereumChain.network.coinParam.supportEIP1559) {
+            !chain!.network.coinParam.supportEIP1559) {
           throw Web3RequestExceptionConst.invalidParameters(
               Web3RequestExceptionConst.eip1559NotSupported);
         }
@@ -184,7 +212,8 @@ mixin JsEthereumHandler on JSWalletNetworks {
     }
     try {
       if (method == EthereumMethods.subscribe) {
-        final result = await cl.subscribe(params: params.params);
+        final result =
+            await cl.subscribe(params: params.paramsAsList() ?? const []);
         return Web3ResponseMessage(result);
       }
       final call = await cl.dynamicCall(method.value, params.params);
@@ -324,8 +353,9 @@ mixin JsEthereumHandler on JSWalletNetworks {
     return Web3EthreumPersonalSign.fromJson(message);
   }
 
-  void _onDone(ClientMessage request) {
-    final method = Web3EthereumRequestMethods.fromName(request.method);
+  @override
+  void onRequestDone(ClientMessageEthereum message) {
+    final method = Web3EthereumRequestMethods.fromName(message.method);
     switch (method) {
       case Web3EthereumRequestMethods.addEthereumChain:
       case Web3EthereumRequestMethods.switchEthereumChain:

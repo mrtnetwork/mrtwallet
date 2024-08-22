@@ -14,7 +14,7 @@ class CustomWebViewClient(private val methodChannel: MethodChannel, val id: Stri
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
-        MrtCore.logging("onpage start","WEBVIEW: ")
+        MrtCore.logging("onpage start","WEBVIEW: ") 
         view.evaluateJavascript(  "(function() {" +
                 "var links = document.getElementsByTagName('link');" +
                 "for (var i = 0; i < links.length; i++) {" +

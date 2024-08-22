@@ -1,62 +1,126 @@
-import 'dart:js_interop';
-
+import 'package:example/app_kit_view.dart';
 import 'package:flutter/material.dart';
-
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/platform_interface.dart';
-import 'dart:ui' as ui;
 
-import 'package:mrt_native_support/web/api/api.dart';
-import 'package:mrt_native_support/web/mrt_native_web.dart';
-
-@JS("localStorage")
-extension type LocalStorage._(JSObject _) implements JSAny {
-  external factory LocalStorage();
+void main() {
+  runApp(const MyApp());
 }
-Map<String, String> getAll() {
-  return Map<String, String>.from(localStorage.dartify() as Map);
-}
-// import 'package:mrt_native_support/web/api/mozila/api/storage.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  if (PlatformInterface.appPlatform.isDesktop) {
-    await PlatformInterface.instance.desktop.init();
-    await PlatformInterface.instance.desktop.waitUntilReadyToShow();
-    final pixelRatio =
-        ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-    await PlatformInterface.instance.desktop.setBounds(
-        pixelRatio: pixelRatio,
-        size: const WidgetSize(width: 400, height: 600));
-    await PlatformInterface.instance.desktop.setResizable(false);
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // TRY THIS: Try running your application with "flutter run". You'll see
+        // the application has a purple toolbar. Then, without quitting the app,
+        // try changing the seedColor in the colorScheme below to Colors.green
+        // and then invoke "hot reload" (save your changes or press the "hot
+        // reload" button in a Flutter-supported IDE, or press "r" if you used
+        // the command line to start the app).
+        //
+        // Notice that the counter didn't reset back to zero; the application
+        // state is not lost during the reload. To reset the state, use hot
+        // restart instead.
+        //
+        // This works for code too, not just values: Most code changes can be
+        // tested with just a hot reload.
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
   }
-  await PlatformInterface.instance.getConfig();
-  runApp(const MaterialApp(home: MyWidget()));
 }
 
-class MyWidget extends StatefulWidget {
-  const MyWidget({super.key});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
 
   @override
-  State<MyWidget> createState() => _MyWidgetState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyWidgetState extends State<MyWidget> {
+class _MyHomePageState extends State<MyHomePage> with WebViewListener {
+  bool init = false;
+  final controller = PlatformInterface.webViewController;
+  MRTAndroidViewController? ca;
+  void initWebView() async {
+    await controller.init("jafar",
+        url: "https://google.com", jsInterface: "MRT");
+    ca = await MRTAndroidViewController.create(viewType: "jafar");
+    init = true;
+    setState(() {});
+  }
+
   @override
+  void onPageProgress(WebViewEvent event) {
+    print("onPageProgress ${event.progress}");
+  }
+
+  @override
+  void onPageFinished(WebViewEvent event) {
+    print("onPageFinished ${event.url}");
+  }
+
+  @override
+  void onPageStart(WebViewEvent event) {
+    print("onPageStart ${event.url}");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ElevatedButton(
-              onPressed: () async {
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+              onPressed: () {
+                PlatformInterface.instance.share(Share.text("jafar aghas"));
               },
-              child: const Text("test"))
+              icon: const Icon(Icons.abc)),
+          TextButton(
+              onPressed: () {
+                initWebView();
+              },
+              child: Text("init")),
+          TextButton(
+              onPressed: () {
+                init = false;
+                setState(() {});
+              },
+              child: Text("change")),
+          TextButton(
+              onPressed: () {
+                ca?.dispose();
+              },
+              child: Text("dispose")),
         ],
       ),
-    ));
+      body: Container(
+        color: Colors.red,
+        child: !init
+            ? Text("wait")
+            : LayoutBuilder(builder: (contect, cons) {
+                print("max width ${cons.maxWidth}");
+                controller.updateFrame(
+                    viewType: "jafar",
+                    size: WidgetSize(
+                        width: cons.maxWidth, height: cons.maxHeight));
+                return APPNativeView(controller: ca!);
+              }),
+      ),
+      // This trailing comma makes auto-formatting nicer for build methods.
+    );
   }
+
+  @override
+  String? get viewType => "jafar";
 }

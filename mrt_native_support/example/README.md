@@ -1,6 +1,6 @@
-# mrt_n_example
+# example
 
-Demonstrates how to use the mrt_n plugin.
+A new Flutter project.
 
 ## Getting Started
 

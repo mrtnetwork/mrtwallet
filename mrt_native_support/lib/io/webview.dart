@@ -12,6 +12,7 @@ class _WebViewConst {
   static const String canGoBack = "canGoBack";
   static const String goBack = "goBack";
   static const String goForward = "goForward";
+  static const String updateFrame = "updateFrame";
   static const String reload = "reload";
   static const String request = "request";
   static const String createWebView = "createWebView";
@@ -23,6 +24,10 @@ class WebViewIoInterface implements PlatformWebView {
   final Map<String?, WebViewListener> _listeners = {};
 
   Future<void> _methodCallHandler(Map<String, dynamic> args) async {
+    if (args['type'] == "log") {
+      print("Console: ${args['data']}");
+      return;
+    }
     if (args["eventName"] == null) return;
     final event = WebViewEvent.fromJson(args);
 
@@ -82,7 +87,7 @@ class WebViewIoInterface implements PlatformWebView {
   }
 
   @override
-  bool get supported => Platform.isAndroid;
+  bool get supported => Platform.isAndroid || Platform.isMacOS;
 
   @override
   void addListener(WebViewListener listener) {
@@ -144,5 +149,14 @@ class WebViewIoInterface implements PlatformWebView {
         viewType: viewType,
         type: _WebViewConst.removeInterface,
         args: {"name": name});
+  }
+
+  @override
+  Future<void> updateFrame(
+      {required String viewType, required WidgetSize size}) async {
+    await _call(
+        viewType: viewType,
+        type: _WebViewConst.updateFrame,
+        args: {"width": size.width, "height": size.height});
   }
 }

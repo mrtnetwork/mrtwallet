@@ -29,6 +29,5 @@ void main(List<String> args) async {
   final future = await completer.future;
   jsWindow.removeEventListener(
       JSWalletConstant.activationEventName, onActivation.toJS);
-
-  EthereumJsController.setup(future);
+  JSPageController.setup(future);
 }
