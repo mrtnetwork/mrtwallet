@@ -46,7 +46,7 @@ class TronFreezBalanceV2FieldsView extends StatelessWidget {
               "frozen_balance".tr,
               child: SetupNetworkAmount(
                 token: account.network.coinParam.token,
-                max: account.address.address.balance.value.balance,
+                max: account.address.address.currencyBalance,
                 min: BigInt.zero,
                 subtitleText: "trx_stake_amount".tr,
               ),

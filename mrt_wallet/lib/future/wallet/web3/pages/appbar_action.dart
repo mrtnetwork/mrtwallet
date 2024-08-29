@@ -33,8 +33,6 @@ class Web3PermissionAppbarActionView extends StatelessWidget {
                         child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(network.token.symbol,
-                            style: context.textTheme.labelLarge),
                         OneLineTextWidget(network.token.name),
                         CoinPriceView(
                             token: network.token,

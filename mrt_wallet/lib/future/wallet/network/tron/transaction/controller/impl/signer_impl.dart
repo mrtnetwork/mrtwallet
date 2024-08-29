@@ -91,11 +91,13 @@ mixin TronSignerImpl on TronTransactionImpl {
     });
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
+    } else if (!result.result.isSuccess) {
+      progressKey.errorText(result.result.error!);
     } else {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
             network: network,
-            txId: result.result,
+            txId: result.result.txId!,
           ),
           backToIdle: false);
     }

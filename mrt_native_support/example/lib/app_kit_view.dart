@@ -7,7 +7,7 @@ import 'package:mrt_native_support/models/device/models/platform.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 
 class MRTAndroidViewController<T> {
-  final T controller;
+  final AppKitViewController controller;
   final int id;
   final FocusNode node;
   MRTAndroidViewController(
@@ -18,32 +18,17 @@ class MRTAndroidViewController<T> {
       TextDirection layoutDirection = TextDirection.ltr}) async {
     final id = platformViewsRegistry.getNextPlatformViewId();
     final node = FocusNode(debugLabel: "MRTAndroidViewController $id");
-    Object controller;
+    AppKitViewController controller;
 
     /// AndroidViewController
-    if (PlatformInterface.appPlatform == AppPlatform.android) {
-      controller = PlatformViewsService.initAndroidView(
-        id: id,
-        viewType: viewType,
-        layoutDirection: layoutDirection,
-        creationParams: createParms,
-        creationParamsCodec: const StandardMessageCodec(),
-        onFocus: () {
-          node.requestFocus();
-        },
-      );
-    } else {
-      controller = await PlatformViewsService.initUiKitView(
-        id: id,
-        viewType: viewType,
-        layoutDirection: layoutDirection,
-        creationParams: createParms,
-        creationParamsCodec: const StandardMessageCodec(),
-        onFocus: () {
-          node.requestFocus();
-        },
-      );
-    }
+    controller = await PlatformViewsService.initAppKitView(
+      id: id,
+      viewType: viewType,
+      layoutDirection: layoutDirection,
+      onFocus: () {
+        node.requestFocus();
+      },
+    );
     return MRTAndroidViewController(controller: controller, id: id, node: node);
   }
 
@@ -51,7 +36,7 @@ class MRTAndroidViewController<T> {
     if (PlatformInterface.appPlatform == AppPlatform.android) {
       (controller as AndroidViewController).dispose();
     } else {
-      (controller as UiKitViewController).dispose();
+      controller.dispose();
     }
     node.dispose();
   }
@@ -86,7 +71,8 @@ class APPNativeView extends StatefulWidget {
 class _AndroidViewState extends State<APPNativeView> {
   late final MRTAndroidViewController controller = widget.controller;
   TextDirection _layoutDirection = TextDirection.ltr;
-  AndroidViewController get _controller => controller.controller;
+  AndroidViewController get _controller =>
+      controller.controller as AndroidViewController;
 
   bool _initialized = false;
   FocusNode get _focusNode => controller.node;
@@ -201,8 +187,8 @@ abstract class _DarwinViewState<
     RenderT extends RenderDarwinPlatformView,
     ViewT extends _DarwinPlatformView<DarwinPlatformViewController,
         RenderT>> extends State<PlatformViewT> {
-  UiKitViewController get controller =>
-      widget.controller.controller as UiKitViewController;
+  AppKitViewController get controller =>
+      widget.controller.controller as AppKitViewController;
   TextDirection? _layoutDirection;
 
   FocusNode get focusNode => widget.controller.node;
@@ -265,7 +251,7 @@ abstract class _DarwinViewState<
   }
 }
 
-class _UiKitViewState extends _DarwinViewState<APPNativeView, RenderUiKitView,
+class _UiKitViewState extends _DarwinViewState<APPNativeView, RenderAppKitView,
     _UiKitPlatformView> {
   @override
   _UiKitPlatformView childPlatformView() {
@@ -303,7 +289,7 @@ abstract class _DarwinPlatformView<
 }
 
 class _UiKitPlatformView
-    extends _DarwinPlatformView<UiKitViewController, RenderUiKitView> {
+    extends _DarwinPlatformView<AppKitViewController, RenderAppKitView> {
   const _UiKitPlatformView(
       {required super.controller,
       required super.hitTestBehavior,
@@ -311,7 +297,7 @@ class _UiKitPlatformView
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return RenderUiKitView(
+    return RenderAppKitView(
       viewController: controller,
       hitTestBehavior: hitTestBehavior,
       gestureRecognizers: gestureRecognizers,

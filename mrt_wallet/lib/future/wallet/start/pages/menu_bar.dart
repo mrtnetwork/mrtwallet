@@ -24,7 +24,7 @@ class AccountMenuButtonView extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleTokenImgaeView(chain.network.coinParam.token, radius: 30),
+            CircleTokenImgaeView(chain.network.token, radius: 30),
             WidgetConstant.width8,
             Expanded(
               child: CopyTextIcon(
@@ -52,10 +52,8 @@ class AccountMenuButtonView extends StatelessWidget {
                               style: context.textTheme.labelLarge,
                             ),
                     if (showMultiSig)
-                      Text(
-                        "multi_signature".tr,
-                        style: context.textTheme.bodyMedium,
-                      ),
+                      Text("multi_signature".tr,
+                          style: context.textTheme.bodyMedium),
                     OneLineTextWidget(
                       account.address.toAddress,
                       style: context.textTheme.bodyMedium,
@@ -86,6 +84,7 @@ class AccountAppbarPopupMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<int>(
         tooltip: "account_options".tr,
+        constraints: WidgetConstant.constraintsMinWidth200,
         onSelected: (v) {
           switch (v) {
             case 0:

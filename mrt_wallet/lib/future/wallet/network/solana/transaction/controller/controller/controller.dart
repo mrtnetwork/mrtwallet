@@ -25,12 +25,12 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
 
   bool _checkTransaction() {
     _error = validator.validator.validateError();
-    _remindAmount.updateBalance(
-        account.address.address.balance.value.balance - fee.balance);
+    _remindAmount
+        .updateBalance(account.address.address.currencyBalance - fee.balance);
     if (validator.validator.mode != SolanaTransactionType.spl) {
       final transactionValue = validator.validator.transferValue + fee.balance;
       _remindAmount.updateBalance(
-          account.address.address.balance.value.balance - transactionValue);
+          account.address.address.currencyBalance - transactionValue);
       remindAmount = (_remindAmount, network.coinParam.token);
     } else {
       final tokenTransferFiled = validator.validator as SolanaTransferForm;

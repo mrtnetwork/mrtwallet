@@ -34,7 +34,8 @@ extension type JSWalletEvent._(JSObject o) implements MRTJsObject {
           clientId: clientId!,
           data: data_,
           requestId: requestId!,
-          type: WalletEventTypes.fromName(type!));
+          type: WalletEventTypes.fromName(type!),
+          additional: additional);
     } catch (e) {
       return null;
     }

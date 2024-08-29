@@ -21,10 +21,9 @@ class EthereumWeb3FieldsView extends StatelessWidget {
         );
       case Web3EthereumRequestMethods.typedData:
         return EthereumWeb3GlobalFieldsView<String, Web3EthreumTypdedData>(
-          request:
-              request as Web3EthereumRequest<String, Web3EthreumTypdedData>,
-          wallet: wallet,
-        );
+            request:
+                request as Web3EthereumRequest<String, Web3EthreumTypdedData>,
+            wallet: wallet);
       case Web3EthereumRequestMethods.addEthereumChain:
         return EthereumWeb3AddEthereumChainView(
           request:

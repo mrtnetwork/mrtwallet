@@ -1,6 +1,6 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin Web3Impl on WalletManager, Web3EthereumImpl {
+mixin Web3Impl on WalletManager, Web3EthereumImpl, Web3TronImpl {
   Chain _getWeb3ChainId(
       {required Web3RequestParams param,
       required Web3APPAuthentication authenticated}) {
@@ -16,6 +16,17 @@ mixin Web3Impl on WalletManager, Web3EthereumImpl {
             .firstWhere(
                 (e) => e.chainId == (web3Chain?.currentChain ?? BigInt.one),
                 orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+      case NetworkType.tron:
+        final web3Chain = authenticated
+            .getChainFromNetworkType<Web3TronChain>(param.method.network);
+        if (param.account != null && web3Chain == null) {
+          throw Web3RequestExceptionConst.missingPermission;
+        }
+        return _appChains._networks.values.whereType<TronChain>().firstWhere(
+            (e) =>
+                e.network.tronNetworkType ==
+                (web3Chain?.currentChain ?? TronChainType.mainnet),
+            orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
@@ -93,6 +104,8 @@ mixin Web3Impl on WalletManager, Web3EthereumImpl {
     switch (request.chain.network.type) {
       case NetworkType.ethereum:
         return await _getEthereumWeb3Result(request as Web3EthereumRequest);
+      case NetworkType.tron:
+        return await _getTronWeb3Result(request as Web3TronRequest);
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
@@ -103,19 +116,23 @@ mixin Web3Impl on WalletManager, Web3EthereumImpl {
     required Web3APPAuthentication authenticated,
     required Web3RequestApplicationInformation walletRequest,
   }) async {
-    Object? result;
-    switch (requestParams.method) {
-      case Web3GlobalRequestMethods.disconnect:
-        final requestMessage = requestParams.cast<Web3DisconnectApplication>();
-        authenticated.disconnect(requestMessage.chain);
-        result = true;
-        break;
-      default:
-        throw Web3RequestExceptionConst.invalidRequest;
-    }
-    await _core._savePermission(wallet: _wallet, permission: authenticated);
-    return Web3WalletResponseMessage(
-        authenticated: authenticated, result: result);
+    throw UnimplementedError();
+    // Object? result;
+    // switch (requestParams.method) {
+    //   case Web3GlobalRequestMethods.disconnect:
+    //     final requestMessage = requestParams.cast<Web3DisconnectApplication>();
+    //     authenticated.disconnect(requestMessage.chain);
+    //     result = true;
+    //     break;
+    //   default:
+    //     throw Web3RequestExceptionConst.invalidRequest;
+    // }
+    // await _core._savePermission(wallet: _wallet, permission: authenticated);
+    // return Web3WalletResponseMessage(
+    //   authenticated: authenticated,
+    //   result: result,
+
+    // );
   }
 
   Future<Web3MessageCore> _handleChainRequest(
@@ -150,10 +167,13 @@ mixin Web3Impl on WalletManager, Web3EthereumImpl {
           type: Web3MessageTypes.chains,
           authenticated: authenticated,
           message: _appChains.toCbor().encode(),
-          response: Web3ResponseMessage(result));
+          response:
+              Web3ResponseMessage(result: result, network: chain.network.type));
     }
     return Web3WalletResponseMessage(
-        result: result, authenticated: authenticated);
+        result: result,
+        authenticated: authenticated,
+        network: chain.network.type);
   }
 
   Future<Web3EncryptedMessage> _web3Request(
@@ -195,9 +215,8 @@ mixin Web3Impl on WalletManager, Web3EthereumImpl {
     } on Web3RejectException {
       rethrow;
     } on Web3RequestException catch (e) {
-      response = e.toResponseMessage(
-          // request: walletRequest.message.toJson(),
-          requestId: walletRequest.request.requestId);
+      response =
+          e.toResponseMessage(requestId: walletRequest.request.requestId);
     } catch (e) {
       const exception = Web3RequestExceptionConst.internalError;
       response = exception.toResponseMessage(

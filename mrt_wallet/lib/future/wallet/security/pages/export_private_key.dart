@@ -149,7 +149,9 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
               ContainerWithBorder(
                 child: CopyTextWithBarcode(
                     dataToCopy: widget.account!.address.toAddress,
-                    widget: AddressDetailsView(address: widget.account!),
+                    widget: AddressDetailsView(
+                      address: widget.account!,
+                    ),
                     barcodeTitle: "address_sharing".tr),
               ),
               WidgetConstant.height20,

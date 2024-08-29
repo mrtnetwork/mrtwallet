@@ -1,144 +1,114 @@
 part of '../scripts.dart';
 
-mixin EthereumPageController on JSBasePageController {
-  final Map<EthereumEvnetTypes, List<JSFunction>> _onEvents = {
+class EthereumPageController extends PageNetworkController {
+  ProxyMethodHandler<EIP1193>? _ethereum;
+  final Map<EthereumEvnetTypes, List<JSFunction>> _listeners = {
     EthereumEvnetTypes.accountsChanged: [],
     EthereumEvnetTypes.chainChanged: [],
     EthereumEvnetTypes.connect: [],
     EthereumEvnetTypes.message: [],
-    EthereumEvnetTypes.disconnect: [],
+    EthereumEvnetTypes.disconnect: []
   };
 
-  void _initEthereum() {
+  EthereumPageController({required super.getWalletMessage});
+
+  ProxyMethodHandler<EIP1193> _setupEIP() {
     final eip = EIP1193.setup(
-        request: _onEthereumRequest.toJS,
-        on: _onEthereumEvent.toJS,
-        removeListener: _removeEthereumEvent.toJS,
-        disconnect: _disconnectEthereum.toJS,
-        enable: _enableEthereum.toJS);
-    mrt.ethereum = eip;
-    ethereum = eip;
-    EIP6963ProviderDetail.setup(ethereum);
+        request: _onRequest.toJS,
+        on: _addListener.toJS,
+        removeListener: _removeListener.toJS,
+        disconnect: _disconnect.toJS,
+        enable: _enable.toJS);
+    return ProxyMethodHandler(eip);
   }
 
-  void _disableEthereun(String? message) {
+  void _init() {
+    _ethereum ??= _setupEIP();
+    final proxy = Proxy(_ethereum!.object, createJSInteropWrapper(_ethereum!));
+    ethereum = proxy;
+    EIP6963ProviderDetail.setup(proxy);
+  }
+
+  void _disable(String? message) {
     ethereum = null;
     jsConsole.error(message);
   }
 
-  void _onEthereumWalletEvent(JSWalletMessage walletResponse) {
-    switch (walletResponse.type) {
-      case JSWalletMessageType.event:
-        _parseEvents(walletResponse.cast());
-        break;
-      case JSWalletMessageType.response:
-        _parseRequestResponse(walletResponse.cast());
-        break;
-      default:
-        throw UnimplementedError("Wrong response in page.");
-    }
-  }
-
-  void _parseRequestResponse(JSWalletMessageResponse message) {
-    switch (message.status) {
-      case JSWalletResponseType.success:
-        _waitingRequest[message.requestId]?.completeMessage(message.data);
-        break;
-      case JSWalletResponseType.failed:
-        _waitingRequest[message.requestId]
-            ?.completerError(message.data as Map<String, dynamic>);
-
-        break;
-      default:
-        throw UnimplementedError("Wrong response in page.");
-    }
-  }
-
-  void _parseEvents(JSWalletMessageResponseEthereum message) {
+  void onEvent(JSWalletMessageResponseEthereum message) {
     final JSWalletMessageResponseEthereum eventMessage = message.cast();
+    JSAny? eventData;
     switch (eventMessage.event) {
       case EthereumEvnetTypes.connect:
-        final result = eventMessage.data as Map<String, dynamic>;
-        final BigInt chainId = BigInt.parse(
-            (result["chainId"] as String).replaceFirst("0x", ""),
-            radix: 16);
-        ethereum.chainId = (result["chainId"] as String);
-        ethereum.networkVersion = chainId.toString();
+        final connectionInfo =
+            ProviderConnectInfo.fromJson(eventMessage.dataAs());
+        eventData = connectionInfo.toJSEvent;
+        _ethereum?.object.chainId = connectionInfo.chainId;
+        _ethereum?.object.networkVersion = connectionInfo.netVersion.toString();
         break;
       case EthereumEvnetTypes.chainChanged:
-        final BigInt chainId = BigInt.parse(
-            (eventMessage.data as String).replaceFirst("0x", ""),
-            radix: 16);
-        ethereum.chainId = (eventMessage.data as String);
-        ethereum.networkVersion = chainId.toString();
+        final connectionInfo =
+            ProviderConnectInfo.fromJson(eventMessage.dataAs());
+        eventData = connectionInfo.chainId.jsify();
+        _ethereum?.object.chainId = connectionInfo.chainId;
+        _ethereum?.object.networkVersion = connectionInfo.netVersion.toString();
         break;
       case EthereumEvnetTypes.disconnect:
-        ethereum.chainId = null;
-        ethereum.networkVersion = null;
-        ethereum.selectedAddress = null;
+        _ethereum?.object.chainId = null;
+        _ethereum?.object.networkVersion = null;
+        _ethereum?.object.selectedAddress = null;
         break;
       case EthereumEvnetTypes.accountsChanged:
-        final accounts = List<String>.from(eventMessage.data as List);
-        ethereum.selectedAddress = accounts.isEmpty ? null : accounts[0];
+        final changeInfo =
+            EthereumAccountsChanged.fromJson(eventMessage.dataAs());
+
+        eventData = changeInfo.toJSEvent;
+        _ethereum?.object.selectedAddress = changeInfo.defaultAddress?.toJS;
         break;
       case EthereumEvnetTypes.disable:
-        _disableEthereun(eventMessage.data as String?);
+        _disable(eventMessage.dataAs());
         break;
       case EthereumEvnetTypes.active:
-        _initEthereum();
+        _init();
         break;
       default:
     }
-    _eventListeners(eventMessage.event, object: message.data);
+    _eventListeners(eventMessage.event, jsObject: eventData);
   }
 
-  void _eventListeners(EthereumEvnetTypes type,
-      {Object? object, JSAny? jsObject}) {
-    jsObject ??= object.jsify();
-    if (jsObject == null) return;
-    final listeners = <JSFunction>[..._onEvents[type]!];
+  void _eventListeners(EthereumEvnetTypes type, {JSAny? jsObject}) {
+    if (jsObject == null || !_listeners.containsKey(type)) return;
+    final listeners = <JSFunction>[..._listeners[type]!];
     for (final i in listeners) {
       i.callAsFunction(i, jsObject);
     }
   }
 
-  void _disconnectEthereum() {}
+  void _disconnect() {}
 
-  void _onEthereumEvent(String type, JSFunction listener) {
+  void _addListener(String type, JSFunction listener) {
     final event = EthereumEvnetTypes.fromName(type);
     if (event == null) return;
-    _onEvents[event]?.add(listener);
+    _listeners[event]?.add(listener);
     if (event != EthereumEvnetTypes.message &&
         event != EthereumEvnetTypes.disconnect) {
-      _getEventResult(event).then((e) {
-        return _eventListeners(event, jsObject: e);
-      }).catchError((e) {});
+      getWalletMessage(ClientMessageEthereum.event(event));
     }
   }
 
-  void _removeEthereumEvent(String type, JSFunction listener) {
+  void _removeListener(String type, JSFunction listener) {
     final event = EthereumEvnetTypes.fromName(type);
-    _onEvents[event]?.remove(listener);
+    _listeners[event]?.remove(listener);
   }
 
-  Future<JSAny?> _getEventResult(EthereumEvnetTypes event) async {
-    final id = UUID.generateUUIDv4();
-    final toWalletRequest =
-        ClientMessageEthereum.event(event: event, requestId: id);
-    _postWalletEvent(toWalletRequest);
-    final PageRequestCompeleter request = PageRequestCompeleter(id);
-    return _onRequest(request);
-  }
-
-  JSPromise<JSAny?> _enableEthereum() {
+  JSPromise<JSAny?> _enable() {
     final params = EthereumRequestParams(method: "eth_requestAccounts");
-    final promise = _getResult(params).toPromise;
-    return promise;
+    return _onRequest(params);
   }
 
-  JSPromise<JSAny?> _onEthereumRequest(EthereumRequestParams params) {
-    final promise = _getResult(params).toPromise;
-
+  JSPromise<JSAny?> _onRequest(EthereumRequestParams params) {
+    final message = ClientMessageEthereum(
+        method: params.method, params: params.params?.dartify());
+    final promise = getWalletMessage(message).toPromise;
     return promise;
   }
 }

@@ -75,6 +75,7 @@ abstract class UIWallet extends WalletCore {
   final Cancelable _cancelabe = Cancelable();
   Future<void> updateBalance() async {
     if (!isOpen) return;
+    _cancelabe.dispose();
     refreshState.currentState?.show();
     await MethodUtils.call(() async {
       return await updateCurrentAccountBalance();
@@ -116,6 +117,10 @@ abstract class UIWallet extends WalletCore {
       case NetworkType.ethereum:
         return navigatorKey.currentContext
                 ?.toSync(PageRouter.web3Ethereum, argruments: request) ??
+            false;
+      case NetworkType.tron:
+        return navigatorKey.currentContext
+                ?.toSync(PageRouter.web3Tron, argruments: request) ??
             false;
       default:
     }

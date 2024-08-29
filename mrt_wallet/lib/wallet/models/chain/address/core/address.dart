@@ -146,6 +146,7 @@ class AccountBalance {
   final Live<IntegerBalance> balance;
 
   String get viewBalance => balance.toString();
+  BigInt get currencyBalance => balance.value.balance;
 
   DateTime _updated;
 

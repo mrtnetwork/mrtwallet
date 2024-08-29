@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/utils/utils.dart';
-import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/tron/tron.dart';
 
 class TronUtils {
   static const int decimal = 6;

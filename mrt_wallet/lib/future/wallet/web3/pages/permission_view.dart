@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/wallet/network/tron/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/client_info.dart';
 import 'package:mrt_wallet/future/wallet/controller/impl/web3_request_controller.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/web3/permission/ethereum_permission_view.dart';
@@ -69,7 +70,7 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
 
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
 
-  NetworkType chainType = Web3Const.supportedWeb3.first;
+  NetworkType? chainType;
 
   Future<void> onChangePermission() async {
     application = await controller.getCurrentApplication();
@@ -105,6 +106,11 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     }
   }
 
+  void changeChain(NetworkType? chainType) {
+    this.chainType = chainType;
+    updateState();
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -130,52 +136,104 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
                 slivers: [
                   SliverConstraintsBoxView(
                       padding: WidgetConstant.paddingHorizontal20,
-                      sliver: SliverMainAxisGroup(slivers: [
-                        SliverToBoxAdapter(
-                            child:
-                                Web3ClientInfoView(permission: application!)),
-                        WidgetConstant.sliverPaddingVertial20,
-                        SliverToBoxAdapter(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("application_name".tr,
-                                  style: context.textTheme.titleMedium),
-                              Text("edit_application_name_desc".tr),
-                              WidgetConstant.height8,
-                              AppTextField(
-                                label: "application_name".tr,
-                                onChanged: onChangeName,
-                                validator: validateApplicationName,
-                                hint: "application_name".tr,
-                                initialValue: applicationName,
-                              ),
-                              WidgetConstant.height20,
-                              AppSwitchListTile(
-                                contentPadding: EdgeInsets.zero,
-                                title: Text("web3_activation".tr,
-                                    style: context.textTheme.titleMedium),
-                                subtitle: Text("web3_activation_desc".tr),
-                                maxLine: 3,
-                                value: active,
-                                onChanged: onChangeActivation,
-                              )
-                            ],
-                          ),
-                        ),
-                        WidgetConstant.sliverPaddingVertial20,
-                        APPSliverAnimatedSwitcher(enable: chainType, widgets: {
-                          NetworkType.ethereum: (c) =>
-                              EthereumWeb3PermissionView(
-                                  permission:
-                                      application?.getChainFromNetworkType(
-                                          NetworkType.ethereum),
-                                  onUpdateChainPermission:
-                                      onUpdateChainPermission),
-                        })
-                      ]))
+                      sliver: APPSliverAnimatedSwitcher(
+                          enable: chainType != null,
+                          widgets: {
+                            true: (c) => _APPPermissionWidget(this),
+                            false: (c) => _SelectAPPPermissionChainWidget(this),
+                          }))
                 ],
               )),
     );
+  }
+}
+
+class _SelectAPPPermissionChainWidget extends StatelessWidget {
+  const _SelectAPPPermissionChainWidget(this.state, {Key? key})
+      : super(key: key);
+  final __Web3APPPermissionViewState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverFillRemaining(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.security,
+                  size: APPConst.double80,
+                  color: context.colors.inversePrimary),
+            ],
+          ),
+          const Padding(padding: WidgetConstant.paddingVertical40),
+          Text("network".tr, style: context.textTheme.titleMedium),
+          Text("update_client_permission_desc".tr),
+          WidgetConstant.height8,
+          AppDropDownBottom(
+            items: {
+              for (final i in Web3Const.supportedWeb3) i: Text(i.name.camelCase)
+            },
+            label: "network".tr,
+            onChanged: state.changeChain,
+            value: state.chainType,
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class _APPPermissionWidget extends StatelessWidget {
+  const _APPPermissionWidget(this.state, {Key? key}) : super(key: key);
+  final __Web3APPPermissionViewState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverMainAxisGroup(slivers: [
+      SliverToBoxAdapter(
+          child: Web3ClientInfoView(permission: state.application!)),
+      WidgetConstant.sliverPaddingVertial20,
+      SliverToBoxAdapter(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("application_name".tr, style: context.textTheme.titleMedium),
+            Text("edit_application_name_desc".tr),
+            WidgetConstant.height8,
+            AppTextField(
+              label: "application_name".tr,
+              onChanged: state.onChangeName,
+              validator: state.validateApplicationName,
+              hint: "application_name".tr,
+              initialValue: state.applicationName,
+            ),
+            WidgetConstant.height20,
+            AppSwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text("web3_activation".tr,
+                  style: context.textTheme.titleMedium),
+              subtitle: Text("web3_activation_desc".tr),
+              maxLine: 3,
+              value: state.active,
+              onChanged: state.onChangeActivation,
+            )
+          ],
+        ),
+      ),
+      WidgetConstant.sliverPaddingVertial20,
+      APPSliverAnimatedSwitcher(enable: state.chainType, widgets: {
+        NetworkType.ethereum: (c) => EthereumWeb3PermissionView(
+            permission: state.application
+                ?.getChainFromNetworkType(NetworkType.ethereum),
+            onUpdateChainPermission: state.onUpdateChainPermission),
+        NetworkType.tron: (c) => TronWeb3PermissionView(
+            permission:
+                state.application?.getChainFromNetworkType(NetworkType.tron),
+            onUpdateChainPermission: state.onUpdateChainPermission),
+      })
+    ]);
   }
 }

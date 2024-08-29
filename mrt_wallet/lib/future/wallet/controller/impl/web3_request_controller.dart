@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/uuid/uuid.dart';
 import 'package:mrt_native_support/models/events/models/wallet_event.dart';
+import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
@@ -47,7 +48,8 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
       final message = toResponseEvent(
           data: walletEvent.result.toCbor().encode(),
           id: clientId,
-          type: WalletEventTypes.activation);
+          type: WalletEventTypes.activation,
+          additional: PlatformInterface.appPlatform.name);
       return message;
     } on Web3RequestException catch (e) {
       onException = e.toResponseMessage();
@@ -70,12 +72,14 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
       {required String id,
       required WalletEventTypes type,
       List<int> data = const [],
-      String? requestId}) {
+      String? requestId,
+      String? additional}) {
     return WalletEvent(
         clientId: id,
         data: data,
         requestId: requestId ?? UUID.generateUUIDv4(),
-        type: type);
+        type: type,
+        additional: additional);
   }
 
   void onCloseClinet(String? applicationId) {
@@ -122,7 +126,6 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
         _reject(request);
         return;
       } catch (e) {
-        print("exception here ?$e");
         Web3ExceptionMessage exception;
         if (e is Web3RequestException) {
           exception = e.toResponseMessage(requestId: request.request.requestId);

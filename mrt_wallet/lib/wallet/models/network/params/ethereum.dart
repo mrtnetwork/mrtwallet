@@ -11,7 +11,8 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
   final BigInt chainId;
   final bool supportEIP1559;
   final bool defaultNetwork;
-
+  @override
+  bool get isTestNet => defaultNetwork && !mainnet;
   EthereumNetworkParams(
       {required super.transactionExplorer,
       required super.addressExplorer,

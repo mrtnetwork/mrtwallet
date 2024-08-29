@@ -179,9 +179,6 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
         jsInterface: _WebViewStateControllerConst.interfaceName);
     final controller = await MRTAndroidViewController.create(viewType: viewId);
     return controller;
-    // await webViewController.init(viewId,
-    //     url: url ?? _website,
-    //     jsInterface: _WebViewStateControllerConst.interfaceName);
   }
 
   Future<WebViewController> _buildController() async {
@@ -242,7 +239,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
 
   Future<void> removeTab(WebViewController auth) async {
     await _storage.removeTab(auth.tab.value);
-    tabsAuthenticated.remove(auth.viewType);
+    final remove = tabsAuthenticated.remove(auth.viewType);
     final last = _storage.lastTab;
     WebViewController? authenticated =
         tabsAuthenticated.values.firstWhereOrNull((e) => e.tabId == last?.id);
@@ -255,6 +252,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
       await newTab((v) {});
     }
     notify();
+    remove?.dispose();
   }
 
   Future<void> addOrRemoveFromBookMark(WebViewTab newTab) async {
@@ -375,7 +373,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   void close() {
     super.close();
     for (final i in tabsAuthenticated.values) {
-      i.controller.dispose();
+      i.dispose();
     }
     liveNotifier.dispose();
     _progress.dispose();

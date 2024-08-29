@@ -7,13 +7,13 @@ import 'package:mrt_wallet/wallet/api/api.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/models/others/models/life_cycle.dart';
-import 'package:mrt_wallet/wallet/web3/networks/global/global.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:mrt_wallet/crypto/worker.dart';
 
 part 'controller/wallet_controller.dart';
 part 'controller/manager.dart';
 part 'controller/web3.dart';
+part 'controller/networks/tron_web3.dart';
 part 'controller/networks/ethereum_web3.dart';
 part 'core/core.dart';
 part 'impl/manager.dart';

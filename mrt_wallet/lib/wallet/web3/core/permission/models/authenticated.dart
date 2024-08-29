@@ -10,6 +10,8 @@ import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
+import 'package:mrt_wallet/wallet/web3/networks/tron/permission/models/permission.dart';
 
 class Web3APPAuthentication with CborSerializable {
   final String applicationId;
@@ -127,20 +129,27 @@ class Web3APPAuthentication with CborSerializable {
 
   T? getChainFromNetworkType<T extends Web3ChainNetwork>(NetworkType network) {
     if (!active) return null;
-    return _chains[network] as T?;
+    Web3Chain? chain = _chains[network];
+    switch (network) {
+      case NetworkType.ethereum:
+        chain ??= Web3EthereumChain.create();
+        break;
+      case NetworkType.tron:
+        chain ??= Web3TronChain.create();
+        break;
+      default:
+        throw Web3RequestExceptionConst.networkNotSupported;
+    }
+    if (chain is! T) {
+      throw Web3RequestExceptionConst.internalError;
+    }
+    return chain;
   }
 
   void updateChainAccount(Web3Chain webChain) {
     final chains = Map<NetworkType, Web3Chain>.from(_chains);
     chains[webChain.network] = webChain;
     _chains = chains.imutable;
-  }
-
-  void disconnect(NetworkType network) {
-    final updateChain = _chains[network];
-    if (updateChain != null) {
-      _chains[network] = updateChain.disconnect();
-    }
   }
 
   void addActivity({required Web3RequestParams param, String? url}) {

@@ -83,8 +83,8 @@ class RippleTransactionStateController extends RippleTransactionImpl
 
   void _checkTransaction() {
     _updateCustomFee();
-    final remindAmounts = address.address.balance.value.balance -
-        (fee.balance + _validatorXRPValue);
+    final remindAmounts =
+        address.address.currencyBalance - (fee.balance + _validatorXRPValue);
     _remindAmount.updateBalance(remindAmounts);
     if (_isPayment?.issueToken == null) {
       remindAmount = (_remindAmount, network.coinParam.token);

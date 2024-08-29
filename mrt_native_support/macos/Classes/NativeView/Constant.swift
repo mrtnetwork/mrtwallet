@@ -16,6 +16,7 @@ struct WebViewConst {
     static let goForward: String = "goForward"
     static let updateFrame: String = "updateFrame"
     static let reload: String = "reload"
+    static let dispose: String = "dispose"
     static let request: String = "request"
     static let faviIconScript: String = """
         (function() {

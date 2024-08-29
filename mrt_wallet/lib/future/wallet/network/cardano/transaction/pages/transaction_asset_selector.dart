@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/constant/global/app.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/setup_amount.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -185,8 +186,10 @@ class _CardanoTransactionAssetSelectorViewState
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      CircleTokenImgaeView(asset.token,
-                                          radius: 25),
+                                      CircleTokenImgaeView(
+                                        asset.token,
+                                        radius: APPConst.circleRadius25,
+                                      ),
                                       WidgetConstant.width8,
                                       Expanded(
                                         child: Column(

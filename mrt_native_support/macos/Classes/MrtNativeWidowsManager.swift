@@ -312,9 +312,16 @@ public class WindowManager: NSObject, NSWindowDelegate {
             mainWindow.styleMask.insert(.resizable)
         } else {
             mainWindow.styleMask.remove(.resizable)
+           
         }
     }
-    
+    public func maximumSize(_ args: [String: Any]) {
+        let width: CGFloat = args["width"] as! CGFloat
+        let height: CGFloat = args["height"] as! CGFloat
+        mainWindow.styleMask.insert(.resizable)
+        mainWindow.maxSize = NSSize(width: width, height: height)
+    }
+
     public func isMovable() -> Bool {
         return mainWindow.isMovable
     }

@@ -43,7 +43,7 @@ class Web3TronChain
             .elementAt<List<dynamic>>(0)
             .map((e) => Web3TronChainAccount.deserialize(object: e))
             .toList(),
-        currentChain: values.elementAt(1),
+        currentChain: TronChainType.fromGenesis(values.elementAt(1)),
         activities: values
             .elementAt<List<dynamic>>(2)
             .map((e) => Web3AccountAcitvity.deserialize(object: e))
@@ -55,7 +55,7 @@ class Web3TronChain
     return CborTagValue(
         CborListValue.fixedLength([
           CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
-          _currentChain,
+          _currentChain.genesisBlockNumber,
           CborListValue.fixedLength(activities.map((e) => e.toCbor()).toList()),
         ]),
         network.tag);
@@ -100,7 +100,7 @@ class Web3TronChain
     return accounts.firstWhereOrNull((e) => e.address == address);
   }
 
-  void updateChain(TronChain chain) {
+  void setActiveChain(TronChain chain) {
     _currentChain = chain.network.tronNetworkType;
   }
 

@@ -34,7 +34,7 @@ abstract class _WalletController with CryptoWokerImpl {
 }
 
 class WalletController extends _WalletController
-    with WalletManager, Web3EthereumImpl, Web3Impl {
+    with WalletManager, Web3EthereumImpl, Web3TronImpl, Web3Impl {
   WalletController._(WalletCore core, HDWallet wallet, ChainsHandler chains)
       : super(core, wallet, chains);
   static Future<ChainsHandler> _setupNetwork(
@@ -48,8 +48,9 @@ class WalletController extends _WalletController
         // ignore: empty_catches
       } catch (e) {}
     }
-    return ChainsHandler(
+    final chain = ChainsHandler(
         chains: chains, currentNetwork: wallet.network, id: wallet._checksum);
+    return chain;
   }
 
   static Future<WalletController> _setup(

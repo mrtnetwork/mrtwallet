@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:http/http.dart' as http;
-import 'package:mrt_wallet/app/error/exception.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/core/base_service.dart';
 import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
@@ -16,6 +16,21 @@ abstract class HTTPService<P extends APIProvider>
   static final http.Client _client = http.Client();
   http.Client get client => _client;
   Duration get defaultTimeOut;
+
+  final _lock = SynchronizedLock();
+
+  Future<T> _callSynchronized<T>(Future<http.Response> Function() t,
+      {List<int> allowStatus = const [200]}) async {
+    if (requestTimeout == null) {
+      return _onException(t, allowStatus: allowStatus);
+    }
+    await _lock.synchronized(() async {
+      await Future.delayed(requestTimeout!);
+    });
+    return _onException<T>(t, allowStatus: allowStatus);
+  }
+
+  Duration? get requestTimeout => null;
   Uri _toUri(String callUrl) {
     final uri = Uri.parse(callUrl);
     if (provider.auth?.type != ProviderAuthType.query) {
@@ -33,18 +48,18 @@ abstract class HTTPService<P extends APIProvider>
       Map<String, String>? headers}) async {
     T? response;
     try {
-      response = await _onException<T>(
-          () async => await client
-              .post(_toUri(url),
-                  headers: {
-                    'Content-Type': 'application/json',
-                    ...headers ?? {},
-                    if (provider.auth?.type == ProviderAuthType.header)
-                      ...provider.auth!.auth
-                  },
-                  body: params)
-              .timeout(timeout ?? defaultTimeOut),
-          allowStatus: allowStatus);
+      response = await _callSynchronized(() async {
+        return await client
+            .post(_toUri(url),
+                headers: {
+                  'Content-Type': 'application/json',
+                  ...headers ?? {},
+                  if (provider.auth?.type == ProviderAuthType.header)
+                    ...provider.auth!.auth
+                },
+                body: params)
+            .timeout(timeout ?? defaultTimeOut);
+      }, allowStatus: allowStatus);
 
       return response!;
     } on ApiProviderException catch (e) {
@@ -66,17 +81,17 @@ abstract class HTTPService<P extends APIProvider>
     T? response;
 
     try {
-      response = await _onException<T>(
-          () async => await client
-              .get(_toUri(url),
-                  headers: headers ??
-                      {
-                        'Content-Type': 'application/json',
-                        if (provider.auth?.type == ProviderAuthType.header)
-                          ...provider.auth!.auth
-                      })
-              .timeout(timeout ?? defaultTimeOut),
-          allowStatus: allowStatus);
+      response = await _callSynchronized<T>(() async {
+        return await client
+            .get(_toUri(url),
+                headers: headers ??
+                    {
+                      'Content-Type': 'application/json',
+                      if (provider.auth?.type == ProviderAuthType.header)
+                        ...provider.auth!.auth
+                    })
+            .timeout(timeout ?? defaultTimeOut);
+      }, allowStatus: allowStatus);
 
       return response!;
     } on ApiProviderException catch (e) {

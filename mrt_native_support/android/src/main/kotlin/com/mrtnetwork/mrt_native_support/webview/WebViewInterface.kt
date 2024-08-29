@@ -47,6 +47,9 @@ interface MrtWebViewInterface : MrtCore {
                         webViewFactory.addMrtJsInterface(name)
                         result.success(true)
                     }
+                    WebViewConst.dispose -> {
+                        result.success(null)
+                    }
 
                     WebViewConst.removeInterface -> {
                         val name: String? = args["name"] as String?

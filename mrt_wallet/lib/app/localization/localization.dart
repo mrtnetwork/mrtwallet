@@ -1921,8 +1921,8 @@ class Localization {
               "Initializing requirements. Please wait.",
           "request_completed_success": "Request completed successfully.",
           "ethereum_networks": "Ethereum networks.",
-          "evm_account_permission_desc":
-              "Switch to each EVM network and grant the necessary permissions.",
+          "chain_permission_desc":
+              "Switch to each network and grant the necessary permissions.",
           "import_providers": "Import network providers.",
           "network_providers_has_been_updated":
               "Network providers has been updated.",
@@ -2021,6 +2021,30 @@ class Localization {
           "contract": "Contract",
           "transfer_token_desc": "The amount of token will be transferred.",
           "transaction_data": "Transaction data",
+          "tron_contract": "Tron contract",
+          "tron_transaction_type": "Tron transaction type",
+          "tron_transaction_destination_desc":
+              "Transaction destination, such as TRX receiver, token recipient, or smart contract.",
+          "tron_total_spent_desc": "Total TRX to be spent in this transaction.",
+          "update_client_permission_desc":
+              "Please select the network where you want to update the client's permissions",
+          "contract_information": "Contract information",
+          "information": "Information",
+          "transaction_id": "Transaction ID",
+          "tron_call_token": "Call TRC-10 token",
+          "tron_call_token_desc": "Token transfer during contract interaction",
+          "tron_call_token_value_desc":
+              "The amount of a TRC-10 token during contract interaction",
+          "tron_networks": "Tron networks.",
+          "default_address": "Default address",
+          "default_address_desc":
+              "Enabling multiple account permissions allows Web3 apps to automatically detect the default address.",
+          "tron_owner_contract": "Owner address of contract",
+          "tron_owner_contract_desc":
+              "in multi-sig transaction, this may be different from the account address",
+          "insufficient_balance": "Insufficient balance",
+          "insufficient_balance_desc":
+              "The transaction might have failed due to insufficient balance. Do you still want to proceed?"
         }
       };
 }

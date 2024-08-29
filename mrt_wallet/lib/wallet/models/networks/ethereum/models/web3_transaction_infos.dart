@@ -5,14 +5,16 @@ import 'package:mrt_wallet/wallet/models/others/others.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/etherum.dart';
 import 'package:on_chain/ethereum/ethereum.dart';
+import 'package:on_chain/solidity/address/core.dart';
 
 import 'init_fee.dart';
 
 class Web3EthereumTransactionRequestInfos {
   bool get isContract => dataInfo != null;
   final String? data;
-  final ReceiptAddress<ETHAddress>? destination;
   final EthereumTransactionDataInfo? dataInfo;
+  final ReceiptAddress<ETHAddress>? destination;
+
   final IntegerBalance value;
   final EthereumInitFee? initFee;
 
@@ -99,7 +101,8 @@ class SolidityCreationContract extends EthereumTransactionDataInfo {
 }
 
 class SolidityUnknownMethodInfo extends EthereumTransactionDataInfo {
-  SolidityUnknownMethodInfo({required super.selector});
+  SolidityUnknownMethodInfo({required this.dataHex, required super.selector});
+  final String dataHex;
 
   @override
   SolidityMethodInfoTypes get type => SolidityMethodInfoTypes.unknown;
@@ -118,19 +121,27 @@ class SolidityNameAndInputValues extends EthereumTransactionDataInfo {
 }
 
 class SolidityERC20MethodInfo extends EthereumTransactionDataInfo {
-  SolidityERC20MethodInfo({required super.selector, required this.token});
+  SolidityERC20MethodInfo({
+    required super.selector,
+    required this.token,
+    required this.dataHex,
+  });
   final SolidityToken token;
+  final String dataHex;
   @override
   SolidityMethodInfoTypes get type => SolidityMethodInfoTypes.erc20;
 }
 
-class SolidityERC20TransferMethodInfo extends SolidityERC20MethodInfo {
-  SolidityERC20TransferMethodInfo(
-      {required super.selector,
-      required super.token,
-      required this.to,
-      required this.value});
-  final ReceiptAddress<ETHAddress> to;
+class SolidityERC20TransferMethodInfo<T extends SolidityAddress>
+    extends SolidityERC20MethodInfo {
+  SolidityERC20TransferMethodInfo({
+    required super.selector,
+    required super.token,
+    required this.to,
+    required this.value,
+    required super.dataHex,
+  });
+  final ReceiptAddress<T> to;
   final IntegerBalance value;
   @override
   SolidityMethodInfoTypes get type => SolidityMethodInfoTypes.erc20Transfer;

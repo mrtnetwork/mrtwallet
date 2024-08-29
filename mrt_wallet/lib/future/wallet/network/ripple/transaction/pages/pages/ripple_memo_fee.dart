@@ -46,7 +46,7 @@ class RippleMemoAndFeeView<T extends RippleTransactionImpl>
                   fees: controller.fees,
                   network: controller.network,
                   type: controller.feeType?.name,
-                  max: controller.account.address.address.balance.value.balance,
+                  max: controller.account.address.address.currencyBalance,
                   customFee: controller.fee.balance,
                 ),
               )

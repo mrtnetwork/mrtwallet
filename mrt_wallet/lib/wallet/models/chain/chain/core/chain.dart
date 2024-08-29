@@ -331,8 +331,7 @@ abstract class Chain<
 
   void refreshTotalBalance() {
     Map<String, BigInt> total = {
-      for (final i in addresses)
-        i.orginalAddress: i.address.balance.value.balance
+      for (final i in addresses) i.orginalAddress: i.address.currencyBalance
     };
     final totalBalances = total.values
         .fold(BigInt.zero, (previousValue, element) => previousValue + element);
@@ -422,12 +421,24 @@ abstract class Chain<
     return true;
   }
 
-  void setProvider(PROVIDER service) {
+  void setProvider(PROVIDER service, {Duration? requestTimeout}) {
     final currentProvider = _client;
-    _client = APIUtils.createApiClient<CLIENT>(network, service: service);
+    _client = APIUtils.createApiClient<CLIENT>(network,
+        service: service, requestTimeut: requestTimeout);
     currentProvider?.service.tracker.notify();
     currentProvider?.service.disposeService();
     initProvider();
+  }
+
+  CLIENT? getWeb3Provider({PROVIDER? service, Duration? requestTimeout}) {
+    final cl = _client;
+    if (cl?.service.provider.allowInWeb3 ?? false) return cl;
+    return APIUtils.createApiClient<CLIENT>(
+      network,
+      service: service,
+      requestTimeut: requestTimeout,
+      allowInWeb3: true,
+    );
   }
 
   T cast<T extends APPCHAIN>() {

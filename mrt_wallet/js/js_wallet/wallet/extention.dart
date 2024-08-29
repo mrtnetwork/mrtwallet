@@ -46,7 +46,7 @@ class JSExtentionWallet extends JSWalletHandler {
         clientId: activationEvent.clientId);
     handler._listenOnClients();
     extention.runtime.onMessage.addListener(handler.onMessage.toJS);
-    handler._updateAuthenticated(message.authenticated, initChain: true);
+    handler._updateAuthenticated(message.authenticated, network: null);
     return handler;
   }
 

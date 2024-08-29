@@ -586,6 +586,16 @@ namespace mrt_native_support
 					SetFullScreen(argsRef);
 					result->Success(true);
 				}
+				else if (methodType == "maximumSize")
+				{
+					const flutter::EncodableMap &argsRef = *args;
+					result->Success(SetMaximumSize(argsRef));
+				}
+				else if (methodType == "minimumSize")
+				{
+					const flutter::EncodableMap &argsRef = *args;
+					result->Success(SetMinimumSize(argsRef));
+				}
 				else if (methodType == "isMaximized")
 				{
 					result->Success(IsMaximized());
@@ -1558,6 +1568,37 @@ namespace mrt_native_support
 		GetWindowPlacement(mainWindow, &windowPlacement);
 
 		return windowPlacement.showCmd == SW_MAXIMIZE;
+	}
+	bool MrtNativeSupport::SetMaximumSize(const flutter::EncodableMap &argsRef)
+	{
+		// Assuming "maxWidth" and "maxHeight" are the keys in the EncodableMap
+		if (argsRef.find(flutter::EncodableValue("width")) != argsRef.end() &&
+			argsRef.find(flutter::EncodableValue("height")) != argsRef.end())
+		{
+
+			double maxWidth = std::get<double>(argsRef.at(flutter::EncodableValue("height")));
+			double maxHeight = std::get<double>(argsRef.at(flutter::EncodableValue("height")));
+
+			maximum_size_.x = static_cast<LONG>(maxWidth);
+			maximum_size_.y = static_cast<LONG>(maxHeight);
+			return true;
+		}
+		return false;
+	}
+	bool MrtNativeSupport::SetMinimumSize(const flutter::EncodableMap &argsRef)
+	{
+		if (argsRef.find(flutter::EncodableValue("width")) != argsRef.end() &&
+			argsRef.find(flutter::EncodableValue("height")) != argsRef.end())
+		{
+
+			double minWidth = std::get<double>(argsRef.at(flutter::EncodableValue("width")));
+			double minHeight = std::get<double>(argsRef.at(flutter::EncodableValue("height")));
+
+			minimum_size_.x = static_cast<LONG>(minWidth);
+			minimum_size_.y = static_cast<LONG>(minHeight);
+			return true;
+		}
+		return false;
 	}
 	void MrtNativeSupport::SetAlwaysOnBottom(const flutter::EncodableMap &args)
 	{

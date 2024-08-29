@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/utils/solidity/solidity.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/controller/impl/transaction.dart';
 import 'package:mrt_wallet/crypto/utils/tron/tron.dart';
 
@@ -30,7 +31,7 @@ mixin TronTransactionFeeIMpl on TronTransactionImpl {
   }
 
   TransactionRaw _buildFeeTr(int? permissiondID) {
-    final contract = field.toContract(owner: owner);
+    final contract = field.toContract(owner: address);
     final transactionContract = TransactionContract(
         type: contract.contractType,
         permissionId: permissiondID,
@@ -77,14 +78,15 @@ mixin TronTransactionFeeIMpl on TronTransactionImpl {
       final contract =
           raw.contract.first.parameter.value as TriggerSmartContract;
       energy = await apiProvider.estimateContractEnergy(
-          account: address,
+          ownerAddress: address.networkAddress,
           contractAddress: smartContractAddr,
-          data: BytesUtils.toHexString(contract.data!));
+          data: BytesUtils.toHexString(contract.data!),
+          fragment: SolidityContractUtils.erc20Transfer);
     }
     final fee = TronFee.calculate(
         raw: raw,
         chainParameters: tronChainParameters,
-        resource: owner.accountResource!,
+        resource: address.accountResource!,
         hasMemo: memo != null,
         signature: signer,
         consumedEnergy: energy,

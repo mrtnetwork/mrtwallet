@@ -278,4 +278,27 @@ class DesktopPlatformInterface implements SpecificPlatfromMethods {
         .invokeMethod(MrtNativeConst.windowsManager, arguments);
     return data;
   }
+
+  /// minimumSize
+  @override
+  Future<bool> setMaximumSize(WidgetSize size) async {
+    final Map<String, dynamic> arguments = {
+      ...size.toJson(),
+      "type": "maximumSize"
+    };
+    final data = await IoPlatformInterface._channel
+        .invokeMethod(MrtNativeConst.windowsManager, arguments);
+    return data;
+  }
+
+  @override
+  Future<bool> setMinimumSize(WidgetSize size) async {
+    final Map<String, dynamic> arguments = {
+      ...size.toJson(),
+      "type": "minimumSize"
+    };
+    final data = await IoPlatformInterface._channel
+        .invokeMethod(MrtNativeConst.windowsManager, arguments);
+    return data;
+  }
 }

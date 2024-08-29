@@ -17,11 +17,18 @@ abstract class _WalletCore extends WalletStateController
 
 abstract class WalletCore extends _WalletCore
     with WalletsManager, WalletsListener {
+  @override
+  bool get useMemoryStorage => false;
+  bool get isJsWallet => false;
+
   final _lock = SynchronizedLock();
   Chain get chain => _controller._appChains.chain;
   WalletNetwork get network => chain.network;
+  WalletNetwork? networkById(int id) =>
+      _controller._appChains._networks[id]?.network;
   HDWallet get wallet => _controller._wallet;
-  List<HDWallet> get wallets => _wallets._wallets.values.toList();
+  List<HDWallet> get wallets => _wallets._wallets.values.toList()
+    ..sort((a, b) => b.created.compareTo(a.created));
   String? get defaultWalletId => _wallets.defaultWallet;
   final _lockWeb3 = SynchronizedLock();
 

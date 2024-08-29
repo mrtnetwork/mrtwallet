@@ -104,7 +104,6 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
     final result = await completer.future.timeout(const Duration(seconds: 20));
     worker.removeEventListener("message", workerListener);
     worker.addEventListener("message", _onMessage.toJS);
-    WalletLogging.log("initialized.");
     return result;
   }
 

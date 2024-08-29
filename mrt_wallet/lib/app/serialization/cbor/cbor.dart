@@ -165,16 +165,12 @@ extension ExtractCborList on CborListValue {
       if (null is T) return null as T;
       throw WalletExceptionConst.invalidSerializationData;
     }
-
     final CborObject obj = value.elementAt(index);
     if (null is T && obj == const CborNullValue()) {
       return null as T;
     }
     if (obj is T) return obj as T;
-    if (obj.value is! T) {
-      throw WalletExceptionConst.invalidSerializationData;
-    }
-    return obj.value;
+    throw WalletExceptionConst.invalidSerializationData;
   }
 }
 

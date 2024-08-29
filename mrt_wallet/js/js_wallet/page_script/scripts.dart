@@ -1,5 +1,4 @@
 import 'dart:js_interop';
-import 'package:blockchain_utils/uuid/uuid.dart';
 import '../models/models.dart';
 import '../utils/utils.dart';
 import 'dart:async';

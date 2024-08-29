@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "MRT Wallet",
-    "version": "1.0",
+    "version": "0.2",
     "description": "MRT Wallet Chrome extension.",
     "action": {
       "default_popup": "popup.html",
@@ -39,7 +39,7 @@
       {
         "world": "MAIN",
         "matches": ["<all_urls>"],
-        "js": ["page.js"]
+        "js": ["tron_web.js","page.js"]
       }
     ],
     "background": {

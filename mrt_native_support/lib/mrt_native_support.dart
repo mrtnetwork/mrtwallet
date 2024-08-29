@@ -58,6 +58,7 @@ abstract class PlatformWebView {
   Future<void> goBack(String viewType);
   Future<void> goForward(String viewType);
   Future<void> reload(String viewType);
+  Future<void> dispose(String viewType);
   Future<void> addJsInterface({required String viewType, required String name});
   Future<void> removeJsInterface(
       {required String viewType, required String name});
@@ -73,6 +74,8 @@ abstract class SpecificPlatfromMethods {
   Future<bool> show();
   Future<bool> hide();
   Future<bool> init();
+  Future<bool> setMaximumSize(WidgetSize size);
+  Future<bool> setMinimumSize(WidgetSize size);
   Future<void> setBounds(
       {required double pixelRatio,
       WidgetRect? bounds,

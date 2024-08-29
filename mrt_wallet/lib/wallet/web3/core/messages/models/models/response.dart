@@ -1,12 +1,14 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message_types.dart';
 
 class Web3ResponseMessage extends Web3MessageCore {
   final Object? result;
-  Web3ResponseMessage(this.result);
+  final NetworkType network;
+  Web3ResponseMessage({required this.result, required this.network});
 
   factory Web3ResponseMessage.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -17,14 +19,17 @@ class Web3ResponseMessage extends Web3MessageCore {
         tags: Web3MessageTypes.response.tag);
     final Map<String, dynamic> result =
         StringUtils.toJson(values.elementAt<String>(0));
-    return Web3ResponseMessage(result["result"]);
+    return Web3ResponseMessage(
+        result: result["result"],
+        network: NetworkType.fromTag(values.elementAt(1)));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          StringUtils.fromJson({"result": result})
+          StringUtils.fromJson({"result": result}),
+          CborBytesValue(network.tag)
         ]),
         type.tag);
   }

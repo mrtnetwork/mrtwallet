@@ -8,14 +8,29 @@ import 'package:on_chain/ethereum/ethereum.dart';
 
 class Web3EthereumChainAccount extends Web3ChainAccount<ETHAddress> {
   final BigInt chainId;
-  Web3EthereumChainAccount(
-      {required super.keyIndex, required super.address, required this.chainId});
+  Web3EthereumChainAccount({
+    required super.keyIndex,
+    required super.address,
+    required super.defaultAddress,
+    required this.chainId,
+  });
+  Web3EthereumChainAccount changeDefault(bool defaultAddress) {
+    return Web3EthereumChainAccount(
+        keyIndex: keyIndex,
+        address: address,
+        defaultAddress: defaultAddress,
+        chainId: chainId);
+  }
+
   factory Web3EthereumChainAccount.fromChainAccount(
-      {required IEthAddress address, required BigInt chainId}) {
+      {required IEthAddress address,
+      required BigInt chainId,
+      required bool defaultAddress}) {
     return Web3EthereumChainAccount(
         keyIndex: address.keyIndex,
         address: address.networkAddress,
-        chainId: chainId);
+        chainId: chainId,
+        defaultAddress: defaultAddress);
   }
   factory Web3EthereumChainAccount.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -28,14 +43,15 @@ class Web3EthereumChainAccount extends Web3ChainAccount<ETHAddress> {
         keyIndex: AddressDerivationIndex.fromCborBytesOrObject(
             obj: values.getCborTag(0)),
         address: ETHAddress(values.elementAt(1)),
-        chainId: values.elementAt(2));
+        chainId: values.elementAt(2),
+        defaultAddress: values.elementAt(3));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength(
-            [keyIndex.toCbor(), address.address, chainId]),
+            [keyIndex.toCbor(), address.address, chainId, defaultAddress]),
         CborTagsConst.web3EthereumAccount);
   }
 

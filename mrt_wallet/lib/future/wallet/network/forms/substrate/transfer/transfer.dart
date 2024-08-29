@@ -40,7 +40,7 @@ class SubstrateTransferForm extends SubstrateTransactionForm {
   BigInt maxTransfer(
       {required ChainAccount account,
       required SubstrateOutputWithBalance receiver}) {
-    return (account.address.balance.value.balance - callValue) +
+    return (account.address.currencyBalance - callValue) +
         receiver.balance.balance;
   }
 

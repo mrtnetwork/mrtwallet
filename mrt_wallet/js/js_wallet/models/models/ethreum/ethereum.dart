@@ -2,10 +2,43 @@ import 'dart:js_interop';
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/app/utils/list/extention.dart';
+import 'package:mrt_wallet/app/utils/numbers/numbers.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../../../constant/constant.dart';
 import '../../models.dart';
+
+@JSExport()
+class ProxyMethodHandler<T> {
+  final T object;
+  ProxyMethodHandler(this.object);
+
+  @JSExport("set")
+  bool set(JSAny object, JSAny prop, JSAny? value, JSAny? receiver) {
+    return false;
+  }
+
+  @JSExport("get")
+  JSAny? get(JSAny object, JSAny prop) {
+    return Reflect.get(object, prop, null);
+  }
+}
+
+@JS("Reflect")
+extension type Reflect._(JSObject _) implements JSAny {
+  external factory Reflect();
+  @JS("get")
+  external static JSAny? get(JSAny? object, JSAny? prob, JSAny? receiver);
+  @JS("set")
+  external static bool set(
+      JSAny? object, JSAny? prob, JSAny? value, JSAny? receiver);
+}
+
+@JS("Proxy")
+extension type Proxy._(JSObject _) implements JSAny {
+  external factory Proxy(JSAny target, JSObject handler);
+}
 
 @JS("EIP-1193")
 extension type EIP1193(JSObject _) implements MRTJsObject {
@@ -20,9 +53,19 @@ extension type EIP1193(JSObject _) implements MRTJsObject {
   external EIP6963ProviderInfo get providerInfo;
   external set enable(JSFunction f);
   external bool get isMetaMask;
+
+  @JS("chainId")
   external set chainId(String? chainId);
+  @JS("chainId")
+  external String? get chainId;
+  @JS("networkVersion")
   external set networkVersion(String? networkVersion);
-  external set selectedAddress(String? selectedAddress);
+  @JS("networkVersion")
+  external String? get networkVersion;
+  @JS("selectedAddress")
+  external set selectedAddress(JSString? selectedAddress);
+  @JS("selectedAddress")
+  external JSString? get selectedAddress;
 
   static EIP1193 setup(
       {required JSFunction request,
@@ -34,14 +77,12 @@ extension type EIP1193(JSObject _) implements MRTJsObject {
     eip.request = request;
     eip.on = on;
     eip.removeListener = removeListener;
-    eip.providerInfo = EIP6963ProviderInfo._providerInfo;
+    eip.providerInfo = EIP6963ProviderInfo.providerInfo;
 
     if (enable != null) {
       eip.enable = enable;
     }
-    final eth = MRTJsObject.freeze(eip);
-
-    return eth;
+    return eip;
   }
 }
 @JS("EIP6963ProviderInfo")
@@ -55,7 +96,7 @@ extension type EIP6963ProviderInfo._(JSObject _) implements MRTJsObject {
   external String get name;
   external String get icon;
   external String get rdns;
-  static final _providerInfo = EIP6963ProviderInfo(
+  static final providerInfo = EIP6963ProviderInfo(
       uuid: JSWalletConstant.uuid,
       name: JSWalletConstant.name,
       icon: JSWalletConstant.mrtPngBase64,
@@ -64,18 +105,18 @@ extension type EIP6963ProviderInfo._(JSObject _) implements MRTJsObject {
 @JS("EIP6963ProviderDetail")
 extension type EIP6963ProviderDetail._(JSObject _) implements MRTJsObject {
   external factory EIP6963ProviderDetail(
-      {required EIP6963ProviderInfo info, required EIP1193 provider});
+      {required EIP6963ProviderInfo info, required Proxy provider});
   external EIP6963ProviderInfo get info;
   external EIP1193 get provider;
 
-  static void setup(EIP1193 ethereum) {
+  static void setup(Proxy ethereum) {
     final event = CustomEvent(
         "eip6963:announceProvider",
         EventInit(
             bubbles: true,
             cancelable: false,
             detail: MRTJsObject.freeze(EIP6963ProviderDetail(
-                info: ethereum.providerInfo, provider: ethereum))));
+                info: EIP6963ProviderInfo.providerInfo, provider: ethereum))));
     jsWindow.addEventListener(
         "eip6963:requestProvider",
         (CustomEvent r) {
@@ -89,20 +130,15 @@ extension type EIP6963ProviderDetail._(JSObject _) implements MRTJsObject {
 extension type EthereumRequestParams._(JSObject o)
     implements Web3JSRequestParams {
   external factory EthereumRequestParams({String? method, JSAny? params});
-  external String? get method;
+  external String get method;
   external set method(String? method);
   external JSAny? get params;
-  external String? get id;
-  external set id(String? id);
 }
 
-class ClientMessageEthereum extends ClientMessage {
-  const ClientMessageEthereum(
-      {required super.method, required super.params, required super.id});
-  factory ClientMessageEthereum.event(
-      {required EthereumEvnetTypes event, required String requestId}) {
-    return ClientMessageEthereum(
-        method: event.name, params: null, id: requestId);
+class ClientMessageEthereum extends PageMessage {
+  const ClientMessageEthereum({required super.method, required super.params});
+  factory ClientMessageEthereum.event(EthereumEvnetTypes event) {
+    return ClientMessageEthereum(method: event.name, params: null);
   }
   @override
   JSClientType get type => JSClientType.ethereum;
@@ -113,17 +149,14 @@ class ClientMessageEthereum extends ClientMessage {
         cborBytes: bytes, tags: JSClientType.ethereum.tag, object: object);
     final params = StringUtils.toJson(values.elementAt(1));
     return ClientMessageEthereum(
-        method: values.elementAt(0),
-        params: params["result"],
-        id: values.elementAt(2));
+        method: values.elementAt(0), params: params["result"]);
   }
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
           method,
-          StringUtils.fromJson({"result": params}),
-          id,
+          StringUtils.fromJson({"result": params})
         ]),
         type.tag);
   }
@@ -186,5 +219,48 @@ class JSWalletMessageResponseEthereum extends JSWalletNetworkEvent {
           resultAsJsonString
         ]),
         type.tag);
+  }
+}
+
+class EthereumAccountsChanged {
+  final List<String> accounts;
+  final String? defaultAddress;
+  EthereumAccountsChanged(
+      {required List<String> accounts, required this.defaultAddress})
+      : accounts = accounts.imutable;
+  factory EthereumAccountsChanged.fromJson(Map<String, dynamic> json) {
+    return EthereumAccountsChanged(
+        accounts: (json["accounts"] as List).cast(),
+        defaultAddress: json["defaultAddress"]);
+  }
+  Map<String, dynamic> toJson() {
+    return {"accounts": accounts, "defaultAddress": defaultAddress};
+  }
+
+  JSAny? get toJSEvent => accounts.jsify();
+  @JSExport("toString")
+  @override
+  String toString() {
+    return "EthereumAccountsChanged${toJson()}";
+  }
+}
+
+class ProviderConnectInfo {
+  @JSExport("chainId")
+  final String chainId;
+  final BigInt netVersion;
+  ProviderConnectInfo(this.netVersion) : chainId = netVersion.toRadix16;
+  factory ProviderConnectInfo.fromJson(Map<String, dynamic> json) {
+    return ProviderConnectInfo(BigInt.parse(json["net_version"]));
+  }
+  Map<String, dynamic> toJson() {
+    return {"net_version": netVersion.toString()};
+  }
+
+  JSAny? get toJSEvent => createJSInteropWrapper(this);
+  @JSExport("toString")
+  @override
+  String toString() {
+    return "ProviderConnectInfo${toJson()}";
   }
 }

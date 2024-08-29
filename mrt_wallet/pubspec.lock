@@ -122,10 +122,10 @@ packages:
     dependency: "direct main"
     description:
       name: cosmos_sdk
-      sha256: "591bb0b3f328287432ec01d6c6e5239a901938c7fe80144ceb17de6bfc848417"
+      sha256: "48183979afb55bbf0a5123948b700062afe55b298ef5b0560f13d7d362d9c0b8"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   coverage:
     dependency: transitive
     description:
@@ -376,10 +376,10 @@ packages:
     dependency: "direct main"
     description:
       name: on_chain
-      sha256: "53a17cc19c722e3cdef7a34931e7cd07c490443a92bf538f08cc755b854dfb59"
+      sha256: "91a1e248d3a38ada694e0036ba073ec1182668bedbfaaafe3cc068279903c203"
       url: "https://pub.dev"
     source: hosted
-    version: "3.9.0"
+    version: "4.0.0"
   package_config:
     dependency: transitive
     description:

@@ -29,23 +29,61 @@ class EthereumWeb3TypedDataSignRequestView extends StatelessWidget {
             domain: param.domain,
           ),
           WidgetConstant.height20,
-          Text("message".tr, style: context.textTheme.titleMedium),
-          TextAndLinkView(
-              text: "eth_sign_typed_data_desc".tr.replaceOne(param.method.name),
-              url: LinkConst.aboutEthereumTypedData,
-              linkDesc: "read_more".tr),
-          WidgetConstant.height8,
           ContainerWithBorder(
-            onRemove: () {},
-            onRemoveWidget:
-                CopyTextIcon(dataToCopy: param.content, isSensitive: false),
             onTapWhenOnRemove: false,
-            child: SelectableText(
-              param.content,
-              style: context.colors.onPrimaryContainer.bodyMedium(context),
-              maxLines: 5,
-              minLines: 1,
-            ),
+            padding: EdgeInsets.zero,
+            child: Theme(
+                data: context.theme
+                    .copyWith(dividerColor: context.colors.transparent),
+                child: ExpansionTile(
+                  title:
+                      Text("message".tr, style: context.textTheme.titleMedium),
+                  subtitle: TextAndLinkView(
+                      text: "eth_sign_typed_data_desc"
+                          .tr
+                          .replaceOne(param.method.name),
+                      url: LinkConst.aboutEthereumTypedData,
+                      linkDesc: "read_more".tr),
+                  children: List.generate(param.typedDataJson.length, (index) {
+                    final key = param.typedDataJson.keys.elementAt(index);
+                    final value = param.typedDataJson[key];
+                    if (value == null) return WidgetConstant.sizedBox;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ContainerWithBorder(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                key.camelCase,
+                                style: context.colors.onPrimaryContainer
+                                    .lableLarge(context),
+                              ),
+                              ContainerWithBorder(
+                                backgroundColor:
+                                    context.colors.onPrimaryContainer,
+                                constraints: null,
+                                child: CopyTextIcon(
+                                  dataToCopy: value.toString(),
+                                  isSensitive: false,
+                                  color: context.colors.primaryContainer,
+                                  widget: SelectableText(
+                                    value.toString(),
+                                    style: context.colors.primaryContainer
+                                        .bodyMedium(context),
+                                    maxLines: 4,
+                                    minLines: 1,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                )),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

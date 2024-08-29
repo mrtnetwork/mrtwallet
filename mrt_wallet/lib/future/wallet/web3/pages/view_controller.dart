@@ -49,7 +49,6 @@ class Web3PageRequestControllerView<T extends Web3RequestControllerState>
               builder: (controller) => Web3PageProgress(
                   key: controller.progressKey,
                   initialStatus: Web3ProgressStatus.progress,
-                  // initialWidget: ProgressWithTextView(text: text),
                   child: (c) => CustomScrollView(slivers: [
                         SliverConstraintsBoxView(
                             padding: WidgetConstant.paddingHorizontal20,

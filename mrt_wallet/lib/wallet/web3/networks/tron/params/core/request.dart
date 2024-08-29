@@ -1,5 +1,7 @@
 import 'package:mrt_wallet/wallet/web3/networks/tron/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/params/models/request_account.dart';
+import 'package:mrt_wallet/wallet/web3/networks/tron/params/models/sign_message_v2.dart';
+import 'package:mrt_wallet/wallet/web3/networks/tron/params/models/transaction.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/permission/permission.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
@@ -49,10 +51,15 @@ abstract class Web3TronRequestParam<RESPONSE> extends Web3RequestParams<
         tags: Web3MessageTypes.walletRequest.tag);
     final method = Web3RequestMethods.fromTag(values.elementAt(0));
     final Web3TronRequestParam param;
-    // throw UnimplementedError();
     switch (method) {
       case Web3TronRequestMethods.requestAccounts:
         param = Web3TronRequestAccounts.deserialize(
+            bytes: bytes, object: object, hex: hex);
+      case Web3TronRequestMethods.signTransaction:
+        param = Web3TronSendTransaction.deserialize(
+            bytes: bytes, object: object, hex: hex);
+      case Web3TronRequestMethods.signMessageV2:
+        param = Web3TronSignMessageV2.deserialize(
             bytes: bytes, object: object, hex: hex);
       default:
         throw Web3RequestExceptionConst.internalError;
@@ -72,6 +79,10 @@ class Web3TronRequest<RESPONSE, PARAMS extends Web3TronRequestParam<RESPONSE>>
       required super.info,
       required super.authenticated,
       required super.chain});
+
+  Web3TronRequest<R, P> cast<R, P extends Web3TronRequestParam<R>>() {
+    return this as Web3TronRequest<R, P>;
+  }
 
   @override
   Web3TronChain? get currentPermission =>

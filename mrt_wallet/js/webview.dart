@@ -22,24 +22,31 @@ void main(List<String> args) async {
 
   final completer = Completer<JSWebviewWallet>();
   bool onActivation(JSWalletEvent data) {
-    try {
-      final String clientId = mrt.scriptId;
-      final walletEvent = data.toEvent();
-      if (walletEvent == null || walletEvent.clientId != clientId) return false;
-      if (walletEvent.type == WalletEventTypes.exception) {
+    final walletEvent = data.toEvent();
+    if (walletEvent == null || walletEvent.clientId != mrt.clientId) {
+      return false;
+    }
+    switch (walletEvent.type) {
+      case WalletEventTypes.exception:
         final message =
             Web3ExceptionMessage.deserialize(bytes: walletEvent.data);
         completer.completeError(message.toWalletError());
         return false;
-      }
-      if (walletEvent.type != WalletEventTypes.activation) {
+      case WalletEventTypes.activation:
+        final target = JSWebviewTraget.fromName(walletEvent.additional);
+        if (target == null) {
+          return false;
+        }
+        final wallet = JSWebviewWallet.initialize(
+          request: walletEvent,
+          clientId: walletEvent.clientId,
+          target: target,
+        );
+        completer.complete(wallet);
+        return true;
+      default:
         return false;
-      }
-      final wallet =
-          JSWebviewWallet.initialize(request: walletEvent, clientId: clientId);
-      completer.complete(wallet);
-    } catch (e, s) {}
-    return true;
+    }
   }
 
   mrt.onMrtMessage = onActivation.toJS;

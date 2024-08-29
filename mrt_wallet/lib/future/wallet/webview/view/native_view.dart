@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -10,15 +12,20 @@ import 'package:mrt_wallet/app/models/models/typedef.dart';
 class MRTAndroidViewController<T> {
   final T controller;
   final int id;
+  final String viewType;
   DynamicVoid? onFocus;
   final FocusNode node;
   MRTAndroidViewController(
-      {required this.controller, required this.id, required this.node});
+      {required this.controller,
+      required this.id,
+      required this.node,
+      required this.viewType});
   static Future<MRTAndroidViewController> create(
       {required String viewType,
       Map<String, String> createParms = const {},
       TextDirection layoutDirection = TextDirection.ltr}) async {
-    final id = platformViewsRegistry.getNextPlatformViewId();
+    /// platformViewsRegistry.getNextPlatformViewId()
+    final id = Random.secure().nextInt(100) + 50;
     final node = FocusNode(debugLabel: "MRTAndroidViewController $id");
     Object controller;
 
@@ -46,7 +53,8 @@ class MRTAndroidViewController<T> {
         },
       );
     }
-    return MRTAndroidViewController(controller: controller, id: id, node: node);
+    return MRTAndroidViewController(
+        controller: controller, id: id, node: node, viewType: viewType);
   }
 
   void dispose() {
@@ -54,7 +62,9 @@ class MRTAndroidViewController<T> {
       (controller as AndroidViewController).dispose();
     } else {
       (controller as UiKitViewController).dispose();
+      PlatformInterface.webViewController.dispose(viewType);
     }
+
     node.dispose();
   }
 }

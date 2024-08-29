@@ -19,6 +19,7 @@ interface WebViewConst {
         const val goForward: String = "goForward"
         const val reload: String = "reload"
         const val request: String = "request"
+        const val dispose: String = "dispose"
 
     }
 

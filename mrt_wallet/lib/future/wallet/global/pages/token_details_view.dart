@@ -12,12 +12,14 @@ class TokenDetailsView extends StatelessWidget {
     this.onSelectWidget,
     this.onSelectIcon,
     this.backgroundColor,
+    this.radius = 40,
   });
   final TokenCore token;
   final DynamicVoid? onSelect;
   final Widget? onSelectWidget;
   final Widget? onSelectIcon;
   final Color? backgroundColor;
+  final double radius;
   @override
   Widget build(BuildContext context) {
     return ContainerWithBorder(
@@ -27,7 +29,7 @@ class TokenDetailsView extends StatelessWidget {
       backgroundColor: backgroundColor,
       child: Row(
         children: [
-          CircleTokenImgaeView(token.token, radius: 40),
+          CircleTokenImgaeView(token.token, radius: radius),
           WidgetConstant.width8,
           Expanded(
               child: Column(

@@ -29,6 +29,8 @@ extension type Window._(JSObject _) implements WebEventStream {
   external BarcodeDetector? get barcode;
   @JS("navigator")
   external JSNavigator get navigator;
+  @JS("navigator")
+  external JSNavigator? get navigatorNullable;
   @JS("URL")
   external URL get url;
   @JS("document")

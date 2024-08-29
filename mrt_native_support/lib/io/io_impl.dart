@@ -69,6 +69,7 @@ class IoPlatformInterface extends MrtPlatformInterface {
   Future<Map<String, String>> readAllSecure({String? prefix}) async {
     final data = await _channel
         .invokeMethod(MrtNativeConst.secureStorageMethod, {"type": "readAll"});
+
     Map<String, String> values = Map<String, String>.from(data!);
     if (prefix != null) {
       values = values..removeWhere((k, v) => !k.startsWith(prefix));

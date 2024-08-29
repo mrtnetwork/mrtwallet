@@ -18,6 +18,8 @@ external JSFunction get _OnContentListener;
 
 class _Wallet extends WalletCore {
   @override
+  bool get isJsWallet => true;
+  @override
   void onChange() {}
 
   @override

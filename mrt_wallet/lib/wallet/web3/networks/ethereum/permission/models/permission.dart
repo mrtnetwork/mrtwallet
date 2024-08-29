@@ -102,7 +102,7 @@ class Web3EthereumChain
     return accounts.firstWhereOrNull((e) => e.address == address);
   }
 
-  void updateChainId(EthereumChain chain) {
+  void setActiveChain(EthereumChain chain) {
     _currentChain = chain.chainId;
   }
 

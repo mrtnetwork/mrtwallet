@@ -21,10 +21,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() async {
-  // run();
-  runZonedGuarded(run, (error, stack) {
-    WalletLogging.log("zone error $error $stack");
-  });
+  runZonedGuarded(run, (error, stack) {});
 }
 
 void run() async {
@@ -38,7 +35,8 @@ void run() async {
     await PlatformInterface.instance.desktop.setBounds(
         pixelRatio: pixelRatio,
         size: const WidgetSize(width: 500, height: 700));
-    // await PlatformInterface.instance.desktop.setResizable(false);
+    await PlatformInterface.instance.desktop.setMaximumSize(const WidgetSize(
+        width: APPConst.desktopAppHeight, height: APPConst.desktopAppWidth));
   }
   final config = await PlatformInterface.instance.getConfig();
   final materialData =
@@ -66,12 +64,12 @@ class MyBTC extends StatelessWidget {
           title: APPConst.name,
           scrollBehavior: AppScrollBehavior(PlatformInterface.appPlatform),
           builder: (context, child) {
-            if (PlatformInterface.appPlatform.isDesktop ||
-                PlatformInterface.isWeb) {
+            if (PlatformInterface.appPlatform.isDesktop) {
               return ConstraintsBoxView(
-                maxWidth: 1200,
-                child: child!,
-              );
+                  maxWidth: APPConst.desktopAppWidth, child: child!);
+            }
+            if (PlatformInterface.isWeb) {
+              return ConstraintsBoxView(child: child!);
             }
             return child!;
           },

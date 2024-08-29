@@ -21,6 +21,7 @@ class AddressDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
+    final network = wallet.wallet.networkById(address.network);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,11 +48,11 @@ class AddressDetailsView extends StatelessWidget {
         OneLineTextWidget(address.address.toAddress,
             style: context.textTheme.bodyMedium?.copyWith(color: color)),
         AddressDrivationInfo(address.keyIndex, color: color),
-        if (showBalance)
+        if (showBalance && network != null)
           CoinPriceView(
               account: address,
               style: context.textTheme.titleLarge?.copyWith(color: color),
-              token: wallet.wallet.network.coinParam.token,
+              token: network.token,
               symbolColor: color),
       ],
     );

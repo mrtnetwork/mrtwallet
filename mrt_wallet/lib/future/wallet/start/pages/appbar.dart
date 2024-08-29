@@ -80,14 +80,13 @@ class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ),
                 )
           }),
-          if (!chainAccount.network.coinParam.mainnet)
+          if (chainAccount.network.coinParam.isTestNet)
             Positioned(
                 top: 0,
                 right: 10,
                 child: ToolTipView(
                   message: "testnet_price_desc".tr,
                   child: Card(
-                    // elevation: 1,
                     color: context.colors.errorContainer,
                     shape: RoundedRectangleBorder(
                         borderRadius: WidgetConstant.border4),

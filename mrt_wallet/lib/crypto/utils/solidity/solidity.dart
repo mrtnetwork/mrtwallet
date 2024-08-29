@@ -1,11 +1,11 @@
-import 'package:on_chain/ethereum/src/address/evm_address.dart';
+import 'package:on_chain/solidity/address/core.dart';
 import 'package:on_chain/solidity/contract/fragments.dart';
 
 class SolidityContractUtils {
   static const int abiSelectorLength = 4;
 
   static List<int>? getSelector(List<int> data) {
-    if (data.length > abiSelectorLength) {
+    if (data.length >= abiSelectorLength) {
       return data.sublist(0, abiSelectorLength);
     }
     return null;
@@ -20,7 +20,7 @@ class SolidityContractUtils {
     ],
     "stateMutability": "view",
     "type": "function"
-  }, false);
+  });
   static final AbiFunctionFragment erc20Balance =
       AbiFunctionFragment.fromJson(const {
     "inputs": [
@@ -32,7 +32,7 @@ class SolidityContractUtils {
     ],
     "stateMutability": "view",
     "type": "function"
-  }, false);
+  });
   static final AbiFunctionFragment erc20Name =
       AbiFunctionFragment.fromJson(const {
     "inputs": [],
@@ -42,7 +42,19 @@ class SolidityContractUtils {
     ],
     "stateMutability": "view",
     "type": "function"
-  }, false);
+  });
+  static final AbiFunctionFragment supperInterfaceId =
+      AbiFunctionFragment.fromJson(const {
+    "inputs": [
+      {"internalType": "bytes4", "name": "interfaceId", "type": "bytes4"}
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {"internalType": "bool", "name": "", "type": "bool"}
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  });
 
   static final AbiFunctionFragment erc20Symbol =
       AbiFunctionFragment.fromJson(const {
@@ -53,7 +65,7 @@ class SolidityContractUtils {
     ],
     "stateMutability": "view",
     "type": "function"
-  }, false);
+  });
   static final AbiFunctionFragment erc20Transfer =
       AbiFunctionFragment.fromJson(const {
     "inputs": [
@@ -66,9 +78,9 @@ class SolidityContractUtils {
     ],
     "stateMutability": "nonpayable",
     "type": "function"
-  }, false);
+  });
 
-  static SolidityEncoderResult<ETHAddress, BigInt, void, void, void>
+  static SolidityEncoderResult<SolidityAddress, BigInt, void, void, void>
       decodeErc20Transfer(List<int> data) {
     return decodeInput(fragment: erc20Transfer, data: data);
   }
@@ -77,19 +89,6 @@ class SolidityContractUtils {
     final r = result.elementAtOrNull(index);
     if (r == null && null is T) return null as T;
     return r as T;
-    // if (T == BigInt) {
-    //   return BigintUtils.parse(r) as T;
-    // }
-    // if (T == int) {
-    //   return IntUtils.parse(r) as T;
-    // }
-    // if (T == List<int>) {
-    //   return BytesUtils.toBytes((r as List).cast()) as T;
-    // }
-    // if (T == ETHAddress) {
-    //   return ETHAddress.fromBytes((r as List).cast()) as T;
-    // }
-    // throw WalletExceptionConst.unsuportedFeature;
   }
 
   static SolidityEncoderResult<A, B, C, D, E> decodeInput<A, B, C, D, E>(

@@ -14,13 +14,8 @@ class Web3EthreumPersonalSign extends Web3EthereumRequestParam<String> {
   final String challeng;
   final String? content;
 
-  final BigInt chainId;
-
   Web3EthreumPersonalSign(
-      {required this.address,
-      required this.challeng,
-      this.content,
-      required this.chainId});
+      {required this.address, required this.challeng, this.content});
 
   factory Web3EthreumPersonalSign.fromJson(Map<String, dynamic> json) {
     const method = Web3EthereumRequestMethods.sendTransaction;
@@ -37,8 +32,6 @@ class Web3EthreumPersonalSign extends Web3EthereumRequestParam<String> {
             json: json),
         challeng: Web3ValidatorUtils.parseHex<String>(
             key: "challeng", method: method, json: json),
-        chainId: Web3ValidatorUtils.parseBigInt<BigInt>(
-            key: "chainId", method: method, json: json),
         content: content);
   }
 
@@ -57,8 +50,7 @@ class Web3EthreumPersonalSign extends Web3EthereumRequestParam<String> {
     return Web3EthreumPersonalSign(
         address: ETHAddress(values.elementAt(1)),
         challeng: BytesUtils.toHexString(challeng, prefix: "0x"),
-        content: values.elementAt(4),
-        chainId: values.elementAt(3));
+        content: values.elementAt(3));
   }
 
   @override
@@ -72,7 +64,6 @@ class Web3EthreumPersonalSign extends Web3EthereumRequestParam<String> {
           method.tag,
           address.address,
           CborBytesValue(BytesUtils.fromHexString(challeng)),
-          chainId,
           content
         ]),
         type.tag);

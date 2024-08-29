@@ -65,7 +65,7 @@ class RipplePaymentFieldsView extends StatelessWidget {
                 "setup_output_amount".tr,
                 child: SetupNetworkAmount(
                   token: account.network.coinParam.token,
-                  max: address.address.balance.value.balance,
+                  max: address.address.currencyBalance,
                   min: BigInt.zero,
                   subtitle: validator.destination.hasValue
                       ? ReceiptAddressView(

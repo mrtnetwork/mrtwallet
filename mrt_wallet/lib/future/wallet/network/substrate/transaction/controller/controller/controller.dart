@@ -63,7 +63,7 @@ class SubstrateTransactionStateController extends SubstrateTransactiomImpl
   @override
   void onCalculateAmount() {
     final totalAmounts = validator.validator.callValue;
-    final remind = address.address.balance.value.balance - totalAmounts;
+    final remind = address.address.currencyBalance - totalAmounts;
     remindAmount.updateBalance(remind);
 
     _trIsReady = _isReady();

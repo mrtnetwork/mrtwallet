@@ -1,0 +1,14 @@
+{
+  "images" : [
+    {
+      "filename" : "app_icon_512.png",
+      "idiom" : "mac",
+      "scale" : "2x",
+      "size" : "256x256"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

@@ -23,6 +23,9 @@ private class WebViewMethods{
         return true
         
     }
+    static func removeView( id:String){
+        webViewFactories.removeValue(forKey: id)
+    }
 }
 
 
@@ -83,6 +86,11 @@ extension MrtNativeSupportPlugin {
                 break
             case WebViewConst.reload:
                 factory.reload()
+                result(true)
+                break
+            case WebViewConst.dispose:
+                factory.dispose()
+                WebViewMethods.removeView(id: factory.id)
                 result(nil)
                 break
             case WebViewConst.updateFrame:

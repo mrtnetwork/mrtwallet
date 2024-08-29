@@ -74,6 +74,8 @@ class MrtNativeSupport : public flutter::Plugin {
   double pixel_ratio_ = 1;
   bool is_frameless_ = false;
   bool IsMaximized();
+  bool SetMinimumSize(const flutter::EncodableMap& argsRef);
+  bool SetMaximumSize(const flutter::EncodableMap& argsRef);
   bool IsMinimized();
   void Restore();
   bool is_resizable_ = true;

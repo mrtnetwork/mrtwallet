@@ -36,12 +36,14 @@ class APIUtils {
         network: network);
   }
 
-  static EVMRPC _buildEthereumRPC(EthereumAPIProvider provider) {
+  static EVMRPC _buildEthereumRPC(EthereumAPIProvider provider,
+      {Duration? requestTimeout}) {
     if (provider.protocol == ServiceProtocol.websocket) {
       return EVMRPC(
           EthereumWebsocketService(provider: provider, url: provider.uri));
     }
-    return EVMRPC(EthereumHTTPService(provider.uri, provider));
+    return EVMRPC(EthereumHTTPService(provider.uri, provider,
+        requestTimeout: requestTimeout));
   }
 
   static RpcService _buildRippleProvider(RippleAPIProvider provider) {
@@ -61,9 +63,11 @@ class APIUtils {
   }
 
   static EthereumClient buildEthereumProvider(
-      EthereumAPIProvider provider, WalletNetwork network) {
+      EthereumAPIProvider provider, WalletNetwork network,
+      {Duration? requestTimeout}) {
     return EthereumClient(
-        provider: _buildEthereumRPC(provider), network: network);
+        provider: _buildEthereumRPC(provider, requestTimeout: requestTimeout),
+        network: network);
   }
 
   static RippleClient buildRippleProvider(
@@ -125,8 +129,11 @@ class APIUtils {
   }
 
   static T? createApiClient<T extends NetworkClient>(WalletNetwork network,
-      {APIProvider? service}) {
-    APIProvider? serviceProvider = network.getProvider(service);
+      {APIProvider? service,
+      Duration? requestTimeut,
+      bool allowInWeb3 = false}) {
+    APIProvider? serviceProvider =
+        network.getProvider(selectProvider: service, allowInWeb3: allowInWeb3);
     serviceProvider ??=
         ProvidersConst.getDefaultService(network, service: service);
     if (serviceProvider == null) return null;
@@ -145,7 +152,8 @@ class APIUtils {
             serviceProvider.toProvider(), network.toNetwork());
         break;
       case NetworkType.ethereum:
-        client = buildEthereumProvider(serviceProvider.toProvider(), network);
+        client = buildEthereumProvider(serviceProvider.toProvider(), network,
+            requestTimeout: requestTimeut);
         break;
       case NetworkType.xrpl:
         client = buildRippleProvider(

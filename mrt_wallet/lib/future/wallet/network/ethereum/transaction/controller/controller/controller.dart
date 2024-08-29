@@ -29,7 +29,7 @@ class EthereumTransactionStateController extends EthTransactionImpl
     final transactionValue = validator.validator.callValue +
         (currentEIP1559Fee?.fee.balance ?? BigInt.zero);
     _remindAmount.updateBalance(
-        account.address.address.balance.value.balance - transactionValue);
+        account.address.address.currencyBalance - transactionValue);
     if (validator.validator.mode != ETHTransactionMode.erc20Transfer) {
       remindAmount = (_remindAmount, network.coinParam.token);
     } else {
@@ -111,6 +111,8 @@ class EthereumTransactionStateController extends EthTransactionImpl
     estimateGasLimit();
   }
 
+  /// 0x32Acb58B4F478372FEDB3ad52bC8a048Cbb3575A
+  /// 0xe302bE89e4ab134bc9C82Bb413773bbD79c31bAC
   void _init() {
     if (validator.validator.mode == ETHTransactionMode.erc20Transfer) {
       final tokenTransferFiled = validator.validator as EthereumTransferForm;

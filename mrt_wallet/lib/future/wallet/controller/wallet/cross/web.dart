@@ -75,7 +75,7 @@ class ExtentionWallet extends UIWallet
     });
     await super.initWallet(initialPassword: loginHistory);
     if (loginHistory != null && isUnlock) {
-      await _lock.synchronized(() async {
+      _lock.synchronized(() async {
         return await saveLoginHistory(loginHistory);
       });
     }

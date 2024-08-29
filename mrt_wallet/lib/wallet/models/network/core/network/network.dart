@@ -4,7 +4,6 @@ import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/api.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -32,17 +31,23 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
   List<CryptoCoins> get coins;
   List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
 
-  T? getProvider<T extends APIProvider>([APIProvider? selectProvider]) {
-    final supportedProviders = coinParam.providers.whereType<T>().where(
-        (element) =>
-            element.protocol.platforms.contains(PlatformInterface.appPlatform));
+  T? getProvider<T extends APIProvider>(
+      {T? selectProvider, bool allowInWeb3 = false}) {
+    Iterable<T> supportedProviders = coinParam.providers.whereType<T>().where(
+        (element) => element.protocol
+            .supportOnThisPlatform(PlatformInterface.appPlatform));
+    if (allowInWeb3) {
+      supportedProviders = supportedProviders.where((e) => e.allowInWeb3);
+    }
     if (supportedProviders.isEmpty) return null;
-    if (selectProvider == null) return supportedProviders.first;
-    return MethodUtils.nullOnException(() {
-      return coinParam.providers.whereType<T>().firstWhere((element) =>
-          element.serviceName == selectProvider.serviceName &&
-          element.protocol == selectProvider.protocol);
-    });
+
+    if (selectProvider == null ||
+        !selectProvider.protocol
+            .supportOnThisPlatform(PlatformInterface.appPlatform)) {
+      return supportedProviders.first;
+    }
+    return supportedProviders.firstWhere((element) => element == selectProvider,
+        orElse: () => supportedProviders.first);
   }
 
   T toNetwork<T extends WalletNetwork>() {

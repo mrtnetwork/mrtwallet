@@ -5,7 +5,7 @@ class TronIssueTRC10Token {
   final TronAddress ownerAddress;
   final String name;
   final String? abbr;
-  final int? totalSupply;
+  final BigInt? totalSupply;
   final int? precision;
   final String? description;
   final String? url;
@@ -27,7 +27,7 @@ class TronIssueTRC10Token {
       ownerAddress: TronAddress(json['owner_address']),
       name: StringUtils.decode(BytesUtils.fromHexString(json['name'])),
       abbr: StringUtils.tryDecode(BytesUtils.tryFromHexString(json['abbr'])),
-      totalSupply: json['total_supply'],
+      totalSupply: BigintUtils.tryParse(json['total_supply']),
       precision: json['precision'],
       description: StringUtils.tryDecode(
           BytesUtils.tryFromHexString(json['description'])),

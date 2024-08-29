@@ -2,7 +2,10 @@ import 'package:mrt_wallet/app/models/models/image.dart';
 
 class APPConst {
   static const String assetErc20Abi = "assets/solidity/erc20.json";
+  static const String assetErc721Abi = "assets/solidity/erc721.json";
+  static const String assetErc1155Abi = "assets/solidity/erc1155.json";
   static const String assetWebviewScript = "assets/webview/script.js";
+  static const String assetsTronWeb = "assets/webview/tron_web.js";
   static final APPImage logo = APPImage.local("assets/image/mrt_wallet.png");
   static final APPImage telegramLogo = APPImage.local("assets/image/t.png");
   static final APPImage githubLogo = APPImage.local("assets/image/g.png");
@@ -47,7 +50,9 @@ class APPConst {
   static const double qrCodeWidth = 300;
   static final RegExp accountNameRegExp = RegExp(r'^[^\n]{0,20}$');
   static final RegExp keyNameRegex = RegExp(r'^[^\n]{0,20}$');
-
+  static const double circleRadius25 = 25;
+  static const double desktopAppWidth = 1200;
+  static const double desktopAppHeight = 768;
   static const String exampleBase58 = "sEd7FSsSXz9CGy18ajtP8nAkrr....";
   static const String exampleHex = "";
 

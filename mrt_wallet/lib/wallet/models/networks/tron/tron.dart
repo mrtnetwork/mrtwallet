@@ -5,3 +5,4 @@ export 'models/issue_token.dart';
 export 'models/tron_account_info.dart';
 export 'models/tron_fee.dart';
 export 'models/chain_type.dart';
+export 'models/web3_transaction_info.dart';

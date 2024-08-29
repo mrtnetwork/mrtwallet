@@ -9,15 +9,30 @@ import 'package:on_chain/tron/tron.dart';
 
 class Web3TronChainAccount extends Web3ChainAccount<TronAddress> {
   final TronChainType chain;
-  Web3TronChainAccount(
-      {required super.keyIndex, required super.address, required this.chain});
+  Web3TronChainAccount({
+    required super.keyIndex,
+    required super.address,
+    required super.defaultAddress,
+    required this.chain,
+  });
   factory Web3TronChainAccount.fromChainAccount(
-      {required ITronAddress address, required TronChainType chain}) {
+      {required ITronAddress address,
+      required TronChainType chain,
+      required bool isDefault}) {
     return Web3TronChainAccount(
         keyIndex: address.keyIndex,
         address: address.networkAddress,
+        chain: chain,
+        defaultAddress: isDefault);
+  }
+  Web3TronChainAccount changeDefault(bool defaultAddress) {
+    return Web3TronChainAccount(
+        keyIndex: keyIndex,
+        address: address,
+        defaultAddress: defaultAddress,
         chain: chain);
   }
+
   factory Web3TronChainAccount.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborListValue values = CborSerializable.cborTagValue(
@@ -29,14 +44,19 @@ class Web3TronChainAccount extends Web3ChainAccount<TronAddress> {
         keyIndex: AddressDerivationIndex.fromCborBytesOrObject(
             obj: values.getCborTag(0)),
         address: TronAddress(values.elementAt(1)),
-        chain: TronChainType.fromName(values.elementAt(2)));
+        chain: TronChainType.fromName(values.elementAt(2)),
+        defaultAddress: values.elementAt(3));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength(
-            [keyIndex.toCbor(), address.toAddress(), chain.name]),
+        CborListValue.fixedLength([
+          keyIndex.toCbor(),
+          address.toAddress(),
+          chain.name,
+          defaultAddress
+        ]),
         CborTagsConst.web3TronAccount);
   }
 

@@ -3,6 +3,8 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 
+import '../../constant/constant.dart';
+import '../../utils/utils/utils.dart';
 import 'ethreum/ethereum.dart';
 import 'tron/tron.dart';
 
@@ -56,6 +58,10 @@ abstract class JSWalletMessage with CborSerializable {
     }
     return this as T;
   }
+
+  T dataAs<T>() {
+    return data as T;
+  }
 }
 
 abstract class JSWalletNetworkEvent extends JSWalletMessage {
@@ -75,6 +81,8 @@ abstract class JSWalletNetworkEvent extends JSWalletMessage {
     switch (client) {
       case JSClientType.ethereum:
         return JSWalletMessageResponseEthereum.deserialize(object: cbor);
+      case JSClientType.tron:
+        return JSWalletMessageResponseTron.deserialize(object: cbor);
       default:
     }
     throw Web3RequestExceptionConst.internalError;
@@ -148,14 +156,36 @@ enum JSClientType {
   }
 }
 
-abstract class ClientMessage with CborSerializable {
-  final String method;
+class JSPageRequest with CborSerializable {
+  JSClientType get type => message.type;
   final String id;
+  final PageMessage message;
+  const JSPageRequest({required this.message, required this.id});
+  factory JSPageRequest.deserialize(
+      {List<int>? bytes, String? cborHex, CborObject? object}) {
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes,
+        hex: cborHex,
+        object: object,
+        tags: JSWalletConstant.pageRequestTag);
+    return JSPageRequest(
+        message: PageMessage.deserialize(object: values.getCborTag(0)),
+        id: values.elementAt(1));
+  }
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([message.toCbor(), id]),
+        JSWalletConstant.pageRequestTag);
+  }
+}
+
+abstract class PageMessage with CborSerializable {
+  final String method;
   abstract final JSClientType type;
   final Object? params;
-  const ClientMessage(
-      {required this.method, required this.params, required this.id});
-  factory ClientMessage.deserialize(
+  const PageMessage({required this.method, required this.params});
+  factory PageMessage.deserialize(
       {List<int>? bytes, String? cborHex, CborObject? object}) {
     final CborTagValue tag =
         CborSerializable.decode(cborBytes: bytes, hex: cborHex, object: object);
@@ -177,6 +207,14 @@ abstract class ClientMessage with CborSerializable {
         return null;
       }
       return listParam;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  Map<K, V>? paramsAsMap<K, V>() {
+    try {
+      return JsUtils.toMap<K, V>(params);
     } catch (e) {
       return null;
     }

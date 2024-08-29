@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 5.5.1+12
+version: 5.6.1+13
 
 homepage: "https://github.com/mrtnetwork/mrtwallet"
 repository: "https://github.com/mrtnetwork/mrtwallet"
@@ -33,7 +33,7 @@ topics:
 
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: '>=3.4.0 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -57,10 +57,13 @@ dependencies:
 
   xrpl_dart: ^4.6.0
 
-  on_chain: ^3.9.0
+  on_chain: ^4.0.0
+
+  # on_chain:
+  #   path: ../../../bitcoin/on_chain
 
 
-  cosmos_sdk: ^1.1.0
+  cosmos_sdk: ^1.2.0
 
   ton_dart: ^0.0.4
 
@@ -153,6 +156,6 @@ msix_config:
     display_name: MRT Wallet
     publisher_display_name: MRT NETWORK
     identity_name: com.mrtnetwork.wallet
-    msix_version: 5.6.0.0
+    msix_version: 5.7.0.0
     logo_path: C:\in_work\bitcoin\mrt_wallet\mrt_wallet\assets\image\mrt_wallet.png
     publish_folder_path: C:\in_work\bitcoin\mrt_wallet\mrt_wallet\build\msix\

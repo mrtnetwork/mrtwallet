@@ -2,17 +2,16 @@ import Cocoa
 import FlutterMacOS
 import WebKit
 
-class WebViewWrapper: NSView {
-}
+
 class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelegate {
     private var webView: WKWebView!
-    private var id:String
+    public let id:String
     private var channel: FlutterMethodChannel
     private var webConfiguration:WKWebViewConfiguration
-    private var view: WebViewWrapper!
+    //    private var view: WebViewWrapper!
     private var viewWidth: CGFloat = 0
     private var viewHeight: CGFloat = 0
-    
+
     
     
     init(channel: FlutterMethodChannel,id:String,url:String?,jsInterface: String?) {
@@ -48,7 +47,7 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
         withViewIdentifier viewId: Int64,
         arguments args: Any?
     ) -> NSView {
-        view = WebViewWrapper(frame: .zero)
+        let view = NSView(frame: .zero)
         webView.autoresizingMask = [.width, .height]
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(self.webView)
@@ -62,20 +61,7 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
     public func createArgsCodec() -> (FlutterMessageCodec & NSObjectProtocol)? {
         return FlutterStandardMessageCodec.sharedInstance()
     }
-    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        
-        //        webView.evaluateJavaScript(WebViewConst.faviIconScript) { result, error in
-        //            if let result = result as? String {
-        //                let data = WebViewData.toJson(id: self.id, eventName: WebViewConst.onPageStart, view: webView, url: webView.url?.absoluteString, favicon: result)
-        //                self.channel.invokeMethod(WebViewConst.webView, arguments: data.toJson())
-        //            } else {
-        //                let data = WebViewData.toJson(id: self.id, eventName: WebViewConst.onPageStart, view: webView, url: webView.url?.absoluteString)
-        //                self.channel.invokeMethod(WebViewConst.webView, arguments: data.toJson())
-        //
-        //            }
-        //        }
-        
-    }
+    
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         let data = WebViewData.toJson(
@@ -85,7 +71,7 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
             url: webView.url?.absoluteString
         )
         self.channel.invokeMethod(WebViewConst.webView, arguments: data.toJson())
-
+        
     }
     
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
@@ -116,6 +102,13 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
             self.channel.invokeMethod(WebViewConst.webView, arguments: data.toJson())
         }
     }
+    func dispose(){
+        
+        webView?.stopLoading()
+        
+        webView?.removeFromSuperview()
+        
+    }
     func openPage(url: String) {
         if let url = URL(string: url) {
             let request = URLRequest(url: url)
@@ -125,12 +118,7 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
     func updateFrameSize(width:CGFloat,height:CGFloat) {
         self.viewWidth = width
         self.viewHeight = height
-        //        let script = """
-        //          document.body.style.overflowX = 'hidden';
-        //          document.body.style.width = '\(width)px';
-        //          document.documentElement.style.width = '100%';
-        //          """
-        //        webView.evaluateJavaScript(script, completionHandler: nil)
+        
     }
     private func convertToString(_ result: Any?) -> String? {
         guard let result = result else { return nil }
@@ -182,12 +170,12 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
             // Capture uncaught errors
             window.onerror = function(message, source, lineno, colno, error) {
                 // Concatenate all the details into a single message string
-                var fullMessage = `Error: ${message} \nSource: ${source} \nLine: ${lineno}, Column: ${colno} \nDetails: ${error ? error.toString() : 'No additional details'}`;
+                var fullMessage = `Error: ${error ? error.toString() : 'No additional details'}`;
         
                 // Send the message to the native side
                 window.webkit.messageHandlers.MRT.postMessage({
                     type: 'log',
-                    message: fullMessage,
+                    data: fullMessage,
                     id: '1',
                     requestId: '0',
                 });
@@ -198,19 +186,19 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
                 var originalLog = console.log;
                 console.log = function(message) {
                     originalLog.apply(console, arguments);
-                    window.webkit.messageHandlers.MRT.postMessage({type: 'log', data: message,id:'1',requestId:'0'});
+                    window.webkit.messageHandlers.MRT.postMessage({type: 'log', data: JSON.stringify(message),id:'1',requestId:'0'});
                 };
                 
                 var originalError = console.error;
                 console.error = function(message) {
                     originalError.apply(console, arguments);
-                    window.webkit.messageHandlers.MRT.postMessage({type: 'log', data: message,id:'1',requestId:'0'});
+                    window.webkit.messageHandlers.MRT.postMessage({type: 'log', data: JSON.stringify(message),id:'1',requestId:'0'});
                 };
         
                 var originalWarn = console.warn;
                 console.warn = function(message) {
                     originalWarn.apply(console, arguments);
-                    window.webkit.messageHandlers.MRT.postMessage({type: 'log', data: message,id:'1',requestId:'0'});
+                    window.webkit.messageHandlers.MRT.postMessage({type: 'log', data: JSON.stringify(message),id:'1',requestId:'0'});
                 };
             })();
         """

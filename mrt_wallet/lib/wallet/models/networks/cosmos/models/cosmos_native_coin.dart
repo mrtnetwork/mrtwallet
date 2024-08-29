@@ -12,7 +12,7 @@ class CosmosNativeCoin with CborSerializable {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.cosmosNativeToken);
     return CosmosNativeCoin(
-        decimal: cbor.getElement(0), denom: cbor.getElement(1));
+        decimal: cbor.elementAt(0), denom: cbor.elementAt(1));
   }
 
   @override

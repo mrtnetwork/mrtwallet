@@ -53,9 +53,8 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
   @override
   void onCalculateAmount() {
     final totalAmounts = validator.validator.callValue;
-    final remind = address.address.balance.value.balance -
-        totalAmounts -
-        feeAmount.balance;
+    final remind =
+        address.address.currencyBalance - totalAmounts - feeAmount.balance;
     remindAmount.updateBalance(remind);
     _trIsReady = _isReady();
     notify();

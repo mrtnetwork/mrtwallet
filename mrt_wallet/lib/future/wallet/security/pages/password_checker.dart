@@ -206,11 +206,9 @@ class _PasswordWriterView extends StatelessWidget {
                               const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
-                                    Icons.security,
-                                    size: APPConst.double80,
-                                    color: ColorConst.green,
-                                  ),
+                                  Icon(Icons.security,
+                                      size: APPConst.double80,
+                                      color: ColorConst.green),
                                 ],
                               ),
                               WidgetConstant.height8,

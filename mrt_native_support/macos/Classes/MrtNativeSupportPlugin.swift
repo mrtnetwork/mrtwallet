@@ -205,6 +205,14 @@ public class MrtNativeSupportPlugin: NSObject, FlutterPlugin,MethodHandler {
                 windowManager.setResizable(args)
                 result(true)
                 break
+            case "maximumSize":
+                windowManager.setMaximumSize(args)
+                result(true)
+                break
+            case "minimumSize":
+                windowManager.setMinimumSize(args)
+                result(true)
+                break
             case "isFocused":
                 let isFocused = windowManager.isFocused()
                 result(isFocused)

@@ -311,7 +311,7 @@ class _SolanaTransferFields extends StatelessWidget {
                 token: field.token,
                 max: field.isTokenTransfer
                     ? field.splToken!.balance.value.balance
-                    : controller.address.address.balance.value.balance -
+                    : controller.address.address.currencyBalance -
                         controller.fee.balance,
                 min: BigInt.zero,
                 subtitle: field.destination.hasValue
@@ -551,7 +551,7 @@ class _CreateAccountFields extends StatelessWidget {
                   "lamports".tr,
                   child: SetupNetworkAmount(
                     token: controller.network.coinParam.token,
-                    max: controller.address.address.balance.value.balance -
+                    max: controller.address.address.currencyBalance -
                         controller.fee.balance,
                     min: BigInt.zero,
                     subtitle: Text("solana_create_account_lamports_desc".tr),

@@ -216,7 +216,7 @@ class _ETHTransactionTransferFields extends StatelessWidget {
               child: SetupNetworkAmount(
                 token: field.token,
                 max: field.erc20Token?.balance.value.balance ??
-                    account.address.address.balance.value.balance,
+                    account.address.address.currencyBalance,
                 min: BigInt.zero,
                 subtitle: field.destination.hasValue
                     ? ReceiptAddressView(

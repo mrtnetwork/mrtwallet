@@ -443,6 +443,7 @@ mixin WalletManager on _WalletController {
   }
 
   void _streamBalances() {
+    if (_core.isJsWallet) return;
     final chains = _appChains.chains();
     _balanceUpdaterStream = MethodUtils.prediocCaller(
             () async => await MethodUtils.call(() async {

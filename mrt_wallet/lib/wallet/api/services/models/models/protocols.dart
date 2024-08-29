@@ -26,6 +26,10 @@ enum ServiceProtocol {
     }
   }
 
+  bool supportOnThisPlatform(AppPlatform platform) {
+    return platforms.contains(platform);
+  }
+
   static ServiceProtocol fromID(int id, {ServiceProtocol? orElese}) {
     return ServiceProtocol.values.firstWhere((element) => element.id == id,
         orElse: orElese == null ? null : () => orElese);

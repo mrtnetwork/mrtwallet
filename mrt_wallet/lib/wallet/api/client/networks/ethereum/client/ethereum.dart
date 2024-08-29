@@ -106,20 +106,20 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
   Future<Token?> getErc20Details(SolidityAddress contractAddress) async {
     try {
       final decimal = await provider.request(RPCERC20Decimal(contractAddress,
-          blockNumber: BlockTagOrNumber.pending));
+          blockNumber: BlockTagOrNumber.latest));
       if (decimal == null) return null;
       String? name;
       String? symbol;
 
       final symbolQuery = await MethodUtils.call(() async =>
           await provider.request(RPCERC20Symbol(contractAddress,
-              blockNumber: BlockTagOrNumber.pending)));
+              blockNumber: BlockTagOrNumber.latest)));
       if (symbolQuery.hasResult) {
         symbol = symbolQuery.result;
       }
       final nameQuery = await MethodUtils.call(() async =>
           await provider.request(RPCERC20Name(contractAddress,
-              blockNumber: BlockTagOrNumber.pending)));
+              blockNumber: BlockTagOrNumber.latest)));
       if (nameQuery.hasResult) {
         name = nameQuery.result;
       }
@@ -152,51 +152,112 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
     }
   }
 
-  Future<EthereumTransactionDataInfo> getTransactionContractInfo(
-      {required SolidityAddress account,
-      required SolidityAddress contractAddress,
-      required EthereumChain chain,
-      required List<int> data}) async {
-    final selector = SolidityContractUtils.getSelector(data);
-    if (selector == null) {
-      return SolidityUnknownMethodInfo(selector: data);
-    }
-    final token = await getAccountERC20Token(account, contractAddress);
-    EthereumTransactionDataInfo? method;
-    if (token != null) {
-      if (BytesUtils.bytesEqual(
-          selector, SolidityContractUtils.erc20Transfer.selector)) {
-        final decodeTransfer = MethodUtils.nullOnException(() {
-          return SolidityContractUtils.decodeErc20Transfer(data);
-        });
-        if (decodeTransfer != null) {
-          return SolidityERC20TransferMethodInfo(
-              selector: selector,
-              token: token,
-              to: chain.getReceiptAddress(decodeTransfer.a.address) ??
-                  ReceiptAddress<ETHAddress>(
-                      view: decodeTransfer.a.address,
-                      networkAddress: decodeTransfer.a),
-              value: IntegerBalance(decodeTransfer.b, token.token.decimal!));
+  Future<(ContractABI, SolidityContractInterface)?> detectContractAbi({
+    required SolidityAddress contractAddress,
+    required SolidityAddress from,
+  }) async {
+    SolidityContractInterface interface = SolidityContractInterface.none;
+    for (final i in SolidityContractInterface.values) {
+      try {
+        final support = await provider.request(RPCDetectContactInterface(
+            interface: i, contractAddress: contractAddress, from: from));
+        if (support) {
+          interface = i;
+          break;
         }
-        final erc20Data = await FileUtils.loadAssetText(APPConst.assetErc20Abi);
-        final abi = ContractABI.fromJson(StringUtils.toJson<List>(erc20Data)
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList());
-        method = MethodUtils.nullOnException(() {
-          final method = abi.findFunctionFromSelector(selector);
-          final decodeInput = method?.decodeInput(data);
-          if (decodeInput != null) {
-            return SolidityNameAndInputValues(
-                selector: selector, inputs: decodeInput, name: method!.name);
+      } on RPCError catch (_) {
+        break;
+      } catch (_) {}
+    }
+    final assetPath = interface.getContractAssetPath;
+    if (assetPath == null) return null;
+    final contractJson = await FileUtils.loadAssetText(assetPath);
+    return (
+      ContractABI.fromJson(StringUtils.toJson<List>(contractJson)
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList()),
+      interface
+    );
+  }
+
+  Future<EthereumTransactionDataInfo>
+      _getTransactionContractInfo<NETWORKADDRESS extends SolidityAddress>(
+          {required ContractABI? contract,
+          required SolidityAddress contractAddress,
+          required SolidityAddress account,
+          required APPCHAINNETWORK<NETWORKADDRESS> chain,
+          required List<int> data,
+          required String dataHex,
+          required List<int> selector,
+          required SolidityContractInterface? interface}) async {
+    if (contract == null || interface == SolidityContractInterface.erc20) {
+      final token = await getAccountERC20Token(account, contractAddress);
+      if (token != null) {
+        if (BytesUtils.bytesEqual(
+            selector, SolidityContractUtils.erc20Transfer.selector)) {
+          final decodeTransfer = MethodUtils.nullOnException(() {
+            final decode = SolidityContractUtils.decodeErc20Transfer(data);
+            if (chain.network.type == NetworkType.tron) {
+              return (decode.a.toTronAddress(), decode.b);
+            }
+            return (decode.a.toEthereumAddress(), decode.b);
+          });
+          if (decodeTransfer != null) {
+            return SolidityERC20TransferMethodInfo<NETWORKADDRESS>(
+                selector: selector,
+                token: token,
+                to: chain.getReceiptAddress(decodeTransfer.$1.toString()) ??
+                    ReceiptAddress<NETWORKADDRESS>(
+                        view: decodeTransfer.$1.toString(),
+                        networkAddress: decodeTransfer.$1 as NETWORKADDRESS),
+                value: IntegerBalance(decodeTransfer.$2, token.token.decimal!),
+                dataHex: dataHex);
           }
-          return null;
-        });
-        method ??= SolidityERC20MethodInfo(selector: selector, token: token);
+        }
+        if (contract == null) {
+          final contractJson = await FileUtils.loadAssetText(
+              SolidityContractInterface.erc20.getContractAssetPath!);
+          contract = ContractABI.fromJson(StringUtils.toJson<List>(contractJson)
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList());
+        }
       }
     }
-    method ??= SolidityUnknownMethodInfo(selector: selector);
-    return method;
+    final method = MethodUtils.nullOnException(() {
+      final method = contract?.findFunctionFromSelector(selector);
+      final decodeInput = method?.decodeInput(data);
+      if (decodeInput != null) {
+        return SolidityNameAndInputValues(
+            selector: selector, inputs: decodeInput, name: method!.name);
+      }
+      return null;
+    });
+    return method ??
+        SolidityUnknownMethodInfo(selector: selector, dataHex: dataHex);
+  }
+
+  Future<EthereumTransactionDataInfo>
+      getTransactionContractInfo<NETWORKADDRESS extends SolidityAddress>(
+          {required SolidityAddress account,
+          required SolidityAddress contractAddress,
+          required APPCHAINNETWORK<NETWORKADDRESS> chain,
+          required List<int> data}) async {
+    final dataHex = BytesUtils.toHexString(data, prefix: "0x");
+    final selector = SolidityContractUtils.getSelector(data);
+    if (selector == null) {
+      return SolidityUnknownMethodInfo(selector: data, dataHex: dataHex);
+    }
+    final contract = await detectContractAbi(
+        contractAddress: contractAddress, from: account);
+    return _getTransactionContractInfo<NETWORKADDRESS>(
+        contract: contract?.$1,
+        contractAddress: contractAddress,
+        account: account,
+        chain: chain,
+        data: data,
+        interface: contract?.$2,
+        selector: selector,
+        dataHex: dataHex);
   }
 
   Future<SolidityToken?> getAccountERC20Token(

@@ -13,6 +13,7 @@ class _WebViewConst {
   static const String goBack = "goBack";
   static const String goForward = "goForward";
   static const String updateFrame = "updateFrame";
+  static const String dispose = "dispose";
   static const String reload = "reload";
   static const String request = "request";
   static const String createWebView = "createWebView";
@@ -25,7 +26,7 @@ class WebViewIoInterface implements PlatformWebView {
 
   Future<void> _methodCallHandler(Map<String, dynamic> args) async {
     if (args['type'] == "log") {
-      print("Console: ${args['data']}");
+      print('\x1B[33m${args['data']}\x1B[0m');
       return;
     }
     if (args["eventName"] == null) return;
@@ -158,5 +159,10 @@ class WebViewIoInterface implements PlatformWebView {
         viewType: viewType,
         type: _WebViewConst.updateFrame,
         args: {"width": size.width, "height": size.height});
+  }
+
+  @override
+  Future<void> dispose(String viewType) async {
+    await _call(viewType: viewType, type: _WebViewConst.dispose);
   }
 }

@@ -37,7 +37,7 @@ class TonTransactionStateController extends TonTransactionImpl
   @override
   void onChange() {
     final totalAmounts = validator.validator.callValue;
-    final remind = address.address.balance.value.balance - (totalAmounts + fee);
+    final remind = address.address.currencyBalance - (totalAmounts + fee);
     remindAmount.updateBalance(remind);
     _trReady = _isReady();
     notify();

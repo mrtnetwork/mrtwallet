@@ -19,6 +19,8 @@ class Web3EthreumTypdedData extends Web3EthereumRequestParam<String> {
   Web3EthreumTypdedData(
       {required this.address, required this.typedData, this.domain});
 
+  late final Map<String, dynamic> typedDataJson = typedData.toJson();
+
   factory Web3EthreumTypdedData.fromJson(Map<String, dynamic> json) {
     const method = Web3EthereumRequestMethods.typedData;
 

@@ -5,7 +5,7 @@ import 'package:on_chain/solidity/address/core.dart';
 
 class RPCERC20Name extends ETHRPCRequest<String?> {
   RPCERC20Name(this.contractAddress, {BlockTagOrNumber? blockNumber})
-      : super(blockNumber: blockNumber ?? BlockTagOrNumber.pending);
+      : super(blockNumber: blockNumber);
 
   @override
   EthereumMethods get method => EthereumMethods.call;

@@ -5,11 +5,14 @@ import 'package:on_chain/on_chain.dart';
 class EthereumHTTPService extends HTTPService<EthereumAPIProvider>
     implements JSONRPCService {
   EthereumHTTPService(this.url, this.provider,
-      {this.defaultTimeOut = const Duration(seconds: 30)});
+      {this.defaultTimeOut = const Duration(seconds: 30), this.requestTimeout});
   @override
   final EthereumAPIProvider provider;
   @override
   final Duration defaultTimeOut;
+
+  @override
+  final Duration? requestTimeout;
   @override
   Future<Map<String, dynamic>> call(ETHRequestDetails params,
       [Duration? timeout]) async {

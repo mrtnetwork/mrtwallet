@@ -11,6 +11,7 @@ enum CryptoRequestHashingType {
   sha3,
   sha3256,
   uuid,
+  keccack256,
   generateUuid;
 
   static CryptoRequestHashingType fromName(String? name) {
@@ -98,6 +99,8 @@ class CryptoRequestHashing
         return SHA3256.hash(bytes);
       case CryptoRequestHashingType.sha512:
         return SHA512.hash(bytes);
+      case CryptoRequestHashingType.keccack256:
+        return Keccack.hash(bytes);
       case CryptoRequestHashingType.uuid:
         final hash = MD4.hash(bytes);
         return StringUtils.encode(UUID.fromBuffer(hash));

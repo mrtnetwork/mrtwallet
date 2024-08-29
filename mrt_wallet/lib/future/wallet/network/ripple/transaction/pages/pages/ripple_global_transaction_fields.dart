@@ -421,7 +421,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                 validator.validatorName.tr,
                 child: SetupNetworkAmount(
                   token: account.network.coinParam.token,
-                  max: account.address.address.balance.value.balance,
+                  max: account.address.address.currencyBalance,
                   min: BigInt.zero,
                   subtitle: PageTitleSubtitle(
                       title: field.name.tr, body: Text(field.subject!.tr)),

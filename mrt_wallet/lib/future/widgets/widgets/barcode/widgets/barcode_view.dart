@@ -62,6 +62,7 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         widget.title,
+        WidgetConstant.divider,
         WidgetConstant.height20,
         ConstraintsBoxView(
           maxHeight: APPConst.qrCodeWidth,

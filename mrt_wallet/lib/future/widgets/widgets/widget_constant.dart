@@ -14,6 +14,8 @@ class WidgetConstant {
   static const EdgeInsets padding10 = EdgeInsets.all(10);
   static const BoxConstraints constraintsMinHeight60 =
       BoxConstraints(minHeight: 60);
+  static const BoxConstraints constraintsMinWidth200 =
+      BoxConstraints(minWidth: 200);
   static const EdgeInsets paddingHorizontal10 =
       EdgeInsets.symmetric(horizontal: 10);
   static const EdgeInsets paddingH10V5 =

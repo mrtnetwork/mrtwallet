@@ -62,6 +62,10 @@ class WebViewPlatformView(
             }
         }
     }
+//    fun injectJavaScriptFile(jsCode: String, callback: Callback<String?>) {
+//
+//        webView.loadUrl()
+//    }
 
     fun openPage(url: String) {
         webView.loadUrl(url)

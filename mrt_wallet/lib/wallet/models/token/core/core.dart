@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 
 abstract class TokenCore<T> with CborSerializable {
   abstract final Token token;
-  abstract final Live<BalanceCore> balance;
+  abstract final Live<BalanceCore<T>> balance;
   void updateBalance([T? updateBalance]);
   abstract final DateTime updated;
   String? get issuer;

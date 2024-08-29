@@ -10,15 +10,12 @@ import 'package:on_chain/tron/src/models/contract/base_contract/transaction_type
 class TronTransactionStateController extends TronTransactionImpl
     with
         TronMemoImpl,
-        NetworkConditionImpl,
+        TronNetworkConditionImpl,
         TronTransactionFeeIMpl,
         TronSignerImpl {
   TronTransactionStateController(
       {required super.walletProvider,
       required super.account,
-      required super.network,
-      required super.apiProvider,
-      required super.address,
       required this.validator});
   final LiveTransactionForm<TronTransactionForm> validator;
   String? _error;
@@ -35,7 +32,7 @@ class TronTransactionStateController extends TronTransactionImpl
   bool _checkTransaction() {
     _error = validator.validator.validateError();
     final transactionValue = validator.validator.callValue;
-    _remindAmount.updateBalance(account.address.address.balance.value.balance -
+    _remindAmount.updateBalance(account.address.address.currencyBalance -
         (transactionValue + (totalBurn?.balance ?? BigInt.zero)));
     if (validator.validator.type !=
         TransactionContractType.triggerSmartContract) {
@@ -78,7 +75,8 @@ class TronTransactionStateController extends TronTransactionImpl
   }
 
   void sedTransaction() async {
-    await signAndSendTransaction(validator.validator.toContract(owner: owner));
+    await signAndSendTransaction(
+        validator.validator.toContract(owner: address));
   }
 
   void _onFormListener() {

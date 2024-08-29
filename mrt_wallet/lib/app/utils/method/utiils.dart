@@ -270,7 +270,7 @@ class MethodResult<T> {
         exception is ArgumentError) {
       return (exception.toString(), false);
     }
-    return ("somthing_wrong", true);
+    return (exception.toString(), true);
   }
 
   final Object? exception;

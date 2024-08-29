@@ -6,7 +6,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
 
-mixin NetworkConditionImpl on TronTransactionImpl {
+mixin TronNetworkConditionImpl on TronTransactionImpl {
   late TronChainParameters _chainParameters;
   @override
   TronChainParameters get tronChainParameters => _chainParameters;
@@ -26,7 +26,7 @@ mixin NetworkConditionImpl on TronTransactionImpl {
       progressKey.errorText("account_not_found".tr, backToIdle: false);
     } else {
       _chainParameters = result.result!;
-      final permission = _checkPermission(address.accountInfo!);
+      final permission = checkPermission(address: address, type: type);
       if (!permission) {
         if (!address.multiSigAccount) {
           progressKey.errorText("multi_sig_account_does_not_supported".tr,
@@ -51,7 +51,9 @@ mixin NetworkConditionImpl on TronTransactionImpl {
     return false;
   }
 
-  bool _checkPermission(TronAccountInfo account) {
+  static bool checkPermission(
+      {required ITronAddress address, required TransactionContractType type}) {
+    final account = address.accountInfo!;
     final List<AccountPermission> permissions = [
       account.ownerPermission,
       ...account.activePermissions

@@ -119,7 +119,7 @@ class _TronTokenView extends StatelessWidget {
 class _Services extends StatelessWidget {
   const _Services(this.chainAccount);
   final TronChain chainAccount;
-  get account => chainAccount.address;
+  ITronAddress get account => chainAccount.address;
   @override
   Widget build(BuildContext context) {
     return AccountTabbarScrollWidget(slivers: [
@@ -148,7 +148,8 @@ class _Services extends StatelessWidget {
                     validator: TronAccountUpdatePermissionForm(
                         permissions: account.accountInfo!.permissions
                             .map((e) => e.clone())
-                            .toList()));
+                            .toList()
+                            .cast<AccountPermission>()));
                 context.to(PageRouter.tronTransaction, argruments: validator);
               },
             ),

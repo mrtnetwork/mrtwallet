@@ -110,14 +110,17 @@ class WebViewStateController extends StateController
           url: event.url,
           title: event.title,
           faviIcon: event.favicon);
+      final tronWeb = await FileUtils.loadAssetText(APPConst.assetsTronWeb);
+      await _loadScript(viewType: event.viewId, script: tronWeb);
       String script;
-      if (false && kDebugMode) {
+      if (kDebugMode) {
         if (PlatformInterface.appPlatform == AppPlatform.android) {
-          script =
-              (await HttpUtils.get<String>("http://10.0.2.2:3000/a")).result;
+          script = (await HttpUtils.get<String>("http://10.0.2.2:3000/webview"))
+              .result;
         } else {
           script =
-              (await HttpUtils.get<String>("http://localhost:3000/a")).result;
+              (await HttpUtils.get<String>("http://localhost:3000/webview"))
+                  .result;
         }
       } else {
         script = await FileUtils.loadAssetText(APPConst.assetWebviewScript);
@@ -133,13 +136,6 @@ class WebViewStateController extends StateController
       return MRTScriptWalletStatus.failed;
     });
   }
-
-  // void check() async {
-  //   final r = await webViewController.loadScript(
-  //       viewType: viewType ?? "",
-  //       script:
-  //           "console.log(ethereum.request({method:'eth_requestAccounts'}))");
-  // }
 
   @override
   Future<void> switchTab(WebViewController controller) async {
@@ -187,7 +183,7 @@ class WebViewStateController extends StateController
       if (result) {
         request.completeSuccess();
       } else {
-        request.completeError;
+        request.completeError();
       }
     } on Web3RejectException {
       return;

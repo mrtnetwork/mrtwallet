@@ -63,6 +63,11 @@ class Web3RequestExceptionConst {
       walletCode: "WEB3-4030",
       code: 4200);
 
+  static const Web3RequestException methodDoesNotSupport = Web3RequestException(
+      message: "The requested method does not supported.",
+      walletCode: "WEB3-4030",
+      code: 4200);
+
   static const Web3RequestException disconnectedChain = Web3RequestException(
       message: "The Provider is not connected to the requested chain.",
       walletCode: "WEB3-6000",
@@ -213,8 +218,15 @@ class Web3RequestExceptionConst {
           code: 4900);
   static Web3RequestException invalidParameters(String message) =>
       Web3RequestException(
-          message: "Invalid method parameters.",
+          message: "Invalid method parameters: $message",
           data: message,
+          walletCode: "WEB3-5100",
+          code: -32602);
+  static Web3RequestException failedRequest(String message,
+          {String? data, Map<String, dynamic>? dataJson}) =>
+      Web3RequestException(
+          message: message,
+          data: data ?? StringUtils.tryFromJson(dataJson),
           walletCode: "WEB3-5100",
           code: -32602);
 }

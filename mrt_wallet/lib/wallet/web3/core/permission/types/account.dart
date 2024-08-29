@@ -5,6 +5,11 @@ abstract class Web3ChainAccount<NETWORKADDRESS>
     with CborSerializable, Equatable {
   final AddressDerivationIndex keyIndex;
   final NETWORKADDRESS address;
+  final bool defaultAddress;
   String get addressStr;
-  Web3ChainAccount({required this.keyIndex, required this.address});
+  Web3ChainAccount({
+    required this.keyIndex,
+    required this.address,
+    required this.defaultAddress,
+  });
 }

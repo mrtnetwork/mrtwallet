@@ -39,9 +39,9 @@ class _AppSettingViewState extends State<AppSettingView> {
       appBar: AppBar(
         title: Text("wallet_preferences".tr),
       ),
-      child: ConstraintsBoxView(
-        padding: WidgetConstant.paddingHorizontal20,
-        child: SingleChildScrollView(
+      child: SingleChildScrollView(
+        child: ConstraintsBoxView(
+          padding: WidgetConstant.paddingHorizontal20,
           child: Column(
             children: [
               if (setting != null)

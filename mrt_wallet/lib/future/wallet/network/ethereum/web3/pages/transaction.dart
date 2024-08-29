@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/constant/global/app.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/receipt_address_view.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/token_details_view.dart';
@@ -9,6 +11,8 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
+import 'package:on_chain/on_chain.dart';
+import 'package:on_chain/solidity/address/core.dart';
 
 class EthereumWeb3TransactionFieldsView extends StatelessWidget {
   const EthereumWeb3TransactionFieldsView(
@@ -40,16 +44,24 @@ class EthereumWeb3TransactionFieldsView extends StatelessWidget {
                     balance: controller.remindAmount.$1,
                     token: controller.remindAmount.$2,
                   ),
-                  ErrorTextContainer(
-                      error: controller.error,
-                      verticalMargin: WidgetConstant.paddingVertical10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FixedElevatedButton(
-                        padding: WidgetConstant.paddingVertical20,
+                        padding: WidgetConstant.paddingVertical40,
                         onPressed: controller.trIsReady
-                            ? controller.sedTransaction
+                            ? () {
+                                controller.sedTransaction(
+                                  () async => context.openSliverDialog(
+                                      (context) => DialogTextView(
+                                            text:
+                                                "insufficient_balance_desc".tr,
+                                            buttonWidget:
+                                                const DialogDoubleButtonView(),
+                                          ),
+                                      "insufficient_balance".tr),
+                                );
+                              }
                             : null,
                         child: Text("send_transaction".tr),
                       )
@@ -88,16 +100,21 @@ class _ETHTransactionTransferFields extends StatelessWidget {
               title: field.isContract ? "contract".tr : "recipient".tr),
           WidgetConstant.height20,
         ],
-        _EthereumTransactionDataView(data: field.dataInfo),
+        _EthereumTransactionDataView(
+          data: field.dataInfo,
+          network: controller.network,
+        ),
       ],
     );
   }
 }
 
 class _EthereumTransactionDataView extends StatelessWidget {
-  const _EthereumTransactionDataView({required this.data, Key? key})
+  const _EthereumTransactionDataView(
+      {required this.data, required this.network, Key? key})
       : super(key: key);
   final EthereumTransactionDataInfo? data;
+  final WalletNetwork network;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -118,30 +135,44 @@ class _EthereumTransactionDataView extends StatelessWidget {
         )),
         if (data != null) ...[
           WidgetConstant.height20,
-          _EthereumTransactionDataWidget(data: data!)
+          EthereumTransactionDataWidget(
+            data: data!,
+            network: network,
+          )
         ],
       ],
     );
   }
 }
 
-class _EthereumTransactionDataWidget extends StatelessWidget {
-  const _EthereumTransactionDataWidget({required this.data, Key? key})
+class EthereumTransactionDataWidget extends StatelessWidget {
+  const EthereumTransactionDataWidget(
+      {required this.data, required this.network, Key? key})
       : super(key: key);
   final EthereumTransactionDataInfo data;
+  final WalletNetwork network;
   @override
   Widget build(BuildContext context) {
     switch (data.type) {
       case SolidityMethodInfoTypes.creationContract:
-      case SolidityMethodInfoTypes.unknown:
         return WidgetConstant.sizedBox;
+      case SolidityMethodInfoTypes.unknown:
+        final info = data.cast<SolidityUnknownMethodInfo>();
+        return _UnknownTransactionDataView(dataHex: info.dataHex);
       case SolidityMethodInfoTypes.unknownData:
-        return _UnknownTransactionDataView(data: data.cast());
+        final info = data.cast<UnknownTransactionData>();
+        return _UnknownTransactionDataView(
+          dataHex: info.dataHex,
+          content: info.content,
+        );
       case SolidityMethodInfoTypes.erc20:
       case SolidityMethodInfoTypes.erc20Transfer:
         return _EthereumTransactionERC20DataWidget(data: data.cast());
       case SolidityMethodInfoTypes.nameAndInputs:
-        return _EthereumTransactionNameAndInputsWidget(data: data.cast());
+        return _EthereumTransactionNameAndInputsWidget(
+          data: data.cast(),
+          network: network,
+        );
       default:
         throw UnimplementedError("unknow data infos.");
     }
@@ -149,19 +180,19 @@ class _EthereumTransactionDataWidget extends StatelessWidget {
 }
 
 class _EthereumTransactionNameAndInputsWidget extends StatelessWidget {
-  const _EthereumTransactionNameAndInputsWidget({required this.data, Key? key})
+  const _EthereumTransactionNameAndInputsWidget(
+      {required this.network, required this.data, Key? key})
       : super(key: key);
   final SolidityNameAndInputValues data;
+  final WalletNetwork network;
   @override
   Widget build(BuildContext context) {
     return ContainerWithBorder(
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          "method_name".tr,
-          style: context.colors.onPrimaryContainer.titleMedium(context),
-        ),
+        Text("method_name".tr,
+            style: context.colors.onPrimaryContainer.titleMedium(context)),
         WidgetConstant.height8,
         ContainerWithBorder(
           constraints: null,
@@ -171,21 +202,57 @@ class _EthereumTransactionNameAndInputsWidget extends StatelessWidget {
             style: context.colors.primaryContainer.bodyMedium(context),
           ),
         ),
-        WidgetConstant.height20,
-        Text("inputs".tr,
-            style: context.colors.onPrimaryContainer.titleMedium(context)),
-        WidgetConstant.height8,
-        ...List.generate(data.inputs.length, (i) {
-          final value = data.inputs[i];
-          return ContainerWithBorder(
-            backgroundColor: context.colors.onPrimaryContainer,
-            constraints: null,
-            child: Text(value.toString(),
-                style: context.colors.primaryContainer.bodyMedium(context)),
-          );
-        })
+        if (data.inputs.isNotEmpty) ...[
+          WidgetConstant.height20,
+          Text("inputs".tr,
+              style: context.colors.onPrimaryContainer.titleMedium(context)),
+          WidgetConstant.height8,
+          ...List.generate(data.inputs.length, (i) {
+            final value = data.inputs[i];
+            return ContainerWithBorder(
+              backgroundColor: context.colors.onPrimaryContainer,
+              constraints: null,
+              child: _SolidityTypesView(
+                  value: value,
+                  network: network,
+                  style: context.colors.primaryContainer.bodyMedium(context)),
+            );
+          })
+        ],
       ],
     ));
+  }
+}
+
+class _SolidityTypesView extends StatelessWidget {
+  const _SolidityTypesView(
+      {required this.value, required this.network, this.style, Key? key})
+      : super(key: key);
+  final dynamic value;
+  final WalletNetwork network;
+  final TextStyle? style;
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(value.toString(), style: style)),
+        if (value is SolidityAddress && network.type == NetworkType.tron)
+          TappedTooltipView(
+            tooltipWidget: ToolTipView(
+                tooltipWidget: (context) {
+                  final SolidityAddress addr = value;
+                  return Container(
+                      constraints: const BoxConstraints(maxWidth: 300),
+                      color: context.colors.tertiary,
+                      child: Text(
+                        addr.toTronAddress().toAddress(),
+                        style: context.colors.onTertiary.bodyMedium(context),
+                      ));
+                },
+                child: Icon(Icons.help, color: style?.color)),
+          )
+      ],
+    );
   }
 }
 
@@ -202,7 +269,25 @@ class _EthereumTransactionERC20DataWidget extends StatelessWidget {
           Text("token_info".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           TokenDetailsView(
-              token: data.token, onSelectWidget: WidgetConstant.sizedBox),
+            token: data.token,
+            onSelectWidget: WidgetConstant.sizedBox,
+            radius: APPConst.circleRadius25,
+          ),
+          WidgetConstant.height20,
+          Text("transaction_data".tr, style: context.textTheme.titleMedium),
+          WidgetConstant.height8,
+          ContainerWithBorder(
+            child: CopyTextIcon(
+              color: context.colors.onPrimaryContainer,
+              dataToCopy: data.dataHex,
+              widget: SelectableText(
+                data.dataHex,
+                style: context.colors.onPrimaryContainer.bodyMedium(context),
+                minLines: 1,
+                maxLines: 3,
+              ),
+            ),
+          )
         ],
       );
     } else {
@@ -213,7 +298,10 @@ class _EthereumTransactionERC20DataWidget extends StatelessWidget {
           Text("token_info".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           TokenDetailsView(
-              token: data.token, onSelectWidget: WidgetConstant.sizedBox),
+            token: data.token,
+            onSelectWidget: WidgetConstant.sizedBox,
+            radius: APPConst.circleRadius25,
+          ),
           WidgetConstant.height20,
           ReceiptAddressView(address: transferData.to),
           WidgetConstant.height20,
@@ -233,9 +321,11 @@ class _EthereumTransactionERC20DataWidget extends StatelessWidget {
 }
 
 class _UnknownTransactionDataView extends StatelessWidget {
-  const _UnknownTransactionDataView({required this.data, Key? key})
+  const _UnknownTransactionDataView(
+      {required this.dataHex, this.content, Key? key})
       : super(key: key);
-  final UnknownTransactionData data;
+  final String dataHex;
+  final String? content;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -246,15 +336,14 @@ class _UnknownTransactionDataView extends StatelessWidget {
         ContainerWithBorder(
           onRemove: () {},
           onTapWhenOnRemove: false,
-          onRemoveWidget:
-              CopyTextIcon(dataToCopy: data.dataHex, isSensitive: false),
+          onRemoveWidget: CopyTextIcon(dataToCopy: dataHex, isSensitive: false),
           child: Text(
-            data.dataHex,
+            dataHex,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (data.content != null) ...[
+        if (content != null) ...[
           WidgetConstant.height20,
           Text("content".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
@@ -262,9 +351,9 @@ class _UnknownTransactionDataView extends StatelessWidget {
             onRemove: () {},
             onTapWhenOnRemove: false,
             onRemoveWidget:
-                CopyTextIcon(dataToCopy: data.content!, isSensitive: false),
+                CopyTextIcon(dataToCopy: content!, isSensitive: false),
             child: Text(
-              data.content!,
+              content!,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),

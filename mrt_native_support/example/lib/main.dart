@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await PlatformInterface.instance.desktop.init();
+  await PlatformInterface.instance.desktop
+      .setMaximumSize(const WidgetSize(width: 1024, height: 768));
+  await PlatformInterface.instance.desktop
+      .setMinimumSize(const WidgetSize(width: 300, height: 500));
   runApp(const MyApp());
 }
 
@@ -100,6 +106,8 @@ class _MyHomePageState extends State<MyHomePage> with WebViewListener {
           TextButton(
               onPressed: () {
                 ca?.dispose();
+                controller.dispose("jafar");
+                print("ca $ca");
               },
               child: Text("dispose")),
         ],
@@ -114,7 +122,7 @@ class _MyHomePageState extends State<MyHomePage> with WebViewListener {
                     viewType: "jafar",
                     size: WidgetSize(
                         width: cons.maxWidth, height: cons.maxHeight));
-                return APPNativeView(controller: ca!);
+                return AppKitView(viewType: "jafar");
               }),
       ),
       // This trailing comma makes auto-formatting nicer for build methods.

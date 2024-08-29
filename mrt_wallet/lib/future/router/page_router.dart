@@ -81,6 +81,7 @@ class PageRouter {
 
   /// web3
   static const String web3Ethereum = "web3/ethereum";
+  static const String web3Tron = "web3/tron";
 
   static const String webview = "web/";
 
@@ -180,6 +181,8 @@ class PageRouter {
         return const SubstrateTransferTransactionView();
       case web3Ethereum:
         return const EthereumWeb3FieldsView();
+      case web3Tron:
+        return const TronWeb3FieldsView();
       case updateEthereumProvider:
         return const UpdateEthereumProvider();
       case webview:

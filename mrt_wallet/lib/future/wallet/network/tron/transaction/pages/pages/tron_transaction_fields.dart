@@ -30,12 +30,7 @@ class TronTransactionFieldsView extends StatelessWidget {
               TronTransactionStateController>(
           repositoryId: StateConst.tron,
           controller: () => TronTransactionStateController(
-              walletProvider: wallet,
-              account: chain,
-              network: chain.network,
-              apiProvider: chain.provider()!,
-              address: chain.address,
-              validator: validator),
+              walletProvider: wallet, account: chain, validator: validator),
           builder: (controller) {
             return PageProgress(
               key: controller.progressKey,
@@ -57,8 +52,9 @@ class TronTransactionFieldsView extends StatelessWidget {
                           ContainerWithBorder(
                             onRemoveIcon: const Icon(Icons.edit),
                             child: AddressDetailsView(
-                                address: controller.owner,
-                                key: ValueKey<ITronAddress?>(controller.owner)),
+                                address: controller.address,
+                                key: ValueKey<ITronAddress?>(
+                                    controller.address)),
                             onRemove: () {
                               context
                                   .openSliverBottomSheet<ITronAddress>(
@@ -258,7 +254,7 @@ class _TronTransactionTransferFields extends StatelessWidget {
               child: SetupNetworkAmount(
                 token: field.token,
                 max: field.transferToken?.balance.value.balance ??
-                    account.address.address.balance.value.balance,
+                    account.address.address.currencyBalance,
                 min: BigInt.zero,
                 subtitle: field.destination.hasValue
                     ? ReceiptAddressView(

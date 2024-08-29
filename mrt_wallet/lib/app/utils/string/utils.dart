@@ -32,6 +32,7 @@ class StrUtils {
     if (input.isEmpty) {
       return input;
     }
+    input = input.replaceAll('-', ' ').replaceAll('_', ' ');
 
     List<String> words = input.split(' ');
 

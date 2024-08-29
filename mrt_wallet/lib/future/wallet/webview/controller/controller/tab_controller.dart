@@ -30,10 +30,6 @@ class WebViewController {
     _tab.value = tab;
   }
 
-  // void init() {
-  //   _inited = true;
-  // }
-
   void dispose() {
     controller.dispose();
     _tab.dispose();

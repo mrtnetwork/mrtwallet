@@ -187,8 +187,7 @@ class _SelectAccountUtxoState extends State<_SelectAccountUtxo> {
                   children: List.generate(addresses.length, (index) {
                     final bool isSelected = currentAccount == addresses[index];
                     if (isSelected) return WidgetConstant.sizedBox;
-                    final balance =
-                        addresses[index].address.balance.value.balance;
+                    final balance = addresses[index].address.currencyBalance;
                     final bool canSpend = balance > BigInt.zero;
 
                     return ContainerWithBorder(

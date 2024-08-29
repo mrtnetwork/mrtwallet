@@ -27,16 +27,17 @@ void main() async {
           client: JSClientType.ethereum,
           status: JSWalletResponseType.failed);
     } else {
-      JSExtentionWallet.initialize(backgroundEvent);
       message = JSWalletMessageResponse(
           requestId: backgroundEvent.requestId,
           data: backgroundEvent.clientId,
           client: JSClientType.ethereum,
           status: JSWalletResponseType.success);
+      jsWindow.dispatchEvent(CustomEvent.create(
+          type: JSWalletConstant.activationEventName,
+          data: message.toCbor().encode(),
+          clone: true));
+      await Future.delayed(const Duration(seconds: 1));
+      JSExtentionWallet.initialize(backgroundEvent);
     }
-    jsWindow.dispatchEvent(CustomEvent.create(
-        type: JSWalletConstant.activationEventName,
-        data: message.toCbor().encode(),
-        clone: true));
   });
 }

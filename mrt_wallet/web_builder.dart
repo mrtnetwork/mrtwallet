@@ -197,8 +197,9 @@ Future<void> _buildWeb(
     await buildBackground(minify: minify);
     await buildPage(minify: minify);
     await buildContent(minify: minify, isMozila: mozila);
-
-    File file = File("extentions/index.html");
+    File file = File("extentions/tron_web.js");
+    await file.copy("web/tron_web.js");
+    file = File("extentions/index.html");
     await file.copy("web/index.html");
     file = File("extentions/popup.html");
     await file.copy("web/popup.html");

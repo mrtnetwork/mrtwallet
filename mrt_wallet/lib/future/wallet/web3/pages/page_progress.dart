@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 
 enum Web3ProgressStatus {
@@ -147,13 +148,19 @@ class Web3PageProgressState extends State<Web3PageProgress> with SafeState {
         Web3ProgressStatus.progress: (c) => Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _responseWidget ?? const CircularProgressIndicator(),
+                Expanded(
+                    child: _responseWidget ??
+                        const Center(
+                          child: CircularProgressIndicator(),
+                        )),
               ],
             ),
         Web3ProgressStatus.error: (c) => Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _responseWidget ?? WidgetConstant.errorIconLarge,
+                Expanded(
+                    child: _responseWidget ??
+                        Center(child: WidgetConstant.errorIconLarge)),
               ],
             ),
         Web3ProgressStatus.errorResponse: (c) => _ProgressSuccessChildWidget(
@@ -193,15 +200,18 @@ class _ProgressSuccessChildWidget extends StatelessWidget {
   final bool successResponse;
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        successText,
-        WidgetConstant.height20,
-        WidgetConstant.divider,
-        _CompleteRequestStatusWidget(status: status)
-      ],
+    return ConstraintsBoxView(
+      padding: WidgetConstant.padding20,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          successText,
+          WidgetConstant.height20,
+          WidgetConstant.divider,
+          _CompleteRequestStatusWidget(status: status),
+        ],
+      ),
     );
   }
 }
@@ -240,6 +250,11 @@ extension QuickAccsessWeb3PageProgressState
 
   void response({String? text, Widget? widget}) {
     currentState?.response(text: text, widget: widget);
+  }
+
+  void responseTx({required String hash, required WalletNetwork network}) {
+    currentState?.response(
+        widget: SuccessTransactionTextView(txId: hash, network: network));
   }
 
   void process({String? text, Widget? widget}) {

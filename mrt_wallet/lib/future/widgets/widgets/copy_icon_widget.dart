@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrt_wallet/app/constant/global/app.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart'
-    show QuickContextAccsess, Translate;
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'barcode/widgets/barcode_view.dart';
 import 'container_with_border.dart';
 import 'text_widget.dart';
@@ -17,7 +16,7 @@ class CopyTextIcon extends StatefulWidget {
       this.size,
       this.messaage,
       this.color,
-      required this.isSensitive});
+       this.isSensitive =false});
   final String dataToCopy;
   final double? size;
   final String? messaage;
@@ -29,39 +28,25 @@ class CopyTextIcon extends StatefulWidget {
   State<CopyTextIcon> createState() => CopyTextIconState();
 }
 
-class CopyTextIconState extends State<CopyTextIcon> {
+class CopyTextIconState extends State<CopyTextIcon> with SafeState {
   bool inCopy = false;
-  void onTap() async {
+  void onTap(BuildContext context) async {
     if (inCopy) return;
     inCopy = true;
-    setState(() {});
+    updateState();
     await Clipboard.setData(ClipboardData(text: widget.dataToCopy));
-    if (_close) return;
     if (mounted) {
       context.showAlert(widget.messaage ?? "copied_to_clipboard".tr);
     }
     await Future.delayed(APPConst.oneSecoundDuration);
     inCopy = false;
-    setState(() {});
-  }
-
-  bool _close = false;
-  @override
-  void setState(VoidCallback fn) {
-    if (_close || !mounted) return;
-    super.setState(fn);
-  }
-
-  @override
-  void dispose() {
-    _close = true;
-    super.dispose();
+    updateState();
   }
 
   @override
   Widget build(BuildContext context) {
     final icon = IconButton(
-      onPressed: onTap,
+      onPressed: () => onTap(context),
       icon: AnimatedSwitcher(
         duration: APPConst.animationDuraion,
         child: Icon(
@@ -73,7 +58,7 @@ class CopyTextIconState extends State<CopyTextIcon> {
       ),
     );
     return InkWell(
-      onTap: onTap,
+      onTap: () => onTap(context),
       customBorder: RoundedRectangleBorder(
         borderRadius: WidgetConstant.border8,
       ),

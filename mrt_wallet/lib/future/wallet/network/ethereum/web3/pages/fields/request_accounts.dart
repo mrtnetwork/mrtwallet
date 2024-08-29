@@ -16,9 +16,22 @@ class EthereumWeb3RequestAccountsView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Text("active_chain".tr, style: context.textTheme.titleMedium),
+              Text("web3_switch_chain_desc".tr,
+                  style: context.textTheme.bodyMedium),
+              WidgetConstant.height8,
+              AppDropDownBottom(
+                label: "network".tr,
+                items: {
+                  for (final i in field.chains)
+                    i: Text(i.network.coinParam.token.name)
+                },
+                value: field.activeChain,
+                onChanged: field.onChangeActiveChain,
+              ),
               Text("ethereum_networks".tr,
                   style: context.textTheme.titleMedium),
-              Text("evm_account_permission_desc".tr),
+              Text("chain_permission_desc".tr),
               WidgetConstant.height8,
               AppDropDownBottom(
                   label: "network".tr,
@@ -28,6 +41,22 @@ class EthereumWeb3RequestAccountsView extends StatelessWidget {
                   },
                   onChanged: field.onChangeChain,
                   value: field.chain),
+              if (field.chainPermission.isNotEmpty) ...[
+                WidgetConstant.height20,
+                Text("default_address".tr,
+                    style: context.textTheme.titleMedium),
+                Text("default_address_desc".tr),
+                WidgetConstant.height8,
+                AppDropDownBottom(
+                    isExpanded: true,
+                    label: "default_address".tr,
+                    items: {
+                      for (final i in field.chainPermission)
+                        i: Text(i.address.address)
+                    },
+                    onChanged: field.onChangeDefaultPermission,
+                    value: field.defaultChainAccount),
+              ],
               WidgetConstant.height20,
               Text("accounts".tr, style: context.textTheme.titleMedium),
               Text("web3_accounts_permission_desc".tr),

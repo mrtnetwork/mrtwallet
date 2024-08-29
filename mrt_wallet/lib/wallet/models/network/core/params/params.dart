@@ -26,6 +26,7 @@ abstract class NetworkCoinParams<PROVIDER extends APIProvider>
   List<PROVIDER> _providers;
   List<PROVIDER> get providers => _providers;
   final bool mainnet;
+  bool get isTestNet => !mainnet;
   int get decimal => token.decimal!;
   final int? bip32CoinType;
   APPImage get logo => token.assetLogo!;

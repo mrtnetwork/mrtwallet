@@ -40,4 +40,5 @@ class JSWalletConstant {
   static const String extentionType = "popup";
 
   static const String activationEventName = "WALLET_ACTIVATION";
+  static const List<int> pageRequestTag = [100, 100];
 }

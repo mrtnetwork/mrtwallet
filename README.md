@@ -70,12 +70,13 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 
 - **Features:** Support for Ethereum transactions.
 - **Highlights:** Compatibility with both legacy and EIP-1559 transactions. Import and manage ERC-20 assets effortlessly, and execute ERC-20 token transfers with ease.
-- **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, and Android platforms.
+- **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, Android and macos platforms ([EIP-1193](https://eips.ethereum.org/EIPS/eip-1193), [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963)).
 
 ### Tron
 
 - **Features:** Seamless interaction with the Tron blockchain.
 - **Highlights:** Confidence in sending TRX, TRC-20, and TRC-10 tokens. Support for native contracts, including multi-signature transactions. Control over updating account permissions, managing accounts, unstaking (v2), delegating resources, and creating/updating witnesses.
+- **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, Android and macos platforms ([TIP-1193](https://github.com/tronprotocol/tips/blob/master/tip-1193.md)).
 
 ### Cosmos
 

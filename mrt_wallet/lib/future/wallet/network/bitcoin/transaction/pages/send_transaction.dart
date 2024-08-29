@@ -189,13 +189,12 @@ class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
                 activeColor: context.colors.secondary,
                 value: widget.controller.addressSelected(
                     currentAccount.networkAddress.addressProgram),
-                onChanged:
-                    currentAccount.address.balance.value.balance > BigInt.zero
-                        ? (v) {
-                            widget.controller.addAccount(currentAccount);
-                          }
-                        : null),
-            onRemove: currentAccount.address.balance.value.balance > BigInt.zero
+                onChanged: currentAccount.address.currencyBalance > BigInt.zero
+                    ? (v) {
+                        widget.controller.addAccount(currentAccount);
+                      }
+                    : null),
+            onRemove: currentAccount.address.currencyBalance > BigInt.zero
                 ? () {
                     widget.controller.addAccount(currentAccount);
                   }
@@ -211,8 +210,7 @@ class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
                   children: List.generate(addresses.length, (index) {
                     final bool isSelected = currentAccount == addresses[index];
                     if (isSelected) return WidgetConstant.sizedBox;
-                    final balance =
-                        addresses[index].address.balance.value.balance;
+                    final balance = addresses[index].address.currencyBalance;
                     final bool canSpend = balance > BigInt.zero;
 
                     return ContainerWithBorder(

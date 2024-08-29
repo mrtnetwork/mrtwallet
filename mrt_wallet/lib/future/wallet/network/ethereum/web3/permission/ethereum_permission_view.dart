@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/wallet/web3/pages/permission_view.dart';
+import 'package:mrt_wallet/future/wallet/web3/web3.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/ethereum/ethereum.dart';
 import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/etherum.dart';
+import 'package:on_chain/ethereum/src/address/evm_address.dart';
 
 class EthereumWeb3PermissionView extends StatefulWidget {
   const EthereumWeb3PermissionView(
@@ -23,7 +24,7 @@ class EthereumWeb3PermissionView extends StatefulWidget {
 
 class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
     with SafeState {
-  late BigInt currentChain = permission.currentChain;
+  late EthereumChain currentChain;
   late Web3EthereumChain permission =
       widget.permission ?? Web3EthereumChain.create();
 
@@ -31,14 +32,25 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
   Map<EthereumChain, List<Web3EthereumChainAccount>> permissions = {};
   late EthereumChain chain;
 
+  Map<EthereumChain, Web3EthereumChainAccount> defaultAccount = {};
+
+  List<Web3EthereumChainAccount> get chainPermission => permissions[chain]!;
+
+  Web3EthereumChainAccount? get defaultChainAccount => defaultAccount[chain];
+
+  void onChangeDefaultPermission(Web3EthereumChainAccount? account) {
+    if (account == null) return;
+    defaultAccount[chain] = account;
+    updateState();
+  }
+
   Web3EthereumChainAccount? accountPermission(IEthAddress address) {
     return permissions[chain]!.firstWhereOrNull(
         (e) => e.address.address == address.networkAddress.address);
   }
 
-  bool hasPermission(IEthAddress address) {
-    final contains = accountPermission(address) != null;
-    return contains;
+  Web3EthereumChainAccount? hasPermission(IEthAddress address) {
+    return accountPermission(address);
   }
 
   void addAccount(IEthAddress address) {
@@ -47,13 +59,21 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
       permissions[chain]?.remove(exists);
     } else {
       permissions[chain]?.add(Web3EthereumChainAccount.fromChainAccount(
-          address: address, chainId: chain.chainId));
+          address: address, chainId: chain.chainId, defaultAddress: false));
+    }
+    if (permissions[chain]!.isEmpty) {
+      defaultAccount.remove(chain);
+    } else {
+      if (!permissions[chain]!.contains(defaultChainAccount)) {
+        defaultAccount[chain] = permissions[chain]![0];
+      }
     }
     updateState();
   }
 
   void onChangeCurrentChain(EthereumChain? chain) {
-    currentChain = chain?.chainId ?? currentChain;
+    if (chain == null) return;
+    currentChain = chain;
     updateState();
   }
 
@@ -63,8 +83,28 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
   }
 
   void complete() {
-    final accounts = permissions.values.expand((e) => e).toList();
-    final newPermission = Web3EthereumChain.create(chainId: currentChain);
+    final newPermission =
+        Web3EthereumChain.create(chainId: currentChain.chainId);
+    List<Web3EthereumChainAccount> accounts = [];
+    for (final i in permissions.entries) {
+      List<Web3EthereumChainAccount> chainAccounts = [];
+      Web3EthereumChainAccount? defaultAddr = defaultAccount[i.key];
+      defaultAddr ??= i.value.isEmpty ? null : i.value.first;
+      for (final a in i.value) {
+        Web3EthereumChainAccount account = a;
+        if (account == defaultAddr && !account.defaultAddress) {
+          account = account.changeDefault(true);
+        } else if (account.defaultAddress) {
+          account = account.changeDefault(false);
+        }
+        chainAccounts.add(account);
+      }
+      if (chainAccounts.isNotEmpty &&
+          !chainAccounts.any((e) => e.defaultAddress)) {
+        chainAccounts[0] = chainAccounts[0].changeDefault(true);
+      }
+      accounts.addAll(chainAccounts);
+    }
     newPermission.updateChainAccount(accounts);
     widget.onUpdateChainPermission(newPermission);
   }
@@ -74,85 +114,41 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
     super.didChangeDependencies();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<EthereumChain>().toList();
+    currentChain = chains.firstWhere(
+        (e) => e.chainId == permission.currentChain,
+        orElse: () => chains.first);
     for (final i in chains) {
       permissions[i] = permission.accounts
           .where((e) => e.chainId == i.network.coinParam.chainId)
           .toList();
     }
-    chain = chains.firstWhere((e) => e.chainId == currentChain);
+    chain = chains.firstWhere((e) => e.chainId == currentChain.chainId);
+    final Map<EthereumChain, Web3EthereumChainAccount> defaultAccount = {};
+    for (final i in chains) {
+      final accounts = permissions[i]!;
+      final defaultAddress = accounts.firstWhereOrNull((e) => e.defaultAddress);
+      if (defaultAddress != null) {
+        defaultAccount[i] = defaultAddress;
+      }
+    }
+    this.defaultAccount = defaultAccount;
   }
 
   @override
   Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("active_chain".tr, style: context.textTheme.titleMedium),
-          Text("web3_switch_chain_desc".tr,
-              style: context.textTheme.bodyMedium),
-          WidgetConstant.height8,
-          AppDropDownBottom(
-              label: "network".tr,
-              items: {
-                for (final i in chains) i: Text(i.network.coinParam.token.name)
-              },
-              onChanged: onChangeCurrentChain,
-              value: chain),
-          WidgetConstant.height20,
-          Text("ethereum_networks".tr, style: context.textTheme.titleMedium),
-          Text("evm_account_permission_desc".tr),
-          WidgetConstant.height8,
-          AppDropDownBottom(
-              label: "network".tr,
-              items: {
-                for (final i in chains) i: Text(i.network.coinParam.token.name)
-              },
-              onChanged: onChangeChain,
-              value: chain),
-          WidgetConstant.height20,
-          Text("accounts".tr, style: context.textTheme.titleMedium),
-          Text("web3_accounts_permission_desc".tr),
-          WidgetConstant.height8,
-          APPAnimatedSwitcher(enable: chain.haveAddress, widgets: {
-            true: (c) => Column(
-                  children: [
-                    ListView.builder(
-                        addAutomaticKeepAlives: false,
-                        shrinkWrap: true,
-                        physics: WidgetConstant.noScrollPhysics,
-                        itemBuilder: (c, index) {
-                          final addr = chain.addresses[index];
-
-                          return ContainerWithBorder(
-                            onRemove: () {
-                              addAccount(addr);
-                            },
-                            onRemoveWidget: IgnorePointer(
-                                child: Checkbox(
-                                    value: hasPermission(addr),
-                                    onChanged: (e) {})),
-                            child: AddressDetailsView(address: addr),
-                          );
-                        },
-                        itemCount: chain.addresses.length),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        FixedElevatedButton(
-                            padding: WidgetConstant.paddingVertical40,
-                            child: Text("update_permission".tr),
-                            onPressed: () {
-                              complete();
-                            }),
-                      ],
-                    )
-                  ],
-                ),
-            false: (c) => NoAccountFoundInChainWidget(chain)
-          }),
-        ],
-      ),
+    return UpdateChainPermissionWidget<ETHAddress, EthereumChain, IEthAddress,
+        Web3EthereumChainAccount>(
+      chain: chain,
+      chains: chains,
+      complete: complete,
+      hasPermission: hasPermission,
+      onChangeCurrentChain: onChangeCurrentChain,
+      addAccount: addAccount,
+      onChangeChain: onChangeChain,
+      onChangeDefaultAccount: onChangeDefaultPermission,
+      permissions: permissions[chain]!,
+      defaultChainAddress: defaultChainAccount,
+      activeChain: currentChain,
     );
   }
 }

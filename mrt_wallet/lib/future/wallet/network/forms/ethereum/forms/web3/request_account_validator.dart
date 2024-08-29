@@ -11,44 +11,73 @@ class EthereumRequestAccountForm extends EthereumWeb3Form {
   late EthereumChain _selectedNetwork = request.chain;
   EthereumChain get chain => _selectedNetwork;
   final Web3EthereumChain newPermission;
+  late EthereumChain _activeChain =
+      chains.firstWhere((e) => e.chainId == newPermission.currentChain);
+
+  EthereumChain get activeChain => _activeChain;
+
+  void onChangeActiveChain(EthereumChain? chain) {
+    _activeChain = chain ?? _activeChain;
+    onChanged?.call();
+  }
 
   void onChangeChain(EthereumChain? chain) {
     _selectedNetwork = chain ?? _selectedNetwork;
     onChanged?.call();
   }
 
-  @override
-  EthereumRequestAccountForm(
-      {required this.request, required List<EthereumChain> chains})
+  EthereumRequestAccountForm._(
+      {required this.request,
+      required this.permissions,
+      required Map<EthereumChain, Web3EthereumChainAccount> defaultAccount,
+      required this.newPermission,
+      required List<EthereumChain> chains})
       : chains = chains.imutable,
-        permissions = _buildFields(
-            chains: chains,
-            currentPermissions: request.currentPermission?.accounts ?? []),
-        newPermission = Web3EthereumChain.create(
-            chainId: request.currentPermission?.currentChain);
-  @override
-  OnChangeForm? onChanged;
-  @override
-  String get name => request.params.method.name;
-  static Map<EthereumChain, TransactionListFormField<Web3EthereumChainAccount>>
-      _buildFields(
-          {required List<Web3EthereumChainAccount> currentPermissions,
-          required List<EthereumChain> chains}) {
+        _defaultAccount = defaultAccount;
+  factory EthereumRequestAccountForm(
+      {required Web3EthereumRequest request,
+      required List<EthereumChain> chains}) {
+    final List<Web3EthereumChainAccount> currentPermissions =
+        request.currentPermission?.accounts ?? [];
     Map<EthereumChain, TransactionListFormField<Web3EthereumChainAccount>>
         fields = {};
     for (final i in chains) {
       fields[i] = TransactionListFormField(
           name: "accounts",
           onChangeForm: (p0) => p0,
-          values: currentPermissions
-              .where((e) => e.chainId == i.network.coinParam.chainId)
-              .toList());
+          values:
+              currentPermissions.where((e) => e.chainId == i.chainId).toList());
     }
-    return fields;
+    final Map<EthereumChain, Web3EthereumChainAccount> defaultAccount = {};
+    for (final i in chains) {
+      final accounts = fields[i]!.value;
+      final defaultAddress = accounts.firstWhereOrNull((e) => e.defaultAddress);
+      if (defaultAddress != null) {
+        defaultAccount[i] = defaultAddress;
+      }
+    }
+    return EthereumRequestAccountForm._(
+        request: request,
+        chains: chains,
+        defaultAccount: defaultAccount,
+        permissions: fields,
+        newPermission: Web3EthereumChain.create(
+            chainId: request.currentPermission?.currentChain));
   }
+  @override
+  OnChangeForm? onChanged;
+  @override
+  String get name => request.params.method.name;
 
   final Map<EthereumChain, TransactionListFormField<Web3EthereumChainAccount>>
       permissions;
+
+  final Map<EthereumChain, Web3EthereumChainAccount> _defaultAccount;
+
+  List<Web3EthereumChainAccount> get chainPermission =>
+      permissions[chain]!.value;
+
+  Web3EthereumChainAccount? get defaultChainAccount => _defaultAccount[chain];
 
   Web3EthereumChainAccount? accountPermission(IEthAddress address) {
     return MethodUtils.nullOnException(() => permissions[chain]!
@@ -62,22 +91,50 @@ class EthereumRequestAccountForm extends EthereumWeb3Form {
     return contains;
   }
 
+  void onChangeDefaultPermission(Web3EthereumChainAccount? account) {
+    if (account == null) return;
+    _defaultAccount[chain] = account;
+    onChanged?.call();
+  }
+
   void addAccount(IEthAddress address) {
     final exists = accountPermission(address);
     if (exists != null) {
       permissions[chain]?.removeValue(exists);
     } else {
       permissions[chain]?.addValue(Web3EthereumChainAccount.fromChainAccount(
-          address: address, chainId: chain.network.coinParam.chainId));
+          address: address,
+          chainId: chain.network.coinParam.chainId,
+          defaultAddress: false));
+    }
+    if (permissions[chain]!.value.isEmpty) {
+      _defaultAccount.remove(chain);
+    } else {
+      if (!permissions[chain]!.value.contains(defaultChainAccount)) {
+        _defaultAccount[chain] = permissions[chain]!.value[0];
+      }
     }
     onChanged?.call();
   }
 
   void complete() {
     assert(onCompeleteForm != null, "Must not be null");
-    final accounts =
-        permissions.values.map((e) => e.value).expand((e) => e).toList();
+    List<Web3EthereumChainAccount> accounts = [];
+    for (final i in permissions.entries) {
+      Web3EthereumChainAccount? defaultAddr = _defaultAccount[i.key];
+      defaultAddr ??= i.value.value.isEmpty ? null : i.value.value.first;
+      for (final a in i.value.value) {
+        Web3EthereumChainAccount account = a;
+        if (account == defaultAddr && !account.defaultAddress) {
+          account = account.changeDefault(true);
+        } else if (account.defaultAddress) {
+          account = account.changeDefault(false);
+        }
+        accounts.add(account);
+      }
+    }
     newPermission.updateChainAccount(accounts);
+    newPermission.setActiveChain(_activeChain);
     onCompeleteForm?.call(newPermission);
   }
 
