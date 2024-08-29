@@ -227,7 +227,8 @@ void main(List<String> args) async {
     if (baseHrefIndex > 0) {
       baseHref = fixedArgs.elementAt(baseHrefIndex);
     }
-    await _buildWeb(minify: minify, baseHref: baseHref, clean: clean);
+    await _buildWeb(
+        minify: minify, baseHref: "--base-href=/mrtwallet/", clean: clean);
   } else if (fixedArgs.contains("-webview")) {
     await buildWebView(minify: minify);
   }

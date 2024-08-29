@@ -36,7 +36,7 @@ void run() async {
         pixelRatio: pixelRatio,
         size: const WidgetSize(width: 500, height: 700));
     await PlatformInterface.instance.desktop.setMaximumSize(const WidgetSize(
-        width: APPConst.desktopAppHeight, height: APPConst.desktopAppWidth));
+        width: APPConst.desktopAppWidth, height: APPConst.desktopAppHeight));
   }
   final config = await PlatformInterface.instance.getConfig();
   final materialData =
