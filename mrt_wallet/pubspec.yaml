@@ -57,13 +57,13 @@ dependencies:
 
   xrpl_dart: ^4.6.0
 
-  on_chain: ^4.0.0
+  on_chain: ^4.0.1
 
   # on_chain:
   #   path: ../../../bitcoin/on_chain
 
 
-  cosmos_sdk: ^1.2.0
+  cosmos_sdk: ^1.3.0
 
   ton_dart: ^0.0.4
 
