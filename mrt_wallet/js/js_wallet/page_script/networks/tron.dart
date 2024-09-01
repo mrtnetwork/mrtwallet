@@ -101,7 +101,7 @@ class TronPageController extends PageNetworkController {
         _tronWeb?.object.defaultAddress = changeInfo.defaultAddress == null
             ? null
             : createJSInteropWrapper(changeInfo.defaultAddress!);
-        eventData = changeInfo.toJSEvenet;
+        eventData = changeInfo.toJSEvent;
         break;
       case TronEventTypes.disable:
         _disableProvider(eventMessage.dataAs());

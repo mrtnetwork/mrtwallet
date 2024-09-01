@@ -183,7 +183,7 @@ class SuccessTransactionTextView extends StatelessWidget {
     required this.txId,
     required this.network,
   });
-  final String txId;
+  final List<String> txId;
   final WalletNetwork network;
 
   @override
@@ -196,20 +196,115 @@ class SuccessTransactionTextView extends StatelessWidget {
         WidgetConstant.checkCircle,
         Text(network.coinParam.token.name, style: context.textTheme.labelLarge),
         WidgetConstant.height20,
-        ContainerWithBorder(
-            child: CopyTextIcon(
-                isSensitive: false,
-                dataToCopy: txId,
-                widget: OneLineTextWidget(txId))),
-        WidgetConstant.height20,
-        FilledButton.icon(
-            onPressed: () {
-              final addr = network.coinParam.getTransactionExplorer(txId);
-              if (addr == null) return;
-              UriUtils.lunch(addr);
+        ListView.separated(
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return ContainerWithBorder(
+                  child: CopyTextIcon(
+                      isSensitive: false,
+                      dataToCopy: txId[index],
+                      widget: OneLineTextWidget(txId[index])));
             },
-            icon: const Icon(Icons.open_in_browser),
-            label: Text("view_on_explorer".tr)),
+            separatorBuilder: (context, index) => WidgetConstant.divider,
+            itemCount: txId.length),
+        WidgetConstant.height20,
+        if (network.coinParam.hasTransactionExplorer)
+          FilledButton.icon(
+              onPressed: () {
+                for (final i in txId) {
+                  final addr = network.coinParam.getTransactionExplorer(i);
+                  UriUtils.lunch(addr);
+                }
+              },
+              icon: const Icon(Icons.open_in_browser),
+              label: Text("view_on_explorer".tr)),
+      ],
+    );
+
+    return _ProgressWithTextView(
+        text: successTrText, icon: WidgetConstant.sizedBox);
+  }
+}
+
+enum ProgressMultipleTextViewStatus { error, success }
+
+class ProgressMultipleTextViewObject {
+  final ProgressMultipleTextViewStatus status;
+  final String text;
+  final bool enableCopy;
+  final String? openUrl;
+  bool get isSuccess => status == ProgressMultipleTextViewStatus.success;
+  const ProgressMultipleTextViewObject(
+      {required this.status,
+      required this.text,
+      required this.enableCopy,
+      this.openUrl});
+  factory ProgressMultipleTextViewObject.success({
+    required String message,
+    String? openUrl,
+    bool enableCopy = true,
+  }) {
+    return ProgressMultipleTextViewObject(
+        status: ProgressMultipleTextViewStatus.success,
+        text: message,
+        enableCopy: enableCopy,
+        openUrl: openUrl);
+  }
+  factory ProgressMultipleTextViewObject.error(
+      {required String message, bool enableCopy = false}) {
+    return ProgressMultipleTextViewObject(
+        status: ProgressMultipleTextViewStatus.error,
+        text: message,
+        enableCopy: enableCopy);
+  }
+}
+
+class ProgressMultipleTextView extends StatelessWidget {
+  const ProgressMultipleTextView(
+      {super.key, required this.texts, required this.logo, this.title});
+  final List<ProgressMultipleTextViewObject> texts;
+  final APPImage? logo;
+  final String? title;
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget successTrText = Column(
+      children: [
+        CircleAPPImageView(logo, radius: APPConst.double80),
+        if (title != null) Text(title!, style: context.textTheme.labelLarge),
+        WidgetConstant.height20,
+        ListView.separated(
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              final txt = texts[index];
+              return ContainerWithBorder(
+                  onTapWhenOnRemove: false,
+                  onRemove: () {},
+                  onRemoveIcon: txt.isSuccess
+                      ? IconButton(
+                          icon: txt.openUrl != null
+                              ? const Icon(Icons.open_in_new)
+                              : const Icon(Icons.check_circle),
+                          color: context.colors.onPrimaryContainer,
+                          onPressed: () {
+                            if (txt.openUrl != null) {
+                              UriUtils.lunch(txt.openUrl);
+                            }
+                          },
+                        )
+                      : Icon(
+                          Icons.error,
+                          color: context.colors.error,
+                        ),
+                  child: txt.enableCopy
+                      ? CopyTextIcon(
+                          isSensitive: false,
+                          dataToCopy: txt.text,
+                          widget: Text(txt.text, maxLines: 2))
+                      : Text(txt.text, maxLines: 2));
+            },
+            separatorBuilder: (context, index) => WidgetConstant.divider,
+            itemCount: texts.length),
       ],
     );
 

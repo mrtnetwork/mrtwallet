@@ -184,7 +184,7 @@ Future<void> _buildWeb(
   if (clean) {
     await _clean();
   }
-  // await buildCrypto();
+  await buildCrypto();
   final r = Directory("web");
   if (r.existsSync()) {
     await r.delete(recursive: true);
@@ -199,6 +199,8 @@ Future<void> _buildWeb(
     await buildContent(minify: minify, isMozila: mozila);
     File file = File("extentions/tron_web.js");
     await file.copy("web/tron_web.js");
+    file = File("extentions/bn.js");
+    await file.copy("web/bn.js");
     file = File("extentions/index.html");
     await file.copy("web/index.html");
     file = File("extentions/popup.html");
@@ -221,12 +223,12 @@ void main(List<String> args) async {
     await _buildWeb(
         extention: true, mozila: mozila, minify: minify, clean: clean);
   } else if (fixedArgs.contains("-web")) {
-    final baseHrefIndex =
-        fixedArgs.indexWhere((e) => e.startsWith("--base-href="));
-    String? baseHref;
-    if (baseHrefIndex > 0) {
-      baseHref = fixedArgs.elementAt(baseHrefIndex);
-    }
+    // final baseHrefIndex =
+    //     fixedArgs.indexWhere((e) => e.startsWith("--base-href="));
+    // String? baseHref;
+    // if (baseHrefIndex > 0) {
+    //   baseHref = fixedArgs.elementAt(baseHrefIndex);
+    // }
     await _buildWeb(
         minify: minify, baseHref: "--base-href=/mrtwallet/", clean: clean);
   } else if (fixedArgs.contains("-webview")) {

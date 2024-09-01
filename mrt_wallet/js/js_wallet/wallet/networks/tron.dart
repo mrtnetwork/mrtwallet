@@ -292,5 +292,11 @@ class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
   }
 
   @override
+  Web3MessageCore finilize(
+      ClientMessageTron request, Web3MessageCore response) {
+    return response;
+  }
+
+  @override
   NetworkType get networkType => NetworkType.tron;
 }

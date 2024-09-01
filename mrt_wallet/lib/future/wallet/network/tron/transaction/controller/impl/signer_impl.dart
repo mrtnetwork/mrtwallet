@@ -97,7 +97,7 @@ mixin TronSignerImpl on TronTransactionImpl {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
             network: network,
-            txId: result.result.txId!,
+            txId: [result.result.txId!],
           ),
           backToIdle: false);
     }

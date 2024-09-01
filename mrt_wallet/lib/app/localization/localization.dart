@@ -2044,7 +2044,28 @@ class Localization {
               "in multi-sig transaction, this may be different from the account address",
           "insufficient_balance": "Insufficient balance",
           "insufficient_balance_desc":
-              "The transaction might have failed due to insufficient balance. Do you still want to proceed?"
+              "The transaction might have failed due to insufficient balance. Do you still want to proceed?",
+          "instructions": "Instructions",
+          "simulate_transaction": "Simulate transaction",
+          "transaction_simulation_failed": "Transaction simulation failed.",
+          "transaction_simulation_success": "Transaction simulation success.",
+          "transaction_simulate_please_wait":
+              "Simulating transaction. Please wait.",
+          "transaction_simulation_failed_retry":
+              "Transaction simulation failed. Tap to retry",
+          "transactions": "Transactions",
+          "multiple_transaction_desc":
+              "Multiple transaction requests detected. Please review each transaction before submitting.",
+          "signing_transaction_please_wait":
+              "Signing transaction. Please wait.",
+          "send_transactions": "Send transactions",
+          "sign_transactions": "Sign transactions",
+          "transaction_signed": "Transaction has been signed.",
+          "total_transaction_fee": "Total transaction fee",
+          "fee_estimate_failed": "Fee estimation failed",
+          "submit_transaction": "Submit transaction.",
+          "simulation_failed_continue_desc":
+              "Some transaction simulations failed. Do you want to continue?"
         }
       };
 }

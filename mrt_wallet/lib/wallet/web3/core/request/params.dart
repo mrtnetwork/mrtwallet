@@ -8,6 +8,7 @@ import 'package:mrt_wallet/wallet/web3/networks/ethereum/params/core/request.dar
 import 'package:mrt_wallet/wallet/web3/core/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/global.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'web_request.dart';
 
@@ -78,6 +79,10 @@ abstract class Web3RequestParams<
         break;
       case NetworkType.tron:
         param = Web3TronRequestParam.deserialize(
+            bytes: bytes, object: object, hex: hex);
+        break;
+      case NetworkType.solana:
+        param = Web3SolanaRequestParam.deserialize(
             bytes: bytes, object: object, hex: hex);
         break;
       default:

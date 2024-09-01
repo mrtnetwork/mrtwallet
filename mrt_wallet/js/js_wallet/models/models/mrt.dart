@@ -1,7 +1,7 @@
 import 'dart:js_interop';
 import 'package:mrt_native_support/web/api/core/js.dart';
 
-import 'ethreum/ethereum.dart';
+import 'networks/ethereum.dart';
 
 @JS("MRT")
 external MRTWallet? get mrtNull;

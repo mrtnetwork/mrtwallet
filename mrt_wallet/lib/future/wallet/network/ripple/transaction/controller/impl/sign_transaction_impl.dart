@@ -36,7 +36,7 @@ mixin RippleSignTransactionImpl on RippleTransactionImpl {
         progressKey.success(
             progressWidget: SuccessTransactionTextView(
               network: network,
-              txId: result.result.txJson.hash,
+              txId: [result.result.txJson.hash],
             ),
             backToIdle: false);
       }

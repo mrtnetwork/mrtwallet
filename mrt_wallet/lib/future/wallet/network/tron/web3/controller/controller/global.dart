@@ -24,7 +24,7 @@ class Web3TronGlobalRequestController<RESPONSE,
     switch (request.params.method) {
       case Web3TronRequestMethods.signMessageV2:
         final sign = await walletProvider.wallet.walletRequest(
-            WalletRequestEthereumPersonalSign(
+            WalletRequestSignMessage(
                 message:
                     request.params.cast<Web3TronSignMessageV2>().chalengBytes(),
                 index: address.keyIndex as Bip32AddressIndex,
@@ -33,12 +33,12 @@ class Web3TronGlobalRequestController<RESPONSE,
           progressKey.error(text: sign.error!.tr);
           return;
         }
-        result = sign.result;
+        result = sign.result.signatureHex;
         break;
       default:
         break;
     }
-    request.completeRequest(result);
+    request.completeResponse(result);
     progressKey.response(text: "request_completed_success".tr);
   }
 

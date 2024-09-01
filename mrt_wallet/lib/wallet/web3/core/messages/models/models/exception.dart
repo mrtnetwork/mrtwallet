@@ -54,7 +54,7 @@ class Web3ExceptionMessage extends Web3MessageCore {
       "data": data,
       "request": request == null ? null : StringUtils.tryToJson(request!),
       "requestId": requestId
-    };
+    }..removeWhere((k, v) => v == null);
   }
 
   @override

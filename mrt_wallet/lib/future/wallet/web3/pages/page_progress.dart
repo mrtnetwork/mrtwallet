@@ -254,7 +254,7 @@ extension QuickAccsessWeb3PageProgressState
 
   void responseTx({required String hash, required WalletNetwork network}) {
     currentState?.response(
-        widget: SuccessTransactionTextView(txId: hash, network: network));
+        widget: SuccessTransactionTextView(txId: [hash], network: network));
   }
 
   void process({String? text, Widget? widget}) {

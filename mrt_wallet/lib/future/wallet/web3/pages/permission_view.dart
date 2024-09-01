@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/wallet/network/solana/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/client_info.dart';
 import 'package:mrt_wallet/future/wallet/controller/impl/web3_request_controller.dart';
@@ -45,7 +46,6 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     with SafeState {
   late Web3RequestControllerImpl controller = widget.controller;
   final GlobalKey<FormState> formKey = GlobalKey();
-  late final bool multipleChains = Web3Const.supportedWeb3.length > 1;
   Web3APPAuthentication? application;
 
   String applicationName = "";
@@ -232,6 +232,10 @@ class _APPPermissionWidget extends StatelessWidget {
         NetworkType.tron: (c) => TronWeb3PermissionView(
             permission:
                 state.application?.getChainFromNetworkType(NetworkType.tron),
+            onUpdateChainPermission: state.onUpdateChainPermission),
+        NetworkType.solana: (c) => SolanaWeb3PermissionView(
+            permission:
+                state.application?.getChainFromNetworkType(NetworkType.solana),
             onUpdateChainPermission: state.onUpdateChainPermission),
       })
     ]);

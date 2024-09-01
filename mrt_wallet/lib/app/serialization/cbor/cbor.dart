@@ -120,8 +120,31 @@ extension ExtractCborList on CborListValue {
     return v;
   }
 
+  T elemetAs<T>(int index) {
+    if (index > value.length - 1) {
+      if (null is T) return null as T;
+      throw WalletExceptionConst.invalidSerializationData;
+    }
+    try {
+      CborObject? cborValue = value[index];
+      if (null is T && cborValue == const CborNullValue()) {
+        return null as T;
+      }
+      if (cborValue is T) {
+        return cborValue as T;
+      }
+      return cborValue!.value as T;
+    } catch (e) {
+      throw WalletExceptionConst.invalidSerializationData;
+    }
+  }
+
   List<T> cast<T>() {
     return [for (int i = 0; i < value.length; i++) elementAt<T>(i)];
+  }
+
+  List<T> castValue<T>() {
+    return [for (int i = 0; i < value.length; i++) elemetAs<T>(i)];
   }
 
   CborTagValue? getCborTag(int index) {
@@ -160,7 +183,7 @@ extension ExtractCborList on CborListValue {
   /// Gets the value at the specified [index] in the [CborListValue].
   ///
   /// If [index] is out of bounds and [T] is nullable, returns null. Otherwise, throws a [WalletException].
-  T getElement<T>(int index) {
+  T getElement<T extends CborObject?>(int index) {
     if (index >= value.length) {
       if (null is T) return null as T;
       throw WalletExceptionConst.invalidSerializationData;

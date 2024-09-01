@@ -134,7 +134,7 @@ abstract class Web3Request<
   bool get isPermissionRequest => params.isPermissionRequest;
   bool get needPermission => params.account != null;
 
-  void completeRequest(Object? response) {
+  void completeResponse(Object? response) {
     if (response is! RESPONSE) {
       throw WalletExceptionConst.invalidArgruments(
           "$RESPONSE", response.runtimeType.toString());

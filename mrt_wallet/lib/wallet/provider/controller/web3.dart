@@ -1,6 +1,7 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin Web3Impl on WalletManager, Web3EthereumImpl, Web3TronImpl {
+mixin Web3Impl
+    on WalletManager, Web3EthereumImpl, Web3SolanaImpl, Web3TronImpl {
   Chain _getWeb3ChainId(
       {required Web3RequestParams param,
       required Web3APPAuthentication authenticated}) {
@@ -25,6 +26,17 @@ mixin Web3Impl on WalletManager, Web3EthereumImpl, Web3TronImpl {
         return _appChains._networks.values.whereType<TronChain>().firstWhere(
             (e) =>
                 e.network.tronNetworkType ==
+                (web3Chain?.currentChain ?? TronChainType.mainnet),
+            orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+      case NetworkType.solana:
+        final web3Chain = authenticated
+            .getChainFromNetworkType<Web3SolanaChain>(param.method.network);
+        if (param.account != null && web3Chain == null) {
+          throw Web3RequestExceptionConst.missingPermission;
+        }
+        return _appChains._networks.values.whereType<SolanaChain>().firstWhere(
+            (e) =>
+                e.network.genesisBlock ==
                 (web3Chain?.currentChain ?? TronChainType.mainnet),
             orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
       default:
@@ -106,6 +118,8 @@ mixin Web3Impl on WalletManager, Web3EthereumImpl, Web3TronImpl {
         return await _getEthereumWeb3Result(request as Web3EthereumRequest);
       case NetworkType.tron:
         return await _getTronWeb3Result(request as Web3TronRequest);
+      case NetworkType.solana:
+        return await _getSolanaWeb3Result(request as Web3SolanaRequest);
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
@@ -117,22 +131,6 @@ mixin Web3Impl on WalletManager, Web3EthereumImpl, Web3TronImpl {
     required Web3RequestApplicationInformation walletRequest,
   }) async {
     throw UnimplementedError();
-    // Object? result;
-    // switch (requestParams.method) {
-    //   case Web3GlobalRequestMethods.disconnect:
-    //     final requestMessage = requestParams.cast<Web3DisconnectApplication>();
-    //     authenticated.disconnect(requestMessage.chain);
-    //     result = true;
-    //     break;
-    //   default:
-    //     throw Web3RequestExceptionConst.invalidRequest;
-    // }
-    // await _core._savePermission(wallet: _wallet, permission: authenticated);
-    // return Web3WalletResponseMessage(
-    //   authenticated: authenticated,
-    //   result: result,
-
-    // );
   }
 
   Future<Web3MessageCore> _handleChainRequest(

@@ -6,6 +6,8 @@ class JSPageController {
       EthereumPageController(getWalletMessage: _getResult);
   late final TronPageController tronPageController =
       TronPageController(getWalletMessage: _getResult);
+  late final SolanaPageController solanaPageController =
+      SolanaPageController(getWalletMessage: _getResult);
   final String clientId;
   late final String _id = JsUtils.toEthereumClientId(clientId);
   late final String _walletId = JsUtils.toWalletId(clientId);
@@ -54,6 +56,9 @@ class JSPageController {
         break;
       case JSClientType.tron:
         tronPageController.onEvent(walletResponse.cast());
+        break;
+      case JSClientType.solana:
+        solanaPageController.onEvent(walletResponse.cast());
         break;
       default:
         break;

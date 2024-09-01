@@ -12,6 +12,7 @@ import '../../page_script/scripts.dart';
 import '../../utils/utils.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../networks/ethereum.dart';
+import '../networks/solana.dart';
 import '../networks/tron.dart';
 part "../webview.dart";
 part "../extention.dart";
@@ -23,6 +24,8 @@ abstract class JSWalletHandler {
       JSEthereumHandler(sendMessageToClient: _sendMessageToClient);
   late final JSTronHandler tronHandler =
       JSTronHandler(sendMessageToClient: _sendMessageToClient);
+  late final JSSolanaHandler solanaHandler =
+      JSSolanaHandler(sendMessageToClient: _sendMessageToClient);
 
   String get clientId;
   late final String _id = JsUtils.toWalletId(clientId);
@@ -64,10 +67,11 @@ abstract class JSWalletHandler {
       {required JSPageRequest? params, required String requestId}) async {
     try {
       Web3MessageCore message = switch (params?.type) {
-        JSClientType.ethereum => await ethereumHandler
-            .request(params!.message as ClientMessageEthereum),
-        JSClientType.tron =>
-          await tronHandler.request(params!.message as ClientMessageTron),
+        JSClientType.ethereum =>
+          await ethereumHandler.request(params!.message.cast()),
+        JSClientType.tron => await tronHandler.request(params!.message.cast()),
+        JSClientType.solana =>
+          await solanaHandler.request(params!.message.cast()),
         _ => throw Web3RequestExceptionConst.invalidRequest
       };
       switch (message.type) {
@@ -94,7 +98,19 @@ abstract class JSWalletHandler {
     try {
       final request = completer.nextRequest;
       _buildAndSendMessage(params: params, requestId: request.id);
-      final message = await request.wait;
+      Web3MessageCore message = await request.wait;
+      switch (params.type) {
+        case JSClientType.ethereum:
+          message = ethereumHandler.finilize(params.message.cast(), message);
+          break;
+        case JSClientType.tron:
+          message = tronHandler.finilize(params.message.cast(), message);
+          break;
+        case JSClientType.solana:
+          message = solanaHandler.finilize(params.message.cast(), message);
+          break;
+        default:
+      }
       return switch (message.type) {
         Web3MessageTypes.response => JSWalletMessageResponse(
             requestId: params.id,
@@ -116,11 +132,13 @@ abstract class JSWalletHandler {
     } finally {
       switch (params.type) {
         case JSClientType.ethereum:
-          ethereumHandler
-              .onRequestDone(params.message as ClientMessageEthereum);
+          ethereumHandler.onRequestDone(params.message.cast());
           break;
         case JSClientType.tron:
-          tronHandler.onRequestDone(params.message as ClientMessageTron);
+          tronHandler.onRequestDone(params.message.cast());
+          break;
+        case JSClientType.solana:
+          solanaHandler.onRequestDone(params.message.cast());
           break;
         default:
       }
@@ -138,10 +156,16 @@ abstract class JSWalletHandler {
         tronHandler.initChain(
             chainHandler: _chain, authenticated: authenticated);
         break;
+      case NetworkType.solana:
+        solanaHandler.initChain(
+            chainHandler: _chain, authenticated: authenticated);
+        break;
       default:
         tronHandler.initChain(
             chainHandler: _chain, authenticated: authenticated);
         ethereumHandler.initChain(
+            chainHandler: _chain, authenticated: authenticated);
+        solanaHandler.initChain(
             chainHandler: _chain, authenticated: authenticated);
         break;
     }

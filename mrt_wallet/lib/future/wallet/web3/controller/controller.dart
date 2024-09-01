@@ -49,6 +49,7 @@ mixin Web3RequestControllerState on StateController {
 
   Future<void> readyWeb3() async {
     permissionAccount = web3Request.accountPermission();
+    notify();
     await MethodUtils.after(() async => _init());
   }
 

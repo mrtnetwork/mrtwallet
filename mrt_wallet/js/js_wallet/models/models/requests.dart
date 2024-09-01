@@ -5,8 +5,9 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 
 import '../../constant/constant.dart';
 import '../../utils/utils/utils.dart';
-import 'ethreum/ethereum.dart';
-import 'tron/tron.dart';
+import 'networks/ethereum.dart';
+import 'networks/solana.dart';
+import 'networks/tron.dart';
 
 enum JSWalletMessageType {
   response([100]),
@@ -83,6 +84,8 @@ abstract class JSWalletNetworkEvent extends JSWalletMessage {
         return JSWalletMessageResponseEthereum.deserialize(object: cbor);
       case JSClientType.tron:
         return JSWalletMessageResponseTron.deserialize(object: cbor);
+      case JSClientType.solana:
+        return JSWalletMessageResponseSolana.deserialize(object: cbor);
       default:
     }
     throw Web3RequestExceptionConst.internalError;
@@ -145,7 +148,8 @@ class JSWalletMessageResponse extends JSWalletMessage {
 enum JSClientType {
   global([110]),
   ethereum([111]),
-  tron([112]);
+  tron([112]),
+  solana([113]);
 
   final List<int> tag;
   const JSClientType(this.tag);
@@ -195,6 +199,8 @@ abstract class PageMessage with CborSerializable {
         return ClientMessageEthereum.deserialize(object: tag);
       case JSClientType.tron:
         return ClientMessageTron.deserialize(object: tag);
+      case JSClientType.solana:
+        return ClientMessageSolana.deserialize(object: tag);
       default:
         throw Web3RequestExceptionConst.internalError;
     }
@@ -218,5 +224,12 @@ abstract class PageMessage with CborSerializable {
     } catch (e) {
       return null;
     }
+  }
+
+  T cast<T extends PageMessage>() {
+    if (this is! T) {
+      throw Web3RequestExceptionConst.internalError;
+    }
+    return this as T;
   }
 }

@@ -464,7 +464,7 @@ abstract class BitcoinTransactionImpl extends StateController
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
             network: network,
-            txId: result.result.toString(),
+            txId: [result.result.toString()],
           ),
           backToIdle: false);
     }

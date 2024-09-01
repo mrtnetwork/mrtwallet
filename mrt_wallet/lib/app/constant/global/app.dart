@@ -6,6 +6,7 @@ class APPConst {
   static const String assetErc1155Abi = "assets/solidity/erc1155.json";
   static const String assetWebviewScript = "assets/webview/script.js";
   static const String assetsTronWeb = "assets/webview/tron_web.js";
+  static const String bnJs = "assets/webview/bn.js";
   static final APPImage logo = APPImage.local("assets/image/mrt_wallet.png");
   static final APPImage telegramLogo = APPImage.local("assets/image/t.png");
   static final APPImage githubLogo = APPImage.local("assets/image/g.png");

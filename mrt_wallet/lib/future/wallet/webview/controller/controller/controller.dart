@@ -112,6 +112,8 @@ class WebViewStateController extends StateController
           faviIcon: event.favicon);
       final tronWeb = await FileUtils.loadAssetText(APPConst.assetsTronWeb);
       await _loadScript(viewType: event.viewId, script: tronWeb);
+      final solanaJs = await FileUtils.loadAssetText(APPConst.bnJs);
+      await _loadScript(viewType: event.viewId, script: solanaJs);
       String script;
       if (kDebugMode) {
         if (PlatformInterface.appPlatform == AppPlatform.android) {

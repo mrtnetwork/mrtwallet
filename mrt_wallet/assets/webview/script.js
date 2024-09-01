@@ -544,6 +544,9 @@
     firstWhere$1$ax(receiver, a0) {
       return J.getInterceptor$ax(receiver).firstWhere$1(receiver, a0);
     },
+    firstWhere$2$orElse$ax(receiver, a0, a1) {
+      return J.getInterceptor$ax(receiver).firstWhere$2$orElse(receiver, a0, a1);
+    },
     fold$1$2$ax(receiver, a0, a1, $T1) {
       return J.getInterceptor$ax(receiver).fold$1$2(receiver, a0, a1, $T1);
     },
@@ -6705,9 +6708,6 @@
       object4 = A.SystemHash_finish(A.SystemHash_combine(A.SystemHash_combine(A.SystemHash_combine(A.SystemHash_combine($.$get$_hashSeed(), t1), object2), object3), object4));
       return object4;
     },
-    print(object) {
-      A.printString(object);
-    },
     _combineSurrogatePair(start, end) {
       return 65536 + ((start & 1023) << 10) + (end & 1023);
     },
@@ -8844,7 +8844,7 @@
     ElectrumRequest_toRequest_closure: function ElectrumRequest_toRequest_closure() {
     },
     Base58Encoder_encode(dataBytes, base58alphabets) {
-      var val, t2, enc, t3, div, zero, _i,
+      var val, t2, enc, t3, div, t4, zero,
         t1 = B.Map_inkaS.$index(0, base58alphabets);
       t1.toString;
       val = A.BigintUtils_fromBytes(dataBytes, B.C_Endian, false);
@@ -8858,15 +8858,16 @@
           return A.ioore(t1, t3);
         enc = t1[t3] + enc;
       }
-      for (t3 = dataBytes.length, zero = 0, _i = 0; _i < dataBytes.length; dataBytes.length === t3 || (0, A.throwConcurrentModificationError)(dataBytes), ++_i)
-        if (J.$eq$(dataBytes[_i], 0))
+      for (t3 = J.getInterceptor$ax(dataBytes), t4 = t3.get$iterator(dataBytes), zero = 0; t4.moveNext$0();)
+        if (t4.get$current() === 0)
           ++zero;
         else
           break;
-      t3 = dataBytes.length;
+      t4 = t3.get$length(dataBytes);
+      t3 = t3.get$length(dataBytes);
       if (0 >= t2)
         return A.ioore(t1, 0);
-      return B.JSString_methods.$mul(t1[0], t3 - (t3 - zero)) + enc;
+      return B.JSString_methods.$mul(t1[0], t4 - (t3 - zero)) + enc;
     },
     Base58Encoder_checkEncode(dataBytes, base58alphabets) {
       var checksum = B.JSArray_methods.sublist$2(A.SHA256_hash(A.SHA256_hash(dataBytes)), 0, 4),
@@ -9238,7 +9239,7 @@
       return new A.ADAByronAddr(new A.ADAByronAddrPayload(t4, new A.ADAByronAddrAttrs(hdPath, networkMagic), A.ADAByronAddrTypes_ADAByronAddrTypes$fromCbor(t2._as(t1[2]))));
     },
     _AdaByronAddrUtils_encodeKey(pubKeyBytes, chainCodeBytes, addrType, hdPathEncBytes, networkMagic) {
-      var t2, t3, t4, t5, h, out,
+      var t2, t3, t4, t5, h, digest,
         addrAttrs = new A.ADAByronAddrAttrs(hdPathEncBytes, networkMagic),
         t1 = A.List_List$of(B.JSArray_methods.sublist$1(pubKeyBytes, 1), true, type$.dynamic);
       B.JSArray_methods.addAll$1(t1, chainCodeBytes);
@@ -9249,17 +9250,10 @@
       t5 = new A.CborListValue(A._setArrayType([new A.CborIntValue(t3), new A.CborListValue(A._setArrayType([t3, A.List_List$from(t1, true, t2)], t4), true, t5), addrAttrs.toJson$0()], t4), true, t5).encode$0();
       h = new A.SHA3256(32, A.List_List$filled(25, 0, false, t2), A.List_List$filled(25, 0, false, t2), A.List_List$filled(200, 0, false, t2));
       h._Keccack$1(64);
-      t4 = type$.List_int;
-      h.super$_Keccack$update(t4._as(t5));
-      out = A.List_List$filled(32, 0, false, t2);
-      t4._as(out);
-      if (!h._finished)
-        h._padAndPermute$1(6);
-      else
-        h._pos = 0;
-      h._squeeze$1(out);
+      h.super$_Keccack$update(type$.List_int._as(t5));
+      digest = h.digest$0();
       h.reset$0();
-      return new A.ADAByronAddr(new A.ADAByronAddrPayload(A.QuickCrypto_blake2b224Hash(out), addrAttrs, addrType));
+      return new A.ADAByronAddr(new A.ADAByronAddrPayload(A.QuickCrypto_blake2b224Hash(digest), addrAttrs, addrType));
     },
     ADAByronAddrTypes: function ADAByronAddrTypes(t0, t1) {
       this.value = t0;
@@ -10175,10 +10169,21 @@
       this.name = t0;
     },
     Ed25519Blake2bPublicKey: function Ed25519Blake2bPublicKey(t0) {
-      this._publicKey = t0;
+      this._ed25519_blake2b_keys$_publicKey = t0;
+    },
+    Ed25519PublicKey_Ed25519PublicKey$fromBytes(keyBytes) {
+      var prefix,
+        t1 = J.getInterceptor$asx(keyBytes);
+      if (t1.get$length(keyBytes) === 33) {
+        prefix = t1.sublist$2(keyBytes, 0, 1);
+        if (A.BytesUtils_bytesEqual(prefix, B.List_0) || A.BytesUtils_bytesEqual(prefix, B.List_237))
+          keyBytes = t1.sublist$1(keyBytes, 1);
+      }
+      t1 = $.$get$Curves_generatorED25519();
+      return new A.Ed25519PublicKey(A.EDDSAPublicKey_EDDSAPublicKey$fromPoint(t1, A.EDPoint_EDPoint$fromBytes(t1.curve, keyBytes)));
     },
     Ed25519PublicKey: function Ed25519PublicKey(t0) {
-      this._ed25519_keys$_publicKey = t0;
+      this._publicKey = t0;
     },
     Ed25519KholawPublicKey: function Ed25519KholawPublicKey(t0) {
       this._ed25519_kholaw_keys$_publicKey = t0;
@@ -11009,6 +11014,9 @@
     CurveFp$(a, b, h, p) {
       return new A.CurveFp(p, a, b, h);
     },
+    CurveED$(a, d, h, order, p) {
+      return new A.CurveED(p, a, d, h);
+    },
     CurveFp: function CurveFp(t0, t1, t2, t3) {
       var _ = this;
       _.p = t0;
@@ -11061,12 +11069,14 @@
         pubkeyBytes = publicPoint.toBytes$0();
       if (pubkeyBytes.length !== baselen)
         throw A.wrapException(A.ArgumentException$("Incorrect size of the public key, expected: " + baselen + " bytes"));
-      return new A.EDDSAPublicKey(generator, A.BytesUtils_toBytes(pubkeyBytes, true), publicPoint);
+      return new A.EDDSAPublicKey(generator, A.BytesUtils_toBytes(pubkeyBytes, true), baselen, publicPoint);
     },
-    EDDSAPublicKey: function EDDSAPublicKey(t0, t1, t2) {
-      this.generator = t0;
-      this._encoded = t1;
-      this._point = t2;
+    EDDSAPublicKey: function EDDSAPublicKey(t0, t1, t2, t3) {
+      var _ = this;
+      _.generator = t0;
+      _._encoded = t1;
+      _.baselen = t2;
+      _._point = t3;
     },
     AbstractPoint_fromBytes(curve, data) {
       var p, expLen, t1, t2, y, x, keyLen, rawEncodingLength, encodeType, prefix, result;
@@ -11162,36 +11172,36 @@
     AbstractPoint: function AbstractPoint() {
     },
     ProjectiveECCPoint_ProjectiveECCPoint(curve, generator, order, x, y, z) {
-      return new A.ProjectiveECCPoint(curve, order, generator, B.List_empty11, A._setArrayType([x, y, z], type$.JSArray_BigInt));
+      return new A.ProjectiveECCPoint(curve, order, generator, B.List_empty13, A._setArrayType([x, y, z], type$.JSArray_BigInt));
     },
     ProjectiveECCPoint_ProjectiveECCPoint$fromBytes(curve, data, order) {
       var coords = A.AbstractPoint_fromBytes(curve, data);
-      return new A.ProjectiveECCPoint(curve, order, false, B.List_empty11, A._setArrayType([coords.item1, coords.item2, $.$get$_BigIntImpl_one()], type$.JSArray_BigInt));
+      return new A.ProjectiveECCPoint(curve, order, false, B.List_empty13, A._setArrayType([coords.item1, coords.item2, $.$get$_BigIntImpl_one()], type$.JSArray_BigInt));
     },
     ProjectiveECCPoint: function ProjectiveECCPoint(t0, t1, t2, t3, t4) {
       var _ = this;
       _.curve = t0;
       _.order = t1;
       _.generator = t2;
-      _._precompute = t3;
+      _._ec_projective_point$_precompute = t3;
       _._ec_projective_point$_coords = t4;
     },
     EDPoint$(curve, generator, order, t, x, y, z) {
-      return new A.EDPoint(curve, order, generator, B.List_empty11, A._setArrayType([x, y, z, t], type$.JSArray_BigInt));
+      return new A.EDPoint(curve, order, generator, B.List_empty13, A._setArrayType([x, y, z, t], type$.JSArray_BigInt));
     },
     EDPoint_EDPoint$fromBytes(curve, data) {
       var coords = A.AbstractPoint_fromBytes(curve, data),
         x = coords.item1,
         y = coords.item2,
         t = x.$mul(0, y);
-      return new A.EDPoint(curve, null, false, B.List_empty11, A._setArrayType([x, y, $.$get$_BigIntImpl_one(), t], type$.JSArray_BigInt));
+      return new A.EDPoint(curve, null, false, B.List_empty13, A._setArrayType([x, y, $.$get$_BigIntImpl_one(), t], type$.JSArray_BigInt));
     },
     EDPoint: function EDPoint(t0, t1, t2, t3, t4) {
       var _ = this;
       _.curve = t0;
       _.order = t1;
       _.generator = t2;
-      _._edwards$_precompute = t3;
+      _._precompute = t3;
       _._coords = t4;
     },
     RistrettoPoint_RistrettoPoint$fromEdwardsPoint(point) {
@@ -11209,7 +11219,7 @@
       t4 = coords[2];
       if (3 >= t1)
         return A.ioore(coords, 3);
-      return new A.RistrettoPoint(point.curve, point.order, false, B.List_empty11, A._setArrayType([t2, t3, t4, coords[3]], type$.JSArray_BigInt));
+      return new A.RistrettoPoint(point.curve, point.order, false, B.List_empty13, A._setArrayType([t2, t3, t4, coords[3]], type$.JSArray_BigInt));
     },
     RistrettoPoint_RistrettoPoint$fromBytes(bytes) {
       var s2, u1, u2, u1_2, u2_2, v, invSqrt, t3, x2, y2, x, y, t,
@@ -11247,14 +11257,14 @@
       }
       if (t1)
         throw A.wrapException(B.ArgumentException_IJC);
-      return A.RistrettoPoint_RistrettoPoint$fromEdwardsPoint(new A.EDPoint(c, null, false, B.List_empty11, A._setArrayType([x, y, t2, t], type$.JSArray_BigInt)));
+      return A.RistrettoPoint_RistrettoPoint$fromEdwardsPoint(new A.EDPoint(c, null, false, B.List_empty13, A._setArrayType([x, y, t2, t], type$.JSArray_BigInt)));
     },
     RistrettoPoint: function RistrettoPoint(t0, t1, t2, t3, t4) {
       var _ = this;
       _.curve = t0;
       _.order = t1;
       _.generator = t2;
-      _._edwards$_precompute = t3;
+      _._precompute = t3;
       _._coords = t4;
     },
     SquareRootError: function SquareRootError(t0) {
@@ -11629,29 +11639,22 @@
       }
     },
     RIPEMD160_hash(data) {
-      var out,
+      var digest,
         t1 = type$.int,
         t2 = J.JSArray_JSArray$growable(0, t1),
         t3 = A.List_List$filled(16, 0, false, t1),
-        h = new A.RIPEMD160(t2, t3),
-        t4 = type$.List_int;
-      h.set$___RIPEMD__state_F(t4._as(A.List_List$filled(5, 0, false, t1)));
+        h = new A.RIPEMD160(t2, t3);
+      h.set$___RIPEMD__state_F(type$.List_int._as(A.List_List$filled(5, 0, false, t1)));
       h.reset$0();
-      t4._as(data);
-      if (h._finished)
-        A.throwExpression(B.MessageException_NiJ);
-      h._lengthInBytes = h._lengthInBytes + data.length;
-      B.JSArray_methods.addAll$1(t2, A.BytesUtils_toBytes(data, false));
-      h._iterate$0();
-      t4 = h.___RIPEMD__state_F;
-      t4 === $ && A.throwLateFieldNI("_state");
-      out = A.List_List$filled(t4.length * 4, 0, false, t1);
-      h.finish$1(out);
-      A.zero(t4);
+      h.update$1(data);
+      digest = h.digest$0();
+      t1 = h.___RIPEMD__state_F;
+      t1 === $ && A.throwLateFieldNI("_state");
+      A.zero(t1);
       A.zero(t3);
       B.JSArray_methods.clear$0(t2);
       h.reset$0();
-      return out;
+      return digest;
     },
     _RidempUtils_T(i, bl, cl, dl) {
       if (i < 16)
@@ -11713,7 +11716,7 @@
       return state;
     },
     SHA256_hash(data) {
-      var out,
+      var digest,
         t1 = type$.int,
         t2 = A.List_List$filled(8, 0, false, t1),
         t3 = A.List_List$filled(64, 0, false, t1),
@@ -11721,12 +11724,11 @@
         h = new A.SHA256(t2, t3, t4, A.List_List$unmodifiable(B.List_02, t1));
       h.reset$0();
       h.update$1(data);
-      out = A.List_List$filled(32, 0, false, t1);
-      h.finish$1(out);
+      digest = h.digest$0();
       A.zero(t4);
       A.zero(t3);
       h.reset$0();
-      return out;
+      return digest;
     },
     BLAKE2b: function BLAKE2b(t0, t1, t2, t3, t4, t5) {
       var _ = this;
@@ -11823,7 +11825,7 @@
       this._keys$_publicKey = t0;
     },
     QuickCrypto__blake2bHash(data, digestSize, key, salt) {
-      var t8, out,
+      var t8, digest,
         t1 = type$.int,
         t2 = A.List_List$from($.$get$_iv(), false, t1),
         t3 = A.List_List$filled(128, 0, false, t1),
@@ -11843,8 +11845,7 @@
       B.JSArray_methods.$indexSet(t2, 0, (t8 ^ (digestSize | 16842752)) >>> 0);
       h.set$__BLAKE2b__initialState_A(type$.List_int._as(A.List_List$from(t2, false, t1)));
       h.update$1(data);
-      out = A.List_List$filled(digestSize, 0, false, t1);
-      h.finish$1(out);
+      digest = h.digest$0();
       A.zero(t6);
       A.zero(t7);
       A.zero(t2);
@@ -11859,7 +11860,7 @@
       A.zero(t4);
       A.zero(t5);
       h._finished = h._lastNode = false;
-      return out;
+      return digest;
     },
     QuickCrypto_blake2b224Hash(data) {
       return A.QuickCrypto__blake2bHash(data, 28, null, null);
@@ -11924,6 +11925,10 @@
       var layout = A.StructLayout_StructLayout(A._setArrayType([A.SequenceLayout_SequenceLayout(new A.CompactOffsetLayout(-1, null), A.MapEntryLayout$(keyLayout, "", valueLayout), "values", type$.dynamic)], type$.JSArray_Layout_dynamic), false, null);
       return new A.CustomLayout(layout, new A.LayoutConst_compactMap_closure($K, $V), new A.LayoutConst_compactMap_closure0($K, $V), layout.span, property, type$.$env_1_1_Map_String_dynamic._bind$1($K._eval$1("@<0>")._bind$1($V)._eval$1("Map<1,2>"))._eval$1("CustomLayout<1,2>"));
     },
+    LayoutConst_array(elementLayout, $length, property) {
+      var layout = A.StructLayout_StructLayout(A._setArrayType([A.SequenceLayout_SequenceLayout(new A.ConstantLayout($length, 0, null, type$.ConstantLayout_dynamic), elementLayout, "values", type$.dynamic)], type$.JSArray_Layout_dynamic), false, null);
+      return new A.CustomLayout(layout, new A.LayoutConst_array_closure(), new A.LayoutConst_array_closure0(), layout.span, property, type$.CustomLayout_of_Map_String_dynamic_and_dynamic);
+    },
     LayoutConst_compactVec(elementLayout, property, $T) {
       var layout = A.StructLayout_StructLayout(A._setArrayType([A.SequenceLayout_SequenceLayout(new A.CompactOffsetLayout(-1, null), elementLayout, "values", type$.dynamic)], type$.JSArray_Layout_dynamic), false, null);
       return new A.CustomLayout(layout, new A.LayoutConst_compactVec_closure($T), new A.LayoutConst_compactVec_closure0($T), layout.span, property, type$.$env_1_1_Map_String_dynamic._bind$1($T._eval$1("List<0>"))._eval$1("CustomLayout<1,2>"));
@@ -11948,6 +11953,10 @@
       this.K = t0;
       this.V = t1;
     },
+    LayoutConst_array_closure0: function LayoutConst_array_closure0() {
+    },
+    LayoutConst_array_closure: function LayoutConst_array_closure() {
+    },
     LayoutConst_compactVec_closure: function LayoutConst_compactVec_closure(t0) {
       this.T = t0;
     },
@@ -11962,7 +11971,26 @@
       this.$ti = t2;
     },
     SequenceLayout_SequenceLayout(count, elementLayout, property, $T) {
-      return new A.SequenceLayout(elementLayout, count, -1, property, $T._eval$1("SequenceLayout<0>"));
+      var t2, span,
+        t1 = !(count instanceof A.ExternalLayout);
+      if (t1)
+        if (count instanceof A.ConstantLayout)
+          t2 = count.value >= 0;
+        else
+          t2 = false;
+      else
+        t2 = true;
+      if (!t2)
+        throw A.wrapException(A.LayoutException$("count must be non-negative integer or an unsigned integer ExternalLayout", A.LinkedHashMap_LinkedHashMap$_literal(["property", property, "count", count], type$.String, type$.dynamic), null));
+      if (t1)
+        t2 = count instanceof A.ConstantLayout && count.value >= 0;
+      else
+        t2 = true;
+      if (t2)
+        span = t1 && elementLayout.span >= 0 ? type$.ConstantLayout_dynamic._as(count).value * elementLayout.span : -1;
+      else
+        span = -1;
+      return new A.SequenceLayout(elementLayout, count, span, property, $T._eval$1("SequenceLayout<0>"));
     },
     SequenceLayout: function SequenceLayout(t0, t1, t2, t3, t4) {
       var _ = this;
@@ -11984,6 +12012,13 @@
     CompactBytes: function CompactBytes(t0, t1) {
       this.span = t0;
       this.property = t1;
+    },
+    ConstantLayout: function ConstantLayout(t0, t1, t2, t3) {
+      var _ = this;
+      _.value = t0;
+      _.span = t1;
+      _.property = t2;
+      _.$ti = t3;
     },
     CustomLayout: function CustomLayout(t0, t1, t2, t3, t4, t5) {
       var _ = this;
@@ -12179,6 +12214,9 @@
     },
     LayoutException_toString_closure: function LayoutException_toString_closure(t0) {
       this.$this = t0;
+    },
+    SolanaVerifier: function SolanaVerifier(t0) {
+      this._eddsaPublicKey = t0;
     },
     SS58ChecksumError: function SS58ChecksumError(t0) {
       this.message = t0;
@@ -13023,11 +13061,45 @@
       }
       return v;
     },
+    ExtractCborList_elemetAs(_this, index, $T) {
+      var cborValue, exception,
+        t1 = _this.value;
+      if (index > t1.length - 1) {
+        if ($T._is(null)) {
+          $T._as(null);
+          return null;
+        }
+        throw A.wrapException($.$get$WalletExceptionConst_invalidSerializationData());
+      }
+      try {
+        cborValue = type$.nullable_CborObject._as(t1[index]);
+        if ($T._is(null) && J.$eq$(cborValue, B.C_CborNullValue)) {
+          $T._as(null);
+          return null;
+        }
+        if ($T._is(cborValue)) {
+          t1 = $T._as(cborValue);
+          return t1;
+        }
+        t1 = $T._as(cborValue.get$value());
+        return t1;
+      } catch (exception) {
+        t1 = $.$get$WalletExceptionConst_invalidSerializationData();
+        throw A.wrapException(t1);
+      }
+    },
     ExtractCborList_cast(_this, $T) {
       var t2, i,
         t1 = A._setArrayType([], $T._eval$1("JSArray<0>"));
       for (t2 = _this.value, i = 0; i < t2.length; ++i)
         t1.push(A.ExtractCborList_elementAt(_this, i, $T));
+      return t1;
+    },
+    ExtractCborList_castValue(_this, $T) {
+      var t2, i,
+        t1 = A._setArrayType([], $T._eval$1("JSArray<0>"));
+      for (t2 = _this.value, i = 0; i < t2.length; ++i)
+        t1.push(A.ExtractCborList_elemetAs(_this, i, $T));
       return t1;
     },
     ExtractCborList_getCborTag(_this, index) {
@@ -14551,7 +14623,7 @@
         if (bitcoinAddressType !== A.BlockchainAddressUtils_toBitcoinAddress(address.address, t4.transacationNetwork, bitcoinAddressType).get$type())
           A.throwExpression($.$get$WalletExceptionConst_invalidAccountDetails());
         A.ExtractCborList_elementAt(cbor, 7, type$.nullable_String);
-        A.List_List$unmodifiable(B.List_empty3, t2);
+        A.List_List$unmodifiable(B.List_empty4, t2);
         return new A.IBitcoinCashMultiSigAddress(multiSignatureAddress, bitcoinAddressType, keyIndex, t3);
       }
       cbor = A.CborSerializable_decodeCborTags(null, obj, B.List_200_191, type$.CborListValue_dynamic);
@@ -14607,7 +14679,7 @@
         A.ExtractCborList_elementAt(cbor, 7, type$.nullable_String);
         multiSignatureAddress.fromType$2$addressType$network(bitcoinAddressType, network.toNetwork$1$0(type$.WalletBitcoinNetwork).coinParam.transacationNetwork);
         t1 = network.get$value();
-        A.List_List$unmodifiable(B.List_empty3, t2);
+        A.List_List$unmodifiable(B.List_empty4, t2);
         return new A.IBitcoinMultiSigAddress(multiSignatureAddress, bitcoinAddressType, keyIndex, t1);
       }
       cbor = A.CborSerializable_decodeCborTags(null, obj, B.List_200_192, type$.CborListValue_dynamic);
@@ -14727,7 +14799,7 @@
     _IEthAddress_ChainAccount_Equatable: function _IEthAddress_ChainAccount_Equatable() {
     },
     ISolanaAddress_ISolanaAddress$fromCborBytesOrObject(network, obj) {
-      var keyIndex, networkId, t2, splTokens, tokens,
+      var keyIndex, networkId, t2, address, splTokens, tokens,
         cbor = A.CborSerializable_decodeCborTags(null, obj, B.List_200_196, type$.CborListValue_dynamic),
         t1 = type$.String,
         proposal = A.CoinProposal_fromName(A.ExtractCborList_elementAt(cbor, 0, t1));
@@ -14738,7 +14810,7 @@
         throw A.wrapException($.$get$WalletExceptionConst_incorrectNetwork());
       t2 = network.get$coinParam().token.decimal;
       t2.toString;
-      A.AccountBalance_AccountBalance$fromCborBytesOrObject(t2, A.ExtractCborList_getCborTag(cbor, 4));
+      address = A.AccountBalance_AccountBalance$fromCborBytesOrObject(t2, A.ExtractCborList_getCborTag(cbor, 4));
       new A.SolAddrDecoder().decodeAddr$1(A.ExtractCborList_elementAt(cbor, 5, t1));
       splTokens = A._setArrayType([], type$.JSArray_SolanaSPLToken);
       tokens = A.ExtractCborList_elementAt(cbor, 7, type$.nullable_List_dynamic);
@@ -14750,11 +14822,12 @@
       t1 = A._setArrayType([], type$.JSArray_NFTCore);
       A.List_List$unmodifiable(splTokens, type$.SolanaSPLToken);
       A.List_List$unmodifiable(t1, type$.NFTCore);
-      return new A.ISolanaAddress(keyIndex, networkId);
+      return new A.ISolanaAddress(address, keyIndex, networkId);
     },
-    ISolanaAddress: function ISolanaAddress(t0, t1) {
-      this.keyIndex = t0;
-      this.network = t1;
+    ISolanaAddress: function ISolanaAddress(t0, t1, t2) {
+      this.address = t0;
+      this.keyIndex = t1;
+      this.network = t2;
     },
     _ISolanaAddress_ChainAccount_Equatable: function _ISolanaAddress_ChainAccount_Equatable() {
     },
@@ -14927,7 +15000,7 @@
         A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject(account);
       if (resource != null)
         A.TronAccountResourceInfo_TronAccountResourceInfo$fromCborBytesOrObject(resource);
-      A.List_List$unmodifiable(B.List_empty3, type$.int);
+      A.List_List$unmodifiable(B.List_empty4, type$.int);
       A.List_List$unmodifiable(trc10Tokens, type$.TronTRC10Token);
       A.List_List$unmodifiable(trc20Tokens, type$.TronTRC20Token);
       A.List_List$unmodifiable(t1, type$.NFTCore);
@@ -15054,7 +15127,7 @@
       accountNfts = A.List_List$of(t1, true, t1.$ti._eval$1("ListIterable.E"));
       multiSigAccount = A.RippleMultiSignatureAddress_RippleMultiSignatureAddress$fromCborBytesOrObject(A.ExtractCborList_getCborTag(values, 11));
       A.ExtractCborList_elementAt(values, 12, type$.nullable_String);
-      A.List_List$unmodifiable(B.List_empty3, t2);
+      A.List_List$unmodifiable(B.List_empty4, t2);
       A.List_List$unmodifiable(issueTokens, t3);
       A.List_List$unmodifiable(accountNfts, t4);
       return new A.IXRPMultisigAddress(multiSigAccount, B.C_MultiSigAddressIndex, networkId, tag);
@@ -15099,57 +15172,57 @@
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.EthereumClient);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.EthereumChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.EthereumChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         case B.NetworkType_SkF:
           t1 = network.toNetwork$1$0(type$.WalletTronNetwork);
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.TronClient);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.TronChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.TronChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         case B.NetworkType_Oh2:
           t1 = network.toNetwork$1$0(type$.WalletXRPNetwork);
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.RippleClient);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.RippleChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.RippleChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         case B.NetworkType_4QF:
           t1 = network.toNetwork$1$0(type$.WalletSolanaNetwork);
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.SolanaClient);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.SolanaChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.SolanaChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         case B.NetworkType_4ei:
           t1 = network.toNetwork$1$0(type$.WalletCardanoNetwork);
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.CardanoClient);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.ADAChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.ADAChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         case B.NetworkType_QJm:
           t1 = network.toNetwork$1$0(type$.WalletCosmosNetwork);
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.CosmosClient);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.CosmosChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.CosmosChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         case B.NetworkType_66M:
           t1 = network.toNetwork$1$0(type$.WalletTonNetwork);
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.TonClient);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.TonChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.TonChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         case B.NetworkType_GRA:
         case B.NetworkType_0:
           t1 = network.toNetwork$1$0(type$.WalletPolkadotNetwork);
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.SubstrateClient);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.SubstrateChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.SubstrateChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         case B.NetworkType_8eb:
         case B.NetworkType_8Nh:
           t1 = network.toNetwork$1$0(type$.WalletBitcoinNetwork);
           t2 = A.APIUtils_createApiClient(network, false, _null, _null, type$.BitcoinClient_IBitcoinAddress);
           t3 = t1.coinParam.token.decimal;
           t3.toString;
-          return A.BitcoinChain$_(0, B.List_empty9, t2, B.List_empty10, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
+          return A.BitcoinChain$_(0, B.List_empty11, t2, B.List_empty12, id, t1, new A.Live(A.IntegerBalance_IntegerBalance($.$get$_BigIntImpl_zero(), t3, false), A.LinkedHashSet_LinkedHashSet$_empty(type$.void_Function), type$.Live_IntegerBalance));
         default:
           throw A.wrapException(A.UnimplementedError$("network does not eixst. "));
       }
@@ -16344,6 +16417,58 @@
     EIP712Domain: function EIP712Domain(t0) {
       this.chainId = t0;
     },
+    SolanaWeb3TransactionResponseType_fromName($name) {
+      return B.JSArray_methods.firstWhere$1(B.List_GhS, new A.SolanaWeb3TransactionResponseType_fromName_closure($name));
+    },
+    SolanaWeb3TransactionResponse_SolanaWeb3TransactionResponse$fromJson(json) {
+      var t3, t4, t5, _s6_ = "signer",
+        _s18_ = "signerAddressBytes",
+        t1 = type$.Iterable_dynamic,
+        t2 = type$.int;
+      switch (A.SolanaWeb3TransactionResponseType_fromName(A._asString(json.$index(0, "type")))) {
+        case B.SolanaWeb3TransactionResponseType_2:
+          t3 = A._asInt(json.$index(0, "id"));
+          return new A.SolanaWeb3TransactionErrorResponse(A._asString(json.$index(0, "message")), t3, A._asString(json.$index(0, _s6_)), A.BytesUtils_toBytes(A.List_List$from(t1._as(json.$index(0, _s18_)), true, t2), true));
+        case B.SolanaWeb3TransactionResponseType_1:
+          t3 = A._asInt(json.$index(0, "id"));
+          t4 = A.List_List$from(t1._as(json.$index(0, "signature")), true, t2);
+          t5 = A._asString(json.$index(0, _s6_));
+          t2 = A.List_List$from(t1._as(json.$index(0, _s18_)), true, t2);
+          return new A.SolanaWeb3TransactionSignResponse(A.BytesUtils_toBytes(t4, false), t3, t5, A.BytesUtils_toBytes(t2, true));
+        default:
+          t3 = A._asInt(json.$index(0, "id"));
+          return new A.SolanaWeb3TransactionSendResponse(A._asString(json.$index(0, "tx_id")), t3, A._asString(json.$index(0, _s6_)), A.BytesUtils_toBytes(A.List_List$from(t1._as(json.$index(0, _s18_)), true, t2), true));
+      }
+    },
+    SolanaWeb3TransactionResponseType: function SolanaWeb3TransactionResponseType(t0) {
+      this._name = t0;
+    },
+    SolanaWeb3TransactionResponseType_fromName_closure: function SolanaWeb3TransactionResponseType_fromName_closure(t0) {
+      this.name = t0;
+    },
+    SolanaWeb3TransactionResponse: function SolanaWeb3TransactionResponse() {
+    },
+    SolanaWeb3TransactionErrorResponse: function SolanaWeb3TransactionErrorResponse(t0, t1, t2, t3) {
+      var _ = this;
+      _.message = t0;
+      _.id = t1;
+      _.signer = t2;
+      _.signerAddressBytes = t3;
+    },
+    SolanaWeb3TransactionSignResponse: function SolanaWeb3TransactionSignResponse(t0, t1, t2, t3) {
+      var _ = this;
+      _.signature = t0;
+      _.id = t1;
+      _.signer = t2;
+      _.signerAddressBytes = t3;
+    },
+    SolanaWeb3TransactionSendResponse: function SolanaWeb3TransactionSendResponse(t0, t1, t2, t3) {
+      var _ = this;
+      _.txHash = t0;
+      _.id = t1;
+      _.signer = t2;
+      _.signerAddressBytes = t3;
+    },
     TronAccountResourceInfo_TronAccountResourceInfo$fromCborBytesOrObject(obj) {
       var t7, t8,
         cbor = A.CborSerializable_decodeCborTags(null, obj, B.List_200_195_101, type$.CborListValue_dynamic),
@@ -17038,6 +17163,8 @@
       _.requestId = t4;
       _.request = t5;
     },
+    Web3ExceptionMessage_toJson_closure: function Web3ExceptionMessage_toJson_closure() {
+    },
     Web3ResponseMessage_Web3ResponseMessage$deserialize(object) {
       var values = A.CborSerializable_cborTagValue(null, null, object, B.List_100_13, type$.CborListValue_dynamic);
       return new A.Web3ResponseMessage(A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 0, type$.String), type$.Map_String_dynamic).$index(0, "result"), A.NetworkType_fromTag(A.ExtractCborList_elementAt(values, 1, type$.nullable_List_int)));
@@ -17052,7 +17179,7 @@
       this.network = t2;
     },
     Web3MessageCore_Web3MessageCore$deserialize(bytes) {
-      var cbor, type, e, s, t1, values, t2, t3, exception, _null = null, hex = null, object = null;
+      var cbor, type, t1, values, t2, t3, exception, _null = null, hex = null, object = null;
       try {
         cbor = A.CborSerializable_decode(bytes, hex, object, type$.CborTagValue_dynamic);
         type = A.Web3MessageTypes_fromTag(cbor.tags);
@@ -17083,9 +17210,6 @@
             throw A.wrapException(B.Web3RequestException_chs);
         }
       } catch (exception) {
-        e = A.unwrapException(exception);
-        s = A.getTraceFromException(exception);
-        A.print("prse message error " + A.S(e) + " " + A.S(s));
         throw A.wrapException(B.Web3RequestException_chs);
       }
     },
@@ -17113,6 +17237,9 @@
         case B.NetworkType_SkF:
           tag.toString;
           return A.Web3TronRequestMethods_fromId(J.get$last$ax(tag));
+        case B.NetworkType_4QF:
+          tag.toString;
+          return A.Web3SolanaRequestMethods_fromId(J.get$last$ax(tag));
         default:
           throw A.wrapException(B.Web3RequestException_IAR);
       }
@@ -17198,6 +17325,9 @@
         case B.NetworkType_SkF:
           chain = A.Web3TronChain_Web3TronChain$deserialize(decode);
           break;
+        case B.NetworkType_4QF:
+          chain = A.Web3SolanaChain_Web3SolanaChain$deserialize(decode);
+          break;
         default:
           throw A.wrapException($.$get$WalletExceptionConst_unsuportedFeature());
       }
@@ -17231,6 +17361,9 @@
           break;
         case B.NetworkType_SkF:
           param = A.Web3TronRequestParam_Web3TronRequestParam$deserialize(_null, _null, object, type$.dynamic);
+          break;
+        case B.NetworkType_4QF:
+          param = A.Web3SolanaRequestParam_Web3SolanaRequestParam$deserialize(_null, _null, object, type$.dynamic);
           break;
         default:
           throw A.wrapException(B.Web3RequestException_chs);
@@ -17462,7 +17595,7 @@
       t2 = A.Web3ValidatorUtils_parseInt(json, "gas", B.Web3EthereumRequestMethods_0_eth_sendTransaction_List_empty, t2);
       t6 = A.Web3ValidatorUtils_parseHex(json, "data", B.Web3EthereumRequestMethods_0_eth_sendTransaction_List_empty, type$.nullable_List_int);
       if (t6 == null)
-        t6 = B.List_empty3;
+        t6 = B.List_empty4;
       return A.Web3EthreumSendTransaction$(A.Web3ValidatorUtils_parseBigInt(json, "chainId", B.Web3EthereumRequestMethods_0_eth_sendTransaction_List_empty, t1), t6, t3, t2, gasPrice, maxFeePerGas, maxPriorityFeePerGas, t4, ethTransactionType, t5);
     },
     Web3EthreumSendTransaction: function Web3EthreumSendTransaction(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9) {
@@ -17591,6 +17724,143 @@
     },
     Web3DisconnectApplication: function Web3DisconnectApplication(t0) {
       this.chain = t0;
+    },
+    Web3SolanaRequestMethods_fromId(id) {
+      return B.JSArray_methods.firstWhere$2$orElse($.Web3SolanaRequestMethods_values, new A.Web3SolanaRequestMethods_fromId_closure(id), new A.Web3SolanaRequestMethods_fromId_closure0());
+    },
+    Web3SolanaRequestMethods_fromName($name) {
+      return A.QuickImutableList_firstWhereOrNull($.Web3SolanaRequestMethods_values, new A.Web3SolanaRequestMethods_fromName_closure($name), null, type$.Web3SolanaRequestMethods);
+    },
+    Web3SolanaRequestMethods: function Web3SolanaRequestMethods(t0, t1, t2) {
+      this.id = t0;
+      this.name = t1;
+      this.methodsName = t2;
+    },
+    Web3SolanaRequestMethods_fromId_closure: function Web3SolanaRequestMethods_fromId_closure(t0) {
+      this.id = t0;
+    },
+    Web3SolanaRequestMethods_fromId_closure0: function Web3SolanaRequestMethods_fromId_closure0() {
+    },
+    Web3SolanaRequestMethods_fromName_closure: function Web3SolanaRequestMethods_fromName_closure(t0) {
+      this.name = t0;
+    },
+    Web3SolanaRequestParam_Web3SolanaRequestParam$deserialize(bytes, hex, object, RESPONSE) {
+      var param, values, challeng,
+        t1 = type$.CborListValue_dynamic;
+      switch (A.Web3RequestMethods_fromTag(A.ExtractCborList_elementAt(A.CborSerializable_cborTagValue(bytes, hex, object, B.List_100_12, t1), 0, type$.nullable_List_int))) {
+        case B.Web3SolanaRequestMethods_A0N:
+          A.CborSerializable_cborTagValue(bytes, hex, object, B.List_100_12, type$.CborObject);
+          param = new A.Web3SolanaRequestAccounts();
+          break;
+        case B.Web3SolanaRequestMethods_6YB:
+          param = A.Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize(bytes, hex, object);
+          break;
+        case B.Web3SolanaRequestMethods_102_solana_signMessage_List_empty:
+          values = A.CborSerializable_cborTagValue(bytes, hex, object, B.List_100_12, t1);
+          challeng = A.ExtractCborList_elementAt(values, 2, type$.List_int);
+          t1 = A.ExtractCborList_elementAt(values, 1, type$.String);
+          new A.SolAddrDecoder().decodeAddr$1(t1);
+          param = new A.Web3SolanaSignMessage(new A.SolAddress(t1), A.BytesUtils_toHexString(challeng, true, "0x"), A.ExtractCborList_elementAt(values, 3, type$.nullable_String));
+          break;
+        default:
+          throw A.wrapException(B.Web3RequestException_chs);
+      }
+      if (!RESPONSE._eval$1("Web3SolanaRequestParam<0>")._is(param))
+        throw A.wrapException(B.Web3RequestException_chs);
+      return param;
+    },
+    Web3SolanaPermissionRequestParam: function Web3SolanaPermissionRequestParam() {
+    },
+    Web3SolanaRequestParam: function Web3SolanaRequestParam() {
+    },
+    Web3SolanaRequestAccounts: function Web3SolanaRequestAccounts() {
+    },
+    Web3SolanaSignMessage: function Web3SolanaSignMessage(t0, t1, t2) {
+      this.address = t0;
+      this.challeng = t1;
+      this.content = t2;
+    },
+    Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize(bytes, hex, object) {
+      var t2, t3,
+        t1 = type$.CborListValue_dynamic,
+        values = A.CborSerializable_cborTagValue(bytes, hex, object, B.List_100_12, t1);
+      t1 = A.ExtractCborList_castValue(A.ExtractCborList_elemetAs(values, 1, t1), type$.CborTagValue_dynamic);
+      t2 = A._arrayInstanceType(t1);
+      t3 = t2._eval$1("MappedListIterable<1,Web3SolanaSendTransactionData>");
+      t3 = A.List_List$of(new A.MappedListIterable(t1, t2._eval$1("Web3SolanaSendTransactionData(1)")._as(new A.Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure()), t3), true, t3._eval$1("ListIterable.E"));
+      t2 = A.ExtractCborList_getCborTag(values, 2);
+      return new A.Web3SolanaSendTransaction(t3, t2 == null ? null : A.QuickCbor_to(t2, new A.Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure0(), type$.nullable_Web3SolanaSendTransactionOptions, type$.CborObject));
+    },
+    Web3SolanaSendTransactionOptions: function Web3SolanaSendTransactionOptions(t0, t1, t2, t3, t4) {
+      var _ = this;
+      _.maxRetries = t0;
+      _.skipPreflight = t1;
+      _.commitment = t2;
+      _.minContextSlot = t3;
+      _.signers = t4;
+    },
+    Web3SolanaSendTransactionData: function Web3SolanaSendTransactionData(t0, t1, t2) {
+      this.account = t0;
+      this.id = t1;
+      this.messageBytes = t2;
+    },
+    Web3SolanaSendTransaction: function Web3SolanaSendTransaction(t0, t1) {
+      this.messages = t0;
+      this.sendConfig = t1;
+    },
+    Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure: function Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure() {
+    },
+    Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure0: function Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure0() {
+    },
+    Web3SolanaSendTransaction_toCbor_closure: function Web3SolanaSendTransaction_toCbor_closure() {
+    },
+    Web3SolanaSendTransaction_toJson_closure: function Web3SolanaSendTransaction_toJson_closure() {
+    },
+    _Web3SolanaSendTransactionData_Object_CborSerializable: function _Web3SolanaSendTransactionData_Object_CborSerializable() {
+    },
+    _Web3SolanaSendTransactionOptions_Object_CborSerializable: function _Web3SolanaSendTransactionOptions_Object_CborSerializable() {
+    },
+    Web3SolanaChainAccount: function Web3SolanaChainAccount(t0, t1, t2, t3) {
+      var _ = this;
+      _.genesis = t0;
+      _.keyIndex = t1;
+      _.address = t2;
+      _.defaultAddress = t3;
+    },
+    Web3SolanaChain_Web3SolanaChain$deserialize(object) {
+      var t4, t5,
+        values = A.CborSerializable_cborTagValue(null, null, object, B.List_80_0_5, type$.CborListValue_dynamic),
+        t1 = type$.List_dynamic,
+        t2 = type$.Web3SolanaChainAccount,
+        t3 = J.map$1$1$ax(A.ExtractCborList_elementAt(values, 0, t1), new A.Web3SolanaChain_Web3SolanaChain$deserialize_closure(), t2);
+      t3 = A.List_List$of(t3, true, t3.$ti._eval$1("ListIterable.E"));
+      t4 = A.ExtractCborList_elementAt(values, 1, type$.String);
+      t5 = type$.Web3AccountAcitvity;
+      t1 = J.map$1$1$ax(A.ExtractCborList_elementAt(values, 2, t1), new A.Web3SolanaChain_Web3SolanaChain$deserialize_closure0(), t5);
+      t1 = A.List_List$of(t1, true, t1.$ti._eval$1("ListIterable.E"));
+      return new A.Web3SolanaChain(t4, A.List_List$unmodifiable(t3, t2), A.List_List$unmodifiable(t1, t5));
+    },
+    Web3SolanaChain: function Web3SolanaChain(t0, t1, t2) {
+      this._genesis = t0;
+      this._accounts = t1;
+      this._activities = t2;
+    },
+    Web3SolanaChain_Web3SolanaChain$deserialize_closure: function Web3SolanaChain_Web3SolanaChain$deserialize_closure() {
+    },
+    Web3SolanaChain_Web3SolanaChain$deserialize_closure0: function Web3SolanaChain_Web3SolanaChain$deserialize_closure0() {
+    },
+    Web3SolanaChain_toCbor_closure: function Web3SolanaChain_toCbor_closure() {
+    },
+    Web3SolanaChain_toCbor_closure0: function Web3SolanaChain_toCbor_closure0() {
+    },
+    Web3SolanaChain_currentChainAccounts_closure: function Web3SolanaChain_currentChainAccounts_closure(t0) {
+      this.$this = t0;
+    },
+    Web3SolanaChain_currentChainAccounts_closure0: function Web3SolanaChain_currentChainAccounts_closure0(t0) {
+      this.i = t0;
+    },
+    Web3SolanaChain_getPermission_closure: function Web3SolanaChain_getPermission_closure(t0) {
+      this.address = t0;
     },
     Web3TronRequestMethods_fromId(id) {
       return B.JSArray_methods.firstWhere$2$orElse($.Web3TronRequestMethods_values, new A.Web3TronRequestMethods_fromId_closure(id), new A.Web3TronRequestMethods_fromId_closure0());
@@ -18064,8 +18334,34 @@
     HTTPRequestType: function HTTPRequestType(t0) {
       this._name = t0;
     },
+    SolAddress_SolAddress$uncheckBytes(keyBytes) {
+      if (J.get$length$asx(keyBytes) !== 32)
+        throw A.wrapException(B.SolanaPluginException_4Cz);
+      return new A.SolAddress(A.Base58Encoder_encode(keyBytes, B.Base58Alphabets_0));
+    },
     SolAddress: function SolAddress(t0) {
       this.address = t0;
+    },
+    SolanaPluginException: function SolanaPluginException(t0) {
+      this.message = t0;
+    },
+    SolanaPublicKey: function SolanaPublicKey(t0) {
+      this._ed25519publicKey = t0;
+    },
+    AddressTableLookup: function AddressTableLookup(t0, t1, t2) {
+      this.accountKey = t0;
+      this.writableIndexes = t1;
+      this.readonlyIndexes = t2;
+    },
+    CompiledInstruction: function CompiledInstruction(t0, t1, t2) {
+      this.programIdIndex = t0;
+      this.accounts = t1;
+      this.data = t2;
+    },
+    MessageHeader: function MessageHeader(t0, t1, t2) {
+      this.numRequiredSignatures = t0;
+      this.numReadonlySignedAccounts = t1;
+      this.numReadonlyUnsignedAccounts = t2;
     },
     SolanaRequestDetails: function SolanaRequestDetails(t0) {
       this.params = t0;
@@ -18081,6 +18377,333 @@
     SolanaRPC: function SolanaRPC(t0) {
       this.rpc = t0;
       this._provider2$_id = 0;
+    },
+    Message: function Message(t0, t1, t2, t3) {
+      var _ = this;
+      _.header = t0;
+      _.accountKeys = t1;
+      _.recentBlockhash = t2;
+      _.compiledInstructions = t3;
+    },
+    MessageV0: function MessageV0(t0, t1, t2, t3, t4) {
+      var _ = this;
+      _.header = t0;
+      _.accountKeys = t1;
+      _.recentBlockhash = t2;
+      _.compiledInstructions = t3;
+      _.addressTableLookups = t4;
+    },
+    SolanaTransaction_SolanaTransaction$deserialize(serializedTransaction) {
+      var index, result, transaction, signerPubkeys, i,
+        t1 = type$.int,
+        emptySignatureBytes = A.List_List$unmodifiable(A.List_List$filled(64, 0, false, t1), t1),
+        message = A.SolanaTransactionUtils_deserializeTransaction(serializedTransaction),
+        t2 = message.item1,
+        _length = t2.get$header().numRequiredSignatures,
+        _list = J.JSArray_JSArray$allocateGrowable(_length, type$.List_int);
+      for (index = 0; index < _length; ++index) {
+        result = A.List_List$from(emptySignatureBytes, false, t1);
+        result.fixed$length = Array;
+        result.immutable$list = Array;
+        _list[index] = result;
+      }
+      transaction = new A.SolanaTransaction(t2, A.List_List$unmodifiable(t2.serialize$0(), t1), _list);
+      signerPubkeys = B.JSArray_methods.sublist$2(t2.get$accountKeys(), 0, t2.get$header().numRequiredSignatures);
+      for (t1 = message.item2, t2 = J.getInterceptor$asx(t1), i = 0; i < t2.get$length(t1); ++i) {
+        if (A.BytesUtils_bytesEqual(emptySignatureBytes, t2.elementAt$1(t1, i)))
+          continue;
+        if (!(i < signerPubkeys.length))
+          return A.ioore(signerPubkeys, i);
+        transaction.addSignature$3$verifySignature(signerPubkeys[i], t2.elementAt$1(t1, i), false);
+      }
+      return transaction;
+    },
+    SolanaTransaction: function SolanaTransaction(t0, t1, t2) {
+      this.message = t0;
+      this._serializeMessage = t1;
+      this._signatures = t2;
+    },
+    SolanaTransaction_addSignature_closure: function SolanaTransaction_addSignature_closure(t0) {
+      this.address = t0;
+    },
+    SolanaTransactionUtils__encodeLength(len) {
+      var remLen, elem,
+        bytes = A._setArrayType([], type$.JSArray_int);
+      for (remLen = len; true;) {
+        elem = remLen & 127;
+        remLen = remLen >>> 7;
+        if (remLen === 0) {
+          B.JSArray_methods.add$1(bytes, elem);
+          break;
+        } else
+          B.JSArray_methods.add$1(bytes, elem | 128);
+      }
+      return bytes;
+    },
+    SolanaTransactionUtils__decodeLength(bytes) {
+      var len, size, elem;
+      for (len = 0, size = 0; true;) {
+        elem = B.JSArray_methods.removeAt$1(bytes, 0);
+        len = (len | B.JSInt_methods._shlPositive$1(elem & 127, size * 7)) >>> 0;
+        ++size;
+        if ((elem & 128) === 0)
+          break;
+      }
+      return len;
+    },
+    SolanaTransactionUtils_serializeInstructionsV0(compiledInstructions) {
+      var t1, t2, t3, t4, serializedLength, _i, instruction, t5, t6, encodedAccountKeyIndexesLength, t7, t8, encodedDataLength, t9, encode,
+        _s30_ = "encodedAccountKeyIndexesLength",
+        _s17_ = "accountKeyIndexes",
+        _s17_0 = "encodedDataLength",
+        serializedInstructions = A.List_List$filled(1232, 0, false, type$.int);
+      for (t1 = compiledInstructions.length, t2 = type$.JSArray_Layout_dynamic, t3 = type$.String, t4 = type$.dynamic, serializedLength = 0, _i = 0; _i < compiledInstructions.length; compiledInstructions.length === t1 || (0, A.throwConcurrentModificationError)(compiledInstructions), ++_i) {
+        instruction = compiledInstructions[_i];
+        t5 = instruction.accounts;
+        t6 = t5.length;
+        encodedAccountKeyIndexesLength = A.SolanaTransactionUtils__encodeLength(t6);
+        t7 = instruction.data;
+        t8 = t7.length;
+        encodedDataLength = A.SolanaTransactionUtils__encodeLength(t8);
+        t9 = A.RawBytesLayout_RawBytesLayout(encodedAccountKeyIndexesLength.length, _s30_);
+        encode = A.StructLayout_StructLayout(A._setArrayType([new A.IntegerLayout(false, B.C_Endian0, 1, "programIdIndex"), t9, A.LayoutConst_array(new A.IntegerLayout(false, B.C_Endian0, 1, null), t6, _s17_), A.RawBytesLayout_RawBytesLayout(encodedDataLength.length, _s17_0), A.RawBytesLayout_RawBytesLayout(t8, "data")], t2), false, null).serialize$1(A.LinkedHashMap_LinkedHashMap$_literal(["programIdIndex", instruction.programIdIndex, _s30_, encodedAccountKeyIndexesLength, _s17_, t5, _s17_0, encodedDataLength, "data", t7], t3, t4));
+        B.JSArray_methods.setAll$2(serializedInstructions, serializedLength, encode);
+        serializedLength += encode.length;
+      }
+      return B.JSArray_methods.sublist$2(serializedInstructions, 0, serializedLength);
+    },
+    SolanaTransactionUtils_serializeV0(message) {
+      var serializedAddressTableLookups, encodedAddressTableLookupsLength, t3, t4,
+        _s23_ = "staticAccountKeysLength",
+        _s17_ = "staticAccountKeys",
+        _s18_ = "instructionsLength",
+        _s22_ = "serializedInstructions",
+        _s25_ = "addressTableLookupsLength",
+        _s29_ = "serializedAddressTableLookups",
+        t1 = message.accountKeys,
+        encodedStaticAccountKeysLength = A.SolanaTransactionUtils__encodeLength(t1.length),
+        t2 = message.compiledInstructions,
+        serializedInstructions = A.SolanaTransactionUtils_serializeInstructionsV0(t2),
+        encodedInstructionsLength = A.SolanaTransactionUtils__encodeLength(t2.length);
+      t2 = message.addressTableLookups;
+      serializedAddressTableLookups = A.SolanaTransactionUtils_serializeAddressTableLookups(t2);
+      encodedAddressTableLookupsLength = A.SolanaTransactionUtils__encodeLength(t2.length);
+      t2 = type$.JSArray_Layout_dynamic;
+      t3 = A._arrayInstanceType(t1);
+      t4 = t3._eval$1("MappedListIterable<1,SolAddress>");
+      return A.StructLayout_StructLayout(A._setArrayType([A.IntegerLayout$(1, B.C_Endian0, "prefix", false), A.StructLayout_StructLayout(A._setArrayType([A.IntegerLayout$(1, B.C_Endian0, "numRequiredSignatures", false), A.IntegerLayout$(1, B.C_Endian0, "numReadonlySignedAccounts", false), A.IntegerLayout$(1, B.C_Endian0, "numReadonlyUnsignedAccounts", false)], t2), false, "header"), A.RawBytesLayout_RawBytesLayout(encodedStaticAccountKeysLength.length, _s23_), A.LayoutConst_array(A.SolanaLayoutUtils_publicKey(null), t1.length, _s17_), A.SolanaLayoutUtils_publicKey("recentBlockhash"), A.RawBytesLayout_RawBytesLayout(encodedInstructionsLength.length, _s18_), A.RawBytesLayout_RawBytesLayout(serializedInstructions.length, _s22_), A.RawBytesLayout_RawBytesLayout(encodedAddressTableLookupsLength.length, _s25_), A.RawBytesLayout_RawBytesLayout(serializedAddressTableLookups.length, _s29_)], t2), false, null).serialize$1(A.LinkedHashMap_LinkedHashMap$_literal(["prefix", 128, "header", message.header.toJson$0(), _s23_, encodedStaticAccountKeysLength, _s17_, A.List_List$of(new A.MappedListIterable(t1, t3._eval$1("SolAddress(1)")._as(new A.SolanaTransactionUtils_serializeV0_closure()), t4), true, t4._eval$1("ListIterable.E")), "recentBlockhash", message.recentBlockhash, _s18_, encodedInstructionsLength, _s22_, serializedInstructions, _s25_, encodedAddressTableLookupsLength, _s29_, serializedAddressTableLookups], type$.String, type$.dynamic));
+    },
+    SolanaTransactionUtils_serializeAddressTableLookups(addressTableLookups) {
+      var t1, t2, t3, t4, serializedLength, _i, lookup, t5, t6, encodedWritableIndexesLength, t7, t8, encodedReadonlyIndexesLength, t9, t10, t11, encode,
+        _s28_ = "encodedWritableIndexesLength",
+        _s28_0 = "encodedReadonlyIndexesLength",
+        serializedAddressTableLookups = A.List_List$filled(1232, 0, false, type$.int);
+      for (t1 = addressTableLookups.length, t2 = type$.JSArray_Layout_dynamic, t3 = type$.String, t4 = type$.dynamic, serializedLength = 0, _i = 0; _i < addressTableLookups.length; addressTableLookups.length === t1 || (0, A.throwConcurrentModificationError)(addressTableLookups), ++_i) {
+        lookup = addressTableLookups[_i];
+        t5 = lookup.writableIndexes;
+        t6 = t5.length;
+        encodedWritableIndexesLength = A.SolanaTransactionUtils__encodeLength(t6);
+        t7 = lookup.readonlyIndexes;
+        t8 = t7.length;
+        encodedReadonlyIndexesLength = A.SolanaTransactionUtils__encodeLength(t8);
+        t9 = A.SolanaLayoutUtils_publicKey("accountKey");
+        t10 = A.RawBytesLayout_RawBytesLayout(encodedWritableIndexesLength.length, _s28_);
+        t6 = A.LayoutConst_array(new A.IntegerLayout(false, B.C_Endian0, 1, null), t6, "writableIndexes");
+        t11 = A.RawBytesLayout_RawBytesLayout(encodedReadonlyIndexesLength.length, _s28_0);
+        encode = A.StructLayout_StructLayout(A._setArrayType([t9, t10, t6, t11, A.LayoutConst_array(new A.IntegerLayout(false, B.C_Endian0, 1, null), t8, "readonlyIndexes")], t2), false, null).serialize$1(A.LinkedHashMap_LinkedHashMap$_literal(["accountKey", lookup.accountKey, _s28_, encodedWritableIndexesLength, "writableIndexes", t5, _s28_0, encodedReadonlyIndexesLength, "readonlyIndexes", t7], t3, t4));
+        B.JSArray_methods.setAll$2(serializedAddressTableLookups, serializedLength, encode);
+        serializedLength += encode.length;
+      }
+      return B.JSArray_methods.sublist$2(serializedAddressTableLookups, 0, serializedLength);
+    },
+    SolanaTransactionUtils_deserializeV0(serializedMessage) {
+      var t2, t3, t4, staticAccountKeys, staticAccountKeysLength, i, t5, recentBlockhash, instructionCount, compiledInstructions, programIdIndex, accountKeyIndexesLength, accountKeyIndexes, dataLength, data, result, result0, addressTableLookupsCount, addressTableLookups, writableIndexesLength, writableIndexes, readonlyIndexesLength, readonlyIndexes,
+        _s11_ = "removeRange",
+        t1 = type$.int,
+        byteArray = A.List_List$from(serializedMessage, true, t1);
+      B.JSArray_methods.removeAt$1(byteArray, 0);
+      t2 = B.JSArray_methods.removeAt$1(byteArray, 0);
+      t3 = B.JSArray_methods.removeAt$1(byteArray, 0);
+      t4 = B.JSArray_methods.removeAt$1(byteArray, 0);
+      staticAccountKeys = A._setArrayType([], type$.JSArray_SolAddress);
+      staticAccountKeysLength = A.SolanaTransactionUtils__decodeLength(byteArray);
+      for (i = 0; i < staticAccountKeysLength; ++i) {
+        t5 = B.JSArray_methods.sublist$2(byteArray, 0, 32);
+        if (t5.length !== 32)
+          A.throwExpression(B.SolanaPluginException_4Cz);
+        B.JSArray_methods.add$1(staticAccountKeys, new A.SolAddress(A.Base58Encoder_encode(t5, B.Base58Alphabets_0)));
+        if (!!byteArray.fixed$length)
+          A.throwExpression(A.UnsupportedError$(_s11_));
+        A.RangeError_checkValidRange(0, 32, byteArray.length);
+        byteArray.splice(0, 32);
+      }
+      recentBlockhash = A.SolAddress_SolAddress$uncheckBytes(B.JSArray_methods.sublist$2(byteArray, 0, 32));
+      B.JSArray_methods.removeRange$2(byteArray, 0, 32);
+      instructionCount = A.SolanaTransactionUtils__decodeLength(byteArray);
+      compiledInstructions = A._setArrayType([], type$.JSArray_CompiledInstruction);
+      for (i = 0; i < instructionCount; ++i) {
+        programIdIndex = B.JSArray_methods.removeAt$1(byteArray, 0);
+        accountKeyIndexesLength = A.SolanaTransactionUtils__decodeLength(byteArray);
+        accountKeyIndexes = B.JSArray_methods.sublist$2(byteArray, 0, accountKeyIndexesLength);
+        if (!!byteArray.fixed$length)
+          A.throwExpression(A.UnsupportedError$(_s11_));
+        A.RangeError_checkValidRange(0, accountKeyIndexesLength, byteArray.length);
+        byteArray.splice(0, accountKeyIndexesLength);
+        dataLength = A.SolanaTransactionUtils__decodeLength(byteArray);
+        data = B.JSArray_methods.sublist$2(byteArray, 0, dataLength);
+        if (!!byteArray.fixed$length)
+          A.throwExpression(A.UnsupportedError$(_s11_));
+        A.RangeError_checkValidRange(0, dataLength, byteArray.length);
+        byteArray.splice(0, dataLength);
+        result = A.List_List$from(data, false, t1);
+        result.fixed$length = Array;
+        result.immutable$list = Array;
+        result0 = A.List_List$from(accountKeyIndexes, false, t1);
+        result0.fixed$length = Array;
+        result0.immutable$list = Array;
+        B.JSArray_methods.add$1(compiledInstructions, new A.CompiledInstruction(programIdIndex, result0, result));
+      }
+      addressTableLookupsCount = A.SolanaTransactionUtils__decodeLength(byteArray);
+      addressTableLookups = A._setArrayType([], type$.JSArray_AddressTableLookup);
+      for (i = 0; i < addressTableLookupsCount; ++i) {
+        t5 = B.JSArray_methods.sublist$2(byteArray, 0, 32);
+        if (t5.length !== 32)
+          A.throwExpression(B.SolanaPluginException_4Cz);
+        t5 = A.Base58Encoder_encode(t5, B.Base58Alphabets_0);
+        if (!!byteArray.fixed$length)
+          A.throwExpression(A.UnsupportedError$(_s11_));
+        A.RangeError_checkValidRange(0, 32, byteArray.length);
+        byteArray.splice(0, 32);
+        writableIndexesLength = A.SolanaTransactionUtils__decodeLength(byteArray);
+        writableIndexes = B.JSArray_methods.sublist$2(byteArray, 0, writableIndexesLength);
+        if (!!byteArray.fixed$length)
+          A.throwExpression(A.UnsupportedError$(_s11_));
+        A.RangeError_checkValidRange(0, writableIndexesLength, byteArray.length);
+        byteArray.splice(0, writableIndexesLength);
+        readonlyIndexesLength = A.SolanaTransactionUtils__decodeLength(byteArray);
+        readonlyIndexes = B.JSArray_methods.sublist$2(byteArray, 0, readonlyIndexesLength);
+        if (!!byteArray.fixed$length)
+          A.throwExpression(A.UnsupportedError$(_s11_));
+        A.RangeError_checkValidRange(0, readonlyIndexesLength, byteArray.length);
+        byteArray.splice(0, readonlyIndexesLength);
+        result = A.List_List$from(writableIndexes, false, t1);
+        result.fixed$length = Array;
+        result.immutable$list = Array;
+        result0 = A.List_List$from(readonlyIndexes, false, t1);
+        result0.fixed$length = Array;
+        result0.immutable$list = Array;
+        B.JSArray_methods.add$1(addressTableLookups, new A.AddressTableLookup(new A.SolAddress(t5), result, result0));
+      }
+      return new A.MessageV0(new A.MessageHeader(t2, t3, t4), staticAccountKeys, recentBlockhash, compiledInstructions, addressTableLookups);
+    },
+    SolanaTransactionUtils_deserializeTransaction(serializedTransaction) {
+      var i, offset,
+        t1 = A.List_List$of(serializedTransaction, true, type$.int),
+        signatures = A._setArrayType([], type$.JSArray_List_int),
+        signaturesLength = A.SolanaTransactionUtils__decodeLength(t1);
+      for (i = 0; i < signaturesLength; ++i) {
+        offset = i * 64;
+        B.JSArray_methods.add$1(signatures, B.JSArray_methods.sublist$2(t1, offset, offset + 64));
+      }
+      return new A.Tuple(A.VersionedMessage_VersionedMessage$fromBuffer(B.JSArray_methods.sublist$1(t1, signatures.length * 64)), signatures, type$.Tuple_of_VersionedMessage_and_List_List_int);
+    },
+    SolanaTransactionUtils_serializeLegacy(message) {
+      var instructionCount, instructionBuffer, instructionBufferLength, t5, _i, instruction, t6, t7, t8, t9, encode, signDataLayout, transaction, signedData,
+        _s15_ = "keyIndicesCount",
+        _s10_ = "keyIndices",
+        _s10_0 = "dataLength",
+        _s21_ = "numRequiredSignatures",
+        _s25_ = "numReadonlySignedAccounts",
+        _s27_ = "numReadonlyUnsignedAccounts",
+        t1 = message.accountKeys,
+        numKeys = t1.length,
+        keyCount = A.SolanaTransactionUtils__encodeLength(numKeys),
+        t2 = message.compiledInstructions,
+        t3 = A._arrayInstanceType(t2),
+        t4 = t3._eval$1("MappedListIterable<1,Map<String,Object>>"),
+        instructions = A.List_List$of(new A.MappedListIterable(t2, t3._eval$1("Map<String,Object>(1)")._as(new A.SolanaTransactionUtils_serializeLegacy_closure()), t4), true, t4._eval$1("ListIterable.E"));
+      t4 = instructions.length;
+      instructionCount = A.SolanaTransactionUtils__encodeLength(t4);
+      t3 = type$.int;
+      instructionBuffer = A.List_List$filled(1232, 0, false, t3);
+      B.JSArray_methods.setAll$2(instructionBuffer, 0, instructionCount);
+      instructionBufferLength = instructionCount.length;
+      for (t2 = type$.List_dynamic, t5 = type$.JSArray_Layout_dynamic, _i = 0; _i < t4; ++_i) {
+        instruction = instructions[_i];
+        t6 = J.getInterceptor$asx(instruction);
+        t7 = A.RawBytesLayout_RawBytesLayout(J.get$length$asx(t2._as(t6.$index(instruction, _s15_))), _s15_);
+        t8 = A.LayoutConst_array(new A.IntegerLayout(false, B.C_Endian0, 1, "keyIndex"), J.get$length$asx(t2._as(t6.$index(instruction, _s10_))), _s10_);
+        t9 = A.RawBytesLayout_RawBytesLayout(J.get$length$asx(t2._as(t6.$index(instruction, _s10_0))), _s10_0);
+        encode = A.StructLayout_StructLayout(A._setArrayType([new A.IntegerLayout(false, B.C_Endian0, 1, "programIdIndex"), t7, t8, t9, A.LayoutConst_array(new A.IntegerLayout(false, B.C_Endian0, 1, "userdatum"), J.get$length$asx(t2._as(t6.$index(instruction, "data"))), "data")], t5), false, null).serialize$1(instruction);
+        B.JSArray_methods.setAll$2(instructionBuffer, instructionBufferLength, encode);
+        instructionBufferLength += encode.length;
+      }
+      instructionBuffer = B.JSArray_methods.sublist$2(instructionBuffer, 0, instructionBufferLength);
+      signDataLayout = A.StructLayout_StructLayout(A._setArrayType([A.RawBytesLayout_RawBytesLayout(1, _s21_), A.RawBytesLayout_RawBytesLayout(1, _s25_), A.RawBytesLayout_RawBytesLayout(1, _s27_), A.RawBytesLayout_RawBytesLayout(keyCount.length, "keyCount"), A.LayoutConst_array(A.RawBytesLayout_RawBytesLayout(32, "key"), numKeys, "keys"), A.RawBytesLayout_RawBytesLayout(32, "recentBlockhash")], t5), false, null);
+      t2 = message.header;
+      t4 = type$.JSArray_int;
+      t5 = A._arrayInstanceType(t1);
+      t6 = t5._eval$1("MappedListIterable<1,List<int>>");
+      transaction = A.LinkedHashMap_LinkedHashMap$_literal([_s21_, A._setArrayType([t2.numRequiredSignatures], t4), _s25_, A._setArrayType([t2.numReadonlySignedAccounts], t4), _s27_, A._setArrayType([t2.numReadonlyUnsignedAccounts], t4), "keyCount", keyCount, "keys", A.List_List$of(new A.MappedListIterable(t1, t5._eval$1("List<int>(1)")._as(new A.SolanaTransactionUtils_serializeLegacy_closure0()), t6), true, t6._eval$1("ListIterable.E")), "recentBlockhash", A.List_List$from(new A.SolAddrDecoder().decodeAddr$1(message.recentBlockhash.address), true, t3)], type$.String, type$.List_Object);
+      signedData = A.List_List$filled(2048, 0, false, t3);
+      encode = signDataLayout.serialize$1(transaction);
+      B.JSArray_methods.setAll$2(signedData, 0, encode);
+      B.JSArray_methods.setAll$2(signedData, encode.length, instructionBuffer);
+      return B.JSArray_methods.sublist$2(signedData, 0, encode.length + instructionBufferLength);
+    },
+    SolanaTransactionUtils_deserializeMessageLegacy(bytes) {
+      var numReadonlySignedAccounts, numReadonlyUnsignedAccounts, accountCount, accountKeys, i, account, recentBlockhash, instructionCount, instructions, programIdIndex, accounts, dataLength, data, result, result0,
+        t1 = type$.int,
+        byteArray = A.List_List$from(bytes, true, t1),
+        numRequiredSignatures = B.JSArray_methods.removeAt$1(byteArray, 0);
+      if (numRequiredSignatures !== (numRequiredSignatures & 127))
+        throw A.wrapException(B.SolanaPluginException_FQs);
+      numReadonlySignedAccounts = B.JSArray_methods.removeAt$1(byteArray, 0);
+      numReadonlyUnsignedAccounts = B.JSArray_methods.removeAt$1(byteArray, 0);
+      accountCount = A.SolanaTransactionUtils__decodeLength(byteArray);
+      accountKeys = A._setArrayType([], type$.JSArray_SolAddress);
+      for (i = 0; i < accountCount; ++i) {
+        account = B.JSArray_methods.sublist$2(byteArray, 0, 32);
+        byteArray = B.JSArray_methods.sublist$1(byteArray, 32);
+        if (account.length !== 32)
+          A.throwExpression(B.SolanaPluginException_4Cz);
+        B.JSArray_methods.add$1(accountKeys, new A.SolAddress(A.Base58Encoder_encode(account, B.Base58Alphabets_0)));
+      }
+      recentBlockhash = B.JSArray_methods.sublist$2(byteArray, 0, 32);
+      byteArray = B.JSArray_methods.sublist$1(byteArray, 32);
+      instructionCount = A.SolanaTransactionUtils__decodeLength(byteArray);
+      instructions = A._setArrayType([], type$.JSArray_CompiledInstruction);
+      for (i = 0; i < instructionCount; ++i) {
+        programIdIndex = B.JSArray_methods.removeAt$1(byteArray, 0);
+        accountCount = A.SolanaTransactionUtils__decodeLength(byteArray);
+        accounts = B.JSArray_methods.sublist$2(byteArray, 0, accountCount);
+        byteArray = B.JSArray_methods.sublist$1(byteArray, accountCount);
+        dataLength = A.SolanaTransactionUtils__decodeLength(byteArray);
+        data = B.JSArray_methods.sublist$2(byteArray, 0, dataLength);
+        byteArray = B.JSArray_methods.sublist$1(byteArray, dataLength);
+        result = A.List_List$from(data, false, t1);
+        result.fixed$length = Array;
+        result.immutable$list = Array;
+        result0 = A.List_List$from(accounts, false, t1);
+        result0.fixed$length = Array;
+        result0.immutable$list = Array;
+        B.JSArray_methods.add$1(instructions, new A.CompiledInstruction(programIdIndex, result0, result));
+      }
+      return new A.Message(new A.MessageHeader(numRequiredSignatures, numReadonlySignedAccounts, numReadonlyUnsignedAccounts), accountKeys, A.SolAddress_SolAddress$uncheckBytes(recentBlockhash), instructions);
+    },
+    SolanaTransactionUtils_serializeV0_closure: function SolanaTransactionUtils_serializeV0_closure() {
+    },
+    SolanaTransactionUtils_serializeLegacy_closure: function SolanaTransactionUtils_serializeLegacy_closure() {
+    },
+    SolanaTransactionUtils_serializeLegacy_closure0: function SolanaTransactionUtils_serializeLegacy_closure0() {
+    },
+    SolanaLayoutUtils_publicKey(property) {
+      var t1 = A.RawBytesLayout_RawBytesLayout(32, null);
+      return new A.CustomLayout(t1, new A.SolanaLayoutUtils_publicKey_closure(), new A.SolanaLayoutUtils_publicKey_closure0(), t1.span, property, type$.CustomLayout_of_List_int_and_SolAddress);
+    },
+    SolanaLayoutUtils_publicKey_closure0: function SolanaLayoutUtils_publicKey_closure0() {
+    },
+    SolanaLayoutUtils_publicKey_closure: function SolanaLayoutUtils_publicKey_closure() {
     },
     ABICoder_ABICoder$fromType(type, $T) {
       var correctType, t1;
@@ -20548,7 +21171,7 @@
         if (!(index < data.length))
           return A.ioore(data, index);
         byte = data[index];
-        value = value.$or(0, A._BigIntImpl__BigIntImpl$from(B.JSInt_methods._shlPositive$1(byte & 127, shift)));
+        value = value.$or(0, A._BigIntImpl__BigIntImpl$from(byte & 127).$shl(0, shift));
         if ((byte & 128) === 0) {
           index = index0;
           break;
@@ -20558,7 +21181,7 @@
       return new A._Result(value, index, type$._Result_BigInt);
     },
     ProtocolBufferDecoder__decodeInt(data) {
-      if (J.indexWhere$1$ax(data, new A.ProtocolBufferDecoder__decodeInt_closure()) <= 4)
+      if (J.indexWhere$1$ax(data, new A.ProtocolBufferDecoder__decodeInt_closure()) < 4)
         return A.ProtocolBufferDecoder__decodeVarint(data);
       return A.ProtocolBufferDecoder__decodeBigVarint(data);
     },
@@ -20624,7 +21247,7 @@
       t2 = type$.List_int;
       if (t2._is(t1) && $T._is(""))
         return $T._as(A.StringUtils_decode(t2._as(t1), false, B.StringEncoding_1));
-      if (A._isInt(t1))
+      if (A._isInt(t1)) {
         if ($T._is($.$get$_BigIntImpl_zero()))
           return $T._as(A._BigIntImpl__BigIntImpl$from(t1));
         else if ($T._is(false)) {
@@ -20632,6 +21255,8 @@
             throw A.wrapException(A.TronPluginException$("Invalid boolean value.", A.LinkedHashMap_LinkedHashMap$_literal(["value", t1], type$.String, type$.dynamic)));
           return $T._as(t1 === 1);
         }
+      } else if (t1 instanceof A._BigIntImpl && $T._is(0))
+        return $T._as(type$.BigInt._as(t1).toInt$0(0));
       throw A.wrapException(A.TronPluginException$("Invalid type.", A.LinkedHashMap_LinkedHashMap$_literal(["type", A.createRuntimeType($T).toString$0(0), "Excepted", J.get$runtimeType$(t1).toString$0(0)], type$.String, type$.dynamic)));
     },
     QuickProtocolBufferResult_cast(_this, $T) {
@@ -22116,13 +22741,13 @@
       t2._as(t1.window).addEventListener("eip6963:requestProvider", A._functionToJS1(new A.EIP6963ProviderDetail_setup_closure($event)));
       t2._as(t1.window).dispatchEvent($event);
     },
-    EthereumEvnetTypes_fromTag(tag) {
-      return B.JSArray_methods.firstWhere$2$orElse(B.List_ECL, new A.EthereumEvnetTypes_fromTag_closure(tag), new A.EthereumEvnetTypes_fromTag_closure0());
+    EthereumEventTypes_fromTag(tag) {
+      return B.JSArray_methods.firstWhere$2$orElse(B.List_86y, new A.EthereumEventTypes_fromTag_closure(tag), new A.EthereumEventTypes_fromTag_closure0());
     },
-    EthereumEvnetTypes_fromName($name) {
+    EthereumEventTypes_fromName($name) {
       var t1, exception;
       try {
-        t1 = B.JSArray_methods.firstWhere$2$orElse(B.List_ECL, new A.EthereumEvnetTypes_fromName_closure($name), new A.EthereumEvnetTypes_fromName_closure0());
+        t1 = B.JSArray_methods.firstWhere$2$orElse(B.List_86y, new A.EthereumEventTypes_fromName_closure($name), new A.EthereumEventTypes_fromName_closure0());
         return t1;
       } catch (exception) {
         return null;
@@ -22139,19 +22764,19 @@
       this.method = t0;
       this.params = t1;
     },
-    EthereumEvnetTypes: function EthereumEvnetTypes(t0, t1) {
+    EthereumEventTypes: function EthereumEventTypes(t0, t1) {
       this.tag = t0;
       this._name = t1;
     },
-    EthereumEvnetTypes_fromTag_closure: function EthereumEvnetTypes_fromTag_closure(t0) {
+    EthereumEventTypes_fromTag_closure: function EthereumEventTypes_fromTag_closure(t0) {
       this.tag = t0;
     },
-    EthereumEvnetTypes_fromTag_closure0: function EthereumEvnetTypes_fromTag_closure0() {
+    EthereumEventTypes_fromTag_closure0: function EthereumEventTypes_fromTag_closure0() {
     },
-    EthereumEvnetTypes_fromName_closure: function EthereumEvnetTypes_fromName_closure(t0) {
+    EthereumEventTypes_fromName_closure: function EthereumEventTypes_fromName_closure(t0) {
       this.name = t0;
     },
-    EthereumEvnetTypes_fromName_closure0: function EthereumEvnetTypes_fromName_closure0() {
+    EthereumEventTypes_fromName_closure0: function EthereumEventTypes_fromName_closure0() {
     },
     JSWalletMessageResponseEthereum: function JSWalletMessageResponseEthereum(t0, t1, t2) {
       this.event = t0;
@@ -22180,7 +22805,7 @@
       var t1, t2, currentChain, permissionAccounts, defaultAddress, t3, _null = null,
         permission = authenticated.getChainFromNetworkType$1$1(B.NetworkType_iDZ, type$.Web3EthereumChain);
       if (permission == null)
-        return A.EthereumWeb3State$_(_null, B.List_empty2, _null, _null, _null, B.List_empty1, B.JSNetworkState_2);
+        return A.EthereumWeb3State$_(_null, B.List_empty3, _null, _null, _null, B.List_empty1, B.JSNetworkState_2);
       t1 = type$.WhereTypeIterable_EthereumChain;
       t2 = t1._eval$1("Iterable.E");
       currentChain = B.JSArray_methods.firstWhere$1(A.List_List$of(new A.WhereTypeIterable(chainHandler.chains$0(), t1), true, t2), new A.EthereumWeb3State_EthereumWeb3State_closure(permission));
@@ -22298,10 +22923,12 @@
       return t1;
     },
     JSWalletError_constructor_fromJson(message) {
-      var t1;
-      if (message.$index(0, "stack") == null)
-        message.$indexSet(0, "stack", null);
-      t1 = A.jsify(message);
+      var t1,
+        errorJson = A.LinkedHashMap_LinkedHashMap$from(message, type$.String, type$.dynamic);
+      if (errorJson.$index(0, "stack") == null)
+        errorJson.$indexSet(0, "stack", null);
+      errorJson.removeWhere$1(0, new A.JSWalletError_constructor_fromJson_closure());
+      t1 = A.jsify(errorJson);
       if (t1 == null)
         t1 = {};
       t1.toString = A._functionToJS0(new A.JSWalletError_constructor_fromJson_toString(message));
@@ -22309,6 +22936,8 @@
     },
     JSWalletError_constructor_fromMessage_toString: function JSWalletError_constructor_fromMessage_toString(t0) {
       this.message = t0;
+    },
+    JSWalletError_constructor_fromJson_closure: function JSWalletError_constructor_fromJson_closure() {
     },
     JSWalletError_constructor_fromJson_toString: function JSWalletError_constructor_fromJson_toString(t0) {
       this.message = t0;
@@ -22363,7 +22992,7 @@
       return response;
     },
     JSWalletNetworkEvent_JSWalletNetworkEvent$deserialize(object) {
-      var values, _null = null,
+      var values, _null = null, _s6_ = "result",
         cbor = A.CborSerializable_decode(_null, _null, object, type$.CborTagValue_dynamic),
         t1 = type$.CborListValue_dynamic,
         t2 = type$.nullable_List_int;
@@ -22372,12 +23001,17 @@
           values = A.CborSerializable_cborTagValue(_null, _null, cbor, B.List_101, t1);
           if (A.JSClientType_fromTag(A.ExtractCborList_elementAt(values, 0, t2)) !== B.JSClientType_List_111_ethereum)
             A.throwExpression(B.Web3RequestException_chs);
-          return new A.JSWalletMessageResponseEthereum(A.EthereumEvnetTypes_fromTag(A.ExtractCborList_elementAt(values, 1, t2)), B.JSClientType_List_111_ethereum, J.$index$asx(A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 2, type$.String), type$.dynamic), "result"));
+          return new A.JSWalletMessageResponseEthereum(A.EthereumEventTypes_fromTag(A.ExtractCborList_elementAt(values, 1, t2)), B.JSClientType_List_111_ethereum, J.$index$asx(A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 2, type$.String), type$.dynamic), _s6_));
         case B.JSClientType_List_112_tron:
           values = A.CborSerializable_cborTagValue(_null, _null, cbor, B.List_101, t1);
           if (A.JSClientType_fromTag(A.ExtractCborList_elementAt(values, 0, t2)) !== B.JSClientType_List_112_tron)
             A.throwExpression(B.Web3RequestException_chs);
-          return new A.JSWalletMessageResponseTron(A.TronEventTypes_fromTag(A.ExtractCborList_elementAt(values, 1, t2)), B.JSClientType_List_112_tron, J.$index$asx(A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 2, type$.String), type$.dynamic), "result"));
+          return new A.JSWalletMessageResponseTron(A.TronEventTypes_fromTag(A.ExtractCborList_elementAt(values, 1, t2)), B.JSClientType_List_112_tron, J.$index$asx(A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 2, type$.String), type$.dynamic), _s6_));
+        case B.JSClientType_List_113_solana:
+          values = A.CborSerializable_cborTagValue(_null, _null, cbor, B.List_101, t1);
+          if (A.JSClientType_fromTag(A.ExtractCborList_elementAt(values, 0, t2)) !== B.JSClientType_List_113_solana)
+            A.throwExpression(B.Web3RequestException_chs);
+          return new A.JSWalletMessageResponseSolana(A.SolanaEventTypes_fromTag(A.ExtractCborList_elementAt(values, 1, t2)), B.JSClientType_List_113_solana, J.$index$asx(A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 2, type$.String), type$.dynamic), _s6_));
       }
       throw A.wrapException(B.Web3RequestException_chs);
     },
@@ -22385,22 +23019,27 @@
       return B.JSArray_methods.firstWhere$2$orElse(B.List_Oho, new A.JSWalletResponseType_fromTag_closure(tag), new A.JSWalletResponseType_fromTag_closure0());
     },
     JSClientType_fromTag(tag) {
-      return B.JSArray_methods.firstWhere$2$orElse(B.List_jHe, new A.JSClientType_fromTag_closure(tag), new A.JSClientType_fromTag_closure0());
+      return B.JSArray_methods.firstWhere$2$orElse(B.List_wjC, new A.JSClientType_fromTag_closure(tag), new A.JSClientType_fromTag_closure0());
     },
     PageMessage_PageMessage$deserialize(object) {
-      var values, t1, params, _null = null,
+      var values, t1, params, _null = null, _s6_ = "result",
         tag = A.CborSerializable_decode(_null, _null, object, type$.CborTagValue_dynamic);
       switch (A.JSClientType_fromTag(tag.tags)) {
         case B.JSClientType_List_111_ethereum:
           values = A.CborSerializable_cborTagValue(_null, _null, tag, B.List_111, type$.CborListValue_dynamic);
           t1 = type$.String;
           params = A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 1, t1), type$.dynamic);
-          return new A.ClientMessageEthereum(A.ExtractCborList_elementAt(values, 0, t1), J.$index$asx(params, "result"));
+          return new A.ClientMessageEthereum(A.ExtractCborList_elementAt(values, 0, t1), J.$index$asx(params, _s6_));
         case B.JSClientType_List_112_tron:
           values = A.CborSerializable_cborTagValue(_null, _null, tag, B.List_112, type$.CborListValue_dynamic);
           t1 = type$.String;
           params = A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 1, t1), type$.dynamic);
-          return new A.ClientMessageTron(A.ExtractCborList_elementAt(values, 0, t1), J.$index$asx(params, "result"));
+          return new A.ClientMessageTron(A.ExtractCborList_elementAt(values, 0, t1), J.$index$asx(params, _s6_));
+        case B.JSClientType_List_113_solana:
+          values = A.CborSerializable_cborTagValue(_null, _null, tag, B.List_113, type$.CborListValue_dynamic);
+          t1 = type$.String;
+          params = A.StringUtils_toJson(A.ExtractCborList_elementAt(values, 1, t1), type$.dynamic);
+          return new A.ClientMessageSolana(A.ExtractCborList_elementAt(values, 0, t1), J.$index$asx(params, _s6_));
         default:
           throw A.wrapException(B.Web3RequestException_chs);
       }
@@ -22457,7 +23096,7 @@
     },
     JSPageController: function JSPageController(t0, t1) {
       var _ = this;
-      _.__JSPageController_tronPageController_FI = _.__JSPageController_ethereumPageController_FI = $;
+      _.__JSPageController_solanaPageController_FI = _.__JSPageController_tronPageController_FI = _.__JSPageController_ethereumPageController_FI = $;
       _.clientId = t0;
       _.__JSPageController__walletId_FI = _.__JSPageController__id_FI = $;
       _._waitingRequest = t1;
@@ -22474,6 +23113,37 @@
     },
     EthereumPageController__init_closure: function EthereumPageController__init_closure(t0) {
       this.$this = t0;
+    },
+    SolanaPageController: function SolanaPageController(t0, t1) {
+      this._solana = null;
+      this._listeners = t0;
+      this.getWalletMessage = t1;
+    },
+    SolanaPageController__init__closure: function SolanaPageController__init__closure(t0) {
+      this._dartInstance = t0;
+    },
+    SolanaPageController__init_closure: function SolanaPageController__init_closure(t0) {
+      this.handler = t0;
+    },
+    SolanaPageController__buildTransaction_closure: function SolanaPageController__buildTransaction_closure() {
+    },
+    SolanaPageController__buildTransaction_closure0: function SolanaPageController__buildTransaction_closure0(t0) {
+      this.completer = t0;
+    },
+    SolanaPageController__buildTransaction_closure1: function SolanaPageController__buildTransaction_closure1(t0, t1, t2, t3) {
+      var _ = this;
+      _.option = t0;
+      _.toDart = t1;
+      _.batch = t2;
+      _.completer = t3;
+    },
+    SolanaPageController__buildTransaction__closure: function SolanaPageController__buildTransaction__closure() {
+    },
+    SolanaPageController__buildTransaction__closure0: function SolanaPageController__buildTransaction__closure0() {
+    },
+    SolanaPageController__buildTransaction__closure1: function SolanaPageController__buildTransaction__closure1() {
+    },
+    SolanaPageController_onEvent_closure: function SolanaPageController_onEvent_closure() {
     },
     TronPageController: function TronPageController(t0, t1) {
       var _ = this;
@@ -22508,68 +23178,156 @@
     TronPageController_onEvent_closure: function TronPageController_onEvent_closure(t0) {
       this.changeInfo = t0;
     },
-    TronWeb3State$_(chain, chains, client, defaultAddress, permission, permissionAccounts, state) {
-      var t1 = A.List_List$unmodifiable(permissionAccounts, type$.String);
-      return new A.TronWeb3State(chain, defaultAddress, client, permission, A.List_List$unmodifiable(chains, type$.TronChain), t1, state);
+    JSUint8Array_toListInt(_this) {
+      var t1 = type$.nullable_List_dynamic._as(A.dartify(_this));
+      t1 = t1 == null ? null : J.cast$1$0$ax(t1, type$.int);
+      return t1 == null ? A._setArrayType([], type$.JSArray_int) : t1;
     },
-    TronWeb3State_TronWeb3State(authenticated, chainHandler) {
+    JSSolanaPublicKey_JSSolanaPublicKey(base58, bytes) {
+      var t1 = self,
+        t2 = type$.Object,
+        jsBuffer = t2._as(t1.Uint8Array.from(A.jsify(bytes)));
+      return new A.JSSolanaPublicKey(base58, jsBuffer, new t1.BN(t2._as(jsBuffer.slice())));
+    },
+    SolanaAccountsChanged_SolanaAccountsChanged$fromJson(json) {
+      var t4,
+        _s14_ = "defaultAddress",
+        t1 = type$.List_dynamic,
+        t2 = type$.String,
+        t3 = J.cast$1$0$ax(t1._as(json.$index(0, "accounts")), t2);
+      if (json.$index(0, _s14_) == null)
+        t1 = null;
+      else {
+        t4 = type$.Map_String_dynamic._as(json.$index(0, _s14_));
+        t4 = A.JSSolanaPublicKey_JSSolanaPublicKey(A._asString(t4.$index(0, "base58")), J.cast$1$0$ax(t1._as(t4.$index(0, "bytes")), type$.int));
+        t1 = t4;
+      }
+      t4 = A._asString(type$.Map_String_dynamic._as(json.$index(0, "connectInfo")).$index(0, "genesisBlock"));
+      return new A.SolanaAccountsChanged(A.List_List$unmodifiable(t3, t2), t1, new A.SolanaProviderConnectInfo(t4));
+    },
+    SolanaEventTypes_fromTag(tag) {
+      return B.JSArray_methods.firstWhere$2$orElse(B.List_fHr, new A.SolanaEventTypes_fromTag_closure(tag), new A.SolanaEventTypes_fromTag_closure0());
+    },
+    SolanaEventTypes_fromName($name) {
+      return A.QuickImutableList_firstWhereOrNull(B.List_fHr, new A.SolanaEventTypes_fromName_closure($name), null, type$.SolanaEventTypes);
+    },
+    JSSolanaPublicKey: function JSSolanaPublicKey(t0, t1, t2) {
+      this.base58 = t0;
+      this.bytes = t1;
+      this._bn = t2;
+    },
+    JSSolanaPublicKey_toJS__closure: function JSSolanaPublicKey_toJS__closure(t0) {
+      this._dartInstance = t0;
+    },
+    JSSolanaPublicKey_toJS_closure: function JSSolanaPublicKey_toJS_closure(t0) {
+      this.$this = t0;
+    },
+    SolanaAccountsChanged: function SolanaAccountsChanged(t0, t1, t2) {
+      this.accounts = t0;
+      this.defaultAddress = t1;
+      this.connectInfo = t2;
+    },
+    SolanaEventTypes: function SolanaEventTypes(t0, t1) {
+      this.tag = t0;
+      this._name = t1;
+    },
+    SolanaEventTypes_fromTag_closure: function SolanaEventTypes_fromTag_closure(t0) {
+      this.tag = t0;
+    },
+    SolanaEventTypes_fromTag_closure0: function SolanaEventTypes_fromTag_closure0() {
+    },
+    SolanaEventTypes_fromName_closure: function SolanaEventTypes_fromName_closure(t0) {
+      this.name = t0;
+    },
+    ClientMessageSolana: function ClientMessageSolana(t0, t1) {
+      this.method = t0;
+      this.params = t1;
+    },
+    ClientSolanaTransactionMessage: function ClientSolanaTransactionMessage(t0, t1, t2) {
+      this.id = t0;
+      this.message = t1;
+      this.sendOption = t2;
+    },
+    JSWalletMessageResponseSolana: function JSWalletMessageResponseSolana(t0, t1, t2) {
+      this.event = t0;
+      this.client = t1;
+      this.data = t2;
+    },
+    SolanaProviderConnectInfo: function SolanaProviderConnectInfo(t0) {
+      this.genesisBlock = t0;
+    },
+    SolanaProviderConnectInfo_toJS__closure: function SolanaProviderConnectInfo_toJS__closure(t0) {
+      this._dartInstance = t0;
+    },
+    SolanaProviderConnectInfo_toJS_closure: function SolanaProviderConnectInfo_toJS_closure(t0) {
+      this.$this = t0;
+    },
+    SolanaWeb3State$_(chain, chains, client, defaultAddress, permission, permissionAccounts, state) {
+      var t1 = A.List_List$unmodifiable(permissionAccounts, type$.String);
+      return new A.SolanaWeb3State(chain, defaultAddress, permission, A.List_List$unmodifiable(chains, type$.SolanaChain), t1, state);
+    },
+    SolanaWeb3State_SolanaWeb3State(authenticated, chainHandler) {
       var t1, t2, currentChain, permissionAccounts, defaultAddress, t3, _null = null,
-        permission = authenticated.getChainFromNetworkType$1$1(B.NetworkType_SkF, type$.Web3TronChain);
+        permission = authenticated.getChainFromNetworkType$1$1(B.NetworkType_4QF, type$.Web3SolanaChain);
       if (permission == null)
-        return A.TronWeb3State$_(_null, B.List_empty0, _null, _null, _null, B.List_empty1, B.JSNetworkState_2);
-      t1 = type$.WhereTypeIterable_TronChain;
+        return A.SolanaWeb3State$_(_null, B.List_empty0, _null, _null, _null, B.List_empty1, B.JSNetworkState_2);
+      t1 = type$.WhereTypeIterable_SolanaChain;
       t2 = t1._eval$1("Iterable.E");
-      currentChain = B.JSArray_methods.firstWhere$1(A.List_List$of(new A.WhereTypeIterable(chainHandler.chains$0(), t1), true, t2), new A.TronWeb3State_TronWeb3State_closure(permission));
+      currentChain = B.JSArray_methods.firstWhere$1(A.List_List$of(new A.WhereTypeIterable(chainHandler.chains$0(), t1), true, t2), new A.SolanaWeb3State_SolanaWeb3State_closure(permission));
       permissionAccounts = permission.currentChainAccounts$1(currentChain);
-      defaultAddress = A.QuickImutableList_firstWhereOrNull(permissionAccounts, new A.TronWeb3State_TronWeb3State_closure0(), new A.TronWeb3State_TronWeb3State_closure1(permissionAccounts), type$.Web3TronChainAccount);
+      defaultAddress = A.QuickImutableList_firstWhereOrNull(permissionAccounts, new A.SolanaWeb3State_SolanaWeb3State_closure0(), new A.SolanaWeb3State_SolanaWeb3State_closure1(permissionAccounts), type$.Web3SolanaChainAccount);
       t2 = A.List_List$of(new A.WhereTypeIterable(chainHandler.chains$0(), t1), true, t2);
       t1 = A._arrayInstanceType(permissionAccounts);
       t3 = t1._eval$1("MappedListIterable<1,String>");
-      t3 = A.List_List$of(new A.MappedListIterable(permissionAccounts, t1._eval$1("String(1)")._as(new A.TronWeb3State_TronWeb3State_closure2()), t3), true, t3._eval$1("ListIterable.E"));
-      B.JSArray_methods.sort$1(t3, new A.TronWeb3State_TronWeb3State_closure3(defaultAddress));
+      t3 = A.List_List$of(new A.MappedListIterable(permissionAccounts, t1._eval$1("String(1)")._as(new A.SolanaWeb3State_SolanaWeb3State_closure2()), t3), true, t3._eval$1("ListIterable.E"));
+      B.JSArray_methods.sort$1(t3, new A.SolanaWeb3State_SolanaWeb3State_closure3(defaultAddress));
       if (defaultAddress == null)
         t1 = _null;
       else {
-        t1 = defaultAddress.address;
-        t1 = new A.JSTronAddress(t1.toAddress$0(), t1._hexAddress);
+        t1 = defaultAddress.address.address;
+        t1 = A.JSSolanaPublicKey_JSSolanaPublicKey(t1, A.List_List$from(new A.SolAddrDecoder().decodeAddr$1(t1), true, type$.int));
       }
-      return A.TronWeb3State$_(currentChain, t2, currentChain.getWeb3Provider$1$requestTimeout(B.Duration_1000000), t1, permission, t3, B.JSNetworkState_0);
+      return A.SolanaWeb3State$_(currentChain, t2, currentChain.getWeb3Provider$1$requestTimeout(B.Duration_1000000), t1, permission, t3, B.JSNetworkState_0);
     },
-    TronWeb3State: function TronWeb3State(t0, t1, t2, t3, t4, t5, t6) {
+    SolanaWeb3State: function SolanaWeb3State(t0, t1, t2, t3, t4, t5) {
       var _ = this;
       _.chain = t0;
       _.defaultAddress = t1;
-      _.client = t2;
-      _.permission = t3;
-      _.chains = t4;
-      _.permissionAccounts = t5;
-      _.state = t6;
+      _.permission = t2;
+      _.chains = t3;
+      _.permissionAccounts = t4;
+      _.state = t5;
     },
-    TronWeb3State_TronWeb3State_closure: function TronWeb3State_TronWeb3State_closure(t0) {
+    SolanaWeb3State_SolanaWeb3State_closure: function SolanaWeb3State_SolanaWeb3State_closure(t0) {
       this.permission = t0;
     },
-    TronWeb3State_TronWeb3State_closure0: function TronWeb3State_TronWeb3State_closure0() {
+    SolanaWeb3State_SolanaWeb3State_closure0: function SolanaWeb3State_SolanaWeb3State_closure0() {
     },
-    TronWeb3State_TronWeb3State_closure1: function TronWeb3State_TronWeb3State_closure1(t0) {
+    SolanaWeb3State_SolanaWeb3State_closure1: function SolanaWeb3State_SolanaWeb3State_closure1(t0) {
       this.permissionAccounts = t0;
     },
-    TronWeb3State_TronWeb3State_closure2: function TronWeb3State_TronWeb3State_closure2() {
+    SolanaWeb3State_SolanaWeb3State_closure2: function SolanaWeb3State_SolanaWeb3State_closure2() {
     },
-    TronWeb3State_TronWeb3State_closure3: function TronWeb3State_TronWeb3State_closure3(t0) {
+    SolanaWeb3State_SolanaWeb3State_closure3: function SolanaWeb3State_SolanaWeb3State_closure3(t0) {
       this.defaultAddress = t0;
     },
-    JSTronHandler: function JSTronHandler(t0, t1, t2) {
+    JSSolanaHandler: function JSSolanaHandler(t0, t1, t2) {
       this.state = t0;
       this.lock = t1;
       this.sendMessageToClient = t2;
     },
-    JSTronHandler_initChain_closure: function JSTronHandler_initChain_closure(t0, t1, t2) {
+    JSSolanaHandler_initChain_closure: function JSSolanaHandler_initChain_closure(t0, t1, t2) {
       this.$this = t0;
       this.authenticated = t1;
       this.chainHandler = t2;
     },
-    JSTronHandler__parseTransaction_closure: function JSTronHandler__parseTransaction_closure(t0) {
-      this.permissionId = t0;
+    JSSolanaHandler__parseTransaction_closure: function JSSolanaHandler__parseTransaction_closure() {
+    },
+    JSSolanaHandler__parseTransaction_closure0: function JSSolanaHandler__parseTransaction_closure0(t0) {
+      this.state = t0;
+    },
+    JSSolanaHandler__parseTransaction_closure1: function JSSolanaHandler__parseTransaction_closure1(t0) {
+      this.activeAccounts = t0;
     },
     TronEventTypes_fromTag(tag) {
       return B.JSArray_methods.firstWhere$2$orElse(B.List_C8a, new A.TronEventTypes_fromTag_closure(tag), new A.TronEventTypes_fromTag_closure0());
@@ -22624,6 +23382,69 @@
       this.accounts = t0;
       this.defaultAddress = t1;
     },
+    TronWeb3State$_(chain, chains, client, defaultAddress, permission, permissionAccounts, state) {
+      var t1 = A.List_List$unmodifiable(permissionAccounts, type$.String);
+      return new A.TronWeb3State(chain, defaultAddress, client, permission, A.List_List$unmodifiable(chains, type$.TronChain), t1, state);
+    },
+    TronWeb3State_TronWeb3State(authenticated, chainHandler) {
+      var t1, t2, currentChain, permissionAccounts, defaultAddress, t3, _null = null,
+        permission = authenticated.getChainFromNetworkType$1$1(B.NetworkType_SkF, type$.Web3TronChain);
+      if (permission == null)
+        return A.TronWeb3State$_(_null, B.List_empty2, _null, _null, _null, B.List_empty1, B.JSNetworkState_2);
+      t1 = type$.WhereTypeIterable_TronChain;
+      t2 = t1._eval$1("Iterable.E");
+      currentChain = B.JSArray_methods.firstWhere$1(A.List_List$of(new A.WhereTypeIterable(chainHandler.chains$0(), t1), true, t2), new A.TronWeb3State_TronWeb3State_closure(permission));
+      permissionAccounts = permission.currentChainAccounts$1(currentChain);
+      defaultAddress = A.QuickImutableList_firstWhereOrNull(permissionAccounts, new A.TronWeb3State_TronWeb3State_closure0(), new A.TronWeb3State_TronWeb3State_closure1(permissionAccounts), type$.Web3TronChainAccount);
+      t2 = A.List_List$of(new A.WhereTypeIterable(chainHandler.chains$0(), t1), true, t2);
+      t1 = A._arrayInstanceType(permissionAccounts);
+      t3 = t1._eval$1("MappedListIterable<1,String>");
+      t3 = A.List_List$of(new A.MappedListIterable(permissionAccounts, t1._eval$1("String(1)")._as(new A.TronWeb3State_TronWeb3State_closure2()), t3), true, t3._eval$1("ListIterable.E"));
+      B.JSArray_methods.sort$1(t3, new A.TronWeb3State_TronWeb3State_closure3(defaultAddress));
+      if (defaultAddress == null)
+        t1 = _null;
+      else {
+        t1 = defaultAddress.address;
+        t1 = new A.JSTronAddress(t1.toAddress$0(), t1._hexAddress);
+      }
+      return A.TronWeb3State$_(currentChain, t2, currentChain.getWeb3Provider$1$requestTimeout(B.Duration_1000000), t1, permission, t3, B.JSNetworkState_0);
+    },
+    TronWeb3State: function TronWeb3State(t0, t1, t2, t3, t4, t5, t6) {
+      var _ = this;
+      _.chain = t0;
+      _.defaultAddress = t1;
+      _.client = t2;
+      _.permission = t3;
+      _.chains = t4;
+      _.permissionAccounts = t5;
+      _.state = t6;
+    },
+    TronWeb3State_TronWeb3State_closure: function TronWeb3State_TronWeb3State_closure(t0) {
+      this.permission = t0;
+    },
+    TronWeb3State_TronWeb3State_closure0: function TronWeb3State_TronWeb3State_closure0() {
+    },
+    TronWeb3State_TronWeb3State_closure1: function TronWeb3State_TronWeb3State_closure1(t0) {
+      this.permissionAccounts = t0;
+    },
+    TronWeb3State_TronWeb3State_closure2: function TronWeb3State_TronWeb3State_closure2() {
+    },
+    TronWeb3State_TronWeb3State_closure3: function TronWeb3State_TronWeb3State_closure3(t0) {
+      this.defaultAddress = t0;
+    },
+    JSTronHandler: function JSTronHandler(t0, t1, t2) {
+      this.state = t0;
+      this.lock = t1;
+      this.sendMessageToClient = t2;
+    },
+    JSTronHandler_initChain_closure: function JSTronHandler_initChain_closure(t0, t1, t2) {
+      this.$this = t0;
+      this.authenticated = t1;
+      this.chainHandler = t2;
+    },
+    JSTronHandler__parseTransaction_closure: function JSTronHandler__parseTransaction_closure(t0) {
+      this.permissionId = t0;
+    },
     JSWebviewTraget_fromName($name) {
       return A.QuickImutableList_firstWhereOrNull(B.List_4m4, new A.JSWebviewTraget_fromName_closure($name), null, type$.JSWebviewTraget);
     },
@@ -22640,7 +23461,7 @@
       _.clientId = t0;
       _._chain = t1;
       _.target = t2;
-      _.__JSWalletHandler__id_FI = _.__JSWalletHandler_tronHandler_FI = _.__JSWalletHandler_ethereumHandler_FI = $;
+      _.__JSWalletHandler__id_FI = _.__JSWalletHandler_solanaHandler_FI = _.__JSWalletHandler_tronHandler_FI = _.__JSWalletHandler_ethereumHandler_FI = $;
       _.completer = t3;
       _._crypto = t4;
     },
@@ -22742,6 +23563,15 @@
       if (!t1._is(contact))
         throw A.wrapException(A.WalletExceptionConst_invalidArgruments(A.createRuntimeType(t1).toString$0(0), A.getRuntimeTypeOfDartObject(contact).toString$0(0)));
       return contact;
+    },
+    VersionedMessage_VersionedMessage$fromBuffer(serializedMessage) {
+      var prefix;
+      if (0 >= serializedMessage.length)
+        return A.ioore(serializedMessage, 0);
+      prefix = serializedMessage[0];
+      if ((prefix & 127) === prefix)
+        return A.SolanaTransactionUtils_deserializeMessageLegacy(serializedMessage);
+      return A.SolanaTransactionUtils_deserializeV0(serializedMessage);
     },
     printString(string) {
       if (typeof dartPrint == "function") {
@@ -22882,7 +23712,7 @@
       return A.AddrKeyValidator_validateAddressArgs(kwargs, key, $T);
     },
     IPublicKey_IPublicKey$fromBytes(keybytes, type) {
-      var point, t1, prefix, keyBytes;
+      var point, t1, keyBytes;
       switch (type) {
         case B.EllipticCurveTypes_nist256p1:
           point = A.ProjectiveECCPoint_ProjectiveECCPoint$fromBytes($.$get$Curves_curve256(), keybytes, null);
@@ -22894,14 +23724,7 @@
           A.RistrettoPoint_RistrettoPoint$fromBytes(keybytes);
           return new A.Sr25519PublicKey(new A.SchnorrkelPublicKey(A.BytesUtils_toBytes(keybytes, true)));
         case B.EllipticCurveTypes_ed25519:
-          t1 = J.getInterceptor$asx(keybytes);
-          if (t1.get$length(keybytes) === 33) {
-            prefix = t1.sublist$2(keybytes, 0, 1);
-            keyBytes = A.BytesUtils_bytesEqual(prefix, B.List_0) || A.BytesUtils_bytesEqual(prefix, B.List_237) ? t1.sublist$1(keybytes, 1) : keybytes;
-          } else
-            keyBytes = keybytes;
-          t1 = $.$get$Curves_generatorED25519();
-          return new A.Ed25519PublicKey(A.EDDSAPublicKey_EDDSAPublicKey$fromPoint(t1, A.EDPoint_EDPoint$fromBytes(t1.curve, keyBytes)));
+          return A.Ed25519PublicKey_Ed25519PublicKey$fromBytes(keybytes);
         case B.EllipticCurveTypes_ed25519Kholaw:
           t1 = J.getInterceptor$asx(keybytes);
           keyBytes = t1.get$length(keybytes) === 33 && J.$eq$(t1.$index(keybytes, 0), 0) ? t1.sublist$1(keybytes, 1) : keybytes;
@@ -23518,9 +24341,9 @@
       return (t1 << 24 | t3 << 16 | t4 << 8 | t2) >>> 0;
     },
     writeUint32BE(value, out, offset) {
-      B.JSArray_methods.$indexSet(out, offset, value >>> 24 & 255);
-      B.JSArray_methods.$indexSet(out, offset + 1, value >>> 16 & 255);
-      B.JSArray_methods.$indexSet(out, offset + 2, value >>> 8 & 255);
+      B.JSArray_methods.$indexSet(out, offset, B.JSInt_methods._shrOtherPositive$1(value, 24) & 255);
+      B.JSArray_methods.$indexSet(out, offset + 1, B.JSInt_methods._shrOtherPositive$1(value, 16) & 255);
+      B.JSArray_methods.$indexSet(out, offset + 2, B.JSInt_methods._shrOtherPositive$1(value, 8) & 255);
       B.JSArray_methods.$indexSet(out, offset + 3, value & 255);
     },
     readUint32BE(array, offset) {
@@ -26070,7 +26893,7 @@
     call$0() {
       return A.Future_Future$value(null, type$.Null);
     },
-    $signature: 15
+    $signature: 16
   };
   A.SentinelValue.prototype = {};
   A.EfficientLengthIterable.prototype = {};
@@ -27075,9 +27898,9 @@
     remove$1(_, key) {
       var _this = this;
       if (typeof key == "string")
-        return _this._removeHashTableEntry$2(_this.__js_helper$_strings, key);
+        return _this.__js_helper$_removeHashTableEntry$2(_this.__js_helper$_strings, key);
       else if (typeof key == "number" && (key & 0x3fffffff) === key)
-        return _this._removeHashTableEntry$2(_this.__js_helper$_nums, key);
+        return _this.__js_helper$_removeHashTableEntry$2(_this.__js_helper$_nums, key);
       else
         return _this.internalRemove$1(key);
     },
@@ -27120,7 +27943,7 @@
       else
         cell.hashMapCellValue = value;
     },
-    _removeHashTableEntry$2(table, key) {
+    __js_helper$_removeHashTableEntry$2(table, key) {
       var cell;
       if (table == null)
         return null;
@@ -27288,19 +28111,19 @@
     call$1(o) {
       return this.getTag(o);
     },
-    $signature: 17
+    $signature: 18
   };
   A.initHooks_closure0.prototype = {
     call$2(o, tag) {
       return this.getUnknownTag(o, tag);
     },
-    $signature: 365
+    $signature: 400
   };
   A.initHooks_closure1.prototype = {
     call$1(tag) {
       return this.prototypeForTag(A._asString(tag));
     },
-    $signature: 98
+    $signature: 115
   };
   A._Record.prototype = {
     get$runtimeType(_) {
@@ -27886,7 +28709,7 @@
       t1.storedCallback = null;
       f.call$0();
     },
-    $signature: 25
+    $signature: 24
   };
   A._AsyncRun__initializeScheduleImmediate_closure.prototype = {
     call$1(callback) {
@@ -27896,19 +28719,19 @@
       t2 = this.span;
       t1.firstChild ? t1.removeChild(t2) : t1.appendChild(t2);
     },
-    $signature: 354
+    $signature: 399
   };
   A._AsyncRun__scheduleImmediateJsOverride_internalCallback.prototype = {
     call$0() {
       this.callback.call$0();
     },
-    $signature: 12
+    $signature: 14
   };
   A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback.prototype = {
     call$0() {
       this.callback.call$0();
     },
-    $signature: 12
+    $signature: 14
   };
   A._TimerImpl.prototype = {
     _TimerImpl$2(milliseconds, callback) {
@@ -27965,19 +28788,19 @@
     call$1(result) {
       return this.bodyFunction.call$2(0, result);
     },
-    $signature: 16
+    $signature: 17
   };
   A._awaitOnObject_closure0.prototype = {
     call$2(error, stackTrace) {
       this.bodyFunction.call$2(1, new A.ExceptionAndStackTrace(error, type$.StackTrace._as(stackTrace)));
     },
-    $signature: 140
+    $signature: 397
   };
   A._wrapJsFunctionForAsync_closure.prototype = {
     call$2(errorCode, result) {
       this.$protected(A._asInt(errorCode), result);
     },
-    $signature: 209
+    $signature: 396
   };
   A._SyncStarIterator.prototype = {
     get$current() {
@@ -28420,13 +29243,13 @@
         t1._completeError$2(error, stackTrace);
       }
     },
-    $signature: 25
+    $signature: 24
   };
   A._Future__chainForeignFuture_closure0.prototype = {
     call$2(error, stackTrace) {
       this.$this._completeError$2(type$.Object._as(error), type$.StackTrace._as(stackTrace));
     },
-    $signature: 79
+    $signature: 134
   };
   A._Future__chainForeignFuture_closure1.prototype = {
     call$0() {
@@ -28491,7 +29314,7 @@
     call$1(_) {
       return this.originalSource;
     },
-    $signature: 339
+    $signature: 394
   };
   A._Future__propagateToListeners_handleValueCallback.prototype = {
     call$0() {
@@ -28568,7 +29391,7 @@
         this._future._completeError$2(e, s);
       }
     },
-    $signature: 79
+    $signature: 134
   };
   A._AsyncCallbackEntry.prototype = {};
   A.Stream.prototype = {
@@ -29410,9 +30233,9 @@
     remove$1(_, key) {
       var _this = this;
       if (typeof key == "string" && key !== "__proto__")
-        return _this._collection$_removeHashTableEntry$2(_this._strings, key);
+        return _this._removeHashTableEntry$2(_this._strings, key);
       else if (typeof key == "number" && (key & 1073741823) === key)
-        return _this._collection$_removeHashTableEntry$2(_this._nums, key);
+        return _this._removeHashTableEntry$2(_this._nums, key);
       else
         return _this._remove$1(key);
     },
@@ -29497,7 +30320,7 @@
       }
       A._HashMap__setTableEntry(table, key, value);
     },
-    _collection$_removeHashTableEntry$2(table, key) {
+    _removeHashTableEntry$2(table, key) {
       var value;
       if (table != null && table[key] != null) {
         value = this.$ti._rest[1]._as(A._HashMap__getTableEntry(table, key));
@@ -29619,7 +30442,7 @@
     call$1(v) {
       return this.K._is(v);
     },
-    $signature: 22
+    $signature: 27
   };
   A._LinkedHashSet.prototype = {
     get$iterator(_) {
@@ -29803,7 +30626,7 @@
     call$2(k, v) {
       this.result.$indexSet(0, this.K._as(k), this.V._as(v));
     },
-    $signature: 370
+    $signature: 392
   };
   A.ListBase.prototype = {
     get$iterator(receiver) {
@@ -30102,7 +30925,7 @@
       t2 = A.S(v);
       t1._contents += t2;
     },
-    $signature: 54
+    $signature: 80
   };
   A.UnmodifiableMapBase.prototype = {};
   A._MapBaseValueIterable.prototype = {
@@ -30173,10 +30996,6 @@
     },
     $index(_, key) {
       return this._map.$index(0, key);
-    },
-    $indexSet(_, key, value) {
-      var t1 = A._instanceType(this);
-      this._map.$indexSet(0, t1._precomputed1._as(key), t1._rest[1]._as(value));
     },
     containsKey$1(key) {
       return this._map.containsKey$1(key);
@@ -30419,7 +31238,7 @@
     call$1(each) {
       return this.$this.$index(0, A._asString(each));
     },
-    $signature: 98
+    $signature: 115
   };
   A._JsonMapKeyIterable.prototype = {
     get$length(_) {
@@ -30462,7 +31281,7 @@
       }
       return null;
     },
-    $signature: 55
+    $signature: 82
   };
   A._Utf8Decoder__decoderNonfatal_closure.prototype = {
     call$0() {
@@ -30474,7 +31293,7 @@
       }
       return null;
     },
-    $signature: 55
+    $signature: 82
   };
   A.AsciiCodec.prototype = {
     get$name() {
@@ -31004,7 +31823,7 @@
       B.JSArray_methods.$indexSet(t1, t2.i++, key);
       B.JSArray_methods.$indexSet(t1, t2.i++, value);
     },
-    $signature: 54
+    $signature: 80
   };
   A._JsonStringStringifier.prototype = {
     get$_partialResult() {
@@ -32131,7 +32950,7 @@
       hash = hash + ((hash & 524287) << 10) & 536870911;
       return hash ^ hash >>> 6;
     },
-    $signature: 23
+    $signature: 26
   };
   A._BigIntImpl_hashCode_finish.prototype = {
     call$1(hash) {
@@ -32139,7 +32958,7 @@
       hash ^= hash >>> 11;
       return hash + ((hash & 16383) << 15) & 536870911;
     },
-    $signature: 19
+    $signature: 21
   };
   A._BigIntClassic.prototype = {
     convert$2(x, resultDigits) {
@@ -32218,7 +33037,7 @@
             A._asStringQ(value);
         }
     },
-    $signature: 62
+    $signature: 92
   };
   A.DateTime.prototype = {
     get$timeZoneOffset() {
@@ -32296,7 +33115,7 @@
         return 0;
       return A.int_parse(matched, null);
     },
-    $signature: 66
+    $signature: 104
   };
   A.DateTime_parse_parseMilliAndMicroseconds.prototype = {
     call$1(matched) {
@@ -32313,7 +33132,7 @@
       }
       return result;
     },
-    $signature: 66
+    $signature: 104
   };
   A.Duration.prototype = {
     $eq(_, other) {
@@ -32802,13 +33621,13 @@
     call$2(msg, position) {
       throw A.wrapException(A.FormatException$("Illegal IPv4 address, " + msg, this.host, position));
     },
-    $signature: 301
+    $signature: 386
   };
   A.Uri_parseIPv6Address_error.prototype = {
     call$2(msg, position) {
       throw A.wrapException(A.FormatException$("Illegal IPv6 address, " + msg, this.host, position));
     },
-    $signature: 294
+    $signature: 380
   };
   A.Uri_parseIPv6Address_parseHex.prototype = {
     call$2(start, end) {
@@ -32820,7 +33639,7 @@
         this.error.call$2("each part must be in the range of `0x0..0xFFFF`", start);
       return value;
     },
-    $signature: 23
+    $signature: 26
   };
   A._Uri.prototype = {
     get$_text() {
@@ -33151,7 +33970,7 @@
         t1._contents += t2;
       }
     },
-    $signature: 270
+    $signature: 371
   };
   A._Uri__makeQueryFromParametersDefault_closure.prototype = {
     call$2(key, value) {
@@ -33163,7 +33982,7 @@
         for (t1 = J.get$iterator$ax(type$.Iterable_dynamic._as(value)), t2 = this.writeParameter; t1.moveNext$0();)
           t2.call$2(key, A._asString(t1.get$current()));
     },
-    $signature: 62
+    $signature: 92
   };
   A.UriData.prototype = {
     get$uri() {
@@ -33204,7 +34023,7 @@
       B.NativeUint8List_methods.fillRange$3(t1, 0, 96, defaultTransition);
       return t1;
     },
-    $signature: 264
+    $signature: 370
   };
   A._createTables_setChars.prototype = {
     call$3(target, chars, transition) {
@@ -33216,7 +34035,7 @@
         target[t2] = transition;
       }
     },
-    $signature: 72
+    $signature: 127
   };
   A._createTables_setRange.prototype = {
     call$3(target, range, transition) {
@@ -33235,7 +34054,7 @@
         target[t1] = transition;
       }
     },
-    $signature: 72
+    $signature: 127
   };
   A._SimpleUri.prototype = {
     get$hasAuthority() {
@@ -33533,7 +34352,7 @@
     call$1(rawSocket) {
       return A.SecureSocket_SecureSocket$_(rawSocket);
     },
-    $signature: 247
+    $signature: 369
   };
   A.RawSecureSocket_connect_closure.prototype = {
     call$1(socket) {
@@ -33546,7 +34365,7 @@
       address = socket.get$address();
       return A._RawSecureSocket$(address, t2, false, _this.context, socket, null, null, false, false, _this.onBadCertificate, _this.keyLog, _this.supportedProtocols)._handshakeComplete.future;
     },
-    $signature: 241
+    $signature: 368
   };
   A._FilterStatus.prototype = {};
   A._RawSecureSocket.prototype = {
@@ -34110,13 +34929,13 @@
       } else
         return o;
     },
-    $signature: 51
+    $signature: 46
   };
   A.promiseToFuture_closure.prototype = {
     call$1(r) {
       return this.completer.complete$1(this.T._eval$1("0/?")._as(r));
     },
-    $signature: 16
+    $signature: 17
   };
   A.promiseToFuture_closure0.prototype = {
     call$1(e) {
@@ -34124,7 +34943,7 @@
         return this.completer.completeError$1(new A.NullRejectionException(e === undefined));
       return this.completer.completeError$1(e);
     },
-    $signature: 16
+    $signature: 17
   };
   A.dartify_convert.prototype = {
     call$1(o) {
@@ -34171,7 +34990,7 @@
       }
       return o;
     },
-    $signature: 51
+    $signature: 46
   };
   A.NullRejectionException.prototype = {
     toString$0(_) {
@@ -34227,7 +35046,7 @@
     call$1(element) {
       return type$.BitcoinAddressType._as(element).get$value() === this.value;
     },
-    $signature: 203
+    $signature: 353
   };
   A.BitcoinAddressType_fromValue_closure0.prototype = {
     call$0() {
@@ -34494,7 +35313,7 @@
       if (t4 !== 0)
         A.throwExpression(B.AddressConverterException_GJk);
       t4 = y.$and(0, t2).compareTo$1(0, $.$get$_BigIntImpl_zero());
-      return A.BytesUtils_toHexString(A.BigintUtils_toBytes(new A.ProjectiveECCPoint(t3, null, false, B.List_empty11, A._setArrayType([x, t4 === 0 ? y : p.$sub(0, y), t2], type$.JSArray_BigInt)).$add(0, n).get$x(), t1.get$point().get$curve().get$baselen(), B.C_Endian), true, null);
+      return A.BytesUtils_toHexString(A.BigintUtils_toBytes(new A.ProjectiveECCPoint(t3, null, false, B.List_empty13, A._setArrayType([x, t4 === 0 ? y : p.$sub(0, y), t2], type$.JSArray_BigInt)).$add(0, n).get$x(), t1.get$point().get$curve().get$baselen(), B.C_Endian), true, null);
     }
   };
   A.BitcoinBasePluginException.prototype = {
@@ -34506,7 +35325,7 @@
     call$1(element) {
       return type$.BasedUtxoNetwork._as(element).get$value() === this.name;
     },
-    $signature: 215
+    $signature: 352
   };
   A.BitcoinSVNetwork.prototype = {
     get$p2pkhNetVer() {
@@ -34896,7 +35715,7 @@
     call$1(v) {
       return v == null;
     },
-    $signature: 22
+    $signature: 27
   };
   A.Base58Alphabets.prototype = {
     _enumToString$0() {
@@ -34914,7 +35733,7 @@
     call$1(rune) {
       return A._asInt(rune) & 31;
     },
-    $signature: 19
+    $signature: 21
   };
   A.Bech32Encodings.prototype = {
     _enumToString$0() {
@@ -34936,26 +35755,26 @@
         return A.ioore(_s32_, e);
       return _s32_[e];
     },
-    $signature: 112
+    $signature: 89
   };
   A.Bech32DecoderBase_decodeBech32_closure.prototype = {
     call$1(x) {
       A._asInt(x);
       return x < 33 || x > 126;
     },
-    $signature: 50
+    $signature: 44
   };
   A.Bech32DecoderBase_decodeBech32_closure0.prototype = {
     call$1(x) {
       return !B.JSString_methods.contains$1("qpzry9x8gf2tvdw0s3jn54khce6mua7l", A.Primitives_stringFromCharCode(A._asInt(x)));
     },
-    $signature: 50
+    $signature: 44
   };
   A.Bech32DecoderBase_decodeBech32_closure1.prototype = {
     call$1(x) {
       return B.JSString_methods.indexOf$1("qpzry9x8gf2tvdw0s3jn54khce6mua7l", A.Primitives_stringFromCharCode(A._asInt(x)));
     },
-    $signature: 19
+    $signature: 21
   };
   A.ADAAddressType.prototype = {
     toString$0(_) {
@@ -34966,7 +35785,7 @@
     call$1(element) {
       return type$.ADAAddressType._as(element).header === this.header;
     },
-    $signature: 236
+    $signature: 349
   };
   A.ADAAddressType_fromHeader_closure0.prototype = {
     call$0() {
@@ -34986,7 +35805,7 @@
     call$1(element) {
       return type$.ADAByronAddrTypes._as(element).value === this.value.value;
     },
-    $signature: 251
+    $signature: 316
   };
   A.ADAByronAddrAttrs.prototype = {
     toJson$0() {
@@ -35145,7 +35964,7 @@
     call$1(element) {
       return type$.ADANetwork._as(element).value === this.tag;
     },
-    $signature: 91
+    $signature: 101
   };
   A.ADANetwork_fromTag_closure0.prototype = {
     call$0() {
@@ -35157,7 +35976,7 @@
     call$1(element) {
       return type$.ADANetwork._as(element).protocolMagic === this.protocolMagic;
     },
-    $signature: 91
+    $signature: 101
   };
   A.ADANetwork_fromProtocolMagic_closure0.prototype = {
     call$0() {
@@ -35191,7 +36010,7 @@
         return A.ioore(t1, i);
       return A.int_parse(t1[i], 16) >= 8 ? c.toUpperCase() : c.toLowerCase();
     },
-    $signature: 284
+    $signature: 403
   };
   A.EthAddrDecoder.prototype = {
     decodeAddr$2(addr, kwargs) {
@@ -35316,14 +36135,14 @@
     call$1(elem) {
       return A._asString(elem).length !== 0;
     },
-    $signature: 21
+    $signature: 25
   };
   A.Bip32PathParser__parseElem_closure.prototype = {
     call$1(element) {
       A._asString(element);
       return B.JSString_methods.endsWith$1(this._box_0.pathElem, element);
     },
-    $signature: 21
+    $signature: 25
   };
   A.BipCoins.prototype = {
     toString$0(_) {
@@ -35365,7 +36184,7 @@
     call$1(element) {
       return type$.Bip44Coins._as(element).name === this.name;
     },
-    $signature: 338
+    $signature: 314
   };
   A.Bip44Conf_akashNetwork_closure.prototype = {
     call$1(kwargs) {
@@ -35374,7 +36193,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_algorand_closure.prototype = {
     call$1(kwargs) {
@@ -35383,7 +36202,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 352
+    $signature: 310
   };
   A.Bip44Conf_aptos_closure.prototype = {
     call$1(kwargs) {
@@ -35392,7 +36211,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 355
+    $signature: 309
   };
   A.Bip44Conf_avaxCChain_closure.prototype = {
     call$1(kwargs) {
@@ -35410,7 +36229,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 366
+    $signature: 300
   };
   A.Bip44Conf_avaxXChain_closure.prototype = {
     call$1(kwargs) {
@@ -35419,7 +36238,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 371
+    $signature: 299
   };
   A.Bip44Conf_axelar_closure.prototype = {
     call$1(kwargs) {
@@ -35428,7 +36247,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_bandProtocol_closure.prototype = {
     call$1(kwargs) {
@@ -35437,7 +36256,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_binanceChain_closure.prototype = {
     call$1(kwargs) {
@@ -35446,7 +36265,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_binanceSmartChain_closure.prototype = {
     call$1(kwargs) {
@@ -35482,7 +36301,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip44Conf_bitcoinCashTestNet_closure.prototype = {
     call$1(legacy) {
@@ -35491,7 +36310,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip44Conf_bitcoinCashSlpMainNet_closure.prototype = {
     call$1(legacy) {
@@ -35500,7 +36319,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip44Conf_bitcoinCashSlpTestNet_closure.prototype = {
     call$1(legacy) {
@@ -35509,7 +36328,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip44Conf_bitcoinSvMainNet_closure.prototype = {
     call$1(legacy) {
@@ -35536,7 +36355,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 27
+    $signature: 36
   };
   A.Bip44Conf_cardanoByronLedger_closure.prototype = {
     call$1(kwargs) {
@@ -35545,7 +36364,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 27
+    $signature: 36
   };
   A.Bip44Conf_cardanoByronIcarusTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -35554,7 +36373,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 27
+    $signature: 36
   };
   A.Bip44Conf_cardanoByronLedgerTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -35563,7 +36382,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 27
+    $signature: 36
   };
   A.Bip44Conf_celo_closure.prototype = {
     call$1(kwargs) {
@@ -35581,7 +36400,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_chihuahua_closure.prototype = {
     call$1(kwargs) {
@@ -35590,7 +36409,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_cosmos_closure.prototype = {
     call$1(kwargs) {
@@ -35599,7 +36418,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_cosmosTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -35608,7 +36427,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_cosmosNist256p1_closure.prototype = {
     call$1(kwargs) {
@@ -35617,7 +36436,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 56
+    $signature: 137
   };
   A.Bip44Conf_cosmosTestnetNist256p1_closure.prototype = {
     call$1(kwargs) {
@@ -35626,7 +36445,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 56
+    $signature: 137
   };
   A.Bip44Conf_dashMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -35689,7 +36508,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip44Conf_ecashTestNet_closure.prototype = {
     call$1(legacy) {
@@ -35698,7 +36517,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip44Conf_elrond_closure.prototype = {
     call$1(kwargs) {
@@ -35707,7 +36526,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 368
+    $signature: 297
   };
   A.Bip44Conf_eos_closure.prototype = {
     call$1(kwargs) {
@@ -35716,7 +36535,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 367
+    $signature: 286
   };
   A.Bip44Conf_ergoMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -35725,7 +36544,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 57
+    $signature: 61
   };
   A.Bip44Conf_ergoTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -35734,7 +36553,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 57
+    $signature: 61
   };
   A.Bip44Conf_ethereum_closure.prototype = {
     call$1(kwargs) {
@@ -35779,7 +36598,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 187
+    $signature: 285
   };
   A.Bip44Conf_harmonyOneMetamask_closure.prototype = {
     call$1(kwargs) {
@@ -35806,7 +36625,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 363
+    $signature: 279
   };
   A.Bip44Conf_huobiChain_closure.prototype = {
     call$1(kwargs) {
@@ -35824,7 +36643,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 361
+    $signature: 277
   };
   A.Bip44Conf_injective_closure.prototype = {
     call$1(kwargs) {
@@ -35833,7 +36652,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 356
+    $signature: 274
   };
   A.Bip44Conf_irisNet_closure.prototype = {
     call$1(kwargs) {
@@ -35842,7 +36661,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_kava_closure.prototype = {
     call$1(kwargs) {
@@ -35851,7 +36670,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_kusamaEd25519Slip_closure.prototype = {
     call$1(kwargs) {
@@ -35896,7 +36715,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 58
+    $signature: 117
   };
   A.Bip44Conf_moneroSecp256k1_closure.prototype = {
     call$1(kwargs) {
@@ -35905,7 +36724,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 58
+    $signature: 117
   };
   A.Bip44Conf_nano_closure.prototype = {
     call$1(kwargs) {
@@ -35914,7 +36733,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 353
+    $signature: 273
   };
   A.Bip44Conf_nearProtocol_closure.prototype = {
     call$1(kwargs) {
@@ -35923,7 +36742,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 343
+    $signature: 270
   };
   A.Bip44Conf_neo_closure.prototype = {
     call$1(kwargs) {
@@ -35932,7 +36751,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 59
+    $signature: 70
   };
   A.Bip44Conf_nineChroniclesGold_closure.prototype = {
     call$1(kwargs) {
@@ -35959,7 +36778,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 60
+    $signature: 71
   };
   A.Bip44Conf_okexChainAtomOld_closure.prototype = {
     call$1(kwargs) {
@@ -35968,7 +36787,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 60
+    $signature: 71
   };
   A.Bip44Conf_ontology_closure.prototype = {
     call$1(kwargs) {
@@ -35977,7 +36796,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 59
+    $signature: 70
   };
   A.Bip44Conf_osmosis_closure.prototype = {
     call$1(kwargs) {
@@ -35986,7 +36805,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_piNetwork_closure.prototype = {
     call$1(kwargs) {
@@ -35995,7 +36814,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 61
+    $signature: 72
   };
   A.Bip44Conf_polkadotEd25519Slip_closure.prototype = {
     call$1(kwargs) {
@@ -36031,7 +36850,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 29
+    $signature: 38
   };
   A.Bip44Conf_rippleTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -36040,7 +36859,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 29
+    $signature: 38
   };
   A.Bip44Conf_rippleEd25519_closure.prototype = {
     call$1(kwargs) {
@@ -36049,7 +36868,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 29
+    $signature: 38
   };
   A.Bip44Conf_rippleTestnetEd25519_closure.prototype = {
     call$1(kwargs) {
@@ -36058,7 +36877,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 29
+    $signature: 38
   };
   A.Bip44Conf_secretNetworkOld_closure.prototype = {
     call$1(kwargs) {
@@ -36067,7 +36886,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_secretNetworkNew_closure.prototype = {
     call$1(kwargs) {
@@ -36076,7 +36895,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_solana_closure.prototype = {
     call$1(kwargs) {
@@ -36085,7 +36904,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 63
+    $signature: 74
   };
   A.Bip44Conf_solanaTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -36094,7 +36913,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 63
+    $signature: 74
   };
   A.Bip44Conf_stellar_closure.prototype = {
     call$1(kwargs) {
@@ -36103,7 +36922,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 61
+    $signature: 72
   };
   A.Bip44Conf_terra_closure.prototype = {
     call$1(kwargs) {
@@ -36112,7 +36931,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 7
+    $signature: 8
   };
   A.Bip44Conf_tezos_closure.prototype = {
     call$1(kwargs) {
@@ -36121,7 +36940,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 340
+    $signature: 269
   };
   A.Bip44Conf_theta_closure.prototype = {
     call$1(kwargs) {
@@ -36139,7 +36958,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 64
+    $signature: 76
   };
   A.Bip44Conf_tronTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -36148,7 +36967,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 64
+    $signature: 76
   };
   A.Bip44Conf_vechain_closure.prototype = {
     call$1(kwargs) {
@@ -36193,7 +37012,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 337
+    $signature: 267
   };
   A.Bip44Conf_tonMainnet_closure.prototype = {
     call$1(kwargs) {
@@ -36202,7 +37021,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 65
+    $signature: 78
   };
   A.Bip44Conf_tonTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -36211,7 +37030,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 65
+    $signature: 78
   };
   A.Bip49Coins.prototype = {
     get$value() {
@@ -36233,7 +37052,7 @@
     call$1(element) {
       return type$.Bip49Coins._as(element).name === this.name;
     },
-    $signature: 334
+    $signature: 266
   };
   A.Bip49Conf_dashMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36242,7 +37061,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_dashTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36251,7 +37070,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_dogecoinMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36260,7 +37079,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_dogecoinTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36269,7 +37088,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_litecoinMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36278,7 +37097,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_litecoinTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36287,7 +37106,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_zcashMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36296,7 +37115,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_zcashTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36305,7 +37124,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_bitcoinMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36314,7 +37133,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_bitcoinTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36323,7 +37142,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_bitcoinSvMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36332,7 +37151,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_bitcoinSvTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36341,7 +37160,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_bitcoinCashMainNet_closure.prototype = {
     call$1(legacy) {
@@ -36350,7 +37169,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip49Conf_bitcoinCashTestNet_closure.prototype = {
     call$1(legacy) {
@@ -36359,7 +37178,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip49Conf_bitcoinCashSlpMainNet_closure.prototype = {
     call$1(legacy) {
@@ -36368,7 +37187,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip49Conf_bitcoinCashSlpTestNet_closure.prototype = {
     call$1(legacy) {
@@ -36377,7 +37196,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip49Conf_ecashMainNet_closure.prototype = {
     call$1(legacy) {
@@ -36386,7 +37205,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip49Conf_ecashTestNet_closure.prototype = {
     call$1(legacy) {
@@ -36395,7 +37214,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 10
+    $signature: 11
   };
   A.Bip49Conf_pepeMainnet_closure.prototype = {
     call$1(kwargs) {
@@ -36404,7 +37223,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip49Conf_pepeTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -36413,7 +37232,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 8
+    $signature: 10
   };
   A.Bip84Coins.prototype = {
     get$value() {
@@ -36435,7 +37254,7 @@
     call$1(element) {
       return type$.Bip84Coins._as(element).name === this.name;
     },
-    $signature: 321
+    $signature: 262
   };
   A.Bip84Conf_bitcoinMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36444,7 +37263,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 30
+    $signature: 39
   };
   A.Bip84Conf_bitcoinTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36453,7 +37272,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 30
+    $signature: 39
   };
   A.Bip84Conf_litecoinMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36462,7 +37281,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 30
+    $signature: 39
   };
   A.Bip84Conf_litecoinTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36471,7 +37290,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 30
+    $signature: 39
   };
   A.Bip86Coins.prototype = {
     get$value() {
@@ -36493,7 +37312,7 @@
     call$1(element) {
       return type$.Bip86Coins._as(element).name === this.name;
     },
-    $signature: 300
+    $signature: 261
   };
   A.Bip86Conf_bitcoinMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36502,7 +37321,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 67
+    $signature: 84
   };
   A.Bip86Conf_bitcoinTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36511,7 +37330,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 67
+    $signature: 84
   };
   A.BipBitcoinCashConf.prototype = {};
   A.BipCoinConfig.prototype = {$isCoinConfig: 1,
@@ -36524,7 +37343,7 @@
     call$1(element) {
       return type$.BipProposal._as(element).get$name() === this.name;
     },
-    $signature: 299
+    $signature: 256
   };
   A.CoinProposal_fromName_closure0.prototype = {
     call$0() {
@@ -36552,7 +37371,7 @@
     call$1(element) {
       return type$.Cip1852Coins._as(element).name === this.name;
     },
-    $signature: 295
+    $signature: 254
   };
   A.CipProposal.prototype = {
     get$specName() {
@@ -36573,7 +37392,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 31
+    $signature: 41
   };
   A.Cip1852Conf_cardanoIcarusTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36582,7 +37401,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 31
+    $signature: 41
   };
   A.Cip1852Conf_cardanoLedgerMainNet_closure.prototype = {
     call$1(kwargs) {
@@ -36591,7 +37410,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 31
+    $signature: 41
   };
   A.Cip1852Conf_cardanoLedgerTestNet_closure.prototype = {
     call$1(kwargs) {
@@ -36600,7 +37419,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 31
+    $signature: 41
   };
   A.CoinConf.prototype = {
     toString$0(_) {
@@ -36622,7 +37441,7 @@
     call$1(element) {
       return type$.EllipticCurveTypes._as(element).name === this.name;
     },
-    $signature: 285
+    $signature: 251
   };
   A.Ed25519Blake2bPublicKey.prototype = {
     get$curve() {
@@ -36632,11 +37451,11 @@
       return 33;
     },
     get$point() {
-      return this._publicKey._point;
+      return this._ed25519_blake2b_keys$_publicKey._point;
     },
     get$compressed() {
       var t1 = A.List_List$of(B.List_0, true, type$.dynamic);
-      B.JSArray_methods.addAll$1(t1, this._publicKey._point.toBytes$0());
+      B.JSArray_methods.addAll$1(t1, this._ed25519_blake2b_keys$_publicKey._point.toBytes$0());
       return A.List_List$from(t1, true, type$.int);
     },
     $isIPublicKey: 1
@@ -36649,11 +37468,11 @@
       return 33;
     },
     get$point() {
-      return this._ed25519_keys$_publicKey._point;
+      return this._publicKey._point;
     },
     get$compressed() {
       var t1 = A.List_List$of(B.List_0, true, type$.dynamic);
-      B.JSArray_methods.addAll$1(t1, this._ed25519_keys$_publicKey._point.toBytes$0());
+      B.JSArray_methods.addAll$1(t1, this._publicKey._point.toBytes$0());
       return A.List_List$from(t1, true, type$.int);
     },
     $isIPublicKey: 1
@@ -36764,7 +37583,7 @@
     call$1(element) {
       return type$.MoneroCoins._as(element).name === this.name;
     },
-    $signature: 282
+    $signature: 250
   };
   A.MoneroProposal.prototype = {
     get$specName() {
@@ -36822,7 +37641,7 @@
     call$1(element) {
       return type$.SubstrateCoins._as(element).name === this.name;
     },
-    $signature: 271
+    $signature: 249
   };
   A.SubstratePropoosal.prototype = {
     get$specName() {
@@ -37234,7 +38053,7 @@
     call$1(e) {
       return A.CborObject_CborObject$fromDynamic(e);
     },
-    $signature: 262
+    $signature: 247
   };
   A.CborBase64Types.prototype = {};
   A.CborBaseUrlValue.prototype = {
@@ -38020,25 +38839,25 @@
     call$1(e) {
       return type$.CborStringValue._as(e).value;
     },
-    $signature: 259
+    $signature: 241
   };
   A.CborUtils__toStringObject_closure.prototype = {
     call$1(element) {
       return A.BytesUtils_bytesEqual(this.tags, type$.CborBase64Types._as(element).tag);
     },
-    $signature: 68
+    $signature: 95
   };
   A.CborUtils__toStringObject_closure0.prototype = {
     call$1(element) {
       return A.BytesUtils_bytesEqual(this.tags, type$.CborBase64Types._as(element).tag);
     },
-    $signature: 68
+    $signature: 95
   };
   A.CborUtils__decodeBytesString_closure.prototype = {
     call$1(e) {
       return type$.CborBytesValue._as(e).value;
     },
-    $signature: 258
+    $signature: 231
   };
   A.CborBytesTracker.prototype = {
     pushTags$1(tags) {
@@ -38522,13 +39341,13 @@
       }
       return s;
     },
-    $signature: 23
+    $signature: 26
   };
   A.AESLib_initialize__rot24.prototype = {
     call$1(x) {
       return A.rotl32(x, 24);
     },
-    $signature: 19
+    $signature: 21
   };
   A.CurveFp.prototype = {
     $eq(_, other) {
@@ -38714,7 +39533,7 @@
     },
     _precomputeIfNeeded$0() {
       var t1, precomputedPoints, i, t2, newOrder, t3, t4, xCoord, yCoord, doubler, _this = this;
-      if (!_this.generator || _this._precompute.length !== 0)
+      if (!_this.generator || _this._ec_projective_point$_precompute.length !== 0)
         return;
       t1 = _this.order;
       t1.toString;
@@ -38733,7 +39552,7 @@
       if (2 >= t4)
         return A.ioore(t3, 2);
       t4 = type$.JSArray_BigInt;
-      doubler = new A.ProjectiveECCPoint(_this.curve, t1, false, B.List_empty11, A._setArrayType([xCoord, yCoord, t3[2]], t4));
+      doubler = new A.ProjectiveECCPoint(_this.curve, t1, false, B.List_empty13, A._setArrayType([xCoord, yCoord, t3[2]], t4));
       newOrder = newOrder.$mul(0, t2);
       B.JSArray_methods.add$1(precomputedPoints, A._setArrayType([doubler.get$x(), doubler.get$y()], t4));
       for (; i.compareTo$1(0, newOrder) < 0;) {
@@ -38741,7 +39560,7 @@
         doubler = doubler.doublePoint$0().scale$0();
         B.JSArray_methods.add$1(precomputedPoints, A._setArrayType([doubler.get$x(), doubler.get$y()], t4));
       }
-      _this.set$_precompute(precomputedPoints);
+      _this.set$_ec_projective_point$_precompute(precomputedPoints);
     },
     $eq(_, other) {
       var t1, t2, x1, y1, z1, p, zz1, t3, x2, y2, z2, zz2;
@@ -38909,7 +39728,7 @@
       t1 = $.$get$_BigIntImpl_zero();
       t2 = y1.compareTo$1(0, t1);
       if (t2 === 0)
-        return new A.ProjectiveECCPoint(_this.curve, null, false, B.List_empty11, A._setArrayType([t1, t1, t1], type$.JSArray_BigInt));
+        return new A.ProjectiveECCPoint(_this.curve, null, false, B.List_empty13, A._setArrayType([t1, t1, t1], type$.JSArray_BigInt));
       t2 = _this.curve;
       result = _this._double$5(x1, y1, z1, t2.p, t2.a);
       t3 = result[1].compareTo$1(0, t1);
@@ -38918,8 +39737,8 @@
       else
         t3 = true;
       if (t3)
-        return new A.ProjectiveECCPoint(t2, null, false, B.List_empty11, A._setArrayType([t1, t1, t1], type$.JSArray_BigInt));
-      return new A.ProjectiveECCPoint(t2, _this.order, false, B.List_empty11, A._setArrayType([result[0], result[1], result[2]], type$.JSArray_BigInt));
+        return new A.ProjectiveECCPoint(t2, null, false, B.List_empty13, A._setArrayType([t1, t1, t1], type$.JSArray_BigInt));
+      return new A.ProjectiveECCPoint(t2, _this.order, false, B.List_empty13, A._setArrayType([result[0], result[1], result[2]], type$.JSArray_BigInt));
     },
     _addPointsWithZ1$5(x1, y1, x2, y2, p) {
       var $V, x3,
@@ -39076,8 +39895,8 @@
       else
         t3 = true;
       if (t3)
-        return new A.ProjectiveECCPoint(t1, null, false, B.List_empty11, A._setArrayType([t2, t2, t2], type$.JSArray_BigInt));
-      return new A.ProjectiveECCPoint(t1, _this.order, false, B.List_empty11, A._setArrayType([x3, y3, z3], type$.JSArray_BigInt));
+        return new A.ProjectiveECCPoint(t1, null, false, B.List_empty13, A._setArrayType([t2, t2, t2], type$.JSArray_BigInt));
+      return new A.ProjectiveECCPoint(t1, _this.order, false, B.List_empty13, A._setArrayType([x3, y3, z3], type$.JSArray_BigInt));
     },
     _multiplyWithPrecompute$1(scalar) {
       var resultY, i, t2, t3, x2, y2, t4, addResult, _this = this,
@@ -39085,7 +39904,7 @@
         resultZ = $.$get$_BigIntImpl_one(),
         t1 = _this.curve,
         primeField = t1.p,
-        precompute = A.List_List$from(_this._precompute, true, type$.List_BigInt);
+        precompute = A.List_List$from(_this._ec_projective_point$_precompute, true, type$.List_BigInt);
       for (resultY = resultX, i = 0; i < precompute.length; ++i) {
         t2 = precompute[i];
         t3 = J.getInterceptor$asx(t2);
@@ -39154,8 +39973,8 @@
       else
         t3 = true;
       if (t3)
-        return new A.ProjectiveECCPoint(t1, null, false, B.List_empty11, A._setArrayType([t2, t2, t2], type$.JSArray_BigInt));
-      return new A.ProjectiveECCPoint(t1, _this.order, false, B.List_empty11, A._setArrayType([resultX, resultY, resultZ], type$.JSArray_BigInt));
+        return new A.ProjectiveECCPoint(t1, null, false, B.List_empty13, A._setArrayType([t2, t2, t2], type$.JSArray_BigInt));
+      return new A.ProjectiveECCPoint(t1, _this.order, false, B.List_empty13, A._setArrayType([resultX, resultY, resultZ], type$.JSArray_BigInt));
     },
     $mul(_, scalar) {
       var x3, z3, t2, t3, x2, y2, primeField, curveA, nafList, i, y3, x30, double, add, _this = this,
@@ -39170,7 +39989,7 @@
       else
         t1 = true;
       if (t1)
-        return new A.ProjectiveECCPoint(_this.curve, null, false, B.List_empty11, A._setArrayType([x3, x3, x3], type$.JSArray_BigInt));
+        return new A.ProjectiveECCPoint(_this.curve, null, false, B.List_empty13, A._setArrayType([x3, x3, x3], type$.JSArray_BigInt));
       z3 = $.$get$_BigIntImpl_one();
       t1 = scalar.compareTo$1(0, z3);
       if (t1 === 0)
@@ -39179,7 +39998,7 @@
       if (t1 != null)
         scalar = scalar.$mod(0, t1.$mul(0, $.$get$_BigIntImpl_two()));
       _this._precomputeIfNeeded$0();
-      if (_this._precompute.length !== 0)
+      if (_this._ec_projective_point$_precompute.length !== 0)
         return _this._multiplyWithPrecompute$1(scalar);
       _this.scale$0();
       t2 = _this._ec_projective_point$_coords;
@@ -39223,14 +40042,14 @@
       else
         t3 = true;
       if (t3)
-        return new A.ProjectiveECCPoint(t2, null, false, B.List_empty11, A._setArrayType([x3, x3, x3], type$.JSArray_BigInt));
-      return new A.ProjectiveECCPoint(t2, t1, false, B.List_empty11, A._setArrayType([x30, y3, z3], type$.JSArray_BigInt));
+        return new A.ProjectiveECCPoint(t2, null, false, B.List_empty13, A._setArrayType([x3, x3, x3], type$.JSArray_BigInt));
+      return new A.ProjectiveECCPoint(t2, t1, false, B.List_empty13, A._setArrayType([x30, y3, z3], type$.JSArray_BigInt));
     },
     get$hashCode(_) {
       return this.curve.get$hashCode(0) ^ this.get$x().get$hashCode(0) ^ this.get$y().get$hashCode(0);
     },
-    set$_precompute(_precompute) {
-      this._precompute = type$.List_List_BigInt._as(_precompute);
+    set$_ec_projective_point$_precompute(_precompute) {
+      this._ec_projective_point$_precompute = type$.List_List_BigInt._as(_precompute);
     },
     set$_ec_projective_point$_coords(_coords) {
       this._ec_projective_point$_coords = type$.List_BigInt._as(_coords);
@@ -39301,26 +40120,25 @@
       return _this;
     },
     $eq(_, other) {
-      var t1, otherCoords, t2, t3, x1, y1, z1, t10, x2, y2, z2, p, xn1, xn2, yn1, yn2;
+      var otherCoords, t1, t2, x1, y1, z1, x2, y2, z2, t3, p, xn1, xn2, yn1, yn2;
       if (other == null)
         return false;
       if (other instanceof A.EDPoint) {
-        t1 = other._coords;
-        otherCoords = A.List_List$from(t1, true, type$.BigInt);
-        t2 = this._coords;
-        t3 = t2.length;
-        if (0 >= t3)
-          return A.ioore(t2, 0);
-        x1 = t2[0];
-        if (1 >= t3)
-          return A.ioore(t2, 1);
-        y1 = t2[1];
-        if (2 >= t3)
-          return A.ioore(t2, 2);
-        z1 = t2[2];
-        if (3 >= t3)
-          return A.ioore(t2, 3);
-        t10 = t2[3];
+        otherCoords = A.List_List$from(other._coords, true, type$.BigInt);
+        t1 = this._coords;
+        t2 = t1.length;
+        if (0 >= t2)
+          return A.ioore(t1, 0);
+        x1 = t1[0];
+        if (1 >= t2)
+          return A.ioore(t1, 1);
+        y1 = t1[1];
+        if (2 >= t2)
+          return A.ioore(t1, 2);
+        z1 = t1[2];
+        if (3 >= t2)
+          return A.ioore(t1, 3);
+        t1 = t1[3];
         t2 = otherCoords.length;
         if (0 >= t2)
           return A.ioore(otherCoords, 0);
@@ -39331,26 +40149,11 @@
         if (2 >= t2)
           return A.ioore(otherCoords, 2);
         z2 = otherCoords[2];
-        t2 = t1.length;
-        if (t2 !== 0) {
-          if (0 >= t2)
-            return A.ioore(t1, 0);
-          t2 = t1[0];
-          t3 = $.$get$_BigIntImpl_zero();
-          t2 = J.compareTo$1$ns(t2, t3);
-          if (t2 === 0) {
-            if (1 >= t1.length)
-              return A.ioore(t1, 1);
-            t1 = J.compareTo$1$ns(t1[1], t3) === 0;
-          } else
-            t1 = false;
-        } else
-          t1 = true;
-        if (t1) {
-          t1 = $.$get$_BigIntImpl_zero();
-          t2 = x1.compareTo$1(0, t1);
-          if (t2 !== 0)
-            t1 = t10.compareTo$1(0, t1) === 0;
+        if (other.get$isInfinity()) {
+          t2 = $.$get$_BigIntImpl_zero();
+          t3 = x1.compareTo$1(0, t2);
+          if (t3 !== 0)
+            t1 = t1.compareTo$1(0, t2) === 0;
           else
             t1 = true;
           return t1;
@@ -39374,6 +40177,26 @@
     },
     get$hashCode(_) {
       return this.get$x().get$hashCode(0) ^ this.get$y().get$hashCode(0) ^ J.get$hashCode$(this.order);
+    },
+    get$isInfinity() {
+      var t3,
+        t1 = this._coords,
+        t2 = t1.length;
+      if (t2 !== 0) {
+        if (0 >= t2)
+          return A.ioore(t1, 0);
+        t2 = t1[0];
+        t3 = $.$get$_BigIntImpl_zero();
+        t2 = J.compareTo$1$ns(t2, t3);
+        if (t2 === 0) {
+          if (1 >= t1.length)
+            return A.ioore(t1, 1);
+          t1 = J.compareTo$1$ns(t1[1], t3) === 0;
+        } else
+          t1 = false;
+      } else
+        t1 = true;
+      return t1;
     },
     get$curve() {
       return this.curve;
@@ -39657,6 +40480,14 @@
       }
       B.JSArray_methods.setRange$3(out, 0, out.length, tmp);
       return _this;
+    },
+    digest$0() {
+      var out,
+        t1 = this.__BLAKE2b_getDigestLength_F;
+      t1 === $ && A.throwLateFieldNI("getDigestLength");
+      out = A.List_List$filled(t1, 0, false, type$.int);
+      this.finish$1(out);
+      return out;
     },
     _g$13(v, al, bl, cl, dl, ah, bh, ch, dh, ml0, mh0, ml1, mh1) {
       var vla, vha, vlb, vhb, vlc, vhc, vld, vhd, t1, t2, w, x, y, w0, vld0, w1;
@@ -40051,6 +40882,17 @@
     reset$0() {
       this.super$_Keccack$reset();
       return this;
+    },
+    digest$0() {
+      var _this = this,
+        out = A.List_List$filled(_this.getDigestLength, 0, false, type$.int);
+      type$.List_int._as(out);
+      if (!_this._finished)
+        _this._padAndPermute$1(6);
+      else
+        _this._pos = 0;
+      _this._squeeze$1(out);
+      return out;
     }
   };
   A.SHA3256.prototype = {};
@@ -40058,11 +40900,27 @@
     reset$0() {
       this.super$_Keccack$reset();
       return this;
+    },
+    digest$0() {
+      var out = A.List_List$filled(32, 0, false, type$.int);
+      type$.List_int._as(out);
+      if (!this._finished)
+        this._padAndPermute$1(31);
+      this._squeeze$1(out);
+      return out;
     }
   };
   A.SHAKE256.prototype = {};
   A.RIPEMD160.prototype = {};
   A._RIPEMD.prototype = {
+    digest$0() {
+      var out,
+        t1 = this.___RIPEMD__state_F;
+      t1 === $ && A.throwLateFieldNI("_state");
+      out = A.List_List$filled(t1.length * 4, 0, false, type$.int);
+      this.finish$1(out);
+      return out;
+    },
     finish$1(out) {
       var i, t1, _this = this;
       type$.List_int._as(out);
@@ -40103,6 +40961,16 @@
       B.JSArray_methods.setAll$2(t1, 0, A._RidempUtils_readState(t1.length * 4));
       _this._finished = false;
       _this._lengthInBytes = 0;
+      return _this;
+    },
+    update$1(data) {
+      var _this = this;
+      type$.List_int._as(data);
+      if (_this._finished)
+        throw A.wrapException(B.MessageException_NiJ);
+      _this._lengthInBytes = _this._lengthInBytes + data.length;
+      B.JSArray_methods.addAll$1(_this._hash$_buffer, A.BytesUtils_toBytes(data, false));
+      _this._iterate$0();
       return _this;
     },
     _iterate$0() {
@@ -40566,6 +41434,11 @@
       for (t1 = _this._hash$_state, i = 0; i < 8; ++i)
         A.writeUint32BE(t1[i], out, i * 4);
       return _this;
+    },
+    digest$0() {
+      var out = A.List_List$filled(32, 0, false, type$.int);
+      this.finish$1(out);
+      return out;
     },
     reset$0() {
       var _this = this,
@@ -41139,7 +42012,7 @@
   A.SchnorrkelPublicKey.prototype = {};
   A.QuickCrypto__generateRandom_closure.prototype = {
     call$1($length) {
-      var t2, t3, k, t4, t5, out,
+      var t2, t3, k, t4,
         t1 = $.QuickCrypto__randomGenerator;
       if (t1 == null) {
         t1 = type$.int;
@@ -41148,17 +42021,11 @@
         t2 = new A.FortunaPRNG(t2, t3);
         k = new A.SHAKE256(A.List_List$filled(25, 0, false, t1), A.List_List$filled(25, 0, false, t1), A.List_List$filled(200, 0, false, t1));
         k._Keccack$1(64);
-        t4 = A._setArrayType([], type$.JSArray_int);
-        t5 = type$.List_int;
-        k.super$_Keccack$update(t5._as(t4));
-        k.super$_Keccack$update(t5._as(A.FortunaPRNG__generateSeed(32)));
-        t4 = t2.get$_key();
-        out = A.List_List$filled(32, 0, false, t1);
-        t5._as(out);
-        if (!k._finished)
-          k._padAndPermute$1(31);
-        k._squeeze$1(out);
-        B.JSArray_methods.setAll$2(t4, 0, out);
+        t1 = A._setArrayType([], type$.JSArray_int);
+        t4 = type$.List_int;
+        k.super$_Keccack$update(t4._as(t1));
+        k.super$_Keccack$update(t4._as(A.FortunaPRNG__generateSeed(32)));
+        B.JSArray_methods.setAll$2(t2.get$_key(), 0, k.digest$0());
         k.reset$0();
         t2._generateBlocks$2(t3, 1);
         $.QuickCrypto__randomGenerator = t2;
@@ -41166,7 +42033,7 @@
       }
       return t1.nextBytes$1($length);
     },
-    $signature: 255
+    $signature: 228
   };
   A.BlockchainUtilsException.prototype = {
     toString$0(_) {
@@ -41314,32 +42181,32 @@
       t1._registry.$indexSet(0, index, rv);
       return rv;
     },
-    $signature: 254
+    $signature: 226
   };
   A.LayoutConst_rustEnum_closure1.prototype = {
     call$1(value) {
       type$.Map_String_dynamic._as(value);
       return value;
     },
-    $signature: 69
+    $signature: 99
   };
   A.LayoutConst_rustEnum_closure0.prototype = {
     call$1(src) {
       return type$.Map_String_dynamic._as(src);
     },
-    $signature: 69
+    $signature: 99
   };
   A.LayoutConst_compactString_closure0.prototype = {
     call$1(bytes) {
       return A.StringUtils_decode(type$.List_int._as(bytes), false, B.StringEncoding_1);
     },
-    $signature: 70
+    $signature: 100
   };
   A.LayoutConst_compactString_closure.prototype = {
     call$1(src) {
       return A.StringUtils_encode(A._asString(src), B.StringEncoding_1);
     },
-    $signature: 253
+    $signature: 225
   };
   A.LayoutConst_compactMap_closure0.prototype = {
     call$1(data) {
@@ -41358,6 +42225,18 @@
     $signature() {
       return this.K._eval$1("@<0>")._bind$1(this.V)._eval$1("Map<String,@>(Map<1,2>)");
     }
+  };
+  A.LayoutConst_array_closure0.prototype = {
+    call$1(data) {
+      return type$.Map_String_dynamic._as(data).$index(0, "values");
+    },
+    $signature: 222
+  };
+  A.LayoutConst_array_closure.prototype = {
+    call$1(values) {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["values", values], type$.String, type$.dynamic);
+    },
+    $signature: 20
   };
   A.LayoutConst_compactVec_closure.prototype = {
     call$1(data) {
@@ -41385,6 +42264,15 @@
     getSpan$1(bytes) {
       return this.getSpan$2$offset(bytes, 0);
     },
+    serialize$1(source) {
+      var t1, data, enc, encodeBytes;
+      A._instanceType(this)._eval$1("Layout.T")._as(source);
+      t1 = this.span;
+      data = A.LayoutByteWriter$(t1);
+      enc = this.encode$2(source, data);
+      encodeBytes = data._byte_handler$_buffer._bytes;
+      return t1 > 0 ? encodeBytes : B.JSArray_methods.sublist$2(encodeBytes, 0, enc);
+    },
     deserialize$1(bytes) {
       return this.decode$1(new A.LayoutByteReader(A.List_List$unmodifiable(type$.List_int._as(bytes), type$.int)));
     }
@@ -41400,9 +42288,19 @@
         t1 = this.span;
       if (t1 >= 0)
         return t1;
-      decodeLength = bytes.getCompactLengthInfos$1(offset);
-      span = decodeLength.item1;
-      counter = decodeLength.item2;
+      t1 = this.count;
+      if (t1 instanceof A.CompactOffsetLayout) {
+        decodeLength = bytes.getCompactLengthInfos$1(offset);
+        span = decodeLength.item1;
+        counter = decodeLength.item2;
+      } else {
+        if (t1 instanceof A.ExternalLayout) {
+          bytes.toString;
+          counter = A._asInt(t1.decode$2$offset(bytes, offset).value);
+        } else
+          counter = 0;
+        span = 0;
+      }
       t1 = this.elementLayout;
       t2 = t1.span;
       if (t2 > 0)
@@ -41418,15 +42316,21 @@
       return this.getSpan$2$offset(bytes, 0);
     },
     decode$2$offset(bytes, offset) {
-      var startOffset, count, t3, i,
+      var decodeLength, startOffset, count, t3, i,
         t1 = this.$ti,
         decoded = A._setArrayType([], t1._eval$1("JSArray<1>")),
-        decodeLength = bytes.getCompactLengthInfos$1(offset),
+        t2 = this.count;
+      if (t2 instanceof A.CompactOffsetLayout) {
+        decodeLength = bytes.getCompactLengthInfos$1(offset);
         t2 = decodeLength.item1;
-      if (typeof t2 !== "number")
-        return A.iae(t2);
-      startOffset = offset + t2;
-      count = decodeLength.item2;
+        if (typeof t2 !== "number")
+          return A.iae(t2);
+        startOffset = offset + t2;
+        count = decodeLength.item2;
+      } else {
+        count = A._asInt(t2.decode$2$offset(bytes, offset).value);
+        startOffset = offset;
+      }
       for (t2 = this.elementLayout, t3 = t1._precomputed1, i = 0; i < count;) {
         B.JSArray_methods.add$1(decoded, t3._as(t2.decode$2$offset(bytes, startOffset).value));
         startOffset += t2.getSpan$2$offset(bytes, startOffset);
@@ -41440,9 +42344,18 @@
     encode$3$offset(source, writer, offset) {
       var t1, span;
       this.$ti._eval$1("List<1>")._as(source);
-      t1 = J.getInterceptor$asx(source);
-      span = this.count.encode$3$offset(t1.get$length(source), writer, offset);
-      return t1.fold$1$2(source, span, new A.SequenceLayout_encode_closure(this, writer, offset), type$.int);
+      t1 = this.count;
+      if (t1 instanceof A.CompactOffsetLayout)
+        span = t1.encode$3$offset(J.get$length$asx(source), writer, offset);
+      else {
+        if (t1 instanceof A.ExternalLayout)
+          t1.encode$3$offset(J.get$length$asx(source), writer, offset);
+        span = 0;
+      }
+      return J.fold$1$2$ax(source, span, new A.SequenceLayout_encode_closure(this, writer, offset), type$.int);
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
     }
   };
   A.SequenceLayout_encode_closure.prototype = {
@@ -41467,6 +42380,9 @@
       var encodeLength = B.C_SubstrateScaleCUintEncoder.encode$1(B.JSInt_methods.toString$0(A._asInt(source)));
       writer.setAll$2(0, offset, encodeLength);
       return encodeLength.length;
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
     }
   };
   A.CompactBytes.prototype = {
@@ -41497,6 +42413,27 @@
       $length = $.$get$CompactBytes__lengthCodec().encode$3$offset(t1.get$length(source), writer, offset);
       writer.setAll$2(0, offset + $length, source);
       return t1.get$length(source) + $length;
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
+    }
+  };
+  A.ConstantLayout.prototype = {
+    decode$2$offset(bytes, offset) {
+      return new A.LayoutDecodeResult(0, this.value, this.$ti._eval$1("LayoutDecodeResult<1>"));
+    },
+    decode$1(bytes) {
+      return this.decode$2$offset(bytes, 0);
+    },
+    encode$3$offset(source, writer, offset) {
+      this.$ti._precomputed1._as(source);
+      return 0;
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
+    },
+    get$value() {
+      return this.value;
     }
   };
   A.CustomLayout.prototype = {
@@ -41536,6 +42473,9 @@
       keyBytes = this.keyLayout.encode$3$offset(source.key, writer, offset);
       return keyBytes + this.valueLayout.encode$3$offset(source.value, writer, offset + keyBytes);
     },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
+    },
     getSpan$2$offset(bytes, offset) {
       var keySpan = this.keyLayout.layout.getSpan$2$offset(bytes, offset);
       return keySpan + this.valueLayout.getSpan$2$offset(bytes, offset + keySpan);
@@ -41553,6 +42493,9 @@
     },
     encode$3$offset(source, writer, offset) {
       return 0;
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
     }
   };
   A.ExternalLayout.prototype = {};
@@ -41600,6 +42543,9 @@
     },
     encode$3$offset(source, writer, offset) {
       return this.layout.encode$3$offset(A._asInt(source), writer, offset);
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
     }
   };
   A.OffsetLayout.prototype = {
@@ -41612,6 +42558,9 @@
     encode$3$offset(source, writer, offset) {
       var t1 = this.layout;
       return t1.layout.encode$3$offset(t1.$ti._precomputed1._as(A._asInt(source)), writer, offset + this.offset);
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
     }
   };
   A.CompactIntLayout.prototype = {
@@ -41683,6 +42632,9 @@
       t1 = _this.get$size();
       return t1 == null ? encode + 1 : t1;
     },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
+    },
     getSpan$2$offset(bytes, offset) {
       var t1, _this = this;
       if (_this.get$size() != null) {
@@ -41716,6 +42668,9 @@
     },
     encode$3$offset(source, writer, offset) {
       return this.layout.encode$3$offset(this.$ti._precomputed1._as(source), writer, offset);
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
     }
   };
   A.RawBytesLayout.prototype = {
@@ -41825,13 +42780,13 @@
       type$.Layout_dynamic._as(e);
       return A.getRuntimeTypeOfDartObject(e).toString$0(0) + ": " + A.S(e.property);
     },
-    $signature: 252
+    $signature: 221
   };
   A.StructLayout_StructLayout_closure0.prototype = {
     call$2(span, fd) {
       return A._asInt(span) + type$.Layout_dynamic._as(fd).getSpan$1(null);
     },
-    $signature: 71
+    $signature: 105
   };
   A.StructLayout_getSpan_closure.prototype = {
     call$2(span, fd) {
@@ -41849,7 +42804,7 @@
         return A.iae(t3);
       return span + t3;
     },
-    $signature: 71
+    $signature: 105
   };
   A.Union.prototype = {
     getSpan$2$offset(bytes, offset) {
@@ -41925,6 +42880,9 @@
       }
       return vlo.encode$3$offset(source, writer, offset);
     },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
+    },
     getVariant$2$offset(variantBytes, offset) {
       return this._registry.$index(0, this.discriminator.layout.decode$2$offset(variantBytes, offset).value);
     }
@@ -41933,7 +42891,7 @@
     call$1(e) {
       return A._asString(e);
     },
-    $signature: 18
+    $signature: 15
   };
   A.VariantLayout.prototype = {
     getSpan$2$offset(bytes, offset) {
@@ -42001,6 +42959,9 @@
       } else
         span = contentOffset;
       return span;
+    },
+    encode$2(source, writer) {
+      return this.encode$3$offset(source, writer, 0);
     }
   };
   A.LayoutException.prototype = {
@@ -42035,8 +42996,9 @@
       A._asString(e);
       return e + ": " + A.S(this.$this.details.$index(0, e));
     },
-    $signature: 18
+    $signature: 15
   };
+  A.SolanaVerifier.prototype = {};
   A.SS58ChecksumError.prototype = {
     toString$0(_) {
       return this.message;
@@ -42049,7 +43011,7 @@
     call$1(e) {
       return A._asInt(e) & 255;
     },
-    $signature: 19
+    $signature: 21
   };
   A.BigRational.prototype = {
     $mul(_, other) {
@@ -42158,13 +43120,13 @@
           return t1.nextInt$1(256);
       }
     },
-    $signature: 19
+    $signature: 21
   };
   A.UUID_generateUUIDv4_closure0.prototype = {
     call$1(byte) {
       return B.JSString_methods.padLeft$2(B.JSInt_methods.toRadixString$1(A._asInt(byte), 16), 2, "0");
     },
-    $signature: 112
+    $signature: 89
   };
   A.CanonicalizedMap.prototype = {
     $index(_, key) {
@@ -42327,7 +43289,7 @@
       A._asString(key);
       return A._asStringQ(value) == null;
     },
-    $signature: 246
+    $signature: 214
   };
   A.TendermintRequestDetails.prototype = {};
   A.TendermintRequestStatus.prototype = {};
@@ -42401,7 +43363,7 @@
     call$1(e) {
       return A.LinkedHashMap_LinkedHashMap$from(type$.Map_dynamic_dynamic._as(e), type$.String, type$.dynamic);
     },
-    $signature: 33
+    $signature: 20
   };
   A.BaseClient.prototype = {
     _sendUnstreamed$5(method, url, headers, body, encoding) {
@@ -42457,13 +43419,13 @@
     call$2(key1, key2) {
       return A._asString(key1).toLowerCase() === A._asString(key2).toLowerCase();
     },
-    $signature: 239
+    $signature: 211
   };
   A.BaseRequest_closure0.prototype = {
     call$1(key) {
       return B.JSString_methods.get$hashCode(A._asString(key).toLowerCase());
     },
-    $signature: 234
+    $signature: 210
   };
   A.BaseResponse.prototype = {
     BaseResponse$7$contentLength$headers$isRedirect$persistentConnection$reasonPhrase$request(statusCode, contentLength, headers, isRedirect, persistentConnection, reasonPhrase, request) {
@@ -42576,14 +43538,14 @@
       t2.BaseResponse$7$contentLength$headers$isRedirect$persistentConnection$reasonPhrase$request(t3, t4, t6, false, true, t1, t5);
       _this.completer.complete$1(t2);
     },
-    $signature: 34
+    $signature: 29
   };
   A.BrowserClient_send_closure0.prototype = {
     call$1(_) {
       type$.JSObject._as(_);
       this.completer.completeError$2(new A.ClientException("XMLHttpRequest error.", this.request.url), A.StackTrace_current());
     },
-    $signature: 34
+    $signature: 29
   };
   A.ByteStream.prototype = {
     toBytes$0() {
@@ -42598,7 +43560,7 @@
     call$1(bytes) {
       return this.completer.complete$1(new Uint8Array(A._ensureNativeList(type$.List_int._as(bytes))));
     },
-    $signature: 226
+    $signature: 208
   };
   A.ClientException.prototype = {
     toString$0(_) {
@@ -42658,7 +43620,7 @@
     call$1(key) {
       return A._asString(key).toLowerCase();
     },
-    $signature: 18
+    $signature: 15
   };
   A.MediaType.prototype = {
     change$1$parameters(parameters) {
@@ -42742,7 +43704,7 @@
       scanner.expectDone$0();
       return A.MediaType$(t4, t5, parameters);
     },
-    $signature: 216
+    $signature: 206
   };
   A.MediaType_toString_closure.prototype = {
     call$2(attribute, value) {
@@ -42762,13 +43724,13 @@
       } else
         t1._contents = t3 + value;
     },
-    $signature: 212
+    $signature: 205
   };
   A.MediaType_toString__closure.prototype = {
     call$1(match) {
       return "\\" + A.S(match.$index(0, 0));
     },
-    $signature: 45
+    $signature: 54
   };
   A.expectQuotedString_closure.prototype = {
     call$1(match) {
@@ -42776,7 +43738,7 @@
       t1.toString;
       return t1;
     },
-    $signature: 45
+    $signature: 54
   };
   A.MRTNativePluginException.prototype = {
     toString$0(_) {
@@ -42798,7 +43760,7 @@
     call$1(e) {
       return type$.WalletEventTypes._as(e)._name === this.name;
     },
-    $signature: 208
+    $signature: 203
   };
   A.WalletEventTypes_fromName_closure0.prototype = {
     call$0() {
@@ -42817,7 +43779,7 @@
     call$1(e) {
       return A._asString(e);
     },
-    $signature: 18
+    $signature: 15
   };
   A.WebEventStream_stream_closure.prototype = {
     call$1($event) {
@@ -42825,13 +43787,13 @@
       t1 = t1 == null ? null : A.dartify(t1);
       this.controller.add$1(0, this.T._as(t1));
     },
-    $signature: 34
+    $signature: 29
   };
   A.WebEventStream_stream_closure0.prototype = {
     call$0() {
       this._this.removeEventListener(this.type, this.callback);
     },
-    $signature: 12
+    $signature: 14
   };
   A.MrtNativeWeb.prototype = {};
   A.ApiProviderException.prototype = {
@@ -42981,13 +43943,13 @@
     call$1(element) {
       return type$.ContentType._as(element).value === this.value;
     },
-    $signature: 206
+    $signature: 201
   };
   A.ContentType_fromValue_closure0.prototype = {
     call$0() {
       throw A.wrapException($.$get$WalletExceptionConst_dataVerificationFailed());
     },
-    $signature: 204
+    $signature: 196
   };
   A.APPImage.prototype = {
     toCbor$0() {
@@ -43140,7 +44102,7 @@
     call$1(_) {
       this.complete.call$0();
     },
-    $signature: 25
+    $signature: 24
   };
   A.MethodUtils_call_closure.prototype = {
     call$1$0($T) {
@@ -43172,7 +44134,7 @@
     call$1(match) {
       return "_" + match.group$1(0).toLowerCase();
     },
-    $signature: 45
+    $signature: 54
   };
   A.WebsocketWeb.prototype = {
     WebsocketWeb$_$1(_socket) {
@@ -43195,25 +44157,25 @@
         t2.cancel$0();
       t1._onOpen = null;
     },
-    $signature: 16
+    $signature: 17
   };
   A.WebsocketWeb$__closure0.prototype = {
     call$1($event) {
       this.$this._streamController.add$1(0, $event);
     },
-    $signature: 16
+    $signature: 17
   };
   A.WebsocketWeb$__closure1.prototype = {
     call$1($event) {
       this.$this._streamController.close$0();
     },
-    $signature: 16
+    $signature: 17
   };
   A.WebsocketWeb_connect_closure.prototype = {
     call$1(_) {
       this.completer.complete$1(A.WebsocketWeb$_(this.socket));
     },
-    $signature: 201
+    $signature: 195
   };
   A.CustomCoins.prototype = {
     get$coinName() {
@@ -43254,7 +44216,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 74
+    $signature: 121
   };
   A.CustomCurrencyConf_byronLegacyTestnet_closure.prototype = {
     call$1(kwargs) {
@@ -43263,7 +44225,7 @@
     call$0() {
       return this.call$1(null);
     },
-    $signature: 74
+    $signature: 121
   };
   A.AddressDerivationType.prototype = {
     _enumToString$0() {
@@ -43370,7 +44332,7 @@
       type$.NetworkType._as(e);
       return A.BytesUtils_bytesEqual(this._box_0.tag, e.tag);
     },
-    $signature: 53
+    $signature: 126
   };
   A.NetworkType_fromTag_closure0.prototype = {
     call$0() {
@@ -43382,7 +44344,7 @@
     call$1(e) {
       return type$.NetworkType._as(e).name === this.name;
     },
-    $signature: 53
+    $signature: 126
   };
   A.NetworkType_fromName_closure0.prototype = {
     call$0() {
@@ -43512,7 +44474,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 188
+    $signature: 189
   };
   A.NetworkClient_init_closure.prototype = {
     call$0() {
@@ -43541,7 +44503,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 180
+    $signature: 181
   };
   A._NetworkClient_Object_BaseRepository.prototype = {};
   A.BitcoinElectrumClient.prototype = {
@@ -43650,7 +44612,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 44
+    $signature: 56
   };
   A.BitcoinExplorerApiProvider.prototype = {
     get$service() {
@@ -43812,7 +44774,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 155
+    $signature: 157
   };
   A.EthereumClient.prototype = {
     get$service() {
@@ -43981,7 +44943,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 75
+    $signature: 131
   };
   A.RippleClient.prototype = {
     get$service() {
@@ -44044,7 +45006,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 153
+    $signature: 156
   };
   A.SolanaClient.prototype = {
     get$service() {
@@ -44134,7 +45096,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 44
+    $signature: 56
   };
   A.SubstrateClient.prototype = {
     get$service() {
@@ -44284,7 +45246,7 @@
       A._asInt(a);
       return B.JSInt_methods.compareTo$1(A._asInt(b), a);
     },
-    $signature: 23
+    $signature: 26
   };
   A._SubstrateClient_NetworkClient_SubstrateRepository.prototype = {};
   A.SubstrateGetApiAt.prototype = {
@@ -44292,13 +45254,7 @@
       return "state_call";
     },
     toJson$0() {
-      var t1 = A.IntegerLayout$(4, B.C_Endian0, null, false),
-        t2 = A._instanceType(t1)._eval$1("Layout.T")._as(this.version),
-        t3 = t1.span,
-        data = A.LayoutByteWriter$(t3),
-        enc = t1.encode$2(t2, data),
-        encodeBytes = data._byte_handler$_buffer._bytes;
-      return ["Metadata_metadata_at_version", A.BytesUtils_toHexString(t3 > 0 ? encodeBytes : B.JSArray_methods.sublist$2(encodeBytes, 0, enc), true, "0x"), null];
+      return ["Metadata_metadata_at_version", A.BytesUtils_toHexString(A.IntegerLayout$(4, B.C_Endian0, null, false).serialize$1(this.version), true, "0x"), null];
     },
     onResonse$1(result) {
       var toBytes, decode, api, t1, exception, _null = null;
@@ -44426,7 +45382,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 152
+    $signature: 154
   };
   A.TronClient.prototype = {
     get$service() {
@@ -44517,7 +45473,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 44
+    $signature: 56
   };
   A._TronClient_NetworkClient_CryptoWokerImpl.prototype = {};
   A.TronRequestGetAccountInfo.prototype = {
@@ -44546,7 +45502,7 @@
       $.$get$PlatformInterface_instance();
       return B.JSArray_methods.contains$1(t1, B.AppPlatform_1);
     },
-    $signature: 76
+    $signature: 59
   };
   A.ProvidersConst_getDefaultService_closure0.prototype = {
     call$1(element) {
@@ -44555,13 +45511,13 @@
       t1 = this.service;
       return element.serviceName === t1.serviceName && element.get$protocol() === t1.get$protocol();
     },
-    $signature: 76
+    $signature: 59
   };
   A.ProvidersConst_getDefaultService_closure1.prototype = {
     call$0() {
       return B.JSArray_methods.get$first(this.networkServices);
     },
-    $signature: 77
+    $signature: 135
   };
   A.APIProvider.prototype = {
     toProvider$1$0($T) {
@@ -44593,7 +45549,7 @@
     call$1(element) {
       return type$.BitcoinExplorerProviderType._as(element)._name === this.name;
     },
-    $signature: 142
+    $signature: 153
   };
   A.BitcoinExplorerProviderType_fromName_closure0.prototype = {
     call$0() {
@@ -44611,7 +45567,7 @@
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.ElectrumAPIProvider.prototype = {
     get$protocol() {
@@ -44639,7 +45595,7 @@
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.BaseBitcoinAPIProvider.prototype = {};
   A.CardanoAPIProvider.prototype = {
@@ -44652,7 +45608,7 @@
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.CosmosAPIProvider.prototype = {
     get$variabels() {
@@ -44664,7 +45620,7 @@
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.EthereumAPIProvider.prototype = {
     get$variabels() {
@@ -44676,7 +45632,7 @@
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.RippleAPIProvider.prototype = {
     get$variabels() {
@@ -44688,14 +45644,14 @@
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.SolanaAPIProvider.prototype = {};
   A.SolanaAPIProvider_SolanaAPIProvider$fromCborBytesOrObject_closure.prototype = {
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.SubstrateAPIProvider.prototype = {
     get$variabels() {
@@ -44707,7 +45663,7 @@
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.TonAPIProvider.prototype = {
     get$variabels() {
@@ -44719,14 +45675,14 @@
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.TronAPIProvider.prototype = {};
   A.TronAPIProvider_TronAPIProvider$fromCborBytesOrObject_closure.prototype = {
     call$1(e) {
       return A.ProviderAuth_ProviderAuth$fromCborBytesOrObject(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.APIServiceTracker.prototype = {
     _checkStatus$0() {
@@ -44755,7 +45711,7 @@
     call$1(element) {
       return type$.ApiRequest._as(element).error == null;
     },
-    $signature: 137
+    $signature: 143
   };
   A.HTTPService.prototype = {
     get$protocol() {
@@ -45106,7 +46062,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 15
+    $signature: 16
   };
   A.HTTPService_providerPOST_closure.prototype = {
     call$0() {
@@ -45152,7 +46108,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 116
+    $signature: 139
   };
   A.HTTPService_providerGET_closure.prototype = {
     call$0() {
@@ -45199,7 +46155,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 116
+    $signature: 139
   };
   A.BaseSocketService.prototype = {
     providerCaller$2(t, param) {
@@ -45463,7 +46419,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 15
+    $signature: 16
   };
   A.SSLService_connect__closure.prototype = {
     call$0() {
@@ -45496,13 +46452,13 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 139
+    $signature: 315
   };
   A.SSLService_connect___closure.prototype = {
     call$1(certificate) {
       return true;
     },
-    $signature: 73
+    $signature: 66
   };
   A.SSLService_post_closure.prototype = {
     call$0() {
@@ -45535,7 +46491,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 40
+    $signature: 45
   };
   A.TCPService.prototype = {
     get$isConnected() {
@@ -45641,7 +46597,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 15
+    $signature: 16
   };
   A.TCPService_connect__closure.prototype = {
     call$0() {
@@ -45674,7 +46630,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 141
+    $signature: 229
   };
   A.TCPService_post_closure.prototype = {
     call$0() {
@@ -45707,7 +46663,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 40
+    $signature: 45
   };
   A.WebSocketService.prototype = {
     get$isConnected() {
@@ -45823,7 +46779,7 @@
   A.WebSocketService__onClose_closure.prototype = {
     call$1(e) {
     },
-    $signature: 25
+    $signature: 24
   };
   A.WebSocketService_connect_closure.prototype = {
     call$0() {
@@ -45873,7 +46829,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 15
+    $signature: 16
   };
   A.WebSocketService_connect__closure.prototype = {
     call$0() {
@@ -45902,7 +46858,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 143
+    $signature: 144
   };
   A.WebSocketService_addMessage_closure.prototype = {
     call$0() {
@@ -45939,7 +46895,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 40
+    $signature: 45
   };
   A.ProviderAuthType.prototype = {
     _enumToString$0() {
@@ -45950,7 +46906,7 @@
     call$1(e) {
       return type$.ProviderAuthType._as(e)._name === this.name;
     },
-    $signature: 144
+    $signature: 145
   };
   A.ProviderAuthType_fromName_closure0.prototype = {
     call$0() {
@@ -45988,7 +46944,7 @@
     call$1(element) {
       return type$.ServiceProtocol._as(element).id === this.id;
     },
-    $signature: 145
+    $signature: 146
   };
   A.ApiRequest.prototype = {};
   A.SocketRequestCompeleter.prototype = {};
@@ -46606,7 +47562,7 @@
       t1 = t1.$index(0, "result");
       return new A.EthereumSubscribeResult(t2, t1 == null ? type$.Object._as(t1) : t1);
     },
-    $signature: 146
+    $signature: 147
   };
   A.RippleWebsocketService.prototype = {
     call$2(params, timeout) {
@@ -46774,19 +47730,19 @@
         A.throwExpression($.$get$WalletExceptionConst_invalidAccountDetails());
       return new A.BitcoinMultiSigSignerDetais(A.BytesUtils_toHexString(publicKey, true, null), weight, keyIndex);
     },
-    $signature: 147
+    $signature: 148
   };
   A.BitcoinMultiSignatureAddress_BitcoinMultiSignatureAddress$fromCborBytesOrObject_closure0.prototype = {
     call$1(e) {
       return A._asString(e.get$value());
     },
-    $signature: 148
+    $signature: 149
   };
   A.BitcoinMultiSignatureAddress_toP2shAddress_closure.prototype = {
     call$1(e) {
       return type$.P2shAddressType._as(e).toString$0(0);
     },
-    $signature: 149
+    $signature: 150
   };
   A._BitcoinMultiSigSignerDetais_Object_Equatable.prototype = {};
   A._BitcoinMultiSigSignerDetais_Object_Equatable_CborSerializable.prototype = {};
@@ -46831,7 +47787,7 @@
     call$1(e) {
       return A.TonJettonToken_TonJettonToken$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 150
+    $signature: 151
   };
   A._ITonAddress_ChainAccount_Equatable.prototype = {};
   A.TronMultiSigSignerDetais.prototype = {
@@ -46852,7 +47808,7 @@
         keyIndex = A.Bip32AddressIndex_Bip32AddressIndex$fromCborBytesOrObject(A.ExtractCborList_getCborTag(cbor, 2));
       return new A.TronMultiSigSignerDetais(A.BytesUtils_toHexString(publicKey, true, null), weight, keyIndex);
     },
-    $signature: 151
+    $signature: 152
   };
   A._TronMultiSigSignerDetais_Object_Equatable.prototype = {};
   A._TronMultiSigSignerDetais_Object_Equatable_CborSerializable.prototype = {};
@@ -46867,13 +47823,13 @@
     call$1(e) {
       return A.TronTRC20Token_TronTRC20Token$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 132
+    $signature: 136
   };
   A.ITronAddress_ITronAddress$fromCborBytesOrObject_closure0.prototype = {
     call$1(e) {
       return A.TronTRC10Token_TronTRC10Token$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 131
+    $signature: 133
   };
   A.ITronMultisigAddress.prototype = {
     get$variabels() {
@@ -46884,13 +47840,13 @@
     call$1(e) {
       return A.TronTRC20Token_TronTRC20Token$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 132
+    $signature: 136
   };
   A.ITronMultisigAddress_ITronMultisigAddress$fromCborBytesOrObject_closure0.prototype = {
     call$1(e) {
       return A.TronTRC10Token_TronTRC10Token$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 131
+    $signature: 133
   };
   A._ITronAddress_ChainAccount_Equatable.prototype = {};
   A.RippleMultiSigSignerDetais.prototype = {
@@ -46911,7 +47867,7 @@
         keyIndex = A.Bip32AddressIndex_Bip32AddressIndex$fromCborBytesOrObject(A.ExtractCborList_getCborTag(cbor, 2));
       return new A.RippleMultiSigSignerDetais(A.BytesUtils_toHexString(publicKey, true, null), weight, keyIndex);
     },
-    $signature: 154
+    $signature: 155
   };
   A._RippleMultiSigSignerDetais_Object_Equatable.prototype = {};
   A._RippleMultiSigSignerDetais_Object_Equatable_CborSerializable.prototype = {};
@@ -46926,13 +47882,13 @@
     call$1(e) {
       return A.RippleIssueToken_RippleIssueToken$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 129
+    $signature: 132
   };
   A.IXRPAddress_IXRPAddress$fromCborBytesOrObject_closure0.prototype = {
     call$1(e) {
       return A.RippleNFToken_RippleNFToken$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 128
+    $signature: 130
   };
   A.IXRPMultisigAddress.prototype = {
     get$variabels() {
@@ -46944,13 +47900,13 @@
     call$1(e) {
       return A.RippleIssueToken_RippleIssueToken$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 129
+    $signature: 132
   };
   A.IXRPMultisigAddress_IXRPMultisigAddress$fromCborBytesOrObject_closure0.prototype = {
     call$1(e) {
       return A.RippleNFToken_RippleNFToken$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 128
+    $signature: 130
   };
   A._IXRPAddress_ChainAccount_Equatable.prototype = {};
   A.Chain.prototype = {
@@ -46966,7 +47922,7 @@
     call$0() {
       return A.WalletNetwork_fromCborBytesOrObject(A.ExtractCborList_getCborTag(this.values, 6));
     },
-    $signature: 157
+    $signature: 158
   };
   A.Chain_Chain$deserialize_closure0.prototype = {
     call$0() {
@@ -46974,124 +47930,124 @@
       t1.toString;
       return A.APIProvider_APIProvider$fromCborBytesOrObject(t1, A.ExtractCborList_getCborTag(this.values, 7));
     },
-    $signature: 77
+    $signature: 135
   };
   A.ADAChain.prototype = {};
   A.ADAChain_ADAChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.ICardanoAddress);
     },
-    $signature: 158
+    $signature: 159
   };
   A.ADAChain_ADAChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.ADAAddress);
     },
-    $signature: 159
+    $signature: 160
   };
   A.BitcoinChain.prototype = {};
   A.BitcoinChain_BitcoinChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.IBitcoinAddress);
     },
-    $signature: 160
+    $signature: 161
   };
   A.BitcoinChain_BitcoinChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.BitcoinBaseAddress);
     },
-    $signature: 161
+    $signature: 162
   };
   A.CosmosChain.prototype = {};
   A.CosmosChain_CosmosChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.ICosmosAddress);
     },
-    $signature: 162
+    $signature: 163
   };
   A.CosmosChain_CosmosChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.CosmosBaseAddress);
     },
-    $signature: 163
+    $signature: 164
   };
   A.EthereumChain.prototype = {};
   A.EthereumChain_EthereumChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.IEthAddress);
     },
-    $signature: 164
+    $signature: 165
   };
   A.EthereumChain_EthereumChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.ETHAddress);
     },
-    $signature: 165
+    $signature: 166
   };
   A.SolanaChain.prototype = {};
   A.SolanaChain_SolanaChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.ISolanaAddress);
     },
-    $signature: 166
+    $signature: 167
   };
   A.SolanaChain_SolanaChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.SolAddress);
     },
-    $signature: 167
+    $signature: 168
   };
   A.SubstrateChain.prototype = {};
   A.SubstrateChain_SubstrateChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.ISubstrateAddress);
     },
-    $signature: 168
+    $signature: 169
   };
   A.SubstrateChain_SubstrateChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.SubstrateAddress);
     },
-    $signature: 169
+    $signature: 170
   };
   A.TonChain.prototype = {};
   A.TonChain_TonChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.ITonAddress);
     },
-    $signature: 170
+    $signature: 171
   };
   A.TonChain_TonChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.TonAddress);
     },
-    $signature: 171
+    $signature: 172
   };
   A.TronChain.prototype = {};
   A.TronChain_TronChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.ITronAddress);
     },
-    $signature: 172
+    $signature: 173
   };
   A.TronChain_TronChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.TronAddress);
     },
-    $signature: 173
+    $signature: 174
   };
   A.RippleChain.prototype = {};
   A.RippleChain_RippleChain$deserialize_closure.prototype = {
     call$0() {
       return A.CryptoAddress_fromCbor(this.network, this.i).cast$1$0(0, type$.IXRPAddress);
     },
-    $signature: 174
+    $signature: 175
   };
   A.RippleChain_RippleChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.ContactCore_fromCborBytesOrObject(this.network, type$.nullable_CborObject._as(e), type$.XRPAddress);
     },
-    $signature: 175
+    $signature: 176
   };
   A._Chain_Object_CborSerializable.prototype = {};
   A.BitcoinContact.prototype = {
@@ -47421,7 +48377,7 @@
     call$1(e) {
       return A.BaseBitcoinAPIProvider_BaseBitcoinAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 176
+    $signature: 177
   };
   A.CardanoNetworkParams.prototype = {
     updateProviders$1(updateProviders) {
@@ -47434,7 +48390,7 @@
     call$1(e) {
       return A.CardanoAPIProvider_CardanoAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 177
+    $signature: 178
   };
   A.CosmosNetworkParams.prototype = {
     updateProviders$1(updateProviders) {
@@ -47447,13 +48403,13 @@
     call$1(e) {
       return A.CosmosAPIProvider_CosmosAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 178
+    $signature: 179
   };
   A.CosmosNetworkParams_CosmosNetworkParams$fromCborBytesOrObject_closure0.prototype = {
     call$1(e) {
       return A.CosmosNativeCoin_CosmosNativeCoin$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 179
+    $signature: 180
   };
   A.EthereumNetworkParams.prototype = {
     updateProviders$1(updateProviders) {
@@ -47466,7 +48422,7 @@
     call$1(e) {
       return A.EthereumAPIProvider_EthereumAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 127
+    $signature: 128
   };
   A.RippleNetworkParams.prototype = {
     updateProviders$1(updateProviders) {
@@ -47479,7 +48435,7 @@
     call$1(e) {
       return A.RippleAPIProvider_RippleAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 181
+    $signature: 182
   };
   A.SolanaNetworkParams.prototype = {
     updateProviders$1(updateProviders) {
@@ -47492,7 +48448,7 @@
     call$1(e) {
       return A.SolanaAPIProvider_SolanaAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 182
+    $signature: 183
   };
   A.SubstrateNetworkParams.prototype = {
     updateProviders$1(updateProviders) {
@@ -47505,7 +48461,7 @@
     call$1(e) {
       return A.SubstrateAPIProvider_SubstrateAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 183
+    $signature: 184
   };
   A.TonNetworkParams.prototype = {
     updateProviders$1(updateProviders) {
@@ -47519,7 +48475,7 @@
     call$1(e) {
       return A.TonAPIProvider_TonAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 184
+    $signature: 185
   };
   A.TronNetworkParams.prototype = {
     updateProviders$1(updateProviders) {
@@ -47532,13 +48488,13 @@
     call$1(e) {
       return A.TronAPIProvider_TronAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 185
+    $signature: 186
   };
   A.TronNetworkParams_TronNetworkParams$fromCborBytesOrObject_closure0.prototype = {
     call$1(e) {
       return A.EthereumAPIProvider_EthereumAPIProvider$fromCborBytesOrObject(null, type$.nullable_CborObject._as(e));
     },
-    $signature: 127
+    $signature: 128
   };
   A.CardanoAddrDetails.prototype = {
     toAddress$2(coin, testnet) {
@@ -47605,7 +48561,7 @@
     call$1(e) {
       return type$.CosmosNetworkTypes._as(e).value === this.value;
     },
-    $signature: 186
+    $signature: 187
   };
   A.CosmosNetworkTypes_CosmosNetworkTypes$fromValue_closure0.prototype = {
     call$0() {
@@ -47614,6 +48570,44 @@
     $signature: 2
   };
   A.EIP712Domain.prototype = {};
+  A.SolanaWeb3TransactionResponseType.prototype = {
+    _enumToString$0() {
+      return "SolanaWeb3TransactionResponseType." + this._name;
+    }
+  };
+  A.SolanaWeb3TransactionResponseType_fromName_closure.prototype = {
+    call$1(e) {
+      return type$.SolanaWeb3TransactionResponseType._as(e)._name === this.name;
+    },
+    $signature: 188
+  };
+  A.SolanaWeb3TransactionResponse.prototype = {};
+  A.SolanaWeb3TransactionErrorResponse.prototype = {
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["type", "error", "id", this.id, "message", this.message, "signer", this.signer], type$.String, type$.dynamic);
+    },
+    get$type() {
+      return B.SolanaWeb3TransactionResponseType_2;
+    }
+  };
+  A.SolanaWeb3TransactionSignResponse.prototype = {
+    toJson$0() {
+      var _this = this;
+      return A.LinkedHashMap_LinkedHashMap$_literal(["type", "sign", "id", _this.id, "signature", _this.signature, "signer", _this.signer, "signerAddressBytes", _this.signerAddressBytes], type$.String, type$.dynamic);
+    },
+    get$type() {
+      return B.SolanaWeb3TransactionResponseType_1;
+    }
+  };
+  A.SolanaWeb3TransactionSendResponse.prototype = {
+    get$type() {
+      return B.SolanaWeb3TransactionResponseType_0;
+    },
+    toJson$0() {
+      var _this = this;
+      return A.LinkedHashMap_LinkedHashMap$_literal(["id", _this.id, "type", "send", "tx_id", _this.txHash, "signer", _this.signer, "signerAddressBytes", _this.signerAddressBytes], type$.String, type$.dynamic);
+    }
+  };
   A.TronAccountResourceInfo.prototype = {
     toString$0(_) {
       var t8, t9, t10, t11, t12, _this = this,
@@ -47651,7 +48645,7 @@
     call$1(e) {
       return type$.TronChainType._as(e)._name === this.lower;
     },
-    $signature: 47
+    $signature: 55
   };
   A.TronChainType_fromName_closure0.prototype = {
     call$0() {
@@ -47663,7 +48657,7 @@
     call$1(e) {
       return type$.TronChainType._as(e).id === this.id;
     },
-    $signature: 47
+    $signature: 55
   };
   A.TronChainType_fromId_closure0.prototype = {
     call$0() {
@@ -47675,7 +48669,7 @@
     call$1(e) {
       return type$.TronChainType._as(e).genesisBlockNumber === this.id;
     },
-    $signature: 47
+    $signature: 55
   };
   A.TronChainType_fromGenesis_closure0.prototype = {
     call$0() {
@@ -47695,13 +48689,13 @@
         t1 = type$.BigInt;
       return new A.FrozenSupply(A.ExtractCborList_elementAt(cbor, 0, t1), A.ExtractCborList_elementAt(cbor, 1, t1));
     },
-    $signature: 126
+    $signature: 125
   };
   A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure0.prototype = {
     call$1(e) {
       return A.AccountPermission_AccountPermission$fromCborBytesOrObject(type$.nullable_CborObject._as(e));
     },
-    $signature: 125
+    $signature: 124
   };
   A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure1.prototype = {
     call$1(e) {
@@ -47710,7 +48704,7 @@
       t1.toString;
       return new A.FrozenV2(A.ExtractCborList_elementAt(cbor, 0, type$.BigInt), t1);
     },
-    $signature: 124
+    $signature: 123
   };
   A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure2.prototype = {
     call$1(e) {
@@ -47718,34 +48712,34 @@
         t1 = type$.BigInt;
       return new A.UnfrozenV2(A.ExtractCborList_elementAt(cbor, 0, type$.nullable_String), A.ExtractCborList_elementAt(cbor, 1, t1), A.ExtractCborList_elementAt(cbor, 2, t1));
     },
-    $signature: 123
+    $signature: 122
   };
   A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure3.prototype = {
     call$1(e) {
       var cbor = A.CborSerializable_decodeCborTags(null, type$.nullable_CborObject._as(e), B.List_200_195_100_3, type$.CborListValue_dynamic);
       return new A.AssetV2(A.ExtractCborList_elementAt(cbor, 0, type$.String), A.ExtractCborList_elementAt(cbor, 1, type$.BigInt));
     },
-    $signature: 122
+    $signature: 120
   };
   A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure4.prototype = {
     call$1(e) {
       var cbor = A.CborSerializable_decodeCborTags(null, type$.nullable_CborObject._as(e), B.List_200_195_100_2, type$.CborListValue_dynamic);
       return new A.FreeAssetNetUsageV2(A.ExtractCborList_elementAt(cbor, 0, type$.String), A.ExtractCborList_elementAt(cbor, 1, type$.BigInt));
     },
-    $signature: 121
+    $signature: 119
   };
   A.TronAccountInfo_TronAccountInfo$fromJson_closure.prototype = {
     call$1(supply) {
       type$.Map_String_dynamic._as(supply);
       return new A.FrozenSupply(A._BigIntImpl__BigIntImpl$from(A._asNum(supply.$index(0, "frozen_balance"))), A._BigIntImpl__BigIntImpl$from(A._asNum(supply.$index(0, "expire_time"))));
     },
-    $signature: 126
+    $signature: 125
   };
   A.TronAccountInfo_TronAccountInfo$fromJson_closure0.prototype = {
     call$1(permission) {
       return A.AccountPermission_AccountPermission$fromJson(type$.Map_String_dynamic._as(permission));
     },
-    $signature: 125
+    $signature: 124
   };
   A.TronAccountInfo_TronAccountInfo$fromJson_closure1.prototype = {
     call$1(frozen) {
@@ -47758,28 +48752,28 @@
       t2.toString;
       return new A.FrozenV2(t1, t2);
     },
-    $signature: 124
+    $signature: 123
   };
   A.TronAccountInfo_TronAccountInfo$fromJson_closure2.prototype = {
     call$1(unfrozen) {
       type$.Map_String_dynamic._as(unfrozen);
       return new A.UnfrozenV2(A._asStringQ(unfrozen.$index(0, "type")), A.BigintUtils_parse(unfrozen.$index(0, "unfreeze_amount")), A.BigintUtils_parse(unfrozen.$index(0, "unfreeze_expire_time")));
     },
-    $signature: 123
+    $signature: 122
   };
   A.TronAccountInfo_TronAccountInfo$fromJson_closure3.prototype = {
     call$1(asset) {
       type$.Map_String_dynamic._as(asset);
       return new A.AssetV2(A._asString(asset.$index(0, "key")), A.BigintUtils_parse(asset.$index(0, "value")));
     },
-    $signature: 122
+    $signature: 120
   };
   A.TronAccountInfo_TronAccountInfo$fromJson_closure4.prototype = {
     call$1(usage) {
       type$.Map_String_dynamic._as(usage);
       return new A.FreeAssetNetUsageV2(A._asString(usage.$index(0, "key")), A.BigintUtils_parse(usage.$index(0, "value")));
     },
-    $signature: 121
+    $signature: 119
   };
   A.AccountPermission.prototype = {
     toString$0(_) {
@@ -47792,14 +48786,14 @@
       var cbor = A.CborSerializable_decodeCborTags(null, type$.nullable_CborObject._as(e), B.List_200_195_100_7, type$.CborListValue_dynamic);
       return new A.PermissionKeys(A.TronAddress_TronAddress(A.ExtractCborList_elementAt(cbor, 0, type$.String)), A.ExtractCborList_elementAt(cbor, 1, type$.BigInt));
     },
-    $signature: 119
+    $signature: 118
   };
   A.AccountPermission_AccountPermission$fromJson_closure.prototype = {
     call$1(e) {
       type$.Map_String_dynamic._as(e);
       return new A.PermissionKeys(A.TronAddress_TronAddress(A._asString(e.$index(0, "address"))), A.BigintUtils_parse(e.$index(0, "weight")));
     },
-    $signature: 119
+    $signature: 118
   };
   A.PermissionKeys.prototype = {
     toString$0(_) {
@@ -47928,7 +48922,7 @@
         t1 = type$.nullable_String;
       return new A.CoingeckoCoin(A.ExtractCborList_elementAt(cbor, 0, type$.String), A.ExtractCborList_elementAt(cbor, 1, t1), A.ExtractCborList_elementAt(cbor, 2, t1));
     },
-    $signature: 195
+    $signature: 197
   };
   A._Token_Object_CborSerializable.prototype = {};
   A._Token_Object_CborSerializable_Equatable.prototype = {};
@@ -47942,7 +48936,7 @@
     call$1(e) {
       return A.Chain_Chain$deserialize(this.id, type$.nullable_CborObject._as(e), type$.APIProvider, type$.NetworkCoinParams_APIProvider, type$.dynamic, type$.TokenCore_dynamic, type$.NFTCore, type$.ChainAccount_of_nullable_Object_and_TokenCore_dynamic_and_NFTCore, type$.WalletNetwork_NetworkCoinParams_APIProvider, type$.NetworkClient_of_ChainAccount_of_nullable_Object_and_TokenCore_dynamic_and_NFTCore_and_APIProvider);
     },
-    $signature: 196
+    $signature: 198
   };
   A._ChainsHandler_Object_CborSerializable.prototype = {};
   A.Web3RequestException.prototype = {
@@ -47956,6 +48950,9 @@
     },
     toResponseMessage$0() {
       return this.toResponseMessage$1$requestId(null);
+    },
+    toString$0(_) {
+      return this.message;
     },
     $isException: 1
   };
@@ -47988,11 +48985,20 @@
       var _this = this,
         t1 = _this.request;
       t1 = t1 == null ? null : A.StringUtils_tryToJson(t1, type$.dynamic);
-      return A.LinkedHashMap_LinkedHashMap$_literal(["message", _this.message, "code", _this.code, "walletCode", _this.walletCode, "data", _this.data, "request", t1, "requestId", _this.requestId], type$.String, type$.dynamic);
+      t1 = A.LinkedHashMap_LinkedHashMap$_literal(["message", _this.message, "code", _this.code, "walletCode", _this.walletCode, "data", _this.data, "request", t1, "requestId", _this.requestId], type$.String, type$.dynamic);
+      t1.removeWhere$1(0, new A.Web3ExceptionMessage_toJson_closure());
+      return t1;
     },
     get$type() {
       return B.Web3MessageTypes_List_100_15_error;
     }
+  };
+  A.Web3ExceptionMessage_toJson_closure.prototype = {
+    call$2(k, v) {
+      A._asString(k);
+      return v == null;
+    },
+    $signature: 0
   };
   A.Web3ResponseMessage.prototype = {
     toCbor$0() {
@@ -48030,7 +49036,7 @@
     call$1(e) {
       return A.BytesUtils_bytesEqual(type$.Web3MessageTypes._as(e).tag, this.tags);
     },
-    $signature: 197
+    $signature: 199
   };
   A.Web3MessageTypes_fromTag_closure0.prototype = {
     call$0() {
@@ -48075,12 +49081,16 @@
         case B.NetworkType_iDZ:
           if (chain == null) {
             t1 = $.$get$_BigIntImpl_one();
-            chain = new A.Web3EthereumChain(t1, A.List_List$unmodifiable(B.List_empty6, type$.Web3EthereumChainAccount), A.List_List$unmodifiable(B.List_empty7, type$.Web3AccountAcitvity));
+            chain = new A.Web3EthereumChain(t1, A.List_List$unmodifiable(B.List_empty7, type$.Web3EthereumChainAccount), A.List_List$unmodifiable(B.List_empty8, type$.Web3AccountAcitvity));
           }
           break;
         case B.NetworkType_SkF:
           if (chain == null)
-            chain = new A.Web3TronChain(B.TronChainType_1001_728126428_mainnet, A.List_List$unmodifiable(B.List_empty8, type$.Web3TronChainAccount), A.List_List$unmodifiable(B.List_empty7, type$.Web3AccountAcitvity));
+            chain = new A.Web3TronChain(B.TronChainType_1001_728126428_mainnet, A.List_List$unmodifiable(B.List_empty9, type$.Web3TronChainAccount), A.List_List$unmodifiable(B.List_empty8, type$.Web3AccountAcitvity));
+          break;
+        case B.NetworkType_4QF:
+          if (chain == null)
+            chain = new A.Web3SolanaChain(string$.x35eykt4, A.List_List$unmodifiable(B.List_empty10, type$.Web3SolanaChainAccount), A.List_List$unmodifiable(B.List_empty8, type$.Web3AccountAcitvity));
           break;
         default:
           throw A.wrapException(B.Web3RequestException_IAR);
@@ -48094,19 +49104,19 @@
     call$1(e) {
       return A.APPImage_APPImage$fromCborBytesOrObject(e);
     },
-    $signature: 198
+    $signature: 200
   };
   A.Web3APPAuthentication_Web3APPAuthentication$deserialize_closure0.prototype = {
     call$1(e) {
       return A.NetworkType_fromName(A._asStringQ(e.get$value()));
     },
-    $signature: 199
+    $signature: 336
   };
   A.Web3APPAuthentication_Web3APPAuthentication$deserialize_closure1.prototype = {
     call$1(p0) {
       return A.Web3Chain_Web3Chain$deserialize(p0, type$.dynamic, type$.Chain_of_APIProvider_and_NetworkCoinParams_APIProvider_and_dynamic_and_TokenCore_dynamic_and_NFTCore_and_ChainAccount_of_dynamic_and_TokenCore_dynamic_and_NFTCore_and_WalletNetwork_NetworkCoinParams_APIProvider_and_NetworkClient_of_ChainAccount_of_dynamic_and_TokenCore_dynamic_and_NFTCore_and_APIProvider, type$.Web3ChainAccount_dynamic);
     },
-    $signature: 200
+    $signature: 202
   };
   A._Web3APPAuthentication_Object_CborSerializable.prototype = {};
   A.Web3ChainAccount.prototype = {};
@@ -48138,7 +49148,7 @@
     call$1(e) {
       return type$.Web3EthereumRequestMethods._as(e).id === this.id;
     },
-    $signature: 118
+    $signature: 116
   };
   A.Web3EthereumRequestMethods_fromId_closure0.prototype = {
     call$0() {
@@ -48153,7 +49163,7 @@
       t1 = this.name;
       return e.name === t1 || B.JSArray_methods.contains$1(e.methodsName, t1);
     },
-    $signature: 118
+    $signature: 116
   };
   A.Web3EthereumPermissionRequestParam.prototype = {};
   A.Web3EthereumRequestParam.prototype = {};
@@ -48197,7 +49207,7 @@
       identifier = A.BlockchainUtils_generateRandomString(8);
       return A.EthereumAPIProvider_EthereumAPIProvider(identifier, t1, e, t2);
     },
-    $signature: 202
+    $signature: 204
   };
   A.Web3EthreumPersonalSign.prototype = {
     toCbor$0() {
@@ -48213,7 +49223,7 @@
     call$1(obj) {
       return A.ETHAddress_ETHAddress(obj);
     },
-    $signature: 37
+    $signature: 35
   };
   A.Web3EthreumRequestAccounts.prototype = {
     toCbor$0() {
@@ -48260,19 +49270,19 @@
     call$1(e) {
       return type$.ETHTransactionType._as(e).prefix === this.transactionType;
     },
-    $signature: 117
+    $signature: 113
   };
   A.Web3EthreumSendTransaction_Web3EthreumSendTransaction$fromJson_closure0.prototype = {
     call$1(c) {
       return A.ETHAddress_ETHAddress(c);
     },
-    $signature: 37
+    $signature: 35
   };
   A.Web3EthreumSendTransaction_Web3EthreumSendTransaction$fromJson_closure1.prototype = {
     call$1(c) {
       return A.ETHAddress_ETHAddress(c);
     },
-    $signature: 37
+    $signature: 35
   };
   A.Web3EthreumTypdedData.prototype = {
     toCbor$0() {
@@ -48290,7 +49300,7 @@
     call$1(c) {
       return A.ETHAddress_ETHAddress(c);
     },
-    $signature: 37
+    $signature: 35
   };
   A.Web3EthreumSwitchChain.prototype = {
     toCbor$0() {
@@ -48345,32 +49355,32 @@
         t2 = A.ETHAddress_ETHAddress(A.ExtractCborList_elementAt(values, 1, type$.String));
       return new A.Web3EthereumChainAccount(A.ExtractCborList_elementAt(values, 2, type$.BigInt), t1, t2, A.ExtractCborList_elementAt(values, 3, type$.bool));
     },
-    $signature: 205
+    $signature: 207
   };
   A.Web3EthereumChain_Web3EthereumChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.Web3AccountAcitvity_Web3AccountAcitvity$deserialize(type$.nullable_CborObject._as(e));
     },
-    $signature: 136
+    $signature: 52
   };
   A.Web3EthereumChain_toCbor_closure.prototype = {
     call$1(e) {
       return type$.Web3EthereumChainAccount._as(e).toCbor$0();
     },
-    $signature: 207
+    $signature: 209
   };
   A.Web3EthereumChain_toCbor_closure0.prototype = {
     call$1(e) {
       return type$.Web3AccountAcitvity._as(e).toCbor$0();
     },
-    $signature: 115
+    $signature: 50
   };
   A.Web3EthereumChain_currentChainAccounts_closure.prototype = {
     call$1(e) {
       var t1 = type$.Web3EthereumChainAccount._as(e).chainId.compareTo$1(0, this.$this._permission$_currentChain);
       return t1 === 0;
     },
-    $signature: 52
+    $signature: 49
   };
   A.Web3EthereumChain_currentChainAccounts_closure0.prototype = {
     call$1(e) {
@@ -48379,13 +49389,13 @@
       t1 = this.i;
       return e.address.address === t1.address.address && e.keyIndex.$eq(0, t1.keyIndex);
     },
-    $signature: 52
+    $signature: 49
   };
   A.Web3EthereumValidator_parseTypedData_closure.prototype = {
     call$0() {
       return A.EIP712Base_EIP712Base$fromJson(A.StringUtils_toJson(this.data, type$.Map_String_dynamic));
     },
-    $signature: 210
+    $signature: 212
   };
   A.Web3GlobalRequestMethods.prototype = {
     get$network() {
@@ -48396,7 +49406,7 @@
     call$1(e) {
       return type$.Web3GlobalRequestMethods._as(e).id === this.id;
     },
-    $signature: 211
+    $signature: 213
   };
   A.Web3GlobalRequestMethods_fromId_closure0.prototype = {
     call$0() {
@@ -48413,6 +49423,215 @@
       return A.LinkedHashMap_LinkedHashMap$_literal(["chain", this.chain.name], type$.String, type$.dynamic);
     }
   };
+  A.Web3SolanaRequestMethods.prototype = {
+    get$network() {
+      return B.NetworkType_4QF;
+    }
+  };
+  A.Web3SolanaRequestMethods_fromId_closure.prototype = {
+    call$1(e) {
+      return type$.Web3SolanaRequestMethods._as(e).id === this.id;
+    },
+    $signature: 108
+  };
+  A.Web3SolanaRequestMethods_fromId_closure0.prototype = {
+    call$0() {
+      return A.throwExpression(B.Web3RequestException_imj);
+    },
+    $signature: 2
+  };
+  A.Web3SolanaRequestMethods_fromName_closure.prototype = {
+    call$1(e) {
+      var t1;
+      type$.Web3SolanaRequestMethods._as(e);
+      t1 = this.name;
+      return e.name === t1 || B.JSArray_methods.contains$1(e.methodsName, t1);
+    },
+    $signature: 108
+  };
+  A.Web3SolanaPermissionRequestParam.prototype = {};
+  A.Web3SolanaRequestParam.prototype = {};
+  A.Web3SolanaRequestAccounts.prototype = {
+    toCbor$0() {
+      var t1 = A._setArrayType([B.Web3SolanaRequestMethods_A0N.get$tag()], type$.JSArray_List_int);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_100_12, type$.int), new A.CborListValue(t1, true, type$.CborListValue_List_int), type$.CborTagValue_dynamic);
+    },
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_empty(type$.String, type$.dynamic);
+    }
+  };
+  A.Web3SolanaSignMessage.prototype = {
+    toCbor$0() {
+      var t1 = B.Web3SolanaRequestMethods_102_solana_signMessage_List_empty.get$tag(),
+        t2 = A.BytesUtils_fromHexString(this.challeng);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_100_12, type$.int), new A.CborListValue([t1, this.address.address, new A.CborBytesValue(t2), this.content], true, type$.CborListValue_nullable_Object), type$.CborTagValue_dynamic);
+    },
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["address", this.address.address, "challeng", this.challeng], type$.String, type$.dynamic);
+    }
+  };
+  A.Web3SolanaSendTransactionOptions.prototype = {
+    toJson$0() {
+      var _this = this;
+      return A.LinkedHashMap_LinkedHashMap$_literal(["maxRetries", _this.maxRetries, "preflightCommitment", _this.skipPreflight, "commitment", _this.commitment, "minContextSlot", _this.minContextSlot], type$.String, type$.dynamic);
+    },
+    toCbor$0() {
+      var _this = this;
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_1_3, type$.int), new A.CborListValue([_this.maxRetries, _this.skipPreflight, _this.commitment, _this.minContextSlot], true, type$.CborListValue_nullable_Object), type$.CborTagValue_dynamic);
+    }
+  };
+  A.Web3SolanaSendTransactionData.prototype = {
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["account", this.account.address, "message", A.BytesUtils_toHexString(this.messageBytes, true, null)], type$.String, type$.dynamic);
+    },
+    toCbor$0() {
+      var t1 = A._setArrayType([this.account.address, new A.CborBytesValue(this.messageBytes), this.id], type$.JSArray_Object);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_1_2, type$.int), new A.CborListValue(t1, true, type$.CborListValue_Object), type$.CborTagValue_dynamic);
+    }
+  };
+  A.Web3SolanaSendTransaction.prototype = {
+    toCbor$0() {
+      var t1 = B.Web3SolanaRequestMethods_6YB.get$tag(),
+        t2 = this.messages,
+        t3 = A._arrayInstanceType(t2),
+        t4 = t3._eval$1("MappedListIterable<1,CborTagValue<@>>");
+      t4 = A.List_List$of(new A.MappedListIterable(t2, t3._eval$1("CborTagValue<@>(1)")._as(new A.Web3SolanaSendTransaction_toCbor_closure()), t4), true, t4._eval$1("ListIterable.E"));
+      t3 = this.sendConfig;
+      t2 = t3 == null ? null : t3.toCbor$0();
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_100_12, type$.int), new A.CborListValue([t1, new A.CborListValue(t4, true, type$.CborListValue_CborTagValue_dynamic), t2], true, type$.CborListValue_nullable_Object), type$.CborTagValue_dynamic);
+    },
+    toJson$0() {
+      var t1 = this.messages,
+        t2 = A._arrayInstanceType(t1),
+        t3 = t2._eval$1("MappedListIterable<1,Map<String,@>>");
+      return A.LinkedHashMap_LinkedHashMap$_literal(["messages", B.C_JsonCodec.encode$2$toEncodable(A.List_List$of(new A.MappedListIterable(t1, t2._eval$1("Map<String,@>(1)")._as(new A.Web3SolanaSendTransaction_toJson_closure()), t3), true, t3._eval$1("ListIterable.E")), null)], type$.String, type$.nullable_String);
+    }
+  };
+  A.Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure.prototype = {
+    call$1(e) {
+      var t2,
+        values = A.CborSerializable_cborTagValue(null, null, type$.CborTagValue_dynamic._as(e), B.List_1_2, type$.CborListValue_dynamic),
+        t1 = A.ExtractCborList_elementAt(values, 0, type$.String);
+      new A.SolAddrDecoder().decodeAddr$1(t1);
+      t2 = A.ExtractCborList_elementAt(values, 1, type$.List_int);
+      return new A.Web3SolanaSendTransactionData(new A.SolAddress(t1), A.ExtractCborList_elementAt(values, 2, type$.int), A.BytesUtils_toBytes(t2, true));
+    },
+    $signature: 215
+  };
+  A.Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure0.prototype = {
+    call$1(e) {
+      var values = A.CborSerializable_cborTagValue(null, null, e, B.List_1_3, type$.CborListValue_dynamic),
+        t1 = type$.nullable_int;
+      return new A.Web3SolanaSendTransactionOptions(A.ExtractCborList_elemetAs(values, 0, t1), A.ExtractCborList_elemetAs(values, 1, type$.bool), A.ExtractCborList_elemetAs(values, 2, type$.nullable_String), A.ExtractCborList_elementAt(values, 3, t1), false);
+    },
+    $signature: 216
+  };
+  A.Web3SolanaSendTransaction_toCbor_closure.prototype = {
+    call$1(e) {
+      return type$.Web3SolanaSendTransactionData._as(e).toCbor$0();
+    },
+    $signature: 217
+  };
+  A.Web3SolanaSendTransaction_toJson_closure.prototype = {
+    call$1(e) {
+      return type$.Web3SolanaSendTransactionData._as(e).toJson$0();
+    },
+    $signature: 218
+  };
+  A._Web3SolanaSendTransactionData_Object_CborSerializable.prototype = {};
+  A._Web3SolanaSendTransactionOptions_Object_CborSerializable.prototype = {};
+  A.Web3SolanaChainAccount.prototype = {
+    toCbor$0() {
+      var _this = this,
+        t1 = A._setArrayType([_this.keyIndex.toCbor$0(), _this.address.address, _this.genesis, _this.defaultAddress], type$.JSArray_Object);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_161_2_1, type$.int), new A.CborListValue(t1, true, type$.CborListValue_Object), type$.CborTagValue_dynamic);
+    },
+    get$variabels() {
+      return [this.keyIndex, this.address.address, this.genesis];
+    }
+  };
+  A.Web3SolanaChain.prototype = {
+    toCbor$0() {
+      var t1 = A.Web3Chain.prototype.get$accounts.call(this),
+        t2 = A._arrayInstanceType(t1)._eval$1("CastList<1,Web3SolanaChainAccount>"),
+        t3 = t2._eval$1("MappedListIterable<ListBase.E,CborTagValue<@>>"),
+        t4 = type$.CborListValue_CborTagValue_dynamic,
+        t5 = this._activities,
+        t6 = A._arrayInstanceType(t5),
+        t7 = t6._eval$1("MappedListIterable<1,CborTagValue<@>>");
+      t4 = A._setArrayType([new A.CborListValue(A.List_List$of(new A.MappedListIterable(new A.CastList(t1, t2), t2._eval$1("CborTagValue<@>(ListBase.E)")._as(new A.Web3SolanaChain_toCbor_closure()), t3), true, t3._eval$1("ListIterable.E")), true, t4), this._genesis, new A.CborListValue(A.List_List$of(new A.MappedListIterable(t5, t6._eval$1("CborTagValue<@>(1)")._as(new A.Web3SolanaChain_toCbor_closure0()), t7), true, t7._eval$1("ListIterable.E")), true, t4)], type$.JSArray_Object);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_80_0_5, type$.int), new A.CborListValue(t4, true, type$.CborListValue_Object), type$.CborTagValue_dynamic);
+    },
+    currentChainAccounts$1(chain) {
+      var _i, chainAccount,
+        t1 = A.Web3Chain.prototype.get$accounts.call(this),
+        t2 = A._arrayInstanceType(t1)._eval$1("CastList<1,Web3SolanaChainAccount>"),
+        t3 = t2._eval$1("WhereIterable<ListBase.E>"),
+        currentAccounts = A.List_List$of(new A.WhereIterable(new A.CastList(t1, t2), t2._eval$1("bool(ListBase.E)")._as(new A.Web3SolanaChain_currentChainAccounts_closure(this)), t3), true, t3._eval$1("Iterable.E")),
+        existsAccounts = A._setArrayType([], type$.JSArray_Web3SolanaChainAccount);
+      for (t1 = chain._addresses, t2 = t1.length, t3 = type$.Web3SolanaChainAccount, _i = 0; _i < t2; ++_i) {
+        chainAccount = A.QuickImutableList_firstWhereOrNull(currentAccounts, new A.Web3SolanaChain_currentChainAccounts_closure0(t1[_i]), null, t3);
+        if (chainAccount != null)
+          B.JSArray_methods.add$1(existsAccounts, chainAccount);
+      }
+      return existsAccounts;
+    },
+    getPermission$1(address) {
+      var t1 = A.Web3Chain.prototype.get$accounts.call(this);
+      return A.QuickImutableList_firstWhereOrNull(new A.CastList(t1, A._arrayInstanceType(t1)._eval$1("CastList<1,Web3SolanaChainAccount>")), new A.Web3SolanaChain_getPermission_closure(address), null, type$.Web3SolanaChainAccount);
+    }
+  };
+  A.Web3SolanaChain_Web3SolanaChain$deserialize_closure.prototype = {
+    call$1(e) {
+      var values = A.CborSerializable_cborTagValue(null, null, type$.nullable_CborObject._as(e), B.List_161_2_1, type$.CborListValue_dynamic),
+        t1 = A.AddressDerivationIndex_fromCborBytesOrObject(A.ExtractCborList_getCborTag(values, 0)),
+        t2 = type$.String,
+        t3 = A.ExtractCborList_elementAt(values, 1, t2);
+      new A.SolAddrDecoder().decodeAddr$1(t3);
+      return new A.Web3SolanaChainAccount(A.ExtractCborList_elementAt(values, 2, t2), t1, new A.SolAddress(t3), A.ExtractCborList_elementAt(values, 3, type$.bool));
+    },
+    $signature: 219
+  };
+  A.Web3SolanaChain_Web3SolanaChain$deserialize_closure0.prototype = {
+    call$1(e) {
+      return A.Web3AccountAcitvity_Web3AccountAcitvity$deserialize(type$.nullable_CborObject._as(e));
+    },
+    $signature: 52
+  };
+  A.Web3SolanaChain_toCbor_closure.prototype = {
+    call$1(e) {
+      return type$.Web3SolanaChainAccount._as(e).toCbor$0();
+    },
+    $signature: 220
+  };
+  A.Web3SolanaChain_toCbor_closure0.prototype = {
+    call$1(e) {
+      return type$.Web3AccountAcitvity._as(e).toCbor$0();
+    },
+    $signature: 50
+  };
+  A.Web3SolanaChain_currentChainAccounts_closure.prototype = {
+    call$1(e) {
+      return type$.Web3SolanaChainAccount._as(e).genesis === this.$this._genesis;
+    },
+    $signature: 30
+  };
+  A.Web3SolanaChain_currentChainAccounts_closure0.prototype = {
+    call$1(e) {
+      var t1;
+      type$.Web3SolanaChainAccount._as(e);
+      t1 = this.i;
+      return e.address.address === t1.address.address && e.keyIndex.$eq(0, t1.keyIndex);
+    },
+    $signature: 30
+  };
+  A.Web3SolanaChain_getPermission_closure.prototype = {
+    call$1(e) {
+      type$.Web3SolanaChainAccount._as(e);
+      return this.address.address === e.address.address;
+    },
+    $signature: 30
+  };
   A.Web3TronRequestMethods.prototype = {
     get$network() {
       return B.NetworkType_SkF;
@@ -48422,7 +49641,7 @@
     call$1(e) {
       return type$.Web3TronRequestMethods._as(e).id === this.id;
     },
-    $signature: 113
+    $signature: 102
   };
   A.Web3TronRequestMethods_fromId_closure0.prototype = {
     call$0() {
@@ -48437,7 +49656,7 @@
       t1 = this.name;
       return e.name === t1 || B.JSArray_methods.contains$1(e.methodsName, t1);
     },
-    $signature: 113
+    $signature: 102
   };
   A.Web3TronPermissionRequestParam.prototype = {};
   A.Web3TronRequestParam.prototype = {};
@@ -48520,31 +49739,31 @@
         t2 = A.TronAddress_TronAddress(A.ExtractCborList_elementAt(values, 1, type$.String));
       return new A.Web3TronChainAccount(A.TronChainType_fromName(A.ExtractCborList_elementAt(values, 2, type$.nullable_String)), t1, t2, A.ExtractCborList_elementAt(values, 3, type$.bool));
     },
-    $signature: 213
+    $signature: 223
   };
   A.Web3TronChain_Web3TronChain$deserialize_closure0.prototype = {
     call$1(e) {
       return A.Web3AccountAcitvity_Web3AccountAcitvity$deserialize(type$.nullable_CborObject._as(e));
     },
-    $signature: 136
+    $signature: 52
   };
   A.Web3TronChain_toCbor_closure.prototype = {
     call$1(e) {
       return type$.Web3TronChainAccount._as(e).toCbor$0();
     },
-    $signature: 214
+    $signature: 224
   };
   A.Web3TronChain_toCbor_closure0.prototype = {
     call$1(e) {
       return type$.Web3AccountAcitvity._as(e).toCbor$0();
     },
-    $signature: 115
+    $signature: 50
   };
   A.Web3TronChain_currentChainAccounts_closure.prototype = {
     call$1(e) {
       return type$.Web3TronChainAccount._as(e).chain === this.$this._currentChain;
     },
-    $signature: 38
+    $signature: 31
   };
   A.Web3TronChain_currentChainAccounts_closure0.prototype = {
     call$1(e) {
@@ -48553,13 +49772,13 @@
       t1 = this.i;
       return e.address.toAddress$0() === t1.address.address && e.keyIndex.$eq(0, t1.keyIndex);
     },
-    $signature: 38
+    $signature: 31
   };
   A.Web3TronChain_getPermission_closure.prototype = {
     call$1(e) {
       return type$.Web3TronChainAccount._as(e).address.$eq(0, this.address);
     },
-    $signature: 38
+    $signature: 31
   };
   A.Web3ValidatorUtils_parseAddress_closure.prototype = {
     call$0() {
@@ -48581,7 +49800,7 @@
     call$0() {
       return A.LinkedHashMap_LinkedHashMap$from(type$.Map_dynamic_dynamic._as(this.value), type$.String, type$.dynamic);
     },
-    $signature: 36
+    $signature: 33
   };
   A.ADAByronAddress.prototype = {
     get$addressType() {
@@ -48724,7 +49943,7 @@
     call$2(previousValue, element) {
       return (A._asInt(previousValue) ^ B.JSInt_methods.get$hashCode(A._asInt(element))) >>> 0;
     },
-    $signature: 23
+    $signature: 26
   };
   A._FixedBytes_Object_ADASerialization.prototype = {};
   A.BlockforestRequestParam.prototype = {
@@ -48842,7 +50061,7 @@
     call$1(e) {
       return A.LinkedHashMap_LinkedHashMap$from(type$.Map_dynamic_dynamic._as(e), type$.String, type$.dynamic);
     },
-    $signature: 33
+    $signature: 20
   };
   A.ADASerialization.prototype = {
     toString$0(_) {
@@ -48883,7 +50102,7 @@
     call$1(v) {
       return v == null;
     },
-    $signature: 22
+    $signature: 27
   };
   A.ETHRPCRequest_toRequest_closure0.prototype = {
     call$1(e) {
@@ -48891,7 +50110,7 @@
         return e.toJson$0();
       return e;
     },
-    $signature: 17
+    $signature: 18
   };
   A.EthereumMethods.prototype = {
     get$value() {
@@ -48902,7 +50121,7 @@
     call$1(e) {
       return type$.EthereumMethods._as(e).value === this.name;
     },
-    $signature: 217
+    $signature: 227
   };
   A.RPCGetChainId.prototype = {
     toJson$0() {
@@ -49008,7 +50227,7 @@
     call$1(element) {
       return type$.ETHTransactionType._as(element).prefix === this.prefix;
     },
-    $signature: 117
+    $signature: 113
   };
   A.HTTPRequestType.prototype = {
     _enumToString$0() {
@@ -49026,6 +50245,36 @@
     },
     toString$0(_) {
       return this.address;
+    }
+  };
+  A.SolanaPluginException.prototype = {
+    toString$0(_) {
+      return this.message;
+    },
+    get$message() {
+      return this.message;
+    }
+  };
+  A.SolanaPublicKey.prototype = {};
+  A.AddressTableLookup.prototype = {
+    toString$0(_) {
+      return "AddressTableLookup{accountKey: " + this.accountKey.toString$0(0) + ", writableIndexes: " + A.S(this.writableIndexes) + ", readonlyIndexes: " + A.S(this.readonlyIndexes) + "}";
+    }
+  };
+  A.CompiledInstruction.prototype = {
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["programIdIndex", this.programIdIndex, "accounts", this.accounts, "data", A.Base58Encoder_encode(this.data, B.Base58Alphabets_0)], type$.String, type$.dynamic);
+    },
+    toString$0(_) {
+      return "CompiledInstruction" + this.toJson$0().toString$0(0);
+    }
+  };
+  A.MessageHeader.prototype = {
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["numRequiredSignatures", this.numRequiredSignatures, "numReadonlySignedAccounts", this.numReadonlySignedAccounts, "numReadonlyUnsignedAccounts", this.numReadonlyUnsignedAccounts], type$.String, type$.dynamic);
+    },
+    toString$0(_) {
+      return "MessageHeader" + this.toJson$0().toString$0(0);
     }
   };
   A.SolanaRequestDetails.prototype = {};
@@ -49050,7 +50299,7 @@
     call$1(v) {
       return v == null;
     },
-    $signature: 22
+    $signature: 27
   };
   A.SolanaRPCGetGenesisHash.prototype = {
     toJson$0() {
@@ -49148,6 +50397,89 @@
       return A._asyncStartSync($async$request$1$1, $async$completer);
     }
   };
+  A.Message.prototype = {
+    serialize$0() {
+      return A.SolanaTransactionUtils_serializeLegacy(this);
+    },
+    $isVersionedMessage: 1,
+    get$header() {
+      return this.header;
+    },
+    get$accountKeys() {
+      return this.accountKeys;
+    }
+  };
+  A.MessageV0.prototype = {
+    serialize$0() {
+      return A.SolanaTransactionUtils_serializeV0(this);
+    },
+    $isVersionedMessage: 1,
+    get$header() {
+      return this.header;
+    },
+    get$accountKeys() {
+      return this.accountKeys;
+    }
+  };
+  A.SolanaTransaction.prototype = {
+    addSignature$3$verifySignature(address, signature, verifySignature) {
+      var t2, signerIndex, currentSigs,
+        t1 = type$.List_int;
+      t1._as(signature);
+      if (J.get$length$asx(signature) !== 64)
+        throw A.wrapException(B.SolanaPluginException_eAf);
+      t2 = this.message;
+      signerIndex = B.JSArray_methods.indexWhere$1(B.JSArray_methods.sublist$2(t2.get$accountKeys(), 0, t2.get$header().numRequiredSignatures), new A.SolanaTransaction_addSignature_closure(address));
+      if (signerIndex < 0)
+        throw A.wrapException(new A.SolanaPluginException("Cannot add signature, " + address.toString$0(0) + " is not required to sign this transaction"));
+      currentSigs = A.List_List$from(this._signatures, true, t1);
+      B.JSArray_methods.$indexSet(currentSigs, signerIndex, A.List_List$unmodifiable(signature, type$.int));
+      this.set$_signatures(A.List_List$unmodifiable(currentSigs, t1));
+    },
+    set$_signatures(_signatures) {
+      this._signatures = type$.List_List_int._as(_signatures);
+    }
+  };
+  A.SolanaTransaction_addSignature_closure.prototype = {
+    call$1(pubkey) {
+      return type$.SolAddress._as(pubkey).address === this.address.address;
+    },
+    $signature: 97
+  };
+  A.SolanaTransactionUtils_serializeV0_closure.prototype = {
+    call$1(key) {
+      return type$.SolAddress._as(key);
+    },
+    $signature: 142
+  };
+  A.SolanaTransactionUtils_serializeLegacy_closure.prototype = {
+    call$1(instruction) {
+      var accounts, data;
+      type$.CompiledInstruction._as(instruction);
+      accounts = instruction.accounts;
+      data = A.List_List$from(instruction.data, true, type$.int);
+      return A.LinkedHashMap_LinkedHashMap$_literal(["programIdIndex", instruction.programIdIndex, "keyIndicesCount", A.SolanaTransactionUtils__encodeLength(accounts.length), "keyIndices", accounts, "dataLength", A.SolanaTransactionUtils__encodeLength(data.length), "data", data], type$.String, type$.Object);
+    },
+    $signature: 230
+  };
+  A.SolanaTransactionUtils_serializeLegacy_closure0.prototype = {
+    call$1(key) {
+      return A.List_List$from(new A.SolAddrDecoder().decodeAddr$1(type$.SolAddress._as(key).address), true, type$.int);
+    },
+    $signature: 96
+  };
+  A.SolanaLayoutUtils_publicKey_closure0.prototype = {
+    call$1(data) {
+      return A.SolAddress_SolAddress$uncheckBytes(type$.List_int._as(data));
+    },
+    $signature: 232
+  };
+  A.SolanaLayoutUtils_publicKey_closure.prototype = {
+    call$1(src) {
+      return A.List_List$from(new A.SolAddrDecoder().decodeAddr$1(type$.SolAddress._as(src).address), true, type$.int);
+    },
+    $signature: 96
+  };
   A.AbiParameter.prototype = {
     legacyEip712Encode$2(value, keepSize) {
       return A.ABICoder_ABICoder$fromType(this.type, type$.dynamic).legacyEip712Encode$3(this, value, keepSize);
@@ -49170,7 +50502,7 @@
     call$1(component) {
       return type$.AbiParameter._as(component).get$isDynamic();
     },
-    $signature: 218
+    $signature: 233
   };
   A.EncoderResult.prototype = {};
   A.EIP712Version.prototype = {};
@@ -49178,7 +50510,7 @@
     call$1(e) {
       return type$.EIP712Version._as(e).version === this.version;
     },
-    $signature: 219
+    $signature: 234
   };
   A.EIP712Version_fromVersion_closure0.prototype = {
     call$0() {
@@ -49190,7 +50522,7 @@
     call$1(e) {
       return type$.EIP712Version._as(e).version;
     },
-    $signature: 220
+    $signature: 235
   };
   A.Eip712TypeDetails.prototype = {
     toString$0(_) {
@@ -49224,7 +50556,7 @@
       type$.Map_String_dynamic._as(e);
       return new A.Eip712TypeDetails(A._asString(e.$index(0, "name")), A._asString(e.$index(0, "type")));
     },
-    $signature: 221
+    $signature: 236
   };
   A.Eip712TypedData_toJson_closure.prototype = {
     call$2(k, v) {
@@ -49233,13 +50565,13 @@
       t1 = J.map$1$1$ax(type$.List_Eip712TypeDetails._as(v), new A.Eip712TypedData_toJson__closure(), type$.Map_String_dynamic);
       return new A.MapEntry(k, A.List_List$of(t1, true, t1.$ti._eval$1("ListIterable.E")), type$.MapEntry_of_String_and_List_Map_String_dynamic);
     },
-    $signature: 222
+    $signature: 237
   };
   A.Eip712TypedData_toJson__closure.prototype = {
     call$1(e) {
       return type$.Eip712TypeDetails._as(e).toJson$0();
     },
-    $signature: 223
+    $signature: 238
   };
   A.Eip712TypedDataV1.prototype = {
     toJson$0() {
@@ -49288,32 +50620,32 @@
         t2 = A._asString(t1.$index(0, "type"));
       return new A.Eip712TypedDataV1(A._asString(t1.$index(0, "name")), t2, A._EIP712Utils_ensureCorrectValues(t2, t1.$index(0, "value")));
     },
-    $signature: 224
+    $signature: 239
   };
   A.EIP712Legacy_encode_closure.prototype = {
     call$1(e) {
       return type$.Eip712TypedDataV1._as(e).value;
     },
-    $signature: 225
+    $signature: 240
   };
   A.EIP712Legacy_encode_closure0.prototype = {
     call$1(e) {
       return type$.Eip712TypedDataV1._as(e).type;
     },
-    $signature: 111
+    $signature: 94
   };
   A.EIP712Legacy_encode_closure1.prototype = {
     call$1(e) {
       type$.Eip712TypedDataV1._as(e);
       return e.type + " " + e.name;
     },
-    $signature: 111
+    $signature: 94
   };
   A.EIP712Legacy_toJson_closure.prototype = {
     call$1(e) {
       return type$.Eip712TypedDataV1._as(e).toJson$0();
     },
-    $signature: 227
+    $signature: 242
   };
   A._EIP712Utils_ensureCorrectValues_closure.prototype = {
     call$1(e) {
@@ -49321,7 +50653,7 @@
       t1.toString;
       return A._EIP712Utils_ensureCorrectValues(t1, e);
     },
-    $signature: 17
+    $signature: 18
   };
   A._EIP712Utils_eip712TypedDataV1ValueToJson_closure.prototype = {
     call$1(e) {
@@ -49329,7 +50661,7 @@
       t1.toString;
       return A._EIP712Utils_eip712TypedDataV1ValueToJson(t1, e);
     },
-    $signature: 17
+    $signature: 18
   };
   A._EIP712Utils_getDependencies_closure.prototype = {
     call$2(previous, t) {
@@ -49340,43 +50672,43 @@
       B.JSArray_methods.addAll$1(t1, J.where$1$ax(A._EIP712Utils_getDependencies(this.typedData, t.type, previous), new A._EIP712Utils_getDependencies__closure(previous)));
       return t1;
     },
-    $signature: 228
+    $signature: 243
   };
   A._EIP712Utils_getDependencies__closure.prototype = {
     call$1(dependency) {
       return !J.contains$1$asx(this.previous, A._asString(dependency));
     },
-    $signature: 21
+    $signature: 25
   };
   A._EIP712Utils_encodeValue_closure.prototype = {
     call$1(item) {
       return A._EIP712Utils_encodeValue(this.typedData, this.isArray.item1, item);
     },
-    $signature: 229
+    $signature: 244
   };
   A._EIP712Utils_encodeValue_closure0.prototype = {
     call$1(item) {
       return type$.Tuple_String_dynamic._as(item).item1;
     },
-    $signature: 230
+    $signature: 245
   };
   A._EIP712Utils_encodeValue_closure1.prototype = {
     call$1(item) {
       return type$.Tuple_String_dynamic._as(item).item2;
     },
-    $signature: 231
+    $signature: 246
   };
   A._EIP712Utils_abiEncode_closure.prototype = {
     call$1(e) {
-      return new A.AbiParameter("", A._asString(e), B.List_empty4);
+      return new A.AbiParameter("", A._asString(e), B.List_empty5);
     },
-    $signature: 110
+    $signature: 93
   };
   A._EIP712Utils_legacyV1encode_closure.prototype = {
     call$1(e) {
-      return new A.AbiParameter("", A._asString(e), B.List_empty4);
+      return new A.AbiParameter("", A._asString(e), B.List_empty5);
     },
-    $signature: 110
+    $signature: 93
   };
   A._EIP712Utils_getMethodSigature_closure.prototype = {
     call$1(dependency) {
@@ -49386,14 +50718,14 @@
       t1.toString;
       return dependency + "(" + J.map$1$1$ax(t1, new A._EIP712Utils_getMethodSigature__closure(), type$.String).join$1(0, ",") + ")";
     },
-    $signature: 18
+    $signature: 15
   };
   A._EIP712Utils_getMethodSigature__closure.prototype = {
     call$1(t) {
       type$.Eip712TypeDetails._as(t);
       return t.type + " " + t.name;
     },
-    $signature: 233
+    $signature: 248
   };
   A.SolidityAbiException.prototype = {
     toString$0(_) {
@@ -49485,25 +50817,25 @@
     call$1(e) {
       return this.param.item1.abiEncode$1(e);
     },
-    $signature: 109
+    $signature: 90
   };
   A.ArrayCoder_abiEncode_closure0.prototype = {
     call$1(e) {
       return type$.EncoderResult._as(e).encoded;
     },
-    $signature: 20
+    $signature: 22
   };
   A.ArrayCoder_legacyEip712Encode_closure.prototype = {
     call$1(e) {
       return this.param.item1.legacyEip712Encode$2(e, true);
     },
-    $signature: 109
+    $signature: 90
   };
   A.ArrayCoder_legacyEip712Encode_closure0.prototype = {
     call$1(e) {
       return type$.EncoderResult._as(e).encoded;
     },
-    $signature: 20
+    $signature: 22
   };
   A.BooleanCoder.prototype = {
     abiEncode$2(params, input) {
@@ -49644,37 +50976,37 @@
     call$1(e) {
       return type$.EncoderResult._as(e).encoded;
     },
-    $signature: 20
+    $signature: 22
   };
   A.TupleCoder_legacyEip712Encode_closure.prototype = {
     call$1(e) {
       return type$.EncoderResult._as(e).encoded;
     },
-    $signature: 20
+    $signature: 22
   };
   A._ABIUtils_encodeDynamicParams_closure.prototype = {
     call$1(p) {
       return type$.EncoderResult._as(p).encoded;
     },
-    $signature: 20
+    $signature: 22
   };
   A._ABIUtils_encodeDynamicParams_closure0.prototype = {
     call$1(element) {
       return type$.List_int._as(element);
     },
-    $signature: 42
+    $signature: 58
   };
   A._ABIUtils_encodeDynamicParams_closure1.prototype = {
     call$1(p) {
       return type$.EncoderResult._as(p).encoded;
     },
-    $signature: 20
+    $signature: 22
   };
   A._ABIUtils_encodeDynamicParams_closure2.prototype = {
     call$1(element) {
       return type$.List_int._as(element);
     },
-    $signature: 42
+    $signature: 58
   };
   A.SolidityAddress.prototype = {
     toString$0(_) {
@@ -49736,7 +51068,7 @@
     call$1(e) {
       return A.AccountType_fromValue(A._asInt(e));
     },
-    $signature: 237
+    $signature: 252
   };
   A.AccountCreateContract_toJson_closure.prototype = {
     call$2(key, value) {
@@ -49800,25 +51132,25 @@
     call$1(e) {
       return A.Permission_Permission$fromJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 238
+    $signature: 253
   };
   A.AccountPermissionUpdateContract_AccountPermissionUpdateContract$deserialize_closure.prototype = {
     call$1(e) {
       return A.Permission_Permission$deserialize(type$.List_int._as(e));
     },
-    $signature: 108
+    $signature: 86
   };
   A.AccountPermissionUpdateContract_AccountPermissionUpdateContract$deserialize_closure0.prototype = {
     call$1(e) {
       return A.Permission_Permission$deserialize(type$.List_int._as(e));
     },
-    $signature: 108
+    $signature: 86
   };
   A.AccountPermissionUpdateContract_toJson_closure.prototype = {
     call$1(e) {
       return type$.Permission._as(e).toJson$0();
     },
-    $signature: 240
+    $signature: 255
   };
   A.AccountPermissionUpdateContract_toJson_closure0.prototype = {
     call$2(key, value) {
@@ -49836,13 +51168,13 @@
     call$1(element) {
       return type$.AccountType._as(element).name === this.name;
     },
-    $signature: 107
+    $signature: 85
   };
   A.AccountType_fromValue_closure.prototype = {
     call$1(element) {
       return type$.AccountType._as(element).value === this.value;
     },
-    $signature: 107
+    $signature: 85
   };
   A.AccountUpdateContract.prototype = {
     get$fieldIds() {
@@ -49885,7 +51217,7 @@
       t1 = A.QuickProtocolBufferResults_getField(decode, 2, t1);
       return new A.AccountId(new A.TronAddress(A.TrxAddressUtils_fromHexBytes(t1), A.BytesUtils_toHexString(t1, true, null)), A.BytesUtils_tryToBytes(t2, true));
     },
-    $signature: 242
+    $signature: 257
   };
   A.TronKey.prototype = {
     get$fieldIds() {
@@ -49936,7 +51268,7 @@
       type$.Map_String_dynamic._as(e);
       return new A.TronKey(A.OnChainUtils_parseTronAddress("address", e.$index(0, "address"), type$.TronAddress), A.OnChainUtils_parseBigInt("weight", e.$index(0, "weight"), type$.BigInt));
     },
-    $signature: 243
+    $signature: 258
   };
   A.Permission_Permission$deserialize_closure.prototype = {
     call$1(e) {
@@ -49945,13 +51277,13 @@
       t1 = A.QuickProtocolBufferResults_getField(decode, 1, t1);
       return new A.TronKey(new A.TronAddress(A.TrxAddressUtils_fromHexBytes(t1), A.BytesUtils_toHexString(t1, true, null)), A.QuickProtocolBufferResults_getField(decode, 2, type$.BigInt));
     },
-    $signature: 244
+    $signature: 259
   };
   A.Permission_toJson_closure.prototype = {
     call$1(e) {
       return type$.TronKey._as(e).toJson$0();
     },
-    $signature: 245
+    $signature: 260
   };
   A.Permission_toJson_closure0.prototype = {
     call$2(k, v) {
@@ -49973,25 +51305,25 @@
     call$1(element) {
       return type$.PermissionType._as(element).name === this.name;
     },
-    $signature: 106
+    $signature: 83
   };
   A.PermissionType_fromName_closure0.prototype = {
     call$0() {
       return this.defaultPermission;
     },
-    $signature: 105
+    $signature: 81
   };
   A.PermissionType_fromValue_closure.prototype = {
     call$1(element) {
       return type$.PermissionType._as(element).value === this.value;
     },
-    $signature: 106
+    $signature: 83
   };
   A.PermissionType_fromValue_closure0.prototype = {
     call$0() {
       return this.defaultPermission;
     },
-    $signature: 105
+    $signature: 81
   };
   A.SetAccountIdContract.prototype = {
     get$fieldIds() {
@@ -50061,7 +51393,7 @@
       t1 = type$.BigInt;
       return new A.AssetIssueContractFrozenSupply(A.OnChainUtils_parseBigInt(_s13_, frozenSupplyJson.$index(0, _s13_), t1), A.OnChainUtils_parseBigInt(_s11_, frozenSupplyJson.$index(0, _s11_), t1));
     },
-    $signature: 248
+    $signature: 263
   };
   A.AssetIssueContract_AssetIssueContract$deserialize_closure.prototype = {
     call$1(e) {
@@ -50069,13 +51401,13 @@
         t1 = type$.BigInt;
       return new A.AssetIssueContractFrozenSupply(A.QuickProtocolBufferResults_getField(decode, 1, t1), A.QuickProtocolBufferResults_getField(decode, 2, t1));
     },
-    $signature: 374
+    $signature: 264
   };
   A.AssetIssueContract_toJson_closure.prototype = {
     call$1(e) {
       return type$.AssetIssueContractFrozenSupply._as(e).toJson$0();
     },
-    $signature: 250
+    $signature: 265
   };
   A.AssetIssueContract_toJson_closure0.prototype = {
     call$2(key, value) {
@@ -50252,7 +51584,7 @@
       A._asInt(e);
       return A.ResourceCode_fromValue(A.QuickProtocolBufferResults_getField(this.decode, 2, type$.nullable_int), null);
     },
-    $signature: 24
+    $signature: 28
   };
   A.DelegateResourceContract_toJson_closure.prototype = {
     call$2(key, value) {
@@ -50293,7 +51625,7 @@
       type$.List_int._as(e);
       return new A.TronAddress(A.TrxAddressUtils_fromHexBytes(e), A.BytesUtils_toHexString(e, true, null));
     },
-    $signature: 102
+    $signature: 77
   };
   A.FreezeBalanceV2Contract.prototype = {
     get$fieldIds() {
@@ -50324,7 +51656,7 @@
     call$1(e) {
       return A.ResourceCode_fromValue(A._asInt(e), null);
     },
-    $signature: 24
+    $signature: 28
   };
   A.FreezeBalanceV2Contract_toJson_closure.prototype = {
     call$2(key, value) {
@@ -50391,7 +51723,7 @@
     call$1(e) {
       return A.ResourceCode_fromValue(A._asInt(e), null);
     },
-    $signature: 24
+    $signature: 28
   };
   A.UnDelegateResourceContract_toJson_closure.prototype = {
     call$2(key, value) {
@@ -50429,7 +51761,7 @@
     call$1(e) {
       return A.ResourceCode_fromValue(A._asInt(e), null);
     },
-    $signature: 24
+    $signature: 28
   };
   A.UnfreezeBalanceV2Contract.prototype = {
     get$fieldIds() {
@@ -50460,7 +51792,7 @@
     call$1(e) {
       return A.ResourceCode_fromValue(A._asInt(e), null);
     },
-    $signature: 24
+    $signature: 28
   };
   A.UnfreezeBalanceV2Contract_toJson_closure.prototype = {
     call$2(key, value) {
@@ -50544,25 +51876,25 @@
     call$1(element) {
       return type$.ResourceCode._as(element).name === this.name;
     },
-    $signature: 101
+    $signature: 141
   };
   A.ResourceCode_fromName_closure.prototype = {
     call$0() {
       return this.orElse;
     },
-    $signature: 78
+    $signature: 75
   };
   A.ResourceCode_fromValue_closure0.prototype = {
     call$1(element) {
       return type$.ResourceCode._as(element).value === this.val;
     },
-    $signature: 101
+    $signature: 141
   };
   A.ResourceCode_fromValue_closure.prototype = {
     call$0() {
       return this.orElse;
     },
-    $signature: 78
+    $signature: 75
   };
   A.TransactionContractType.prototype = {
     toString$0(_) {
@@ -50577,7 +51909,7 @@
     call$1(element) {
       return type$.TransactionContractType._as(element).name === this.name;
     },
-    $signature: 97
+    $signature: 69
   };
   A.TransactionContractType_findByName_closure0.prototype = {
     call$0() {
@@ -50589,7 +51921,7 @@
     call$1(element) {
       return type$.TransactionContractType._as(element).value === this.value;
     },
-    $signature: 97
+    $signature: 69
   };
   A.ExchangeCreateContract.prototype = {
     get$fieldIds() {
@@ -50843,7 +52175,7 @@
         t1 = type$.BigInt;
       return new A.MapEntry(A.OnChainUtils_parseBigInt(_s10_, key, t1), A.OnChainUtils_parseBigInt(_s10_, value, t1), type$.MapEntry_BigInt_BigInt);
     },
-    $signature: 256
+    $signature: 271
   };
   A.ProposalCreateContract_toJson_closure.prototype = {
     call$2(key, value) {
@@ -50852,7 +52184,7 @@
       t1._as(value);
       return new A.MapEntry(key.toString$0(0), value.toString$0(0), type$.MapEntry_String_String);
     },
-    $signature: 257
+    $signature: 272
   };
   A.ProposalDeleteContract.prototype = {
     get$fieldIds() {
@@ -50954,7 +52286,7 @@
       t5 = A.BytesUtils_tryFromHexString(A._asStringQ(desc.$index(0, "zkproof")));
       return A.SpendDescription$(t2, t3, t4, A.BytesUtils_tryFromHexString(A._asStringQ(desc.$index(0, "spend_authority_signature"))), t1, t5);
     },
-    $signature: 96
+    $signature: 68
   };
   A.ShieldedTransferContract_ShieldedTransferContract$fromJson_closure0.prototype = {
     call$1(desc) {
@@ -50965,7 +52297,7 @@
       t3 = A.BytesUtils_tryFromHexString(A._asStringQ(desc.$index(0, "epk")));
       return A.ReceiveDescription$(A.BytesUtils_tryFromHexString(A._asStringQ(desc.$index(0, "c_enc"))), A.BytesUtils_tryFromHexString(A._asStringQ(desc.$index(0, "c_out"))), t3, t2, t1, A.BytesUtils_tryFromHexString(A._asStringQ(desc.$index(0, "zkproof"))));
     },
-    $signature: 94
+    $signature: 65
   };
   A.ShieldedTransferContract_ShieldedTransferContract$deserialize_closure.prototype = {
     call$1(e) {
@@ -50978,7 +52310,7 @@
         t6 = A.QuickProtocolBufferResults_getField(decode, 5, t1);
       return A.SpendDescription$(t3, t4, t5, A.QuickProtocolBufferResults_getField(decode, 6, t1), t2, t6);
     },
-    $signature: 96
+    $signature: 68
   };
   A.ShieldedTransferContract_ShieldedTransferContract$deserialize_closure0.prototype = {
     call$1(e) {
@@ -50989,19 +52321,19 @@
         t4 = A.QuickProtocolBufferResults_getField(decode, 3, t1);
       return A.ReceiveDescription$(A.QuickProtocolBufferResults_getField(decode, 4, t1), A.QuickProtocolBufferResults_getField(decode, 5, t1), t4, t3, t2, A.QuickProtocolBufferResults_getField(decode, 6, t1));
     },
-    $signature: 94
+    $signature: 65
   };
   A.ShieldedTransferContract_toJson_closure.prototype = {
     call$1(desc) {
       return type$.SpendDescription._as(desc).toJson$0();
     },
-    $signature: 260
+    $signature: 275
   };
   A.ShieldedTransferContract_toJson_closure0.prototype = {
     call$1(desc) {
       return type$.ReceiveDescription._as(desc).toJson$0();
     },
-    $signature: 261
+    $signature: 276
   };
   A.ShieldedTransferContract_toJson_closure1.prototype = {
     call$2(key, value) {
@@ -51048,7 +52380,7 @@
     call$1(element) {
       return type$.SmartContractAbiEntryType._as(element).name.toLowerCase() === this.name.toLowerCase();
     },
-    $signature: 93
+    $signature: 64
   };
   A.SmartContractAbiEntryType_fromName_closure0.prototype = {
     call$0() {
@@ -51060,13 +52392,13 @@
     call$1(element) {
       return type$.SmartContractAbiEntryType._as(element).value === this.value;
     },
-    $signature: 93
+    $signature: 64
   };
   A.SmartContractAbiEntryType_fromValue_closure0.prototype = {
     call$0() {
       throw A.wrapException(B.TronPluginException_B6W);
     },
-    $signature: 263
+    $signature: 278
   };
   A.SmartContractAbiStateMutabilityType.prototype = {
     toString$0(_) {
@@ -51081,7 +52413,7 @@
     call$1(element) {
       return type$.SmartContractAbiStateMutabilityType._as(element).name.toLowerCase() === this.name.toLowerCase();
     },
-    $signature: 92
+    $signature: 63
   };
   A.SmartContractAbiStateMutabilityType_fromName_closure0.prototype = {
     call$0() {
@@ -51093,13 +52425,13 @@
     call$1(element) {
       return type$.SmartContractAbiStateMutabilityType._as(element).value === this.value;
     },
-    $signature: 92
+    $signature: 63
   };
   A.SmartContractAbiStateMutabilityType_fromValue_closure0.prototype = {
     call$0() {
       throw A.wrapException(B.TronPluginException_awe);
     },
-    $signature: 265
+    $signature: 280
   };
   A.ClearABIContract.prototype = {
     get$fieldIds() {
@@ -51188,14 +52520,14 @@
     call$1(e) {
       return A.SmartContractABI_SmartContractABI$deserialize(type$.List_int._as(e));
     },
-    $signature: 266
+    $signature: 281
   };
   A.SmartContract_SmartContract$deserialize_closure0.prototype = {
     call$1(e) {
       type$.List_int._as(e);
       return new A.TronAddress(A.TrxAddressUtils_fromHexBytes(e), A.BytesUtils_toHexString(e, true, null));
     },
-    $signature: 102
+    $signature: 77
   };
   A.SmartContract_toJson_closure.prototype = {
     call$2(key, value) {
@@ -51225,19 +52557,19 @@
     call$1(e) {
       return A.SmartContractABIEntry_SmartContractABIEntry$fromJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 267
+    $signature: 282
   };
   A.SmartContractABI_SmartContractABI$deserialize_closure.prototype = {
     call$1(e) {
       return A.SmartContractABIEntry_SmartContractABIEntry$deserialize(type$.List_int._as(e));
     },
-    $signature: 268
+    $signature: 283
   };
   A.SmartContractABI_toJson_closure.prototype = {
     call$1(e) {
       return type$.SmartContractABIEntry._as(e).toJson$0();
     },
-    $signature: 269
+    $signature: 284
   };
   A.SmartContractABIEntry.prototype = {
     get$fieldIds() {
@@ -51282,37 +52614,37 @@
     call$1(e) {
       return A.SmartContractBABIEntryParam_SmartContractBABIEntryParam$fromJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 39
+    $signature: 37
   };
   A.SmartContractABIEntry_SmartContractABIEntry$fromJson_closure0.prototype = {
     call$1(e) {
       return A.SmartContractBABIEntryParam_SmartContractBABIEntryParam$fromJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 39
+    $signature: 37
   };
   A.SmartContractABIEntry_SmartContractABIEntry$deserialize_closure.prototype = {
     call$1(e) {
       return A.SmartContractBABIEntryParam_SmartContractBABIEntryParam$deserialize(type$.List_int._as(e));
     },
-    $signature: 39
+    $signature: 37
   };
   A.SmartContractABIEntry_SmartContractABIEntry$deserialize_closure0.prototype = {
     call$1(e) {
       return A.SmartContractBABIEntryParam_SmartContractBABIEntryParam$deserialize(type$.List_int._as(e));
     },
-    $signature: 39
+    $signature: 37
   };
   A.SmartContractABIEntry_toJson_closure.prototype = {
     call$1(e) {
       return type$.SmartContractBABIEntryParam._as(e).toJson$0();
     },
-    $signature: 90
+    $signature: 60
   };
   A.SmartContractABIEntry_toJson_closure0.prototype = {
     call$1(e) {
       return type$.SmartContractBABIEntryParam._as(e).toJson$0();
     },
-    $signature: 90
+    $signature: 60
   };
   A.SmartContractBABIEntryParam.prototype = {
     get$fieldIds() {
@@ -51505,19 +52837,19 @@
     call$1(s) {
       return A.BytesUtils_fromHexString(A._asString(s));
     },
-    $signature: 272
+    $signature: 287
   };
   A.Transaction_closure.prototype = {
     call$1(e) {
       return A.BytesUtils_toBytes(type$.List_int._as(e), true);
     },
-    $signature: 42
+    $signature: 58
   };
   A.Transaction_toJson_closure.prototype = {
     call$1(s) {
       return A.BytesUtils_toHexString(type$.List_int._as(s), true, null);
     },
-    $signature: 70
+    $signature: 100
   };
   A.TransactionContract.prototype = {
     toJson$0() {
@@ -51629,7 +52961,7 @@
       t1 = A.OnChainUtils_parseBytes(_s13_0, t3.$index(0, _s13_0), t1);
       return new A.TransactionContract(type, any, A.BytesUtils_tryToBytes(t2, true), A.BytesUtils_tryToBytes(t1, true), permissionId);
     },
-    $signature: 273
+    $signature: 288
   };
   A.TransactionRaw_TransactionRaw$fromJson_closure0.prototype = {
     call$1(e) {
@@ -51645,7 +52977,7 @@
       }
       return new A.Authority(t2, A.BytesUtils_tryToBytes(A.StringUtils_tryEncode(A._asStringQ(t1.$index(0, "permission_name"))), true));
     },
-    $signature: 274
+    $signature: 289
   };
   A.TransactionRaw_TransactionRaw$deserialize_closure.prototype = {
     call$1(e) {
@@ -51662,25 +52994,25 @@
       t5 = A.QuickProtocolBufferResults_getField(decode, 5, type$.nullable_int);
       return new A.TransactionContract(t2, t1, A.BytesUtils_tryToBytes(t4, true), A.BytesUtils_tryToBytes(t3, true), t5);
     },
-    $signature: 275
+    $signature: 290
   };
   A.TransactionRaw_TransactionRaw$deserialize_closure0.prototype = {
     call$1(e) {
       return A.Authority_Authority$deserialize(type$.List_int._as(e));
     },
-    $signature: 276
+    $signature: 291
   };
   A.TransactionRaw_toJson_closure.prototype = {
     call$1(auth) {
       return type$.Authority._as(auth).toJson$0();
     },
-    $signature: 277
+    $signature: 292
   };
   A.TransactionRaw_toJson_closure0.prototype = {
     call$1(c) {
       return type$.TransactionContract._as(c).toJson$0();
     },
-    $signature: 278
+    $signature: 293
   };
   A.TransactionRaw_toJson_closure1.prototype = {
     call$2(key, value) {
@@ -51717,20 +53049,20 @@
     call$1(address) {
       return A.TronAddress_TronAddress(A._asString(address));
     },
-    $signature: 279
+    $signature: 294
   };
   A.VoteAssetContract_VoteAssetContract$deserialize_closure.prototype = {
     call$1(e) {
       type$.List_int._as(e);
       return new A.TronAddress(A.TrxAddressUtils_fromHexBytes(e), A.BytesUtils_toHexString(e, true, null));
     },
-    $signature: 280
+    $signature: 295
   };
   A.VoteAssetContract_toJson_closure.prototype = {
     call$1(address) {
       return type$.TronAddress._as(address).toAddress$1(true);
     },
-    $signature: 281
+    $signature: 296
   };
   A.VoteAssetContract_toJson_closure0.prototype = {
     call$2(key, value) {
@@ -51776,7 +53108,7 @@
         t1 = A.OnChainUtils_parseMap("vote", true, vote, type$.String, type$.dynamic);
       return new A.VoteWitnessContractVote(A.OnChainUtils_parseTronAddress(_s12_, t1.$index(0, _s12_), type$.TronAddress), A.OnChainUtils_parseBigInt(_s10_, t1.$index(0, _s10_), type$.BigInt));
     },
-    $signature: 89
+    $signature: 140
   };
   A.VoteWitnessContract_VoteWitnessContract$deserialize_closure.prototype = {
     call$1(e) {
@@ -51785,13 +53117,13 @@
       t1 = A.QuickProtocolBufferResults_getField(decode, 1, t1);
       return new A.VoteWitnessContractVote(new A.TronAddress(A.TrxAddressUtils_fromHexBytes(t1), A.BytesUtils_toHexString(t1, true, null)), A.QuickProtocolBufferResults_getField(decode, 2, type$.BigInt));
     },
-    $signature: 89
+    $signature: 140
   };
   A.VoteWitnessContract_toJson_closure.prototype = {
     call$1(vote) {
       return type$.VoteWitnessContractVote._as(vote).toJson$0();
     },
-    $signature: 283
+    $signature: 298
   };
   A.VoteWitnessContract_toJson_closure0.prototype = {
     call$2(key, value) {
@@ -51870,7 +53202,7 @@
     call$1(element) {
       return (A._asInt(element) & 128) === 0;
     },
-    $signature: 50
+    $signature: 44
   };
   A.ProtocolBufferDecoderResult.prototype = {
     toString$0(_) {
@@ -51892,31 +53224,31 @@
     call$1(element) {
       return type$.ProtocolBufferDecoderResult_dynamic._as(element).tagNumber === this.tag;
     },
-    $signature: 35
+    $signature: 34
   };
   A.QuickProtocolBufferResults_getField_closure0.prototype = {
     call$1(e) {
       return type$.ProtocolBufferDecoderResult_dynamic._as(e).tagNumber;
     },
-    $signature: 88
+    $signature: 114
   };
   A.QuickProtocolBufferResults_getResult_closure.prototype = {
     call$1(element) {
       return type$.ProtocolBufferDecoderResult_dynamic._as(element).tagNumber === this.id;
     },
-    $signature: 35
+    $signature: 34
   };
   A.QuickProtocolBufferResults_getResult_closure0.prototype = {
     call$1(e) {
       return type$.ProtocolBufferDecoderResult_dynamic._as(e).tagNumber;
     },
-    $signature: 88
+    $signature: 114
   };
   A.QuickProtocolBufferResults_getFields_closure.prototype = {
     call$1(element) {
       return type$.ProtocolBufferDecoderResult_dynamic._as(element).tagNumber === this.tag;
     },
-    $signature: 35
+    $signature: 34
   };
   A.QuickProtocolBufferResults_getFields_closure0.prototype = {
     call$1(e) {
@@ -51930,7 +53262,7 @@
     call$1(element) {
       return type$.ProtocolBufferDecoderResult_dynamic._as(element).tagNumber === this.tagId;
     },
-    $signature: 35
+    $signature: 34
   };
   A.TVMRequestParam.prototype = {
     get$visible() {
@@ -51977,7 +53309,7 @@
       this.replace.$indexSet(0, n, object);
       return n;
     },
-    $signature: 286
+    $signature: 301
   };
   A.TronRequestDetails.prototype = {
     url$1(uri) {
@@ -52256,20 +53588,20 @@
     call$1(part) {
       return A._asString(part) !== "";
     },
-    $signature: 21
+    $signature: 25
   };
   A.Context_split_closure.prototype = {
     call$1(part) {
       return A._asString(part).length !== 0;
     },
-    $signature: 21
+    $signature: 25
   };
   A._validateArgList_closure.prototype = {
     call$1(arg) {
       A._asStringQ(arg);
       return arg == null ? "null" : '"' + arg + '"';
     },
-    $signature: 287
+    $signature: 302
   };
   A.InternalStyle.prototype = {
     getRoot$1(path) {
@@ -52669,7 +54001,7 @@
       A._asString(e);
       return e + ": " + A.S(this.$this.details.$index(0, e));
     },
-    $signature: 18
+    $signature: 15
   };
   A.MetadataApiInterface.prototype = {};
   A.LatestMetadataInterface.prototype = {};
@@ -52700,7 +54032,7 @@
     call$1(element) {
       return type$.PrimitiveTypes._as(element).name === this.value;
     },
-    $signature: 288
+    $signature: 303
   };
   A.PrimitiveTypes_fromValue_closure0.prototype = {
     call$0() {
@@ -52744,7 +54076,7 @@
     call$1(e) {
       return type$.PrimitiveTypes._as(e).name;
     },
-    $signature: 289
+    $signature: 304
   };
   A.Si1Field.prototype = {
     layout$1$property(property) {
@@ -52818,19 +54150,19 @@
       type$.Map_String_dynamic._as(e);
       return new A.Si1TypeParameter(A._asString(e.$index(0, "name")), A._asIntQ(e.$index(0, "type")));
     },
-    $signature: 290
+    $signature: 305
   };
   A.Si1Type$deserializeJson_closure0.prototype = {
     call$1(e) {
       return type$.Si1TypeParameter._as(e).type;
     },
-    $signature: 291
+    $signature: 306
   };
   A.Si1Type_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.Si1TypeParameter._as(e).scaleJsonSerialize$0();
     },
-    $signature: 292
+    $signature: 307
   };
   A.Si1TypeDefsIndexesConst.prototype = {
     toString$0(_) {
@@ -52841,7 +54173,7 @@
     call$1(element) {
       return type$.Si1TypeDefsIndexesConst._as(element).name === this.name;
     },
-    $signature: 293
+    $signature: 308
   };
   A.Si1TypeDefsIndexesConst_fromValue_closure0.prototype = {
     call$0() {
@@ -52931,13 +54263,13 @@
     call$1(e) {
       return A.Si1Field$deserializeJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 87
+    $signature: 111
   };
   A.Si1TypeDefComposite_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.Si1Field._as(e).scaleJsonSerialize$0();
     },
-    $signature: 86
+    $signature: 110
   };
   A.Si1TypeDefPrimitive.prototype = {
     get$typeName() {
@@ -53009,13 +54341,13 @@
     call$1(e) {
       return A.Si1Variant$deserializeJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 296
+    $signature: 311
   };
   A.Si1TypeDefVariant_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.Si1Variant._as(e).scaleJsonSerialize$0();
     },
-    $signature: 297
+    $signature: 312
   };
   A.Si1TypeParameter.prototype = {
     layout$1$property(property) {
@@ -53053,20 +54385,20 @@
     call$1(e) {
       return A.Si1Field$deserializeJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 87
+    $signature: 111
   };
   A.Si1Variant_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.Si1Field._as(e).scaleJsonSerialize$0();
     },
-    $signature: 86
+    $signature: 110
   };
   A.StorageHasherV11Options.prototype = {};
   A.StorageHasherV11Options_fromValue_closure.prototype = {
     call$1(element) {
       return type$.StorageHasherV11Options._as(element).name === this.value;
     },
-    $signature: 298
+    $signature: 313
   };
   A.StorageHasherV11Options_fromValue_closure0.prototype = {
     call$0() {
@@ -53118,13 +54450,13 @@
     call$1(e) {
       return A.SignedExtensionMetadataV14$deserializeJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 85
+    $signature: 107
   };
   A.ExtrinsicMetadataV14_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.SignedExtensionMetadataV14._as(e).scaleJsonSerialize$0();
     },
-    $signature: 83
+    $signature: 103
   };
   A.MetadataV14.prototype = {
     layout$1$property(property) {
@@ -53150,13 +54482,13 @@
       var decode = A.PalletMetadataV14$deserializeJson(type$.Map_String_dynamic._as(e));
       return new A.MapEntry(decode.index, decode, type$.MapEntry_dynamic_dynamic);
     },
-    $signature: 82
+    $signature: 98
   };
   A.MetadataV14_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.PalletMetadataV14._as(e).scaleJsonSerialize$0();
     },
-    $signature: 302
+    $signature: 317
   };
   A._MetadataV14_SubstrateMetadata_LatestMetadataInterface.prototype = {};
   A.PalletCallMetadataV14.prototype = {
@@ -53251,13 +54583,13 @@
       type$.Map_String_dynamic._as(e);
       return new A.PalletConstantMetadataV14(A._asString(e.$index(0, "name")), A._asInt(e.$index(0, "type")), A.BytesUtils_toBytes(type$.List_int._as(e.$index(0, "value")), true), A.List_List$unmodifiable(type$.Iterable_dynamic._as(e.$index(0, "docs")), type$.String));
     },
-    $signature: 303
+    $signature: 318
   };
   A.PalletMetadataV14_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.PalletConstantMetadataV14._as(e).scaleJsonSerialize$0();
     },
-    $signature: 304
+    $signature: 319
   };
   A.PalletStorageMetadataV14.prototype = {
     layout$1$property(property) {
@@ -53282,13 +54614,13 @@
       t1._as(e);
       return new A.StorageEntryMetadataV14(A._asString(e.$index(0, "name")), new A.StorageEntryModifierV14(A.StorageEntryModifierV9_fromValue(A.SubstrateEnumSerializationUtils_getScaleEnumKey(t1._as(e.$index(0, "modifier")), null, null)).name), A.StorageEntryTypeV14_StorageEntryTypeV14$deserializeJson(t1._as(e.$index(0, "type")), type$.dynamic), A.BytesUtils_toBytes(type$.List_int._as(e.$index(0, "fallback")), true), A.List_List$unmodifiable(type$.Iterable_dynamic._as(e.$index(0, "docs")), type$.String));
     },
-    $signature: 305
+    $signature: 320
   };
   A.PalletStorageMetadataV14_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.StorageEntryMetadataV14._as(e).scaleJsonSerialize$0();
     },
-    $signature: 306
+    $signature: 321
   };
   A.PortableRegistryV14.prototype = {
     layout$1$property(property) {
@@ -53316,13 +54648,13 @@
       t2 = A._asInt(e.$index(0, "id"));
       return new A.MapEntry(t2, new A.PortableTypeV14(t2, t1), type$.MapEntry_int_PortableTypeV14);
     },
-    $signature: 307
+    $signature: 322
   };
   A.PortableRegistryV14_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.PortableTypeV14._as(e).scaleJsonSerialize$0();
     },
-    $signature: 308
+    $signature: 323
   };
   A.PortableTypeV14.prototype = {
     layout$1$property(property) {
@@ -53380,13 +54712,13 @@
     call$1(e) {
       return new A.StorageHasherV14(A.StorageHasherV11Options_fromValue(A.SubstrateEnumSerializationUtils_getScaleEnumKey(type$.Map_String_dynamic._as(e), null, null)));
     },
-    $signature: 309
+    $signature: 324
   };
   A.StorageEntryTypeV14Map_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return A.LinkedHashMap_LinkedHashMap$_literal([type$.StorageHasherV14._as(e).option.name, null], type$.String, type$.dynamic);
     },
-    $signature: 310
+    $signature: 325
   };
   A.StorageEntryTypeV14Plain.prototype = {
     get$typeName() {
@@ -53485,13 +54817,13 @@
     call$1(e) {
       return A.SignedExtensionMetadataV14$deserializeJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 85
+    $signature: 107
   };
   A.ExtrinsicMetadataV15_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.SignedExtensionMetadataV14._as(e).scaleJsonSerialize$0();
     },
-    $signature: 83
+    $signature: 103
   };
   A.MetadataV15.prototype = {
     layout$1$property(property) {
@@ -53520,25 +54852,25 @@
       var decode = A.PalletMetadataV15$deserializeJson(type$.Map_String_dynamic._as(e));
       return new A.MapEntry(decode.index, decode, type$.MapEntry_dynamic_dynamic);
     },
-    $signature: 82
+    $signature: 98
   };
   A.MetadataV15$deserializeJson_closure0.prototype = {
     call$1(e) {
       return A.RuntimeApiMetadataV15$deserializeJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 311
+    $signature: 326
   };
   A.MetadataV15_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.PalletMetadataV15._as(e).scaleJsonSerialize$0();
     },
-    $signature: 312
+    $signature: 327
   };
   A.MetadataV15_scaleJsonSerialize_closure0.prototype = {
     call$1(e) {
       return type$.RuntimeApiMetadataV15._as(e).scaleJsonSerialize$0();
     },
-    $signature: 313
+    $signature: 328
   };
   A._MetadataV15_SubstrateMetadata_LatestMetadataInterface.prototype = {};
   A.OuterEnums15.prototype = {
@@ -53594,13 +54926,13 @@
     call$1(e) {
       return A.RuntimeApiMethodMetadataV15$deserializeJson(type$.Map_String_dynamic._as(e));
     },
-    $signature: 314
+    $signature: 329
   };
   A.RuntimeApiMetadataV15_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.RuntimeApiMethodMetadataV15._as(e).scaleJsonSerialize$0();
     },
-    $signature: 315
+    $signature: 330
   };
   A.RuntimeApiMethodMetadataV15.prototype = {
     layout$1$property(property) {
@@ -53625,13 +54957,13 @@
       type$.Map_String_dynamic._as(e);
       return new A.RuntimeApiMethodParamMetadataV15(A._asString(e.$index(0, "name")), A._asInt(e.$index(0, "type")));
     },
-    $signature: 316
+    $signature: 331
   };
   A.RuntimeApiMethodMetadataV15_scaleJsonSerialize_closure.prototype = {
     call$1(e) {
       return type$.RuntimeApiMethodParamMetadataV15._as(e).scaleJsonSerialize$0();
     },
-    $signature: 317
+    $signature: 332
   };
   A.RuntimeApiMethodParamMetadataV15.prototype = {
     layout$1$property(property) {
@@ -53668,7 +55000,7 @@
     call$1(element) {
       return type$.StorageEntryModifierV9._as(element).name === this.value;
     },
-    $signature: 318
+    $signature: 333
   };
   A.StorageEntryModifierV9_fromValue_closure0.prototype = {
     call$0() {
@@ -53745,13 +55077,13 @@
     call$1(v) {
       return v == null;
     },
-    $signature: 22
+    $signature: 27
   };
   A.SubstrateRPCRequest_toRequest_closure0.prototype = {
     call$1(e) {
       return e;
     },
-    $signature: 17
+    $signature: 18
   };
   A.SubstrateRPCService.prototype = {};
   A.SubstrateRPCChainGetBlockHash.prototype = {
@@ -54277,7 +55609,7 @@
     call$0() {
       return this.color;
     },
-    $signature: 319
+    $signature: 334
   };
   A.Highlighter$__closure.prototype = {
     call$1(line) {
@@ -54285,34 +55617,34 @@
         t2 = A._arrayInstanceType(t1);
       return new A.WhereIterable(t1, t2._eval$1("bool(1)")._as(new A.Highlighter$___closure()), t2._eval$1("WhereIterable<1>")).get$length(0);
     },
-    $signature: 320
+    $signature: 335
   };
   A.Highlighter$___closure.prototype = {
     call$1(highlight) {
       var t1 = type$._Highlight._as(highlight).span;
       return t1.get$start().get$line() !== t1.get$end().get$line();
     },
-    $signature: 46
+    $signature: 42
   };
   A.Highlighter$__closure0.prototype = {
     call$1(line) {
       return type$._Line._as(line).url;
     },
-    $signature: 322
+    $signature: 337
   };
   A.Highlighter__collateLines_closure.prototype = {
     call$1(highlight) {
       var t1 = type$._Highlight._as(highlight).span.get$sourceUrl();
       return t1 == null ? new A.Object() : t1;
     },
-    $signature: 323
+    $signature: 338
   };
   A.Highlighter__collateLines_closure0.prototype = {
     call$2(highlight1, highlight2) {
       var t1 = type$._Highlight;
       return t1._as(highlight1).span.compareTo$1(0, t1._as(highlight2).span);
     },
-    $signature: 324
+    $signature: 339
   };
   A.Highlighter__collateLines_closure1.prototype = {
     call$1(entry) {
@@ -54356,20 +55688,20 @@
       }
       return lines;
     },
-    $signature: 325
+    $signature: 340
   };
   A.Highlighter__collateLines__closure.prototype = {
     call$1(highlight) {
       return type$._Highlight._as(highlight).span.get$end().get$line() < this.line.number;
     },
-    $signature: 46
+    $signature: 42
   };
   A.Highlighter_highlight_closure.prototype = {
     call$1(highlight) {
       type$._Highlight._as(highlight);
       return true;
     },
-    $signature: 46
+    $signature: 42
   };
   A.Highlighter__writeFileStart_closure.prototype = {
     call$0() {
@@ -54386,7 +55718,7 @@
         t2 = this.startLine === this.line.number ? "\u250c" : "\u2514";
       t1._contents += t2;
     },
-    $signature: 12
+    $signature: 14
   };
   A.Highlighter__writeMultilineHighlights_closure0.prototype = {
     call$0() {
@@ -54394,7 +55726,7 @@
         t2 = this.highlight == null ? "\u2500" : "\u253c";
       t1._contents += t2;
     },
-    $signature: 12
+    $signature: 14
   };
   A.Highlighter__writeMultilineHighlights_closure1.prototype = {
     call$0() {
@@ -54429,7 +55761,7 @@
         }
       }
     },
-    $signature: 12
+    $signature: 14
   };
   A.Highlighter__writeMultilineHighlights__closure.prototype = {
     call$0() {
@@ -54437,13 +55769,13 @@
         t2 = this._box_0.openedOnThisLine ? "\u252c" : "\u250c";
       t1._contents += t2;
     },
-    $signature: 12
+    $signature: 14
   };
   A.Highlighter__writeMultilineHighlights__closure0.prototype = {
     call$0() {
       this.$this._highlighter$_buffer._contents += this.vertical;
     },
-    $signature: 12
+    $signature: 14
   };
   A.Highlighter__writeHighlightedText_closure.prototype = {
     call$0() {
@@ -54471,7 +55803,7 @@
       t4 = t2._contents += t4;
       return t4.length - t3.length;
     },
-    $signature: 49
+    $signature: 43
   };
   A.Highlighter__writeIndicator_closure0.prototype = {
     call$0() {
@@ -54492,7 +55824,7 @@
         t1._writeArrow$3$beginning(_this.line, Math.max(_this.highlight.span.get$end().get$column() - 1, 0), false);
       return t2._contents.length - t3.length;
     },
-    $signature: 49
+    $signature: 43
   };
   A.Highlighter__writeSidebar_closure.prototype = {
     call$0() {
@@ -54506,7 +55838,7 @@
       t3 = this.end;
       t2._contents = t1 + (t3 == null ? "\u2502" : t3);
     },
-    $signature: 12
+    $signature: 14
   };
   A._Highlight.prototype = {
     toString$0(_) {
@@ -54528,7 +55860,7 @@
       }
       return A._Highlight__normalizeEndOfLine(A._Highlight__normalizeTrailingNewline(A._Highlight__normalizeNewlines(t1)));
     },
-    $signature: 326
+    $signature: 341
   };
   A._Line.prototype = {
     toString$0(_) {
@@ -54815,7 +56147,7 @@
     call$1(element) {
       return type$.WalletVersion._as(element).name === this.name;
     },
-    $signature: 327
+    $signature: 342
   };
   A.WalletVersion_WalletVersion$fromValue_closure0.prototype = {
     call$0() {
@@ -54845,14 +56177,14 @@
     call$1(element) {
       return type$.MapEntry_String_dynamic._as(element).value != null;
     },
-    $signature: 328
+    $signature: 343
   };
   A.TonDartPluginException_toString_closure0.prototype = {
     call$1(e) {
       type$.MapEntry_String_dynamic._as(e);
       return A.S(e.key) + ": " + A.S(e.value);
     },
-    $signature: 329
+    $signature: 344
   };
   A.RequestMethod.prototype = {
     _enumToString$0() {
@@ -54864,7 +56196,7 @@
     call$1(element) {
       return type$.TonApiType._as(element).name === this.name;
     },
-    $signature: 330
+    $signature: 345
   };
   A.TonApiType_TonApiType$fromValue_closure0.prototype = {
     call$0() {
@@ -54927,7 +56259,7 @@
     call$1(element) {
       return type$.MapEntry_of_String_and_nullable_String._as(element).value != null;
     },
-    $signature: 331
+    $signature: 346
   };
   A.TonCenterPostRequestParam.prototype = {
     toRequest$1(v) {
@@ -55001,13 +56333,13 @@
       type$.Map_String_dynamic._as(item);
       return new A.BlockCurrencyCollectionOtherItemResponse(A.BigintUtils_parse(item.$index(0, "id")), A._asString(item.$index(0, "value")));
     },
-    $signature: 332
+    $signature: 347
   };
   A.BlockCurrencyCollectionResponse_toJson_closure.prototype = {
     call$1(item) {
       return type$.BlockCurrencyCollectionOtherItemResponse._as(item).toJson$0();
     },
-    $signature: 333
+    $signature: 348
   };
   A._BlockCurrencyCollectionResponse_Object_JsonSerialization.prototype = {};
   A.BlockCurrencyCollectionOtherItemResponse.prototype = {
@@ -55146,7 +56478,7 @@
     call$1(e) {
       return A.LinkedHashMap_LinkedHashMap$from(type$.Map_dynamic_dynamic._as(e), type$.String, type$.dynamic);
     },
-    $signature: 33
+    $signature: 20
   };
   A.JsonSerialization0.prototype = {
     toString$0(_) {
@@ -55206,13 +56538,13 @@
     call$1(e) {
       return this.onData.call$1(type$.JSObject._as(e));
     },
-    $signature: 28
+    $signature: 32
   };
   A._EventStreamSubscription_onData_closure.prototype = {
     call$1(e) {
       return this.handleData.call$1(type$.JSObject._as(e));
     },
-    $signature: 28
+    $signature: 32
   };
   A.RPCRequestDetails.prototype = {};
   A.LookupByLedgerRequest.prototype = {};
@@ -55438,14 +56770,13 @@
     $set$4(object, prop, value, receiver) {
       var t1 = type$.Object;
       t1._as(object);
-      A.print("come to set prob " + A.S(t1._as(prop)));
+      t1._as(prop);
       return false;
     },
     $get$2(object, prop) {
       var t1 = type$.Object;
       t1._as(object);
       t1._as(prop);
-      A.print("come to get prob " + A.S(prop));
       return self.Reflect.get(object, prop, null);
     }
   };
@@ -55455,7 +56786,7 @@
       t1._as(r);
       t1._as(self.window).dispatchEvent(this.event);
     },
-    $signature: 34
+    $signature: 29
   };
   A.ClientMessageEthereum.prototype = {
     get$type() {
@@ -55466,30 +56797,30 @@
       return new A.CborTagValue(A.List_List$unmodifiable(B.List_111, type$.int), new A.CborListValue(t1, true, type$.CborListValue_String), type$.CborTagValue_dynamic);
     }
   };
-  A.EthereumEvnetTypes.prototype = {
+  A.EthereumEventTypes.prototype = {
     _enumToString$0() {
-      return "EthereumEvnetTypes." + this._name;
+      return "EthereumEventTypes." + this._name;
     }
   };
-  A.EthereumEvnetTypes_fromTag_closure.prototype = {
+  A.EthereumEventTypes_fromTag_closure.prototype = {
     call$1(e) {
-      return A.BytesUtils_bytesEqual(type$.EthereumEvnetTypes._as(e).tag, this.tag);
+      return A.BytesUtils_bytesEqual(type$.EthereumEventTypes._as(e).tag, this.tag);
     },
-    $signature: 134
+    $signature: 88
   };
-  A.EthereumEvnetTypes_fromTag_closure0.prototype = {
+  A.EthereumEventTypes_fromTag_closure0.prototype = {
     call$0() {
       return A.throwExpression(B.Web3RequestException_chs);
     },
     $signature: 2
   };
-  A.EthereumEvnetTypes_fromName_closure.prototype = {
+  A.EthereumEventTypes_fromName_closure.prototype = {
     call$1(e) {
-      return type$.EthereumEvnetTypes._as(e)._name === this.name;
+      return type$.EthereumEventTypes._as(e)._name === this.name;
     },
-    $signature: 134
+    $signature: 88
   };
-  A.EthereumEvnetTypes_fromName_closure0.prototype = {
+  A.EthereumEventTypes_fromName_closure0.prototype = {
     call$0() {
       return A.throwExpression(B.Web3RequestException_chs);
     },
@@ -55524,7 +56855,7 @@
     call$0() {
       return this._dartInstance.chainId;
     },
-    $signature: 13
+    $signature: 7
   };
   A.ProviderConnectInfo_toJSEvent_closure.prototype = {
     call$0() {
@@ -55542,7 +56873,7 @@
       t2.defineProperty.apply(t2, [_jsExporter, "chainId", _chainIdMapping]);
       return _jsExporter;
     },
-    $signature: 14
+    $signature: 12
   };
   A.EthereumWeb3State.prototype = {};
   A.EthereumWeb3State_EthereumWeb3State_closure.prototype = {
@@ -55550,13 +56881,13 @@
       var t1 = type$.EthereumChain._as(e).network.coinParam.chainId.compareTo$1(0, this.permission._permission$_currentChain);
       return t1 === 0;
     },
-    $signature: 130
+    $signature: 73
   };
   A.EthereumWeb3State_EthereumWeb3State_closure0.prototype = {
     call$1(e) {
       return type$.Web3EthereumChainAccount._as(e).defaultAddress;
     },
-    $signature: 52
+    $signature: 49
   };
   A.EthereumWeb3State_EthereumWeb3State_closure1.prototype = {
     call$0() {
@@ -55565,13 +56896,13 @@
         return null;
       return B.JSArray_methods.get$first(t1);
     },
-    $signature: 341
+    $signature: 356
   };
   A.EthereumWeb3State_EthereumWeb3State_closure2.prototype = {
     call$1(e) {
       return type$.Web3EthereumChainAccount._as(e).address.address;
     },
-    $signature: 342
+    $signature: 357
   };
   A.EthereumWeb3State_EthereumWeb3State_closure3.prototype = {
     call$2(a, b) {
@@ -55586,17 +56917,17 @@
         return 1;
       return B.JSString_methods.compareTo$1(a, b);
     },
-    $signature: 99
+    $signature: 47
   };
   A.JSEthereumHandler.prototype = {
     _onSubscribe$1(result) {
-      this.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEvnetTypes_List_102_message, B.JSClientType_List_111_ethereum, type$.EthereumSubscribeResult._as(result).toJson$0()));
+      this.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEventTypes_List_102_message, B.JSClientType_List_111_ethereum, type$.EthereumSubscribeResult._as(result).toJson$0()));
     },
     initChain$2$authenticated$chainHandler(authenticated, chainHandler) {
       this.lock.synchronized$1$1(new A.JSEthereumHandler_initChain_closure(this, authenticated, chainHandler), type$.Null);
     },
     _ethereum$_disconnect$0() {
-      this.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEvnetTypes_List_104_disconnect, B.JSClientType_List_111_ethereum, B.Web3RequestException_ww8.toJson$0()));
+      this.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEventTypes_List_104_disconnect, B.JSClientType_List_111_ethereum, B.Web3RequestException_ww8.toJson$0()));
     },
     _ethereum$_connect$1(state) {
       var $async$goto = 0,
@@ -55617,7 +56948,7 @@
               }
               t1 = t1.network.coinParam.chainId;
               t1.toRadixString$1(0, 16);
-              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEvnetTypes_List_103_connect, B.JSClientType_List_111_ethereum, A.LinkedHashMap_LinkedHashMap$_literal(["net_version", t1.toString$0(0)], type$.String, type$.dynamic)));
+              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEventTypes_List_103_connect, B.JSClientType_List_111_ethereum, A.LinkedHashMap_LinkedHashMap$_literal(["net_version", t1.toString$0(0)], type$.String, type$.dynamic)));
             case 1:
               // return
               return A._asyncReturn($async$returnValue, $async$completer);
@@ -55636,7 +56967,7 @@
           switch ($async$goto) {
             case 0:
               // Function start
-              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEvnetTypes_List_100_accountsChanged, B.JSClientType_List_111_ethereum, new A.EthereumAccountsChanged(A.List_List$unmodifiable(state.permissionAccounts, type$.String), state.defaultAddress).toJson$0()));
+              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEventTypes_List_100_accountsChanged, B.JSClientType_List_111_ethereum, new A.EthereumAccountsChanged(A.List_List$unmodifiable(state.permissionAccounts, type$.String), state.defaultAddress).toJson$0()));
               // implicit return
               return A._asyncReturn(null, $async$completer);
           }
@@ -55662,7 +56993,7 @@
               }
               t1 = t1.network.coinParam.chainId;
               t1.toRadixString$1(0, 16);
-              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEvnetTypes_List_101_chainChanged, B.JSClientType_List_111_ethereum, A.LinkedHashMap_LinkedHashMap$_literal(["net_version", t1.toString$0(0)], type$.String, type$.dynamic)));
+              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEventTypes_List_101_chainChanged, B.JSClientType_List_111_ethereum, A.LinkedHashMap_LinkedHashMap$_literal(["net_version", t1.toString$0(0)], type$.String, type$.dynamic)));
             case 1:
               // return
               return A._asyncReturn($async$returnValue, $async$completer);
@@ -55672,10 +57003,10 @@
     },
     _ethereum$_eventMessage$2(type, state) {
       switch (type) {
-        case B.EthereumEvnetTypes_List_100_accountsChanged:
+        case B.EthereumEventTypes_List_100_accountsChanged:
           this._ethereum$_accountChanged$1(state);
           break;
-        case B.EthereumEvnetTypes_List_101_chainChanged:
+        case B.EthereumEventTypes_List_101_chainChanged:
           this._chainChanged$1(state);
           break;
         default:
@@ -55697,7 +57028,7 @@
                 // Function start
                 state = $async$self.state;
                 t1 = params.method;
-                isEvent = A.EthereumEvnetTypes_fromName(t1);
+                isEvent = A.EthereumEventTypes_fromName(t1);
                 if (isEvent != null) {
                   $async$returnValue = $async$self._ethereum$_eventMessage$2(isEvent, state);
                   // goto return
@@ -55751,7 +57082,7 @@
                     $async$goto = 1;
                     break $async$outer;
                   case B.Web3EthereumRequestMethods_1_personal_sign_List_empty:
-                    $async$returnValue = $async$self._personalSign$1(params);
+                    $async$returnValue = $async$self._ethereum$_personalSign$1(params);
                     // goto return
                     $async$goto = 1;
                     break $async$outer;
@@ -55833,7 +57164,7 @@
                 throw A.wrapException(B.Web3RequestException_23B);
               t1 = params.paramsAsList$1$0(type$.dynamic);
               if (t1 == null)
-                t1 = B.List_empty5;
+                t1 = B.List_empty6;
               $async$goto = 10;
               return A._asyncAwait(cl.subscribe$1$params(t1), $async$_rpcCall$2);
             case 10:
@@ -55988,7 +57319,7 @@
       });
       return A._asyncStartSync($async$_parseAddEthereumChain$1, $async$completer);
     },
-    _personalSign$1(params) {
+    _ethereum$_personalSign$1(params) {
       var toList, message, t1, exception;
       try {
         t1 = type$.dynamic;
@@ -56040,9 +57371,9 @@
               if (currentState.state !== t2.state) {
                 t3 = t1.sendMessageToClient;
                 if (t2.chain != null)
-                  t3.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEvnetTypes_List_105_active, B.JSClientType_List_111_ethereum, null));
+                  t3.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEventTypes_List_105_active, B.JSClientType_List_111_ethereum, null));
                 else
-                  t3.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEvnetTypes_List_106_disable, B.JSClientType_List_111_ethereum, string$.The_UR));
+                  t3.call$1(new A.JSWalletMessageResponseEthereum(B.EthereumEventTypes_List_106_disable, B.JSClientType_List_111_ethereum, string$.The_UR));
                 t1._ethereum$_disconnect$0();
                 t2 = t1.state;
                 if (t2.chain != null) {
@@ -56079,20 +57410,20 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 15
+    $signature: 16
   };
   A.JSEthereumHandler_request_closure.prototype = {
     call$1(e) {
       var t1 = type$.EthereumChain._as(e).network.coinParam.chainId.compareTo$1(0, this.parse.chainId);
       return t1 === 0;
     },
-    $signature: 130
+    $signature: 73
   };
   A.JSEthereumHandler__parseTypedData_closure.prototype = {
     call$1(e) {
       return A.LinkedHashMap_LinkedHashMap$from(type$.Map_dynamic_dynamic._as(e), type$.String, type$.dynamic);
     },
-    $signature: 33
+    $signature: 20
   };
   A.JSEthereumHandler__parseAddEthereumChain_closure.prototype = {
     call$0() {
@@ -56121,7 +57452,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 75
+    $signature: 131
   };
   A.JSEthereumHandler__parseTransaction_closure.prototype = {
     call$0() {
@@ -56131,19 +57462,26 @@
       else
         return A.LinkedHashMap_LinkedHashMap$from(type$.Map_dynamic_dynamic._as(t1), type$.String, type$.dynamic);
     },
-    $signature: 345
+    $signature: 360
   };
   A.JSWalletError_constructor_fromMessage_toString.prototype = {
     call$0() {
       return "MRT: " + this.message.message;
     },
-    $signature: 13
+    $signature: 7
+  };
+  A.JSWalletError_constructor_fromJson_closure.prototype = {
+    call$2(k, v) {
+      A._asString(k);
+      return v == null;
+    },
+    $signature: 0
   };
   A.JSWalletError_constructor_fromJson_toString.prototype = {
     call$0() {
       return this.message.toString$0(0);
     },
-    $signature: 13
+    $signature: 7
   };
   A.ChainWeb3State.prototype = {};
   A.JSNetworkHandler.prototype = {};
@@ -56159,7 +57497,7 @@
       t1._as(reject);
       this._this.then$1$2$onError(new A.WalletPromise_get_toPromise__closure(resolve), new A.WalletPromise_get_toPromise__closure0(reject), type$.nullable_Object).catchError$1(new A.WalletPromise_get_toPromise__closure1(reject, resolve));
     },
-    $signature: 346
+    $signature: 361
   };
   A.WalletPromise_get_toPromise__closure.prototype = {
     call$1(value) {
@@ -56167,7 +57505,7 @@
       t1.call(t1, value);
       return value;
     },
-    $signature: 51
+    $signature: 46
   };
   A.WalletPromise_get_toPromise__closure0.prototype = {
     call$2(error, stackTrace) {
@@ -56178,14 +57516,14 @@
       t1.call(t1, error);
       return error;
     },
-    $signature: 347
+    $signature: 362
   };
   A.WalletPromise_get_toPromise__closure1.prototype = {
     call$1(e) {
       this.reject.call(this.resolve, e);
       return e;
     },
-    $signature: 17
+    $signature: 18
   };
   A.JSWalletMessageType.prototype = {
     _enumToString$0() {
@@ -56196,7 +57534,7 @@
     call$1(e) {
       return A.BytesUtils_bytesEqual(type$.JSWalletMessageType._as(e).tag, this.tag);
     },
-    $signature: 348
+    $signature: 363
   };
   A.JSWalletMessageType_fromTag_closure0.prototype = {
     call$0() {
@@ -56229,7 +57567,7 @@
     call$1(e) {
       return A.BytesUtils_bytesEqual(type$.JSWalletResponseType._as(e).tag, this.tag);
     },
-    $signature: 349
+    $signature: 364
   };
   A.JSWalletResponseType_fromTag_closure0.prototype = {
     call$0() {
@@ -56259,7 +57597,7 @@
     call$1(e) {
       return A.BytesUtils_bytesEqual(type$.JSClientType._as(e).tag, this.tag);
     },
-    $signature: 350
+    $signature: 365
   };
   A.JSClientType_fromTag_closure0.prototype = {
     call$0() {
@@ -56296,6 +57634,12 @@
       } catch (exception) {
         return null;
       }
+    },
+    cast$1$0(_, $T) {
+      A.checkTypeBound($T, type$.PageMessage, "T", "cast");
+      if (!$T._is(this))
+        throw A.wrapException(B.Web3RequestException_chs);
+      return $T._as(this);
     }
   };
   A._JSPageRequest_Object_CborSerializable.prototype = {};
@@ -56303,7 +57647,7 @@
   A._PageMessage_Object_CborSerializable.prototype = {};
   A.JSPageController.prototype = {
     _getResult$1(message) {
-      return this._getResult$body$JSPageController(message);
+      return this._getResult$body$JSPageController(type$.PageMessage._as(message));
     },
     _getResult$body$JSPageController(message) {
       var $async$goto = 0,
@@ -56383,7 +57727,7 @@
           value = _this.__JSPageController_ethereumPageController_FI;
           if (value === $) {
             t1 = type$.JSArray_JavaScriptFunction;
-            t1 = A.LinkedHashMap_LinkedHashMap$_literal([B.EthereumEvnetTypes_List_100_accountsChanged, A._setArrayType([], t1), B.EthereumEvnetTypes_List_101_chainChanged, A._setArrayType([], t1), B.EthereumEvnetTypes_List_103_connect, A._setArrayType([], t1), B.EthereumEvnetTypes_List_102_message, A._setArrayType([], t1), B.EthereumEvnetTypes_List_104_disconnect, A._setArrayType([], t1)], type$.EthereumEvnetTypes, type$.List_JavaScriptFunction);
+            t1 = A.LinkedHashMap_LinkedHashMap$_literal([B.EthereumEventTypes_List_100_accountsChanged, A._setArrayType([], t1), B.EthereumEventTypes_List_101_chainChanged, A._setArrayType([], t1), B.EthereumEventTypes_List_103_connect, A._setArrayType([], t1), B.EthereumEventTypes_List_102_message, A._setArrayType([], t1), B.EthereumEventTypes_List_104_disconnect, A._setArrayType([], t1)], type$.EthereumEventTypes, type$.List_JavaScriptFunction);
             _this.__JSPageController_ethereumPageController_FI !== $ && A.throwLateFieldADI("ethereumPageController");
             value = _this.__JSPageController_ethereumPageController_FI = new A.EthereumPageController(t1, _this.get$_getResult());
           }
@@ -56398,6 +57742,16 @@
             value = _this.__JSPageController_tronPageController_FI = new A.TronPageController(t1, _this.get$_getResult());
           }
           value.onEvent$1(walletResponse.cast$1$0(0, type$.JSWalletMessageResponseTron));
+          break;
+        case B.JSClientType_List_113_solana:
+          value = _this.__JSPageController_solanaPageController_FI;
+          if (value === $) {
+            t1 = type$.JSArray_JavaScriptFunction;
+            t1 = A.LinkedHashMap_LinkedHashMap$_literal([B.SolanaEventTypes_List_113_connect, A._setArrayType([], t1), B.SolanaEventTypes_List_112_message, A._setArrayType([], t1), B.SolanaEventTypes_List_114_disconnect, A._setArrayType([], t1), B.SolanaEventTypes_List_101_chainChanged, A._setArrayType([], t1), B.SolanaEventTypes_List_100_accountsChanged, A._setArrayType([], t1)], type$.SolanaEventTypes, type$.List_JavaScriptFunction);
+            _this.__JSPageController_solanaPageController_FI !== $ && A.throwLateFieldADI("solanaPageController");
+            value = _this.__JSPageController_solanaPageController_FI = new A.SolanaPageController(t1, _this.get$_getResult());
+          }
+          value.onEvent$1(walletResponse.cast$1$0(0, type$.JSWalletMessageResponseSolana));
           break;
         default:
           break;
@@ -56428,14 +57782,13 @@
       A.EIP6963ProviderDetail_setup(proxy);
     },
     onEvent$1(message) {
-      var eventMessage, t1, eventData, t2, t3, t4, _this = this, _null = null,
-        _s11_ = "net_version";
-      A.print("got event " + message.event._name);
-      eventMessage = message.cast$1$0(0, type$.JSWalletMessageResponseEthereum);
-      t1 = eventMessage.event;
-      eventData = _null;
+      var t2, t3, t4, _this = this, _null = null,
+        _s11_ = "net_version",
+        eventMessage = message.cast$1$0(0, type$.JSWalletMessageResponseEthereum),
+        t1 = eventMessage.event,
+        eventData = _null;
       switch (t1) {
-        case B.EthereumEvnetTypes_List_103_connect:
+        case B.EthereumEventTypes_List_103_connect:
           t2 = A._BigIntImpl_parse(A._asString(type$.Map_String_dynamic._as(eventMessage.data).$index(0, _s11_)), _null);
           t3 = "0x" + t2.toRadixString$1(0, 16);
           eventData = new A.ProviderConnectInfo(t3, t2).get$toJSEvent();
@@ -56446,7 +57799,7 @@
           if (t3 != null)
             t3.object.networkVersion = t2.toString$0(0);
           break;
-        case B.EthereumEvnetTypes_List_101_chainChanged:
+        case B.EthereumEventTypes_List_101_chainChanged:
           t2 = A._BigIntImpl_parse(A._asString(type$.Map_String_dynamic._as(eventMessage.data).$index(0, _s11_)), _null);
           t3 = "0x" + t2.toRadixString$1(0, 16);
           eventData = A.jsify(t3);
@@ -56457,7 +57810,7 @@
           if (t3 != null)
             t3.object.networkVersion = t2.toString$0(0);
           break;
-        case B.EthereumEvnetTypes_List_104_disconnect:
+        case B.EthereumEventTypes_List_104_disconnect:
           t2 = _this._ethereum;
           if (t2 != null)
             t2.object.chainId = null;
@@ -56468,7 +57821,7 @@
           if (t2 != null)
             t2.object.selectedAddress = null;
           break;
-        case B.EthereumEvnetTypes_List_100_accountsChanged:
+        case B.EthereumEventTypes_List_100_accountsChanged:
           t2 = type$.Map_String_dynamic._as(eventMessage.data);
           t3 = type$.String;
           t4 = J.cast$1$0$ax(type$.List_dynamic._as(t2.$index(0, "accounts")), t3);
@@ -56482,13 +57835,13 @@
             t3.selectedAddress = t2;
           }
           break;
-        case B.EthereumEvnetTypes_List_106_disable:
+        case B.EthereumEventTypes_List_106_disable:
           t2 = A._asStringQ(eventMessage.data);
           t3 = self;
           t3.ethereum = null;
           type$.JSObject._as(t3.console).error(t2);
           break;
-        case B.EthereumEvnetTypes_List_105_active:
+        case B.EthereumEventTypes_List_105_active:
           _this._init$0();
           break;
       }
@@ -56509,27 +57862,23 @@
     _disconnect$0() {
     },
     _scripts$_addListener$2(type, listener) {
-      var $event, t1, t2;
+      var $event, t1;
       A._asString(type);
       type$.JavaScriptFunction._as(listener);
-      $event = A.EthereumEvnetTypes_fromName(type);
-      t1 = this._listeners;
-      t2 = t1.$index(0, $event);
-      t2 = t2 == null ? null : B.JSArray_methods.contains$1(t2, listener);
-      A.print("add listener " + type + " " + A.S(t2));
+      $event = A.EthereumEventTypes_fromName(type);
       if ($event == null)
         return;
-      t1 = t1.$index(0, $event);
+      t1 = this._listeners.$index(0, $event);
       if (t1 != null)
         B.JSArray_methods.add$1(t1, listener);
-      if ($event !== B.EthereumEvnetTypes_List_102_message && $event !== B.EthereumEvnetTypes_List_104_disconnect)
+      if ($event !== B.EthereumEventTypes_List_102_message && $event !== B.EthereumEventTypes_List_104_disconnect)
         this.getWalletMessage.call$1(new A.ClientMessageEthereum($event._name, null));
     },
     _removeListener$2(type, listener) {
       var t1;
       A._asString(type);
       type$.JavaScriptFunction._as(listener);
-      t1 = this._listeners.$index(0, A.EthereumEvnetTypes_fromName(type));
+      t1 = this._listeners.$index(0, A.EthereumEventTypes_fromName(type));
       if (t1 != null)
         B.JSArray_methods.remove$1(t1, listener);
     },
@@ -56539,7 +57888,6 @@
     _onRequest$1(params) {
       var t1, t2;
       type$.JSObject._as(params);
-      A.print("page request " + A._asString(params.method));
       t1 = A._asString(params.method);
       t2 = params.params;
       t2 = t2 == null ? null : A.dartify(t2);
@@ -56553,7 +57901,7 @@
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 32
+    $signature: 23
   };
   A.EthereumPageController__init_closure.prototype = {
     call$0() {
@@ -56573,11 +57921,359 @@
       t3.defineProperty.apply(t3, [_jsExporter, "object", _objectMapping]);
       return _jsExporter;
     },
-    $signature: 14
+    $signature: 12
+  };
+  A.SolanaPageController.prototype = {
+    _init$0() {
+      var handler, t1, proxy, _this = this, _this0 = {};
+      _this0.signAndSendTransaction = A._functionToJS1(_this.get$_signTranaction());
+      _this0.signAllTransactions = A._functionToJS1(_this.get$_signAllTransactions());
+      _this0.signAndSendTransaction = A._functionToJS2(_this.get$_signAndSendTransaction());
+      _this0.signAndSendAllTransactions = A._functionToJS2(_this.get$_signAndSendAllTransactions());
+      _this0.on = A._functionToJS2(_this.get$_scripts$_addListener());
+      _this0.removeListener = A._functionToJS2(_this.get$_removeListener());
+      _this0.signMessage = A._functionToJS1(_this.get$_signMessage());
+      _this0.connect = A._functionToJS0(_this.get$_connect());
+      _this0.isConnected = false;
+      handler = new A.ProxyMethodHandler(_this0, type$.ProxyMethodHandler_JSObject);
+      t1 = self;
+      proxy = A.callConstructor(t1.Proxy, [_this0, new A.SolanaPageController__init_closure(handler).call$0()], type$.JSObject);
+      _this.set$_solana(handler);
+      t1.solana = proxy;
+    },
+    _signMessage$1(transaction) {
+      return A.WalletPromise_get_toPromise(this._personalSign$1(type$.Object._as(transaction)), type$.nullable_JSObject);
+    },
+    _personalSign$1(transaction) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.nullable_JSObject),
+        $async$returnValue, $async$self = this, result;
+      var $async$_personalSign$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              $async$goto = 3;
+              return A._asyncAwait($async$self.getWalletMessage.call$1(new A.ClientMessageSolana("solana_signMessage", A.JSUint8Array_toListInt(transaction))), $async$_personalSign$1);
+            case 3:
+              // returning from await.
+              result = $async$result;
+              A.printString("dartify " + A.S(A.dartify(result)));
+              $async$returnValue = {signature: type$.Object._as(self.Uint8Array.from(result))};
+              // goto return
+              $async$goto = 1;
+              break;
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_personalSign$1, $async$completer);
+    },
+    _signTranaction$1(transaction) {
+      return A.WalletPromise_get_toPromise(this._buildTransaction$2$batch$transactions(false, A._setArrayType([type$.JSObject._as(transaction)], type$.JSArray_JSObject)), type$.nullable_Object);
+    },
+    _signAllTransactions$1(transaction) {
+      return A.WalletPromise_get_toPromise(this._buildTransaction$2$batch$transactions(true, type$.JSArray_nullable_Object._as(transaction)), type$.nullable_Object);
+    },
+    _signAndSendTransaction$2(transaction, options) {
+      var t1;
+      type$.JSObject._as(transaction);
+      type$.nullable_JSObject._as(options);
+      t1 = A._setArrayType([transaction], type$.JSArray_JSObject);
+      return A.WalletPromise_get_toPromise(this._buildTransaction$3$batch$option$transactions(false, options == null ? {skipPreflight: false} : options, t1), type$.nullable_Object);
+    },
+    _signAndSendTransaction$1(transaction) {
+      return this._signAndSendTransaction$2(transaction, null);
+    },
+    _signAndSendAllTransactions$2(transaction, options) {
+      type$.JSArray_nullable_Object._as(transaction);
+      type$.nullable_JSObject._as(options);
+      return A.WalletPromise_get_toPromise(this._buildTransaction$3$batch$option$transactions(true, options == null ? {skipPreflight: false} : options, transaction), type$.nullable_Object);
+    },
+    _signAndSendAllTransactions$1(transaction) {
+      return this._signAndSendAllTransactions$2(transaction, null);
+    },
+    _buildTransaction$3$batch$option$transactions(batch, option, transactions) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.nullable_Object),
+        $async$returnValue, $async$self = this, t2, t3, t4, t5, t6, t7, t8, t9, t10, index, t11, t12, t13, t14, t15, completer, result, toDart, t1, _length, messages;
+      var $async$_buildTransaction$3$batch$option$transactions = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              toDart = type$.List_JSObject._is(transactions) ? transactions : new A.CastList(transactions, A._arrayInstanceType(transactions)._eval$1("CastList<1,JSObject>"));
+              t1 = J.getInterceptor$asx(toDart);
+              _length = t1.get$length(toDart);
+              messages = J.JSArray_JSArray$allocateGrowable(_length, type$.ClientSolanaTransactionMessage);
+              for (t2 = type$.String, t3 = type$.dynamic, t4 = type$.List_Object, t5 = type$.nullable_JSArray_nullable_Object, t6 = option == null, t7 = type$.int, t8 = type$.Object, t9 = type$.nullable_List_dynamic, t10 = type$.JSArray_int, index = 0; index < _length; ++index) {
+                t11 = t9._as(A.dartify(t8._as(t1.$index(toDart, index).serialize({verifySignatures: false}))));
+                t11 = t11 == null ? null : J.cast$1$0$ax(t11, t7);
+                if (t11 == null)
+                  t11 = A._setArrayType([], t10);
+                if (t6)
+                  t12 = null;
+                else {
+                  t12 = A._asBoolQ(option.skipPreflight);
+                  t13 = A._asStringQ(option.preflightCommitment);
+                  t14 = A._asIntQ(option.minContextSlot);
+                  t15 = t5._as(option.signers);
+                  if (t15 == null)
+                    t15 = null;
+                  else
+                    t15 = J.get$isNotEmpty$asx(t4._is(t15) ? t15 : new A.CastList(t15, A._arrayInstanceType(t15)._eval$1("CastList<1,Object>")));
+                  t12 = A.LinkedHashMap_LinkedHashMap$_literal(["skipPreflight", t12, "preflightCommitment", t13, "minContextSlot", t14, "signers", t15 === true, "maxRetries", A._asIntQ(option.maxRetries)], t2, t3);
+                }
+                messages[index] = new A.ClientSolanaTransactionMessage(index, A.BytesUtils_toBytes(t11, true), t12);
+              }
+              t1 = new A._Future($.Zone__current, type$._Future_nullable_Object);
+              completer = new A._AsyncCompleter(t1, type$._AsyncCompleter_nullable_Object);
+              t2 = A._arrayInstanceType(messages);
+              t3 = t2._eval$1("MappedListIterable<1,Map<String,@>>");
+              result = $async$self.getWalletMessage.call$1(new A.ClientMessageSolana("solana_signTransaction", A.List_List$of(new A.MappedListIterable(messages, t2._eval$1("Map<String,@>(1)")._as(new A.SolanaPageController__buildTransaction_closure()), t3), true, t3._eval$1("ListIterable.E"))));
+              result.catchError$1(new A.SolanaPageController__buildTransaction_closure0(completer));
+              result.then$1$1(new A.SolanaPageController__buildTransaction_closure1(option, toDart, batch, completer), type$.Null);
+              $async$returnValue = t1;
+              // goto return
+              $async$goto = 1;
+              break;
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_buildTransaction$3$batch$option$transactions, $async$completer);
+    },
+    _buildTransaction$2$batch$transactions(batch, transactions) {
+      return this._buildTransaction$3$batch$option$transactions(batch, null, transactions);
+    },
+    _connect$0() {
+      return A.WalletPromise_get_toPromise(this.getWalletMessage.call$1(B.ClientMessageSolana_solana_requestAccounts_null), type$.nullable_Object);
+    },
+    onEvent$1(message) {
+      var t2, addr, eventData, changeInfo, t3, t4, _this = this,
+        eventMessage = message.cast$1$0(0, type$.JSWalletMessageResponseSolana),
+        t1 = eventMessage.event;
+      switch (t1) {
+        case B.SolanaEventTypes_List_113_connect:
+          t2 = A.SolanaAccountsChanged_SolanaAccountsChanged$fromJson(type$.Map_String_dynamic._as(eventMessage.data)).defaultAddress;
+          addr = t2 == null ? null : t2.get$toJS();
+          t2 = _this._solana;
+          if (t2 != null)
+            t2.object.publicKey = addr;
+          t2 = _this._solana;
+          if (t2 != null)
+            t2.object.isConnected = addr != null;
+          eventData = addr;
+          break;
+        case B.SolanaEventTypes_List_101_chainChanged:
+          eventData = new A.SolanaProviderConnectInfo(A._asString(type$.Map_String_dynamic._as(eventMessage.data).$index(0, "genesisBlock"))).get$toJS();
+          break;
+        case B.SolanaEventTypes_List_100_accountsChanged:
+          changeInfo = A.SolanaAccountsChanged_SolanaAccountsChanged$fromJson(type$.Map_String_dynamic._as(eventMessage.data));
+          t2 = changeInfo.defaultAddress;
+          addr = t2 == null ? null : t2.get$toJS();
+          t2 = changeInfo.accounts;
+          t3 = A._arrayInstanceType(t2);
+          t4 = t3._eval$1("MappedListIterable<1,String>");
+          eventData = A.List_List$of(new A.MappedListIterable(t2, t3._eval$1("String(1)")._as(new A.SolanaPageController_onEvent_closure()), t4), true, t4._eval$1("ListIterable.E"));
+          t4 = _this._solana;
+          if (t4 != null)
+            t4.object.publicKey = addr;
+          t2 = _this._solana;
+          if (t2 != null)
+            t2.object.isConnected = addr != null;
+          break;
+        case B.SolanaEventTypes_List_114_disconnect:
+          t2 = _this._solana;
+          if (t2 != null)
+            t2.object.publicKey = null;
+          t2 = _this._solana;
+          if (t2 != null)
+            t2.object.isConnected = false;
+          eventData = null;
+          break;
+        case B.SolanaEventTypes_List_116_disable:
+          t1 = A._asStringQ(eventMessage.data);
+          t2 = self;
+          t2.solana = null;
+          type$.JSObject._as(t2.console).error(t1);
+          return;
+        case B.SolanaEventTypes_List_115_active:
+          _this._init$0();
+          return;
+        default:
+          return;
+      }
+      _this._eventListeners$2$jsObject(t1, eventData);
+    },
+    _eventListeners$2$jsObject(type, jsObject) {
+      var t2, _i, i,
+        t1 = this._listeners;
+      if (!t1.containsKey$1(type))
+        return;
+      t1 = t1.$index(0, type);
+      t1.toString;
+      t1 = A.List_List$of(t1, true, type$.JavaScriptFunction);
+      for (t2 = t1.length, _i = 0; _i < t2; ++_i) {
+        i = t1[_i];
+        i.call(i, jsObject);
+      }
+    },
+    _scripts$_addListener$2(type, listener) {
+      var $event, t1;
+      A._asString(type);
+      type$.JavaScriptFunction._as(listener);
+      $event = A.SolanaEventTypes_fromName(type);
+      if ($event == null || !this._listeners.containsKey$1($event))
+        return;
+      t1 = this._listeners.$index(0, $event);
+      if (t1 != null)
+        B.JSArray_methods.add$1(t1, listener);
+      if ($event !== B.SolanaEventTypes_List_112_message && $event !== B.SolanaEventTypes_List_114_disconnect)
+        this.getWalletMessage.call$1(new A.ClientMessageSolana($event._name, null));
+    },
+    _removeListener$2(type, listener) {
+      var t1;
+      A._asString(type);
+      type$.JavaScriptFunction._as(listener);
+      t1 = this._listeners.$index(0, A.SolanaEventTypes_fromName(type));
+      if (t1 != null)
+        B.JSArray_methods.remove$1(t1, listener);
+    },
+    set$_solana(_solana) {
+      this._solana = type$.nullable_ProxyMethodHandler_JSObject._as(_solana);
+    }
+  };
+  A.SolanaPageController__init__closure.prototype = {
+    call$0() {
+      return this._dartInstance.object;
+    },
+    $signature: 23
+  };
+  A.SolanaPageController__init_closure.prototype = {
+    call$0() {
+      var _objectMapping,
+        _dartInstance = this.handler,
+        t1 = type$.JSObject,
+        t2 = t1._as(self),
+        t3 = t1._as(t2.Object),
+        _jsExporter = t1._as(t3.create.apply(t3, [null]));
+      _jsExporter.set = A._functionToJS4(_dartInstance.get$set());
+      _jsExporter.get = A._functionToJS2(_dartInstance.get$get());
+      t3 = t1._as(t2.Object);
+      _objectMapping = t1._as(t3.create.apply(t3, [null]));
+      _objectMapping.get = A._functionToJS0(new A.SolanaPageController__init__closure(_dartInstance));
+      t2 = t1._as(t2.Object);
+      t2.defineProperty.apply(t2, [_jsExporter, "object", _objectMapping]);
+      return _jsExporter;
+    },
+    $signature: 12
+  };
+  A.SolanaPageController__buildTransaction_closure.prototype = {
+    call$1(e) {
+      return type$.ClientSolanaTransactionMessage._as(e).toJson$0();
+    },
+    $signature: 375
+  };
+  A.SolanaPageController__buildTransaction_closure0.prototype = {
+    call$1(e) {
+      var t1 = e == null ? type$.Object._as(e) : e;
+      this.completer.completeError$1(t1);
+      return null;
+    },
+    $signature: 24
+  };
+  A.SolanaPageController__buildTransaction_closure1.prototype = {
+    call$1(e) {
+      var _length, txHash, t3, _i, i, t4, t5, t6, t7, t8, jsBuffer, _this = this,
+        response = J.map$1$1$ax(type$.List_dynamic._as(A.dartify(e)), new A.SolanaPageController__buildTransaction__closure(), type$.Map_String_dynamic),
+        t1 = response.$ti,
+        t2 = t1._eval$1("MappedListIterable<ListIterable.E,SolanaWeb3TransactionResponse>"),
+        results = A.List_List$of(new A.MappedListIterable(response, t1._eval$1("SolanaWeb3TransactionResponse(ListIterable.E)")._as(new A.SolanaPageController__buildTransaction__closure0()), t2), true, t2._eval$1("ListIterable.E"));
+      if (_this.option != null) {
+        _length = J.get$length$asx(_this.toDart);
+        txHash = J.JSArray_JSArray$allocateGrowable(_length, type$.nullable_String);
+        for (e = 0; e < _length; ++e)
+          txHash[e] = null;
+        for (t1 = results.length, t2 = type$.SolanaWeb3TransactionSendResponse, t3 = type$.SolanaWeb3TransactionResponse, _i = 0; _i < t1; ++_i) {
+          i = results[_i];
+          switch (i.get$type()) {
+            case B.SolanaWeb3TransactionResponseType_0:
+              t4 = i.id;
+              if (!(t4 >= 0 && t4 < t1))
+                return A.ioore(results, t4);
+              t5 = results[t4];
+              A.checkTypeBound(t2, t3, "T", "cast");
+              B.JSArray_methods.$indexSet(txHash, t4, t2._as(t5).txHash);
+              break;
+          }
+        }
+        t1 = _this.completer;
+        if (_this.batch) {
+          t2 = A._arrayInstanceType(txHash);
+          t3 = t2._eval$1("MappedListIterable<1,String?>");
+          t1.complete$1(A.List_List$of(new A.MappedListIterable(txHash, t2._eval$1("String?(1)")._as(new A.SolanaPageController__buildTransaction__closure1()), t3), true, t3._eval$1("ListIterable.E")));
+        } else {
+          t2 = B.JSArray_methods.get$first(txHash);
+          t1.complete$1(t2 == null ? null : t2);
+        }
+      } else {
+        for (t1 = results.length, t2 = type$.SolanaWeb3TransactionSignResponse, t3 = type$.SolanaWeb3TransactionResponse, t4 = _this.toDart, t5 = J.getInterceptor$asx(t4), t6 = type$.Object, _i = 0; _i < t1; ++_i) {
+          i = results[_i];
+          switch (i.get$type()) {
+            case B.SolanaWeb3TransactionResponseType_1:
+              A.checkTypeBound(t2, t3, "T", "cast");
+              t2._as(i);
+              t7 = t5.$index(t4, i.id);
+              t8 = self;
+              jsBuffer = t6._as(t8.Uint8Array.from(A.jsify(i.signerAddressBytes)));
+              t7.addSignature(new A.JSSolanaPublicKey(i.signer, jsBuffer, new t8.BN(t6._as(jsBuffer.slice()))).get$toJS(), t6._as(t8.Uint8Array.from(A.jsify(i.signature))));
+              break;
+          }
+        }
+        t1 = _this.completer;
+        if (_this.batch)
+          t1.complete$1(A.List_List$from(t4, true, t6));
+        else
+          t1.complete$1(t5.$index(t4, 0));
+      }
+    },
+    $signature: 376
+  };
+  A.SolanaPageController__buildTransaction__closure.prototype = {
+    call$1(e) {
+      return A.LinkedHashMap_LinkedHashMap$from(type$.Map_dynamic_dynamic._as(e), type$.String, type$.dynamic);
+    },
+    $signature: 20
+  };
+  A.SolanaPageController__buildTransaction__closure0.prototype = {
+    call$1(e) {
+      return A.SolanaWeb3TransactionResponse_SolanaWeb3TransactionResponse$fromJson(type$.Map_String_dynamic._as(e));
+    },
+    $signature: 377
+  };
+  A.SolanaPageController__buildTransaction__closure1.prototype = {
+    call$1(e) {
+      A._asStringQ(e);
+      return e == null ? null : e;
+    },
+    $signature: 378
+  };
+  A.SolanaPageController_onEvent_closure.prototype = {
+    call$1(e) {
+      return A._asString(e);
+    },
+    $signature: 15
   };
   A.TronPageController.prototype = {
     _init$1(info) {
-      var t1, tronWeb, t2, t3, t4, tronWebMethodHandler, t5, t6, t7, t8, _this0, eth, adapter, proxy, _this = this, _null = null;
+      var t1, tronWeb, t2, t3, t4, tronWebMethodHandler, t5, t6, t7, t8, _this0, eth, adapter, proxy, _this = this;
       if (_this._tron != null) {
         t1 = _this._tronWeb;
         if (t1 != null)
@@ -56585,10 +58281,6 @@
         t1 = _this._tronWeb;
         if (t1 != null)
           t1.object.solidityNode = new self.TronWeb.providers.HttpProvider(info.fullNode);
-        t1 = _this._tronWeb;
-        A.print("changed host: " + A.S(t1 == null ? _null : A._asString(type$.Object._as(t1.object.fullNode).host)));
-        t1 = _this._tronWeb;
-        A.print("changed host: " + A.S(t1 == null ? _null : A._asString(type$.Object._as(t1.object.solidityNode).host)));
         return;
       }
       tronWeb = info.toTronWeb$0();
@@ -56630,10 +58322,6 @@
       _this.set$_tron(adapter);
       _this.set$_tronWeb(tronWebMethodHandler);
       t4.tron = proxy;
-      t1 = _this._tronWeb;
-      A.print("host: " + A.S(t1 == null ? _null : A._asString(type$.Object._as(t1.object.fullNode).host)));
-      t1 = _this._tronWeb;
-      A.print("host: " + A.S(t1 == null ? _null : A._asString(type$.Object._as(t1.object.solidityNode).host)));
     },
     _disabledFeature$1(args) {
       throw A.wrapException(A.Exception_Exception("this feature disabled by wallet provider."));
@@ -56770,7 +58458,7 @@
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 32
+    $signature: 23
   };
   A.TronPageController__init_closure.prototype = {
     call$0() {
@@ -56789,13 +58477,13 @@
       t2.defineProperty.apply(t2, [_jsExporter, "object", _objectMapping]);
       return _jsExporter;
     },
-    $signature: 14
+    $signature: 12
   };
   A.TronPageController__init__closure0.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 32
+    $signature: 23
   };
   A.TronPageController__init_closure0.prototype = {
     call$0() {
@@ -56814,13 +58502,13 @@
       t2.defineProperty.apply(t2, [_jsExporter, "object", _objectMapping]);
       return _jsExporter;
     },
-    $signature: 14
+    $signature: 12
   };
   A.TronPageController__init__closure.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 32
+    $signature: 23
   };
   A.TronPageController__init_closure1.prototype = {
     call$0() {
@@ -56839,19 +58527,19 @@
       t2.defineProperty.apply(t2, [_jsExporter, "object", _objectMapping]);
       return _jsExporter;
     },
-    $signature: 14
+    $signature: 12
   };
   A.TronPageController_onEvent__closure.prototype = {
     call$0() {
       return this._dartInstance.base58;
     },
-    $signature: 13
+    $signature: 7
   };
   A.TronPageController_onEvent__closure0.prototype = {
     call$0() {
       return this._dartInstance.hex;
     },
-    $signature: 13
+    $signature: 7
   };
   A.TronPageController_onEvent_closure.prototype = {
     call$0() {
@@ -56875,7 +58563,686 @@
       t3.defineProperty.apply(t3, [_jsExporter, "hex", _hexMapping]);
       return _jsExporter;
     },
-    $signature: 14
+    $signature: 12
+  };
+  A.JSSolanaPublicKey.prototype = {
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["base58", this.base58, "bytes", this.bytes], type$.String, type$.dynamic);
+    },
+    equals$1(other) {
+      var t1;
+      type$.nullable_JSObject._as(other);
+      t1 = other == null ? null : other._bn;
+      return A._asBool(this._bn.eq(t1));
+    },
+    toBase58$0() {
+      return this.base58;
+    },
+    toJSON$0() {
+      return this.base58;
+    },
+    toString$0(_) {
+      return this.base58;
+    },
+    toBytes$0() {
+      return type$.Object._as(this.bytes.slice());
+    },
+    get$toJS() {
+      return new A.JSSolanaPublicKey_toJS_closure(this).call$0();
+    }
+  };
+  A.JSSolanaPublicKey_toJS__closure.prototype = {
+    call$0() {
+      return this._dartInstance._bn;
+    },
+    $signature: 12
+  };
+  A.JSSolanaPublicKey_toJS_closure.prototype = {
+    call$0() {
+      var __bnMapping,
+        _dartInstance = this.$this,
+        t1 = type$.JSObject,
+        t2 = t1._as(self),
+        t3 = t1._as(t2.Object),
+        _jsExporter = t1._as(t3.create.apply(t3, [null]));
+      _jsExporter.equals = A._functionToJS1(_dartInstance.get$equals());
+      _jsExporter.toBase58 = A._functionToJS0(_dartInstance.get$toBase58());
+      _jsExporter.toJSON = A._functionToJS0(_dartInstance.get$toJSON());
+      _jsExporter.toString = A._functionToJS0(_dartInstance.get$toString(_dartInstance));
+      _jsExporter.toBytes = A._functionToJS0(_dartInstance.get$toBytes());
+      t3 = t1._as(t2.Object);
+      __bnMapping = t1._as(t3.create.apply(t3, [null]));
+      __bnMapping.get = A._functionToJS0(new A.JSSolanaPublicKey_toJS__closure(_dartInstance));
+      t2 = t1._as(t2.Object);
+      t2.defineProperty.apply(t2, [_jsExporter, "_bn", __bnMapping]);
+      return _jsExporter;
+    },
+    $signature: 12
+  };
+  A.SolanaAccountsChanged.prototype = {
+    toJson$0() {
+      var t2, t3,
+        t1 = this.defaultAddress;
+      t1 = t1 == null ? null : t1.toJson$0();
+      t2 = type$.String;
+      t3 = type$.dynamic;
+      return A.LinkedHashMap_LinkedHashMap$_literal(["accounts", this.accounts, "defaultAddress", t1, "connectInfo", A.LinkedHashMap_LinkedHashMap$_literal(["genesisBlock", this.connectInfo.genesisBlock], t2, t3)], t2, t3);
+    },
+    toString$0(_) {
+      return "SolanaAccountsChanged" + this.toJson$0().toString$0(0);
+    }
+  };
+  A.SolanaEventTypes.prototype = {
+    _enumToString$0() {
+      return "SolanaEventTypes." + this._name;
+    }
+  };
+  A.SolanaEventTypes_fromTag_closure.prototype = {
+    call$1(e) {
+      return A.BytesUtils_bytesEqual(type$.SolanaEventTypes._as(e).tag, this.tag);
+    },
+    $signature: 109
+  };
+  A.SolanaEventTypes_fromTag_closure0.prototype = {
+    call$0() {
+      return A.throwExpression(B.Web3RequestException_chs);
+    },
+    $signature: 2
+  };
+  A.SolanaEventTypes_fromName_closure.prototype = {
+    call$1(e) {
+      return type$.SolanaEventTypes._as(e)._name === this.name;
+    },
+    $signature: 109
+  };
+  A.ClientMessageSolana.prototype = {
+    get$type() {
+      return B.JSClientType_List_113_solana;
+    },
+    toCbor$0() {
+      var t1 = A._setArrayType([this.method, B.C_JsonCodec.encode$2$toEncodable(A.LinkedHashMap_LinkedHashMap$_literal(["result", this.params], type$.String, type$.nullable_Object), null)], type$.JSArray_String);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_113, type$.int), new A.CborListValue(t1, true, type$.CborListValue_String), type$.CborTagValue_dynamic);
+    }
+  };
+  A.ClientSolanaTransactionMessage.prototype = {
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["id", this.id, "message", this.message, "sendOption", this.sendOption], type$.String, type$.dynamic);
+    }
+  };
+  A.JSWalletMessageResponseSolana.prototype = {
+    toCbor$0() {
+      var t1 = A._setArrayType([new A.CborBytesValue(this.client.tag), new A.CborBytesValue(this.event.tag), B.C_JsonCodec.encode$2$toEncodable(A.LinkedHashMap_LinkedHashMap$_literal(["result", this.data], type$.String, type$.nullable_Object), null)], type$.JSArray_Object);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_101, type$.int), new A.CborListValue(t1, true, type$.CborListValue_Object), type$.CborTagValue_dynamic);
+    }
+  };
+  A.SolanaProviderConnectInfo.prototype = {
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["genesisBlock", this.genesisBlock], type$.String, type$.dynamic);
+    },
+    get$toJS() {
+      return new A.SolanaProviderConnectInfo_toJS_closure(this).call$0();
+    },
+    toString$0(_) {
+      return this.genesisBlock;
+    }
+  };
+  A.SolanaProviderConnectInfo_toJS__closure.prototype = {
+    call$0() {
+      return this._dartInstance.genesisBlock;
+    },
+    $signature: 7
+  };
+  A.SolanaProviderConnectInfo_toJS_closure.prototype = {
+    call$0() {
+      var _genesisBlockMapping,
+        _dartInstance = this.$this,
+        t1 = type$.JSObject,
+        t2 = t1._as(self),
+        t3 = t1._as(t2.Object),
+        _jsExporter = t1._as(t3.create.apply(t3, [null]));
+      _jsExporter.toString = A._functionToJS0(_dartInstance.get$toString(_dartInstance));
+      t3 = t1._as(t2.Object);
+      _genesisBlockMapping = t1._as(t3.create.apply(t3, [null]));
+      _genesisBlockMapping.get = A._functionToJS0(new A.SolanaProviderConnectInfo_toJS__closure(_dartInstance));
+      t2 = t1._as(t2.Object);
+      t2.defineProperty.apply(t2, [_jsExporter, "genesisBlock", _genesisBlockMapping]);
+      return _jsExporter;
+    },
+    $signature: 12
+  };
+  A.SolanaWeb3State.prototype = {
+    chainChanged$1(other) {
+      var t2,
+        t1 = other.chain;
+      t1 = t1 == null ? null : t1.network.coinParam.genesis;
+      t2 = this.chain;
+      return t1 != (t2 == null ? null : t2.network.coinParam.genesis);
+    }
+  };
+  A.SolanaWeb3State_SolanaWeb3State_closure.prototype = {
+    call$1(e) {
+      return type$.SolanaChain._as(e).network.coinParam.genesis === this.permission._genesis;
+    },
+    $signature: 381
+  };
+  A.SolanaWeb3State_SolanaWeb3State_closure0.prototype = {
+    call$1(e) {
+      return type$.Web3SolanaChainAccount._as(e).defaultAddress;
+    },
+    $signature: 30
+  };
+  A.SolanaWeb3State_SolanaWeb3State_closure1.prototype = {
+    call$0() {
+      var t1 = this.permissionAccounts;
+      if (t1.length === 0)
+        return null;
+      return B.JSArray_methods.get$first(t1);
+    },
+    $signature: 382
+  };
+  A.SolanaWeb3State_SolanaWeb3State_closure2.prototype = {
+    call$1(e) {
+      return type$.Web3SolanaChainAccount._as(e).address.address;
+    },
+    $signature: 383
+  };
+  A.SolanaWeb3State_SolanaWeb3State_closure3.prototype = {
+    call$2(a, b) {
+      var t1, t2;
+      A._asString(a);
+      A._asString(b);
+      t1 = this.defaultAddress;
+      t2 = t1 == null;
+      if (a === (t2 ? null : t1.address.address))
+        return -1;
+      else if (b === (t2 ? null : t1.address.address))
+        return 1;
+      return B.JSString_methods.compareTo$1(a, b);
+    },
+    $signature: 47
+  };
+  A.JSSolanaHandler.prototype = {
+    initChain$2$authenticated$chainHandler(authenticated, chainHandler) {
+      this.lock.synchronized$1$1(new A.JSSolanaHandler_initChain_closure(this, authenticated, chainHandler), type$.Null);
+    },
+    _eventMessage$2(type, state) {
+      switch (type) {
+        case B.SolanaEventTypes_List_113_connect:
+          this._solana$_connect$1(state);
+          break;
+        default:
+          break;
+      }
+      return new A.Web3ResponseMessage(null, this.get$networkType());
+    },
+    request$1(params) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.Web3MessageCore),
+        $async$returnValue, $async$self = this, state, t1, isEvent;
+      var $async$request$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          $async$outer:
+            switch ($async$goto) {
+              case 0:
+                // Function start
+                state = $async$self.state;
+                t1 = params.method;
+                isEvent = A.SolanaEventTypes_fromName(t1);
+                if (isEvent != null) {
+                  $async$returnValue = $async$self._eventMessage$2(isEvent, state);
+                  // goto return
+                  $async$goto = 1;
+                  break;
+                }
+                switch (A.Web3SolanaRequestMethods_fromName(t1)) {
+                  case B.Web3SolanaRequestMethods_A0N:
+                    t1 = state.permissionAccounts;
+                    if (t1.length !== 0) {
+                      $async$returnValue = new A.Web3ResponseMessage(t1, $async$self.get$networkType());
+                      // goto return
+                      $async$goto = 1;
+                      break $async$outer;
+                    }
+                    $async$returnValue = new A.Web3SolanaRequestAccounts();
+                    // goto return
+                    $async$goto = 1;
+                    break $async$outer;
+                  case B.Web3SolanaRequestMethods_6YB:
+                    $async$returnValue = $async$self._parseTransaction$2(params, state);
+                    // goto return
+                    $async$goto = 1;
+                    break $async$outer;
+                  case B.Web3SolanaRequestMethods_102_solana_signMessage_List_empty:
+                    $async$returnValue = $async$self._solana$_signMessage$2(params, state);
+                    // goto return
+                    $async$goto = 1;
+                    break $async$outer;
+                  default:
+                    throw A.wrapException(B.Web3RequestException_imj);
+                }
+              case 1:
+                // return
+                return A._asyncReturn($async$returnValue, $async$completer);
+            }
+      });
+      return A._asyncStartSync($async$request$1, $async$completer);
+    },
+    _solana$_signMessage$2(params, state) {
+      var data, t2, exception,
+        t1 = state.defaultAddress;
+      if (t1 == null)
+        throw A.wrapException(B.Web3RequestException_CeF);
+      data = A.List_List$from(type$.List_dynamic._as(params.params), true, type$.int);
+      try {
+        A.VersionedMessage_VersionedMessage$fromBuffer(data);
+        t2 = A.Web3RequestExceptionConst_invalidParameters("for signing a transaction using the signTransaction method.");
+        throw A.wrapException(t2);
+      } catch (exception) {
+        if (A.unwrapException(exception) instanceof A.Web3RequestException)
+          throw exception;
+      }
+      t1 = t1.base58;
+      new A.SolAddrDecoder().decodeAddr$1(t1);
+      return new A.Web3SolanaSignMessage(new A.SolAddress(t1), A.BytesUtils_toHexString(data, true, null), A.StringUtils_tryDecode(data));
+    },
+    _parseTransaction$2(params, state) {
+      return this._parseTransaction$body$JSSolanaHandler(params, state);
+    },
+    _parseTransaction$body$JSSolanaHandler(params, state) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.Web3SolanaSendTransaction),
+        $async$returnValue, requests, messages, i, activeAccounts, message, signers, i0, account, option, t1, requests0, t2, t3, t4, t5, _i, t6, t7, _i0, t8, option0, exception;
+      var $async$_parseTransaction$2 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              try {
+                t1 = type$.nullable_List_dynamic._as(params.params);
+                if (t1 == null)
+                  requests0 = null;
+                else {
+                  t1 = J.map$1$1$ax(t1, new A.JSSolanaHandler__parseTransaction_closure(), type$.ClientSolanaTransactionMessage);
+                  t1 = A.List_List$of(t1, true, t1.$ti._eval$1("ListIterable.E"));
+                  requests0 = t1;
+                }
+                requests = requests0 == null ? A._setArrayType([], type$.JSArray_ClientSolanaTransactionMessage) : requests0;
+                if (J.get$length$asx(requests) === 0) {
+                  t1 = A.Web3RequestExceptionConst_invalidParameters("At least one transaction is required for signing.");
+                  throw A.wrapException(t1);
+                }
+                messages = A._setArrayType([], type$.JSArray_Web3SolanaSendTransactionData);
+                for (t1 = requests, t2 = t1.length, t3 = type$.SolAddress, t4 = state.permission, t5 = type$.JSArray_SolAddress, _i = 0; _i < t1.length; t1.length === t2 || (0, A.throwConcurrentModificationError)(t1), ++_i) {
+                  i = t1[_i];
+                  activeAccounts = A._setArrayType([], t5);
+                  message = A.SolanaTransaction_SolanaTransaction$deserialize(i.message);
+                  t6 = message.message;
+                  signers = B.JSArray_methods.sublist$2(t6.get$accountKeys(), 0, t6.get$header().numRequiredSignatures);
+                  for (t6 = signers, t7 = t6.length, _i0 = 0; _i0 < t6.length; t6.length === t7 || (0, A.throwConcurrentModificationError)(t6), ++_i0) {
+                    i0 = t6[_i0];
+                    t8 = t3._as(i0);
+                    if ((t4 == null ? null : t4.getPermission$1(t8)) != null)
+                      J.add$1$ax(activeAccounts, i0);
+                  }
+                  if (J.get$length$asx(activeAccounts) === 0)
+                    throw A.wrapException(B.Web3RequestException_CeF);
+                  account = J.firstWhere$2$orElse$ax(activeAccounts, new A.JSSolanaHandler__parseTransaction_closure0(state), new A.JSSolanaHandler__parseTransaction_closure1(activeAccounts));
+                  t6 = i.message;
+                  J.add$1$ax(messages, new A.Web3SolanaSendTransactionData(account, i.id, A.BytesUtils_toBytes(t6, true)));
+                }
+                if (J.get$first$ax(requests).sendOption == null)
+                  option0 = null;
+                else {
+                  t1 = J.get$first$ax(requests).sendOption;
+                  t2 = A._asStringQ(t1.$index(0, "preflightCommitment"));
+                  t3 = A._asBool(t1.$index(0, "skipPreflight"));
+                  option0 = new A.Web3SolanaSendTransactionOptions(A._asIntQ(t1.$index(0, "maxRetries")), t3, t2, A._asIntQ(t1.$index(0, "minContextSlot")), A._asBool(t1.$index(0, "signers")));
+                }
+                option = option0;
+                t1 = option;
+                t1 = t1 == null ? null : t1.signers;
+                if (t1 === true) {
+                  t1 = A.Web3RequestExceptionConst_invalidParameters("Signers do not have any effect. Please ensure all signatures are added to the transaction before signing, and remove any unused fields.");
+                  throw A.wrapException(t1);
+                }
+                $async$returnValue = new A.Web3SolanaSendTransaction(messages, option);
+                // goto return
+                $async$goto = 1;
+                break;
+              } catch (exception) {
+                if (A.unwrapException(exception) instanceof A.Web3RequestException)
+                  throw exception;
+                else {
+                  t1 = A.Web3RequestExceptionConst_invalidParameters("Transaction serialization failed");
+                  throw A.wrapException(t1);
+                }
+              }
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_parseTransaction$2, $async$completer);
+    },
+    _solana$_disconnect$0() {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.void),
+        $async$self = this;
+      var $async$_solana$_disconnect$0 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseSolana(B.SolanaEventTypes_List_114_disconnect, B.JSClientType_List_113_solana, B.Web3RequestException_ww8.toJson$0()));
+              // implicit return
+              return A._asyncReturn(null, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_solana$_disconnect$0, $async$completer);
+    },
+    _solana$_connect$1(state) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.void),
+        $async$returnValue, $async$self = this, t2, t1;
+      var $async$_solana$_connect$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              t1 = state.defaultAddress;
+              if (t1 == null) {
+                // goto return
+                $async$goto = 1;
+                break;
+              }
+              t2 = state.chain.network;
+              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseSolana(B.SolanaEventTypes_List_113_connect, B.JSClientType_List_113_solana, new A.SolanaAccountsChanged(A.List_List$unmodifiable(state.permissionAccounts, type$.String), t1, new A.SolanaProviderConnectInfo(t2.coinParam.genesis)).toJson$0()));
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_solana$_connect$1, $async$completer);
+    },
+    _solana$_accountChanged$1(state) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.void),
+        $async$self = this, t1;
+      var $async$_solana$_accountChanged$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              t1 = state.chain.network;
+              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseSolana(B.SolanaEventTypes_List_100_accountsChanged, B.JSClientType_List_113_solana, new A.SolanaAccountsChanged(A.List_List$unmodifiable(state.permissionAccounts, type$.String), state.defaultAddress, new A.SolanaProviderConnectInfo(t1.coinParam.genesis)).toJson$0()));
+              // implicit return
+              return A._asyncReturn(null, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_solana$_accountChanged$1, $async$completer);
+    },
+    _solana$_chainChanged$1(state) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.void),
+        $async$returnValue, $async$self = this, t1;
+      var $async$_solana$_chainChanged$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              t1 = state.chain;
+              if (t1 == null) {
+                // goto return
+                $async$goto = 1;
+                break;
+              }
+              $async$self.sendMessageToClient.call$1(new A.JSWalletMessageResponseSolana(B.SolanaEventTypes_List_101_chainChanged, B.JSClientType_List_113_solana, A.LinkedHashMap_LinkedHashMap$_literal(["genesisBlock", t1.network.coinParam.genesis], type$.String, type$.dynamic)));
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_solana$_chainChanged$1, $async$completer);
+    },
+    onRequestDone$1(message) {
+      switch (A.Web3SolanaRequestMethods_fromName(message.method)) {
+        case B.Web3SolanaRequestMethods_A0N:
+          this._solana$_connect$1(this.state);
+          break;
+      }
+    },
+    get$networkType() {
+      return B.NetworkType_4QF;
+    }
+  };
+  A.JSSolanaHandler_initChain_closure.prototype = {
+    call$0() {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.Null),
+        $async$returnValue, $async$self = this, t3, t1, currentState, t2;
+      var $async$call$0 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              t1 = $async$self.$this;
+              currentState = t1.state;
+              t2 = t1.state = A.SolanaWeb3State_SolanaWeb3State($async$self.authenticated, $async$self.chainHandler);
+              if (currentState.state !== t2.state) {
+                t3 = t1.sendMessageToClient;
+                if (t2.chain != null)
+                  t3.call$1(new A.JSWalletMessageResponseSolana(B.SolanaEventTypes_List_115_active, B.JSClientType_List_113_solana, null));
+                else
+                  t3.call$1(new A.JSWalletMessageResponseSolana(B.SolanaEventTypes_List_116_disable, B.JSClientType_List_113_solana, string$.The_UR));
+                t1._solana$_disconnect$0();
+                t2 = t1.state;
+                if (t2.defaultAddress != null) {
+                  t1._solana$_connect$1(t2);
+                  t1._solana$_chainChanged$1(t1.state);
+                }
+                t1._solana$_accountChanged$1(t1.state);
+                // goto return
+                $async$goto = 1;
+                break;
+              }
+              if (t2.chainChanged$1(currentState)) {
+                t1._solana$_disconnect$0();
+                t2 = t1.state;
+                if (t2.defaultAddress != null)
+                  t1._solana$_connect$1(t2);
+                t1._solana$_chainChanged$1(t1.state);
+              }
+              t2 = t1.state;
+              if (!(A.CompareUtils_iterableIsEqual(t2.permissionAccounts, currentState.permissionAccounts, type$.String) && t2.defaultAddress == currentState.defaultAddress)) {
+                if (!t1.state.chainChanged$1(currentState)) {
+                  t2 = t1.state;
+                  if (t2.defaultAddress != null)
+                    t1._solana$_connect$1(t2);
+                  else
+                    t1._solana$_disconnect$0();
+                }
+                t1._solana$_accountChanged$1(t1.state);
+              }
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$call$0, $async$completer);
+    },
+    $signature: 16
+  };
+  A.JSSolanaHandler__parseTransaction_closure.prototype = {
+    call$1(e) {
+      var t1, t2, t3;
+      type$.Map_String_dynamic._as(e);
+      t1 = A._asInt(e.$index(0, "id"));
+      t2 = J.cast$1$0$ax(type$.List_dynamic._as(e.$index(0, "message")), type$.int);
+      t3 = type$.nullable_Map_dynamic_dynamic._as(e.$index(0, "sendOption"));
+      t3 = t3 == null ? null : t3.cast$2$0(0, type$.String, type$.dynamic);
+      return new A.ClientSolanaTransactionMessage(t1, A.BytesUtils_toBytes(t2, true), t3);
+    },
+    $signature: 384
+  };
+  A.JSSolanaHandler__parseTransaction_closure0.prototype = {
+    call$1(e) {
+      var t1;
+      type$.SolAddress._as(e);
+      t1 = this.state.defaultAddress;
+      t1 = t1 == null ? null : t1.base58;
+      return e.address === t1;
+    },
+    $signature: 97
+  };
+  A.JSSolanaHandler__parseTransaction_closure1.prototype = {
+    call$0() {
+      return B.JSArray_methods.get$first(this.activeAccounts);
+    },
+    $signature: 385
+  };
+  A.JSTronAddress.prototype = {
+    toJson$0() {
+      return A.LinkedHashMap_LinkedHashMap$_literal(["base58", this.base58, "hex", this.hex], type$.String, type$.dynamic);
+    },
+    toString$0(_) {
+      return this.base58;
+    },
+    $eq(_, other) {
+      if (other == null)
+        return false;
+      if (!(other instanceof A.JSTronAddress))
+        return false;
+      return this.hex === other.hex;
+    },
+    get$hashCode(_) {
+      return B.JSString_methods.get$hashCode(this.hex) ^ B.JSString_methods.get$hashCode(this.base58);
+    }
+  };
+  A.TronEventTypes.prototype = {
+    _enumToString$0() {
+      return "TronEventTypes." + this._name;
+    }
+  };
+  A.TronEventTypes_fromTag_closure.prototype = {
+    call$1(e) {
+      return A.BytesUtils_bytesEqual(type$.TronEventTypes._as(e).tag, this.tag);
+    },
+    $signature: 106
+  };
+  A.TronEventTypes_fromTag_closure0.prototype = {
+    call$0() {
+      return A.throwExpression(B.Web3RequestException_chs);
+    },
+    $signature: 2
+  };
+  A.TronEventTypes_fromName_closure.prototype = {
+    call$1(e) {
+      return type$.TronEventTypes._as(e)._name === this.name;
+    },
+    $signature: 106
+  };
+  A.ClientMessageTron.prototype = {
+    get$type() {
+      return B.JSClientType_List_112_tron;
+    },
+    toCbor$0() {
+      var t1 = A._setArrayType([this.method, B.C_JsonCodec.encode$2$toEncodable(A.LinkedHashMap_LinkedHashMap$_literal(["result", this.params], type$.String, type$.nullable_Object), null)], type$.JSArray_String);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_112, type$.int), new A.CborListValue(t1, true, type$.CborListValue_String), type$.CborTagValue_dynamic);
+    }
+  };
+  A.TronWebNodeInfo.prototype = {
+    toJson$0() {
+      var _this = this;
+      return A.LinkedHashMap_LinkedHashMap$_literal(["solidityNode", _this.solidityNode, "fullNode", _this.fullNode, "chainId", _this.chainId, "hex", _this.hex, "eventServer", _this.eventServer, "base58", _this.base58], type$.String, type$.dynamic);
+    },
+    toAddress$0() {
+      var t2,
+        t1 = this.base58;
+      if (t1 == null || this.hex == null)
+        return null;
+      t1.toString;
+      t2 = this.hex;
+      t2.toString;
+      return new A.JSTronAddress(t1, t2);
+    },
+    toTronWeb$0() {
+      var tronWeb, addr, t1, exception;
+      try {
+        t1 = this.fullNode;
+        tronWeb = new self.TronWeb(t1, t1, this.eventServer);
+        addr = this.toAddress$0();
+        t1 = addr == null ? null : new A.TronWebNodeInfo_toTronWeb_closure(addr).call$0();
+        tronWeb.defaultAddress = t1;
+        return tronWeb;
+      } catch (exception) {
+        throw exception;
+      }
+    }
+  };
+  A.TronWebNodeInfo_toTronWeb__closure.prototype = {
+    call$0() {
+      return this._dartInstance.base58;
+    },
+    $signature: 7
+  };
+  A.TronWebNodeInfo_toTronWeb__closure0.prototype = {
+    call$0() {
+      return this._dartInstance.hex;
+    },
+    $signature: 7
+  };
+  A.TronWebNodeInfo_toTronWeb_closure.prototype = {
+    call$0() {
+      var _base58Mapping, _hexMapping,
+        _dartInstance = this.addr,
+        t1 = type$.JSObject,
+        t2 = t1._as(self),
+        t3 = t1._as(t2.Object),
+        _jsExporter = t1._as(t3.create.apply(t3, [null]));
+      _jsExporter.toString = A._functionToJS0(J.get$toString$(_dartInstance));
+      t3 = t1._as(t2.Object);
+      _base58Mapping = t1._as(t3.create.apply(t3, [null]));
+      _base58Mapping.get = A._functionToJS0(new A.TronWebNodeInfo_toTronWeb__closure(_dartInstance));
+      t3 = t1._as(t2.Object);
+      t3.defineProperty.apply(t3, [_jsExporter, "base58", _base58Mapping]);
+      t3 = t1._as(t2.Object);
+      _hexMapping = t1._as(t3.create.apply(t3, [null]));
+      _hexMapping.get = A._functionToJS0(new A.TronWebNodeInfo_toTronWeb__closure0(_dartInstance));
+      t2 = t1._as(t2.Object);
+      t2.defineProperty.apply(t2, [_jsExporter, "hex", _hexMapping]);
+      return _jsExporter;
+    },
+    $signature: 12
+  };
+  A.JSWalletMessageResponseTron.prototype = {
+    toCbor$0() {
+      var t1 = A._setArrayType([new A.CborBytesValue(this.client.tag), new A.CborBytesValue(this.event.tag), B.C_JsonCodec.encode$2$toEncodable(A.LinkedHashMap_LinkedHashMap$_literal(["result", this.data], type$.String, type$.nullable_Object), null)], type$.JSArray_Object);
+      return new A.CborTagValue(A.List_List$unmodifiable(B.List_101, type$.int), new A.CborListValue(t1, true, type$.CborListValue_Object), type$.CborTagValue_dynamic);
+    }
+  };
+  A.TronAccountsChanged.prototype = {
+    toJson$0() {
+      var t1 = this.defaultAddress;
+      t1 = t1 == null ? null : t1.toJson$0();
+      return A.LinkedHashMap_LinkedHashMap$_literal(["accounts", this.accounts, "defaultAddress", t1], type$.String, type$.dynamic);
+    },
+    toString$0(_) {
+      return "TronAccountsChanged" + this.toJson$0().toString$0(0);
+    }
   };
   A.TronWeb3State.prototype = {
     get$isConnect() {
@@ -56891,13 +59258,13 @@
     call$1(e) {
       return A.TronChainType_fromId(type$.TronChain._as(e).network.value) === this.permission._currentChain;
     },
-    $signature: 357
+    $signature: 387
   };
   A.TronWeb3State_TronWeb3State_closure0.prototype = {
     call$1(e) {
       return type$.Web3TronChainAccount._as(e).defaultAddress;
     },
-    $signature: 38
+    $signature: 31
   };
   A.TronWeb3State_TronWeb3State_closure1.prototype = {
     call$0() {
@@ -56906,13 +59273,13 @@
         return null;
       return B.JSArray_methods.get$first(t1);
     },
-    $signature: 358
+    $signature: 388
   };
   A.TronWeb3State_TronWeb3State_closure2.prototype = {
     call$1(e) {
       return type$.Web3TronChainAccount._as(e).address.toAddress$0();
     },
-    $signature: 359
+    $signature: 389
   };
   A.TronWeb3State_TronWeb3State_closure3.prototype = {
     call$2(a, b) {
@@ -56927,13 +59294,13 @@
         return 1;
       return B.JSString_methods.compareTo$1(a, b);
     },
-    $signature: 99
+    $signature: 47
   };
   A.JSTronHandler.prototype = {
     initChain$2$authenticated$chainHandler(authenticated, chainHandler) {
       this.lock.synchronized$1$1(new A.JSTronHandler_initChain_closure(this, authenticated, chainHandler), type$.Null);
     },
-    _eventMessage$2(type, state) {
+    _tron$_eventMessage$2(type, state) {
       switch (type) {
         case B.TronEventTypes_List_110_accountsChanged:
           this._accountChanged$1(state);
@@ -56962,7 +59329,7 @@
                 t1 = params.method;
                 isEvent = A.TronEventTypes_fromName(t1);
                 if (isEvent != null) {
-                  $async$returnValue = $async$self._eventMessage$2(isEvent, state);
+                  $async$returnValue = $async$self._tron$_eventMessage$2(isEvent, state);
                   // goto return
                   $async$goto = 1;
                   break;
@@ -56981,7 +59348,7 @@
                     $async$goto = 1;
                     break $async$outer;
                   case B.Web3TronRequestMethods_MMc:
-                    $async$returnValue = $async$self._parseTransaction$2(params, state);
+                    $async$returnValue = $async$self._tron$_parseTransaction$2(params, state);
                     // goto return
                     $async$goto = 1;
                     break $async$outer;
@@ -57017,11 +59384,11 @@
       }
       throw A.wrapException(A.Web3RequestExceptionConst_invalidParameters("Invalid transaction. signed message only accepts bytes or string."));
     },
-    _parseTransaction$2(params, state) {
+    _tron$_parseTransaction$2(params, state) {
       var $async$goto = 0,
         $async$completer = A._makeAsyncAwaitCompleter(type$.Web3TronSendTransaction),
         $async$returnValue, transaction, txId, t1, value, result, owner, t2, permissionId, accountInfo, permission, activeAddressees, t3, _i, t4, transactionData;
-      var $async$_parseTransaction$2 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+      var $async$_tron$_parseTransaction$2 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
         if ($async$errorCode === 1)
           return A._asyncRethrow($async$result, $async$completer);
         while (true)
@@ -57067,7 +59434,7 @@
               if (permissionId == null)
                 throw A.wrapException(B.Web3RequestException_CeF);
               $async$goto = 5;
-              return A._asyncAwait(state.client.getAccount$1(owner), $async$_parseTransaction$2);
+              return A._asyncAwait(state.client.getAccount$1(owner), $async$_tron$_parseTransaction$2);
             case 5:
               // returning from await.
               accountInfo = $async$result;
@@ -57105,7 +59472,7 @@
               return A._asyncReturn($async$returnValue, $async$completer);
           }
       });
-      return A._asyncStartSync($async$_parseTransaction$2, $async$completer);
+      return A._asyncStartSync($async$_tron$_parseTransaction$2, $async$completer);
     },
     _tron$_disconnect$0() {
       var $async$goto = 0,
@@ -57125,11 +59492,11 @@
       });
       return A._asyncStartSync($async$_tron$_disconnect$0, $async$completer);
     },
-    _connect$1(state) {
+    _tron$_connect$1(state) {
       var $async$goto = 0,
         $async$completer = A._makeAsyncAwaitCompleter(type$.void),
         $async$returnValue, $async$self = this, t1;
-      var $async$_connect$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+      var $async$_tron$_connect$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
         if ($async$errorCode === 1)
           return A._asyncRethrow($async$result, $async$completer);
         while (true)
@@ -57150,7 +59517,7 @@
               return A._asyncReturn($async$returnValue, $async$completer);
           }
       });
-      return A._asyncStartSync($async$_connect$1, $async$completer);
+      return A._asyncStartSync($async$_tron$_connect$1, $async$completer);
     },
     _accountChanged$1(state) {
       var $async$goto = 0,
@@ -57237,7 +59604,7 @@
                 t1._toggleTron$1(t2);
                 t1._tron$_disconnect$0();
                 if (t1.state.get$isConnect()) {
-                  t1._connect$1(t1.state);
+                  t1._tron$_connect$1(t1.state);
                   t1._tron$_chainChanged$1(t1.state);
                 }
                 t1._accountChanged$1(t1.state);
@@ -57252,7 +59619,7 @@
                 t1._tron$_disconnect$0();
                 t1._toggleTron$1(t1.state);
                 if (t1.state.get$isConnect())
-                  t1._connect$1(t1.state);
+                  t1._tron$_connect$1(t1.state);
               }
               t2 = t1.state;
               if (A.CompareUtils_iterableIsEqual(t2.permissionAccounts, currentState.permissionAccounts, type$.String)) {
@@ -57271,151 +59638,20 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 15
+    $signature: 16
   };
   A.JSTronHandler__parseTransaction_closure.prototype = {
     call$1(e) {
       return type$.AccountPermission._as(e).id === this.permissionId;
     },
-    $signature: 360
-  };
-  A.JSTronAddress.prototype = {
-    toJson$0() {
-      return A.LinkedHashMap_LinkedHashMap$_literal(["base58", this.base58, "hex", this.hex], type$.String, type$.dynamic);
-    },
-    toString$0(_) {
-      return this.base58;
-    },
-    $eq(_, other) {
-      if (other == null)
-        return false;
-      if (!(other instanceof A.JSTronAddress))
-        return false;
-      return this.hex === other.hex;
-    },
-    get$hashCode(_) {
-      return B.JSString_methods.get$hashCode(this.hex) ^ B.JSString_methods.get$hashCode(this.base58);
-    }
-  };
-  A.TronEventTypes.prototype = {
-    _enumToString$0() {
-      return "TronEventTypes." + this._name;
-    }
-  };
-  A.TronEventTypes_fromTag_closure.prototype = {
-    call$1(e) {
-      return A.BytesUtils_bytesEqual(type$.TronEventTypes._as(e).tag, this.tag);
-    },
-    $signature: 133
-  };
-  A.TronEventTypes_fromTag_closure0.prototype = {
-    call$0() {
-      return A.throwExpression(B.Web3RequestException_chs);
-    },
-    $signature: 2
-  };
-  A.TronEventTypes_fromName_closure.prototype = {
-    call$1(e) {
-      return type$.TronEventTypes._as(e)._name === this.name;
-    },
-    $signature: 133
-  };
-  A.ClientMessageTron.prototype = {
-    get$type() {
-      return B.JSClientType_List_112_tron;
-    },
-    toCbor$0() {
-      var t1 = A._setArrayType([this.method, B.C_JsonCodec.encode$2$toEncodable(A.LinkedHashMap_LinkedHashMap$_literal(["result", this.params], type$.String, type$.nullable_Object), null)], type$.JSArray_String);
-      return new A.CborTagValue(A.List_List$unmodifiable(B.List_112, type$.int), new A.CborListValue(t1, true, type$.CborListValue_String), type$.CborTagValue_dynamic);
-    }
-  };
-  A.TronWebNodeInfo.prototype = {
-    toJson$0() {
-      var _this = this;
-      return A.LinkedHashMap_LinkedHashMap$_literal(["solidityNode", _this.solidityNode, "fullNode", _this.fullNode, "chainId", _this.chainId, "hex", _this.hex, "eventServer", _this.eventServer, "base58", _this.base58], type$.String, type$.dynamic);
-    },
-    toAddress$0() {
-      var t2,
-        t1 = this.base58;
-      if (t1 == null || this.hex == null)
-        return null;
-      t1.toString;
-      t2 = this.hex;
-      t2.toString;
-      return new A.JSTronAddress(t1, t2);
-    },
-    toTronWeb$0() {
-      var tronWeb, addr, exception,
-        t1 = this.fullNode;
-      A.print("full node " + t1);
-      try {
-        tronWeb = new self.TronWeb(t1, t1, this.eventServer);
-        addr = this.toAddress$0();
-        t1 = addr == null ? null : new A.TronWebNodeInfo_toTronWeb_closure(addr).call$0();
-        tronWeb.defaultAddress = t1;
-        return tronWeb;
-      } catch (exception) {
-        throw exception;
-      }
-    }
-  };
-  A.TronWebNodeInfo_toTronWeb__closure.prototype = {
-    call$0() {
-      return this._dartInstance.base58;
-    },
-    $signature: 13
-  };
-  A.TronWebNodeInfo_toTronWeb__closure0.prototype = {
-    call$0() {
-      return this._dartInstance.hex;
-    },
-    $signature: 13
-  };
-  A.TronWebNodeInfo_toTronWeb_closure.prototype = {
-    call$0() {
-      var _base58Mapping, _hexMapping,
-        _dartInstance = this.addr,
-        t1 = type$.JSObject,
-        t2 = t1._as(self),
-        t3 = t1._as(t2.Object),
-        _jsExporter = t1._as(t3.create.apply(t3, [null]));
-      _jsExporter.toString = A._functionToJS0(J.get$toString$(_dartInstance));
-      t3 = t1._as(t2.Object);
-      _base58Mapping = t1._as(t3.create.apply(t3, [null]));
-      _base58Mapping.get = A._functionToJS0(new A.TronWebNodeInfo_toTronWeb__closure(_dartInstance));
-      t3 = t1._as(t2.Object);
-      t3.defineProperty.apply(t3, [_jsExporter, "base58", _base58Mapping]);
-      t3 = t1._as(t2.Object);
-      _hexMapping = t1._as(t3.create.apply(t3, [null]));
-      _hexMapping.get = A._functionToJS0(new A.TronWebNodeInfo_toTronWeb__closure0(_dartInstance));
-      t2 = t1._as(t2.Object);
-      t2.defineProperty.apply(t2, [_jsExporter, "hex", _hexMapping]);
-      return _jsExporter;
-    },
-    $signature: 14
-  };
-  A.JSWalletMessageResponseTron.prototype = {
-    toCbor$0() {
-      var t1 = A._setArrayType([new A.CborBytesValue(this.client.tag), new A.CborBytesValue(this.event.tag), B.C_JsonCodec.encode$2$toEncodable(A.LinkedHashMap_LinkedHashMap$_literal(["result", this.data], type$.String, type$.nullable_Object), null)], type$.JSArray_Object);
-      return new A.CborTagValue(A.List_List$unmodifiable(B.List_101, type$.int), new A.CborListValue(t1, true, type$.CborListValue_Object), type$.CborTagValue_dynamic);
-    }
-  };
-  A.TronAccountsChanged.prototype = {
-    toJson$0() {
-      var t1 = this.defaultAddress;
-      t1 = t1 == null ? null : t1.toJson$0();
-      return A.LinkedHashMap_LinkedHashMap$_literal(["accounts", this.accounts, "defaultAddress", t1], type$.String, type$.dynamic);
-    },
-    toString$0(_) {
-      return "TronAccountsChanged" + this.toJson$0().toString$0(0);
-    }
+    $signature: 390
   };
   A.JSWalletHandler.prototype = {
     get$ethereumHandler() {
       var t1, _this = this, _null = null,
         value = _this.__JSWalletHandler_ethereumHandler_FI;
       if (value === $) {
-        t1 = A.EthereumWeb3State$_(_null, B.List_empty2, _null, _null, _null, B.List_empty1, B.JSNetworkState_1);
+        t1 = A.EthereumWeb3State$_(_null, B.List_empty3, _null, _null, _null, B.List_empty1, B.JSNetworkState_1);
         _this.__JSWalletHandler_ethereumHandler_FI !== $ && A.throwLateFieldADI("ethereumHandler");
         value = _this.__JSWalletHandler_ethereumHandler_FI = new A.JSEthereumHandler(t1, new A.SynchronizedLock(), _this.get$_sendMessageToClient());
       }
@@ -57425,9 +59661,19 @@
       var t1, _this = this, _null = null,
         value = _this.__JSWalletHandler_tronHandler_FI;
       if (value === $) {
-        t1 = A.TronWeb3State$_(_null, B.List_empty0, _null, _null, _null, B.List_empty1, B.JSNetworkState_1);
+        t1 = A.TronWeb3State$_(_null, B.List_empty2, _null, _null, _null, B.List_empty1, B.JSNetworkState_1);
         _this.__JSWalletHandler_tronHandler_FI !== $ && A.throwLateFieldADI("tronHandler");
         value = _this.__JSWalletHandler_tronHandler_FI = new A.JSTronHandler(t1, new A.SynchronizedLock(), _this.get$_sendMessageToClient());
+      }
+      return value;
+    },
+    get$solanaHandler() {
+      var t1, _this = this, _null = null,
+        value = _this.__JSWalletHandler_solanaHandler_FI;
+      if (value === $) {
+        t1 = A.SolanaWeb3State$_(_null, B.List_empty0, _null, _null, _null, B.List_empty1, B.JSNetworkState_1);
+        _this.__JSWalletHandler_solanaHandler_FI !== $ && A.throwLateFieldADI("solanaHandler");
+        value = _this.__JSWalletHandler_solanaHandler_FI = new A.JSSolanaHandler(t1, new A.SynchronizedLock(), _this.get$_sendMessageToClient());
       }
       return value;
     },
@@ -57464,7 +59710,7 @@
             case 7:
               // then
               $async$goto = 9;
-              return A._asyncAwait($async$self.get$ethereumHandler().request$1(type$.ClientMessageEthereum._as(params.message)), $async$_buildAndSendMessage$2$params$requestId);
+              return A._asyncAwait($async$self.get$ethereumHandler().request$1(params.message.cast$1$0(0, type$.ClientMessageEthereum)), $async$_buildAndSendMessage$2$params$requestId);
             case 9:
               // returning from await.
               t1 = $async$result;
@@ -57478,7 +59724,7 @@
             case 10:
               // then
               $async$goto = 12;
-              return A._asyncAwait($async$self.get$tronHandler().request$1(type$.ClientMessageTron._as(params.message)), $async$_buildAndSendMessage$2$params$requestId);
+              return A._asyncAwait($async$self.get$tronHandler().request$1(params.message.cast$1$0(0, type$.ClientMessageTron)), $async$_buildAndSendMessage$2$params$requestId);
             case 12:
               // returning from await.
               t1 = $async$result;
@@ -57487,45 +59733,59 @@
               break;
             case 11:
               // join
+              $async$goto = B.JSClientType_List_113_solana === _0_0 ? 13 : 14;
+              break;
+            case 13:
+              // then
+              $async$goto = 15;
+              return A._asyncAwait($async$self.get$solanaHandler().request$1(params.message.cast$1$0(0, type$.ClientMessageSolana)), $async$_buildAndSendMessage$2$params$requestId);
+            case 15:
+              // returning from await.
+              t1 = $async$result;
+              // goto break $label0$0
+              $async$goto = 6;
+              break;
+            case 14:
+              // join
               t1 = A.throwExpression(B.Web3RequestException_NOa);
             case 6:
               // break $label0$0
               message = t1;
-            case 13:
+            case 16:
               // switch
               switch (message.get$type()) {
                 case B.Web3MessageTypes_List_100_13_response:
                   // goto case
-                  $async$goto = 15;
+                  $async$goto = 18;
                   break;
                 case B.Web3MessageTypes_List_100_14_walletResponse:
                   // goto case
-                  $async$goto = 16;
+                  $async$goto = 19;
                   break;
                 default:
                   // goto default
-                  $async$goto = 17;
+                  $async$goto = 20;
                   break;
               }
               break;
-            case 15:
+            case 18:
               // case
-            case 16:
+            case 19:
               // case
               $async$self.completer.complete$2$requestId$response(requestId, message);
               // goto after switch
-              $async$goto = 14;
+              $async$goto = 17;
               break;
-            case 17:
+            case 20:
               // default
-              $async$goto = 18;
+              $async$goto = 21;
               return A._asyncAwait($async$self._sendMessageToWallet$2$message$requestId(message, requestId), $async$_buildAndSendMessage$2$params$requestId);
-            case 18:
+            case 21:
               // returning from await.
               // goto after switch
-              $async$goto = 14;
+              $async$goto = 17;
               break;
-            case 14:
+            case 17:
               // after switch
               $async$handler = 1;
               // goto after finally
@@ -57538,7 +59798,6 @@
               t1 = A.unwrapException($async$exception1);
               if (t1 instanceof A.Web3RequestException) {
                 e = t1;
-                A.getTraceFromException($async$exception1);
                 exception = e.toResponseMessage$0();
                 $async$self.completer.complete$2$requestId$response(requestId, exception);
               } else {
@@ -57570,7 +59829,7 @@
     _completeJsRequest$body$JSWalletHandler(params) {
       var $async$goto = 0,
         $async$completer = A._makeAsyncAwaitCompleter(type$.JSWalletMessageResponse),
-        $async$returnValue, $async$handler = 2, $async$currentError, $async$next = [], $async$self = this, request, message, t1, _0_0, requestId, completer, t2;
+        $async$returnValue, $async$handler = 2, $async$currentError, $async$next = [], $async$self = this, request, message, t1, _0_0, requestId, completer, t2, t3, t4, t5;
       var $async$_completeJsRequest$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
         if ($async$errorCode === 1) {
           $async$currentError = $async$result;
@@ -57591,23 +59850,50 @@
             case 6:
               // returning from await.
               message = $async$result;
+              t2 = params.message;
+              switch (t2.get$type()) {
+                case B.JSClientType_List_111_ethereum:
+                  $async$self.get$ethereumHandler();
+                  t3 = type$.ClientMessageEthereum;
+                  t4 = t2.cast$1$0(0, t3);
+                  t5 = message;
+                  t3._as(t4);
+                  message = type$.Web3MessageCore._as(t5);
+                  break;
+                case B.JSClientType_List_112_tron:
+                  $async$self.get$tronHandler();
+                  t3 = type$.ClientMessageTron;
+                  t4 = t2.cast$1$0(0, t3);
+                  t5 = message;
+                  t3._as(t4);
+                  message = type$.Web3MessageCore._as(t5);
+                  break;
+                case B.JSClientType_List_113_solana:
+                  $async$self.get$solanaHandler();
+                  t3 = type$.ClientMessageSolana;
+                  t4 = t2.cast$1$0(0, t3);
+                  t5 = message;
+                  t3._as(t4);
+                  message = type$.Web3MessageCore._as(t5);
+                  break;
+              }
               t1 = null;
               _0_0 = message.get$type();
-              $label0$0: {
+              $label0$1: {
                 if (B.Web3MessageTypes_List_100_13_response === _0_0) {
-                  t2 = J.cast$1$0$ax(message, type$.Web3ResponseMessage);
-                  t1 = new A.JSWalletMessageResponse(params.id, B.JSWalletResponseType_List_50_success, params.message.get$type(), t2.result);
-                  break $label0$0;
+                  t3 = J.cast$1$0$ax(message, type$.Web3ResponseMessage);
+                  t1 = new A.JSWalletMessageResponse(params.id, B.JSWalletResponseType_List_50_success, t2.get$type(), t3.result);
+                  break $label0$1;
                 }
                 if (B.Web3MessageTypes_List_100_14_walletResponse === _0_0) {
-                  t2 = J.cast$1$0$ax(message, type$.Web3WalletResponseMessage);
-                  t1 = new A.JSWalletMessageResponse(params.id, B.JSWalletResponseType_List_50_success, params.message.get$type(), t2.result);
-                  break $label0$0;
+                  t3 = J.cast$1$0$ax(message, type$.Web3WalletResponseMessage);
+                  t1 = new A.JSWalletMessageResponse(params.id, B.JSWalletResponseType_List_50_success, t2.get$type(), t3.result);
+                  break $label0$1;
                 }
                 if (B.Web3MessageTypes_List_100_15_error === _0_0) {
-                  t2 = J.cast$1$0$ax(message, type$.Web3ExceptionMessage).toJson$0();
-                  t1 = new A.JSWalletMessageResponse(params.id, B.JSWalletResponseType_List_51_failed, params.message.get$type(), t2);
-                  break $label0$0;
+                  t3 = J.cast$1$0$ax(message, type$.Web3ExceptionMessage).toJson$0();
+                  t1 = new A.JSWalletMessageResponse(params.id, B.JSWalletResponseType_List_51_failed, t2.get$type(), t3);
+                  break $label0$1;
                 }
                 t1 = A.throwExpression(B.Web3RequestException_NOa);
               }
@@ -57630,10 +59916,13 @@
               t1 = params.message;
               switch (t1.get$type()) {
                 case B.JSClientType_List_111_ethereum:
-                  $async$self.get$ethereumHandler().onRequestDone$1(type$.ClientMessageEthereum._as(t1));
+                  $async$self.get$ethereumHandler().onRequestDone$1(t1.cast$1$0(0, type$.ClientMessageEthereum));
                   break;
                 case B.JSClientType_List_112_tron:
-                  $async$self.get$tronHandler().onRequestDone$1(type$.ClientMessageTron._as(t1));
+                  $async$self.get$tronHandler().onRequestDone$1(t1.cast$1$0(0, type$.ClientMessageTron));
+                  break;
+                case B.JSClientType_List_113_solana:
+                  $async$self.get$solanaHandler().onRequestDone$1(t1.cast$1$0(0, type$.ClientMessageSolana));
                   break;
               }
               // goto the next finally handler
@@ -57660,9 +59949,13 @@
         case B.NetworkType_SkF:
           _this.get$tronHandler().initChain$2$authenticated$chainHandler(authenticated, _this._chain);
           break;
+        case B.NetworkType_4QF:
+          _this.get$solanaHandler().initChain$2$authenticated$chainHandler(authenticated, _this._chain);
+          break;
         default:
           _this.get$tronHandler().initChain$2$authenticated$chainHandler(authenticated, _this._chain);
           _this.get$ethereumHandler().initChain$2$authenticated$chainHandler(authenticated, _this._chain);
+          _this.get$solanaHandler().initChain$2$authenticated$chainHandler(authenticated, _this._chain);
           break;
       }
     },
@@ -57740,7 +60033,7 @@
     call$1(e) {
       return type$.JSWebviewTraget._as(e)._name === this.name;
     },
-    $signature: 364
+    $signature: 393
   };
   A.JSWebviewWallet.prototype = {
     _sendMessageToWallet$2$message$requestId(message, requestId) {
@@ -57820,7 +60113,7 @@
           return false;
       }
     },
-    $signature: 120
+    $signature: 79
   };
   (function aliases() {
     var _ = J.LegacyJavaScriptObject.prototype;
@@ -57866,89 +60159,103 @@
       _instance_1_i = hunkHelpers._instance_1i,
       _static = hunkHelpers.installStaticTearOff,
       _instance_0_i = hunkHelpers._instance_0i;
-    _static_2(J, "_interceptors_JSArray__compareAny$closure", "JSArray__compareAny", 114);
-    _instance_1_u(A.CastStreamSubscription.prototype, "get$__internal$_onData", "__internal$_onData$1", 43);
-    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 48);
-    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 48);
-    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 48);
+    _static_2(J, "_interceptors_JSArray__compareAny$closure", "JSArray__compareAny", 62);
+    _instance_1_u(A.CastStreamSubscription.prototype, "get$__internal$_onData", "__internal$_onData$1", 57);
+    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 53);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 53);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 53);
     _static_0(A, "async___startMicrotaskLoop$closure", "_startMicrotaskLoop", 1);
-    _static_1(A, "async___nullDataHandler$closure", "_nullDataHandler", 16);
-    _static_2(A, "async___nullErrorHandler$closure", "_nullErrorHandler", 81);
+    _static_1(A, "async___nullDataHandler$closure", "_nullDataHandler", 17);
+    _static_2(A, "async___nullErrorHandler$closure", "_nullErrorHandler", 129);
     _static_0(A, "async___nullDoneHandler$closure", "_nullDoneHandler", 1);
-    _instance(A._Completer.prototype, "get$completeError", 0, 1, null, ["call$2", "call$1"], ["completeError$2", "completeError$1"], 235, 0, 0);
-    _instance_2_u(A._Future.prototype, "get$_completeError", "_completeError$2", 81);
+    _instance(A._Completer.prototype, "get$completeError", 0, 1, null, ["call$2", "call$1"], ["completeError$2", "completeError$1"], 395, 0, 0);
+    _instance_2_u(A._Future.prototype, "get$_completeError", "_completeError$2", 129);
     _instance_0_u(A._DoneStreamSubscription.prototype, "get$_onMicrotask", "_onMicrotask$0", 1);
-    _static_2(A, "collection___defaultEquals$closure", "_defaultEquals", 103);
-    _static_1(A, "collection___defaultHashCode$closure", "_defaultHashCode", 100);
-    _static_2(A, "collection_ListBase__compareAny$closure", "ListBase__compareAny", 114);
-    _static_1(A, "convert___defaultToEncodable$closure", "_defaultToEncodable", 17);
+    _static_2(A, "collection___defaultEquals$closure", "_defaultEquals", 112);
+    _static_1(A, "collection___defaultHashCode$closure", "_defaultHashCode", 91);
+    _static_2(A, "collection_ListBase__compareAny$closure", "ListBase__compareAny", 62);
+    _static_1(A, "convert___defaultToEncodable$closure", "_defaultToEncodable", 18);
     var _;
-    _instance_1_i(_ = A._ByteCallbackSink.prototype, "get$add", "add$1", 43);
+    _instance_1_i(_ = A._ByteCallbackSink.prototype, "get$add", "add$1", 57);
     _instance_0_u(_, "get$close", "close$0", 1);
-    _static_1(A, "core__identityHashCode$closure", "identityHashCode", 100);
-    _static_2(A, "core__identical$closure", "identical", 103);
-    _static_1(A, "core_Uri_decodeComponent$closure", "Uri_decodeComponent", 18);
-    _instance(_ = A._RawSecureSocket.prototype, "get$_completeCloseCompleter", 0, 0, null, ["call$1", "call$0"], ["_completeCloseCompleter$1", "_completeCloseCompleter$0"], 232, 0, 0);
-    _instance_1_u(_, "get$_onBadCertificateWrapper", "_onBadCertificateWrapper$1", 73);
-    _instance_1_u(_, "get$_eventDispatcher", "_eventDispatcher$1", 189);
+    _static_1(A, "core__identityHashCode$closure", "identityHashCode", 91);
+    _static_2(A, "core__identical$closure", "identical", 112);
+    _static_1(A, "core_Uri_decodeComponent$closure", "Uri_decodeComponent", 15);
+    _instance(_ = A._RawSecureSocket.prototype, "get$_completeCloseCompleter", 0, 0, null, ["call$1", "call$0"], ["_completeCloseCompleter$1", "_completeCloseCompleter$0"], 367, 0, 0);
+    _instance_1_u(_, "get$_onBadCertificateWrapper", "_onBadCertificateWrapper$1", 66);
+    _instance_1_u(_, "get$_eventDispatcher", "_eventDispatcher$1", 358);
     _instance_0_u(_, "get$_doneHandler", "_doneHandler$0", 1);
-    _instance(_, "get$_reportError", 0, 1, null, ["call$2", "call$1"], ["_reportError$2", "_reportError$1"], 156, 0, 0);
+    _instance(_, "get$_reportError", 0, 1, null, ["call$2", "call$1"], ["_reportError$2", "_reportError$1"], 355, 0, 0);
     _instance_0_u(_, "get$_secureHandshakeCompleteHandler", "_secureHandshakeCompleteHandler$0", 1);
     _instance_0_u(_, "get$_onPauseStateChange", "_onPauseStateChange$0", 1);
     _instance_0_u(_, "get$_onSubscriptionStateChange", "_onSubscriptionStateChange$0", 1);
-    _instance_1_u(_, "get$_readSocketOrBufferedData", "_readSocketOrBufferedData$1", 138);
+    _instance_1_u(_, "get$_readSocketOrBufferedData", "_readSocketOrBufferedData$1", 354);
     _static(A, "math__max$closure", 2, null, ["call$1$2", "call$2"], ["max", function(a, b) {
       return A.max(a, b, type$.num);
-    }], 369, 0);
-    _static_2(A, "bch_bech32__BchBech32Utils_computeChecksum$closure", "_BchBech32Utils_computeChecksum", 104);
-    _static_2(A, "bch_bech32__BchBech32Utils_verifyChecksum$closure", "_BchBech32Utils_verifyChecksum", 84);
+    }], 398, 0);
+    _static_2(A, "bch_bech32__BchBech32Utils_computeChecksum$closure", "_BchBech32Utils_computeChecksum", 87);
+    _static_2(A, "bch_bech32__BchBech32Utils_verifyChecksum$closure", "_BchBech32Utils_verifyChecksum", 67);
     _static(A, "bech32_base_Bech32Utils_computeChecksum$closure", 2, null, ["call$3", "call$2"], ["Bech32Utils_computeChecksum", function(hrp, data) {
       return A.Bech32Utils_computeChecksum(hrp, data, B.Bech32Encodings_0);
-    }], 372, 0);
+    }], 401, 0);
     _static(A, "bech32_base_Bech32Utils_verifyChecksum$closure", 2, null, ["call$3", "call$2"], ["Bech32Utils_verifyChecksum", function(hrp, data) {
       return A.Bech32Utils_verifyChecksum(hrp, data, B.Bech32Encodings_0);
-    }], 373, 0);
-    _static_1(A, "bip32_path_Bip32PathParser__parseElem$closure", "Bip32PathParser__parseElem", 249);
-    _instance_0_i(A.Bip32Path.prototype, "get$length", "length$0", 49);
+    }], 402, 0);
+    _static_1(A, "bip32_path_Bip32PathParser__parseElem$closure", "Bip32PathParser__parseElem", 268);
+    _instance_0_i(A.Bip32Path.prototype, "get$length", "length$0", 43);
     _instance_0_u(_ = A.WebSocketService.prototype, "get$_onClose", "_onClose$0", 1);
-    _instance_1_u(_, "get$onMessge", "onMessge$1", 135);
-    _instance_1_u(A.EthereumWebsocketService.prototype, "get$onMessge", "onMessge$1", 135);
-    _instance_0_u(A.WithdrawExpireUnfreezeContract.prototype, "get$toJson", "toJson$0", 36);
-    _instance_0_u(A.ReceiveDescription.prototype, "get$toJson", "toJson$0", 36);
-    _instance_0_u(A.SpendDescription.prototype, "get$toJson", "toJson$0", 36);
-    _instance(_ = A.ProxyMethodHandler.prototype, "get$set", 0, 4, null, ["call$4"], ["$set$4"], 335, 0, 0);
-    _instance_2_u(_, "get$get", "$get$2", 336);
-    _instance_0_i(A.ProviderConnectInfo.prototype, "get$toString", "toString$0", 13);
-    _instance_1_u(A.JSEthereumHandler.prototype, "get$_onSubscribe", "_onSubscribe$1", 344);
-    _instance_1_u(_ = A.JSPageController.prototype, "get$_getResult", "_getResult$1", 351);
-    _instance_1_u(_, "get$_onWalletEvent", "_onWalletEvent$1", 28);
+    _instance_1_u(_, "get$onMessge", "onMessge$1", 138);
+    _instance_1_u(A.EthereumWebsocketService.prototype, "get$onMessge", "onMessge$1", 138);
+    _instance_0_u(A.WithdrawExpireUnfreezeContract.prototype, "get$toJson", "toJson$0", 33);
+    _instance_0_u(A.ReceiveDescription.prototype, "get$toJson", "toJson$0", 33);
+    _instance_0_u(A.SpendDescription.prototype, "get$toJson", "toJson$0", 33);
+    _instance(_ = A.ProxyMethodHandler.prototype, "get$set", 0, 4, null, ["call$4"], ["$set$4"], 350, 0, 0);
+    _instance_2_u(_, "get$get", "$get$2", 351);
+    _instance_0_i(A.ProviderConnectInfo.prototype, "get$toString", "toString$0", 7);
+    _instance_1_u(A.JSEthereumHandler.prototype, "get$_onSubscribe", "_onSubscribe$1", 359);
+    _instance_1_u(_ = A.JSPageController.prototype, "get$_getResult", "_getResult$1", 366);
+    _instance_1_u(_, "get$_onWalletEvent", "_onWalletEvent$1", 32);
     _instance_0_u(_ = A.EthereumPageController.prototype, "get$_disconnect", "_disconnect$0", 1);
-    _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 26);
-    _instance_2_u(_, "get$_removeListener", "_removeListener$2", 26);
-    _instance_0_u(_, "get$_enable", "_enable$0", 95);
-    _instance_1_u(_, "get$_onRequest", "_onRequest$1", 80);
-    _instance_1_u(_ = A.TronPageController.prototype, "get$_disabledFeature", "_disabledFeature$1", 43);
-    _instance_1_u(_, "get$_signMessageV2_", "_signMessageV2_$1", 41);
-    _instance_1_u(_, "get$_signTransaction_", "_signTransaction_$1", 41);
-    _instance_1_u(_, "get$_multiSign", "_multiSign$1", 41);
+    _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 19);
+    _instance_2_u(_, "get$_removeListener", "_removeListener$2", 19);
+    _instance_0_u(_, "get$_enable", "_enable$0", 48);
+    _instance_1_u(_, "get$_onRequest", "_onRequest$1", 51);
+    _instance_1_u(_ = A.SolanaPageController.prototype, "get$_signMessage", "_signMessage$1", 40);
+    _instance_1_u(_, "get$_signTranaction", "_signTranaction$1", 51);
+    _instance_1_u(_, "get$_signAllTransactions", "_signAllTransactions$1", 372);
+    _instance(_, "get$_signAndSendTransaction", 0, 1, null, ["call$2", "call$1"], ["_signAndSendTransaction$2", "_signAndSendTransaction$1"], 373, 0, 0);
+    _instance(_, "get$_signAndSendAllTransactions", 0, 1, null, ["call$2", "call$1"], ["_signAndSendAllTransactions$2", "_signAndSendAllTransactions$1"], 374, 0, 0);
+    _instance_0_u(_, "get$_connect", "_connect$0", 48);
+    _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 19);
+    _instance_2_u(_, "get$_removeListener", "_removeListener$2", 19);
+    _instance_1_u(_ = A.TronPageController.prototype, "get$_disabledFeature", "_disabledFeature$1", 57);
+    _instance_1_u(_, "get$_signMessageV2_", "_signMessageV2_$1", 40);
+    _instance_1_u(_, "get$_signTransaction_", "_signTransaction_$1", 40);
+    _instance_1_u(_, "get$_multiSign", "_multiSign$1", 40);
     _instance_0_u(_, "get$_disconnect", "_disconnect$0", 1);
-    _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 26);
-    _instance_2_u(_, "get$_removeListener", "_removeListener$2", 26);
-    _instance_0_u(_, "get$_enable", "_enable$0", 95);
-    _instance_1_u(_, "get$_onRequest", "_onRequest$1", 80);
-    _instance_0_i(A.JSTronAddress.prototype, "get$toString", "toString$0", 13);
-    _instance_1_u(_ = A.JSWalletHandler.prototype, "get$_onClientEvent", "_onClientEvent$1", 28);
-    _instance_1_u(_, "get$_sendMessageToClient", "_sendMessageToClient$1", 362);
-    _instance_1_u(_, "get$_onResponse", "_onResponse$1", 120);
-    _static_2(A, "segwit_bech32_SegwitBech32Encoder__computeChecksum$closure", "SegwitBech32Encoder__computeChecksum", 104);
-    _static_2(A, "segwit_bech32_SegwitBech32Decoder__verifyChecksum$closure", "SegwitBech32Decoder__verifyChecksum", 84);
+    _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 19);
+    _instance_2_u(_, "get$_removeListener", "_removeListener$2", 19);
+    _instance_0_u(_, "get$_enable", "_enable$0", 48);
+    _instance_1_u(_, "get$_onRequest", "_onRequest$1", 51);
+    _instance_1_u(_ = A.JSSolanaPublicKey.prototype, "get$equals", "equals$1", 379);
+    _instance_0_u(_, "get$toBase58", "toBase58$0", 7);
+    _instance_0_u(_, "get$toJSON", "toJSON$0", 7);
+    _instance_0_i(_, "get$toString", "toString$0", 7);
+    _instance_0_u(_, "get$toBytes", "toBytes$0", 12);
+    _instance_0_i(A.SolanaProviderConnectInfo.prototype, "get$toString", "toString$0", 7);
+    _instance_0_i(A.JSTronAddress.prototype, "get$toString", "toString$0", 7);
+    _instance_1_u(_ = A.JSWalletHandler.prototype, "get$_onClientEvent", "_onClientEvent$1", 32);
+    _instance_1_u(_, "get$_sendMessageToClient", "_sendMessageToClient$1", 391);
+    _instance_1_u(_, "get$_onResponse", "_onResponse$1", 79);
+    _static_2(A, "segwit_bech32_SegwitBech32Encoder__computeChecksum$closure", "SegwitBech32Encoder__computeChecksum", 87);
+    _static_2(A, "segwit_bech32_SegwitBech32Decoder__verifyChecksum$closure", "SegwitBech32Decoder__verifyChecksum", 67);
   })();
   (function inheritance() {
     var _mixin = hunkHelpers.mixin,
       _inherit = hunkHelpers.inherit,
       _inheritMany = hunkHelpers.inheritMany;
     _inherit(A.Object, null);
-    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Stream, A.CastStreamSubscription, A.Iterable, A.CastIterator, A.Closure, A.MapBase, A.Error, A.ListBase, A.SentinelValue, A.ListIterator, A.MappedIterator, A.WhereIterator, A.ExpandIterator, A.TakeIterator, A.SkipIterator, A.EmptyIterator, A.WhereTypeIterator, A.FixedLengthListMixin, A.UnmodifiableListMixin, A.Symbol, A._Record, A.MapView, A.ConstantMap, A._KeysOrValuesOrElementsIterator, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A.ExceptionAndStackTrace, A._StackTrace, A.LinkedHashMapCell, A.LinkedHashMapKeyIterator, A.JSSyntaxRegExp, A._MatchImplementation, A._AllMatchesIterator, A.StringMatch, A._StringAllMatchesIterator, A._Cell, A.Rti, A._FunctionParameters, A._Type, A._TimerImpl, A._AsyncAwaitCompleter, A._SyncStarIterator, A.AsyncError, A.TimeoutException, A._Completer, A._FutureListener, A._Future, A._AsyncCallbackEntry, A._StreamController, A._SyncStreamControllerDispatch, A._AsyncStreamControllerDispatch, A._BufferingStreamSubscription, A._DelayedEvent, A._DelayedDone, A._PendingEvents, A._DoneStreamSubscription, A._StreamIterator, A._Zone, A._HashMapKeyIterator, A.SetBase, A._LinkedHashSetCell, A._LinkedHashSetIterator, A._MapBaseValueIterator, A._UnmodifiableMapMixin, A.Codec, A.Converter, A._Base64Encoder, A._Base64Decoder, A.ByteConversionSink, A._JsonStringifier, A._Utf8Encoder, A._Utf8Decoder, A._BigIntImpl, A._BigIntClassic, A.DateTime, A.Duration, A._Enum, A.OutOfMemoryError, A.StackOverflowError, A._Exception, A.FormatException, A.IntegerDivisionByZeroException, A.MapEntry, A.Null, A._StringStackTrace, A.RuneIterator, A.StringBuffer, A._Uri, A.UriData, A._SimpleUri, A.Expando, A._FilterStatus, A.TlsException, A.SocketDirection, A.RawSocketEvent, A.NullRejectionException, A._JSRandom, A._JSSecureRandom, A.Endian, A.PubKeyAddressType, A.P2pkhAddressType, A.P2shAddressType, A.SegwitAddresType, A.LegacyAddress, A.BitcoinNetworkAddress, A.SegwitAddress, A.Script, A.ECPublic, A.BlockchainUtilsException, A.BitcoinSVNetwork, A.BitcoinNetwork, A.LitecoinNetwork, A.DashNetwork, A.DogecoinNetwork, A.BitcoinCashNetwork, A.PepeNetwork, A.ApiProvider, A.ElectrumApiProvider, A.ElectrumRequest, A.APIConfig, A.ElectrumRequestDetails, A.Base58ChecksumError, A.Bech32ChecksumError, A.ADAAddressType, A.ADAByronAddrTypes, A.ADAByronAddrAttrs, A.ADAByronAddrPayload, A.ADAByronAddr, A.AdaByronIcarusAddrEncoder, A.AdaByronLegacyAddrEncoder, A.Pointer, A.AdaStakeCredType, A.AdaStakeCredential, A.AdaShelleyAddrEncoder, A.AdaShelleyStakingAddrEncoder, A.AdaGenericAddrDecoderResult, A.AdaGenericAddrDecoder, A.ADANetwork, A.AlgoAddrEncoder, A.AptosAddrEncoder, A.AtomAddrEncoder, A.AtomNist256P1AddrEncoder, A.AvaxPChainAddrEncoder, A.AvaxXChainAddrEncoder, A.EgldAddrEncoder, A.BlockchainAddressEncoder, A.EosAddrEncoder, A.ErgoNetworkTypes, A.ErgoP2PKHAddrEncoder, A.EthAddrDecoder, A.EthAddrEncoder, A.AddressConverterException, A.FilSecp256k1AddrEncoder, A.IcxAddrEncoder, A.InjAddrEncoder, A.NanoAddrEncoder, A.NearAddrEncoder, A.NeoAddrEncoder, A.OkexAddrEncoder, A.OneAddrEncoder, A.P2PKHAddrEncoder, A.BchP2PKHAddrEncoder, A.P2SHAddrEncoder, A.BchP2SHAddrEncoder, A.P2TRAddrEncoder, A.P2WPKHAddrEncoder, A.SolAddrDecoder, A.SolAddrEncoder, A.SubstrateEd25519AddrEncoder, A.SubstrateSr25519AddrEncoder, A.SubstrateSecp256k1AddrEncoder, A.DecodeAddressResult, A.FriendlyAddressFlags, A.TonAddrDecoder, A.TonAddrEncoder, A.TrxAddrDecoder, A.TrxAddrEncoder, A.XlmAddrTypes, A.XlmAddrEncoder, A.XRPXAddressDecodeResult, A.XrpAddrEncoder, A.XtzAddrPrefixes, A.XtzAddrEncoder, A.ZilAddrEncoder, A.Bip32PathError, A.Bip32ChainCode, A.Bip32FingerPrint, A.Bip32KeyIndex, A.Bip32KeyData, A.Bip32KeyNetVersions, A.Bip32KeyBase, A.Bip32Path, A.BipCoins, A.BipProposal, A.BipCoinConfig, A.CipProposal, A.CoinConf, A.CoinParams, A.CoinNames, A.EllipticCurveTypes, A.Ed25519Blake2bPublicKey, A.Ed25519PublicKey, A.Ed25519KholawPublicKey, A.Ed25519MoneroPublicKey, A.Nist256p1PublicKey, A.Secp256k1PublicKeyEcdsa, A.Sr25519PublicKey, A.MoneroCoinConf, A.MoneroCoins, A.MoneroProposal, A.MoneroKeyError, A.MoneroPublicKey, A.SubstrateCoinConf, A.SubstrateCoins, A.SubstratePropoosal, A.SubstrateScaleEncoderBase, A.CborBase64Types, A.CborBaseUrlValue, A.CborBigFloatValue, A.CborBigIntValue, A.CborBoleanValue, A.CborBytesValue, A.CborDynamicBytesValue, A.CborTagValue, A._CborDate, A.CborDecimalFracValue, A.CborFloatValue, A.CborIntValue, A.CborSafeIntValue, A.CborListValue, A.CborMapValue, A.CborMimeValue, A.CborNullValue, A.CborUndefinedValue, A.CborRegxpValue, A.CborSetValue, A.CborString, A.CborUriValue, A.CborBytesTracker, A.FloatLength, A.FloatUtils, A.AES, A.AESLib, A.Curve, A.ECDSAPublicKey, A.EDDSAPublicKey, A.AbstractPoint, A.SquareRootError, A.JacobiError, A.ChaCha20Poly1305, A.CTR, A.BLAKE2b, A._Keccack, A._RIPEMD, A.SHA256, A.Poly1305, A.FortunaPRNG, A.SchnorrkelPublicKey, A.ArgumentException, A.MessageException, A.RPCError, A._Hex, A.LayoutByteReader, A.LayoutByteWriter, A.Layout, A.LayoutDecodeResult, A.LayoutException, A.SS58ChecksumError, A.DynamicByteTracker, A.BigRational, A.Tuple, A.CanonicalizedMap, A.CosmosBaseAddress, A.TendermintRequestParam, A.TendermintRequestDetails, A.TendermintProvider, A.BaseClient, A.BaseRequest, A.BaseResponse, A.ClientException, A.MediaType, A.MRTNativePluginException, A.WalletEvent, A.PlatformInterface, A.ApiProviderException, A.WalletException, A.Equatable, A._LiveListenable_Object__LiveListenable, A._LiveListenable, A._APPImage_Object_CborSerializable, A.CborSerializable, A.JsonSerialization, A.SynchronizedLock, A.MethodResult, A.WebsocketWeb, A.CustomProposal, A._AddressDerivationIndex_Object_CborSerializable, A.CryptoWokerImpl, A.IsolateCryptoWoker, A.NetworkType, A.BaseRepository, A._NetworkClient_Object_BaseRepository, A.LookupBlockRequest0, A.SubstrateRepository, A.TVMRequestParam, A._APIProvider_Object_Equatable, A.APIServiceTracker, A.HTTPService, A.BaseSocketService, A._ProviderAuth_Object_CborSerializable, A.ApiRequest, A.SocketRequestCompeleter, A.EthereumSubscribeResult, A.DecimalBalance, A.IntegerBalance, A._CryptoAddress_Object_CborSerializable, A.AccountBalance, A.BitcoinMultiSigBase, A._BitcoinMultiSigSignerDetais_Object_Equatable, A._BitcoinMultiSignatureAddress_Object_CborSerializable, A._TronMultiSigSignerDetais_Object_Equatable, A._TronMultiSignatureAddress_Object_Equatable, A._RippleMultiSigSignerDetais_Object_Equatable, A._RippleMultiSignatureAddress_Object_Equatable, A._Chain_Object_CborSerializable, A._BitcoinContact_Object_Equatable, A._CardanoContact_Object_Equatable, A._CosmosContact_Object_Equatable, A._EthereumContract_Object_Equatable, A._SolanaContact_Object_Equatable, A._SubstrateContact_Object_Equatable, A._TonContact_Object_Equatable, A._TronContact_Object_Equatable, A._RippleContact_Object_Equatable, A._WalletNetwork_Object_Equatable, A._NetworkCoinParams_Object_CborSerializable, A._CardanoAddrDetails_Object_Equatable, A._CosmosNativeCoin_Object_CborSerializable, A.CosmosNetworkTypes, A.EIP712Domain, A._TronAccountResourceInfo_Object_CborSerializable, A._TronAccountInfo_Object_CborSerializable, A._AccountPermission_Object_CborSerializable, A._PermissionKeys_Object_CborSerializable, A._FrozenSupply_Object_CborSerializable, A._FrozenV2_Object_CborSerializable, A._UnfrozenV2_Object_CborSerializable, A._AssetV2_Object_CborSerializable, A._FreeAssetNetUsageV2_Object_CborSerializable, A._TronAccountResource_Object_CborSerializable, A._RippleNFToken_Object_Equatable, A._ETHERC20Token_Object_Equatable, A._RippleIssueToken_Object_Equatable, A._TonJettonToken_Object_Equatable, A._SolanaSPLToken_Object_Equatable, A._TronTRC10Token_Object_Equatable, A._TronTRC20Token_Object_Equatable, A._CoingeckoCoin_Object_CborSerializable, A._Token_Object_CborSerializable, A._ChainsHandler_Object_CborSerializable, A.Web3RequestException, A._Web3MessageCore_Object_CborSerializable, A._Web3EncryptedMessage_Object_CborSerializable, A.Web3RequestMethods, A._Web3AccountAcitvity_Object_CborSerializable, A._Web3APPAuthentication_Object_CborSerializable, A._Web3ChainAccount_Object_CborSerializable, A._Web3Chain_Object_CborSerializable, A._ADAAddress_Object_ADASerialization, A._FixedBytes_Object_ADASerialization, A._StakeCredType_Object_ADASerialization, A.BlockforestRequestParam, A.BlockforestRequestDetails, A.BlockfrostError, A.BlockforestProvider, A.ADASerialization, A.SolidityAddress, A.BlockTagOrNumber, A.ETHRequestDetails, A.LookupBlockRequest, A.EthereumMethods, A.EVMRPC, A.ETHTransactionType, A.SolAddress, A.SolanaRequestDetails, A.LoockupLedgerRequest, A.SolanaRPC, A.AbiParameter, A.EncoderResult, A.EIP712Version, A.Eip712TypeDetails, A.Eip712TypedData, A.Eip712TypedDataV1, A.EIP712Legacy, A.AddressCoder, A.ArrayCoder, A.BooleanCoder, A.BytesCoder, A.FunctionCoder, A.NumbersCoder, A.StringCoder, A.TupleCoder, A.TronProtocolBufferImpl, A.AccountType, A.PermissionType, A.ResourceCode, A.TransactionContractType, A.SmartContractAbiEntryType, A.SmartContractAbiStateMutabilityType, A.ProtocolBufferDecoderResult, A._Result, A.TronRequestDetails, A.TronHTTPMethods, A.TronProvider, A.Context, A.Style, A.ParsedPath, A.PathException, A.SubstrateAddress, A._MetadataApi_Object_MetadataApiInterface, A.SubstrateSerialization, A.MetadataApiInterface, A.LatestMetadataInterface, A.PrimitiveTypes, A.Si1TypeDefsIndexesConst, A.StorageHasherV11Options, A.SubstrateRequestDetails, A.SubstrateRPCService, A.SubstrateRPC, A.SourceFile, A.SourceLocationMixin, A.SourceSpanMixin, A.Highlighter, A._Highlight, A._Line, A.SourceLocation, A.SourceSpanException, A.StringScanner, A.TonAddress, A.WalletVersion, A.TonApiType, A.TonApiRequestParam, A.TonRequestInfo, A._BlockCurrencyCollectionResponse_Object_JsonSerialization, A._BlockCurrencyCollectionOtherItemResponse_Object_JsonSerialization, A._BlockValueFlowResponse_Object_JsonSerialization, A._BlockchainBlockResponse_Object_JsonSerialization, A.TonProvider, A.JsonSerialization0, A.EventStreamProvider, A._EventStreamSubscription, A.RPCRequestDetails, A.LookupByLedgerRequest, A.XRPLedgerState, A.XRPLedgerStateDetails, A.XRPLastClose, A.XRPLedgerStateAccounting, A.XRPLedgerStateAccountingDuration, A.XRPLedgerValidatedLedger, A.XRPLRpc, A.XRPAddress, A.XRPLAddressCodecException, A.MessageCompleterHandler, A.MessageCompleter, A.PageRequestCompeleter, A.ProxyMethodHandler, A._PageMessage_Object_CborSerializable, A._JSWalletMessage_Object_CborSerializable, A.EthereumAccountsChanged, A.ProviderConnectInfo, A.ChainWeb3State, A.JSNetworkHandler, A._JSPageRequest_Object_CborSerializable, A.JSPageController, A.PageNetworkController, A.JSTronAddress, A.TronWebNodeInfo, A.TronAccountsChanged, A.JSWalletHandler]);
+    _inheritMany(A.Object, [A.JS_CONST, J.Interceptor, J.ArrayIterator, A.Stream, A.CastStreamSubscription, A.Iterable, A.CastIterator, A.Closure, A.MapBase, A.Error, A.ListBase, A.SentinelValue, A.ListIterator, A.MappedIterator, A.WhereIterator, A.ExpandIterator, A.TakeIterator, A.SkipIterator, A.EmptyIterator, A.WhereTypeIterator, A.FixedLengthListMixin, A.UnmodifiableListMixin, A.Symbol, A._Record, A.MapView, A.ConstantMap, A._KeysOrValuesOrElementsIterator, A.TypeErrorDecoder, A.NullThrownFromJavaScriptException, A.ExceptionAndStackTrace, A._StackTrace, A.LinkedHashMapCell, A.LinkedHashMapKeyIterator, A.JSSyntaxRegExp, A._MatchImplementation, A._AllMatchesIterator, A.StringMatch, A._StringAllMatchesIterator, A._Cell, A.Rti, A._FunctionParameters, A._Type, A._TimerImpl, A._AsyncAwaitCompleter, A._SyncStarIterator, A.AsyncError, A.TimeoutException, A._Completer, A._FutureListener, A._Future, A._AsyncCallbackEntry, A._StreamController, A._SyncStreamControllerDispatch, A._AsyncStreamControllerDispatch, A._BufferingStreamSubscription, A._DelayedEvent, A._DelayedDone, A._PendingEvents, A._DoneStreamSubscription, A._StreamIterator, A._Zone, A._HashMapKeyIterator, A.SetBase, A._LinkedHashSetCell, A._LinkedHashSetIterator, A._MapBaseValueIterator, A._UnmodifiableMapMixin, A.Codec, A.Converter, A._Base64Encoder, A._Base64Decoder, A.ByteConversionSink, A._JsonStringifier, A._Utf8Encoder, A._Utf8Decoder, A._BigIntImpl, A._BigIntClassic, A.DateTime, A.Duration, A._Enum, A.OutOfMemoryError, A.StackOverflowError, A._Exception, A.FormatException, A.IntegerDivisionByZeroException, A.MapEntry, A.Null, A._StringStackTrace, A.RuneIterator, A.StringBuffer, A._Uri, A.UriData, A._SimpleUri, A.Expando, A._FilterStatus, A.TlsException, A.SocketDirection, A.RawSocketEvent, A.NullRejectionException, A._JSRandom, A._JSSecureRandom, A.Endian, A.PubKeyAddressType, A.P2pkhAddressType, A.P2shAddressType, A.SegwitAddresType, A.LegacyAddress, A.BitcoinNetworkAddress, A.SegwitAddress, A.Script, A.ECPublic, A.BlockchainUtilsException, A.BitcoinSVNetwork, A.BitcoinNetwork, A.LitecoinNetwork, A.DashNetwork, A.DogecoinNetwork, A.BitcoinCashNetwork, A.PepeNetwork, A.ApiProvider, A.ElectrumApiProvider, A.ElectrumRequest, A.APIConfig, A.ElectrumRequestDetails, A.Base58ChecksumError, A.Bech32ChecksumError, A.ADAAddressType, A.ADAByronAddrTypes, A.ADAByronAddrAttrs, A.ADAByronAddrPayload, A.ADAByronAddr, A.AdaByronIcarusAddrEncoder, A.AdaByronLegacyAddrEncoder, A.Pointer, A.AdaStakeCredType, A.AdaStakeCredential, A.AdaShelleyAddrEncoder, A.AdaShelleyStakingAddrEncoder, A.AdaGenericAddrDecoderResult, A.AdaGenericAddrDecoder, A.ADANetwork, A.AlgoAddrEncoder, A.AptosAddrEncoder, A.AtomAddrEncoder, A.AtomNist256P1AddrEncoder, A.AvaxPChainAddrEncoder, A.AvaxXChainAddrEncoder, A.EgldAddrEncoder, A.BlockchainAddressEncoder, A.EosAddrEncoder, A.ErgoNetworkTypes, A.ErgoP2PKHAddrEncoder, A.EthAddrDecoder, A.EthAddrEncoder, A.AddressConverterException, A.FilSecp256k1AddrEncoder, A.IcxAddrEncoder, A.InjAddrEncoder, A.NanoAddrEncoder, A.NearAddrEncoder, A.NeoAddrEncoder, A.OkexAddrEncoder, A.OneAddrEncoder, A.P2PKHAddrEncoder, A.BchP2PKHAddrEncoder, A.P2SHAddrEncoder, A.BchP2SHAddrEncoder, A.P2TRAddrEncoder, A.P2WPKHAddrEncoder, A.SolAddrDecoder, A.SolAddrEncoder, A.SubstrateEd25519AddrEncoder, A.SubstrateSr25519AddrEncoder, A.SubstrateSecp256k1AddrEncoder, A.DecodeAddressResult, A.FriendlyAddressFlags, A.TonAddrDecoder, A.TonAddrEncoder, A.TrxAddrDecoder, A.TrxAddrEncoder, A.XlmAddrTypes, A.XlmAddrEncoder, A.XRPXAddressDecodeResult, A.XrpAddrEncoder, A.XtzAddrPrefixes, A.XtzAddrEncoder, A.ZilAddrEncoder, A.Bip32PathError, A.Bip32ChainCode, A.Bip32FingerPrint, A.Bip32KeyIndex, A.Bip32KeyData, A.Bip32KeyNetVersions, A.Bip32KeyBase, A.Bip32Path, A.BipCoins, A.BipProposal, A.BipCoinConfig, A.CipProposal, A.CoinConf, A.CoinParams, A.CoinNames, A.EllipticCurveTypes, A.Ed25519Blake2bPublicKey, A.Ed25519PublicKey, A.Ed25519KholawPublicKey, A.Ed25519MoneroPublicKey, A.Nist256p1PublicKey, A.Secp256k1PublicKeyEcdsa, A.Sr25519PublicKey, A.MoneroCoinConf, A.MoneroCoins, A.MoneroProposal, A.MoneroKeyError, A.MoneroPublicKey, A.SubstrateCoinConf, A.SubstrateCoins, A.SubstratePropoosal, A.SubstrateScaleEncoderBase, A.CborBase64Types, A.CborBaseUrlValue, A.CborBigFloatValue, A.CborBigIntValue, A.CborBoleanValue, A.CborBytesValue, A.CborDynamicBytesValue, A.CborTagValue, A._CborDate, A.CborDecimalFracValue, A.CborFloatValue, A.CborIntValue, A.CborSafeIntValue, A.CborListValue, A.CborMapValue, A.CborMimeValue, A.CborNullValue, A.CborUndefinedValue, A.CborRegxpValue, A.CborSetValue, A.CborString, A.CborUriValue, A.CborBytesTracker, A.FloatLength, A.FloatUtils, A.AES, A.AESLib, A.Curve, A.ECDSAPublicKey, A.EDDSAPublicKey, A.AbstractPoint, A.SquareRootError, A.JacobiError, A.ChaCha20Poly1305, A.CTR, A.BLAKE2b, A._Keccack, A._RIPEMD, A.SHA256, A.Poly1305, A.FortunaPRNG, A.SchnorrkelPublicKey, A.ArgumentException, A.MessageException, A.RPCError, A._Hex, A.LayoutByteReader, A.LayoutByteWriter, A.Layout, A.LayoutDecodeResult, A.LayoutException, A.SolanaVerifier, A.SS58ChecksumError, A.DynamicByteTracker, A.BigRational, A.Tuple, A.CanonicalizedMap, A.CosmosBaseAddress, A.TendermintRequestParam, A.TendermintRequestDetails, A.TendermintProvider, A.BaseClient, A.BaseRequest, A.BaseResponse, A.ClientException, A.MediaType, A.MRTNativePluginException, A.WalletEvent, A.PlatformInterface, A.ApiProviderException, A.WalletException, A.Equatable, A._LiveListenable_Object__LiveListenable, A._LiveListenable, A._APPImage_Object_CborSerializable, A.CborSerializable, A.JsonSerialization, A.SynchronizedLock, A.MethodResult, A.WebsocketWeb, A.CustomProposal, A._AddressDerivationIndex_Object_CborSerializable, A.CryptoWokerImpl, A.IsolateCryptoWoker, A.NetworkType, A.BaseRepository, A._NetworkClient_Object_BaseRepository, A.LookupBlockRequest0, A.SubstrateRepository, A.TVMRequestParam, A._APIProvider_Object_Equatable, A.APIServiceTracker, A.HTTPService, A.BaseSocketService, A._ProviderAuth_Object_CborSerializable, A.ApiRequest, A.SocketRequestCompeleter, A.EthereumSubscribeResult, A.DecimalBalance, A.IntegerBalance, A._CryptoAddress_Object_CborSerializable, A.AccountBalance, A.BitcoinMultiSigBase, A._BitcoinMultiSigSignerDetais_Object_Equatable, A._BitcoinMultiSignatureAddress_Object_CborSerializable, A._TronMultiSigSignerDetais_Object_Equatable, A._TronMultiSignatureAddress_Object_Equatable, A._RippleMultiSigSignerDetais_Object_Equatable, A._RippleMultiSignatureAddress_Object_Equatable, A._Chain_Object_CborSerializable, A._BitcoinContact_Object_Equatable, A._CardanoContact_Object_Equatable, A._CosmosContact_Object_Equatable, A._EthereumContract_Object_Equatable, A._SolanaContact_Object_Equatable, A._SubstrateContact_Object_Equatable, A._TonContact_Object_Equatable, A._TronContact_Object_Equatable, A._RippleContact_Object_Equatable, A._WalletNetwork_Object_Equatable, A._NetworkCoinParams_Object_CborSerializable, A._CardanoAddrDetails_Object_Equatable, A._CosmosNativeCoin_Object_CborSerializable, A.CosmosNetworkTypes, A.EIP712Domain, A.SolanaWeb3TransactionResponse, A._TronAccountResourceInfo_Object_CborSerializable, A._TronAccountInfo_Object_CborSerializable, A._AccountPermission_Object_CborSerializable, A._PermissionKeys_Object_CborSerializable, A._FrozenSupply_Object_CborSerializable, A._FrozenV2_Object_CborSerializable, A._UnfrozenV2_Object_CborSerializable, A._AssetV2_Object_CborSerializable, A._FreeAssetNetUsageV2_Object_CborSerializable, A._TronAccountResource_Object_CborSerializable, A._RippleNFToken_Object_Equatable, A._ETHERC20Token_Object_Equatable, A._RippleIssueToken_Object_Equatable, A._TonJettonToken_Object_Equatable, A._SolanaSPLToken_Object_Equatable, A._TronTRC10Token_Object_Equatable, A._TronTRC20Token_Object_Equatable, A._CoingeckoCoin_Object_CborSerializable, A._Token_Object_CborSerializable, A._ChainsHandler_Object_CborSerializable, A.Web3RequestException, A._Web3MessageCore_Object_CborSerializable, A._Web3EncryptedMessage_Object_CborSerializable, A.Web3RequestMethods, A._Web3AccountAcitvity_Object_CborSerializable, A._Web3APPAuthentication_Object_CborSerializable, A._Web3ChainAccount_Object_CborSerializable, A._Web3Chain_Object_CborSerializable, A._Web3SolanaSendTransactionOptions_Object_CborSerializable, A._Web3SolanaSendTransactionData_Object_CborSerializable, A._ADAAddress_Object_ADASerialization, A._FixedBytes_Object_ADASerialization, A._StakeCredType_Object_ADASerialization, A.BlockforestRequestParam, A.BlockforestRequestDetails, A.BlockfrostError, A.BlockforestProvider, A.ADASerialization, A.SolidityAddress, A.BlockTagOrNumber, A.ETHRequestDetails, A.LookupBlockRequest, A.EthereumMethods, A.EVMRPC, A.ETHTransactionType, A.SolAddress, A.SolanaPublicKey, A.AddressTableLookup, A.CompiledInstruction, A.MessageHeader, A.SolanaRequestDetails, A.LoockupLedgerRequest, A.SolanaRPC, A.Message, A.MessageV0, A.SolanaTransaction, A.AbiParameter, A.EncoderResult, A.EIP712Version, A.Eip712TypeDetails, A.Eip712TypedData, A.Eip712TypedDataV1, A.EIP712Legacy, A.AddressCoder, A.ArrayCoder, A.BooleanCoder, A.BytesCoder, A.FunctionCoder, A.NumbersCoder, A.StringCoder, A.TupleCoder, A.TronProtocolBufferImpl, A.AccountType, A.PermissionType, A.ResourceCode, A.TransactionContractType, A.SmartContractAbiEntryType, A.SmartContractAbiStateMutabilityType, A.ProtocolBufferDecoderResult, A._Result, A.TronRequestDetails, A.TronHTTPMethods, A.TronProvider, A.Context, A.Style, A.ParsedPath, A.PathException, A.SubstrateAddress, A._MetadataApi_Object_MetadataApiInterface, A.SubstrateSerialization, A.MetadataApiInterface, A.LatestMetadataInterface, A.PrimitiveTypes, A.Si1TypeDefsIndexesConst, A.StorageHasherV11Options, A.SubstrateRequestDetails, A.SubstrateRPCService, A.SubstrateRPC, A.SourceFile, A.SourceLocationMixin, A.SourceSpanMixin, A.Highlighter, A._Highlight, A._Line, A.SourceLocation, A.SourceSpanException, A.StringScanner, A.TonAddress, A.WalletVersion, A.TonApiType, A.TonApiRequestParam, A.TonRequestInfo, A._BlockCurrencyCollectionResponse_Object_JsonSerialization, A._BlockCurrencyCollectionOtherItemResponse_Object_JsonSerialization, A._BlockValueFlowResponse_Object_JsonSerialization, A._BlockchainBlockResponse_Object_JsonSerialization, A.TonProvider, A.JsonSerialization0, A.EventStreamProvider, A._EventStreamSubscription, A.RPCRequestDetails, A.LookupByLedgerRequest, A.XRPLedgerState, A.XRPLedgerStateDetails, A.XRPLastClose, A.XRPLedgerStateAccounting, A.XRPLedgerStateAccountingDuration, A.XRPLedgerValidatedLedger, A.XRPLRpc, A.XRPAddress, A.XRPLAddressCodecException, A.MessageCompleterHandler, A.MessageCompleter, A.PageRequestCompeleter, A.ProxyMethodHandler, A._PageMessage_Object_CborSerializable, A._JSWalletMessage_Object_CborSerializable, A.EthereumAccountsChanged, A.ProviderConnectInfo, A.ChainWeb3State, A.JSNetworkHandler, A._JSPageRequest_Object_CborSerializable, A.JSPageController, A.PageNetworkController, A.JSSolanaPublicKey, A.SolanaAccountsChanged, A.ClientSolanaTransactionMessage, A.SolanaProviderConnectInfo, A.JSTronAddress, A.TronWebNodeInfo, A.TronAccountsChanged, A.JSWalletHandler]);
     _inheritMany(J.Interceptor, [J.JSBool, J.JSNull, J.JavaScriptObject, J.JavaScriptBigInt, J.JavaScriptSymbol, J.JSNumber, J.JSString]);
     _inheritMany(J.JavaScriptObject, [J.LegacyJavaScriptObject, J.JSArray, A.NativeByteBuffer, A.NativeTypedData]);
     _inheritMany(J.LegacyJavaScriptObject, [J.PlainJavaScriptObject, J.UnknownJavaScriptObject, J.JavaScriptFunction]);
@@ -57959,14 +60266,14 @@
     _inheritMany(A._CastIterableBase, [A.CastIterable, A.__CastListBase__CastIterableBase_ListMixin]);
     _inherit(A._EfficientLengthCastIterable, A.CastIterable);
     _inherit(A._CastListBase, A.__CastListBase__CastIterableBase_ListMixin);
-    _inheritMany(A.Closure, [A.Closure2Args, A.CastMap_entries_closure, A.Closure0Args, A.Instantiation, A.TearOffClosure, A.JsLinkedHashMap_values_closure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._awaitOnObject_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A._Future_timeout_closure0, A.Stream_length_closure, A.Stream_first_closure0, A._RootZone_bindUnaryCallbackGuarded_closure, A._HashMap_values_closure, A._LinkedCustomHashMap_closure, A.MapBase_entries_closure, A._JsonMap_values_closure, A._BigIntImpl_hashCode_finish, A.DateTime_parse_parseIntOrZero, A.DateTime_parse_parseMilliAndMicroseconds, A._createTables_setChars, A._createTables_setRange, A.SecureSocket_connect_closure, A.RawSecureSocket_connect_closure, A.jsify__convert, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.dartify_convert, A.BitcoinAddressType_fromValue_closure, A.BasedUtxoNetwork_fromName_closure, A.ElectrumRequest_toRequest_closure, A._BchBech32Utils_hrpExpand_closure, A.Bech32EncoderBase_encodeBech32_closure, A.Bech32DecoderBase_decodeBech32_closure, A.Bech32DecoderBase_decodeBech32_closure0, A.Bech32DecoderBase_decodeBech32_closure1, A.ADAAddressType_fromHeader_closure, A.ADAByronAddrTypes_ADAByronAddrTypes$fromCbor_closure, A.ADANetwork_fromTag_closure, A.ADANetwork_fromProtocolMagic_closure, A.EthAddrUtils__checksumEncode_closure, A.Bip32PathParser_parse_closure, A.Bip32PathParser__parseElem_closure, A.Bip44Coins_fromName_closure, A.Bip44Conf_akashNetwork_closure, A.Bip44Conf_algorand_closure, A.Bip44Conf_aptos_closure, A.Bip44Conf_avaxCChain_closure, A.Bip44Conf_avaxPChain_closure, A.Bip44Conf_avaxXChain_closure, A.Bip44Conf_axelar_closure, A.Bip44Conf_bandProtocol_closure, A.Bip44Conf_binanceChain_closure, A.Bip44Conf_binanceSmartChain_closure, A.Bip44Conf_bitcoinMainNet_closure, A.Bip44Conf_bitcoinTestNet_closure, A.Bip44Conf_bitcoinCashMainNet_closure, A.Bip44Conf_bitcoinCashTestNet_closure, A.Bip44Conf_bitcoinCashSlpMainNet_closure, A.Bip44Conf_bitcoinCashSlpTestNet_closure, A.Bip44Conf_bitcoinSvMainNet_closure, A.Bip44Conf_bitcoinSvTestNet_closure, A.Bip44Conf_cardanoByronIcarus_closure, A.Bip44Conf_cardanoByronLedger_closure, A.Bip44Conf_cardanoByronIcarusTestnet_closure, A.Bip44Conf_cardanoByronLedgerTestnet_closure, A.Bip44Conf_celo_closure, A.Bip44Conf_certik_closure, A.Bip44Conf_chihuahua_closure, A.Bip44Conf_cosmos_closure, A.Bip44Conf_cosmosTestnet_closure, A.Bip44Conf_cosmosNist256p1_closure, A.Bip44Conf_cosmosTestnetNist256p1_closure, A.Bip44Conf_dashMainNet_closure, A.Bip44Conf_dashTestNet_closure, A.Bip44Conf_dogecoinMainNet_closure, A.Bip44Conf_dogecoinTestNet_closure, A.Bip44Conf_pepeMainnet_closure, A.Bip44Conf_pepeTestnet_closure, A.Bip44Conf_ecashMainNet_closure, A.Bip44Conf_ecashTestNet_closure, A.Bip44Conf_elrond_closure, A.Bip44Conf_eos_closure, A.Bip44Conf_ergoMainNet_closure, A.Bip44Conf_ergoTestNet_closure, A.Bip44Conf_ethereum_closure, A.Bip44Conf_ethereumTestnet_closure, A.Bip44Conf_ethereumClassic_closure, A.Bip44Conf_fantomOpera_closure, A.Bip44Conf_filecoin_closure, A.Bip44Conf_harmonyOneMetamask_closure, A.Bip44Conf_harmonyOneEth_closure, A.Bip44Conf_harmonyOneAtom_closure, A.Bip44Conf_huobiChain_closure, A.Bip44Conf_icon_closure, A.Bip44Conf_injective_closure, A.Bip44Conf_irisNet_closure, A.Bip44Conf_kava_closure, A.Bip44Conf_kusamaEd25519Slip_closure, A.Bip44Conf_kusamaTestnetEd25519Slip_closure, A.Bip44Conf_litecoinMainNet_closure, A.Bip44Conf_litecoinTestNet_closure, A.Bip44Conf_moneroEd25519Slip_closure, A.Bip44Conf_moneroSecp256k1_closure, A.Bip44Conf_nano_closure, A.Bip44Conf_nearProtocol_closure, A.Bip44Conf_neo_closure, A.Bip44Conf_nineChroniclesGold_closure, A.Bip44Conf_okexChainEth_closure, A.Bip44Conf_okexChainAtom_closure, A.Bip44Conf_okexChainAtomOld_closure, A.Bip44Conf_ontology_closure, A.Bip44Conf_osmosis_closure, A.Bip44Conf_piNetwork_closure, A.Bip44Conf_polkadotEd25519Slip_closure, A.Bip44Conf_polkadotTestnetEd25519Slip_closure, A.Bip44Conf_polygon_closure, A.Bip44Conf_ripple_closure, A.Bip44Conf_rippleTestnet_closure, A.Bip44Conf_rippleEd25519_closure, A.Bip44Conf_rippleTestnetEd25519_closure, A.Bip44Conf_secretNetworkOld_closure, A.Bip44Conf_secretNetworkNew_closure, A.Bip44Conf_solana_closure, A.Bip44Conf_solanaTestnet_closure, A.Bip44Conf_stellar_closure, A.Bip44Conf_terra_closure, A.Bip44Conf_tezos_closure, A.Bip44Conf_theta_closure, A.Bip44Conf_tron_closure, A.Bip44Conf_tronTestnet_closure, A.Bip44Conf_vechain_closure, A.Bip44Conf_verge_closure, A.Bip44Conf_zcashMainNet_closure, A.Bip44Conf_zcashTestNet_closure, A.Bip44Conf_zilliqa_closure, A.Bip44Conf_tonMainnet_closure, A.Bip44Conf_tonTestnet_closure, A.Bip49Coins_fromName_closure, A.Bip49Conf_dashMainNet_closure, A.Bip49Conf_dashTestNet_closure, A.Bip49Conf_dogecoinMainNet_closure, A.Bip49Conf_dogecoinTestNet_closure, A.Bip49Conf_litecoinMainNet_closure, A.Bip49Conf_litecoinTestNet_closure, A.Bip49Conf_zcashMainNet_closure, A.Bip49Conf_zcashTestNet_closure, A.Bip49Conf_bitcoinMainNet_closure, A.Bip49Conf_bitcoinTestNet_closure, A.Bip49Conf_bitcoinSvMainNet_closure, A.Bip49Conf_bitcoinSvTestNet_closure, A.Bip49Conf_bitcoinCashMainNet_closure, A.Bip49Conf_bitcoinCashTestNet_closure, A.Bip49Conf_bitcoinCashSlpMainNet_closure, A.Bip49Conf_bitcoinCashSlpTestNet_closure, A.Bip49Conf_ecashMainNet_closure, A.Bip49Conf_ecashTestNet_closure, A.Bip49Conf_pepeMainnet_closure, A.Bip49Conf_pepeTestnet_closure, A.Bip84Coins_fromName_closure, A.Bip84Conf_bitcoinMainNet_closure, A.Bip84Conf_bitcoinTestNet_closure, A.Bip84Conf_litecoinMainNet_closure, A.Bip84Conf_litecoinTestNet_closure, A.Bip86Coins_fromName_closure, A.Bip86Conf_bitcoinMainNet_closure, A.Bip86Conf_bitcoinTestNet_closure, A.CoinProposal_fromName_closure, A.Cip1852Coins_fromName_closure, A.Cip1852Conf_cardanoIcarusMainNet_closure, A.Cip1852Conf_cardanoIcarusTestNet_closure, A.Cip1852Conf_cardanoLedgerMainNet_closure, A.Cip1852Conf_cardanoLedgerTestNet_closure, A.EllipticCurveTypes_fromName_closure, A.MoneroCoins_fromName_closure, A.SubstrateCoins_fromName_closure, A.SubstrateConf_acalaEd25519_closure, A.SubstrateConf_acalaSecp256k1_closure, A.SubstrateConf_acalaSr25519_closure, A.SubstrateConf_bifrostEd25519_closure, A.SubstrateConf_bifrostSecp256k1_closure, A.SubstrateConf_bifrostSr25519_closure, A.SubstrateConf_chainXEd25519_closure, A.SubstrateConf_chainXSecp256k1_closure, A.SubstrateConf_chainXSr25519_closure, A.SubstrateConf_edgewareEd25519_closure, A.SubstrateConf_edgewareSecp256k1_closure, A.SubstrateConf_edgewareSr25519_closure, A.SubstrateConf_genericEd25519_closure, A.SubstrateConf_genericSecp256k1_closure, A.SubstrateConf_genericSr25519_closure, A.SubstrateConf_karuraEd25519_closure, A.SubstrateConf_karuraSecp256k1_closure, A.SubstrateConf_karuraSr25519_closure, A.SubstrateConf_kusamaEd25519_closure, A.SubstrateConf_kusamaSecp256k1_closure, A.SubstrateConf_kusamaSr25519_closure, A.SubstrateConf_moonbeamEd25519_closure, A.SubstrateConf_moonbeamSecp256k1_closure, A.SubstrateConf_moonbeamSr25519_closure, A.SubstrateConf_moonriverEd25519_closure, A.SubstrateConf_moonriverSecp256k1_closure, A.SubstrateConf_moonriverSr25519_closure, A.SubstrateConf_phalaEd25519_closure, A.SubstrateConf_phalaSecp256k1_closure, A.SubstrateConf_phalaSr25519_closure, A.SubstrateConf_plasmEd25519_closure, A.SubstrateConf_plasmSecp256k1_closure, A.SubstrateConf_plasmSr25519_closure, A.SubstrateConf_polkadotEd25519_closure, A.SubstrateConf_polkadotSecp256k1_closure, A.SubstrateConf_polkadotSr25519_closure, A.SubstrateConf_soraEd25519_closure, A.SubstrateConf_soraSecp256k1_closure, A.SubstrateConf_soraSr25519_closure, A.SubstrateConf_stafiEd25519_closure, A.SubstrateConf_stafiSecp256k1_closure, A.SubstrateConf_stafiSr25519_closure, A.CborObject_CborObject$fromDynamic_closure, A.CborUtils__decodeUtf8String_closure, A.CborUtils__toStringObject_closure, A.CborUtils__toStringObject_closure0, A.CborUtils__decodeBytesString_closure, A.AESLib_initialize__rot24, A.QuickCrypto__generateRandom_closure, A.LayoutConst_rustEnum_closure1, A.LayoutConst_rustEnum_closure0, A.LayoutConst_compactString_closure0, A.LayoutConst_compactString_closure, A.LayoutConst_compactMap_closure0, A.LayoutConst_compactMap_closure, A.LayoutConst_compactVec_closure, A.LayoutConst_compactVec_closure0, A.StructLayout_StructLayout_closure, A.Union_defaultGetSourceVariant_closure, A.LayoutException_toString_closure, A.BytesUtils_toBytes_closure, A.UUID_generateUUIDv4_closure, A.UUID_generateUUIDv4_closure0, A.CanonicalizedMap_entries_closure, A.CanonicalizedMap_keys_closure, A.CanonicalizedMap_values_closure, A.TendermintProvider_request_closure, A.BaseRequest_closure0, A.BrowserClient_send_closure, A.BrowserClient_send_closure0, A.ByteStream_toBytes_closure, A.CaseInsensitiveMap$from_closure, A.MediaType_toString__closure, A.expectQuotedString_closure, A.WalletEventTypes_fromName_closure, A.JSWebSocket_constructor_create_closure, A.WebEventStream_stream_closure, A.ContentType_fromValue_closure, A.ExtractCborMap_generateMap_closure, A.SynchronizedLock_synchronized_closure, A.MethodUtils_call_closure, A.StrUtils_toSnakeCase_closure, A.WebsocketWeb$__closure, A.WebsocketWeb$__closure0, A.WebsocketWeb$__closure1, A.WebsocketWeb_connect_closure, A.CustomCoins_fromName_closure, A.CustomCurrencyConf_byronLegacy_closure, A.CustomCurrencyConf_byronLegacyTestnet_closure, A.AddressDerivationType_fromTag_closure, A.Bip32AddressIndex__toPath_closure, A.Bip32AddressIndex__toPath_closure0, A.SeedTypes_fromName_closure, A.NetworkType_fromTag_closure, A.NetworkType_fromName_closure, A.ProvidersConst_getDefaultService_closure, A.ProvidersConst_getDefaultService_closure0, A.BitcoinExplorerProviderType_fromName_closure, A.BitcoinExplorerAPIProvider_BitcoinExplorerAPIProvider$fromCborBytesOrObject_closure, A.ElectrumAPIProvider_ElectrumAPIProvider$fromCborBytesOrObject_closure, A.CardanoAPIProvider_CardanoAPIProvider$fromCborBytesOrObject_closure, A.CosmosAPIProvider_CosmosAPIProvider$fromCborBytesOrObject_closure, A.EthereumAPIProvider_EthereumAPIProvider$fromCborBytesOrObject_closure, A.RippleAPIProvider_RippleAPIProvider$fromCborBytesOrObject_closure, A.SolanaAPIProvider_SolanaAPIProvider$fromCborBytesOrObject_closure, A.SubstrateAPIProvider_SubstrateAPIProvider$fromCborBytesOrObject_closure, A.TonAPIProvider_TonAPIProvider$fromCborBytesOrObject_closure, A.TronAPIProvider_TronAPIProvider$fromCborBytesOrObject_closure, A.APIServiceTracker__checkStatus_closure, A.SSLService_connect___closure, A.WebSocketService__onClose_closure, A.ProviderAuthType_fromName_closure, A.ServiceProtocol_fromID_closure, A.BitcoinMultiSignatureAddress_BitcoinMultiSignatureAddress$fromCborBytesOrObject_closure, A.BitcoinMultiSignatureAddress_BitcoinMultiSignatureAddress$fromCborBytesOrObject_closure0, A.BitcoinMultiSignatureAddress_toP2shAddress_closure, A.ITonAddress_ITonAddress$fromCborBytesOrObject_closure, A.TronMultiSignatureAddress_TronMultiSignatureAddress$fromCborBytesOrObject_closure, A.ITronAddress_ITronAddress$fromCborBytesOrObject_closure, A.ITronAddress_ITronAddress$fromCborBytesOrObject_closure0, A.ITronMultisigAddress_ITronMultisigAddress$fromCborBytesOrObject_closure, A.ITronMultisigAddress_ITronMultisigAddress$fromCborBytesOrObject_closure0, A.RippleMultiSignatureAddress_RippleMultiSignatureAddress$fromCborBytesOrObject_closure, A.IXRPAddress_IXRPAddress$fromCborBytesOrObject_closure, A.IXRPAddress_IXRPAddress$fromCborBytesOrObject_closure0, A.IXRPMultisigAddress_IXRPMultisigAddress$fromCborBytesOrObject_closure, A.IXRPMultisigAddress_IXRPMultisigAddress$fromCborBytesOrObject_closure0, A.ADAChain_ADAChain$deserialize_closure0, A.BitcoinChain_BitcoinChain$deserialize_closure0, A.CosmosChain_CosmosChain$deserialize_closure0, A.EthereumChain_EthereumChain$deserialize_closure0, A.SolanaChain_SolanaChain$deserialize_closure0, A.SubstrateChain_SubstrateChain$deserialize_closure0, A.TonChain_TonChain$deserialize_closure0, A.TronChain_TronChain$deserialize_closure0, A.RippleChain_RippleChain$deserialize_closure0, A.WalletNetwork_getProvider_closure, A.WalletNetwork_getProvider_closure0, A.WalletNetwork_getProvider_closure1, A.BitcoinParams_BitcoinParams$fromCborBytesOrObject_closure, A.CardanoNetworkParams_CardanoNetworkParams$fromCborBytesOrObject_closure, A.CosmosNetworkParams_CosmosNetworkParams$fromCborBytesOrObject_closure, A.CosmosNetworkParams_CosmosNetworkParams$fromCborBytesOrObject_closure0, A.EthereumNetworkParams_EthereumNetworkParams$fromCborBytesOrObject_closure, A.RippleNetworkParams_RippleNetworkParams$fromCborBytesOrObject_closure, A.SolanaNetworkParams_SolanaNetworkParams$fromCborBytesOrObject_closure, A.SubstrateNetworkParams_SubstrateNetworkParams$fromCborBytesOrObject_closure, A.TonNetworkParams_TonNetworkParams$fromCborBytesOrObject_closure, A.TronNetworkParams_TronNetworkParams$fromCborBytesOrObject_closure, A.TronNetworkParams_TronNetworkParams$fromCborBytesOrObject_closure0, A.CosmosNetworkTypes_CosmosNetworkTypes$fromValue_closure, A.TronChainType_fromName_closure, A.TronChainType_fromId_closure, A.TronChainType_fromGenesis_closure, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure0, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure1, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure2, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure3, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure4, A.TronAccountInfo_TronAccountInfo$fromJson_closure, A.TronAccountInfo_TronAccountInfo$fromJson_closure0, A.TronAccountInfo_TronAccountInfo$fromJson_closure1, A.TronAccountInfo_TronAccountInfo$fromJson_closure2, A.TronAccountInfo_TronAccountInfo$fromJson_closure3, A.TronAccountInfo_TronAccountInfo$fromJson_closure4, A.AccountPermission_AccountPermission$fromCborBytesOrObject_closure, A.AccountPermission_AccountPermission$fromJson_closure, A.Token_Token$fromCborBytesOrObject_closure, A.ChainsHandler_ChainsHandler$deserialize_closure, A.Web3MessageTypes_fromTag_closure, A.Web3APPAuthentication_Web3APPAuthentication$deserialize_closure, A.Web3APPAuthentication_Web3APPAuthentication$deserialize_closure0, A.Web3APPAuthentication_Web3APPAuthentication$deserialize_closure1, A.Web3EthereumRequestMethods_fromId_closure, A.Web3EthereumRequestMethods_fromName_closure, A.Web3EthereumAddNewChain_toNewNetwork_closure, A.Web3EthreumPersonalSign_Web3EthreumPersonalSign$fromJson_closure, A.Web3EthreumSendTransaction_Web3EthreumSendTransaction$fromJson_closure, A.Web3EthreumSendTransaction_Web3EthreumSendTransaction$fromJson_closure0, A.Web3EthreumSendTransaction_Web3EthreumSendTransaction$fromJson_closure1, A.Web3EthreumTypdedData_Web3EthreumTypdedData$fromJson_closure, A.Web3EthereumChain_Web3EthereumChain$deserialize_closure, A.Web3EthereumChain_Web3EthereumChain$deserialize_closure0, A.Web3EthereumChain_toCbor_closure, A.Web3EthereumChain_toCbor_closure0, A.Web3EthereumChain_currentChainAccounts_closure, A.Web3EthereumChain_currentChainAccounts_closure0, A.Web3GlobalRequestMethods_fromId_closure, A.Web3TronRequestMethods_fromId_closure, A.Web3TronRequestMethods_fromName_closure, A.Web3TronChain_Web3TronChain$deserialize_closure, A.Web3TronChain_Web3TronChain$deserialize_closure0, A.Web3TronChain_toCbor_closure, A.Web3TronChain_toCbor_closure0, A.Web3TronChain_currentChainAccounts_closure, A.Web3TronChain_currentChainAccounts_closure0, A.Web3TronChain_getPermission_closure, A.BlockforestProvider_request_closure, A.ETHRPCRequest_toRequest_closure, A.ETHRPCRequest_toRequest_closure0, A.EthereumMethods_fromName_closure, A.ETHTransactionType_fromPrefix_closure, A.SolanaRPCRequest_toRequest_closure, A.AbiParameter_isDynamic_closure, A.EIP712Version_fromVersion_closure, A.EIP712Version_fromVersion__closure, A.Eip712TypedData_Eip712TypedData$fromJson_closure, A.Eip712TypedData_toJson__closure, A.EIP712Legacy_EIP712Legacy$fromJson_closure, A.EIP712Legacy_encode_closure, A.EIP712Legacy_encode_closure0, A.EIP712Legacy_encode_closure1, A.EIP712Legacy_toJson_closure, A._EIP712Utils_ensureCorrectValues_closure, A._EIP712Utils_eip712TypedDataV1ValueToJson_closure, A._EIP712Utils_getDependencies__closure, A._EIP712Utils_encodeValue_closure, A._EIP712Utils_encodeValue_closure0, A._EIP712Utils_encodeValue_closure1, A._EIP712Utils_abiEncode_closure, A._EIP712Utils_legacyV1encode_closure, A._EIP712Utils_getMethodSigature_closure, A._EIP712Utils_getMethodSigature__closure, A.ArrayCoder_abiEncode_closure, A.ArrayCoder_abiEncode_closure0, A.ArrayCoder_legacyEip712Encode_closure, A.ArrayCoder_legacyEip712Encode_closure0, A.TupleCoder_abiEncode_closure, A.TupleCoder_legacyEip712Encode_closure, A._ABIUtils_encodeDynamicParams_closure, A._ABIUtils_encodeDynamicParams_closure0, A._ABIUtils_encodeDynamicParams_closure1, A._ABIUtils_encodeDynamicParams_closure2, A.AccountCreateContract_AccountCreateContract$deserialize_closure, A.AccountPermissionUpdateContract_AccountPermissionUpdateContract$fromJson_closure, A.AccountPermissionUpdateContract_AccountPermissionUpdateContract$deserialize_closure, A.AccountPermissionUpdateContract_AccountPermissionUpdateContract$deserialize_closure0, A.AccountPermissionUpdateContract_toJson_closure, A.AccountType_fromName_closure, A.AccountType_fromValue_closure, A.Authority_Authority$deserialize_closure, A.Permission_Permission$fromJson_closure, A.Permission_Permission$deserialize_closure, A.Permission_toJson_closure, A.PermissionType_fromName_closure, A.PermissionType_fromValue_closure, A.AssetIssueContract_AssetIssueContract$fromJson_closure, A.AssetIssueContract_AssetIssueContract$deserialize_closure, A.AssetIssueContract_toJson_closure, A.DelegateResourceContract_DelegateResourceContract$deserialize_closure, A.FreezeBalanceContract_FreezeBalanceContract$deserialize_closure, A.FreezeBalanceV2Contract_FreezeBalanceV2Contract$deserialize_closure, A.UnDelegateResourceContract_UnDelegateResourceContract$deserialize_closure, A.UnfreezeBalanceContract_UnfreezeBalanceContract$deserialize_closure, A.UnfreezeBalanceV2Contract_UnfreezeBalanceV2Contract$deserialize_closure, A.ResourceCode_fromName_closure0, A.ResourceCode_fromValue_closure0, A.TransactionContractType_findByName_closure, A.TransactionContractType_findByValue_closure, A.ShieldedTransferContract_ShieldedTransferContract$fromJson_closure, A.ShieldedTransferContract_ShieldedTransferContract$fromJson_closure0, A.ShieldedTransferContract_ShieldedTransferContract$deserialize_closure, A.ShieldedTransferContract_ShieldedTransferContract$deserialize_closure0, A.ShieldedTransferContract_toJson_closure, A.ShieldedTransferContract_toJson_closure0, A.SmartContractAbiEntryType_fromName_closure, A.SmartContractAbiEntryType_fromValue_closure, A.SmartContractAbiStateMutabilityType_fromName_closure, A.SmartContractAbiStateMutabilityType_fromValue_closure, A.SmartContract_SmartContract$deserialize_closure, A.SmartContract_SmartContract$deserialize_closure0, A.SmartContractABI_SmartContractABI$fromJson_closure, A.SmartContractABI_SmartContractABI$deserialize_closure, A.SmartContractABI_toJson_closure, A.SmartContractABIEntry_SmartContractABIEntry$fromJson_closure, A.SmartContractABIEntry_SmartContractABIEntry$fromJson_closure0, A.SmartContractABIEntry_SmartContractABIEntry$deserialize_closure, A.SmartContractABIEntry_SmartContractABIEntry$deserialize_closure0, A.SmartContractABIEntry_toJson_closure, A.SmartContractABIEntry_toJson_closure0, A.Transaction_Transaction$fromJson_closure, A.Transaction_closure, A.Transaction_toJson_closure, A.TransactionRaw_TransactionRaw$fromJson_closure, A.TransactionRaw_TransactionRaw$fromJson_closure0, A.TransactionRaw_TransactionRaw$deserialize_closure, A.TransactionRaw_TransactionRaw$deserialize_closure0, A.TransactionRaw_toJson_closure, A.TransactionRaw_toJson_closure0, A.VoteAssetContract_VoteAssetContract$fromJson_closure, A.VoteAssetContract_VoteAssetContract$deserialize_closure, A.VoteAssetContract_toJson_closure, A.VoteWitnessContract_VoteWitnessContract$fromJson_closure, A.VoteWitnessContract_VoteWitnessContract$deserialize_closure, A.VoteWitnessContract_toJson_closure, A.ProtocolBufferDecoder__decodeInt_closure, A.QuickProtocolBufferResults_getField_closure, A.QuickProtocolBufferResults_getField_closure0, A.QuickProtocolBufferResults_getResult_closure, A.QuickProtocolBufferResults_getResult_closure0, A.QuickProtocolBufferResults_getFields_closure, A.QuickProtocolBufferResults_getFields_closure0, A.QuickProtocolBufferResults_getMap_closure, A.TVMRequestParam_toRequest_closure0, A.Context_joinAll_closure, A.Context_split_closure, A._validateArgList_closure, A.MetadataException_toString_closure, A.PrimitiveTypes_fromValue_closure, A.Si0TypeDefPrimitive$deserializeJson_closure, A.Si1Type$deserializeJson_closure, A.Si1Type$deserializeJson_closure0, A.Si1Type_scaleJsonSerialize_closure, A.Si1TypeDefsIndexesConst_fromValue_closure, A.Si1TypeDefComposite$deserializeJson_closure, A.Si1TypeDefComposite_scaleJsonSerialize_closure, A.Si1TypeDefVariant$deserializeJson_closure, A.Si1TypeDefVariant_scaleJsonSerialize_closure, A.Si1Variant$deserializeJson_closure, A.Si1Variant_scaleJsonSerialize_closure, A.StorageHasherV11Options_fromValue_closure, A.ExtrinsicMetadataV14$deserializeJson_closure, A.ExtrinsicMetadataV14_scaleJsonSerialize_closure, A.MetadataV14$deserializeJson_closure, A.MetadataV14_scaleJsonSerialize_closure, A.PalletMetadataV14$deserializeJson_closure, A.PalletMetadataV14_scaleJsonSerialize_closure, A.PalletStorageMetadataV14$deserializeJson_closure, A.PalletStorageMetadataV14_scaleJsonSerialize_closure, A.PortableRegistryV14$deserializeJson_closure, A.PortableRegistryV14_scaleJsonSerialize_closure, A.StorageEntryTypeV14Map$deserializeJson_closure, A.StorageEntryTypeV14Map_scaleJsonSerialize_closure, A.ExtrinsicMetadataV15$deserializeJson_closure, A.ExtrinsicMetadataV15_scaleJsonSerialize_closure, A.MetadataV15$deserializeJson_closure, A.MetadataV15$deserializeJson_closure0, A.MetadataV15_scaleJsonSerialize_closure, A.MetadataV15_scaleJsonSerialize_closure0, A.RuntimeApiMetadataV15$deserializeJson_closure, A.RuntimeApiMetadataV15_scaleJsonSerialize_closure, A.RuntimeApiMethodMetadataV15$deserializeJson_closure, A.RuntimeApiMethodMetadataV15_scaleJsonSerialize_closure, A.StorageEntryModifierV9_fromValue_closure, A.SubstrateRPCRequest_toRequest_closure, A.SubstrateRPCRequest_toRequest_closure0, A.Highlighter$__closure, A.Highlighter$___closure, A.Highlighter$__closure0, A.Highlighter__collateLines_closure, A.Highlighter__collateLines_closure1, A.Highlighter__collateLines__closure, A.Highlighter_highlight_closure, A.WalletVersion_WalletVersion$fromValue_closure, A.TonDartPluginException_toString_closure, A.TonDartPluginException_toString_closure0, A.TonApiType_TonApiType$fromValue_closure, A.TonApiRequestParam_toRequest_closure0, A.BlockCurrencyCollectionResponse_BlockCurrencyCollectionResponse$fromJson_closure, A.BlockCurrencyCollectionResponse_toJson_closure, A.TonProvider_request_closure, A._EventStreamSubscription_closure, A._EventStreamSubscription_onData_closure, A.EIP6963ProviderDetail_setup_closure, A.EthereumEvnetTypes_fromTag_closure, A.EthereumEvnetTypes_fromName_closure, A.EthereumWeb3State_EthereumWeb3State_closure, A.EthereumWeb3State_EthereumWeb3State_closure0, A.EthereumWeb3State_EthereumWeb3State_closure2, A.JSEthereumHandler_request_closure, A.JSEthereumHandler__parseTypedData_closure, A.WalletPromise_get_toPromise__closure, A.WalletPromise_get_toPromise__closure1, A.JSWalletMessageType_fromTag_closure, A.JSWalletResponseType_fromTag_closure, A.JSClientType_fromTag_closure, A.TronWeb3State_TronWeb3State_closure, A.TronWeb3State_TronWeb3State_closure0, A.TronWeb3State_TronWeb3State_closure2, A.JSTronHandler__parseTransaction_closure, A.TronEventTypes_fromTag_closure, A.TronEventTypes_fromName_closure, A.JSWebviewTraget_fromName_closure, A.main_onActivation]);
-    _inheritMany(A.Closure2Args, [A._CastListBase_sort_closure, A.CastMap_forEach_closure, A.ConstantMap_map_closure, A.JsLinkedHashMap_addAll_closure, A.initHooks_closure0, A._awaitOnObject_closure0, A._wrapJsFunctionForAsync_closure, A._Future__chainForeignFuture_closure0, A._Future_timeout_closure1, A.LinkedHashMap_LinkedHashMap$from_closure, A.MapBase_mapToString_closure, A._JsonStringifier_writeMap_closure, A._BigIntImpl_hashCode_combine, A._Uri__makeQueryFromParameters_closure, A.Uri__parseIPv4Address_error, A.Uri_parseIPv6Address_error, A.Uri_parseIPv6Address_parseHex, A._Uri__makeQueryFromParametersDefault_writeParameter, A._Uri__makeQueryFromParametersDefault_closure, A._createTables_build, A.AESLib_initialize_mul, A.LayoutConst_rustEnum_closure, A.SequenceLayout_encode_closure, A.StructLayout_StructLayout_closure0, A.StructLayout_getSpan_closure, A.LayoutException_closure, A.CanonicalizedMap_addAll_closure, A.CanonicalizedMap_forEach_closure, A.CanonicalizedMap_map_closure, A.TendermintRequestParam_toRequest_closure, A.BaseRequest_closure, A.MediaType_toString_closure, A.SubstrateClient__loadApi_closure, A.FixedBytes_hashCode_closure, A.Eip712TypedData_toJson_closure, A._EIP712Utils_getDependencies_closure, A.AccountCreateContract_toJson_closure, A.AccountId_toJson_closure, A.AccountPermissionUpdateContract_toJson_closure0, A.Permission_toJson_closure0, A.AssetIssueContract_toJson_closure0, A.TransferAssetContract_toJson_closure, A.UpdateAssetContract_toJson_closure, A.DelegateResourceContract_toJson_closure, A.FreezeBalanceV2Contract_toJson_closure, A.TransferContract_toJson_closure, A.UnDelegateResourceContract_toJson_closure, A.UnfreezeBalanceV2Contract_toJson_closure, A.ExchangeCreateContract_toJson_closure, A.ExchangeInjectContract_toJson_closure, A.ExchangeTransactionContract_toJson_closure, A.ExchangeWithdrawContract_toJson_closure, A.MarketCancelOrderContract_toJson_closure, A.MarketSellAssetContract_toJson_closure, A.ProposalApproveContract_toJson_closure, A.ProposalCreateContract_ProposalCreateContract$fromJson_closure, A.ProposalCreateContract_toJson_closure, A.ReceiveDescription_toJson_closure, A.ShieldedTransferContract_toJson_closure1, A.SpendDescription_toJson_closure, A.CreateSmartContract_toJson_closure, A.SmartContract_toJson_closure, A.SmartContractBABIEntryParam_toJson_closure, A.TriggerSmartContract_toJson_closure, A.UpdateEnergyLimitContract_toJson_closure, A.UpdateSettingContract_toJson_closure, A.TransactionContract_toJson_closure, A.TransactionRaw_toJson_closure1, A.VoteAssetContract_toJson_closure0, A.VoteWitnessContract_toJson_closure0, A.WitnessUpdateContract_toJson_closure, A.WitnessCreateContract_toJson_closure, A.TVMRequestParam_toRequest_closure, A.MetadataException_closure, A.Highlighter__collateLines_closure0, A.TonApiRequestParam_toRequest_closure, A.TonCenterPostRequestParam_toRequest_closure, A.XRPLedgerRequest_toRequest_closure, A.EthereumWeb3State_EthereumWeb3State_closure3, A.WalletPromise_get_toPromise_closure, A.WalletPromise_get_toPromise__closure0, A.TronWeb3State_TronWeb3State_closure3]);
+    _inheritMany(A.Closure, [A.Closure2Args, A.CastMap_entries_closure, A.Closure0Args, A.Instantiation, A.TearOffClosure, A.JsLinkedHashMap_values_closure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._awaitOnObject_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A._Future_timeout_closure0, A.Stream_length_closure, A.Stream_first_closure0, A._RootZone_bindUnaryCallbackGuarded_closure, A._HashMap_values_closure, A._LinkedCustomHashMap_closure, A.MapBase_entries_closure, A._JsonMap_values_closure, A._BigIntImpl_hashCode_finish, A.DateTime_parse_parseIntOrZero, A.DateTime_parse_parseMilliAndMicroseconds, A._createTables_setChars, A._createTables_setRange, A.SecureSocket_connect_closure, A.RawSecureSocket_connect_closure, A.jsify__convert, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.dartify_convert, A.BitcoinAddressType_fromValue_closure, A.BasedUtxoNetwork_fromName_closure, A.ElectrumRequest_toRequest_closure, A._BchBech32Utils_hrpExpand_closure, A.Bech32EncoderBase_encodeBech32_closure, A.Bech32DecoderBase_decodeBech32_closure, A.Bech32DecoderBase_decodeBech32_closure0, A.Bech32DecoderBase_decodeBech32_closure1, A.ADAAddressType_fromHeader_closure, A.ADAByronAddrTypes_ADAByronAddrTypes$fromCbor_closure, A.ADANetwork_fromTag_closure, A.ADANetwork_fromProtocolMagic_closure, A.EthAddrUtils__checksumEncode_closure, A.Bip32PathParser_parse_closure, A.Bip32PathParser__parseElem_closure, A.Bip44Coins_fromName_closure, A.Bip44Conf_akashNetwork_closure, A.Bip44Conf_algorand_closure, A.Bip44Conf_aptos_closure, A.Bip44Conf_avaxCChain_closure, A.Bip44Conf_avaxPChain_closure, A.Bip44Conf_avaxXChain_closure, A.Bip44Conf_axelar_closure, A.Bip44Conf_bandProtocol_closure, A.Bip44Conf_binanceChain_closure, A.Bip44Conf_binanceSmartChain_closure, A.Bip44Conf_bitcoinMainNet_closure, A.Bip44Conf_bitcoinTestNet_closure, A.Bip44Conf_bitcoinCashMainNet_closure, A.Bip44Conf_bitcoinCashTestNet_closure, A.Bip44Conf_bitcoinCashSlpMainNet_closure, A.Bip44Conf_bitcoinCashSlpTestNet_closure, A.Bip44Conf_bitcoinSvMainNet_closure, A.Bip44Conf_bitcoinSvTestNet_closure, A.Bip44Conf_cardanoByronIcarus_closure, A.Bip44Conf_cardanoByronLedger_closure, A.Bip44Conf_cardanoByronIcarusTestnet_closure, A.Bip44Conf_cardanoByronLedgerTestnet_closure, A.Bip44Conf_celo_closure, A.Bip44Conf_certik_closure, A.Bip44Conf_chihuahua_closure, A.Bip44Conf_cosmos_closure, A.Bip44Conf_cosmosTestnet_closure, A.Bip44Conf_cosmosNist256p1_closure, A.Bip44Conf_cosmosTestnetNist256p1_closure, A.Bip44Conf_dashMainNet_closure, A.Bip44Conf_dashTestNet_closure, A.Bip44Conf_dogecoinMainNet_closure, A.Bip44Conf_dogecoinTestNet_closure, A.Bip44Conf_pepeMainnet_closure, A.Bip44Conf_pepeTestnet_closure, A.Bip44Conf_ecashMainNet_closure, A.Bip44Conf_ecashTestNet_closure, A.Bip44Conf_elrond_closure, A.Bip44Conf_eos_closure, A.Bip44Conf_ergoMainNet_closure, A.Bip44Conf_ergoTestNet_closure, A.Bip44Conf_ethereum_closure, A.Bip44Conf_ethereumTestnet_closure, A.Bip44Conf_ethereumClassic_closure, A.Bip44Conf_fantomOpera_closure, A.Bip44Conf_filecoin_closure, A.Bip44Conf_harmonyOneMetamask_closure, A.Bip44Conf_harmonyOneEth_closure, A.Bip44Conf_harmonyOneAtom_closure, A.Bip44Conf_huobiChain_closure, A.Bip44Conf_icon_closure, A.Bip44Conf_injective_closure, A.Bip44Conf_irisNet_closure, A.Bip44Conf_kava_closure, A.Bip44Conf_kusamaEd25519Slip_closure, A.Bip44Conf_kusamaTestnetEd25519Slip_closure, A.Bip44Conf_litecoinMainNet_closure, A.Bip44Conf_litecoinTestNet_closure, A.Bip44Conf_moneroEd25519Slip_closure, A.Bip44Conf_moneroSecp256k1_closure, A.Bip44Conf_nano_closure, A.Bip44Conf_nearProtocol_closure, A.Bip44Conf_neo_closure, A.Bip44Conf_nineChroniclesGold_closure, A.Bip44Conf_okexChainEth_closure, A.Bip44Conf_okexChainAtom_closure, A.Bip44Conf_okexChainAtomOld_closure, A.Bip44Conf_ontology_closure, A.Bip44Conf_osmosis_closure, A.Bip44Conf_piNetwork_closure, A.Bip44Conf_polkadotEd25519Slip_closure, A.Bip44Conf_polkadotTestnetEd25519Slip_closure, A.Bip44Conf_polygon_closure, A.Bip44Conf_ripple_closure, A.Bip44Conf_rippleTestnet_closure, A.Bip44Conf_rippleEd25519_closure, A.Bip44Conf_rippleTestnetEd25519_closure, A.Bip44Conf_secretNetworkOld_closure, A.Bip44Conf_secretNetworkNew_closure, A.Bip44Conf_solana_closure, A.Bip44Conf_solanaTestnet_closure, A.Bip44Conf_stellar_closure, A.Bip44Conf_terra_closure, A.Bip44Conf_tezos_closure, A.Bip44Conf_theta_closure, A.Bip44Conf_tron_closure, A.Bip44Conf_tronTestnet_closure, A.Bip44Conf_vechain_closure, A.Bip44Conf_verge_closure, A.Bip44Conf_zcashMainNet_closure, A.Bip44Conf_zcashTestNet_closure, A.Bip44Conf_zilliqa_closure, A.Bip44Conf_tonMainnet_closure, A.Bip44Conf_tonTestnet_closure, A.Bip49Coins_fromName_closure, A.Bip49Conf_dashMainNet_closure, A.Bip49Conf_dashTestNet_closure, A.Bip49Conf_dogecoinMainNet_closure, A.Bip49Conf_dogecoinTestNet_closure, A.Bip49Conf_litecoinMainNet_closure, A.Bip49Conf_litecoinTestNet_closure, A.Bip49Conf_zcashMainNet_closure, A.Bip49Conf_zcashTestNet_closure, A.Bip49Conf_bitcoinMainNet_closure, A.Bip49Conf_bitcoinTestNet_closure, A.Bip49Conf_bitcoinSvMainNet_closure, A.Bip49Conf_bitcoinSvTestNet_closure, A.Bip49Conf_bitcoinCashMainNet_closure, A.Bip49Conf_bitcoinCashTestNet_closure, A.Bip49Conf_bitcoinCashSlpMainNet_closure, A.Bip49Conf_bitcoinCashSlpTestNet_closure, A.Bip49Conf_ecashMainNet_closure, A.Bip49Conf_ecashTestNet_closure, A.Bip49Conf_pepeMainnet_closure, A.Bip49Conf_pepeTestnet_closure, A.Bip84Coins_fromName_closure, A.Bip84Conf_bitcoinMainNet_closure, A.Bip84Conf_bitcoinTestNet_closure, A.Bip84Conf_litecoinMainNet_closure, A.Bip84Conf_litecoinTestNet_closure, A.Bip86Coins_fromName_closure, A.Bip86Conf_bitcoinMainNet_closure, A.Bip86Conf_bitcoinTestNet_closure, A.CoinProposal_fromName_closure, A.Cip1852Coins_fromName_closure, A.Cip1852Conf_cardanoIcarusMainNet_closure, A.Cip1852Conf_cardanoIcarusTestNet_closure, A.Cip1852Conf_cardanoLedgerMainNet_closure, A.Cip1852Conf_cardanoLedgerTestNet_closure, A.EllipticCurveTypes_fromName_closure, A.MoneroCoins_fromName_closure, A.SubstrateCoins_fromName_closure, A.SubstrateConf_acalaEd25519_closure, A.SubstrateConf_acalaSecp256k1_closure, A.SubstrateConf_acalaSr25519_closure, A.SubstrateConf_bifrostEd25519_closure, A.SubstrateConf_bifrostSecp256k1_closure, A.SubstrateConf_bifrostSr25519_closure, A.SubstrateConf_chainXEd25519_closure, A.SubstrateConf_chainXSecp256k1_closure, A.SubstrateConf_chainXSr25519_closure, A.SubstrateConf_edgewareEd25519_closure, A.SubstrateConf_edgewareSecp256k1_closure, A.SubstrateConf_edgewareSr25519_closure, A.SubstrateConf_genericEd25519_closure, A.SubstrateConf_genericSecp256k1_closure, A.SubstrateConf_genericSr25519_closure, A.SubstrateConf_karuraEd25519_closure, A.SubstrateConf_karuraSecp256k1_closure, A.SubstrateConf_karuraSr25519_closure, A.SubstrateConf_kusamaEd25519_closure, A.SubstrateConf_kusamaSecp256k1_closure, A.SubstrateConf_kusamaSr25519_closure, A.SubstrateConf_moonbeamEd25519_closure, A.SubstrateConf_moonbeamSecp256k1_closure, A.SubstrateConf_moonbeamSr25519_closure, A.SubstrateConf_moonriverEd25519_closure, A.SubstrateConf_moonriverSecp256k1_closure, A.SubstrateConf_moonriverSr25519_closure, A.SubstrateConf_phalaEd25519_closure, A.SubstrateConf_phalaSecp256k1_closure, A.SubstrateConf_phalaSr25519_closure, A.SubstrateConf_plasmEd25519_closure, A.SubstrateConf_plasmSecp256k1_closure, A.SubstrateConf_plasmSr25519_closure, A.SubstrateConf_polkadotEd25519_closure, A.SubstrateConf_polkadotSecp256k1_closure, A.SubstrateConf_polkadotSr25519_closure, A.SubstrateConf_soraEd25519_closure, A.SubstrateConf_soraSecp256k1_closure, A.SubstrateConf_soraSr25519_closure, A.SubstrateConf_stafiEd25519_closure, A.SubstrateConf_stafiSecp256k1_closure, A.SubstrateConf_stafiSr25519_closure, A.CborObject_CborObject$fromDynamic_closure, A.CborUtils__decodeUtf8String_closure, A.CborUtils__toStringObject_closure, A.CborUtils__toStringObject_closure0, A.CborUtils__decodeBytesString_closure, A.AESLib_initialize__rot24, A.QuickCrypto__generateRandom_closure, A.LayoutConst_rustEnum_closure1, A.LayoutConst_rustEnum_closure0, A.LayoutConst_compactString_closure0, A.LayoutConst_compactString_closure, A.LayoutConst_compactMap_closure0, A.LayoutConst_compactMap_closure, A.LayoutConst_array_closure0, A.LayoutConst_array_closure, A.LayoutConst_compactVec_closure, A.LayoutConst_compactVec_closure0, A.StructLayout_StructLayout_closure, A.Union_defaultGetSourceVariant_closure, A.LayoutException_toString_closure, A.BytesUtils_toBytes_closure, A.UUID_generateUUIDv4_closure, A.UUID_generateUUIDv4_closure0, A.CanonicalizedMap_entries_closure, A.CanonicalizedMap_keys_closure, A.CanonicalizedMap_values_closure, A.TendermintProvider_request_closure, A.BaseRequest_closure0, A.BrowserClient_send_closure, A.BrowserClient_send_closure0, A.ByteStream_toBytes_closure, A.CaseInsensitiveMap$from_closure, A.MediaType_toString__closure, A.expectQuotedString_closure, A.WalletEventTypes_fromName_closure, A.JSWebSocket_constructor_create_closure, A.WebEventStream_stream_closure, A.ContentType_fromValue_closure, A.ExtractCborMap_generateMap_closure, A.SynchronizedLock_synchronized_closure, A.MethodUtils_call_closure, A.StrUtils_toSnakeCase_closure, A.WebsocketWeb$__closure, A.WebsocketWeb$__closure0, A.WebsocketWeb$__closure1, A.WebsocketWeb_connect_closure, A.CustomCoins_fromName_closure, A.CustomCurrencyConf_byronLegacy_closure, A.CustomCurrencyConf_byronLegacyTestnet_closure, A.AddressDerivationType_fromTag_closure, A.Bip32AddressIndex__toPath_closure, A.Bip32AddressIndex__toPath_closure0, A.SeedTypes_fromName_closure, A.NetworkType_fromTag_closure, A.NetworkType_fromName_closure, A.ProvidersConst_getDefaultService_closure, A.ProvidersConst_getDefaultService_closure0, A.BitcoinExplorerProviderType_fromName_closure, A.BitcoinExplorerAPIProvider_BitcoinExplorerAPIProvider$fromCborBytesOrObject_closure, A.ElectrumAPIProvider_ElectrumAPIProvider$fromCborBytesOrObject_closure, A.CardanoAPIProvider_CardanoAPIProvider$fromCborBytesOrObject_closure, A.CosmosAPIProvider_CosmosAPIProvider$fromCborBytesOrObject_closure, A.EthereumAPIProvider_EthereumAPIProvider$fromCborBytesOrObject_closure, A.RippleAPIProvider_RippleAPIProvider$fromCborBytesOrObject_closure, A.SolanaAPIProvider_SolanaAPIProvider$fromCborBytesOrObject_closure, A.SubstrateAPIProvider_SubstrateAPIProvider$fromCborBytesOrObject_closure, A.TonAPIProvider_TonAPIProvider$fromCborBytesOrObject_closure, A.TronAPIProvider_TronAPIProvider$fromCborBytesOrObject_closure, A.APIServiceTracker__checkStatus_closure, A.SSLService_connect___closure, A.WebSocketService__onClose_closure, A.ProviderAuthType_fromName_closure, A.ServiceProtocol_fromID_closure, A.BitcoinMultiSignatureAddress_BitcoinMultiSignatureAddress$fromCborBytesOrObject_closure, A.BitcoinMultiSignatureAddress_BitcoinMultiSignatureAddress$fromCborBytesOrObject_closure0, A.BitcoinMultiSignatureAddress_toP2shAddress_closure, A.ITonAddress_ITonAddress$fromCborBytesOrObject_closure, A.TronMultiSignatureAddress_TronMultiSignatureAddress$fromCborBytesOrObject_closure, A.ITronAddress_ITronAddress$fromCborBytesOrObject_closure, A.ITronAddress_ITronAddress$fromCborBytesOrObject_closure0, A.ITronMultisigAddress_ITronMultisigAddress$fromCborBytesOrObject_closure, A.ITronMultisigAddress_ITronMultisigAddress$fromCborBytesOrObject_closure0, A.RippleMultiSignatureAddress_RippleMultiSignatureAddress$fromCborBytesOrObject_closure, A.IXRPAddress_IXRPAddress$fromCborBytesOrObject_closure, A.IXRPAddress_IXRPAddress$fromCborBytesOrObject_closure0, A.IXRPMultisigAddress_IXRPMultisigAddress$fromCborBytesOrObject_closure, A.IXRPMultisigAddress_IXRPMultisigAddress$fromCborBytesOrObject_closure0, A.ADAChain_ADAChain$deserialize_closure0, A.BitcoinChain_BitcoinChain$deserialize_closure0, A.CosmosChain_CosmosChain$deserialize_closure0, A.EthereumChain_EthereumChain$deserialize_closure0, A.SolanaChain_SolanaChain$deserialize_closure0, A.SubstrateChain_SubstrateChain$deserialize_closure0, A.TonChain_TonChain$deserialize_closure0, A.TronChain_TronChain$deserialize_closure0, A.RippleChain_RippleChain$deserialize_closure0, A.WalletNetwork_getProvider_closure, A.WalletNetwork_getProvider_closure0, A.WalletNetwork_getProvider_closure1, A.BitcoinParams_BitcoinParams$fromCborBytesOrObject_closure, A.CardanoNetworkParams_CardanoNetworkParams$fromCborBytesOrObject_closure, A.CosmosNetworkParams_CosmosNetworkParams$fromCborBytesOrObject_closure, A.CosmosNetworkParams_CosmosNetworkParams$fromCborBytesOrObject_closure0, A.EthereumNetworkParams_EthereumNetworkParams$fromCborBytesOrObject_closure, A.RippleNetworkParams_RippleNetworkParams$fromCborBytesOrObject_closure, A.SolanaNetworkParams_SolanaNetworkParams$fromCborBytesOrObject_closure, A.SubstrateNetworkParams_SubstrateNetworkParams$fromCborBytesOrObject_closure, A.TonNetworkParams_TonNetworkParams$fromCborBytesOrObject_closure, A.TronNetworkParams_TronNetworkParams$fromCborBytesOrObject_closure, A.TronNetworkParams_TronNetworkParams$fromCborBytesOrObject_closure0, A.CosmosNetworkTypes_CosmosNetworkTypes$fromValue_closure, A.SolanaWeb3TransactionResponseType_fromName_closure, A.TronChainType_fromName_closure, A.TronChainType_fromId_closure, A.TronChainType_fromGenesis_closure, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure0, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure1, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure2, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure3, A.TronAccountInfo_TronAccountInfo$fromCborBytesOrObject_closure4, A.TronAccountInfo_TronAccountInfo$fromJson_closure, A.TronAccountInfo_TronAccountInfo$fromJson_closure0, A.TronAccountInfo_TronAccountInfo$fromJson_closure1, A.TronAccountInfo_TronAccountInfo$fromJson_closure2, A.TronAccountInfo_TronAccountInfo$fromJson_closure3, A.TronAccountInfo_TronAccountInfo$fromJson_closure4, A.AccountPermission_AccountPermission$fromCborBytesOrObject_closure, A.AccountPermission_AccountPermission$fromJson_closure, A.Token_Token$fromCborBytesOrObject_closure, A.ChainsHandler_ChainsHandler$deserialize_closure, A.Web3MessageTypes_fromTag_closure, A.Web3APPAuthentication_Web3APPAuthentication$deserialize_closure, A.Web3APPAuthentication_Web3APPAuthentication$deserialize_closure0, A.Web3APPAuthentication_Web3APPAuthentication$deserialize_closure1, A.Web3EthereumRequestMethods_fromId_closure, A.Web3EthereumRequestMethods_fromName_closure, A.Web3EthereumAddNewChain_toNewNetwork_closure, A.Web3EthreumPersonalSign_Web3EthreumPersonalSign$fromJson_closure, A.Web3EthreumSendTransaction_Web3EthreumSendTransaction$fromJson_closure, A.Web3EthreumSendTransaction_Web3EthreumSendTransaction$fromJson_closure0, A.Web3EthreumSendTransaction_Web3EthreumSendTransaction$fromJson_closure1, A.Web3EthreumTypdedData_Web3EthreumTypdedData$fromJson_closure, A.Web3EthereumChain_Web3EthereumChain$deserialize_closure, A.Web3EthereumChain_Web3EthereumChain$deserialize_closure0, A.Web3EthereumChain_toCbor_closure, A.Web3EthereumChain_toCbor_closure0, A.Web3EthereumChain_currentChainAccounts_closure, A.Web3EthereumChain_currentChainAccounts_closure0, A.Web3GlobalRequestMethods_fromId_closure, A.Web3SolanaRequestMethods_fromId_closure, A.Web3SolanaRequestMethods_fromName_closure, A.Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure, A.Web3SolanaSendTransaction_Web3SolanaSendTransaction$deserialize_closure0, A.Web3SolanaSendTransaction_toCbor_closure, A.Web3SolanaSendTransaction_toJson_closure, A.Web3SolanaChain_Web3SolanaChain$deserialize_closure, A.Web3SolanaChain_Web3SolanaChain$deserialize_closure0, A.Web3SolanaChain_toCbor_closure, A.Web3SolanaChain_toCbor_closure0, A.Web3SolanaChain_currentChainAccounts_closure, A.Web3SolanaChain_currentChainAccounts_closure0, A.Web3SolanaChain_getPermission_closure, A.Web3TronRequestMethods_fromId_closure, A.Web3TronRequestMethods_fromName_closure, A.Web3TronChain_Web3TronChain$deserialize_closure, A.Web3TronChain_Web3TronChain$deserialize_closure0, A.Web3TronChain_toCbor_closure, A.Web3TronChain_toCbor_closure0, A.Web3TronChain_currentChainAccounts_closure, A.Web3TronChain_currentChainAccounts_closure0, A.Web3TronChain_getPermission_closure, A.BlockforestProvider_request_closure, A.ETHRPCRequest_toRequest_closure, A.ETHRPCRequest_toRequest_closure0, A.EthereumMethods_fromName_closure, A.ETHTransactionType_fromPrefix_closure, A.SolanaRPCRequest_toRequest_closure, A.SolanaTransaction_addSignature_closure, A.SolanaTransactionUtils_serializeV0_closure, A.SolanaTransactionUtils_serializeLegacy_closure, A.SolanaTransactionUtils_serializeLegacy_closure0, A.SolanaLayoutUtils_publicKey_closure0, A.SolanaLayoutUtils_publicKey_closure, A.AbiParameter_isDynamic_closure, A.EIP712Version_fromVersion_closure, A.EIP712Version_fromVersion__closure, A.Eip712TypedData_Eip712TypedData$fromJson_closure, A.Eip712TypedData_toJson__closure, A.EIP712Legacy_EIP712Legacy$fromJson_closure, A.EIP712Legacy_encode_closure, A.EIP712Legacy_encode_closure0, A.EIP712Legacy_encode_closure1, A.EIP712Legacy_toJson_closure, A._EIP712Utils_ensureCorrectValues_closure, A._EIP712Utils_eip712TypedDataV1ValueToJson_closure, A._EIP712Utils_getDependencies__closure, A._EIP712Utils_encodeValue_closure, A._EIP712Utils_encodeValue_closure0, A._EIP712Utils_encodeValue_closure1, A._EIP712Utils_abiEncode_closure, A._EIP712Utils_legacyV1encode_closure, A._EIP712Utils_getMethodSigature_closure, A._EIP712Utils_getMethodSigature__closure, A.ArrayCoder_abiEncode_closure, A.ArrayCoder_abiEncode_closure0, A.ArrayCoder_legacyEip712Encode_closure, A.ArrayCoder_legacyEip712Encode_closure0, A.TupleCoder_abiEncode_closure, A.TupleCoder_legacyEip712Encode_closure, A._ABIUtils_encodeDynamicParams_closure, A._ABIUtils_encodeDynamicParams_closure0, A._ABIUtils_encodeDynamicParams_closure1, A._ABIUtils_encodeDynamicParams_closure2, A.AccountCreateContract_AccountCreateContract$deserialize_closure, A.AccountPermissionUpdateContract_AccountPermissionUpdateContract$fromJson_closure, A.AccountPermissionUpdateContract_AccountPermissionUpdateContract$deserialize_closure, A.AccountPermissionUpdateContract_AccountPermissionUpdateContract$deserialize_closure0, A.AccountPermissionUpdateContract_toJson_closure, A.AccountType_fromName_closure, A.AccountType_fromValue_closure, A.Authority_Authority$deserialize_closure, A.Permission_Permission$fromJson_closure, A.Permission_Permission$deserialize_closure, A.Permission_toJson_closure, A.PermissionType_fromName_closure, A.PermissionType_fromValue_closure, A.AssetIssueContract_AssetIssueContract$fromJson_closure, A.AssetIssueContract_AssetIssueContract$deserialize_closure, A.AssetIssueContract_toJson_closure, A.DelegateResourceContract_DelegateResourceContract$deserialize_closure, A.FreezeBalanceContract_FreezeBalanceContract$deserialize_closure, A.FreezeBalanceV2Contract_FreezeBalanceV2Contract$deserialize_closure, A.UnDelegateResourceContract_UnDelegateResourceContract$deserialize_closure, A.UnfreezeBalanceContract_UnfreezeBalanceContract$deserialize_closure, A.UnfreezeBalanceV2Contract_UnfreezeBalanceV2Contract$deserialize_closure, A.ResourceCode_fromName_closure0, A.ResourceCode_fromValue_closure0, A.TransactionContractType_findByName_closure, A.TransactionContractType_findByValue_closure, A.ShieldedTransferContract_ShieldedTransferContract$fromJson_closure, A.ShieldedTransferContract_ShieldedTransferContract$fromJson_closure0, A.ShieldedTransferContract_ShieldedTransferContract$deserialize_closure, A.ShieldedTransferContract_ShieldedTransferContract$deserialize_closure0, A.ShieldedTransferContract_toJson_closure, A.ShieldedTransferContract_toJson_closure0, A.SmartContractAbiEntryType_fromName_closure, A.SmartContractAbiEntryType_fromValue_closure, A.SmartContractAbiStateMutabilityType_fromName_closure, A.SmartContractAbiStateMutabilityType_fromValue_closure, A.SmartContract_SmartContract$deserialize_closure, A.SmartContract_SmartContract$deserialize_closure0, A.SmartContractABI_SmartContractABI$fromJson_closure, A.SmartContractABI_SmartContractABI$deserialize_closure, A.SmartContractABI_toJson_closure, A.SmartContractABIEntry_SmartContractABIEntry$fromJson_closure, A.SmartContractABIEntry_SmartContractABIEntry$fromJson_closure0, A.SmartContractABIEntry_SmartContractABIEntry$deserialize_closure, A.SmartContractABIEntry_SmartContractABIEntry$deserialize_closure0, A.SmartContractABIEntry_toJson_closure, A.SmartContractABIEntry_toJson_closure0, A.Transaction_Transaction$fromJson_closure, A.Transaction_closure, A.Transaction_toJson_closure, A.TransactionRaw_TransactionRaw$fromJson_closure, A.TransactionRaw_TransactionRaw$fromJson_closure0, A.TransactionRaw_TransactionRaw$deserialize_closure, A.TransactionRaw_TransactionRaw$deserialize_closure0, A.TransactionRaw_toJson_closure, A.TransactionRaw_toJson_closure0, A.VoteAssetContract_VoteAssetContract$fromJson_closure, A.VoteAssetContract_VoteAssetContract$deserialize_closure, A.VoteAssetContract_toJson_closure, A.VoteWitnessContract_VoteWitnessContract$fromJson_closure, A.VoteWitnessContract_VoteWitnessContract$deserialize_closure, A.VoteWitnessContract_toJson_closure, A.ProtocolBufferDecoder__decodeInt_closure, A.QuickProtocolBufferResults_getField_closure, A.QuickProtocolBufferResults_getField_closure0, A.QuickProtocolBufferResults_getResult_closure, A.QuickProtocolBufferResults_getResult_closure0, A.QuickProtocolBufferResults_getFields_closure, A.QuickProtocolBufferResults_getFields_closure0, A.QuickProtocolBufferResults_getMap_closure, A.TVMRequestParam_toRequest_closure0, A.Context_joinAll_closure, A.Context_split_closure, A._validateArgList_closure, A.MetadataException_toString_closure, A.PrimitiveTypes_fromValue_closure, A.Si0TypeDefPrimitive$deserializeJson_closure, A.Si1Type$deserializeJson_closure, A.Si1Type$deserializeJson_closure0, A.Si1Type_scaleJsonSerialize_closure, A.Si1TypeDefsIndexesConst_fromValue_closure, A.Si1TypeDefComposite$deserializeJson_closure, A.Si1TypeDefComposite_scaleJsonSerialize_closure, A.Si1TypeDefVariant$deserializeJson_closure, A.Si1TypeDefVariant_scaleJsonSerialize_closure, A.Si1Variant$deserializeJson_closure, A.Si1Variant_scaleJsonSerialize_closure, A.StorageHasherV11Options_fromValue_closure, A.ExtrinsicMetadataV14$deserializeJson_closure, A.ExtrinsicMetadataV14_scaleJsonSerialize_closure, A.MetadataV14$deserializeJson_closure, A.MetadataV14_scaleJsonSerialize_closure, A.PalletMetadataV14$deserializeJson_closure, A.PalletMetadataV14_scaleJsonSerialize_closure, A.PalletStorageMetadataV14$deserializeJson_closure, A.PalletStorageMetadataV14_scaleJsonSerialize_closure, A.PortableRegistryV14$deserializeJson_closure, A.PortableRegistryV14_scaleJsonSerialize_closure, A.StorageEntryTypeV14Map$deserializeJson_closure, A.StorageEntryTypeV14Map_scaleJsonSerialize_closure, A.ExtrinsicMetadataV15$deserializeJson_closure, A.ExtrinsicMetadataV15_scaleJsonSerialize_closure, A.MetadataV15$deserializeJson_closure, A.MetadataV15$deserializeJson_closure0, A.MetadataV15_scaleJsonSerialize_closure, A.MetadataV15_scaleJsonSerialize_closure0, A.RuntimeApiMetadataV15$deserializeJson_closure, A.RuntimeApiMetadataV15_scaleJsonSerialize_closure, A.RuntimeApiMethodMetadataV15$deserializeJson_closure, A.RuntimeApiMethodMetadataV15_scaleJsonSerialize_closure, A.StorageEntryModifierV9_fromValue_closure, A.SubstrateRPCRequest_toRequest_closure, A.SubstrateRPCRequest_toRequest_closure0, A.Highlighter$__closure, A.Highlighter$___closure, A.Highlighter$__closure0, A.Highlighter__collateLines_closure, A.Highlighter__collateLines_closure1, A.Highlighter__collateLines__closure, A.Highlighter_highlight_closure, A.WalletVersion_WalletVersion$fromValue_closure, A.TonDartPluginException_toString_closure, A.TonDartPluginException_toString_closure0, A.TonApiType_TonApiType$fromValue_closure, A.TonApiRequestParam_toRequest_closure0, A.BlockCurrencyCollectionResponse_BlockCurrencyCollectionResponse$fromJson_closure, A.BlockCurrencyCollectionResponse_toJson_closure, A.TonProvider_request_closure, A._EventStreamSubscription_closure, A._EventStreamSubscription_onData_closure, A.EIP6963ProviderDetail_setup_closure, A.EthereumEventTypes_fromTag_closure, A.EthereumEventTypes_fromName_closure, A.EthereumWeb3State_EthereumWeb3State_closure, A.EthereumWeb3State_EthereumWeb3State_closure0, A.EthereumWeb3State_EthereumWeb3State_closure2, A.JSEthereumHandler_request_closure, A.JSEthereumHandler__parseTypedData_closure, A.WalletPromise_get_toPromise__closure, A.WalletPromise_get_toPromise__closure1, A.JSWalletMessageType_fromTag_closure, A.JSWalletResponseType_fromTag_closure, A.JSClientType_fromTag_closure, A.SolanaPageController__buildTransaction_closure, A.SolanaPageController__buildTransaction_closure0, A.SolanaPageController__buildTransaction_closure1, A.SolanaPageController__buildTransaction__closure, A.SolanaPageController__buildTransaction__closure0, A.SolanaPageController__buildTransaction__closure1, A.SolanaPageController_onEvent_closure, A.SolanaEventTypes_fromTag_closure, A.SolanaEventTypes_fromName_closure, A.SolanaWeb3State_SolanaWeb3State_closure, A.SolanaWeb3State_SolanaWeb3State_closure0, A.SolanaWeb3State_SolanaWeb3State_closure2, A.JSSolanaHandler__parseTransaction_closure, A.JSSolanaHandler__parseTransaction_closure0, A.TronEventTypes_fromTag_closure, A.TronEventTypes_fromName_closure, A.TronWeb3State_TronWeb3State_closure, A.TronWeb3State_TronWeb3State_closure0, A.TronWeb3State_TronWeb3State_closure2, A.JSTronHandler__parseTransaction_closure, A.JSWebviewTraget_fromName_closure, A.main_onActivation]);
+    _inheritMany(A.Closure2Args, [A._CastListBase_sort_closure, A.CastMap_forEach_closure, A.ConstantMap_map_closure, A.JsLinkedHashMap_addAll_closure, A.initHooks_closure0, A._awaitOnObject_closure0, A._wrapJsFunctionForAsync_closure, A._Future__chainForeignFuture_closure0, A._Future_timeout_closure1, A.LinkedHashMap_LinkedHashMap$from_closure, A.MapBase_mapToString_closure, A._JsonStringifier_writeMap_closure, A._BigIntImpl_hashCode_combine, A._Uri__makeQueryFromParameters_closure, A.Uri__parseIPv4Address_error, A.Uri_parseIPv6Address_error, A.Uri_parseIPv6Address_parseHex, A._Uri__makeQueryFromParametersDefault_writeParameter, A._Uri__makeQueryFromParametersDefault_closure, A._createTables_build, A.AESLib_initialize_mul, A.LayoutConst_rustEnum_closure, A.SequenceLayout_encode_closure, A.StructLayout_StructLayout_closure0, A.StructLayout_getSpan_closure, A.LayoutException_closure, A.CanonicalizedMap_addAll_closure, A.CanonicalizedMap_forEach_closure, A.CanonicalizedMap_map_closure, A.TendermintRequestParam_toRequest_closure, A.BaseRequest_closure, A.MediaType_toString_closure, A.SubstrateClient__loadApi_closure, A.Web3ExceptionMessage_toJson_closure, A.FixedBytes_hashCode_closure, A.Eip712TypedData_toJson_closure, A._EIP712Utils_getDependencies_closure, A.AccountCreateContract_toJson_closure, A.AccountId_toJson_closure, A.AccountPermissionUpdateContract_toJson_closure0, A.Permission_toJson_closure0, A.AssetIssueContract_toJson_closure0, A.TransferAssetContract_toJson_closure, A.UpdateAssetContract_toJson_closure, A.DelegateResourceContract_toJson_closure, A.FreezeBalanceV2Contract_toJson_closure, A.TransferContract_toJson_closure, A.UnDelegateResourceContract_toJson_closure, A.UnfreezeBalanceV2Contract_toJson_closure, A.ExchangeCreateContract_toJson_closure, A.ExchangeInjectContract_toJson_closure, A.ExchangeTransactionContract_toJson_closure, A.ExchangeWithdrawContract_toJson_closure, A.MarketCancelOrderContract_toJson_closure, A.MarketSellAssetContract_toJson_closure, A.ProposalApproveContract_toJson_closure, A.ProposalCreateContract_ProposalCreateContract$fromJson_closure, A.ProposalCreateContract_toJson_closure, A.ReceiveDescription_toJson_closure, A.ShieldedTransferContract_toJson_closure1, A.SpendDescription_toJson_closure, A.CreateSmartContract_toJson_closure, A.SmartContract_toJson_closure, A.SmartContractBABIEntryParam_toJson_closure, A.TriggerSmartContract_toJson_closure, A.UpdateEnergyLimitContract_toJson_closure, A.UpdateSettingContract_toJson_closure, A.TransactionContract_toJson_closure, A.TransactionRaw_toJson_closure1, A.VoteAssetContract_toJson_closure0, A.VoteWitnessContract_toJson_closure0, A.WitnessUpdateContract_toJson_closure, A.WitnessCreateContract_toJson_closure, A.TVMRequestParam_toRequest_closure, A.MetadataException_closure, A.Highlighter__collateLines_closure0, A.TonApiRequestParam_toRequest_closure, A.TonCenterPostRequestParam_toRequest_closure, A.XRPLedgerRequest_toRequest_closure, A.EthereumWeb3State_EthereumWeb3State_closure3, A.JSWalletError_constructor_fromJson_closure, A.WalletPromise_get_toPromise_closure, A.WalletPromise_get_toPromise__closure0, A.SolanaWeb3State_SolanaWeb3State_closure3, A.TronWeb3State_TronWeb3State_closure3]);
     _inherit(A.CastList, A._CastListBase);
     _inheritMany(A.MapBase, [A.CastMap, A.UnmodifiableMapBase, A.JsLinkedHashMap, A._HashMap, A._JsonMap]);
     _inheritMany(A.Error, [A.LateError, A.TypeError, A.JsNoSuchMethodError, A.UnknownJsTypeError, A._CyclicInitializationError, A.RuntimeError, A.AssertionError, A._Error, A.JsonUnsupportedObjectError, A.ArgumentError, A.UnsupportedError, A.UnimplementedError, A.StateError, A.ConcurrentModificationError]);
     _inherit(A.UnmodifiableListBase, A.ListBase);
     _inherit(A.CodeUnits, A.UnmodifiableListBase);
-    _inheritMany(A.Closure0Args, [A.nullFuture_closure, A._AsyncRun__scheduleImmediateJsOverride_internalCallback, A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback, A._TimerImpl_internalCallback, A.Future_Future$delayed_closure, A._Future__addListener_closure, A._Future__prependListeners_closure, A._Future__chainForeignFuture_closure1, A._Future__chainCoreFutureAsync_closure, A._Future__asyncCompleteWithValue_closure, A._Future__asyncCompleteError_closure, A._Future__propagateToListeners_handleWhenCompleteCallback, A._Future__propagateToListeners_handleValueCallback, A._Future__propagateToListeners_handleError, A._Future_timeout_closure, A.Stream_length_closure0, A.Stream_first_closure, A._StreamController__subscribe_closure, A._StreamController__recordCancel_complete, A._BufferingStreamSubscription__sendError_sendError, A._BufferingStreamSubscription__sendDone_sendDone, A._PendingEvents_schedule_closure, A._cancelAndValue_closure, A._rootHandleError_closure, A._RootZone_bindCallbackGuarded_closure, A._Utf8Decoder__decoder_closure, A._Utf8Decoder__decoderNonfatal_closure, A._RawSecureSocket__secureHandshakeCompleteHandler_closure, A.BitcoinAddressType_fromValue_closure0, A.ADAAddressType_fromHeader_closure0, A.ADANetwork_fromTag_closure0, A.ADANetwork_fromProtocolMagic_closure0, A.CoinProposal_fromName_closure0, A.MediaType_MediaType$parse_closure, A.WalletEventTypes_fromName_closure0, A.WebEventStream_stream_closure0, A.ContentType_fromValue_closure0, A.SynchronizedLock_synchronized_complete, A.AddressDerivationType_fromTag_closure0, A.SeedTypes_fromName_closure0, A.NetworkType_fromTag_closure0, A.NetworkType_fromName_closure0, A.NetworkClient__init_closure, A.NetworkClient_init_closure, A.BitcoinElectrumClient_genesis_closure, A.CosmosClient_onInit_closure, A.EthereumClient_onInit_closure, A.RippleClient_onInit_closure, A.SolanaClient_onInit_closure, A.TonClient_onInit_closure, A.TronClient_onInit_closure, A.ProvidersConst_getDefaultService_closure1, A.BitcoinExplorerProviderType_fromName_closure0, A.HTTPService__callSynchronized_closure, A.HTTPService_providerPOST_closure, A.HTTPService_providerGET_closure, A.SSLService_connect_closure, A.SSLService_connect__closure, A.SSLService_post_closure, A.TCPService_connect_closure, A.TCPService_connect__closure, A.TCPService_post_closure, A.WebSocketService_connect_closure, A.WebSocketService_connect__closure, A.WebSocketService_addMessage_closure, A.ProviderAuthType_fromName_closure0, A.EthereumWebsocketService__emitListeners_closure, A.EthereumWebsocketService_onMessge_closure, A.Chain_Chain$deserialize_closure, A.Chain_Chain$deserialize_closure0, A.ADAChain_ADAChain$deserialize_closure, A.BitcoinChain_BitcoinChain$deserialize_closure, A.CosmosChain_CosmosChain$deserialize_closure, A.EthereumChain_EthereumChain$deserialize_closure, A.SolanaChain_SolanaChain$deserialize_closure, A.SubstrateChain_SubstrateChain$deserialize_closure, A.TonChain_TonChain$deserialize_closure, A.TronChain_TronChain$deserialize_closure, A.RippleChain_RippleChain$deserialize_closure, A.WalletNetwork_getProvider_closure2, A.CosmosNetworkTypes_CosmosNetworkTypes$fromValue_closure0, A.TronChainType_fromName_closure0, A.TronChainType_fromId_closure0, A.TronChainType_fromGenesis_closure0, A.Web3MessageTypes_fromTag_closure0, A.Web3EthereumRequestMethods_fromId_closure0, A.Web3EthereumValidator_parseTypedData_closure, A.Web3GlobalRequestMethods_fromId_closure0, A.Web3TronRequestMethods_fromId_closure0, A.Web3ValidatorUtils_parseAddress_closure, A.Web3ValidatorUtils_parseList_closure, A.Web3ValidatorUtils_parseMap_closure, A.EIP712Version_fromVersion_closure0, A.PermissionType_fromName_closure0, A.PermissionType_fromValue_closure0, A.ResourceCode_fromName_closure, A.ResourceCode_fromValue_closure, A.TransactionContractType_findByName_closure0, A.SmartContractAbiEntryType_fromName_closure0, A.SmartContractAbiEntryType_fromValue_closure0, A.SmartContractAbiStateMutabilityType_fromName_closure0, A.SmartContractAbiStateMutabilityType_fromValue_closure0, A.PrimitiveTypes_fromValue_closure0, A.Si1TypeDefsIndexesConst_fromValue_closure0, A.StorageHasherV11Options_fromValue_closure0, A.StorageEntryModifierV9_fromValue_closure0, A.Highlighter_closure, A.Highlighter__writeFileStart_closure, A.Highlighter__writeMultilineHighlights_closure, A.Highlighter__writeMultilineHighlights_closure0, A.Highlighter__writeMultilineHighlights_closure1, A.Highlighter__writeMultilineHighlights_closure2, A.Highlighter__writeMultilineHighlights__closure, A.Highlighter__writeMultilineHighlights__closure0, A.Highlighter__writeHighlightedText_closure, A.Highlighter__writeIndicator_closure, A.Highlighter__writeIndicator_closure0, A.Highlighter__writeIndicator_closure1, A.Highlighter__writeSidebar_closure, A._Highlight_closure, A.WalletVersion_WalletVersion$fromValue_closure0, A.TonApiType_TonApiType$fromValue_closure0, A.EthereumEvnetTypes_fromTag_closure0, A.EthereumEvnetTypes_fromName_closure0, A.ProviderConnectInfo_toJSEvent__closure, A.ProviderConnectInfo_toJSEvent_closure, A.EthereumWeb3State_EthereumWeb3State_closure1, A.JSEthereumHandler_initChain_closure, A.JSEthereumHandler__parseAddEthereumChain_closure, A.JSEthereumHandler__parseTransaction_closure, A.JSWalletError_constructor_fromMessage_toString, A.JSWalletError_constructor_fromJson_toString, A.JSWalletMessageType_fromTag_closure0, A.JSWalletResponseType_fromTag_closure0, A.JSClientType_fromTag_closure0, A.EthereumPageController__init__closure, A.EthereumPageController__init_closure, A.TronPageController__init__closure1, A.TronPageController__init_closure, A.TronPageController__init__closure0, A.TronPageController__init_closure0, A.TronPageController__init__closure, A.TronPageController__init_closure1, A.TronPageController_onEvent__closure, A.TronPageController_onEvent__closure0, A.TronPageController_onEvent_closure, A.TronWeb3State_TronWeb3State_closure1, A.JSTronHandler_initChain_closure, A.TronEventTypes_fromTag_closure0, A.TronWebNodeInfo_toTronWeb__closure, A.TronWebNodeInfo_toTronWeb__closure0, A.TronWebNodeInfo_toTronWeb_closure]);
+    _inheritMany(A.Closure0Args, [A.nullFuture_closure, A._AsyncRun__scheduleImmediateJsOverride_internalCallback, A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback, A._TimerImpl_internalCallback, A.Future_Future$delayed_closure, A._Future__addListener_closure, A._Future__prependListeners_closure, A._Future__chainForeignFuture_closure1, A._Future__chainCoreFutureAsync_closure, A._Future__asyncCompleteWithValue_closure, A._Future__asyncCompleteError_closure, A._Future__propagateToListeners_handleWhenCompleteCallback, A._Future__propagateToListeners_handleValueCallback, A._Future__propagateToListeners_handleError, A._Future_timeout_closure, A.Stream_length_closure0, A.Stream_first_closure, A._StreamController__subscribe_closure, A._StreamController__recordCancel_complete, A._BufferingStreamSubscription__sendError_sendError, A._BufferingStreamSubscription__sendDone_sendDone, A._PendingEvents_schedule_closure, A._cancelAndValue_closure, A._rootHandleError_closure, A._RootZone_bindCallbackGuarded_closure, A._Utf8Decoder__decoder_closure, A._Utf8Decoder__decoderNonfatal_closure, A._RawSecureSocket__secureHandshakeCompleteHandler_closure, A.BitcoinAddressType_fromValue_closure0, A.ADAAddressType_fromHeader_closure0, A.ADANetwork_fromTag_closure0, A.ADANetwork_fromProtocolMagic_closure0, A.CoinProposal_fromName_closure0, A.MediaType_MediaType$parse_closure, A.WalletEventTypes_fromName_closure0, A.WebEventStream_stream_closure0, A.ContentType_fromValue_closure0, A.SynchronizedLock_synchronized_complete, A.AddressDerivationType_fromTag_closure0, A.SeedTypes_fromName_closure0, A.NetworkType_fromTag_closure0, A.NetworkType_fromName_closure0, A.NetworkClient__init_closure, A.NetworkClient_init_closure, A.BitcoinElectrumClient_genesis_closure, A.CosmosClient_onInit_closure, A.EthereumClient_onInit_closure, A.RippleClient_onInit_closure, A.SolanaClient_onInit_closure, A.TonClient_onInit_closure, A.TronClient_onInit_closure, A.ProvidersConst_getDefaultService_closure1, A.BitcoinExplorerProviderType_fromName_closure0, A.HTTPService__callSynchronized_closure, A.HTTPService_providerPOST_closure, A.HTTPService_providerGET_closure, A.SSLService_connect_closure, A.SSLService_connect__closure, A.SSLService_post_closure, A.TCPService_connect_closure, A.TCPService_connect__closure, A.TCPService_post_closure, A.WebSocketService_connect_closure, A.WebSocketService_connect__closure, A.WebSocketService_addMessage_closure, A.ProviderAuthType_fromName_closure0, A.EthereumWebsocketService__emitListeners_closure, A.EthereumWebsocketService_onMessge_closure, A.Chain_Chain$deserialize_closure, A.Chain_Chain$deserialize_closure0, A.ADAChain_ADAChain$deserialize_closure, A.BitcoinChain_BitcoinChain$deserialize_closure, A.CosmosChain_CosmosChain$deserialize_closure, A.EthereumChain_EthereumChain$deserialize_closure, A.SolanaChain_SolanaChain$deserialize_closure, A.SubstrateChain_SubstrateChain$deserialize_closure, A.TonChain_TonChain$deserialize_closure, A.TronChain_TronChain$deserialize_closure, A.RippleChain_RippleChain$deserialize_closure, A.WalletNetwork_getProvider_closure2, A.CosmosNetworkTypes_CosmosNetworkTypes$fromValue_closure0, A.TronChainType_fromName_closure0, A.TronChainType_fromId_closure0, A.TronChainType_fromGenesis_closure0, A.Web3MessageTypes_fromTag_closure0, A.Web3EthereumRequestMethods_fromId_closure0, A.Web3EthereumValidator_parseTypedData_closure, A.Web3GlobalRequestMethods_fromId_closure0, A.Web3SolanaRequestMethods_fromId_closure0, A.Web3TronRequestMethods_fromId_closure0, A.Web3ValidatorUtils_parseAddress_closure, A.Web3ValidatorUtils_parseList_closure, A.Web3ValidatorUtils_parseMap_closure, A.EIP712Version_fromVersion_closure0, A.PermissionType_fromName_closure0, A.PermissionType_fromValue_closure0, A.ResourceCode_fromName_closure, A.ResourceCode_fromValue_closure, A.TransactionContractType_findByName_closure0, A.SmartContractAbiEntryType_fromName_closure0, A.SmartContractAbiEntryType_fromValue_closure0, A.SmartContractAbiStateMutabilityType_fromName_closure0, A.SmartContractAbiStateMutabilityType_fromValue_closure0, A.PrimitiveTypes_fromValue_closure0, A.Si1TypeDefsIndexesConst_fromValue_closure0, A.StorageHasherV11Options_fromValue_closure0, A.StorageEntryModifierV9_fromValue_closure0, A.Highlighter_closure, A.Highlighter__writeFileStart_closure, A.Highlighter__writeMultilineHighlights_closure, A.Highlighter__writeMultilineHighlights_closure0, A.Highlighter__writeMultilineHighlights_closure1, A.Highlighter__writeMultilineHighlights_closure2, A.Highlighter__writeMultilineHighlights__closure, A.Highlighter__writeMultilineHighlights__closure0, A.Highlighter__writeHighlightedText_closure, A.Highlighter__writeIndicator_closure, A.Highlighter__writeIndicator_closure0, A.Highlighter__writeIndicator_closure1, A.Highlighter__writeSidebar_closure, A._Highlight_closure, A.WalletVersion_WalletVersion$fromValue_closure0, A.TonApiType_TonApiType$fromValue_closure0, A.EthereumEventTypes_fromTag_closure0, A.EthereumEventTypes_fromName_closure0, A.ProviderConnectInfo_toJSEvent__closure, A.ProviderConnectInfo_toJSEvent_closure, A.EthereumWeb3State_EthereumWeb3State_closure1, A.JSEthereumHandler_initChain_closure, A.JSEthereumHandler__parseAddEthereumChain_closure, A.JSEthereumHandler__parseTransaction_closure, A.JSWalletError_constructor_fromMessage_toString, A.JSWalletError_constructor_fromJson_toString, A.JSWalletMessageType_fromTag_closure0, A.JSWalletResponseType_fromTag_closure0, A.JSClientType_fromTag_closure0, A.EthereumPageController__init__closure, A.EthereumPageController__init_closure, A.SolanaPageController__init__closure, A.SolanaPageController__init_closure, A.TronPageController__init__closure1, A.TronPageController__init_closure, A.TronPageController__init__closure0, A.TronPageController__init_closure0, A.TronPageController__init__closure, A.TronPageController__init_closure1, A.TronPageController_onEvent__closure, A.TronPageController_onEvent__closure0, A.TronPageController_onEvent_closure, A.JSSolanaPublicKey_toJS__closure, A.JSSolanaPublicKey_toJS_closure, A.SolanaEventTypes_fromTag_closure0, A.SolanaProviderConnectInfo_toJS__closure, A.SolanaProviderConnectInfo_toJS_closure, A.SolanaWeb3State_SolanaWeb3State_closure1, A.JSSolanaHandler_initChain_closure, A.JSSolanaHandler__parseTransaction_closure1, A.TronEventTypes_fromTag_closure0, A.TronWebNodeInfo_toTronWeb__closure, A.TronWebNodeInfo_toTronWeb__closure0, A.TronWebNodeInfo_toTronWeb_closure, A.TronWeb3State_TronWeb3State_closure1, A.JSTronHandler_initChain_closure]);
     _inheritMany(A.EfficientLengthIterable, [A.ListIterable, A.EmptyIterable, A.LinkedHashMapKeyIterable, A._HashMapKeyIterable, A._MapBaseValueIterable]);
     _inheritMany(A.ListIterable, [A.SubListIterable, A.MappedListIterable, A._ListIndicesIterable, A.ReversedListIterable, A._JsonMapKeyIterable]);
     _inherit(A.EfficientLengthMappedIterable, A.MappedIterable);
@@ -58016,9 +60323,9 @@
     _inheritMany(A.LegacyAddress, [A.P2shAddress, A.P2pkhAddress, A.P2pkAddress]);
     _inheritMany(A.BitcoinNetworkAddress, [A.BitcoinAddress, A.DogeAddress, A.PepeAddress, A.LitecoinAddress, A.BitcoinCashAddress, A.DashAddress]);
     _inheritMany(A.SegwitAddress, [A.P2wpkhAddress, A.P2trAddress, A.P2wshAddress]);
-    _inheritMany(A.BlockchainUtilsException, [A.BitcoinBasePluginException, A.SolidityAbiException, A.TronPluginException, A.MetadataException, A.TonDartPluginException]);
+    _inheritMany(A.BlockchainUtilsException, [A.BitcoinBasePluginException, A.SolanaPluginException, A.SolidityAbiException, A.TronPluginException, A.MetadataException, A.TonDartPluginException]);
     _inheritMany(A.ElectrumRequest, [A.ElectrumBlockHeader, A.ElectrumServerFeatures]);
-    _inheritMany(A._Enum, [A.APIType, A.Base58Alphabets, A.Bech32Encodings, A.EncodeType, A.StringEncoding, A.AppPlatform, A.WalletEventTypes, A.ContentType, A.AddressDerivationType, A.SeedTypes, A.NodeClientStatus, A.BitcoinExplorerProviderType, A.ProviderAuthType, A.ServiceProtocol, A.SocketStatus, A.APIServiceStatus, A.TronChainType, A.Web3MessageTypes, A.HTTPRequestType, A.RequestMethod, A.EthereumEvnetTypes, A.JSNetworkState, A.JSWalletMessageType, A.JSWalletResponseType, A.JSClientType, A.TronEventTypes, A.JSWebviewTraget]);
+    _inheritMany(A._Enum, [A.APIType, A.Base58Alphabets, A.Bech32Encodings, A.EncodeType, A.StringEncoding, A.AppPlatform, A.WalletEventTypes, A.ContentType, A.AddressDerivationType, A.SeedTypes, A.NodeClientStatus, A.BitcoinExplorerProviderType, A.ProviderAuthType, A.ServiceProtocol, A.SocketStatus, A.APIServiceStatus, A.SolanaWeb3TransactionResponseType, A.TronChainType, A.Web3MessageTypes, A.HTTPRequestType, A.RequestMethod, A.EthereumEventTypes, A.JSNetworkState, A.JSWalletMessageType, A.JSWalletResponseType, A.JSClientType, A.SolanaEventTypes, A.TronEventTypes, A.JSWebviewTraget]);
     _inherit(A.XmrAddrEncoder, A.BlockchainAddressEncoder);
     _inherit(A.Bip32PublicKey, A.Bip32KeyBase);
     _inheritMany(A.BipCoins, [A.Bip44Coins, A.Bip49Coins, A.Bip84Coins, A.Bip86Coins, A.Cip1852Coins, A.CustomCoins]);
@@ -58033,7 +60340,7 @@
     _inherit(A.SHA3256, A.SHA3);
     _inherit(A.SHAKE256, A.SHAKE);
     _inherit(A.RIPEMD160, A._RIPEMD);
-    _inheritMany(A.Layout, [A.SequenceLayout, A.ExternalLayout, A.CompactBytes, A.CustomLayout, A.MapEntryLayout, A.NoneLayout, A.BaseIntiger, A.UnionDiscriminatorLayout, A.CompactIntLayout, A.OptionalLayout, A.PaddingLayout, A.RawBytesLayout, A.StructLayout, A.Union, A.VariantLayout]);
+    _inheritMany(A.Layout, [A.SequenceLayout, A.ExternalLayout, A.CompactBytes, A.ConstantLayout, A.CustomLayout, A.MapEntryLayout, A.NoneLayout, A.BaseIntiger, A.UnionDiscriminatorLayout, A.CompactIntLayout, A.OptionalLayout, A.PaddingLayout, A.RawBytesLayout, A.StructLayout, A.Union, A.VariantLayout]);
     _inheritMany(A.ExternalLayout, [A.CompactOffsetLayout, A.OffsetLayout]);
     _inherit(A.IntegerLayout, A.BaseIntiger);
     _inherit(A.UnionLayoutDiscriminatorLayout, A.UnionDiscriminatorLayout);
@@ -58124,6 +60431,7 @@
     _inherit(A._CardanoAddrDetails_Object_Equatable_CborSerializable, A._CardanoAddrDetails_Object_Equatable);
     _inherit(A.CardanoAddrDetails, A._CardanoAddrDetails_Object_Equatable_CborSerializable);
     _inherit(A.CosmosNativeCoin, A._CosmosNativeCoin_Object_CborSerializable);
+    _inheritMany(A.SolanaWeb3TransactionResponse, [A.SolanaWeb3TransactionErrorResponse, A.SolanaWeb3TransactionSignResponse, A.SolanaWeb3TransactionSendResponse]);
     _inherit(A.TronAccountResourceInfo, A._TronAccountResourceInfo_Object_CborSerializable);
     _inherit(A.TronAccountInfo, A._TronAccountInfo_Object_CborSerializable);
     _inherit(A.AccountPermission, A._AccountPermission_Object_CborSerializable);
@@ -58158,12 +60466,16 @@
     _inherit(A.Web3Chain, A._Web3Chain_Object_CborSerializable);
     _inherit(A.Web3GlobalRequestParams, A._Web3GlobalRequestParams_Web3MessageCore_JsonSerialization);
     _inheritMany(A.Web3GlobalRequestParams, [A.Web3RequestParams, A.Web3DisconnectApplication]);
-    _inheritMany(A.Web3RequestMethods, [A.Web3EthereumRequestMethods, A.Web3GlobalRequestMethods, A.Web3TronRequestMethods]);
-    _inheritMany(A.Web3RequestParams, [A.Web3EthereumRequestParam, A.Web3TronRequestParam]);
+    _inheritMany(A.Web3RequestMethods, [A.Web3EthereumRequestMethods, A.Web3GlobalRequestMethods, A.Web3SolanaRequestMethods, A.Web3TronRequestMethods]);
+    _inheritMany(A.Web3RequestParams, [A.Web3EthereumRequestParam, A.Web3SolanaRequestParam, A.Web3TronRequestParam]);
     _inheritMany(A.Web3EthereumRequestParam, [A.Web3EthereumPermissionRequestParam, A.Web3EthereumAddNewChain, A.Web3EthreumPersonalSign, A.Web3EthreumSendTransaction, A.Web3EthreumTypdedData, A.Web3EthreumSwitchChain]);
     _inherit(A.Web3EthreumRequestAccounts, A.Web3EthereumPermissionRequestParam);
-    _inheritMany(A.Web3ChainAccount, [A.Web3EthereumChainAccount, A.Web3TronChainAccount]);
-    _inheritMany(A.Web3Chain, [A.Web3EthereumChain, A.Web3TronChain]);
+    _inheritMany(A.Web3ChainAccount, [A.Web3EthereumChainAccount, A.Web3SolanaChainAccount, A.Web3TronChainAccount]);
+    _inheritMany(A.Web3Chain, [A.Web3EthereumChain, A.Web3SolanaChain, A.Web3TronChain]);
+    _inheritMany(A.Web3SolanaRequestParam, [A.Web3SolanaPermissionRequestParam, A.Web3SolanaSignMessage, A.Web3SolanaSendTransaction]);
+    _inherit(A.Web3SolanaRequestAccounts, A.Web3SolanaPermissionRequestParam);
+    _inherit(A.Web3SolanaSendTransactionOptions, A._Web3SolanaSendTransactionOptions_Object_CborSerializable);
+    _inherit(A.Web3SolanaSendTransactionData, A._Web3SolanaSendTransactionData_Object_CborSerializable);
     _inheritMany(A.Web3TronRequestParam, [A.Web3TronPermissionRequestParam, A.Web3TronSignMessageV2, A.Web3TronSendTransaction]);
     _inherit(A.Web3TronRequestAccounts, A.Web3TronPermissionRequestParam);
     _inherit(A.ADAAddress, A._ADAAddress_Object_ADASerialization);
@@ -58212,14 +60524,14 @@
     _inherit(A.XRPLedgerRequest, A.LookupByLedgerRequest);
     _inherit(A.RPCServerState, A.XRPLedgerRequest);
     _inherit(A.PageMessage, A._PageMessage_Object_CborSerializable);
-    _inheritMany(A.PageMessage, [A.ClientMessageEthereum, A.ClientMessageTron]);
+    _inheritMany(A.PageMessage, [A.ClientMessageEthereum, A.ClientMessageSolana, A.ClientMessageTron]);
     _inherit(A.JSWalletMessage, A._JSWalletMessage_Object_CborSerializable);
     _inheritMany(A.JSWalletMessage, [A.JSWalletNetworkEvent, A.JSWalletMessageResponse]);
-    _inheritMany(A.JSWalletNetworkEvent, [A.JSWalletMessageResponseEthereum, A.JSWalletMessageResponseTron]);
-    _inheritMany(A.ChainWeb3State, [A.EthereumWeb3State, A.TronWeb3State]);
-    _inheritMany(A.JSNetworkHandler, [A.JSEthereumHandler, A.JSTronHandler]);
+    _inheritMany(A.JSWalletNetworkEvent, [A.JSWalletMessageResponseEthereum, A.JSWalletMessageResponseSolana, A.JSWalletMessageResponseTron]);
+    _inheritMany(A.ChainWeb3State, [A.EthereumWeb3State, A.SolanaWeb3State, A.TronWeb3State]);
+    _inheritMany(A.JSNetworkHandler, [A.JSEthereumHandler, A.JSSolanaHandler, A.JSTronHandler]);
     _inherit(A.JSPageRequest, A._JSPageRequest_Object_CborSerializable);
-    _inheritMany(A.PageNetworkController, [A.EthereumPageController, A.TronPageController]);
+    _inheritMany(A.PageNetworkController, [A.EthereumPageController, A.SolanaPageController, A.TronPageController]);
     _inherit(A.JSWebviewWallet, A.JSWalletHandler);
     _mixin(A.UnmodifiableListBase, A.UnmodifiableListMixin);
     _mixin(A.__CastListBase__CastIterableBase_ListMixin, A.ListBase);
@@ -58313,6 +60625,8 @@
     _mixin(A._Web3ChainAccount_Object_CborSerializable_Equatable, A.Equatable);
     _mixin(A._Web3Chain_Object_CborSerializable, A.CborSerializable);
     _mixin(A._Web3GlobalRequestParams_Web3MessageCore_JsonSerialization, A.JsonSerialization);
+    _mixin(A._Web3SolanaSendTransactionData_Object_CborSerializable, A.CborSerializable);
+    _mixin(A._Web3SolanaSendTransactionOptions_Object_CborSerializable, A.CborSerializable);
     _mixin(A._ADAAddress_Object_ADASerialization, A.ADASerialization);
     _mixin(A._StakeCredType_Object_ADASerialization, A.ADASerialization);
     _mixin(A._FixedBytes_Object_ADASerialization, A.ADASerialization);
@@ -58331,7 +60645,7 @@
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List", Object: "Object", Map: "Map"},
     mangledNames: {},
-    types: ["bool(String,@)", "~()", "0&()", "SubstrateEd25519AddrEncoder([@])", "EthAddrEncoder([@])", "P2PKHAddrEncoder([@])", "SubstrateSecp256k1AddrEncoder([@])", "AtomAddrEncoder([@])", "P2SHAddrEncoder([@])", "SubstrateSr25519AddrEncoder([@])", "BlockchainAddressEncoder([@])", "ProviderAuth(CborObject)", "Null()", "String()", "Object()", "Future<Null>()", "~(@)", "@(@)", "String(String)", "int(int)", "List<int>(EncoderResult)", "bool(String)", "bool(@)", "int(int,int)", "ResourceCode(int)", "Null(@)", "~(String,JavaScriptFunction)", "AdaByronIcarusAddrEncoder([@])", "~(JSObject)", "XrpAddrEncoder([@])", "P2WPKHAddrEncoder([@])", "AdaShelleyAddrEncoder([@])", "Object?()", "Map<String,@>(@)", "Null(JSObject)", "bool(ProtocolBufferDecoderResult<@>)", "Map<String,@>()", "ETHAddress(String)", "bool(Web3TronChainAccount)", "SmartContractBABIEntryParam(@)", "Future<Map<String,@>>()", "JSObject(Object)", "List<int>(List<int>)", "~(Object?)", "Future<String>()", "String(Match)", "bool(_Highlight)", "bool(TronChainType)", "~(~())", "int()", "bool(int)", "Object?(Object?)", "bool(Web3EthereumChainAccount)", "bool(NetworkType)", "~(Object?,Object?)", "@()", "AtomNist256P1AddrEncoder([@])", "ErgoP2PKHAddrEncoder([@])", "XmrAddrEncoder([@])", "NeoAddrEncoder([@])", "OkexAddrEncoder([@])", "XlmAddrEncoder([@])", "~(String,@)", "SolAddrEncoder([@])", "TrxAddrEncoder([@])", "TonAddrEncoder([@])", "int(String?)", "P2TRAddrEncoder([@])", "bool(CborBase64Types)", "Map<String,@>(Map<String,@>)", "String(List<int>)", "int(int,Layout<@>)", "~(Uint8List,String,int)", "bool(X509Certificate)", "AdaByronLegacyAddrEncoder([@])", "Future<BigInt>()", "bool(APIProvider)", "APIProvider()", "ResourceCode()", "Null(Object,StackTrace)", "JSObject(JSObject)", "~(Object,StackTrace)", "MapEntry<@,@>(@)", "Map<String,@>(SignedExtensionMetadataV14)", "bool(String,List<int>)", "SignedExtensionMetadataV14(@)", "Map<String,@>(Si1Field)", "Si1Field(@)", "int(ProtocolBufferDecoderResult<@>)", "VoteWitnessContractVote(@)", "Map<String,@>(SmartContractBABIEntryParam)", "bool(ADANetwork)", "bool(SmartContractAbiStateMutabilityType)", "bool(SmartContractAbiEntryType)", "ReceiveDescription(@)", "JSObject()", "SpendDescription(@)", "bool(TransactionContractType)", "@(String)", "int(String,String)", "int(Object?)", "bool(ResourceCode)", "TronAddress(List<int>)", "bool(Object?,Object?)", "List<int>(String,List<int>)", "PermissionType()", "bool(PermissionType)", "bool(AccountType)", "Permission(List<int>)", "EncoderResult(@)", "AbiParameter(String)", "String(Eip712TypedDataV1)", "String(int)", "bool(Web3TronRequestMethods)", "int(@,@)", "CborTagValue<@>(Web3AccountAcitvity)", "Future<Response>()", "bool(ETHTransactionType)", "bool(Web3EthereumRequestMethods)", "PermissionKeys(@)", "bool(JSObject)", "FreeAssetNetUsageV2(@)", "AssetV2(@)", "UnfrozenV2(@)", "FrozenV2(@)", "AccountPermission(@)", "FrozenSupply(@)", "EthereumAPIProvider(@)", "RippleNFToken(@)", "RippleIssueToken(@)", "bool(EthereumChain)", "TronTRC10Token(@)", "TronTRC20Token(@)", "bool(TronEventTypes)", "bool(EthereumEvnetTypes)", "Map<String,@>?(String)", "Web3AccountAcitvity(@)", "bool(ApiRequest)", "List<int>?(int)", "Future<SecureSocket>()", "Null(@,StackTrace)", "Future<Socket>()", "bool(BitcoinExplorerProviderType)", "Future<PlatformWebScoket>()", "bool(ProviderAuthType)", "bool(ServiceProtocol)", "EthereumSubscribeResult()", "BitcoinMultiSigSignerDetais(@)", "String(@)", "String(P2shAddressType)", "TonJettonToken(@)", "TronMultiSigSignerDetais(@)", "Future<int>()", "Future<XRPLedgerState>()", "RippleMultiSigSignerDetais(@)", "Future<@>()", "~(@[StackTrace?])", "WalletNetwork<NetworkCoinParams<APIProvider>>()", "ICardanoAddress()", "ContactCore<ADAAddress>(@)", "IBitcoinAddress()", "ContactCore<BitcoinBaseAddress>(@)", "ICosmosAddress()", "ContactCore<CosmosBaseAddress>(@)", "IEthAddress()", "ContactCore<ETHAddress>(@)", "ISolanaAddress()", "ContactCore<SolAddress>(@)", "ISubstrateAddress()", "ContactCore<SubstrateAddress>(@)", "ITonAddress()", "ContactCore<TonAddress>(@)", "ITronAddress()", "ContactCore<TronAddress>(@)", "IXRPAddress()", "ContactCore<XRPAddress>(@)", "BaseBitcoinAPIProvider(@)", "CardanoAPIProvider(@)", "CosmosAPIProvider(@)", "CosmosNativeCoin(@)", "Future<~>()", "RippleAPIProvider(@)", "SolanaAPIProvider(@)", "SubstrateAPIProvider(@)", "TonAPIProvider(@)", "TronAPIProvider(@)", "bool(CosmosNetworkTypes)", "FilSecp256k1AddrEncoder([@])", "Future<bool>()", "~(RawSocketEvent)", "bool(SeedTypes)", "Bip32KeyIndex(int?)", "bool(int?)", "bool(AddressDerivationType)", "bool(CustomCoins)", "CoingeckoCoin(CborObject)", "Chain<APIProvider,NetworkCoinParams<APIProvider>,@,TokenCore<@>,NFTCore,ChainAccount<Object?,TokenCore<@>,NFTCore>,WalletNetwork<NetworkCoinParams<APIProvider>>,NetworkClient<ChainAccount<Object?,TokenCore<@>,NFTCore>,APIProvider>>(@)", "bool(Web3MessageTypes)", "APPImage(CborObject)", "NetworkType(CborObject)", "Web3Chain<@,Chain<APIProvider,NetworkCoinParams<APIProvider>,@,TokenCore<@>,NFTCore,ChainAccount<@,TokenCore<@>,NFTCore>,WalletNetwork<NetworkCoinParams<APIProvider>>,NetworkClient<ChainAccount<@,TokenCore<@>,NFTCore>,APIProvider>>,Web3ChainAccount<@>>(CborObject)", "Null(~)", "EthereumAPIProvider(String)", "bool(BitcoinAddressType)", "ContentType()", "Web3EthereumChainAccount(@)", "bool(ContentType)", "CborTagValue<@>(Web3EthereumChainAccount)", "bool(WalletEventTypes)", "~(int,@)", "EIP712Base()", "bool(Web3GlobalRequestMethods)", "~(String,String)", "Web3TronChainAccount(@)", "CborTagValue<@>(Web3TronChainAccount)", "bool(BasedUtxoNetwork)", "MediaType()", "bool(EthereumMethods)", "bool(AbiParameter)", "bool(EIP712Version)", "int(EIP712Version)", "Eip712TypeDetails(@)", "MapEntry<String,List<Map<String,@>>>(String,List<Eip712TypeDetails>)", "Map<String,@>(Eip712TypeDetails)", "Eip712TypedDataV1(@)", "@(Eip712TypedDataV1)", "~(List<int>)", "Map<String,@>(Eip712TypedDataV1)", "List<String>(List<String>,Eip712TypeDetails)", "Tuple<String,@>(@)", "String(Tuple<String,@>)", "@(Tuple<String,@>)", "~([RawSocket?])", "String(Eip712TypeDetails)", "int(String)", "~(Object[StackTrace?])", "bool(ADAAddressType)", "AccountType(int)", "Permission(@)", "bool(String,String)", "Map<String,@>(Permission)", "Future<RawSecureSocket>(RawSocket)", "AccountId(List<int>)", "TronKey(@)", "TronKey(List<int>)", "Map<String,@>(TronKey)", "bool(String,String?)", "SecureSocket(RawSecureSocket)", "AssetIssueContractFrozenSupply(@)", "Bip32KeyIndex(String)", "Map<String,@>(AssetIssueContractFrozenSupply)", "bool(ADAByronAddrTypes)", "String(Layout<@>)", "List<int>(String)", "~(int,Layout<@>)", "List<int>(int)", "MapEntry<BigInt,BigInt>(@,@)", "MapEntry<String,String>(BigInt,BigInt)", "List<int>(CborBytesValue)", "String(CborStringValue)", "Map<String,@>(SpendDescription)", "Map<String,@>(ReceiveDescription)", "CborObject(@)", "SmartContractAbiEntryType()", "Uint8List(@,@)", "SmartContractAbiStateMutabilityType()", "SmartContractABI(List<int>)", "SmartContractABIEntry(@)", "SmartContractABIEntry(List<int>)", "Map<String,@>(SmartContractABIEntry)", "~(String,String?)", "bool(SubstrateCoins)", "List<int>(@)", "TransactionContract(@)", "Authority(@)", "TransactionContract(List<int>)", "Authority(List<int>)", "Map<String,@>(Authority)", "Map<String,@>(TransactionContract)", "TronAddress(String)", "TronAddress(@)", "String(TronAddress)", "bool(MoneroCoins)", "Map<String,@>(VoteWitnessContractVote)", "String(MapEntry<int,String>)", "bool(EllipticCurveTypes)", "Object(@)", "String(String?)", "bool(PrimitiveTypes)", "String(PrimitiveTypes)", "Si1TypeParameter(@)", "int?(Si1TypeParameter)", "Map<String,@>(Si1TypeParameter)", "bool(Si1TypeDefsIndexesConst)", "~(String,int?)", "bool(Cip1852Coins)", "Si1Variant(@)", "Map<String,@>(Si1Variant)", "bool(StorageHasherV11Options)", "bool(BipProposal)", "bool(Bip86Coins)", "~(String,int)", "Map<String,@>(PalletMetadataV14)", "PalletConstantMetadataV14(@)", "Map<String,@>(PalletConstantMetadataV14)", "StorageEntryMetadataV14(@)", "Map<String,@>(StorageEntryMetadataV14)", "MapEntry<int,PortableTypeV14>(@)", "Map<String,@>(PortableTypeV14)", "StorageHasherV14(@)", "Map<String,@>(StorageHasherV14)", "RuntimeApiMetadataV15(@)", "Map<String,@>(PalletMetadataV15)", "Map<String,@>(RuntimeApiMetadataV15)", "RuntimeApiMethodMetadataV15(@)", "Map<String,@>(RuntimeApiMethodMetadataV15)", "RuntimeApiMethodParamMetadataV15(@)", "Map<String,@>(RuntimeApiMethodParamMetadataV15)", "bool(StorageEntryModifierV9)", "String?()", "int(_Line)", "bool(Bip84Coins)", "Object(_Line)", "Object(_Highlight)", "int(_Highlight,_Highlight)", "List<_Line>(MapEntry<Object,List<_Highlight>>)", "SourceSpanWithContext()", "bool(WalletVersion)", "bool(MapEntry<String,@>)", "String(MapEntry<String,@>)", "bool(TonApiType)", "bool(MapEntry<String,String?>)", "BlockCurrencyCollectionOtherItemResponse(@)", "Map<String,@>(BlockCurrencyCollectionOtherItemResponse)", "bool(Bip49Coins)", "bool(Object,Object,Object?,Object?)", "Object?(Object,Object)", "ZilAddrEncoder([@])", "bool(Bip44Coins)", "_Future<@>(@)", "XtzAddrEncoder([@])", "Web3EthereumChainAccount?()", "String(Web3EthereumChainAccount)", "NearAddrEncoder([@])", "~(EthereumSubscribeResult)", "Map<String,@>?()", "Null(JavaScriptFunction,JavaScriptFunction)", "Object(Object,StackTrace)", "bool(JSWalletMessageType)", "bool(JSWalletResponseType)", "bool(JSClientType)", "Future<Object?>(PageMessage)", "AlgoAddrEncoder([@])", "NanoAddrEncoder([@])", "Null(~())", "AptosAddrEncoder([@])", "InjAddrEncoder([@])", "bool(TronChain)", "Web3TronChainAccount?()", "String(Web3TronChainAccount)", "bool(AccountPermission)", "IcxAddrEncoder([@])", "~(JSWalletMessage)", "OneAddrEncoder([@])", "bool(JSWebviewTraget)", "@(@,String)", "AvaxPChainAddrEncoder([@])", "EosAddrEncoder([@])", "EgldAddrEncoder([@])", "0^(0^,0^)<num>", "~(@,@)", "AvaxXChainAddrEncoder([@])", "List<int>(String,List<int>[Bech32Encodings])", "bool(String,List<int>[Bech32Encodings])", "AssetIssueContractFrozenSupply(List<int>)"],
+    types: ["bool(String,@)", "~()", "0&()", "SubstrateEd25519AddrEncoder([@])", "EthAddrEncoder([@])", "P2PKHAddrEncoder([@])", "SubstrateSecp256k1AddrEncoder([@])", "String()", "AtomAddrEncoder([@])", "SubstrateSr25519AddrEncoder([@])", "P2SHAddrEncoder([@])", "BlockchainAddressEncoder([@])", "Object()", "ProviderAuth(CborObject)", "Null()", "String(String)", "Future<Null>()", "~(@)", "@(@)", "~(String,JavaScriptFunction)", "Map<String,@>(@)", "int(int)", "List<int>(EncoderResult)", "Object?()", "Null(@)", "bool(String)", "int(int,int)", "bool(@)", "ResourceCode(int)", "Null(JSObject)", "bool(Web3SolanaChainAccount)", "bool(Web3TronChainAccount)", "~(JSObject)", "Map<String,@>()", "bool(ProtocolBufferDecoderResult<@>)", "ETHAddress(String)", "AdaByronIcarusAddrEncoder([@])", "SmartContractBABIEntryParam(@)", "XrpAddrEncoder([@])", "P2WPKHAddrEncoder([@])", "JSObject(Object)", "AdaShelleyAddrEncoder([@])", "bool(_Highlight)", "int()", "bool(int)", "Future<Map<String,@>>()", "Object?(Object?)", "int(String,String)", "JSObject()", "bool(Web3EthereumChainAccount)", "CborTagValue<@>(Web3AccountAcitvity)", "JSObject(JSObject)", "Web3AccountAcitvity(@)", "~(~())", "String(Match)", "bool(TronChainType)", "Future<String>()", "~(Object?)", "List<int>(List<int>)", "bool(APIProvider)", "Map<String,@>(SmartContractBABIEntryParam)", "ErgoP2PKHAddrEncoder([@])", "int(@,@)", "bool(SmartContractAbiStateMutabilityType)", "bool(SmartContractAbiEntryType)", "ReceiveDescription(@)", "bool(X509Certificate)", "bool(String,List<int>)", "SpendDescription(@)", "bool(TransactionContractType)", "NeoAddrEncoder([@])", "OkexAddrEncoder([@])", "XlmAddrEncoder([@])", "bool(EthereumChain)", "SolAddrEncoder([@])", "ResourceCode()", "TrxAddrEncoder([@])", "TronAddress(List<int>)", "TonAddrEncoder([@])", "bool(JSObject)", "~(Object?,Object?)", "PermissionType()", "@()", "bool(PermissionType)", "P2TRAddrEncoder([@])", "bool(AccountType)", "Permission(List<int>)", "List<int>(String,List<int>)", "bool(EthereumEventTypes)", "String(int)", "EncoderResult(@)", "int(Object?)", "~(String,@)", "AbiParameter(String)", "String(Eip712TypedDataV1)", "bool(CborBase64Types)", "List<int>(SolAddress)", "bool(SolAddress)", "MapEntry<@,@>(@)", "Map<String,@>(Map<String,@>)", "String(List<int>)", "bool(ADANetwork)", "bool(Web3TronRequestMethods)", "Map<String,@>(SignedExtensionMetadataV14)", "int(String?)", "int(int,Layout<@>)", "bool(TronEventTypes)", "SignedExtensionMetadataV14(@)", "bool(Web3SolanaRequestMethods)", "bool(SolanaEventTypes)", "Map<String,@>(Si1Field)", "Si1Field(@)", "bool(Object?,Object?)", "bool(ETHTransactionType)", "int(ProtocolBufferDecoderResult<@>)", "@(String)", "bool(Web3EthereumRequestMethods)", "XmrAddrEncoder([@])", "PermissionKeys(@)", "FreeAssetNetUsageV2(@)", "AssetV2(@)", "AdaByronLegacyAddrEncoder([@])", "UnfrozenV2(@)", "FrozenV2(@)", "AccountPermission(@)", "FrozenSupply(@)", "bool(NetworkType)", "~(Uint8List,String,int)", "EthereumAPIProvider(@)", "~(Object,StackTrace)", "RippleNFToken(@)", "Future<BigInt>()", "RippleIssueToken(@)", "TronTRC10Token(@)", "Null(Object,StackTrace)", "APIProvider()", "TronTRC20Token(@)", "AtomNist256P1AddrEncoder([@])", "Map<String,@>?(String)", "Future<Response>()", "VoteWitnessContractVote(@)", "bool(ResourceCode)", "SolAddress(SolAddress)", "bool(ApiRequest)", "Future<PlatformWebScoket>()", "bool(ProviderAuthType)", "bool(ServiceProtocol)", "EthereumSubscribeResult()", "BitcoinMultiSigSignerDetais(@)", "String(@)", "String(P2shAddressType)", "TonJettonToken(@)", "TronMultiSigSignerDetais(@)", "bool(BitcoinExplorerProviderType)", "Future<int>()", "RippleMultiSigSignerDetais(@)", "Future<XRPLedgerState>()", "Future<@>()", "WalletNetwork<NetworkCoinParams<APIProvider>>()", "ICardanoAddress()", "ContactCore<ADAAddress>(@)", "IBitcoinAddress()", "ContactCore<BitcoinBaseAddress>(@)", "ICosmosAddress()", "ContactCore<CosmosBaseAddress>(@)", "IEthAddress()", "ContactCore<ETHAddress>(@)", "ISolanaAddress()", "ContactCore<SolAddress>(@)", "ISubstrateAddress()", "ContactCore<SubstrateAddress>(@)", "ITonAddress()", "ContactCore<TonAddress>(@)", "ITronAddress()", "ContactCore<TronAddress>(@)", "IXRPAddress()", "ContactCore<XRPAddress>(@)", "BaseBitcoinAPIProvider(@)", "CardanoAPIProvider(@)", "CosmosAPIProvider(@)", "CosmosNativeCoin(@)", "Future<~>()", "RippleAPIProvider(@)", "SolanaAPIProvider(@)", "SubstrateAPIProvider(@)", "TonAPIProvider(@)", "TronAPIProvider(@)", "bool(CosmosNetworkTypes)", "bool(SolanaWeb3TransactionResponseType)", "Future<bool>()", "bool(SeedTypes)", "Bip32KeyIndex(int?)", "bool(int?)", "bool(AddressDerivationType)", "bool(CustomCoins)", "Null(~)", "ContentType()", "CoingeckoCoin(CborObject)", "Chain<APIProvider,NetworkCoinParams<APIProvider>,@,TokenCore<@>,NFTCore,ChainAccount<Object?,TokenCore<@>,NFTCore>,WalletNetwork<NetworkCoinParams<APIProvider>>,NetworkClient<ChainAccount<Object?,TokenCore<@>,NFTCore>,APIProvider>>(@)", "bool(Web3MessageTypes)", "APPImage(CborObject)", "bool(ContentType)", "Web3Chain<@,Chain<APIProvider,NetworkCoinParams<APIProvider>,@,TokenCore<@>,NFTCore,ChainAccount<@,TokenCore<@>,NFTCore>,WalletNetwork<NetworkCoinParams<APIProvider>>,NetworkClient<ChainAccount<@,TokenCore<@>,NFTCore>,APIProvider>>,Web3ChainAccount<@>>(CborObject)", "bool(WalletEventTypes)", "EthereumAPIProvider(String)", "~(String,String)", "MediaType()", "Web3EthereumChainAccount(@)", "~(List<int>)", "CborTagValue<@>(Web3EthereumChainAccount)", "int(String)", "bool(String,String)", "EIP712Base()", "bool(Web3GlobalRequestMethods)", "bool(String,String?)", "Web3SolanaSendTransactionData(CborTagValue<@>)", "Web3SolanaSendTransactionOptions(CborObject)", "CborTagValue<@>(Web3SolanaSendTransactionData)", "Map<String,@>(Web3SolanaSendTransactionData)", "Web3SolanaChainAccount(@)", "CborTagValue<@>(Web3SolanaChainAccount)", "String(Layout<@>)", "@(Map<String,@>)", "Web3TronChainAccount(@)", "CborTagValue<@>(Web3TronChainAccount)", "List<int>(String)", "~(int,Layout<@>)", "bool(EthereumMethods)", "List<int>(int)", "Future<Socket>()", "Map<String,Object>(CompiledInstruction)", "List<int>(CborBytesValue)", "SolAddress(List<int>)", "bool(AbiParameter)", "bool(EIP712Version)", "int(EIP712Version)", "Eip712TypeDetails(@)", "MapEntry<String,List<Map<String,@>>>(String,List<Eip712TypeDetails>)", "Map<String,@>(Eip712TypeDetails)", "Eip712TypedDataV1(@)", "@(Eip712TypedDataV1)", "String(CborStringValue)", "Map<String,@>(Eip712TypedDataV1)", "List<String>(List<String>,Eip712TypeDetails)", "Tuple<String,@>(@)", "String(Tuple<String,@>)", "@(Tuple<String,@>)", "CborObject(@)", "String(Eip712TypeDetails)", "bool(SubstrateCoins)", "bool(MoneroCoins)", "bool(EllipticCurveTypes)", "AccountType(int)", "Permission(@)", "bool(Cip1852Coins)", "Map<String,@>(Permission)", "bool(BipProposal)", "AccountId(List<int>)", "TronKey(@)", "TronKey(List<int>)", "Map<String,@>(TronKey)", "bool(Bip86Coins)", "bool(Bip84Coins)", "AssetIssueContractFrozenSupply(@)", "AssetIssueContractFrozenSupply(List<int>)", "Map<String,@>(AssetIssueContractFrozenSupply)", "bool(Bip49Coins)", "ZilAddrEncoder([@])", "Bip32KeyIndex(String)", "XtzAddrEncoder([@])", "NearAddrEncoder([@])", "MapEntry<BigInt,BigInt>(@,@)", "MapEntry<String,String>(BigInt,BigInt)", "NanoAddrEncoder([@])", "InjAddrEncoder([@])", "Map<String,@>(SpendDescription)", "Map<String,@>(ReceiveDescription)", "IcxAddrEncoder([@])", "SmartContractAbiEntryType()", "OneAddrEncoder([@])", "SmartContractAbiStateMutabilityType()", "SmartContractABI(List<int>)", "SmartContractABIEntry(@)", "SmartContractABIEntry(List<int>)", "Map<String,@>(SmartContractABIEntry)", "FilSecp256k1AddrEncoder([@])", "EosAddrEncoder([@])", "List<int>(@)", "TransactionContract(@)", "Authority(@)", "TransactionContract(List<int>)", "Authority(List<int>)", "Map<String,@>(Authority)", "Map<String,@>(TransactionContract)", "TronAddress(String)", "TronAddress(@)", "String(TronAddress)", "EgldAddrEncoder([@])", "Map<String,@>(VoteWitnessContractVote)", "AvaxXChainAddrEncoder([@])", "AvaxPChainAddrEncoder([@])", "Object(@)", "String(String?)", "bool(PrimitiveTypes)", "String(PrimitiveTypes)", "Si1TypeParameter(@)", "int?(Si1TypeParameter)", "Map<String,@>(Si1TypeParameter)", "bool(Si1TypeDefsIndexesConst)", "AptosAddrEncoder([@])", "AlgoAddrEncoder([@])", "Si1Variant(@)", "Map<String,@>(Si1Variant)", "bool(StorageHasherV11Options)", "bool(Bip44Coins)", "Future<SecureSocket>()", "bool(ADAByronAddrTypes)", "Map<String,@>(PalletMetadataV14)", "PalletConstantMetadataV14(@)", "Map<String,@>(PalletConstantMetadataV14)", "StorageEntryMetadataV14(@)", "Map<String,@>(StorageEntryMetadataV14)", "MapEntry<int,PortableTypeV14>(@)", "Map<String,@>(PortableTypeV14)", "StorageHasherV14(@)", "Map<String,@>(StorageHasherV14)", "RuntimeApiMetadataV15(@)", "Map<String,@>(PalletMetadataV15)", "Map<String,@>(RuntimeApiMetadataV15)", "RuntimeApiMethodMetadataV15(@)", "Map<String,@>(RuntimeApiMethodMetadataV15)", "RuntimeApiMethodParamMetadataV15(@)", "Map<String,@>(RuntimeApiMethodParamMetadataV15)", "bool(StorageEntryModifierV9)", "String?()", "int(_Line)", "NetworkType(CborObject)", "Object(_Line)", "Object(_Highlight)", "int(_Highlight,_Highlight)", "List<_Line>(MapEntry<Object,List<_Highlight>>)", "SourceSpanWithContext()", "bool(WalletVersion)", "bool(MapEntry<String,@>)", "String(MapEntry<String,@>)", "bool(TonApiType)", "bool(MapEntry<String,String?>)", "BlockCurrencyCollectionOtherItemResponse(@)", "Map<String,@>(BlockCurrencyCollectionOtherItemResponse)", "bool(ADAAddressType)", "bool(Object,Object,Object?,Object?)", "Object?(Object,Object)", "bool(BasedUtxoNetwork)", "bool(BitcoinAddressType)", "List<int>?(int)", "~(@[StackTrace?])", "Web3EthereumChainAccount?()", "String(Web3EthereumChainAccount)", "~(RawSocketEvent)", "~(EthereumSubscribeResult)", "Map<String,@>?()", "Null(JavaScriptFunction,JavaScriptFunction)", "Object(Object,StackTrace)", "bool(JSWalletMessageType)", "bool(JSWalletResponseType)", "bool(JSClientType)", "Future<Object?>(PageMessage)", "~([RawSocket?])", "Future<RawSecureSocket>(RawSocket)", "SecureSocket(RawSecureSocket)", "Uint8List(@,@)", "~(String,String?)", "JSObject(JSArray<Object?>)", "JSObject(JSObject[JSObject?])", "JSObject(JSArray<Object?>[JSObject?])", "Map<String,@>(ClientSolanaTransactionMessage)", "Null(Object?)", "SolanaWeb3TransactionResponse(Map<String,@>)", "String?(String?)", "bool(JSObject?)", "~(String,int?)", "bool(SolanaChain)", "Web3SolanaChainAccount?()", "String(Web3SolanaChainAccount)", "ClientSolanaTransactionMessage(@)", "SolAddress()", "~(String,int)", "bool(TronChain)", "Web3TronChainAccount?()", "String(Web3TronChainAccount)", "bool(AccountPermission)", "~(JSWalletMessage)", "~(@,@)", "bool(JSWebviewTraget)", "_Future<@>(@)", "~(Object[StackTrace?])", "~(int,@)", "Null(@,StackTrace)", "0^(0^,0^)<num>", "Null(~())", "@(@,String)", "List<int>(String,List<int>[Bech32Encodings])", "bool(String,List<int>[Bech32Encodings])", "String(MapEntry<int,String>)"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti"),
@@ -58339,12 +60653,13 @@
       "2;": (t1, t2) => o => o instanceof A._Record_2 && t1._is(o._0) && t2._is(o._1)
     }
   };
-  A._Universe_addRules(init.typeUniverse, JSON.parse('{"JavaScriptFunction":"LegacyJavaScriptObject","PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JSArray":{"List":["1"],"EfficientLengthIterable":["1"],"JSObject":[],"Iterable":["1"]},"JSBool":{"bool":[],"TrustedGetRuntimeType":[]},"JSNull":{"Null":[],"TrustedGetRuntimeType":[]},"JavaScriptObject":{"JSObject":[]},"LegacyJavaScriptObject":{"JSObject":[]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"EfficientLengthIterable":["1"],"JSObject":[],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"double":[],"num":[],"Comparable":["num"]},"JSInt":{"double":[],"int":[],"num":[],"Comparable":["num"],"TrustedGetRuntimeType":[]},"JSNumNotInt":{"double":[],"num":[],"Comparable":["num"],"TrustedGetRuntimeType":[]},"JSString":{"String":[],"Comparable":["String"],"Pattern":[],"TrustedGetRuntimeType":[]},"CastStream":{"Stream":["2"],"Stream.T":"2"},"CastStreamSubscription":{"StreamSubscription":["2"]},"_CastIterableBase":{"Iterable":["2"]},"CastIterator":{"Iterator":["2"]},"CastIterable":{"_CastIterableBase":["1","2"],"Iterable":["2"],"Iterable.E":"2"},"_EfficientLengthCastIterable":{"CastIterable":["1","2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"_CastListBase":{"ListBase":["2"],"List":["2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"]},"CastList":{"_CastListBase":["1","2"],"ListBase":["2"],"List":["2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"ListBase.E":"2","Iterable.E":"2"},"CastMap":{"MapBase":["3","4"],"Map":["3","4"],"MapBase.K":"3","MapBase.V":"4"},"LateError":{"Error":[]},"CodeUnits":{"ListBase":["int"],"UnmodifiableListMixin":["int"],"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"],"ListBase.E":"int","UnmodifiableListMixin.E":"int"},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"]},"SubListIterable":{"ListIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1","ListIterable.E":"1"},"ListIterator":{"Iterator":["1"]},"MappedIterable":{"Iterable":["2"],"Iterable.E":"2"},"EfficientLengthMappedIterable":{"MappedIterable":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"MappedIterator":{"Iterator":["2"]},"MappedListIterable":{"ListIterable":["2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2","ListIterable.E":"2"},"WhereIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereIterator":{"Iterator":["1"]},"ExpandIterable":{"Iterable":["2"],"Iterable.E":"2"},"ExpandIterator":{"Iterator":["2"]},"TakeIterable":{"Iterable":["1"],"Iterable.E":"1"},"EfficientLengthTakeIterable":{"TakeIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"TakeIterator":{"Iterator":["1"]},"SkipIterable":{"Iterable":["1"],"Iterable.E":"1"},"EfficientLengthSkipIterable":{"SkipIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"SkipIterator":{"Iterator":["1"]},"EmptyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"EmptyIterator":{"Iterator":["1"]},"WhereTypeIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereTypeIterator":{"Iterator":["1"]},"UnmodifiableListBase":{"ListBase":["1"],"UnmodifiableListMixin":["1"],"List":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"_ListIndicesIterable":{"ListIterable":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"],"Iterable.E":"int","ListIterable.E":"int"},"ListMapView":{"MapBase":["int","1"],"_UnmodifiableMapMixin":["int","1"],"Map":["int","1"],"MapBase.K":"int","MapBase.V":"1","_UnmodifiableMapMixin.K":"int","_UnmodifiableMapMixin.V":"1"},"ReversedListIterable":{"ListIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1","ListIterable.E":"1"},"_Record_2":{"_Record2":[],"_Record":[]},"ConstantMapView":{"UnmodifiableMapView":["1","2"],"_UnmodifiableMapView_MapView__UnmodifiableMapMixin":["1","2"],"MapView":["1","2"],"_UnmodifiableMapMixin":["1","2"],"Map":["1","2"],"_UnmodifiableMapMixin.K":"1","_UnmodifiableMapMixin.V":"2"},"ConstantMap":{"Map":["1","2"]},"ConstantStringMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"_KeysOrValues":{"Iterable":["1"],"Iterable.E":"1"},"_KeysOrValuesOrElementsIterator":{"Iterator":["1"]},"GeneralConstantMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"Instantiation":{"Closure":[],"Function":[]},"Instantiation1":{"Closure":[],"Function":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"NullThrownFromJavaScriptException":{"Exception":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Closure":[],"Function":[]},"Closure2Args":{"Closure":[],"Function":[]},"TearOffClosure":{"Closure":[],"Function":[]},"StaticClosure":{"Closure":[],"Function":[]},"BoundClosure":{"Closure":[],"Function":[]},"_CyclicInitializationError":{"Error":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"LinkedHashMapKeyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"JsIdentityLinkedHashMap":{"JsLinkedHashMap":["1","2"],"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"JsConstantLinkedHashMap":{"JsLinkedHashMap":["1","2"],"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"_Record2":{"_Record":[]},"JSSyntaxRegExp":{"RegExp":[],"Pattern":[]},"_MatchImplementation":{"RegExpMatch":[],"Match":[]},"_AllMatchesIterable":{"Iterable":["RegExpMatch"],"Iterable.E":"RegExpMatch"},"_AllMatchesIterator":{"Iterator":["RegExpMatch"]},"StringMatch":{"Match":[]},"_StringAllMatchesIterable":{"Iterable":["Match"],"Iterable.E":"Match"},"_StringAllMatchesIterator":{"Iterator":["Match"]},"NativeByteBuffer":{"JSObject":[],"ByteBuffer":[],"TrustedGetRuntimeType":[]},"NativeTypedData":{"JSObject":[]},"NativeByteData":{"ByteData":[],"JSObject":[],"TrustedGetRuntimeType":[]},"NativeTypedArray":{"JavaScriptIndexingBehavior":["1"],"JSObject":[]},"NativeTypedArrayOfDouble":{"ListBase":["double"],"NativeTypedArray":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"]},"NativeTypedArrayOfInt":{"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"]},"NativeFloat32List":{"Float32List":[],"ListBase":["double"],"NativeTypedArray":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"],"TrustedGetRuntimeType":[],"ListBase.E":"double","FixedLengthListMixin.E":"double"},"NativeFloat64List":{"Float64List":[],"ListBase":["double"],"NativeTypedArray":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"],"TrustedGetRuntimeType":[],"ListBase.E":"double","FixedLengthListMixin.E":"double"},"NativeInt16List":{"NativeTypedArrayOfInt":[],"Int16List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeInt32List":{"NativeTypedArrayOfInt":[],"Int32List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeInt8List":{"NativeTypedArrayOfInt":[],"Int8List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint16List":{"NativeTypedArrayOfInt":[],"Uint16List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint32List":{"NativeTypedArrayOfInt":[],"Uint32List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint8ClampedList":{"NativeTypedArrayOfInt":[],"Uint8ClampedList":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint8List":{"NativeTypedArrayOfInt":[],"Uint8List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"_AsyncAwaitCompleter":{"Completer":["1"]},"_SyncStarIterator":{"Iterator":["1"]},"_SyncStarIterable":{"Iterable":["1"],"Iterable.E":"1"},"AsyncError":{"Error":[]},"TimeoutException":{"Exception":[]},"_Completer":{"Completer":["1"]},"_AsyncCompleter":{"_Completer":["1"],"Completer":["1"]},"_SyncCompleter":{"_Completer":["1"],"Completer":["1"]},"StreamView":{"Stream":["1"]},"_StreamController":{"StreamController":["1"],"_StreamControllerLifecycle":["1"],"_EventDispatch":["1"]},"_AsyncStreamController":{"_AsyncStreamControllerDispatch":["1"],"_StreamController":["1"],"StreamController":["1"],"_StreamControllerLifecycle":["1"],"_EventDispatch":["1"]},"_SyncStreamController":{"_SyncStreamControllerDispatch":["1"],"_StreamController":["1"],"StreamController":["1"],"_StreamControllerLifecycle":["1"],"_EventDispatch":["1"]},"_ControllerStream":{"_StreamImpl":["1"],"Stream":["1"],"Stream.T":"1"},"_ControllerSubscription":{"_BufferingStreamSubscription":["1"],"StreamSubscription":["1"],"_EventDispatch":["1"]},"_BufferingStreamSubscription":{"StreamSubscription":["1"],"_EventDispatch":["1"]},"_StreamImpl":{"Stream":["1"]},"_DelayedData":{"_DelayedEvent":["1"]},"_DelayedError":{"_DelayedEvent":["@"]},"_DelayedDone":{"_DelayedEvent":["@"]},"_DoneStreamSubscription":{"StreamSubscription":["1"]},"_EmptyStream":{"Stream":["1"],"Stream.T":"1"},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_HashMap":{"MapBase":["1","2"],"Map":["1","2"]},"_IdentityHashMap":{"_HashMap":["1","2"],"MapBase":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"_HashMapKeyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"_HashMapKeyIterator":{"Iterator":["1"]},"_LinkedCustomHashMap":{"JsLinkedHashMap":["1","2"],"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"_LinkedHashSet":{"SetBase":["1"],"Set":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"_LinkedHashSetIterator":{"Iterator":["1"]},"ListBase":{"List":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"MapBase":{"Map":["1","2"]},"UnmodifiableMapBase":{"MapBase":["1","2"],"_UnmodifiableMapMixin":["1","2"],"Map":["1","2"]},"_MapBaseValueIterable":{"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"_MapBaseValueIterator":{"Iterator":["2"]},"MapView":{"Map":["1","2"]},"UnmodifiableMapView":{"_UnmodifiableMapView_MapView__UnmodifiableMapMixin":["1","2"],"MapView":["1","2"],"_UnmodifiableMapMixin":["1","2"],"Map":["1","2"],"_UnmodifiableMapMixin.K":"1","_UnmodifiableMapMixin.V":"2"},"SetBase":{"Set":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"_SetBase":{"SetBase":["1"],"Set":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"Encoding":{"Codec":["String","List<int>"]},"_JsonMap":{"MapBase":["String","@"],"Map":["String","@"],"MapBase.K":"String","MapBase.V":"@"},"_JsonMapKeyIterable":{"ListIterable":["String"],"EfficientLengthIterable":["String"],"Iterable":["String"],"Iterable.E":"String","ListIterable.E":"String"},"AsciiCodec":{"Encoding":[],"Codec":["String","List<int>"],"Codec.S":"String"},"Base64Codec":{"Codec":["List<int>","String"],"Codec.S":"List<int>"},"JsonUnsupportedObjectError":{"Error":[]},"JsonCyclicError":{"Error":[]},"JsonCodec":{"Codec":["Object?","String"],"Codec.S":"Object?"},"Latin1Codec":{"Encoding":[],"Codec":["String","List<int>"],"Codec.S":"String"},"Utf8Codec":{"Encoding":[],"Codec":["String","List<int>"],"Codec.S":"String"},"BigInt":{"Comparable":["BigInt"]},"DateTime":{"Comparable":["DateTime"]},"double":{"num":[],"Comparable":["num"]},"Duration":{"Comparable":["Duration"]},"int":{"num":[],"Comparable":["num"]},"List":{"EfficientLengthIterable":["1"],"Iterable":["1"]},"num":{"Comparable":["num"]},"RegExpMatch":{"Match":[]},"String":{"Comparable":["String"],"Pattern":[]},"_BigIntImpl":{"BigInt":[],"Comparable":["BigInt"]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"_Exception":{"Exception":[]},"FormatException":{"Exception":[]},"IntegerDivisionByZeroException":{"Exception":[],"Error":[]},"_StringStackTrace":{"StackTrace":[]},"Runes":{"Iterable":["int"],"Iterable.E":"int"},"RuneIterator":{"Iterator":["int"]},"StringBuffer":{"StringSink":[]},"_Uri":{"Uri":[]},"_SimpleUri":{"Uri":[]},"_DataUri":{"Uri":[]},"SecureSocket":{"Socket":[],"Stream":["Uint8List"],"StringSink":[]},"RawSecureSocket":{"RawSocket":[],"Stream":["RawSocketEvent"]},"_RawSecureSocket":{"RawSecureSocket":[],"RawSocket":[],"Stream":["RawSocketEvent"],"Stream.T":"RawSocketEvent"},"RawSocket":{"Stream":["RawSocketEvent"]},"Socket":{"Stream":["Uint8List"],"StringSink":[]},"TlsException":{"Exception":[]},"HandshakeException":{"Exception":[]},"NullRejectionException":{"Exception":[]},"Int8List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint8List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint8ClampedList":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Int16List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint16List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Int32List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint32List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Float32List":{"List":["double"],"EfficientLengthIterable":["double"],"Iterable":["double"]},"Float64List":{"List":["double"],"EfficientLengthIterable":["double"],"Iterable":["double"]},"P2shAddressType":{"BitcoinAddressType":[]},"PubKeyAddressType":{"BitcoinAddressType":[]},"P2pkhAddressType":{"BitcoinAddressType":[]},"SegwitAddresType":{"BitcoinAddressType":[]},"LegacyAddress":{"BitcoinBaseAddress":[]},"P2shAddress":{"BitcoinBaseAddress":[]},"P2pkhAddress":{"BitcoinBaseAddress":[]},"P2pkAddress":{"BitcoinBaseAddress":[]},"SegwitAddress":{"BitcoinBaseAddress":[]},"P2wpkhAddress":{"BitcoinBaseAddress":[]},"P2trAddress":{"BitcoinBaseAddress":[]},"P2wshAddress":{"BitcoinBaseAddress":[]},"BitcoinBasePluginException":{"BlockchainUtilsException":[],"Exception":[]},"BitcoinNetwork":{"BasedUtxoNetwork":[]},"LitecoinNetwork":{"BasedUtxoNetwork":[]},"DashNetwork":{"BasedUtxoNetwork":[]},"DogecoinNetwork":{"BasedUtxoNetwork":[]},"BitcoinCashNetwork":{"BasedUtxoNetwork":[]},"PepeNetwork":{"BasedUtxoNetwork":[]},"BitcoinSVNetwork":{"BasedUtxoNetwork":[]},"ElectrumBlockHeader":{"ElectrumRequest":["@","@"]},"ElectrumServerFeatures":{"ElectrumRequest":["@","@"]},"Base58ChecksumError":{"BlockchainUtilsException":[],"Exception":[]},"Bech32ChecksumError":{"BlockchainUtilsException":[],"Exception":[]},"AdaByronIcarusAddrEncoder":{"BlockchainAddressEncoder":[]},"AdaByronLegacyAddrEncoder":{"BlockchainAddressEncoder":[]},"AdaShelleyAddrEncoder":{"BlockchainAddressEncoder":[]},"AdaShelleyStakingAddrEncoder":{"BlockchainAddressEncoder":[]},"AlgoAddrEncoder":{"BlockchainAddressEncoder":[]},"AptosAddrEncoder":{"BlockchainAddressEncoder":[]},"AtomAddrEncoder":{"BlockchainAddressEncoder":[]},"AtomNist256P1AddrEncoder":{"BlockchainAddressEncoder":[]},"AvaxPChainAddrEncoder":{"BlockchainAddressEncoder":[]},"AvaxXChainAddrEncoder":{"BlockchainAddressEncoder":[]},"EgldAddrEncoder":{"BlockchainAddressEncoder":[]},"EosAddrEncoder":{"BlockchainAddressEncoder":[]},"ErgoP2PKHAddrEncoder":{"BlockchainAddressEncoder":[]},"EthAddrEncoder":{"BlockchainAddressEncoder":[]},"AddressConverterException":{"BlockchainUtilsException":[],"Exception":[]},"FilSecp256k1AddrEncoder":{"BlockchainAddressEncoder":[]},"IcxAddrEncoder":{"BlockchainAddressEncoder":[]},"InjAddrEncoder":{"BlockchainAddressEncoder":[]},"NanoAddrEncoder":{"BlockchainAddressEncoder":[]},"NearAddrEncoder":{"BlockchainAddressEncoder":[]},"NeoAddrEncoder":{"BlockchainAddressEncoder":[]},"OkexAddrEncoder":{"BlockchainAddressEncoder":[]},"OneAddrEncoder":{"BlockchainAddressEncoder":[]},"P2PKHAddrEncoder":{"BlockchainAddressEncoder":[]},"BchP2PKHAddrEncoder":{"BlockchainAddressEncoder":[]},"P2SHAddrEncoder":{"BlockchainAddressEncoder":[]},"BchP2SHAddrEncoder":{"BlockchainAddressEncoder":[]},"P2TRAddrEncoder":{"BlockchainAddressEncoder":[]},"P2WPKHAddrEncoder":{"BlockchainAddressEncoder":[]},"SolAddrEncoder":{"BlockchainAddressEncoder":[]},"SubstrateEd25519AddrEncoder":{"BlockchainAddressEncoder":[]},"SubstrateSr25519AddrEncoder":{"BlockchainAddressEncoder":[]},"SubstrateSecp256k1AddrEncoder":{"BlockchainAddressEncoder":[]},"TonAddrEncoder":{"BlockchainAddressEncoder":[]},"TrxAddrEncoder":{"BlockchainAddressEncoder":[]},"XlmAddrEncoder":{"BlockchainAddressEncoder":[]},"XmrAddrEncoder":{"BlockchainAddressEncoder":[]},"XrpAddrEncoder":{"BlockchainAddressEncoder":[]},"XtzAddrEncoder":{"BlockchainAddressEncoder":[]},"ZilAddrEncoder":{"BlockchainAddressEncoder":[]},"Bip32PathError":{"BlockchainUtilsException":[],"Exception":[]},"BipCoins":{"CryptoCoins":["BipCoinConfig"]},"Bip44Coins":{"CryptoCoins":["BipCoinConfig"]},"Bip49Coins":{"CryptoCoins":["BipCoinConfig"]},"Bip84Coins":{"CryptoCoins":["BipCoinConfig"]},"Bip86Coins":{"CryptoCoins":["BipCoinConfig"]},"BipBitcoinCashConf":{"BipCoinConfig":[],"CoinConfig":[]},"BipCoinConfig":{"CoinConfig":[]},"BipLitecoinConf":{"BipCoinConfig":[],"CoinConfig":[]},"Cip1852Coins":{"CryptoCoins":["BipCoinConfig"]},"CipProposal":{"BipProposal":[]},"Ed25519Blake2bPublicKey":{"IPublicKey":[]},"Ed25519PublicKey":{"IPublicKey":[]},"Ed25519KholawPublicKey":{"IPublicKey":[]},"Ed25519MoneroPublicKey":{"IPublicKey":[]},"Nist256p1PublicKey":{"IPublicKey":[]},"Secp256k1PublicKeyEcdsa":{"IPublicKey":[]},"Sr25519PublicKey":{"IPublicKey":[]},"MoneroCoinConf":{"CoinConfig":[]},"MoneroCoins":{"CryptoCoins":["MoneroCoinConf"]},"MoneroKeyError":{"BlockchainUtilsException":[],"Exception":[]},"MoneroPublicKey":{"IPublicKey":[]},"SubstrateCoinConf":{"CoinConfig":[]},"SubstrateCoins":{"CryptoCoins":["SubstrateCoinConf"]},"CborNumeric":{"CborObject":[]},"CborBaseUrlValue":{"CborObject":[]},"CborBigFloatValue":{"CborObject":[]},"CborBigIntValue":{"CborNumeric":[],"CborObject":[]},"CborBoleanValue":{"CborObject":[]},"CborBytesValue":{"CborObject":[]},"CborDynamicBytesValue":{"CborObject":[]},"CborTagValue":{"CborObject":[]},"CborEpochIntValue":{"CborObject":[]},"_CborDate":{"CborObject":[]},"CborStringDateValue":{"CborObject":[]},"CborEpochFloatValue":{"CborObject":[]},"CborDecimalFracValue":{"CborObject":[]},"CborFloatValue":{"CborObject":[]},"CborIntValue":{"CborNumeric":[],"CborObject":[]},"CborSafeIntValue":{"CborNumeric":[],"CborObject":[]},"CborListValue":{"CborObject":[]},"CborMapValue":{"CborObject":[]},"CborMimeValue":{"CborObject":[]},"CborNullValue":{"CborObject":[]},"CborUndefinedValue":{"CborObject":[]},"CborRegxpValue":{"CborObject":[]},"CborSetValue":{"CborObject":[]},"CborStringValue":{"CborObject":[]},"CborIndefiniteStringValue":{"CborObject":[]},"CborString":{"CborObject":[]},"CborUriValue":{"CborObject":[]},"AES":{"BlockCipher":[]},"ProjectiveECCPoint":{"AbstractPoint":[]},"EDPoint":{"AbstractPoint":[]},"RistrettoPoint":{"EDPoint":[],"AbstractPoint":[]},"SquareRootError":{"BlockchainUtilsException":[],"Exception":[]},"JacobiError":{"BlockchainUtilsException":[],"Exception":[]},"BlockchainUtilsException":{"Exception":[]},"ArgumentException":{"BlockchainUtilsException":[],"Exception":[]},"MessageException":{"BlockchainUtilsException":[],"Exception":[]},"RPCError":{"BlockchainUtilsException":[],"Exception":[]},"SequenceLayout":{"Layout":["List<1>"],"Layout.T":"List<1>"},"CompactOffsetLayout":{"ExternalLayout":[],"Layout":["int"],"Layout.T":"int"},"CompactBytes":{"Layout":["List<int>"],"Layout.T":"List<int>"},"CustomLayout":{"Layout":["2"],"Layout.T":"2"},"MapEntryLayout":{"Layout":["MapEntry<@,@>"],"Layout.T":"MapEntry<@,@>"},"NoneLayout":{"Layout":["@"],"Layout.T":"@"},"ExternalLayout":{"Layout":["int"]},"BaseIntiger":{"Layout":["1"]},"IntegerLayout":{"BaseIntiger":["int"],"Layout":["int"],"Layout.T":"int"},"UnionDiscriminatorLayout":{"Layout":["int"]},"UnionLayoutDiscriminatorLayout":{"Layout":["int"],"Layout.T":"int"},"OffsetLayout":{"ExternalLayout":[],"Layout":["int"],"Layout.T":"int"},"CompactIntLayout":{"Layout":["int"],"Layout.T":"int"},"OptionalLayout":{"Layout":["1?"],"Layout.T":"1?"},"PaddingLayout":{"Layout":["1"],"Layout.T":"1"},"RawBytesLayout":{"Layout":["List<int>"],"Layout.T":"List<int>"},"StructLayout":{"Layout":["Map<String,@>"],"Layout.T":"Map<String,@>"},"VariantLayout":{"Layout":["Map<String,@>"],"Layout.T":"Map<String,@>"},"Union":{"Layout":["Map<String,@>"],"Layout.T":"Map<String,@>"},"LayoutException":{"BlockchainUtilsException":[],"Exception":[]},"SS58ChecksumError":{"BlockchainUtilsException":[],"Exception":[]},"CanonicalizedMap":{"Map":["2","3"]},"TendermintRequestStatus":{"TendermintRequestParam":["Map<String,@>","Map<String,@>"],"TendermintRequestParam.0":"Map<String,@>","TendermintRequestParam.1":"Map<String,@>"},"ByteStream":{"StreamView":["List<int>"],"Stream":["List<int>"],"StreamView.T":"List<int>","Stream.T":"List<int>"},"ClientException":{"Exception":[]},"Request":{"BaseRequest":[]},"StreamedResponseV2":{"StreamedResponse":[]},"CaseInsensitiveMap":{"CanonicalizedMap":["String","String","1"],"Map":["String","1"],"CanonicalizedMap.K":"String","CanonicalizedMap.V":"1","CanonicalizedMap.C":"String"},"MRTNativePluginException":{"Exception":[]},"ApiProviderException":{"Exception":[]},"WalletException":{"Exception":[]},"_Live":{"LiveListenable":["1"]},"Live":{"_Live":["1"],"LiveListenable":["1"]},"APPImage":{"Equatable":[]},"WebsocketWeb":{"PlatformWebScoket":[]},"CustomCoins":{"CryptoCoins":["BipCoinConfig"]},"CustomProposal":{"BipProposal":[]},"AddressDerivationIndex":{"Equatable":[]},"Bip32AddressIndex":{"AddressDerivationIndex":[],"Equatable":[]},"MultiSigAddressIndex":{"AddressDerivationIndex":[],"Equatable":[]},"SubstrateAddressIndex":{"AddressDerivationIndex":[],"Equatable":[]},"BrowserCryptoWorker":{"IsolateCryptoWoker":[]},"BitcoinElectrumClient":{"BitcoinClient":["IBitcoinAddress"],"NetworkClient":["IBitcoinAddress","BaseBitcoinAPIProvider"]},"BitcoinExplorerApiProvider":{"BitcoinClient":["IBitcoinAddress"],"NetworkClient":["IBitcoinAddress","BaseBitcoinAPIProvider"]},"BitcoinClient":{"NetworkClient":["1","BaseBitcoinAPIProvider"]},"CardanoClient":{"NetworkClient":["ICardanoAddress","CardanoAPIProvider"]},"CosmosClient":{"NetworkClient":["ICosmosAddress","CosmosAPIProvider"]},"EthereumClient":{"NetworkClient":["IEthAddress","EthereumAPIProvider"]},"RippleClient":{"NetworkClient":["IXRPAddress","RippleAPIProvider"]},"SolanaClient":{"NetworkClient":["ISolanaAddress","SolanaAPIProvider"]},"SubstrateClient":{"NetworkClient":["ISubstrateAddress","SubstrateAPIProvider"]},"SubstrateGetApiAt":{"SubstrateRPCRequest":["String","+(MetadataApi,String)?"],"SubstrateRPCRequest.1":"+(MetadataApi,String)?","SubstrateRPCRequest.0":"String"},"SubstrateGetStateApi":{"SubstrateRPCRequest":["String","+(MetadataApi,String)?"],"SubstrateRPCRequest.1":"+(MetadataApi,String)?","SubstrateRPCRequest.0":"String"},"TonClient":{"NetworkClient":["ITonAddress","TonAPIProvider"]},"TronClient":{"NetworkClient":["ITronAddress","TronAPIProvider"]},"TronRequestGetAccountInfo":{"TVMRequestParam":["TronAccountInfo?","Map<String,@>"],"TVMRequestParam.0":"TronAccountInfo?","TVMRequestParam.1":"Map<String,@>"},"APIProvider":{"Equatable":[]},"BitcoinExplorerAPIProvider":{"BaseBitcoinAPIProvider":[],"APIProvider":[],"Equatable":[]},"ElectrumAPIProvider":{"BaseBitcoinAPIProvider":[],"APIProvider":[],"Equatable":[]},"BaseBitcoinAPIProvider":{"APIProvider":[],"Equatable":[]},"CardanoAPIProvider":{"APIProvider":[],"Equatable":[]},"CosmosAPIProvider":{"APIProvider":[],"Equatable":[]},"EthereumAPIProvider":{"APIProvider":[],"Equatable":[]},"RippleAPIProvider":{"APIProvider":[],"Equatable":[]},"SolanaAPIProvider":{"APIProvider":[],"Equatable":[]},"SubstrateAPIProvider":{"APIProvider":[],"Equatable":[]},"TonAPIProvider":{"APIProvider":[],"Equatable":[]},"TronAPIProvider":{"APIProvider":[],"Equatable":[]},"HTTPService":{"BaseServiceProtocol":["1"]},"BaseSocketService":{"BaseServiceProtocol":["1"]},"SSLService":{"BaseServiceProtocol":["1"]},"TCPService":{"BaseServiceProtocol":["1"]},"WebSocketService":{"BaseServiceProtocol":["1"]},"ElectrumSSLSocketService":{"SSLService":["ElectrumAPIProvider"],"BaseServiceProtocol":["ElectrumAPIProvider"],"BitcoinBaseElectrumRPCService":[],"SSLService.T":"ElectrumAPIProvider"},"ElectrumSocketService":{"TCPService":["ElectrumAPIProvider"],"BaseServiceProtocol":["ElectrumAPIProvider"],"BitcoinBaseElectrumRPCService":[],"TCPService.T":"ElectrumAPIProvider"},"ElectrumWebsocketService":{"WebSocketService":["ElectrumAPIProvider"],"BaseServiceProtocol":["ElectrumAPIProvider"],"BitcoinBaseElectrumRPCService":[],"WebSocketService.T":"ElectrumAPIProvider"},"BitcoinHTTPService":{"BaseServiceProtocol":["BitcoinExplorerAPIProvider"],"ApiService":[]},"CardanoHTTPService":{"BaseServiceProtocol":["CardanoAPIProvider"],"BlockfrostServiceProvider":[]},"TendermintHTTPService":{"BaseServiceProtocol":["CosmosAPIProvider"],"TendermintServiceProvider":[]},"EthereumHTTPService":{"BaseServiceProtocol":["EthereumAPIProvider"],"JSONRPCService":[]},"RippleHTTPService":{"BaseServiceProtocol":["RippleAPIProvider"],"RpcService":[]},"SolanaHTTPService":{"BaseServiceProtocol":["SolanaAPIProvider"],"SolanaJSONRPCService":[]},"SubstrateHttpService":{"BaseServiceProtocol":["SubstrateAPIProvider"],"SubstrateRPCService":[]},"TonHTTPService":{"BaseServiceProtocol":["TonAPIProvider"],"TonServiceProvider":[]},"TronHTTPService":{"BaseServiceProtocol":["TronAPIProvider"],"TronServiceProvider":[]},"EthereumWebsocketService":{"WebSocketService":["EthereumAPIProvider"],"BaseServiceProtocol":["EthereumAPIProvider"],"JSONRPCService":[],"WebSocketService.T":"EthereumAPIProvider"},"RippleWebsocketService":{"WebSocketService":["RippleAPIProvider"],"BaseServiceProtocol":["RippleAPIProvider"],"RpcService":[],"WebSocketService.T":"RippleAPIProvider"},"IBitcoinCashAddress":{"IBitcoinAddress":[],"ChainAccount":["BitcoinBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"IBitcoinCashMultiSigAddress":{"IBitcoinAddress":[],"ChainAccount":["BitcoinBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"IBitcoinAddress":{"ChainAccount":["BitcoinBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"IBitcoinMultiSigAddress":{"IBitcoinAddress":[],"ChainAccount":["BitcoinBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"BitcoinMultiSigSignerDetais":{"Equatable":[]},"ICardanoAddress":{"ChainAccount":["ADAAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"ICosmosAddress":{"ChainAccount":["CosmosBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"IEthAddress":{"ChainAccount":["ETHAddress","ETHERC20Token","NFTCore"],"Equatable":[]},"ISolanaAddress":{"ChainAccount":["SolAddress","SolanaSPLToken","NFTCore"],"Equatable":[]},"ISubstrateAddress":{"ChainAccount":["SubstrateAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"ITonAddress":{"ChainAccount":["TonAddress","TonJettonToken","NFTCore"],"Equatable":[]},"TronMultiSigSignerDetais":{"Equatable":[]},"TronMultiSignatureAddress":{"Equatable":[]},"ITronAddress":{"ChainAccount":["TronAddress","TronToken","NFTCore"],"Equatable":[]},"ITronMultisigAddress":{"ITronAddress":[],"ChainAccount":["TronAddress","TronToken","NFTCore"],"Equatable":[]},"RippleMultiSigSignerDetais":{"Equatable":[]},"RippleMultiSignatureAddress":{"Equatable":[]},"IXRPAddress":{"ChainAccount":["XRPAddress","RippleIssueToken","RippleNFToken"],"Equatable":[]},"IXRPMultisigAddress":{"IXRPAddress":[],"ChainAccount":["XRPAddress","RippleIssueToken","RippleNFToken"],"Equatable":[]},"EthereumChain":{"Chain":["EthereumAPIProvider","EthereumNetworkParams","ETHAddress","ETHERC20Token","NFTCore","IEthAddress","WalletEthereumNetwork","EthereumClient"],"Chain.6":"WalletEthereumNetwork","Chain.7":"EthereumClient","Chain.5":"IEthAddress","Chain.2":"ETHAddress"},"TronChain":{"Chain":["TronAPIProvider","TronNetworkParams","TronAddress","TronToken","NFTCore","ITronAddress","WalletTronNetwork","TronClient"],"Chain.6":"WalletTronNetwork","Chain.7":"TronClient","Chain.5":"ITronAddress","Chain.2":"TronAddress"},"ADAChain":{"Chain":["CardanoAPIProvider","CardanoNetworkParams","ADAAddress","TokenCore<@>","NFTCore","ICardanoAddress","WalletCardanoNetwork","CardanoClient"],"Chain.6":"WalletCardanoNetwork","Chain.7":"CardanoClient","Chain.5":"ICardanoAddress","Chain.2":"ADAAddress"},"BitcoinChain":{"Chain":["BaseBitcoinAPIProvider","BitcoinParams","BitcoinBaseAddress","TokenCore<@>","NFTCore","IBitcoinAddress","WalletBitcoinNetwork","BitcoinClient<IBitcoinAddress>"],"Chain.6":"WalletBitcoinNetwork","Chain.7":"BitcoinClient<IBitcoinAddress>","Chain.5":"IBitcoinAddress","Chain.2":"BitcoinBaseAddress"},"CosmosChain":{"Chain":["CosmosAPIProvider","CosmosNetworkParams","CosmosBaseAddress","TokenCore<@>","NFTCore","ICosmosAddress","WalletCosmosNetwork","CosmosClient"],"Chain.6":"WalletCosmosNetwork","Chain.7":"CosmosClient","Chain.5":"ICosmosAddress","Chain.2":"CosmosBaseAddress"},"SolanaChain":{"Chain":["SolanaAPIProvider","SolanaNetworkParams","SolAddress","SolanaSPLToken","NFTCore","ISolanaAddress","WalletSolanaNetwork","SolanaClient"],"Chain.6":"WalletSolanaNetwork","Chain.7":"SolanaClient","Chain.5":"ISolanaAddress","Chain.2":"SolAddress"},"SubstrateChain":{"Chain":["SubstrateAPIProvider","SubstrateNetworkParams","SubstrateAddress","TokenCore<@>","NFTCore","ISubstrateAddress","WalletPolkadotNetwork","SubstrateClient"],"Chain.6":"WalletPolkadotNetwork","Chain.7":"SubstrateClient","Chain.5":"ISubstrateAddress","Chain.2":"SubstrateAddress"},"TonChain":{"Chain":["TonAPIProvider","TonNetworkParams","TonAddress","TonJettonToken","NFTCore","ITonAddress","WalletTonNetwork","TonClient"],"Chain.6":"WalletTonNetwork","Chain.7":"TonClient","Chain.5":"ITonAddress","Chain.2":"TonAddress"},"RippleChain":{"Chain":["RippleAPIProvider","RippleNetworkParams","XRPAddress","RippleIssueToken","RippleNFToken","IXRPAddress","WalletXRPNetwork","RippleClient"],"Chain.6":"WalletXRPNetwork","Chain.7":"RippleClient","Chain.5":"IXRPAddress","Chain.2":"XRPAddress"},"BitcoinContact":{"ContactCore":["BitcoinBaseAddress"],"Equatable":[]},"CardanoContact":{"ContactCore":["ADAAddress"],"Equatable":[]},"CosmosContact":{"ContactCore":["CosmosBaseAddress"],"Equatable":[]},"EthereumContract":{"ContactCore":["ETHAddress"],"Equatable":[]},"SolanaContact":{"ContactCore":["SolAddress"],"Equatable":[]},"SubstrateContact":{"ContactCore":["SubstrateAddress"],"Equatable":[]},"TonContact":{"ContactCore":["TonAddress"],"Equatable":[]},"TronContact":{"ContactCore":["TronAddress"],"Equatable":[]},"RippleContact":{"ContactCore":["XRPAddress"],"Equatable":[]},"WalletNetwork":{"Equatable":[]},"WalletBitcoinNetwork":{"WalletNetwork":["BitcoinParams"],"Equatable":[]},"WalletXRPNetwork":{"WalletNetwork":["RippleNetworkParams"],"Equatable":[]},"WalletEthereumNetwork":{"WalletNetwork":["EthereumNetworkParams"],"Equatable":[]},"WalletTronNetwork":{"WalletNetwork":["TronNetworkParams"],"Equatable":[]},"WalletSolanaNetwork":{"WalletNetwork":["SolanaNetworkParams"],"Equatable":[]},"WalletCardanoNetwork":{"WalletNetwork":["CardanoNetworkParams"],"Equatable":[]},"WalletCosmosNetwork":{"WalletNetwork":["CosmosNetworkParams"],"Equatable":[]},"WalletTonNetwork":{"WalletNetwork":["TonNetworkParams"],"Equatable":[]},"WalletPolkadotNetwork":{"WalletNetwork":["SubstrateNetworkParams"],"Equatable":[]},"WalletBitcoinCashNetwork":{"WalletBitcoinNetwork":[],"WalletNetwork":["BitcoinParams"],"Equatable":[]},"WalletKusamaNetwork":{"WalletPolkadotNetwork":[],"WalletNetwork":["SubstrateNetworkParams"],"Equatable":[]},"BitcoinParams":{"NetworkCoinParams":["BaseBitcoinAPIProvider"],"NetworkCoinParams.0":"BaseBitcoinAPIProvider"},"CardanoNetworkParams":{"NetworkCoinParams":["CardanoAPIProvider"],"NetworkCoinParams.0":"CardanoAPIProvider"},"CosmosNetworkParams":{"NetworkCoinParams":["CosmosAPIProvider"],"NetworkCoinParams.0":"CosmosAPIProvider"},"EthereumNetworkParams":{"NetworkCoinParams":["EthereumAPIProvider"],"NetworkCoinParams.0":"EthereumAPIProvider"},"RippleNetworkParams":{"NetworkCoinParams":["RippleAPIProvider"],"NetworkCoinParams.0":"RippleAPIProvider"},"SolanaNetworkParams":{"NetworkCoinParams":["SolanaAPIProvider"],"NetworkCoinParams.0":"SolanaAPIProvider"},"SubstrateNetworkParams":{"NetworkCoinParams":["SubstrateAPIProvider"],"NetworkCoinParams.0":"SubstrateAPIProvider"},"TonNetworkParams":{"NetworkCoinParams":["TonAPIProvider"],"NetworkCoinParams.0":"TonAPIProvider"},"TronNetworkParams":{"NetworkCoinParams":["TronAPIProvider"],"NetworkCoinParams.0":"TronAPIProvider"},"CardanoAddrDetails":{"Equatable":[]},"PermissionKeys":{"Equatable":[]},"RippleNFToken":{"NFTCore":[],"Equatable":[]},"ETHERC20Token":{"TokenCore":["BigInt"],"Equatable":[]},"RippleIssueToken":{"TokenCore":["BigRational"],"Equatable":[]},"TonJettonToken":{"TokenCore":["BigInt"],"Equatable":[]},"SolanaSPLToken":{"TokenCore":["BigInt"],"Equatable":[]},"TronTRC10Token":{"TronToken":[],"TokenCore":["BigInt"],"Equatable":[]},"TronToken":{"TokenCore":["BigInt"]},"TronTRC20Token":{"TronToken":[],"TokenCore":["BigInt"],"Equatable":[]},"Token":{"Equatable":[]},"Web3RequestException":{"Exception":[]},"Web3ChainMessage":{"Web3MessageCore":[]},"Web3ExceptionMessage":{"Web3MessageCore":[]},"Web3ResponseMessage":{"Web3MessageCore":[]},"Web3WalletResponseMessage":{"Web3ResponseMessage":[],"Web3MessageCore":[]},"Web3ChainAccount":{"Equatable":[]},"Web3GlobalRequestParams":{"Web3MessageCore":[]},"Web3RequestParams":{"Web3GlobalRequestParams":["1"],"Web3MessageCore":[]},"Web3EthereumPermissionRequestParam":{"Web3EthereumRequestParam":["Web3EthereumChain"],"Web3RequestParams":["Web3EthereumChain","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["Web3EthereumChain"],"Web3MessageCore":[]},"Web3EthereumRequestParam":{"Web3RequestParams":["1","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["1"],"Web3MessageCore":[]},"Web3EthereumAddNewChain":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthreumPersonalSign":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthreumRequestAccounts":{"Web3EthereumRequestParam":["Web3EthereumChain"],"Web3RequestParams":["Web3EthereumChain","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["Web3EthereumChain"],"Web3MessageCore":[]},"Web3EthreumSendTransaction":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthreumTypdedData":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthreumSwitchChain":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthereumChainAccount":{"Web3ChainAccount":["ETHAddress"],"Equatable":[],"Web3ChainAccount.0":"ETHAddress"},"Web3EthereumChain":{"Web3Chain":["ETHAddress","EthereumChain","Web3EthereumChainAccount"],"Web3Chain.2":"Web3EthereumChainAccount"},"Web3DisconnectApplication":{"Web3GlobalRequestParams":["@"],"Web3MessageCore":[]},"Web3TronPermissionRequestParam":{"Web3TronRequestParam":["Web3TronChain"],"Web3RequestParams":["Web3TronChain","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["Web3TronChain"],"Web3MessageCore":[]},"Web3TronRequestParam":{"Web3RequestParams":["1","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["1"],"Web3MessageCore":[]},"Web3TronRequestAccounts":{"Web3TronRequestParam":["Web3TronChain"],"Web3RequestParams":["Web3TronChain","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["Web3TronChain"],"Web3MessageCore":[]},"Web3TronSignMessageV2":{"Web3TronRequestParam":["String"],"Web3RequestParams":["String","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3TronSendTransaction":{"Web3TronRequestParam":["Map<String,@>"],"Web3RequestParams":["Map<String,@>","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["Map<String,@>"],"Web3MessageCore":[]},"Web3TronChainAccount":{"Web3ChainAccount":["TronAddress"],"Equatable":[],"Web3ChainAccount.0":"TronAddress"},"Web3TronChain":{"Web3Chain":["TronAddress","TronChain","Web3TronChainAccount"],"Web3Chain.2":"Web3TronChainAccount"},"ADAByronAddress":{"ADAAddress":[]},"ADAPointerAddress":{"ADAAddress":[]},"ADARewardAddress":{"ADAAddress":[]},"ADABaseAddress":{"ADAAddress":[]},"ADAShellyAddress":{"ADAAddress":[]},"ADAEnterpriseAddress":{"ADAAddress":[]},"StakeCred":{"FixedBytes":[],"Comparable":["FixedBytes"]},"StakeCredKey":{"StakeCred":[],"FixedBytes":[],"Comparable":["FixedBytes"]},"StakeCredScript":{"StakeCred":[],"FixedBytes":[],"Comparable":["FixedBytes"]},"FixedBytes":{"Comparable":["FixedBytes"]},"BlockfrostRequestBackendHealthStatus":{"BlockforestRequestParam":["bool","Map<String,@>"]},"BlockfrostError":{"BlockchainUtilsException":[],"Exception":[]},"ETHAddress":{"SolidityAddress":[]},"RPCGetChainId":{"ETHRPCRequest":["BigInt"]},"SolanaRPCGetGenesisHash":{"SolanaRPCRequest":["String"],"SolanaRPCRequest.T":"String"},"Eip712TypedData":{"EIP712Base":[]},"EIP712Legacy":{"EIP712Base":[]},"SolidityAbiException":{"BlockchainUtilsException":[],"Exception":[]},"AddressCoder":{"ABICoder":["SolidityAddress"]},"ArrayCoder":{"ABICoder":["List<@>"]},"BooleanCoder":{"ABICoder":["bool"]},"BytesCoder":{"ABICoder":["List<int>"]},"FunctionCoder":{"ABICoder":["List<int>"]},"NumbersCoder":{"ABICoder":["BigInt"]},"StringCoder":{"ABICoder":["String"]},"TupleCoder":{"ABICoder":["List<@>"]},"TronAddress":{"SolidityAddress":[]},"TronPluginException":{"BlockchainUtilsException":[],"Exception":[]},"AccountCreateContract":{"TronBaseContract":[]},"AccountPermissionUpdateContract":{"TronBaseContract":[]},"AccountType":{"TronEnumerate":[]},"AccountUpdateContract":{"TronBaseContract":[]},"PermissionType":{"TronEnumerate":[]},"SetAccountIdContract":{"TronBaseContract":[]},"AssetIssueContract":{"TronBaseContract":[]},"ParticipateAssetIssueContract":{"TronBaseContract":[]},"TransferAssetContract":{"TronBaseContract":[]},"UnfreezeAssetContract":{"TronBaseContract":[]},"UpdateAssetContract":{"TronBaseContract":[]},"CancelAllUnfreezeV2Contract":{"TronBaseContract":[]},"DelegateResourceContract":{"TronBaseContract":[]},"FreezeBalanceContract":{"TronBaseContract":[]},"FreezeBalanceV2Contract":{"TronBaseContract":[]},"TransferContract":{"TronBaseContract":[]},"UnDelegateResourceContract":{"TronBaseContract":[]},"UnfreezeBalanceContract":{"TronBaseContract":[]},"UnfreezeBalanceV2Contract":{"TronBaseContract":[]},"WithdrawBalanceContract":{"TronBaseContract":[]},"WithdrawExpireUnfreezeContract":{"TronBaseContract":[]},"ResourceCode":{"TronEnumerate":[]},"TransactionContractType":{"TronEnumerate":[]},"ExchangeCreateContract":{"TronBaseContract":[]},"ExchangeInjectContract":{"TronBaseContract":[]},"ExchangeTransactionContract":{"TronBaseContract":[]},"ExchangeWithdrawContract":{"TronBaseContract":[]},"MarketCancelOrderContract":{"TronBaseContract":[]},"MarketSellAssetContract":{"TronBaseContract":[]},"ProposalApproveContract":{"TronBaseContract":[]},"ProposalCreateContract":{"TronBaseContract":[]},"ProposalDeleteContract":{"TronBaseContract":[]},"ShieldedTransferContract":{"TronBaseContract":[]},"SmartContractAbiEntryType":{"TronEnumerate":[]},"SmartContractAbiStateMutabilityType":{"TronEnumerate":[]},"ClearABIContract":{"TronBaseContract":[]},"CreateSmartContract":{"TronBaseContract":[]},"TriggerSmartContract":{"TronBaseContract":[]},"UpdateEnergyLimitContract":{"TronBaseContract":[]},"UpdateSettingContract":{"TronBaseContract":[]},"UpdateBrokerageContract":{"TronBaseContract":[]},"VoteAssetContract":{"TronBaseContract":[]},"VoteWitnessContract":{"TronBaseContract":[]},"WitnessUpdateContract":{"TronBaseContract":[]},"WitnessCreateContract":{"TronBaseContract":[]},"TronRequestGetBlockByNum":{"TVMRequestParam":["Map<String,@>","Map<String,@>"],"TVMRequestParam.0":"Map<String,@>","TVMRequestParam.1":"Map<String,@>"},"PathException":{"Exception":[]},"PosixStyle":{"InternalStyle":[]},"UrlStyle":{"InternalStyle":[]},"WindowsStyle":{"InternalStyle":[]},"SubstrateMetadata":{"SubstrateSerialization":["1"]},"MetadataException":{"BlockchainUtilsException":[],"Exception":[]},"TypeDefOption":{"SubstrateSerialization":["1"],"ScaleTypeDef":[]},"UnsupportedMetadata":{"SubstrateMetadata":["List<int>"],"SubstrateSerialization":["List<int>"]},"Si0TypeDefPrimitive":{"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1Field":{"SubstrateSerialization":["Map<String,@>"]},"Si1TypeDefHistoricMetaCompat":{"Si1TypeDef":["String"],"SubstrateSerialization":["String"],"ScaleTypeDef":[]},"Si1Type":{"SubstrateSerialization":["Map<String,@>"]},"Si1TypeDef":{"SubstrateSerialization":["1"],"ScaleTypeDef":[]},"Si1TypeDefArray":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefBitSequence":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefCompact":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefComposite":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefPrimitive":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefSequence":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefTuple":{"Si1TypeDef":["List<int>"],"SubstrateSerialization":["List<int>"],"ScaleTypeDef":[]},"Si1TypeDefVariant":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeParameter":{"SubstrateSerialization":["Map<String,@>"]},"Si1Variant":{"SubstrateSerialization":["Map<String,@>"]},"StorageHasherV14":{"SubstrateSerialization":["Map<String,@>"]},"StorageHasherV11":{"SubstrateSerialization":["Map<String,@>"]},"StorageEntryModifierV14":{"StorageEntryModifierV9":[],"SubstrateSerialization":["Map<String,@>"]},"ExtrinsicMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"MetadataV14":{"SubstrateMetadata":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"LatestMetadataInterface":[]},"PalletCallMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletConstantMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletErrorMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletEventMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletStorageMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PortableRegistryV14":{"SubstrateSerialization":["Map<String,@>"]},"PortableTypeV14":{"SubstrateSerialization":["Map<String,@>"]},"SignedExtensionMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"StorageEntryTypeV14":{"SubstrateSerialization":["1"]},"StorageEntryTypeV14Map":{"StorageEntryTypeV14":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"]},"StorageEntryTypeV14Plain":{"StorageEntryTypeV14":["int"],"SubstrateSerialization":["int"]},"StorageEntryMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"CustomMetadata15":{"SubstrateSerialization":["Map<String,@>"]},"CustomValueMetadata15":{"SubstrateSerialization":["Map<String,@>"]},"ExtrinsicMetadataV15":{"SubstrateSerialization":["Map<String,@>"]},"MetadataV15":{"SubstrateMetadata":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"LatestMetadataInterface":[]},"OuterEnums15":{"SubstrateSerialization":["Map<String,@>"]},"PalletMetadataV15":{"PalletMetadataV14":[],"SubstrateSerialization":["Map<String,@>"]},"RuntimeApiMetadataV15":{"SubstrateSerialization":["Map<String,@>"]},"RuntimeApiMethodMetadataV15":{"SubstrateSerialization":["Map<String,@>"]},"RuntimeApiMethodParamMetadataV15":{"SubstrateSerialization":["Map<String,@>"]},"StorageEntryModifierV9":{"SubstrateSerialization":["Map<String,@>"]},"VersionedMetadata":{"SubstrateSerialization":["Map<String,@>"]},"SubstrateBlockHash":{"SubstrateSerialization":["List<int>"]},"ScaleFixedBytes":{"SubstrateSerialization":["List<int>"]},"SubstrateHash256":{"SubstrateSerialization":["List<int>"]},"SubstrateRPCChainGetBlockHash":{"SubstrateRPCRequest":["String","String"],"SubstrateRPCRequest.1":"String","SubstrateRPCRequest.0":"String"},"SubstrateRPCRuntimeMetadataGetVersions":{"SubstrateRPCRequest":["String","List<int>"],"SubstrateRPCRequest.1":"List<int>","SubstrateRPCRequest.0":"String"},"FileLocation":{"SourceLocation":[],"Comparable":["SourceLocation"]},"_FileSpan":{"SourceSpanWithContext":[],"SourceSpan":[],"Comparable":["SourceSpan"]},"SourceLocation":{"Comparable":["SourceLocation"]},"SourceLocationMixin":{"SourceLocation":[],"Comparable":["SourceLocation"]},"SourceSpan":{"Comparable":["SourceSpan"]},"SourceSpanBase":{"SourceSpan":[],"Comparable":["SourceSpan"]},"SourceSpanException":{"Exception":[]},"SourceSpanFormatException":{"FormatException":[],"Exception":[]},"SourceSpanMixin":{"SourceSpan":[],"Comparable":["SourceSpan"]},"SourceSpanWithContext":{"SourceSpan":[],"Comparable":["SourceSpan"]},"StringScannerException":{"FormatException":[],"Exception":[]},"TonContractException":{"BlockchainUtilsException":[],"Exception":[]},"TonDartPluginException":{"BlockchainUtilsException":[],"Exception":[]},"TonCenterPostRequestParam":{"TonApiRequestParam":["1","2"]},"TonApiError":{"BlockchainUtilsException":[],"Exception":[]},"TonApiGetBlockchainMasterchainHead":{"TonApiRequestParam":["BlockchainBlockResponse","Map<String,@>"],"TonApiRequestParam.0":"BlockchainBlockResponse","TonApiRequestParam.1":"Map<String,@>"},"TonCenterGetMasterchainInfo":{"TonApiRequestParam":["Map<String,@>","Map<String,@>"],"TonApiRequestParam.0":"Map<String,@>","TonApiRequestParam.1":"Map<String,@>"},"_EventStream":{"Stream":["1"],"Stream.T":"1"},"_EventStreamSubscription":{"StreamSubscription":["1"]},"RPCServerState":{"XRPLedgerRequest":["XRPLedgerState"]},"XRPLAddressCodecException":{"BlockchainUtilsException":[],"Exception":[]},"ClientMessageEthereum":{"PageMessage":[]},"JSWalletMessageResponseEthereum":{"JSWalletMessage":[]},"EthereumWeb3State":{"ChainWeb3State":["ETHAddress","EthereumChain","Web3EthereumChain"],"ChainWeb3State.1":"EthereumChain","ChainWeb3State.2":"Web3EthereumChain"},"JSWalletMessageResponse":{"JSWalletMessage":[]},"JSWalletNetworkEvent":{"JSWalletMessage":[]},"TronWeb3State":{"ChainWeb3State":["TronAddress","TronChain","Web3TronChain"],"ChainWeb3State.1":"TronChain","ChainWeb3State.2":"Web3TronChain"},"ClientMessageTron":{"PageMessage":[]},"JSWalletMessageResponseTron":{"JSWalletMessage":[]}}'));
+  A._Universe_addRules(init.typeUniverse, JSON.parse('{"JavaScriptFunction":"LegacyJavaScriptObject","PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JSArray":{"List":["1"],"EfficientLengthIterable":["1"],"JSObject":[],"Iterable":["1"]},"JSBool":{"bool":[],"TrustedGetRuntimeType":[]},"JSNull":{"Null":[],"TrustedGetRuntimeType":[]},"JavaScriptObject":{"JSObject":[]},"LegacyJavaScriptObject":{"JSObject":[]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"EfficientLengthIterable":["1"],"JSObject":[],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"double":[],"num":[],"Comparable":["num"]},"JSInt":{"double":[],"int":[],"num":[],"Comparable":["num"],"TrustedGetRuntimeType":[]},"JSNumNotInt":{"double":[],"num":[],"Comparable":["num"],"TrustedGetRuntimeType":[]},"JSString":{"String":[],"Comparable":["String"],"Pattern":[],"TrustedGetRuntimeType":[]},"CastStream":{"Stream":["2"],"Stream.T":"2"},"CastStreamSubscription":{"StreamSubscription":["2"]},"_CastIterableBase":{"Iterable":["2"]},"CastIterator":{"Iterator":["2"]},"CastIterable":{"_CastIterableBase":["1","2"],"Iterable":["2"],"Iterable.E":"2"},"_EfficientLengthCastIterable":{"CastIterable":["1","2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"_CastListBase":{"ListBase":["2"],"List":["2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"]},"CastList":{"_CastListBase":["1","2"],"ListBase":["2"],"List":["2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"ListBase.E":"2","Iterable.E":"2"},"CastMap":{"MapBase":["3","4"],"Map":["3","4"],"MapBase.K":"3","MapBase.V":"4"},"LateError":{"Error":[]},"CodeUnits":{"ListBase":["int"],"UnmodifiableListMixin":["int"],"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"],"ListBase.E":"int","UnmodifiableListMixin.E":"int"},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"]},"SubListIterable":{"ListIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1","ListIterable.E":"1"},"ListIterator":{"Iterator":["1"]},"MappedIterable":{"Iterable":["2"],"Iterable.E":"2"},"EfficientLengthMappedIterable":{"MappedIterable":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"MappedIterator":{"Iterator":["2"]},"MappedListIterable":{"ListIterable":["2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2","ListIterable.E":"2"},"WhereIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereIterator":{"Iterator":["1"]},"ExpandIterable":{"Iterable":["2"],"Iterable.E":"2"},"ExpandIterator":{"Iterator":["2"]},"TakeIterable":{"Iterable":["1"],"Iterable.E":"1"},"EfficientLengthTakeIterable":{"TakeIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"TakeIterator":{"Iterator":["1"]},"SkipIterable":{"Iterable":["1"],"Iterable.E":"1"},"EfficientLengthSkipIterable":{"SkipIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"SkipIterator":{"Iterator":["1"]},"EmptyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"EmptyIterator":{"Iterator":["1"]},"WhereTypeIterable":{"Iterable":["1"],"Iterable.E":"1"},"WhereTypeIterator":{"Iterator":["1"]},"UnmodifiableListBase":{"ListBase":["1"],"UnmodifiableListMixin":["1"],"List":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"_ListIndicesIterable":{"ListIterable":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"],"Iterable.E":"int","ListIterable.E":"int"},"ListMapView":{"MapBase":["int","1"],"_UnmodifiableMapMixin":["int","1"],"Map":["int","1"],"MapBase.K":"int","MapBase.V":"1","_UnmodifiableMapMixin.K":"int","_UnmodifiableMapMixin.V":"1"},"ReversedListIterable":{"ListIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1","ListIterable.E":"1"},"_Record_2":{"_Record2":[],"_Record":[]},"ConstantMapView":{"UnmodifiableMapView":["1","2"],"_UnmodifiableMapView_MapView__UnmodifiableMapMixin":["1","2"],"MapView":["1","2"],"_UnmodifiableMapMixin":["1","2"],"Map":["1","2"],"_UnmodifiableMapMixin.K":"1","_UnmodifiableMapMixin.V":"2"},"ConstantMap":{"Map":["1","2"]},"ConstantStringMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"_KeysOrValues":{"Iterable":["1"],"Iterable.E":"1"},"_KeysOrValuesOrElementsIterator":{"Iterator":["1"]},"GeneralConstantMap":{"ConstantMap":["1","2"],"Map":["1","2"]},"Instantiation":{"Closure":[],"Function":[]},"Instantiation1":{"Closure":[],"Function":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"NullThrownFromJavaScriptException":{"Exception":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Closure":[],"Function":[]},"Closure2Args":{"Closure":[],"Function":[]},"TearOffClosure":{"Closure":[],"Function":[]},"StaticClosure":{"Closure":[],"Function":[]},"BoundClosure":{"Closure":[],"Function":[]},"_CyclicInitializationError":{"Error":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"LinkedHashMapKeyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"JsIdentityLinkedHashMap":{"JsLinkedHashMap":["1","2"],"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"JsConstantLinkedHashMap":{"JsLinkedHashMap":["1","2"],"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"_Record2":{"_Record":[]},"JSSyntaxRegExp":{"RegExp":[],"Pattern":[]},"_MatchImplementation":{"RegExpMatch":[],"Match":[]},"_AllMatchesIterable":{"Iterable":["RegExpMatch"],"Iterable.E":"RegExpMatch"},"_AllMatchesIterator":{"Iterator":["RegExpMatch"]},"StringMatch":{"Match":[]},"_StringAllMatchesIterable":{"Iterable":["Match"],"Iterable.E":"Match"},"_StringAllMatchesIterator":{"Iterator":["Match"]},"NativeByteBuffer":{"JSObject":[],"ByteBuffer":[],"TrustedGetRuntimeType":[]},"NativeTypedData":{"JSObject":[]},"NativeByteData":{"ByteData":[],"JSObject":[],"TrustedGetRuntimeType":[]},"NativeTypedArray":{"JavaScriptIndexingBehavior":["1"],"JSObject":[]},"NativeTypedArrayOfDouble":{"ListBase":["double"],"NativeTypedArray":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"]},"NativeTypedArrayOfInt":{"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"]},"NativeFloat32List":{"Float32List":[],"ListBase":["double"],"NativeTypedArray":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"],"TrustedGetRuntimeType":[],"ListBase.E":"double","FixedLengthListMixin.E":"double"},"NativeFloat64List":{"Float64List":[],"ListBase":["double"],"NativeTypedArray":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"],"TrustedGetRuntimeType":[],"ListBase.E":"double","FixedLengthListMixin.E":"double"},"NativeInt16List":{"NativeTypedArrayOfInt":[],"Int16List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeInt32List":{"NativeTypedArrayOfInt":[],"Int32List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeInt8List":{"NativeTypedArrayOfInt":[],"Int8List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint16List":{"NativeTypedArrayOfInt":[],"Uint16List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint32List":{"NativeTypedArrayOfInt":[],"Uint32List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint8ClampedList":{"NativeTypedArrayOfInt":[],"Uint8ClampedList":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint8List":{"NativeTypedArrayOfInt":[],"Uint8List":[],"ListBase":["int"],"NativeTypedArray":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"_AsyncAwaitCompleter":{"Completer":["1"]},"_SyncStarIterator":{"Iterator":["1"]},"_SyncStarIterable":{"Iterable":["1"],"Iterable.E":"1"},"AsyncError":{"Error":[]},"TimeoutException":{"Exception":[]},"_Completer":{"Completer":["1"]},"_AsyncCompleter":{"_Completer":["1"],"Completer":["1"]},"_SyncCompleter":{"_Completer":["1"],"Completer":["1"]},"StreamView":{"Stream":["1"]},"_StreamController":{"StreamController":["1"],"_StreamControllerLifecycle":["1"],"_EventDispatch":["1"]},"_AsyncStreamController":{"_AsyncStreamControllerDispatch":["1"],"_StreamController":["1"],"StreamController":["1"],"_StreamControllerLifecycle":["1"],"_EventDispatch":["1"]},"_SyncStreamController":{"_SyncStreamControllerDispatch":["1"],"_StreamController":["1"],"StreamController":["1"],"_StreamControllerLifecycle":["1"],"_EventDispatch":["1"]},"_ControllerStream":{"_StreamImpl":["1"],"Stream":["1"],"Stream.T":"1"},"_ControllerSubscription":{"_BufferingStreamSubscription":["1"],"StreamSubscription":["1"],"_EventDispatch":["1"]},"_BufferingStreamSubscription":{"StreamSubscription":["1"],"_EventDispatch":["1"]},"_StreamImpl":{"Stream":["1"]},"_DelayedData":{"_DelayedEvent":["1"]},"_DelayedError":{"_DelayedEvent":["@"]},"_DelayedDone":{"_DelayedEvent":["@"]},"_DoneStreamSubscription":{"StreamSubscription":["1"]},"_EmptyStream":{"Stream":["1"],"Stream.T":"1"},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_HashMap":{"MapBase":["1","2"],"Map":["1","2"]},"_IdentityHashMap":{"_HashMap":["1","2"],"MapBase":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"_HashMapKeyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"_HashMapKeyIterator":{"Iterator":["1"]},"_LinkedCustomHashMap":{"JsLinkedHashMap":["1","2"],"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"_LinkedHashSet":{"SetBase":["1"],"Set":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"_LinkedHashSetIterator":{"Iterator":["1"]},"ListBase":{"List":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"MapBase":{"Map":["1","2"]},"UnmodifiableMapBase":{"MapBase":["1","2"],"_UnmodifiableMapMixin":["1","2"],"Map":["1","2"]},"_MapBaseValueIterable":{"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"_MapBaseValueIterator":{"Iterator":["2"]},"MapView":{"Map":["1","2"]},"UnmodifiableMapView":{"_UnmodifiableMapView_MapView__UnmodifiableMapMixin":["1","2"],"MapView":["1","2"],"_UnmodifiableMapMixin":["1","2"],"Map":["1","2"],"_UnmodifiableMapMixin.K":"1","_UnmodifiableMapMixin.V":"2"},"SetBase":{"Set":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"_SetBase":{"SetBase":["1"],"Set":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"]},"Encoding":{"Codec":["String","List<int>"]},"_JsonMap":{"MapBase":["String","@"],"Map":["String","@"],"MapBase.K":"String","MapBase.V":"@"},"_JsonMapKeyIterable":{"ListIterable":["String"],"EfficientLengthIterable":["String"],"Iterable":["String"],"Iterable.E":"String","ListIterable.E":"String"},"AsciiCodec":{"Encoding":[],"Codec":["String","List<int>"],"Codec.S":"String"},"Base64Codec":{"Codec":["List<int>","String"],"Codec.S":"List<int>"},"JsonUnsupportedObjectError":{"Error":[]},"JsonCyclicError":{"Error":[]},"JsonCodec":{"Codec":["Object?","String"],"Codec.S":"Object?"},"Latin1Codec":{"Encoding":[],"Codec":["String","List<int>"],"Codec.S":"String"},"Utf8Codec":{"Encoding":[],"Codec":["String","List<int>"],"Codec.S":"String"},"BigInt":{"Comparable":["BigInt"]},"DateTime":{"Comparable":["DateTime"]},"double":{"num":[],"Comparable":["num"]},"Duration":{"Comparable":["Duration"]},"int":{"num":[],"Comparable":["num"]},"List":{"EfficientLengthIterable":["1"],"Iterable":["1"]},"num":{"Comparable":["num"]},"RegExpMatch":{"Match":[]},"String":{"Comparable":["String"],"Pattern":[]},"_BigIntImpl":{"BigInt":[],"Comparable":["BigInt"]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"_Exception":{"Exception":[]},"FormatException":{"Exception":[]},"IntegerDivisionByZeroException":{"Exception":[],"Error":[]},"_StringStackTrace":{"StackTrace":[]},"Runes":{"Iterable":["int"],"Iterable.E":"int"},"RuneIterator":{"Iterator":["int"]},"StringBuffer":{"StringSink":[]},"_Uri":{"Uri":[]},"_SimpleUri":{"Uri":[]},"_DataUri":{"Uri":[]},"SecureSocket":{"Socket":[],"Stream":["Uint8List"],"StringSink":[]},"RawSecureSocket":{"RawSocket":[],"Stream":["RawSocketEvent"]},"_RawSecureSocket":{"RawSecureSocket":[],"RawSocket":[],"Stream":["RawSocketEvent"],"Stream.T":"RawSocketEvent"},"RawSocket":{"Stream":["RawSocketEvent"]},"Socket":{"Stream":["Uint8List"],"StringSink":[]},"TlsException":{"Exception":[]},"HandshakeException":{"Exception":[]},"NullRejectionException":{"Exception":[]},"Int8List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint8List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint8ClampedList":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Int16List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint16List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Int32List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint32List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Float32List":{"List":["double"],"EfficientLengthIterable":["double"],"Iterable":["double"]},"Float64List":{"List":["double"],"EfficientLengthIterable":["double"],"Iterable":["double"]},"P2shAddressType":{"BitcoinAddressType":[]},"PubKeyAddressType":{"BitcoinAddressType":[]},"P2pkhAddressType":{"BitcoinAddressType":[]},"SegwitAddresType":{"BitcoinAddressType":[]},"LegacyAddress":{"BitcoinBaseAddress":[]},"P2shAddress":{"BitcoinBaseAddress":[]},"P2pkhAddress":{"BitcoinBaseAddress":[]},"P2pkAddress":{"BitcoinBaseAddress":[]},"SegwitAddress":{"BitcoinBaseAddress":[]},"P2wpkhAddress":{"BitcoinBaseAddress":[]},"P2trAddress":{"BitcoinBaseAddress":[]},"P2wshAddress":{"BitcoinBaseAddress":[]},"BitcoinBasePluginException":{"BlockchainUtilsException":[],"Exception":[]},"BitcoinNetwork":{"BasedUtxoNetwork":[]},"LitecoinNetwork":{"BasedUtxoNetwork":[]},"DashNetwork":{"BasedUtxoNetwork":[]},"DogecoinNetwork":{"BasedUtxoNetwork":[]},"BitcoinCashNetwork":{"BasedUtxoNetwork":[]},"PepeNetwork":{"BasedUtxoNetwork":[]},"BitcoinSVNetwork":{"BasedUtxoNetwork":[]},"ElectrumBlockHeader":{"ElectrumRequest":["@","@"]},"ElectrumServerFeatures":{"ElectrumRequest":["@","@"]},"Base58ChecksumError":{"BlockchainUtilsException":[],"Exception":[]},"Bech32ChecksumError":{"BlockchainUtilsException":[],"Exception":[]},"AdaByronIcarusAddrEncoder":{"BlockchainAddressEncoder":[]},"AdaByronLegacyAddrEncoder":{"BlockchainAddressEncoder":[]},"AdaShelleyAddrEncoder":{"BlockchainAddressEncoder":[]},"AdaShelleyStakingAddrEncoder":{"BlockchainAddressEncoder":[]},"AlgoAddrEncoder":{"BlockchainAddressEncoder":[]},"AptosAddrEncoder":{"BlockchainAddressEncoder":[]},"AtomAddrEncoder":{"BlockchainAddressEncoder":[]},"AtomNist256P1AddrEncoder":{"BlockchainAddressEncoder":[]},"AvaxPChainAddrEncoder":{"BlockchainAddressEncoder":[]},"AvaxXChainAddrEncoder":{"BlockchainAddressEncoder":[]},"EgldAddrEncoder":{"BlockchainAddressEncoder":[]},"EosAddrEncoder":{"BlockchainAddressEncoder":[]},"ErgoP2PKHAddrEncoder":{"BlockchainAddressEncoder":[]},"EthAddrEncoder":{"BlockchainAddressEncoder":[]},"AddressConverterException":{"BlockchainUtilsException":[],"Exception":[]},"FilSecp256k1AddrEncoder":{"BlockchainAddressEncoder":[]},"IcxAddrEncoder":{"BlockchainAddressEncoder":[]},"InjAddrEncoder":{"BlockchainAddressEncoder":[]},"NanoAddrEncoder":{"BlockchainAddressEncoder":[]},"NearAddrEncoder":{"BlockchainAddressEncoder":[]},"NeoAddrEncoder":{"BlockchainAddressEncoder":[]},"OkexAddrEncoder":{"BlockchainAddressEncoder":[]},"OneAddrEncoder":{"BlockchainAddressEncoder":[]},"P2PKHAddrEncoder":{"BlockchainAddressEncoder":[]},"BchP2PKHAddrEncoder":{"BlockchainAddressEncoder":[]},"P2SHAddrEncoder":{"BlockchainAddressEncoder":[]},"BchP2SHAddrEncoder":{"BlockchainAddressEncoder":[]},"P2TRAddrEncoder":{"BlockchainAddressEncoder":[]},"P2WPKHAddrEncoder":{"BlockchainAddressEncoder":[]},"SolAddrEncoder":{"BlockchainAddressEncoder":[]},"SubstrateEd25519AddrEncoder":{"BlockchainAddressEncoder":[]},"SubstrateSr25519AddrEncoder":{"BlockchainAddressEncoder":[]},"SubstrateSecp256k1AddrEncoder":{"BlockchainAddressEncoder":[]},"TonAddrEncoder":{"BlockchainAddressEncoder":[]},"TrxAddrEncoder":{"BlockchainAddressEncoder":[]},"XlmAddrEncoder":{"BlockchainAddressEncoder":[]},"XmrAddrEncoder":{"BlockchainAddressEncoder":[]},"XrpAddrEncoder":{"BlockchainAddressEncoder":[]},"XtzAddrEncoder":{"BlockchainAddressEncoder":[]},"ZilAddrEncoder":{"BlockchainAddressEncoder":[]},"Bip32PathError":{"BlockchainUtilsException":[],"Exception":[]},"BipCoins":{"CryptoCoins":["BipCoinConfig"]},"Bip44Coins":{"CryptoCoins":["BipCoinConfig"]},"Bip49Coins":{"CryptoCoins":["BipCoinConfig"]},"Bip84Coins":{"CryptoCoins":["BipCoinConfig"]},"Bip86Coins":{"CryptoCoins":["BipCoinConfig"]},"BipBitcoinCashConf":{"BipCoinConfig":[],"CoinConfig":[]},"BipCoinConfig":{"CoinConfig":[]},"BipLitecoinConf":{"BipCoinConfig":[],"CoinConfig":[]},"Cip1852Coins":{"CryptoCoins":["BipCoinConfig"]},"CipProposal":{"BipProposal":[]},"Ed25519Blake2bPublicKey":{"IPublicKey":[]},"Ed25519PublicKey":{"IPublicKey":[]},"Ed25519KholawPublicKey":{"IPublicKey":[]},"Ed25519MoneroPublicKey":{"IPublicKey":[]},"Nist256p1PublicKey":{"IPublicKey":[]},"Secp256k1PublicKeyEcdsa":{"IPublicKey":[]},"Sr25519PublicKey":{"IPublicKey":[]},"MoneroCoinConf":{"CoinConfig":[]},"MoneroCoins":{"CryptoCoins":["MoneroCoinConf"]},"MoneroKeyError":{"BlockchainUtilsException":[],"Exception":[]},"MoneroPublicKey":{"IPublicKey":[]},"SubstrateCoinConf":{"CoinConfig":[]},"SubstrateCoins":{"CryptoCoins":["SubstrateCoinConf"]},"CborNumeric":{"CborObject":[]},"CborBaseUrlValue":{"CborObject":[]},"CborBigFloatValue":{"CborObject":[]},"CborBigIntValue":{"CborNumeric":[],"CborObject":[]},"CborBoleanValue":{"CborObject":[]},"CborBytesValue":{"CborObject":[]},"CborDynamicBytesValue":{"CborObject":[]},"CborTagValue":{"CborObject":[]},"CborEpochIntValue":{"CborObject":[]},"_CborDate":{"CborObject":[]},"CborStringDateValue":{"CborObject":[]},"CborEpochFloatValue":{"CborObject":[]},"CborDecimalFracValue":{"CborObject":[]},"CborFloatValue":{"CborObject":[]},"CborIntValue":{"CborNumeric":[],"CborObject":[]},"CborSafeIntValue":{"CborNumeric":[],"CborObject":[]},"CborListValue":{"CborObject":[]},"CborMapValue":{"CborObject":[]},"CborMimeValue":{"CborObject":[]},"CborNullValue":{"CborObject":[]},"CborUndefinedValue":{"CborObject":[]},"CborRegxpValue":{"CborObject":[]},"CborSetValue":{"CborObject":[]},"CborStringValue":{"CborObject":[]},"CborIndefiniteStringValue":{"CborObject":[]},"CborString":{"CborObject":[]},"CborUriValue":{"CborObject":[]},"AES":{"BlockCipher":[]},"ProjectiveECCPoint":{"AbstractPoint":[]},"EDPoint":{"AbstractPoint":[]},"RistrettoPoint":{"EDPoint":[],"AbstractPoint":[]},"SquareRootError":{"BlockchainUtilsException":[],"Exception":[]},"JacobiError":{"BlockchainUtilsException":[],"Exception":[]},"BlockchainUtilsException":{"Exception":[]},"ArgumentException":{"BlockchainUtilsException":[],"Exception":[]},"MessageException":{"BlockchainUtilsException":[],"Exception":[]},"RPCError":{"BlockchainUtilsException":[],"Exception":[]},"SequenceLayout":{"Layout":["List<1>"],"Layout.T":"List<1>"},"CompactOffsetLayout":{"ExternalLayout":[],"Layout":["int"],"Layout.T":"int"},"CompactBytes":{"Layout":["List<int>"],"Layout.T":"List<int>"},"ConstantLayout":{"Layout":["1"],"Layout.T":"1"},"CustomLayout":{"Layout":["2"],"Layout.T":"2"},"MapEntryLayout":{"Layout":["MapEntry<@,@>"],"Layout.T":"MapEntry<@,@>"},"NoneLayout":{"Layout":["@"],"Layout.T":"@"},"ExternalLayout":{"Layout":["int"]},"BaseIntiger":{"Layout":["1"]},"IntegerLayout":{"BaseIntiger":["int"],"Layout":["int"],"Layout.T":"int"},"UnionDiscriminatorLayout":{"Layout":["int"]},"UnionLayoutDiscriminatorLayout":{"Layout":["int"],"Layout.T":"int"},"OffsetLayout":{"ExternalLayout":[],"Layout":["int"],"Layout.T":"int"},"CompactIntLayout":{"Layout":["int"],"Layout.T":"int"},"OptionalLayout":{"Layout":["1?"],"Layout.T":"1?"},"PaddingLayout":{"Layout":["1"],"Layout.T":"1"},"RawBytesLayout":{"Layout":["List<int>"],"Layout.T":"List<int>"},"StructLayout":{"Layout":["Map<String,@>"],"Layout.T":"Map<String,@>"},"VariantLayout":{"Layout":["Map<String,@>"],"Layout.T":"Map<String,@>"},"Union":{"Layout":["Map<String,@>"],"Layout.T":"Map<String,@>"},"LayoutException":{"BlockchainUtilsException":[],"Exception":[]},"SS58ChecksumError":{"BlockchainUtilsException":[],"Exception":[]},"CanonicalizedMap":{"Map":["2","3"]},"TendermintRequestStatus":{"TendermintRequestParam":["Map<String,@>","Map<String,@>"],"TendermintRequestParam.0":"Map<String,@>","TendermintRequestParam.1":"Map<String,@>"},"ByteStream":{"StreamView":["List<int>"],"Stream":["List<int>"],"StreamView.T":"List<int>","Stream.T":"List<int>"},"ClientException":{"Exception":[]},"Request":{"BaseRequest":[]},"StreamedResponseV2":{"StreamedResponse":[]},"CaseInsensitiveMap":{"CanonicalizedMap":["String","String","1"],"Map":["String","1"],"CanonicalizedMap.K":"String","CanonicalizedMap.V":"1","CanonicalizedMap.C":"String"},"MRTNativePluginException":{"Exception":[]},"ApiProviderException":{"Exception":[]},"WalletException":{"Exception":[]},"_Live":{"LiveListenable":["1"]},"Live":{"_Live":["1"],"LiveListenable":["1"]},"APPImage":{"Equatable":[]},"WebsocketWeb":{"PlatformWebScoket":[]},"CustomCoins":{"CryptoCoins":["BipCoinConfig"]},"CustomProposal":{"BipProposal":[]},"AddressDerivationIndex":{"Equatable":[]},"Bip32AddressIndex":{"AddressDerivationIndex":[],"Equatable":[]},"MultiSigAddressIndex":{"AddressDerivationIndex":[],"Equatable":[]},"SubstrateAddressIndex":{"AddressDerivationIndex":[],"Equatable":[]},"BrowserCryptoWorker":{"IsolateCryptoWoker":[]},"BitcoinElectrumClient":{"BitcoinClient":["IBitcoinAddress"],"NetworkClient":["IBitcoinAddress","BaseBitcoinAPIProvider"]},"BitcoinExplorerApiProvider":{"BitcoinClient":["IBitcoinAddress"],"NetworkClient":["IBitcoinAddress","BaseBitcoinAPIProvider"]},"BitcoinClient":{"NetworkClient":["1","BaseBitcoinAPIProvider"]},"CardanoClient":{"NetworkClient":["ICardanoAddress","CardanoAPIProvider"]},"CosmosClient":{"NetworkClient":["ICosmosAddress","CosmosAPIProvider"]},"EthereumClient":{"NetworkClient":["IEthAddress","EthereumAPIProvider"]},"RippleClient":{"NetworkClient":["IXRPAddress","RippleAPIProvider"]},"SolanaClient":{"NetworkClient":["ISolanaAddress","SolanaAPIProvider"]},"SubstrateClient":{"NetworkClient":["ISubstrateAddress","SubstrateAPIProvider"]},"SubstrateGetApiAt":{"SubstrateRPCRequest":["String","+(MetadataApi,String)?"],"SubstrateRPCRequest.1":"+(MetadataApi,String)?","SubstrateRPCRequest.0":"String"},"SubstrateGetStateApi":{"SubstrateRPCRequest":["String","+(MetadataApi,String)?"],"SubstrateRPCRequest.1":"+(MetadataApi,String)?","SubstrateRPCRequest.0":"String"},"TonClient":{"NetworkClient":["ITonAddress","TonAPIProvider"]},"TronClient":{"NetworkClient":["ITronAddress","TronAPIProvider"]},"TronRequestGetAccountInfo":{"TVMRequestParam":["TronAccountInfo?","Map<String,@>"],"TVMRequestParam.0":"TronAccountInfo?","TVMRequestParam.1":"Map<String,@>"},"APIProvider":{"Equatable":[]},"BitcoinExplorerAPIProvider":{"BaseBitcoinAPIProvider":[],"APIProvider":[],"Equatable":[]},"ElectrumAPIProvider":{"BaseBitcoinAPIProvider":[],"APIProvider":[],"Equatable":[]},"BaseBitcoinAPIProvider":{"APIProvider":[],"Equatable":[]},"CardanoAPIProvider":{"APIProvider":[],"Equatable":[]},"CosmosAPIProvider":{"APIProvider":[],"Equatable":[]},"EthereumAPIProvider":{"APIProvider":[],"Equatable":[]},"RippleAPIProvider":{"APIProvider":[],"Equatable":[]},"SolanaAPIProvider":{"APIProvider":[],"Equatable":[]},"SubstrateAPIProvider":{"APIProvider":[],"Equatable":[]},"TonAPIProvider":{"APIProvider":[],"Equatable":[]},"TronAPIProvider":{"APIProvider":[],"Equatable":[]},"HTTPService":{"BaseServiceProtocol":["1"]},"BaseSocketService":{"BaseServiceProtocol":["1"]},"SSLService":{"BaseServiceProtocol":["1"]},"TCPService":{"BaseServiceProtocol":["1"]},"WebSocketService":{"BaseServiceProtocol":["1"]},"ElectrumSSLSocketService":{"SSLService":["ElectrumAPIProvider"],"BaseServiceProtocol":["ElectrumAPIProvider"],"BitcoinBaseElectrumRPCService":[],"SSLService.T":"ElectrumAPIProvider"},"ElectrumSocketService":{"TCPService":["ElectrumAPIProvider"],"BaseServiceProtocol":["ElectrumAPIProvider"],"BitcoinBaseElectrumRPCService":[],"TCPService.T":"ElectrumAPIProvider"},"ElectrumWebsocketService":{"WebSocketService":["ElectrumAPIProvider"],"BaseServiceProtocol":["ElectrumAPIProvider"],"BitcoinBaseElectrumRPCService":[],"WebSocketService.T":"ElectrumAPIProvider"},"BitcoinHTTPService":{"BaseServiceProtocol":["BitcoinExplorerAPIProvider"],"ApiService":[]},"CardanoHTTPService":{"BaseServiceProtocol":["CardanoAPIProvider"],"BlockfrostServiceProvider":[]},"TendermintHTTPService":{"BaseServiceProtocol":["CosmosAPIProvider"],"TendermintServiceProvider":[]},"EthereumHTTPService":{"BaseServiceProtocol":["EthereumAPIProvider"],"JSONRPCService":[]},"RippleHTTPService":{"BaseServiceProtocol":["RippleAPIProvider"],"RpcService":[]},"SolanaHTTPService":{"BaseServiceProtocol":["SolanaAPIProvider"],"SolanaJSONRPCService":[]},"SubstrateHttpService":{"BaseServiceProtocol":["SubstrateAPIProvider"],"SubstrateRPCService":[]},"TonHTTPService":{"BaseServiceProtocol":["TonAPIProvider"],"TonServiceProvider":[]},"TronHTTPService":{"BaseServiceProtocol":["TronAPIProvider"],"TronServiceProvider":[]},"EthereumWebsocketService":{"WebSocketService":["EthereumAPIProvider"],"BaseServiceProtocol":["EthereumAPIProvider"],"JSONRPCService":[],"WebSocketService.T":"EthereumAPIProvider"},"RippleWebsocketService":{"WebSocketService":["RippleAPIProvider"],"BaseServiceProtocol":["RippleAPIProvider"],"RpcService":[],"WebSocketService.T":"RippleAPIProvider"},"IBitcoinCashAddress":{"IBitcoinAddress":[],"ChainAccount":["BitcoinBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"IBitcoinCashMultiSigAddress":{"IBitcoinAddress":[],"ChainAccount":["BitcoinBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"IBitcoinAddress":{"ChainAccount":["BitcoinBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"IBitcoinMultiSigAddress":{"IBitcoinAddress":[],"ChainAccount":["BitcoinBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"BitcoinMultiSigSignerDetais":{"Equatable":[]},"ICardanoAddress":{"ChainAccount":["ADAAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"ICosmosAddress":{"ChainAccount":["CosmosBaseAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"IEthAddress":{"ChainAccount":["ETHAddress","ETHERC20Token","NFTCore"],"Equatable":[]},"ISolanaAddress":{"ChainAccount":["SolAddress","SolanaSPLToken","NFTCore"],"Equatable":[]},"ISubstrateAddress":{"ChainAccount":["SubstrateAddress","TokenCore<@>","NFTCore"],"Equatable":[]},"ITonAddress":{"ChainAccount":["TonAddress","TonJettonToken","NFTCore"],"Equatable":[]},"TronMultiSigSignerDetais":{"Equatable":[]},"TronMultiSignatureAddress":{"Equatable":[]},"ITronAddress":{"ChainAccount":["TronAddress","TronToken","NFTCore"],"Equatable":[]},"ITronMultisigAddress":{"ITronAddress":[],"ChainAccount":["TronAddress","TronToken","NFTCore"],"Equatable":[]},"RippleMultiSigSignerDetais":{"Equatable":[]},"RippleMultiSignatureAddress":{"Equatable":[]},"IXRPAddress":{"ChainAccount":["XRPAddress","RippleIssueToken","RippleNFToken"],"Equatable":[]},"IXRPMultisigAddress":{"IXRPAddress":[],"ChainAccount":["XRPAddress","RippleIssueToken","RippleNFToken"],"Equatable":[]},"EthereumChain":{"Chain":["EthereumAPIProvider","EthereumNetworkParams","ETHAddress","ETHERC20Token","NFTCore","IEthAddress","WalletEthereumNetwork","EthereumClient"],"Chain.6":"WalletEthereumNetwork","Chain.7":"EthereumClient","Chain.5":"IEthAddress","Chain.2":"ETHAddress"},"SolanaChain":{"Chain":["SolanaAPIProvider","SolanaNetworkParams","SolAddress","SolanaSPLToken","NFTCore","ISolanaAddress","WalletSolanaNetwork","SolanaClient"],"Chain.6":"WalletSolanaNetwork","Chain.7":"SolanaClient","Chain.5":"ISolanaAddress","Chain.2":"SolAddress"},"TronChain":{"Chain":["TronAPIProvider","TronNetworkParams","TronAddress","TronToken","NFTCore","ITronAddress","WalletTronNetwork","TronClient"],"Chain.6":"WalletTronNetwork","Chain.7":"TronClient","Chain.5":"ITronAddress","Chain.2":"TronAddress"},"ADAChain":{"Chain":["CardanoAPIProvider","CardanoNetworkParams","ADAAddress","TokenCore<@>","NFTCore","ICardanoAddress","WalletCardanoNetwork","CardanoClient"],"Chain.6":"WalletCardanoNetwork","Chain.7":"CardanoClient","Chain.5":"ICardanoAddress","Chain.2":"ADAAddress"},"BitcoinChain":{"Chain":["BaseBitcoinAPIProvider","BitcoinParams","BitcoinBaseAddress","TokenCore<@>","NFTCore","IBitcoinAddress","WalletBitcoinNetwork","BitcoinClient<IBitcoinAddress>"],"Chain.6":"WalletBitcoinNetwork","Chain.7":"BitcoinClient<IBitcoinAddress>","Chain.5":"IBitcoinAddress","Chain.2":"BitcoinBaseAddress"},"CosmosChain":{"Chain":["CosmosAPIProvider","CosmosNetworkParams","CosmosBaseAddress","TokenCore<@>","NFTCore","ICosmosAddress","WalletCosmosNetwork","CosmosClient"],"Chain.6":"WalletCosmosNetwork","Chain.7":"CosmosClient","Chain.5":"ICosmosAddress","Chain.2":"CosmosBaseAddress"},"SubstrateChain":{"Chain":["SubstrateAPIProvider","SubstrateNetworkParams","SubstrateAddress","TokenCore<@>","NFTCore","ISubstrateAddress","WalletPolkadotNetwork","SubstrateClient"],"Chain.6":"WalletPolkadotNetwork","Chain.7":"SubstrateClient","Chain.5":"ISubstrateAddress","Chain.2":"SubstrateAddress"},"TonChain":{"Chain":["TonAPIProvider","TonNetworkParams","TonAddress","TonJettonToken","NFTCore","ITonAddress","WalletTonNetwork","TonClient"],"Chain.6":"WalletTonNetwork","Chain.7":"TonClient","Chain.5":"ITonAddress","Chain.2":"TonAddress"},"RippleChain":{"Chain":["RippleAPIProvider","RippleNetworkParams","XRPAddress","RippleIssueToken","RippleNFToken","IXRPAddress","WalletXRPNetwork","RippleClient"],"Chain.6":"WalletXRPNetwork","Chain.7":"RippleClient","Chain.5":"IXRPAddress","Chain.2":"XRPAddress"},"BitcoinContact":{"ContactCore":["BitcoinBaseAddress"],"Equatable":[]},"CardanoContact":{"ContactCore":["ADAAddress"],"Equatable":[]},"CosmosContact":{"ContactCore":["CosmosBaseAddress"],"Equatable":[]},"EthereumContract":{"ContactCore":["ETHAddress"],"Equatable":[]},"SolanaContact":{"ContactCore":["SolAddress"],"Equatable":[]},"SubstrateContact":{"ContactCore":["SubstrateAddress"],"Equatable":[]},"TonContact":{"ContactCore":["TonAddress"],"Equatable":[]},"TronContact":{"ContactCore":["TronAddress"],"Equatable":[]},"RippleContact":{"ContactCore":["XRPAddress"],"Equatable":[]},"WalletNetwork":{"Equatable":[]},"WalletBitcoinNetwork":{"WalletNetwork":["BitcoinParams"],"Equatable":[]},"WalletXRPNetwork":{"WalletNetwork":["RippleNetworkParams"],"Equatable":[]},"WalletEthereumNetwork":{"WalletNetwork":["EthereumNetworkParams"],"Equatable":[]},"WalletTronNetwork":{"WalletNetwork":["TronNetworkParams"],"Equatable":[]},"WalletSolanaNetwork":{"WalletNetwork":["SolanaNetworkParams"],"Equatable":[]},"WalletCardanoNetwork":{"WalletNetwork":["CardanoNetworkParams"],"Equatable":[]},"WalletCosmosNetwork":{"WalletNetwork":["CosmosNetworkParams"],"Equatable":[]},"WalletTonNetwork":{"WalletNetwork":["TonNetworkParams"],"Equatable":[]},"WalletPolkadotNetwork":{"WalletNetwork":["SubstrateNetworkParams"],"Equatable":[]},"WalletBitcoinCashNetwork":{"WalletBitcoinNetwork":[],"WalletNetwork":["BitcoinParams"],"Equatable":[]},"WalletKusamaNetwork":{"WalletPolkadotNetwork":[],"WalletNetwork":["SubstrateNetworkParams"],"Equatable":[]},"BitcoinParams":{"NetworkCoinParams":["BaseBitcoinAPIProvider"],"NetworkCoinParams.0":"BaseBitcoinAPIProvider"},"CardanoNetworkParams":{"NetworkCoinParams":["CardanoAPIProvider"],"NetworkCoinParams.0":"CardanoAPIProvider"},"CosmosNetworkParams":{"NetworkCoinParams":["CosmosAPIProvider"],"NetworkCoinParams.0":"CosmosAPIProvider"},"EthereumNetworkParams":{"NetworkCoinParams":["EthereumAPIProvider"],"NetworkCoinParams.0":"EthereumAPIProvider"},"RippleNetworkParams":{"NetworkCoinParams":["RippleAPIProvider"],"NetworkCoinParams.0":"RippleAPIProvider"},"SolanaNetworkParams":{"NetworkCoinParams":["SolanaAPIProvider"],"NetworkCoinParams.0":"SolanaAPIProvider"},"SubstrateNetworkParams":{"NetworkCoinParams":["SubstrateAPIProvider"],"NetworkCoinParams.0":"SubstrateAPIProvider"},"TonNetworkParams":{"NetworkCoinParams":["TonAPIProvider"],"NetworkCoinParams.0":"TonAPIProvider"},"TronNetworkParams":{"NetworkCoinParams":["TronAPIProvider"],"NetworkCoinParams.0":"TronAPIProvider"},"CardanoAddrDetails":{"Equatable":[]},"SolanaWeb3TransactionSignResponse":{"SolanaWeb3TransactionResponse":[]},"SolanaWeb3TransactionSendResponse":{"SolanaWeb3TransactionResponse":[]},"SolanaWeb3TransactionErrorResponse":{"SolanaWeb3TransactionResponse":[]},"PermissionKeys":{"Equatable":[]},"RippleNFToken":{"NFTCore":[],"Equatable":[]},"ETHERC20Token":{"TokenCore":["BigInt"],"Equatable":[]},"RippleIssueToken":{"TokenCore":["BigRational"],"Equatable":[]},"TonJettonToken":{"TokenCore":["BigInt"],"Equatable":[]},"SolanaSPLToken":{"TokenCore":["BigInt"],"Equatable":[]},"TronTRC10Token":{"TronToken":[],"TokenCore":["BigInt"],"Equatable":[]},"TronToken":{"TokenCore":["BigInt"]},"TronTRC20Token":{"TronToken":[],"TokenCore":["BigInt"],"Equatable":[]},"Token":{"Equatable":[]},"Web3RequestException":{"Exception":[]},"Web3ChainMessage":{"Web3MessageCore":[]},"Web3ExceptionMessage":{"Web3MessageCore":[]},"Web3ResponseMessage":{"Web3MessageCore":[]},"Web3WalletResponseMessage":{"Web3ResponseMessage":[],"Web3MessageCore":[]},"Web3ChainAccount":{"Equatable":[]},"Web3GlobalRequestParams":{"Web3MessageCore":[]},"Web3RequestParams":{"Web3GlobalRequestParams":["1"],"Web3MessageCore":[]},"Web3EthereumPermissionRequestParam":{"Web3EthereumRequestParam":["Web3EthereumChain"],"Web3RequestParams":["Web3EthereumChain","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["Web3EthereumChain"],"Web3MessageCore":[]},"Web3EthereumRequestParam":{"Web3RequestParams":["1","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["1"],"Web3MessageCore":[]},"Web3EthereumAddNewChain":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthreumPersonalSign":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthreumRequestAccounts":{"Web3EthereumRequestParam":["Web3EthereumChain"],"Web3RequestParams":["Web3EthereumChain","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["Web3EthereumChain"],"Web3MessageCore":[]},"Web3EthreumSendTransaction":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthreumTypdedData":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthreumSwitchChain":{"Web3EthereumRequestParam":["String"],"Web3RequestParams":["String","ETHAddress","EthereumChain","Web3EthereumChainAccount","Web3EthereumChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3EthereumChainAccount":{"Web3ChainAccount":["ETHAddress"],"Equatable":[],"Web3ChainAccount.0":"ETHAddress"},"Web3EthereumChain":{"Web3Chain":["ETHAddress","EthereumChain","Web3EthereumChainAccount"],"Web3Chain.2":"Web3EthereumChainAccount"},"Web3DisconnectApplication":{"Web3GlobalRequestParams":["@"],"Web3MessageCore":[]},"Web3SolanaPermissionRequestParam":{"Web3SolanaRequestParam":["Web3SolanaChain"],"Web3RequestParams":["Web3SolanaChain","SolAddress","SolanaChain","Web3SolanaChainAccount","Web3SolanaChain"],"Web3GlobalRequestParams":["Web3SolanaChain"],"Web3MessageCore":[]},"Web3SolanaRequestParam":{"Web3RequestParams":["1","SolAddress","SolanaChain","Web3SolanaChainAccount","Web3SolanaChain"],"Web3GlobalRequestParams":["1"],"Web3MessageCore":[]},"Web3SolanaRequestAccounts":{"Web3SolanaRequestParam":["Web3SolanaChain"],"Web3RequestParams":["Web3SolanaChain","SolAddress","SolanaChain","Web3SolanaChainAccount","Web3SolanaChain"],"Web3GlobalRequestParams":["Web3SolanaChain"],"Web3MessageCore":[]},"Web3SolanaSignMessage":{"Web3SolanaRequestParam":["List<int>"],"Web3RequestParams":["List<int>","SolAddress","SolanaChain","Web3SolanaChainAccount","Web3SolanaChain"],"Web3GlobalRequestParams":["List<int>"],"Web3MessageCore":[]},"Web3SolanaSendTransaction":{"Web3SolanaRequestParam":["List<Map<String,@>>"],"Web3RequestParams":["List<Map<String,@>>","SolAddress","SolanaChain","Web3SolanaChainAccount","Web3SolanaChain"],"Web3GlobalRequestParams":["List<Map<String,@>>"],"Web3MessageCore":[]},"Web3SolanaChainAccount":{"Web3ChainAccount":["SolAddress"],"Equatable":[],"Web3ChainAccount.0":"SolAddress"},"Web3SolanaChain":{"Web3Chain":["SolAddress","SolanaChain","Web3SolanaChainAccount"],"Web3Chain.2":"Web3SolanaChainAccount"},"Web3TronPermissionRequestParam":{"Web3TronRequestParam":["Web3TronChain"],"Web3RequestParams":["Web3TronChain","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["Web3TronChain"],"Web3MessageCore":[]},"Web3TronRequestParam":{"Web3RequestParams":["1","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["1"],"Web3MessageCore":[]},"Web3TronRequestAccounts":{"Web3TronRequestParam":["Web3TronChain"],"Web3RequestParams":["Web3TronChain","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["Web3TronChain"],"Web3MessageCore":[]},"Web3TronSignMessageV2":{"Web3TronRequestParam":["String"],"Web3RequestParams":["String","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["String"],"Web3MessageCore":[]},"Web3TronSendTransaction":{"Web3TronRequestParam":["Map<String,@>"],"Web3RequestParams":["Map<String,@>","TronAddress","TronChain","Web3TronChainAccount","Web3TronChain"],"Web3GlobalRequestParams":["Map<String,@>"],"Web3MessageCore":[]},"Web3TronChainAccount":{"Web3ChainAccount":["TronAddress"],"Equatable":[],"Web3ChainAccount.0":"TronAddress"},"Web3TronChain":{"Web3Chain":["TronAddress","TronChain","Web3TronChainAccount"],"Web3Chain.2":"Web3TronChainAccount"},"ADAByronAddress":{"ADAAddress":[]},"ADAPointerAddress":{"ADAAddress":[]},"ADARewardAddress":{"ADAAddress":[]},"ADABaseAddress":{"ADAAddress":[]},"ADAShellyAddress":{"ADAAddress":[]},"ADAEnterpriseAddress":{"ADAAddress":[]},"StakeCred":{"FixedBytes":[],"Comparable":["FixedBytes"]},"StakeCredKey":{"StakeCred":[],"FixedBytes":[],"Comparable":["FixedBytes"]},"StakeCredScript":{"StakeCred":[],"FixedBytes":[],"Comparable":["FixedBytes"]},"FixedBytes":{"Comparable":["FixedBytes"]},"BlockfrostRequestBackendHealthStatus":{"BlockforestRequestParam":["bool","Map<String,@>"]},"BlockfrostError":{"BlockchainUtilsException":[],"Exception":[]},"ETHAddress":{"SolidityAddress":[]},"RPCGetChainId":{"ETHRPCRequest":["BigInt"]},"SolanaPluginException":{"BlockchainUtilsException":[],"Exception":[]},"SolanaRPCGetGenesisHash":{"SolanaRPCRequest":["String"],"SolanaRPCRequest.T":"String"},"Message":{"VersionedMessage":[]},"MessageV0":{"VersionedMessage":[]},"Eip712TypedData":{"EIP712Base":[]},"EIP712Legacy":{"EIP712Base":[]},"SolidityAbiException":{"BlockchainUtilsException":[],"Exception":[]},"AddressCoder":{"ABICoder":["SolidityAddress"]},"ArrayCoder":{"ABICoder":["List<@>"]},"BooleanCoder":{"ABICoder":["bool"]},"BytesCoder":{"ABICoder":["List<int>"]},"FunctionCoder":{"ABICoder":["List<int>"]},"NumbersCoder":{"ABICoder":["BigInt"]},"StringCoder":{"ABICoder":["String"]},"TupleCoder":{"ABICoder":["List<@>"]},"TronAddress":{"SolidityAddress":[]},"TronPluginException":{"BlockchainUtilsException":[],"Exception":[]},"AccountCreateContract":{"TronBaseContract":[]},"AccountPermissionUpdateContract":{"TronBaseContract":[]},"AccountType":{"TronEnumerate":[]},"AccountUpdateContract":{"TronBaseContract":[]},"PermissionType":{"TronEnumerate":[]},"SetAccountIdContract":{"TronBaseContract":[]},"AssetIssueContract":{"TronBaseContract":[]},"ParticipateAssetIssueContract":{"TronBaseContract":[]},"TransferAssetContract":{"TronBaseContract":[]},"UnfreezeAssetContract":{"TronBaseContract":[]},"UpdateAssetContract":{"TronBaseContract":[]},"CancelAllUnfreezeV2Contract":{"TronBaseContract":[]},"DelegateResourceContract":{"TronBaseContract":[]},"FreezeBalanceContract":{"TronBaseContract":[]},"FreezeBalanceV2Contract":{"TronBaseContract":[]},"TransferContract":{"TronBaseContract":[]},"UnDelegateResourceContract":{"TronBaseContract":[]},"UnfreezeBalanceContract":{"TronBaseContract":[]},"UnfreezeBalanceV2Contract":{"TronBaseContract":[]},"WithdrawBalanceContract":{"TronBaseContract":[]},"WithdrawExpireUnfreezeContract":{"TronBaseContract":[]},"ResourceCode":{"TronEnumerate":[]},"TransactionContractType":{"TronEnumerate":[]},"ExchangeCreateContract":{"TronBaseContract":[]},"ExchangeInjectContract":{"TronBaseContract":[]},"ExchangeTransactionContract":{"TronBaseContract":[]},"ExchangeWithdrawContract":{"TronBaseContract":[]},"MarketCancelOrderContract":{"TronBaseContract":[]},"MarketSellAssetContract":{"TronBaseContract":[]},"ProposalApproveContract":{"TronBaseContract":[]},"ProposalCreateContract":{"TronBaseContract":[]},"ProposalDeleteContract":{"TronBaseContract":[]},"ShieldedTransferContract":{"TronBaseContract":[]},"SmartContractAbiEntryType":{"TronEnumerate":[]},"SmartContractAbiStateMutabilityType":{"TronEnumerate":[]},"ClearABIContract":{"TronBaseContract":[]},"CreateSmartContract":{"TronBaseContract":[]},"TriggerSmartContract":{"TronBaseContract":[]},"UpdateEnergyLimitContract":{"TronBaseContract":[]},"UpdateSettingContract":{"TronBaseContract":[]},"UpdateBrokerageContract":{"TronBaseContract":[]},"VoteAssetContract":{"TronBaseContract":[]},"VoteWitnessContract":{"TronBaseContract":[]},"WitnessUpdateContract":{"TronBaseContract":[]},"WitnessCreateContract":{"TronBaseContract":[]},"TronRequestGetBlockByNum":{"TVMRequestParam":["Map<String,@>","Map<String,@>"],"TVMRequestParam.0":"Map<String,@>","TVMRequestParam.1":"Map<String,@>"},"PathException":{"Exception":[]},"PosixStyle":{"InternalStyle":[]},"UrlStyle":{"InternalStyle":[]},"WindowsStyle":{"InternalStyle":[]},"SubstrateMetadata":{"SubstrateSerialization":["1"]},"MetadataException":{"BlockchainUtilsException":[],"Exception":[]},"TypeDefOption":{"SubstrateSerialization":["1"],"ScaleTypeDef":[]},"UnsupportedMetadata":{"SubstrateMetadata":["List<int>"],"SubstrateSerialization":["List<int>"]},"Si0TypeDefPrimitive":{"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1Field":{"SubstrateSerialization":["Map<String,@>"]},"Si1TypeDefHistoricMetaCompat":{"Si1TypeDef":["String"],"SubstrateSerialization":["String"],"ScaleTypeDef":[]},"Si1Type":{"SubstrateSerialization":["Map<String,@>"]},"Si1TypeDef":{"SubstrateSerialization":["1"],"ScaleTypeDef":[]},"Si1TypeDefArray":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefBitSequence":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefCompact":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefComposite":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefPrimitive":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefSequence":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeDefTuple":{"Si1TypeDef":["List<int>"],"SubstrateSerialization":["List<int>"],"ScaleTypeDef":[]},"Si1TypeDefVariant":{"Si1TypeDef":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"ScaleTypeDef":[]},"Si1TypeParameter":{"SubstrateSerialization":["Map<String,@>"]},"Si1Variant":{"SubstrateSerialization":["Map<String,@>"]},"StorageHasherV14":{"SubstrateSerialization":["Map<String,@>"]},"StorageHasherV11":{"SubstrateSerialization":["Map<String,@>"]},"StorageEntryModifierV14":{"StorageEntryModifierV9":[],"SubstrateSerialization":["Map<String,@>"]},"ExtrinsicMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"MetadataV14":{"SubstrateMetadata":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"LatestMetadataInterface":[]},"PalletCallMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletConstantMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletErrorMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletEventMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PalletStorageMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"PortableRegistryV14":{"SubstrateSerialization":["Map<String,@>"]},"PortableTypeV14":{"SubstrateSerialization":["Map<String,@>"]},"SignedExtensionMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"StorageEntryTypeV14":{"SubstrateSerialization":["1"]},"StorageEntryTypeV14Map":{"StorageEntryTypeV14":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"]},"StorageEntryTypeV14Plain":{"StorageEntryTypeV14":["int"],"SubstrateSerialization":["int"]},"StorageEntryMetadataV14":{"SubstrateSerialization":["Map<String,@>"]},"CustomMetadata15":{"SubstrateSerialization":["Map<String,@>"]},"CustomValueMetadata15":{"SubstrateSerialization":["Map<String,@>"]},"ExtrinsicMetadataV15":{"SubstrateSerialization":["Map<String,@>"]},"MetadataV15":{"SubstrateMetadata":["Map<String,@>"],"SubstrateSerialization":["Map<String,@>"],"LatestMetadataInterface":[]},"OuterEnums15":{"SubstrateSerialization":["Map<String,@>"]},"PalletMetadataV15":{"PalletMetadataV14":[],"SubstrateSerialization":["Map<String,@>"]},"RuntimeApiMetadataV15":{"SubstrateSerialization":["Map<String,@>"]},"RuntimeApiMethodMetadataV15":{"SubstrateSerialization":["Map<String,@>"]},"RuntimeApiMethodParamMetadataV15":{"SubstrateSerialization":["Map<String,@>"]},"StorageEntryModifierV9":{"SubstrateSerialization":["Map<String,@>"]},"VersionedMetadata":{"SubstrateSerialization":["Map<String,@>"]},"SubstrateBlockHash":{"SubstrateSerialization":["List<int>"]},"ScaleFixedBytes":{"SubstrateSerialization":["List<int>"]},"SubstrateHash256":{"SubstrateSerialization":["List<int>"]},"SubstrateRPCChainGetBlockHash":{"SubstrateRPCRequest":["String","String"],"SubstrateRPCRequest.1":"String","SubstrateRPCRequest.0":"String"},"SubstrateRPCRuntimeMetadataGetVersions":{"SubstrateRPCRequest":["String","List<int>"],"SubstrateRPCRequest.1":"List<int>","SubstrateRPCRequest.0":"String"},"FileLocation":{"SourceLocation":[],"Comparable":["SourceLocation"]},"_FileSpan":{"SourceSpanWithContext":[],"SourceSpan":[],"Comparable":["SourceSpan"]},"SourceLocation":{"Comparable":["SourceLocation"]},"SourceLocationMixin":{"SourceLocation":[],"Comparable":["SourceLocation"]},"SourceSpan":{"Comparable":["SourceSpan"]},"SourceSpanBase":{"SourceSpan":[],"Comparable":["SourceSpan"]},"SourceSpanException":{"Exception":[]},"SourceSpanFormatException":{"FormatException":[],"Exception":[]},"SourceSpanMixin":{"SourceSpan":[],"Comparable":["SourceSpan"]},"SourceSpanWithContext":{"SourceSpan":[],"Comparable":["SourceSpan"]},"StringScannerException":{"FormatException":[],"Exception":[]},"TonContractException":{"BlockchainUtilsException":[],"Exception":[]},"TonDartPluginException":{"BlockchainUtilsException":[],"Exception":[]},"TonCenterPostRequestParam":{"TonApiRequestParam":["1","2"]},"TonApiError":{"BlockchainUtilsException":[],"Exception":[]},"TonApiGetBlockchainMasterchainHead":{"TonApiRequestParam":["BlockchainBlockResponse","Map<String,@>"],"TonApiRequestParam.0":"BlockchainBlockResponse","TonApiRequestParam.1":"Map<String,@>"},"TonCenterGetMasterchainInfo":{"TonApiRequestParam":["Map<String,@>","Map<String,@>"],"TonApiRequestParam.0":"Map<String,@>","TonApiRequestParam.1":"Map<String,@>"},"_EventStream":{"Stream":["1"],"Stream.T":"1"},"_EventStreamSubscription":{"StreamSubscription":["1"]},"RPCServerState":{"XRPLedgerRequest":["XRPLedgerState"]},"XRPLAddressCodecException":{"BlockchainUtilsException":[],"Exception":[]},"ClientMessageEthereum":{"PageMessage":[]},"JSWalletMessageResponseEthereum":{"JSWalletMessage":[]},"EthereumWeb3State":{"ChainWeb3State":["ETHAddress","EthereumChain","Web3EthereumChain"],"ChainWeb3State.1":"EthereumChain","ChainWeb3State.2":"Web3EthereumChain"},"JSWalletMessageResponse":{"JSWalletMessage":[]},"JSWalletNetworkEvent":{"JSWalletMessage":[]},"ClientMessageSolana":{"PageMessage":[]},"JSWalletMessageResponseSolana":{"JSWalletMessage":[]},"SolanaWeb3State":{"ChainWeb3State":["SolAddress","SolanaChain","Web3SolanaChain"],"ChainWeb3State.1":"SolanaChain","ChainWeb3State.2":"Web3SolanaChain"},"ClientMessageTron":{"PageMessage":[]},"JSWalletMessageResponseTron":{"JSWalletMessage":[]},"TronWeb3State":{"ChainWeb3State":["TronAddress","TronChain","Web3TronChain"],"ChainWeb3State.1":"TronChain","ChainWeb3State.2":"Web3TronChain"}}'));
   A._Universe_addErasedTypes(init.typeUniverse, JSON.parse('{"UnmodifiableListBase":1,"__CastListBase__CastIterableBase_ListMixin":2,"NativeTypedArray":1,"_DelayedEvent":1,"UnmodifiableMapBase":2,"_SetBase":1,"Converter":2,"BitcoinNetworkAddress":1,"HTTPService":1,"BaseSocketService":1,"CryptoAddress":1,"SubstrateMetadata":1,"TonCenterPostRequestParam":2,"JSNetworkHandler":5}'));
   var string$ = {
     x20must_: " must not be greater than the number of characters in the file, ",
     x27__Ple: "': Please ensure that the arguments for '",
     x3000000: "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+    x35eykt4: "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
     x3723700: "7237005577332262213973186563042994240857116359379907606001950938285454250989",
     ABCDEF: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
     Cannotff: "Cannot extract a file path from a URI with a fragment component",
@@ -58465,10 +60780,14 @@
       ChainsHandler: findType("ChainsHandler"),
       Cip1852Coins: findType("Cip1852Coins"),
       ClientMessageEthereum: findType("ClientMessageEthereum"),
+      ClientMessageSolana: findType("ClientMessageSolana"),
       ClientMessageTron: findType("ClientMessageTron"),
+      ClientSolanaTransactionMessage: findType("ClientSolanaTransactionMessage"),
       CodeUnits: findType("CodeUnits"),
       CoingeckoCoin: findType("CoingeckoCoin"),
       Comparable_dynamic: findType("Comparable<@>"),
+      CompiledInstruction: findType("CompiledInstruction"),
+      ConstantLayout_dynamic: findType("ConstantLayout<@>"),
       ContactCore_ADAAddress: findType("ContactCore<ADAAddress>"),
       ContactCore_BitcoinBaseAddress: findType("ContactCore<BitcoinBaseAddress>"),
       ContactCore_CosmosBaseAddress: findType("ContactCore<CosmosBaseAddress>"),
@@ -58487,8 +60806,10 @@
       CryptoCoins_CoinConfig: findType("CryptoCoins<CoinConfig>"),
       CurveFp: findType("CurveFp"),
       CustomCoins: findType("CustomCoins"),
+      CustomLayout_of_List_int_and_SolAddress: findType("CustomLayout<List<int>,SolAddress>"),
       CustomLayout_of_List_int_and_String: findType("CustomLayout<List<int>,String>"),
       CustomLayout_of_Map_String_dynamic_and_Map_String_dynamic: findType("CustomLayout<Map<String,@>,Map<String,@>>"),
+      CustomLayout_of_Map_String_dynamic_and_dynamic: findType("CustomLayout<Map<String,@>,@>"),
       CustomValueMetadata15: findType("CustomValueMetadata15"),
       DateTime: findType("DateTime"),
       Duration: findType("Duration"),
@@ -58510,7 +60831,7 @@
       EthereumAPIProvider: findType("EthereumAPIProvider"),
       EthereumChain: findType("EthereumChain"),
       EthereumClient: findType("EthereumClient"),
-      EthereumEvnetTypes: findType("EthereumEvnetTypes"),
+      EthereumEventTypes: findType("EthereumEventTypes"),
       EthereumMethods: findType("EthereumMethods"),
       EthereumSubscribeResult: findType("EthereumSubscribeResult"),
       EthereumWebsocketService: findType("EthereumWebsocketService"),
@@ -58548,6 +60869,7 @@
       Iterable_nullable_Object: findType("Iterable<Object?>"),
       JSArray_APIProvider: findType("JSArray<APIProvider>"),
       JSArray_AccountPermission: findType("JSArray<AccountPermission>"),
+      JSArray_AddressTableLookup: findType("JSArray<AddressTableLookup>"),
       JSArray_ApiRequest: findType("JSArray<ApiRequest>"),
       JSArray_AppPlatform: findType("JSArray<AppPlatform>"),
       JSArray_AssetV2: findType("JSArray<AssetV2>"),
@@ -58556,6 +60878,8 @@
       JSArray_BitcoinAddressType: findType("JSArray<BitcoinAddressType>"),
       JSArray_CborBytesValue: findType("JSArray<CborBytesValue>"),
       JSArray_CborObject: findType("JSArray<CborObject>"),
+      JSArray_ClientSolanaTransactionMessage: findType("JSArray<ClientSolanaTransactionMessage>"),
+      JSArray_CompiledInstruction: findType("JSArray<CompiledInstruction>"),
       JSArray_ContactCore_ADAAddress: findType("JSArray<ContactCore<ADAAddress>>"),
       JSArray_ContactCore_BitcoinBaseAddress: findType("JSArray<ContactCore<BitcoinBaseAddress>>"),
       JSArray_ContactCore_CosmosBaseAddress: findType("JSArray<ContactCore<CosmosBaseAddress>>"),
@@ -58582,6 +60906,7 @@
       JSArray_ITonAddress: findType("JSArray<ITonAddress>"),
       JSArray_ITronAddress: findType("JSArray<ITronAddress>"),
       JSArray_IXRPAddress: findType("JSArray<IXRPAddress>"),
+      JSArray_JSObject: findType("JSArray<JSObject>"),
       JSArray_JavaScriptFunction: findType("JSArray<JavaScriptFunction>"),
       JSArray_Layout_dynamic: findType("JSArray<Layout<@>>"),
       JSArray_List_BigInt: findType("JSArray<List<BigInt>>"),
@@ -58596,6 +60921,7 @@
       JSArray_RippleIssueToken: findType("JSArray<RippleIssueToken>"),
       JSArray_RippleNFToken: findType("JSArray<RippleNFToken>"),
       JSArray_SmartContractABIEntry: findType("JSArray<SmartContractABIEntry>"),
+      JSArray_SolAddress: findType("JSArray<SolAddress>"),
       JSArray_SolanaSPLToken: findType("JSArray<SolanaSPLToken>"),
       JSArray_String: findType("JSArray<String>"),
       JSArray_TokenCore_BigInt: findType("JSArray<TokenCore<BigInt>>"),
@@ -58605,6 +60931,8 @@
       JSArray_TronTRC20Token: findType("JSArray<TronTRC20Token>"),
       JSArray_UnfrozenV2: findType("JSArray<UnfrozenV2>"),
       JSArray_Web3EthereumChainAccount: findType("JSArray<Web3EthereumChainAccount>"),
+      JSArray_Web3SolanaChainAccount: findType("JSArray<Web3SolanaChainAccount>"),
+      JSArray_Web3SolanaSendTransactionData: findType("JSArray<Web3SolanaSendTransactionData>"),
       JSArray_Web3TronChainAccount: findType("JSArray<Web3TronChainAccount>"),
       JSArray__Highlight: findType("JSArray<_Highlight>"),
       JSArray__Line: findType("JSArray<_Line>"),
@@ -58612,6 +60940,7 @@
       JSArray_dynamic: findType("JSArray<@>"),
       JSArray_int: findType("JSArray<int>"),
       JSArray_nullable_CborObject: findType("JSArray<CborObject?>"),
+      JSArray_nullable_Object: findType("JSArray<Object?>"),
       JSArray_nullable_String: findType("JSArray<String?>"),
       JSArray_nullable_int: findType("JSArray<int?>"),
       JSArray_of_void_Function_EthereumSubscribeResult: findType("JSArray<~(EthereumSubscribeResult)>"),
@@ -58622,6 +60951,7 @@
       JSWalletMessage: findType("JSWalletMessage"),
       JSWalletMessageResponse: findType("JSWalletMessageResponse"),
       JSWalletMessageResponseEthereum: findType("JSWalletMessageResponseEthereum"),
+      JSWalletMessageResponseSolana: findType("JSWalletMessageResponseSolana"),
       JSWalletMessageResponseTron: findType("JSWalletMessageResponseTron"),
       JSWalletMessageType: findType("JSWalletMessageType"),
       JSWalletResponseType: findType("JSWalletResponseType"),
@@ -58638,10 +60968,12 @@
       List_APIProvider: findType("List<APIProvider>"),
       List_BigInt: findType("List<BigInt>"),
       List_Eip712TypeDetails: findType("List<Eip712TypeDetails>"),
+      List_JSObject: findType("List<JSObject>"),
       List_JavaScriptFunction: findType("List<JavaScriptFunction>"),
       List_List_BigInt: findType("List<List<BigInt>>"),
       List_List_int: findType("List<List<int>>"),
       List_Map_String_dynamic: findType("List<Map<String,@>>"),
+      List_Object: findType("List<Object>"),
       List_String: findType("List<String>"),
       List_double: findType("List<double>"),
       List_dynamic: findType("List<@>"),
@@ -58683,6 +61015,7 @@
       Object: findType("Object"),
       P2shAddressType: findType("P2shAddressType"),
       PaddingLayout_int: findType("PaddingLayout<int>"),
+      PageMessage: findType("PageMessage"),
       PageRequestCompeleter: findType("PageRequestCompeleter"),
       PalletConstantMetadataV14: findType("PalletConstantMetadataV14"),
       PalletMetadataV14: findType("PalletMetadataV14"),
@@ -58737,9 +61070,15 @@
       SocketRequestCompeleter: findType("SocketRequestCompeleter"),
       SolAddress: findType("SolAddress"),
       SolanaAPIProvider: findType("SolanaAPIProvider"),
+      SolanaChain: findType("SolanaChain"),
       SolanaClient: findType("SolanaClient"),
+      SolanaEventTypes: findType("SolanaEventTypes"),
       SolanaRequestDetails: findType("SolanaRequestDetails"),
       SolanaSPLToken: findType("SolanaSPLToken"),
+      SolanaWeb3TransactionResponse: findType("SolanaWeb3TransactionResponse"),
+      SolanaWeb3TransactionResponseType: findType("SolanaWeb3TransactionResponseType"),
+      SolanaWeb3TransactionSendResponse: findType("SolanaWeb3TransactionSendResponse"),
+      SolanaWeb3TransactionSignResponse: findType("SolanaWeb3TransactionSignResponse"),
       SolidityAddress: findType("SolidityAddress"),
       SourceLocation: findType("SourceLocation"),
       SourceSpan: findType("SourceSpan"),
@@ -58798,6 +61137,7 @@
       Tuple_of_List_int_and_List_int: findType("Tuple<List<int>,List<int>>"),
       Tuple_of_List_int_and_int: findType("Tuple<List<int>,int>"),
       Tuple_of_String_and_List_int: findType("Tuple<String,List<int>>"),
+      Tuple_of_VersionedMessage_and_List_List_int: findType("Tuple<VersionedMessage,List<List<int>>>"),
       Tuple_of_int_and_List_int: findType("Tuple<int,List<int>>"),
       TypeDefOption_dynamic: findType("TypeDefOption<@>"),
       TypeError: findType("TypeError"),
@@ -58840,6 +61180,11 @@
       Web3MessageCore: findType("Web3MessageCore"),
       Web3MessageTypes: findType("Web3MessageTypes"),
       Web3ResponseMessage: findType("Web3ResponseMessage"),
+      Web3SolanaChain: findType("Web3SolanaChain"),
+      Web3SolanaChainAccount: findType("Web3SolanaChainAccount"),
+      Web3SolanaRequestMethods: findType("Web3SolanaRequestMethods"),
+      Web3SolanaSendTransaction: findType("Web3SolanaSendTransaction"),
+      Web3SolanaSendTransactionData: findType("Web3SolanaSendTransactionData"),
       Web3TronChain: findType("Web3TronChain"),
       Web3TronChainAccount: findType("Web3TronChainAccount"),
       Web3TronRequestMethods: findType("Web3TronRequestMethods"),
@@ -58851,6 +61196,7 @@
       WhereTypeIterable_CborNumeric: findType("WhereTypeIterable<CborNumeric>"),
       WhereTypeIterable_CborStringValue: findType("WhereTypeIterable<CborStringValue>"),
       WhereTypeIterable_EthereumChain: findType("WhereTypeIterable<EthereumChain>"),
+      WhereTypeIterable_SolanaChain: findType("WhereTypeIterable<SolanaChain>"),
       WhereTypeIterable_String: findType("WhereTypeIterable<String>"),
       WhereTypeIterable_TronChain: findType("WhereTypeIterable<TronChain>"),
       XRPAddress: findType("XRPAddress"),
@@ -58921,6 +61267,7 @@
       nullable_List_int: findType("List<int>?"),
       nullable_Map_String_String: findType("Map<String,String>?"),
       nullable_Map_String_dynamic: findType("Map<String,@>?"),
+      nullable_Map_dynamic_dynamic: findType("Map<@,@>?"),
       nullable_MetadataApi: findType("MetadataApi?"),
       nullable_Object: findType("Object?"),
       nullable_PlatformWebScoket: findType("PlatformWebScoket?"),
@@ -58943,6 +61290,7 @@
       nullable_TronAccountInfo: findType("TronAccountInfo?"),
       nullable_TronAddress: findType("TronAddress?"),
       nullable_TronNetworkParams: findType("TronNetworkParams?"),
+      nullable_Web3SolanaSendTransactionOptions: findType("Web3SolanaSendTransactionOptions?"),
       nullable__DelayedEvent_dynamic: findType("_DelayedEvent<@>?"),
       nullable__FutureListener_dynamic_dynamic: findType("_FutureListener<@,@>?"),
       nullable__Highlight: findType("_Highlight?"),
@@ -58991,11 +61339,11 @@
     B.APIServiceStatus_2 = new A.APIServiceStatus("error");
     B.APIType_0 = new A.APIType("mempool");
     B.APIType_1 = new A.APIType("blockCypher");
-    B.List_empty4 = A._setArrayType(makeConstList([]), A.findType("JSArray<AbiParameter>"));
-    B.AbiParameter_AmO = new A.AbiParameter("", "uint256", B.List_empty4);
-    B.AbiParameter_O1c = new A.AbiParameter("", "bytes", B.List_empty4);
-    B.AbiParameter_qgB = new A.AbiParameter("", "bytes24", B.List_empty4);
-    B.AbiParameter_swd = new A.AbiParameter("", "uint32", B.List_empty4);
+    B.List_empty5 = A._setArrayType(makeConstList([]), A.findType("JSArray<AbiParameter>"));
+    B.AbiParameter_AmO = new A.AbiParameter("", "uint256", B.List_empty5);
+    B.AbiParameter_O1c = new A.AbiParameter("", "bytes", B.List_empty5);
+    B.AbiParameter_qgB = new A.AbiParameter("", "bytes24", B.List_empty5);
+    B.AbiParameter_swd = new A.AbiParameter("", "uint32", B.List_empty5);
     B.AccountType_0_Normal = new A.AccountType(0, "Normal");
     B.AdaStakeCredType_Key_0 = new A.AdaStakeCredType("Key", 0);
     B.AdaStakeCredType_Script_1 = new A.AdaStakeCredType("Script", 1);
@@ -59455,6 +61803,7 @@
     B.Cip1852Coins_cardanoIcarusTestnet = new A.Cip1852Coins("cardanoIcarusTestnet");
     B.Cip1852Coins_cardanoLedger = new A.Cip1852Coins("cardanoLedger");
     B.Cip1852Coins_cardanoLedgerTestnet = new A.Cip1852Coins("cardanoLedgerTestnet");
+    B.ClientMessageSolana_solana_requestAccounts_null = new A.ClientMessageSolana("solana_requestAccounts", null);
     B.CoinNames_Stafi = new A.CoinNames("Stafi");
     B.CoinParams_GVt = new A.CoinParams(null, null, null, null, null, 20, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
     B.CoinConf_9R3 = new A.CoinConf(B.CoinNames_Stafi, B.CoinParams_GVt);
@@ -59644,19 +61993,19 @@
     B.ErgoNetworkTypes_0 = new A.ErgoNetworkTypes(0);
     B.ErgoNetworkTypes_16 = new A.ErgoNetworkTypes(16);
     B.List_100 = A._setArrayType(makeConstList([100]), type$.JSArray_int);
-    B.EthereumEvnetTypes_List_100_accountsChanged = new A.EthereumEvnetTypes(B.List_100, "accountsChanged");
+    B.EthereumEventTypes_List_100_accountsChanged = new A.EthereumEventTypes(B.List_100, "accountsChanged");
     B.List_101 = A._setArrayType(makeConstList([101]), type$.JSArray_int);
-    B.EthereumEvnetTypes_List_101_chainChanged = new A.EthereumEvnetTypes(B.List_101, "chainChanged");
+    B.EthereumEventTypes_List_101_chainChanged = new A.EthereumEventTypes(B.List_101, "chainChanged");
     B.List_102 = A._setArrayType(makeConstList([102]), type$.JSArray_int);
-    B.EthereumEvnetTypes_List_102_message = new A.EthereumEvnetTypes(B.List_102, "message");
+    B.EthereumEventTypes_List_102_message = new A.EthereumEventTypes(B.List_102, "message");
     B.List_103 = A._setArrayType(makeConstList([103]), type$.JSArray_int);
-    B.EthereumEvnetTypes_List_103_connect = new A.EthereumEvnetTypes(B.List_103, "connect");
+    B.EthereumEventTypes_List_103_connect = new A.EthereumEventTypes(B.List_103, "connect");
     B.List_104 = A._setArrayType(makeConstList([104]), type$.JSArray_int);
-    B.EthereumEvnetTypes_List_104_disconnect = new A.EthereumEvnetTypes(B.List_104, "disconnect");
+    B.EthereumEventTypes_List_104_disconnect = new A.EthereumEventTypes(B.List_104, "disconnect");
     B.List_105 = A._setArrayType(makeConstList([105]), type$.JSArray_int);
-    B.EthereumEvnetTypes_List_105_active = new A.EthereumEvnetTypes(B.List_105, "active");
+    B.EthereumEventTypes_List_105_active = new A.EthereumEventTypes(B.List_105, "active");
     B.List_106 = A._setArrayType(makeConstList([106]), type$.JSArray_int);
-    B.EthereumEvnetTypes_List_106_disable = new A.EthereumEvnetTypes(B.List_106, "disable");
+    B.EthereumEventTypes_List_106_disable = new A.EthereumEventTypes(B.List_106, "disable");
     B.EthereumMethods_eth_subscribe = new A.EthereumMethods("eth_subscribe");
     B.FloatLength_11_52 = new A.FloatLength(11, 52);
     B.FloatLength_5_10 = new A.FloatLength(5, 10);
@@ -59669,6 +62018,7 @@
     B.JSClientType_List_111_ethereum = new A.JSClientType(B.List_111, "ethereum");
     B.List_112 = A._setArrayType(makeConstList([112]), type$.JSArray_int);
     B.JSClientType_List_112_tron = new A.JSClientType(B.List_112, "tron");
+    B.JSClientType_List_113_solana = new A.JSClientType(B.List_113, "solana");
     B.JSNetworkState_0 = new A.JSNetworkState("init");
     B.JSNetworkState_1 = new A.JSNetworkState("disconnect");
     B.JSNetworkState_2 = new A.JSNetworkState("block");
@@ -59765,6 +62115,8 @@
     B.List_161_0_0 = A._setArrayType(makeConstList([161, 0, 0]), type$.JSArray_int);
     B.List_161_1_1 = A._setArrayType(makeConstList([161, 1, 1]), type$.JSArray_int);
     B.List_161_2_1 = A._setArrayType(makeConstList([161, 2, 1]), type$.JSArray_int);
+    B.List_1_2 = A._setArrayType(makeConstList([1, 2]), type$.JSArray_int);
+    B.List_1_3 = A._setArrayType(makeConstList([1, 3]), type$.JSArray_int);
     B.List_2 = A._setArrayType(makeConstList([2]), type$.JSArray_int);
     B.List_200 = A._setArrayType(makeConstList([200]), type$.JSArray_int);
     B.List_200_191 = A._setArrayType(makeConstList([200, 191]), type$.JSArray_int);
@@ -59893,6 +62245,7 @@
     B.List_80_1_7 = A._setArrayType(makeConstList([80, 1, 7]), type$.JSArray_int);
     B.List_80_1_8 = A._setArrayType(makeConstList([80, 1, 8]), type$.JSArray_int);
     B.List_80_1_9 = A._setArrayType(makeConstList([80, 1, 9]), type$.JSArray_int);
+    B.List_86y = A._setArrayType(makeConstList([B.EthereumEventTypes_List_100_accountsChanged, B.EthereumEventTypes_List_101_chainChanged, B.EthereumEventTypes_List_102_message, B.EthereumEventTypes_List_103_connect, B.EthereumEventTypes_List_104_disconnect, B.EthereumEventTypes_List_105_active, B.EthereumEventTypes_List_106_disable]), A.findType("JSArray<EthereumEventTypes>"));
     B.List_8cU = A._setArrayType(makeConstList([0, 0, 2147483648, 2147483648, 0, 0, 2147483648, 2147483648, 0, 0, 0, 0, 0, 2147483648, 2147483648, 2147483648, 2147483648, 2147483648, 0, 2147483648, 2147483648, 2147483648, 0, 2147483648]), type$.JSArray_dynamic);
     B.List_90_0 = A._setArrayType(makeConstList([90, 0]), type$.JSArray_int);
     B.List_90_1 = A._setArrayType(makeConstList([90, 1]), type$.JSArray_int);
@@ -59931,9 +62284,12 @@
     B.List_Cpl1 = A._setArrayType(makeConstList([200, 192, 1, 0, 0]), type$.JSArray_int);
     B.List_Cpl0 = A._setArrayType(makeConstList([200, 193, 1, 0, 0]), type$.JSArray_int);
     B.List_Cpl = A._setArrayType(makeConstList([200, 195, 1, 0, 0]), type$.JSArray_int);
-    B.List_ECL = A._setArrayType(makeConstList([B.EthereumEvnetTypes_List_100_accountsChanged, B.EthereumEvnetTypes_List_101_chainChanged, B.EthereumEvnetTypes_List_102_message, B.EthereumEvnetTypes_List_103_connect, B.EthereumEvnetTypes_List_104_disconnect, B.EthereumEvnetTypes_List_105_active, B.EthereumEvnetTypes_List_106_disable]), A.findType("JSArray<EthereumEvnetTypes>"));
     B.List_GVy = A._setArrayType(makeConstList([0, 0, 26624, 1023, 65534, 2047, 65534, 2047]), type$.JSArray_int);
     B.List_Gbr = A._setArrayType(makeConstList([B.EIP712Version_1, B.EIP712Version_3, B.EIP712Version_4]), A.findType("JSArray<EIP712Version>"));
+    B.SolanaWeb3TransactionResponseType_0 = new A.SolanaWeb3TransactionResponseType("send");
+    B.SolanaWeb3TransactionResponseType_1 = new A.SolanaWeb3TransactionResponseType("sign");
+    B.SolanaWeb3TransactionResponseType_2 = new A.SolanaWeb3TransactionResponseType("error");
+    B.List_GhS = A._setArrayType(makeConstList([B.SolanaWeb3TransactionResponseType_0, B.SolanaWeb3TransactionResponseType_1, B.SolanaWeb3TransactionResponseType_2]), A.findType("JSArray<SolanaWeb3TransactionResponseType>"));
     B.List_M2I = A._setArrayType(makeConstList([0, 0, 65490, 12287, 65535, 34815, 65534, 18431]), type$.JSArray_int);
     B.PermissionType_Owner_0 = new A.PermissionType("Owner", 0);
     B.PermissionType_Witness_1 = new A.PermissionType("Witness", 1);
@@ -59987,21 +62343,31 @@
     B.PrimitiveTypes_I128 = new A.PrimitiveTypes("I128");
     B.PrimitiveTypes_I256 = new A.PrimitiveTypes("I256");
     B.List_ck7 = A._setArrayType(makeConstList([B.PrimitiveTypes_Bool, B.PrimitiveTypes_Char, B.PrimitiveTypes_Str, B.PrimitiveTypes_U8, B.PrimitiveTypes_U16, B.PrimitiveTypes_U32, B.PrimitiveTypes_U64, B.PrimitiveTypes_U128, B.PrimitiveTypes_U256, B.PrimitiveTypes_I8, B.PrimitiveTypes_I16, B.PrimitiveTypes_I32, B.PrimitiveTypes_I64, B.PrimitiveTypes_I128, B.PrimitiveTypes_I256]), A.findType("JSArray<PrimitiveTypes>"));
-    B.List_empty10 = A._setArrayType(makeConstList([]), A.findType("JSArray<ContactCore<0&>>"));
-    B.List_empty2 = A._setArrayType(makeConstList([]), A.findType("JSArray<EthereumChain>"));
-    B.List_empty11 = A._setArrayType(makeConstList([]), type$.JSArray_List_BigInt);
+    B.List_empty12 = A._setArrayType(makeConstList([]), A.findType("JSArray<ContactCore<0&>>"));
+    B.List_empty3 = A._setArrayType(makeConstList([]), A.findType("JSArray<EthereumChain>"));
+    B.List_empty13 = A._setArrayType(makeConstList([]), type$.JSArray_List_BigInt);
     B.List_empty = A._setArrayType(makeConstList([]), type$.JSArray_List_int);
-    B.List_empty0 = A._setArrayType(makeConstList([]), A.findType("JSArray<TronChain>"));
-    B.List_empty7 = A._setArrayType(makeConstList([]), A.findType("JSArray<Web3AccountAcitvity>"));
-    B.List_empty6 = A._setArrayType(makeConstList([]), type$.JSArray_Web3EthereumChainAccount);
-    B.List_empty8 = A._setArrayType(makeConstList([]), type$.JSArray_Web3TronChainAccount);
-    B.List_empty3 = A._setArrayType(makeConstList([]), type$.JSArray_int);
-    B.List_empty9 = A._setArrayType(makeConstList([]), A.findType("JSArray<0&>"));
-    B.List_empty5 = A._setArrayType(makeConstList([]), type$.JSArray_dynamic);
+    B.List_empty0 = A._setArrayType(makeConstList([]), A.findType("JSArray<SolanaChain>"));
+    B.List_empty2 = A._setArrayType(makeConstList([]), A.findType("JSArray<TronChain>"));
+    B.List_empty8 = A._setArrayType(makeConstList([]), A.findType("JSArray<Web3AccountAcitvity>"));
+    B.List_empty7 = A._setArrayType(makeConstList([]), type$.JSArray_Web3EthereumChainAccount);
+    B.List_empty10 = A._setArrayType(makeConstList([]), type$.JSArray_Web3SolanaChainAccount);
+    B.List_empty9 = A._setArrayType(makeConstList([]), type$.JSArray_Web3TronChainAccount);
+    B.List_empty4 = A._setArrayType(makeConstList([]), type$.JSArray_int);
+    B.List_empty11 = A._setArrayType(makeConstList([]), A.findType("JSArray<0&>"));
+    B.List_empty6 = A._setArrayType(makeConstList([]), type$.JSArray_dynamic);
     B.TronChainType_1001_728126428_mainnet = new A.TronChainType(1001, 728126428, "mainnet");
     B.TronChainType_1002_2494104990_shasta = new A.TronChainType(1002, 2494104990, "shasta");
     B.TronChainType_1003_3448148188_nile = new A.TronChainType(1003, 3448148188, "nile");
     B.List_ewF = A._setArrayType(makeConstList([B.TronChainType_1001_728126428_mainnet, B.TronChainType_1002_2494104990_shasta, B.TronChainType_1003_3448148188_nile]), A.findType("JSArray<TronChainType>"));
+    B.SolanaEventTypes_List_100_accountsChanged = new A.SolanaEventTypes(B.List_100, "accountsChanged");
+    B.SolanaEventTypes_List_101_chainChanged = new A.SolanaEventTypes(B.List_101, "chainChanged");
+    B.SolanaEventTypes_List_112_message = new A.SolanaEventTypes(B.List_112, "message");
+    B.SolanaEventTypes_List_113_connect = new A.SolanaEventTypes(B.List_113, "connect");
+    B.SolanaEventTypes_List_114_disconnect = new A.SolanaEventTypes(B.List_114, "disconnect");
+    B.SolanaEventTypes_List_115_active = new A.SolanaEventTypes(B.List_115, "active");
+    B.SolanaEventTypes_List_116_disable = new A.SolanaEventTypes(B.List_116, "disable");
+    B.List_fHr = A._setArrayType(makeConstList([B.SolanaEventTypes_List_100_accountsChanged, B.SolanaEventTypes_List_101_chainChanged, B.SolanaEventTypes_List_112_message, B.SolanaEventTypes_List_113_connect, B.SolanaEventTypes_List_114_disconnect, B.SolanaEventTypes_List_115_active, B.SolanaEventTypes_List_116_disable]), A.findType("JSArray<SolanaEventTypes>"));
     B.AccountType_1_AssetIssue = new A.AccountType(1, "AssetIssue");
     B.AccountType_2_Contract = new A.AccountType(2, "Contract");
     B.List_fgL = A._setArrayType(makeConstList([B.AccountType_0_Normal, B.AccountType_1_AssetIssue, B.AccountType_2_Contract]), A.findType("JSArray<AccountType>"));
@@ -60073,8 +62439,6 @@
     B.TonApiType_tonApi = new A.TonApiType("tonApi");
     B.TonApiType_tonCenter = new A.TonApiType("tonCenter");
     B.List_ivT = A._setArrayType(makeConstList([B.TonApiType_tonApi, B.TonApiType_tonCenter]), A.findType("JSArray<TonApiType>"));
-    B.JSClientType_List_110_global = new A.JSClientType(B.List_110, "global");
-    B.List_jHe = A._setArrayType(makeConstList([B.JSClientType_List_110_global, B.JSClientType_List_111_ethereum, B.JSClientType_List_112_tron]), A.findType("JSArray<JSClientType>"));
     B.SeedTypes_Bip39_bip39 = new A.SeedTypes("Bip39", "bip39");
     B.SeedTypes_Bip39Entropy_bip39Entropy = new A.SeedTypes("Bip39Entropy", "bip39Entropy");
     B.SeedTypes_ByronLegacySeed_byronLegacySeed = new A.SeedTypes("ByronLegacySeed", "byronLegacySeed");
@@ -60124,6 +62488,8 @@
     B.ADAByronAddrTypes_2_redemption = new A.ADAByronAddrTypes(2, "redemption");
     B.List_ugX = A._setArrayType(makeConstList([B.ADAByronAddrTypes_0_publicKey, B.ADAByronAddrTypes_2_redemption]), A.findType("JSArray<ADAByronAddrTypes>"));
     B.List_vwZ = A._setArrayType(makeConstList([B.JSWalletMessageType_List_100_response, B.JSWalletMessageType_List_101_event]), A.findType("JSArray<JSWalletMessageType>"));
+    B.JSClientType_List_110_global = new A.JSClientType(B.List_110, "global");
+    B.List_wjC = A._setArrayType(makeConstList([B.JSClientType_List_110_global, B.JSClientType_List_111_ethereum, B.JSClientType_List_112_tron, B.JSClientType_List_113_solana]), A.findType("JSArray<JSClientType>"));
     B.List_34 = A._setArrayType(makeConstList([34]), type$.JSArray_int);
     B.CborBase64Types_List_34 = new A.CborBase64Types(B.List_34);
     B.List_33 = A._setArrayType(makeConstList([33]), type$.JSArray_int);
@@ -60293,8 +62659,12 @@
     B.RequestMethod_2 = new A.RequestMethod("get");
     B.SocketStatus_0 = new A.SocketStatus("connect");
     B.SocketStatus_1 = new A.SocketStatus("disconnect");
+    B.SolanaAPIProvider_6hp = new A.SolanaAPIProvider("https://api.devnet.solana.com", B.ServiceProtocol_HTTP_0_http, "solana", "solana.com", null, true);
     B.SolanaAPIProvider_TLI = new A.SolanaAPIProvider("https://api.testnet.solana.com", B.ServiceProtocol_HTTP_0_http, "solana", "solana.com", null, true);
     B.SolanaAPIProvider_ww8 = new A.SolanaAPIProvider("https://api.mainnet-beta.solana.com", B.ServiceProtocol_HTTP_0_http, "solana", "solana.com", null, true);
+    B.SolanaPluginException_4Cz = new A.SolanaPluginException("The public key must have a length of 32 bytes.");
+    B.SolanaPluginException_FQs = new A.SolanaPluginException("invalid versioned Message");
+    B.SolanaPluginException_eAf = new A.SolanaPluginException("Signature must be 64 bytes long");
     B.SolidityAbiException_WUl = new A.SolidityAbiException(null, "Invalid argument length detected.");
     B.SolidityAbiException_Xrq = new A.SolidityAbiException(null, "Invalid data provided for bytes codec.");
     B.SolidityAbiException_bJg = new A.SolidityAbiException(null, "Invalid bytes length");
@@ -60360,9 +62730,12 @@
     B.Web3RequestException_yST = new A.Web3RequestException("Invalid method parameters\t", -32602, "WEB3-5060", "To use EIP-1559 gas metrics, you must fill both maxFeePerGas and maxPriorityFeePerGas fields.");
     B.Web3RequestException_yrN = new A.Web3RequestException("Invalid method parameters\t", -32602, "WEB3-5050", "You cannot use both legacy and EIP-1559 gas parameters simultaneously.");
     B.Web3RequestException_yre = new A.Web3RequestException("Invalid method parameters\t", -32602, "WEB3-5040", "Invalid Ethereum decimal. The decimal value must be exactly 18.");
+    B.Web3SolanaRequestMethods_102_solana_signMessage_List_empty = new A.Web3SolanaRequestMethods(102, "solana_signMessage", B.List_empty1);
+    B.Web3SolanaRequestMethods_6YB = new A.Web3SolanaRequestMethods(101, "solana_signTransaction", B.List_empty1);
+    B.List_eth_requestAccounts = A._setArrayType(makeConstList(["eth_requestAccounts"]), type$.JSArray_String);
+    B.Web3SolanaRequestMethods_A0N = new A.Web3SolanaRequestMethods(100, "solana_requestAccounts", B.List_eth_requestAccounts);
     B.Web3TronRequestMethods_102_tron_signMessageV2_List_empty = new A.Web3TronRequestMethods(102, "tron_signMessageV2", B.List_empty1);
     B.Web3TronRequestMethods_MMc = new A.Web3TronRequestMethods(101, "tron_signTransaction", B.List_empty1);
-    B.List_eth_requestAccounts = A._setArrayType(makeConstList(["eth_requestAccounts"]), type$.JSArray_String);
     B.Web3TronRequestMethods_nIp = new A.Web3TronRequestMethods(100, "tron_requestAccounts", B.List_eth_requestAccounts);
   })();
   (function staticFields() {
@@ -60398,6 +62771,7 @@
       return A._setArrayType([A._setArrayType([0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30], t1), A._setArrayType([28, 20, 8, 16, 18, 30, 26, 12, 2, 24, 0, 4, 22, 14, 10, 6], t1), A._setArrayType([22, 16, 24, 0, 10, 4, 30, 26, 20, 28, 6, 12, 14, 2, 18, 8], t1), A._setArrayType([14, 18, 6, 2, 26, 24, 22, 28, 4, 12, 10, 20, 8, 0, 30, 16], t1), A._setArrayType([18, 0, 10, 14, 4, 8, 20, 30, 28, 2, 22, 24, 12, 16, 6, 26], t1), A._setArrayType([4, 24, 12, 20, 0, 22, 16, 6, 8, 26, 14, 10, 30, 28, 2, 18], t1), A._setArrayType([24, 10, 2, 30, 28, 26, 8, 20, 0, 14, 12, 6, 18, 4, 16, 22], t1), A._setArrayType([26, 22, 14, 28, 24, 2, 6, 18, 10, 0, 30, 8, 16, 12, 4, 20], t1), A._setArrayType([12, 30, 28, 18, 22, 6, 0, 16, 24, 4, 26, 14, 2, 8, 20, 10], t1), A._setArrayType([20, 4, 16, 8, 14, 12, 2, 10, 30, 22, 18, 28, 6, 24, 26, 0], t1), A._setArrayType([0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30], t1), A._setArrayType([28, 20, 8, 16, 18, 30, 26, 12, 2, 24, 0, 4, 22, 14, 10, 6], t1)], type$.JSArray_List_int);
     }();
     $.QuickCrypto__randomGenerator = null;
+    $.Web3SolanaRequestMethods_values = A._setArrayType([B.Web3SolanaRequestMethods_A0N, B.Web3SolanaRequestMethods_6YB, B.Web3SolanaRequestMethods_102_solana_signMessage_List_empty], A.findType("JSArray<Web3SolanaRequestMethods>"));
     $.Web3TronRequestMethods_values = A._setArrayType([B.Web3TronRequestMethods_nIp, B.Web3TronRequestMethods_MMc, B.Web3TronRequestMethods_102_tron_signMessageV2_List_empty], A.findType("JSArray<Web3TronRequestMethods>"));
     $._currentUriBase = null;
     $._current = null;
@@ -61006,12 +63380,8 @@
       return t1;
     });
     _lazyFinal($, "Curves_curveEd25519", "$get$Curves_curveEd25519", () => {
-      var t1 = A._BigIntImpl_parse("57896044618658097711785492504343953926634992332820282019728792003956564819949", null),
-        t2 = A._BigIntImpl__BigIntImpl$from(-1),
-        t3 = A._BigIntImpl_parse("37095705934669439343138083508754565189542113879843219016388785533085940283555", null),
-        t4 = A._BigIntImpl__BigIntImpl$from(8);
-      A._BigIntImpl_parse(string$.x3723700, null);
-      return new A.CurveED(t1, t2, t3, t4);
+      var t1 = A._BigIntImpl_parse("57896044618658097711785492504343953926634992332820282019728792003956564819949", null);
+      return A.CurveED$(A._BigIntImpl__BigIntImpl$from(-1), A._BigIntImpl_parse("37095705934669439343138083508754565189542113879843219016388785533085940283555", null), A._BigIntImpl__BigIntImpl$from(8), A._BigIntImpl_parse(string$.x3723700, null), t1);
     });
     _lazyFinal($, "Curves_generatorED25519", "$get$Curves_generatorED25519", () => {
       var _null = null,
@@ -61186,7 +63556,7 @@
         _s32_0 = "https://nile.trongrid.io/jsonrpc",
         t1 = type$.JSArray_APIProvider,
         t2 = type$.dynamic;
-      return A.ConstantMap_ConstantMap$from(A.LinkedHashMap_LinkedHashMap$_literal([0, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-0", B.ServiceProtocol_SSL_1_ssl, _s17_, _s17_, _s17_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-1", B.ServiceProtocol_WebSocket_3_websocket, "aranguren", "wss://bitcoin.aranguren.org:50004", "bitcoin.aranguren.org"), A.ElectrumAPIProvider_ElectrumAPIProvider("default-2", B.ServiceProtocol_WebSocket_3_websocket, _s14_, "wss://104.198.149.61:8443", _s14_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-3", B.ServiceProtocol_SSL_1_ssl, _s21_, _s21_, _s21_), B.BitcoinExplorerAPIProvider_e3c, B.BitcoinExplorerAPIProvider_wzK], t1), 1, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-4", B.ServiceProtocol_WebSocket_3_websocket, _s21_0, "wss://testnet.aranguren.org:51004", _s13_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-5", B.ServiceProtocol_SSL_1_ssl, _s21_0, "testnet.aranguren.org:51002", _s13_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-6", B.ServiceProtocol_SSL_1_ssl, "blockstream", "blockstream.info:700", "blockstream.info"), B.BitcoinExplorerAPIProvider_e3c, B.BitcoinExplorerAPIProvider_wzK], t1), 2, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-7", B.ServiceProtocol_WebSocket_3_websocket, "qortal", "wss://electrum.qortal.link:50004", _s20_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-8", B.ServiceProtocol_WebSocket_3_websocket, _s12_, "wss://46.101.3.154:50004", _s12_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-9", B.ServiceProtocol_SSL_1_ssl, _s12_, "46.101.3.154:50002", _s12_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-10", B.ServiceProtocol_SSL_1_ssl, _s23_, "backup.electrum-ltc.org:443", _s23_), B.BitcoinExplorerAPIProvider_wzK], t1), 7, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-11", B.ServiceProtocol_SSL_1_ssl, _s20_0, "electrum-ltc.bysh.me:51002", _s20_0), A.ElectrumAPIProvider_ElectrumAPIProvider("default-12", B.ServiceProtocol_SSL_1_ssl, _s24_, "electrum.ltc.xurious.com:51002", _s24_)], t1), 3, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-13", B.ServiceProtocol_SSL_1_ssl, _s20_, "electrum.qortal.link:54002", _s20_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-14", B.ServiceProtocol_WebSocket_3_websocket, "qortal", "wss://electrum.qortal.link:54004", _s20_), B.BitcoinExplorerAPIProvider_wzK], t1), 8, A._setArrayType([], t1), 9, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-15", B.ServiceProtocol_SSL_1_ssl, _s22_, "electrumx.bitcoinsv.io:50002", _s22_)], t1), 4, A._setArrayType([B.BitcoinExplorerAPIProvider_wzK], t1), 10, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-16", B.ServiceProtocol_WebSocket_3_websocket, _s23_0, "wss://electrum.imaginary.cash:50004", _s23_0), A.ElectrumAPIProvider_ElectrumAPIProvider("default-17", B.ServiceProtocol_SSL_1_ssl, _s23_0, "electrum.imaginary.cash:50002", _s23_0), A.ElectrumAPIProvider_ElectrumAPIProvider("default-18", B.ServiceProtocol_WebSocket_3_websocket, _s14_0, "wss://bch.loping.net:50004", _s14_0), A.ElectrumAPIProvider_ElectrumAPIProvider("default-19", B.ServiceProtocol_SSL_1_ssl, _s14_0, "bch.loping.net:50002", _s14_0)], t1), 11, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-20", B.ServiceProtocol_WebSocket_3_websocket, "Chipnet-Websocket", "wss://chipnet.imaginary.cash:50004", _s30_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-21", B.ServiceProtocol_SSL_1_ssl, "Chipnet-ssl", "chipnet.imaginary.cash:50002", _s30_)], t1), 12, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-22", B.ServiceProtocol_SSL_1_ssl, "pepeblocks-ssl", "mainnet.pepeblocks.com:50002", _s30_0), A.ElectrumAPIProvider_ElectrumAPIProvider(_s10_, B.ServiceProtocol_TCP_2_tcp, "pepeblocks-tcp", "mainnet.pepeblocks.com:50001", _s30_0), A.ElectrumAPIProvider_ElectrumAPIProvider(_s10_, B.ServiceProtocol_WebSocket_3_websocket, "pepeblocks-wss", "wss://mainnet.pepeblocks.com:50004", "mainnet.pepeblocks.com"), A.ElectrumAPIProvider_ElectrumAPIProvider("default-25", B.ServiceProtocol_SSL_1_ssl, "pepelum-ssl", "mainnet.pepelum.site:50002", _s28_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-26", B.ServiceProtocol_TCP_2_tcp, "pepelum-tcp", "mainnet.pepelum.site:50001", _s28_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-27", B.ServiceProtocol_WebSocket_3_websocket, "pepelum-wss", "wss://mainnet.pepelum.site:50004", "mainnet.pepelum.site")], t1), 30, A._setArrayType([A.RippleAPIProvider_RippleAPIProvider("default-28", _s6_, "https://xrplcluster.com/", _s23_1), A.RippleAPIProvider_RippleAPIProvider("default-29", "Ripple-wss", "wss://xrplcluster.com/", _s23_1)], t1), 31, A._setArrayType([A.RippleAPIProvider_RippleAPIProvider("default-30", _s6_, "https://s.altnet.rippletest.net:51234/", _s22_0), A.RippleAPIProvider_RippleAPIProvider("default-31", _s6_, "wss://s.altnet.rippletest.net:51233", _s22_0)], t1), 32, A._setArrayType([A.RippleAPIProvider_RippleAPIProvider("default-32", _s6_, "https://s.devnet.rippletest.net:51234/", _s22_0), A.RippleAPIProvider_RippleAPIProvider("default-33", _s6_, "wss://s.devnet.rippletest.net:51233", _s22_0)], t1), 33, A._setArrayType([B.SolanaAPIProvider_ww8], t1), 34, A._setArrayType([B.SolanaAPIProvider_TLI], t1), 50, A._setArrayType([A.CardanoAPIProvider_CardanoAPIProvider(B.ProviderAuth_Svh, "default-36", _s10_0, "https://cardano-mainnet.blockfrost.io/api/v0/", _s13_0)], t1), 51, A._setArrayType([A.CardanoAPIProvider_CardanoAPIProvider(B.ProviderAuth_qV2, "default-37", _s10_0, "https://cardano-preprod.blockfrost.io/api/v0/", _s13_0)], t1), 100, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-38", _s10_1, _s29_, _s23_2), A.EthereumAPIProvider_EthereumAPIProvider("default-39", _s10_1, _s29_, _s23_2)], t1), 101, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-40", _s14_1, _s39_, _s39_)], t1), 102, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-41", _s14_1, _s34_, _s34_)], t1), 103, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-42", _s14_1, _s41_, _s41_)], t1), 104, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-43", _s14_1, _s26_, _s26_)], t1), 105, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-44", _s14_1, _s34_0, _s34_0)], t1), 200, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-45", _null, "cosmos-rpc.publicnode.com", _s37_, _s37_)], t1), 206, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-46", _null, _s12_0, _s33_, _s33_)], t1), 207, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-47", _null, _s12_0, _s24_0, _s24_0)], t1), 201, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-48", _null, "polypore.xyz", _s48_, _s48_)], t1), 202, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-49", "https://mayanode.mayachain.info/mayachain", "mayachain.info", _s33_0, _s33_0)], t1), 203, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-50", "https://thornode.ninerealms.com/thorchain", "liquify.com", "https://rpc.thorchain.liquify.com/", "https://rpc.thorchain.liquify.com")], t1), 204, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-51", _s40_, _s12_1, _s40_, _s40_)], t1), 205, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-52", _s32_, _s12_1, _s32_, _s32_)], t1), 300, A._setArrayType([A.TonAPIProvider_TonAPIProvider(B.TonApiType_tonApi, _null, "default-53", "TonAPI", _s17_0, _s17_0), A.TonAPIProvider_TonAPIProvider(B.TonApiType_tonCenter, B.ProviderAuth_NUd, "default-54", _s9_, "https://toncenter.com", _s20_1)], t1), 301, A._setArrayType([A.TonAPIProvider_TonAPIProvider(B.TonApiType_tonApi, _null, "default-55", "TonAPI", "https://testnet.tonapi.io", _s17_0), A.TonAPIProvider_TonAPIProvider(B.TonApiType_tonCenter, B.ProviderAuth_0Qy, "default-56", _s9_, "https://testnet.toncenter.com", _s20_1)], t1), 400, A._setArrayType([A.SubstrateAPIProvider_SubstrateAPIProvider("default-57", "Polkadot", "https://rpc.polkadot.io", _s19_)], t1), 450, A._setArrayType([A.SubstrateAPIProvider_SubstrateAPIProvider("default-58", "Kusama", "https://kusama-rpc.polkadot.io", _s19_)], t1), 451, A._setArrayType([A.SubstrateAPIProvider_SubstrateAPIProvider("default-59", "Westend", "https://westend-rpc.polkadot.io", _s19_)], t1), 1001, A._setArrayType([A.TronAPIProvider$(_null, "https://api.trongrid.io", "default-60", _s8_, A.EthereumAPIProvider_EthereumAPIProvider("default-61", _s31_, _s31_, _s11_), _s19_0)], t1), 1002, A._setArrayType([A.TronAPIProvider$(_null, "https://api.shasta.trongrid.io", "default-62", _s8_, A.EthereumAPIProvider_EthereumAPIProvider("default-63", _s38_, _s38_, _s11_), _s19_0)], t1), 1003, A._setArrayType([A.TronAPIProvider$(_null, "https://nile.trongrid.io", "default-64", _s8_, A.EthereumAPIProvider_EthereumAPIProvider("default-65", _s32_0, _s32_0, _s11_), _s19_0)], t1)], t2, t2), type$.int, type$.List_APIProvider);
+      return A.ConstantMap_ConstantMap$from(A.LinkedHashMap_LinkedHashMap$_literal([0, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-0", B.ServiceProtocol_SSL_1_ssl, _s17_, _s17_, _s17_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-1", B.ServiceProtocol_WebSocket_3_websocket, "aranguren", "wss://bitcoin.aranguren.org:50004", "bitcoin.aranguren.org"), A.ElectrumAPIProvider_ElectrumAPIProvider("default-2", B.ServiceProtocol_WebSocket_3_websocket, _s14_, "wss://104.198.149.61:8443", _s14_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-3", B.ServiceProtocol_SSL_1_ssl, _s21_, _s21_, _s21_), B.BitcoinExplorerAPIProvider_e3c, B.BitcoinExplorerAPIProvider_wzK], t1), 1, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-4", B.ServiceProtocol_WebSocket_3_websocket, _s21_0, "wss://testnet.aranguren.org:51004", _s13_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-5", B.ServiceProtocol_SSL_1_ssl, _s21_0, "testnet.aranguren.org:51002", _s13_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-6", B.ServiceProtocol_SSL_1_ssl, "blockstream", "blockstream.info:700", "blockstream.info"), B.BitcoinExplorerAPIProvider_e3c, B.BitcoinExplorerAPIProvider_wzK], t1), 2, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-7", B.ServiceProtocol_WebSocket_3_websocket, "qortal", "wss://electrum.qortal.link:50004", _s20_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-8", B.ServiceProtocol_WebSocket_3_websocket, _s12_, "wss://46.101.3.154:50004", _s12_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-9", B.ServiceProtocol_SSL_1_ssl, _s12_, "46.101.3.154:50002", _s12_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-10", B.ServiceProtocol_SSL_1_ssl, _s23_, "backup.electrum-ltc.org:443", _s23_), B.BitcoinExplorerAPIProvider_wzK], t1), 7, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-11", B.ServiceProtocol_SSL_1_ssl, _s20_0, "electrum-ltc.bysh.me:51002", _s20_0), A.ElectrumAPIProvider_ElectrumAPIProvider("default-12", B.ServiceProtocol_SSL_1_ssl, _s24_, "electrum.ltc.xurious.com:51002", _s24_)], t1), 3, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-13", B.ServiceProtocol_SSL_1_ssl, _s20_, "electrum.qortal.link:54002", _s20_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-14", B.ServiceProtocol_WebSocket_3_websocket, "qortal", "wss://electrum.qortal.link:54004", _s20_), B.BitcoinExplorerAPIProvider_wzK], t1), 8, A._setArrayType([], t1), 9, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-15", B.ServiceProtocol_SSL_1_ssl, _s22_, "electrumx.bitcoinsv.io:50002", _s22_)], t1), 4, A._setArrayType([B.BitcoinExplorerAPIProvider_wzK], t1), 10, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-16", B.ServiceProtocol_WebSocket_3_websocket, _s23_0, "wss://electrum.imaginary.cash:50004", _s23_0), A.ElectrumAPIProvider_ElectrumAPIProvider("default-17", B.ServiceProtocol_SSL_1_ssl, _s23_0, "electrum.imaginary.cash:50002", _s23_0), A.ElectrumAPIProvider_ElectrumAPIProvider("default-18", B.ServiceProtocol_WebSocket_3_websocket, _s14_0, "wss://bch.loping.net:50004", _s14_0), A.ElectrumAPIProvider_ElectrumAPIProvider("default-19", B.ServiceProtocol_SSL_1_ssl, _s14_0, "bch.loping.net:50002", _s14_0)], t1), 11, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-20", B.ServiceProtocol_WebSocket_3_websocket, "Chipnet-Websocket", "wss://chipnet.imaginary.cash:50004", _s30_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-21", B.ServiceProtocol_SSL_1_ssl, "Chipnet-ssl", "chipnet.imaginary.cash:50002", _s30_)], t1), 12, A._setArrayType([A.ElectrumAPIProvider_ElectrumAPIProvider("default-22", B.ServiceProtocol_SSL_1_ssl, "pepeblocks-ssl", "mainnet.pepeblocks.com:50002", _s30_0), A.ElectrumAPIProvider_ElectrumAPIProvider(_s10_, B.ServiceProtocol_TCP_2_tcp, "pepeblocks-tcp", "mainnet.pepeblocks.com:50001", _s30_0), A.ElectrumAPIProvider_ElectrumAPIProvider(_s10_, B.ServiceProtocol_WebSocket_3_websocket, "pepeblocks-wss", "wss://mainnet.pepeblocks.com:50004", "mainnet.pepeblocks.com"), A.ElectrumAPIProvider_ElectrumAPIProvider("default-25", B.ServiceProtocol_SSL_1_ssl, "pepelum-ssl", "mainnet.pepelum.site:50002", _s28_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-26", B.ServiceProtocol_TCP_2_tcp, "pepelum-tcp", "mainnet.pepelum.site:50001", _s28_), A.ElectrumAPIProvider_ElectrumAPIProvider("default-27", B.ServiceProtocol_WebSocket_3_websocket, "pepelum-wss", "wss://mainnet.pepelum.site:50004", "mainnet.pepelum.site")], t1), 30, A._setArrayType([A.RippleAPIProvider_RippleAPIProvider("default-28", _s6_, "https://xrplcluster.com/", _s23_1), A.RippleAPIProvider_RippleAPIProvider("default-29", "Ripple-wss", "wss://xrplcluster.com/", _s23_1)], t1), 31, A._setArrayType([A.RippleAPIProvider_RippleAPIProvider("default-30", _s6_, "https://s.altnet.rippletest.net:51234/", _s22_0), A.RippleAPIProvider_RippleAPIProvider("default-31", _s6_, "wss://s.altnet.rippletest.net:51233", _s22_0)], t1), 32, A._setArrayType([A.RippleAPIProvider_RippleAPIProvider("default-32", _s6_, "https://s.devnet.rippletest.net:51234/", _s22_0), A.RippleAPIProvider_RippleAPIProvider("default-33", _s6_, "wss://s.devnet.rippletest.net:51233", _s22_0)], t1), 33, A._setArrayType([B.SolanaAPIProvider_ww8], t1), 34, A._setArrayType([B.SolanaAPIProvider_TLI], t1), 35, A._setArrayType([B.SolanaAPIProvider_6hp], t1), 50, A._setArrayType([A.CardanoAPIProvider_CardanoAPIProvider(B.ProviderAuth_Svh, "default-36", _s10_0, "https://cardano-mainnet.blockfrost.io/api/v0/", _s13_0)], t1), 51, A._setArrayType([A.CardanoAPIProvider_CardanoAPIProvider(B.ProviderAuth_qV2, "default-37", _s10_0, "https://cardano-preprod.blockfrost.io/api/v0/", _s13_0)], t1), 100, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-38", _s10_1, _s29_, _s23_2), A.EthereumAPIProvider_EthereumAPIProvider("default-39", _s10_1, _s29_, _s23_2)], t1), 101, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-40", _s14_1, _s39_, _s39_)], t1), 102, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-41", _s14_1, _s34_, _s34_)], t1), 103, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-42", _s14_1, _s41_, _s41_)], t1), 104, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-43", _s14_1, _s26_, _s26_)], t1), 105, A._setArrayType([A.EthereumAPIProvider_EthereumAPIProvider("default-44", _s14_1, _s34_0, _s34_0)], t1), 200, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-45", _null, "cosmos-rpc.publicnode.com", _s37_, _s37_)], t1), 206, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-46", _null, _s12_0, _s33_, _s33_)], t1), 207, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-47", _null, _s12_0, _s24_0, _s24_0)], t1), 201, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-48", _null, "polypore.xyz", _s48_, _s48_)], t1), 202, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-49", "https://mayanode.mayachain.info/mayachain", "mayachain.info", _s33_0, _s33_0)], t1), 203, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-50", "https://thornode.ninerealms.com/thorchain", "liquify.com", "https://rpc.thorchain.liquify.com/", "https://rpc.thorchain.liquify.com")], t1), 204, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-51", _s40_, _s12_1, _s40_, _s40_)], t1), 205, A._setArrayType([A.CosmosAPIProvider_CosmosAPIProvider("default-52", _s32_, _s12_1, _s32_, _s32_)], t1), 300, A._setArrayType([A.TonAPIProvider_TonAPIProvider(B.TonApiType_tonApi, _null, "default-53", "TonAPI", _s17_0, _s17_0), A.TonAPIProvider_TonAPIProvider(B.TonApiType_tonCenter, B.ProviderAuth_NUd, "default-54", _s9_, "https://toncenter.com", _s20_1)], t1), 301, A._setArrayType([A.TonAPIProvider_TonAPIProvider(B.TonApiType_tonApi, _null, "default-55", "TonAPI", "https://testnet.tonapi.io", _s17_0), A.TonAPIProvider_TonAPIProvider(B.TonApiType_tonCenter, B.ProviderAuth_0Qy, "default-56", _s9_, "https://testnet.toncenter.com", _s20_1)], t1), 400, A._setArrayType([A.SubstrateAPIProvider_SubstrateAPIProvider("default-57", "Polkadot", "https://rpc.polkadot.io", _s19_)], t1), 450, A._setArrayType([A.SubstrateAPIProvider_SubstrateAPIProvider("default-58", "Kusama", "https://kusama-rpc.polkadot.io", _s19_)], t1), 451, A._setArrayType([A.SubstrateAPIProvider_SubstrateAPIProvider("default-59", "Westend", "https://westend-rpc.polkadot.io", _s19_)], t1), 1001, A._setArrayType([A.TronAPIProvider$(_null, "https://api.trongrid.io", "default-60", _s8_, A.EthereumAPIProvider_EthereumAPIProvider("default-61", _s31_, _s31_, _s11_), _s19_0)], t1), 1002, A._setArrayType([A.TronAPIProvider$(_null, "https://api.shasta.trongrid.io", "default-62", _s8_, A.EthereumAPIProvider_EthereumAPIProvider("default-63", _s38_, _s38_, _s11_), _s19_0)], t1), 1003, A._setArrayType([A.TronAPIProvider$(_null, "https://nile.trongrid.io", "default-64", _s8_, A.EthereumAPIProvider_EthereumAPIProvider("default-65", _s32_0, _s32_0, _s11_), _s19_0)], t1)], t2, t2), type$.int, type$.List_APIProvider);
     });
     _lazyFinal($, "HTTPService__client", "$get$HTTPService__client", () => new A.BrowserClient(A.LinkedHashSet_LinkedHashSet$_empty(type$.JSObject)));
     _lazyFinal($, "_DefaultAppCoins_bitcoinCashMainnet", "$get$_DefaultAppCoins_bitcoinCashMainnet", () => {
@@ -61290,11 +63660,15 @@
     });
     _lazyFinal($, "_DefaultAppCoins_solana", "$get$_DefaultAppCoins_solana", () => {
       var t1 = A.Token_Token($.$get$APPConst_sol(), 9, B.CoingeckoCoin_solana_solana_null, "Solana", "SOL");
-      return A.SolanaNetworkParams$("https://explorer.solana.com/address/#address", "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d", true, A._setArrayType([], A.findType("JSArray<SolanaAPIProvider>")), t1, "https://explorer.solana.com/tx/#txid");
+      return A.SolanaNetworkParams$("https://explorer.solana.com/address/#address", string$.x35eykt4, true, A._setArrayType([], A.findType("JSArray<SolanaAPIProvider>")), t1, "https://explorer.solana.com/tx/#txid");
     });
     _lazyFinal($, "_DefaultAppCoins_solanaTestnet", "$get$_DefaultAppCoins_solanaTestnet", () => {
       var t1 = A.Token_Token($.$get$APPConst_sol(), 9, B.CoingeckoCoin_solana_solana_null, "Solana testnet", "tSOL");
       return A.SolanaNetworkParams$("https://explorer.solana.com/address/#address?cluster=testnet", "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY", false, A._setArrayType([], A.findType("JSArray<SolanaAPIProvider>")), t1, "https://explorer.solana.com/tx/#txid?cluster=testnet");
+    });
+    _lazyFinal($, "_DefaultAppCoins_solanaDevnet", "$get$_DefaultAppCoins_solanaDevnet", () => {
+      var t1 = A.Token_Token($.$get$APPConst_sol(), 9, B.CoingeckoCoin_solana_solana_null, "Solana devnet", "tSOL");
+      return A.SolanaNetworkParams$("https://explorer.solana.com/address/#address?cluster=devnet", "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG", false, A._setArrayType([], A.findType("JSArray<SolanaAPIProvider>")), t1, "https://explorer.solana.com/tx/#txid?cluster=devnet");
     });
     _lazyFinal($, "_DefaultAppCoins_cardanoTestnet", "$get$_DefaultAppCoins_cardanoTestnet", () => {
       var t1 = A.Token_Token($.$get$APPConst_ada(), 6, B.CoingeckoCoin_cardano_cardano_null, "Cardano preprod", "tADA");
@@ -61366,7 +63740,7 @@
     });
     _lazyFinal($, "ChainConst_defaultCoins", "$get$ChainConst_defaultCoins", () => {
       var t1 = type$.dynamic;
-      return A.ConstantMap_ConstantMap$from(A.LinkedHashMap_LinkedHashMap$_literal([0, A.WalletBitcoinNetwork$(0, $.$get$_DefaultAppCoins_bitcoinMainnet()), 1, A.WalletBitcoinNetwork$(1, $.$get$_DefaultAppCoins_bitcoinTestnet()), 2, A.WalletBitcoinNetwork$(2, $.$get$_DefaultAppCoins_litecoinMainnet()), 7, A.WalletBitcoinNetwork$(7, $.$get$_DefaultAppCoins_litecoinTestnet()), 3, A.WalletBitcoinNetwork$(3, $.$get$_DefaultAppCoins_dogecoinMainnet()), 8, A.WalletBitcoinNetwork$(8, $.$get$_DefaultAppCoins_dogeTestnet()), 9, A.WalletBitcoinNetwork$(9, $.$get$_DefaultAppCoins_bsvMainnet()), 4, A.WalletBitcoinNetwork$(4, $.$get$_DefaultAppCoins_dashMainnet()), 10, A.WalletBitcoinCashNetwork$(10, $.$get$_DefaultAppCoins_bitcoinCashMainnet()), 11, A.WalletBitcoinCashNetwork$(11, $.$get$_DefaultAppCoins_bitcoinCashChipnet()), 12, A.WalletBitcoinNetwork$(12, $.$get$_DefaultAppCoins_pepecoinMainnet()), 30, A.WalletXRPNetwork$(30, $.$get$_DefaultAppCoins_xrpMainnet()), 31, A.WalletXRPNetwork$(31, $.$get$_DefaultAppCoins_xrpTestnet()), 32, A.WalletXRPNetwork$(32, $.$get$_DefaultAppCoins_xrpDevnet()), 33, A.WalletSolanaNetwork$(33, $.$get$_DefaultAppCoins_solana()), 34, A.WalletSolanaNetwork$(34, $.$get$_DefaultAppCoins_solanaTestnet()), 50, A.WalletCardanoNetwork$(50, $.$get$_DefaultAppCoins_cardano()), 51, A.WalletCardanoNetwork$(51, $.$get$_DefaultAppCoins_cardanoTestnet()), 100, A.WalletEthereumNetwork$(100, $.$get$_DefaultAppCoins_ethreumMainnet()), 101, A.WalletEthereumNetwork$(101, $.$get$_DefaultAppCoins_ethreumTestnet()), 102, A.WalletEthereumNetwork$(102, $.$get$_DefaultAppCoins_polygon()), 103, A.WalletEthereumNetwork$(103, $.$get$_DefaultAppCoins_polygonTestnet()), 104, A.WalletEthereumNetwork$(104, $.$get$_DefaultAppCoins_bnb()), 105, A.WalletEthereumNetwork$(105, $.$get$_DefaultAppCoins_bnbTestnet()), 200, A.WalletCosmosNetwork$(200, $.$get$_DefaultAppCoins_cosmos()), 201, A.WalletCosmosNetwork$(201, $.$get$_DefaultAppCoins_cosmosTestnet()), 202, A.WalletCosmosNetwork$(202, $.$get$_DefaultAppCoins_maya()), 203, A.WalletCosmosNetwork$(203, $.$get$_DefaultAppCoins_thorchain()), 204, A.WalletCosmosNetwork$(204, $.$get$_DefaultAppCoins_kujiraTestnet()), 205, A.WalletCosmosNetwork$(205, $.$get$_DefaultAppCoins_kujira()), 206, A.WalletCosmosNetwork$(206, $.$get$_DefaultAppCoins_osmosisTestnet()), 207, A.WalletCosmosNetwork$(207, $.$get$_DefaultAppCoins_osmosis()), 300, A.WalletTonNetwork$(300, $.$get$_DefaultAppCoins_tonMainnet()), 301, A.WalletTonNetwork$(301, $.$get$_DefaultAppCoins_tonTestnet()), 400, A.WalletPolkadotNetwork$(400, $.$get$_DefaultAppCoins_polkadot()), 450, A.WalletKusamaNetwork$(450, $.$get$_DefaultAppCoins_kusama()), 451, A.WalletKusamaNetwork$(451, $.$get$_DefaultAppCoins_westend()), 1001, A.WalletTronNetwork$(1001, $.$get$_DefaultAppCoins_tron()), 1002, A.WalletTronNetwork$(1002, $.$get$_DefaultAppCoins_tronShasta()), 1003, A.WalletTronNetwork$(1003, $.$get$_DefaultAppCoins_tronNile())], t1, t1), type$.int, type$.WalletNetwork_NetworkCoinParams_APIProvider);
+      return A.ConstantMap_ConstantMap$from(A.LinkedHashMap_LinkedHashMap$_literal([0, A.WalletBitcoinNetwork$(0, $.$get$_DefaultAppCoins_bitcoinMainnet()), 1, A.WalletBitcoinNetwork$(1, $.$get$_DefaultAppCoins_bitcoinTestnet()), 2, A.WalletBitcoinNetwork$(2, $.$get$_DefaultAppCoins_litecoinMainnet()), 7, A.WalletBitcoinNetwork$(7, $.$get$_DefaultAppCoins_litecoinTestnet()), 3, A.WalletBitcoinNetwork$(3, $.$get$_DefaultAppCoins_dogecoinMainnet()), 8, A.WalletBitcoinNetwork$(8, $.$get$_DefaultAppCoins_dogeTestnet()), 9, A.WalletBitcoinNetwork$(9, $.$get$_DefaultAppCoins_bsvMainnet()), 4, A.WalletBitcoinNetwork$(4, $.$get$_DefaultAppCoins_dashMainnet()), 10, A.WalletBitcoinCashNetwork$(10, $.$get$_DefaultAppCoins_bitcoinCashMainnet()), 11, A.WalletBitcoinCashNetwork$(11, $.$get$_DefaultAppCoins_bitcoinCashChipnet()), 12, A.WalletBitcoinNetwork$(12, $.$get$_DefaultAppCoins_pepecoinMainnet()), 30, A.WalletXRPNetwork$(30, $.$get$_DefaultAppCoins_xrpMainnet()), 31, A.WalletXRPNetwork$(31, $.$get$_DefaultAppCoins_xrpTestnet()), 32, A.WalletXRPNetwork$(32, $.$get$_DefaultAppCoins_xrpDevnet()), 33, A.WalletSolanaNetwork$(33, $.$get$_DefaultAppCoins_solana()), 34, A.WalletSolanaNetwork$(34, $.$get$_DefaultAppCoins_solanaTestnet()), 35, A.WalletSolanaNetwork$(35, $.$get$_DefaultAppCoins_solanaDevnet()), 50, A.WalletCardanoNetwork$(50, $.$get$_DefaultAppCoins_cardano()), 51, A.WalletCardanoNetwork$(51, $.$get$_DefaultAppCoins_cardanoTestnet()), 100, A.WalletEthereumNetwork$(100, $.$get$_DefaultAppCoins_ethreumMainnet()), 101, A.WalletEthereumNetwork$(101, $.$get$_DefaultAppCoins_ethreumTestnet()), 102, A.WalletEthereumNetwork$(102, $.$get$_DefaultAppCoins_polygon()), 103, A.WalletEthereumNetwork$(103, $.$get$_DefaultAppCoins_polygonTestnet()), 104, A.WalletEthereumNetwork$(104, $.$get$_DefaultAppCoins_bnb()), 105, A.WalletEthereumNetwork$(105, $.$get$_DefaultAppCoins_bnbTestnet()), 200, A.WalletCosmosNetwork$(200, $.$get$_DefaultAppCoins_cosmos()), 201, A.WalletCosmosNetwork$(201, $.$get$_DefaultAppCoins_cosmosTestnet()), 202, A.WalletCosmosNetwork$(202, $.$get$_DefaultAppCoins_maya()), 203, A.WalletCosmosNetwork$(203, $.$get$_DefaultAppCoins_thorchain()), 204, A.WalletCosmosNetwork$(204, $.$get$_DefaultAppCoins_kujiraTestnet()), 205, A.WalletCosmosNetwork$(205, $.$get$_DefaultAppCoins_kujira()), 206, A.WalletCosmosNetwork$(206, $.$get$_DefaultAppCoins_osmosisTestnet()), 207, A.WalletCosmosNetwork$(207, $.$get$_DefaultAppCoins_osmosis()), 300, A.WalletTonNetwork$(300, $.$get$_DefaultAppCoins_tonMainnet()), 301, A.WalletTonNetwork$(301, $.$get$_DefaultAppCoins_tonTestnet()), 400, A.WalletPolkadotNetwork$(400, $.$get$_DefaultAppCoins_polkadot()), 450, A.WalletKusamaNetwork$(450, $.$get$_DefaultAppCoins_kusama()), 451, A.WalletKusamaNetwork$(451, $.$get$_DefaultAppCoins_westend()), 1001, A.WalletTronNetwork$(1001, $.$get$_DefaultAppCoins_tron()), 1002, A.WalletTronNetwork$(1002, $.$get$_DefaultAppCoins_tronShasta()), 1003, A.WalletTronNetwork$(1003, $.$get$_DefaultAppCoins_tronNile())], t1, t1), type$.int, type$.WalletNetwork_NetworkCoinParams_APIProvider);
     });
     _lazyFinal($, "BlockforestProviderUtils__pathParamRegex", "$get$BlockforestProviderUtils__pathParamRegex", () => A.RegExp_RegExp(":\\w+", true));
     _lazyFinal($, "_EIP712Utils_typeRegex", "$get$_EIP712Utils_typeRegex", () => A.RegExp_RegExp("^\\w+", true));

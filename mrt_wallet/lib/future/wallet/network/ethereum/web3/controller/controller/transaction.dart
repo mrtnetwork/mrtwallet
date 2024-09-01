@@ -141,7 +141,7 @@ class Web3EthereumTransactionRequestController
         request.error(error);
       } else {
         progressKey.responseTx(hash: result.result, network: network);
-        request.completeRequest(result.result);
+        request.completeResponse(result.result);
       }
     } finally {
       notify();

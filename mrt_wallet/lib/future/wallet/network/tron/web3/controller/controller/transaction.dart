@@ -4,7 +4,7 @@ import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/web3/forms/transaction.dart';
+import 'package:mrt_wallet/future/wallet/network/forms/tron/tron.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/controller/impl/impl.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
@@ -22,7 +22,7 @@ class Web3TronTransactionRequestController
   TronFee? get consumedFee => _consumedFee;
   @override
   // ignore: overridden_fields
-  late final LiveTransactionForm<TronWeb3TransactionForm> liveRequest;
+  late final LiveTransactionForm<Web3TronReadOnlyForm> liveRequest;
 
   Web3TronTransactionRequestController({
     required super.walletProvider,
@@ -32,7 +32,7 @@ class Web3TronTransactionRequestController
   late final IntegerBalance ownerBalance =
       IntegerBalance.zero(network.coinDecimal);
 
-  late final Web3TronTransactionInfo _info;
+  late final Web3TronTransactionInfo info;
   late final ReceiptAddress<TronAddress> owner;
   IntegerBalance? _feeLimit;
   IntegerBalance? get feeLimit => _feeLimit;
@@ -40,39 +40,40 @@ class Web3TronTransactionRequestController
   String? get memo => _memo;
 
   Transaction get transaction => request.params.transaction;
+  TransactionContractType get type => transaction.rawData.type;
   bool _trIsReady = false;
   bool get trIsReady => _trIsReady;
 
   late (IntegerBalance, Token) remindAmount;
 
   bool _checkTransaction() {
-    final transactionValue = _info.totalTrxAmount?.balance ?? BigInt.zero;
+    final transactionValue = info.totalTrxAmount?.balance ?? BigInt.zero;
     final remindTrx = ownerBalance.balance -
         (transactionValue + consumedFee!.totalBurn.balance);
     remindAmount =
         (IntegerBalance(remindTrx, network.coinDecimal), network.token);
     if (!remindAmount.$1.isNegative) {
-      if (_info.transferAsset != null) {
+      if (info.transferAsset != null) {
         final remindTokenAmounts =
-            _info.transferAsset!.token.balance.value.balance -
-                _info.transferAsset!.amount.balance;
+            info.transferAsset!.token.balance.value.balance -
+                info.transferAsset!.amount.balance;
         if (remindTokenAmounts.isNegative) {
           remindAmount = (
             IntegerBalance(
-                remindTokenAmounts, _info.transferAsset!.token.token.decimal!),
-            _info.transferAsset!.token.token
+                remindTokenAmounts, info.transferAsset!.token.token.decimal!),
+            info.transferAsset!.token.token
           );
         }
       }
-      if (_info.trc20Transfer != null && !remindAmount.$1.isNegative) {
+      if (info.trc20Transfer != null && !remindAmount.$1.isNegative) {
         final remindTokenAmounts =
-            _info.trc20Transfer!.token.balance.value.balance -
-                _info.trc20Transfer!.value.balance;
+            info.trc20Transfer!.token.balance.value.balance -
+                info.trc20Transfer!.value.balance;
         if (remindTokenAmounts.isNegative) {
           remindAmount = (
             IntegerBalance(
-                remindTokenAmounts, _info.trc20Transfer!.token.token.decimal!),
-            _info.trc20Transfer!.token.token
+                remindTokenAmounts, info.trc20Transfer!.token.token.decimal!),
+            info.trc20Transfer!.token.token
           );
         }
       }
@@ -166,7 +167,7 @@ class Web3TronTransactionRequestController
         progressKey.error(text: fee.error!.tr, backToIdle: null);
         return;
       }
-      _info = transactionInfo.result;
+      info = transactionInfo.result;
       _consumedFee = fee.result;
       if (transaction.rawData.feeLimit != null) {
         _feeLimit =
@@ -177,8 +178,7 @@ class Web3TronTransactionRequestController
             BytesUtils.toHexString(transaction.rawData.data!);
       }
       liveRequest = LiveTransactionForm(
-          validator: TronWeb3TransactionForm(
-              request: request, transactionInfo: transactionInfo.result));
+          validator: Web3TronReadOnlyForm(request: request));
       _trIsReady = _checkTransaction();
       progressKey.idle();
     }
@@ -241,7 +241,7 @@ class Web3TronTransactionRequestController
       progressKey.error(text: result.error!.tr);
     } else if (result.result.isSuccess) {
       progressKey.responseTx(hash: result.result.txId!, network: network);
-      request.completeRequest(result.result.respose);
+      request.completeResponse(result.result.respose);
     } else {
       progressKey.error(text: result.result.error, backToIdle: null);
       request.error(Web3RequestExceptionConst.failedRequest(

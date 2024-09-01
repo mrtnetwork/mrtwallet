@@ -2,12 +2,12 @@ part of '../scripts.dart';
 
 class EthereumPageController extends PageNetworkController {
   ProxyMethodHandler<EIP1193>? _ethereum;
-  final Map<EthereumEvnetTypes, List<JSFunction>> _listeners = {
-    EthereumEvnetTypes.accountsChanged: [],
-    EthereumEvnetTypes.chainChanged: [],
-    EthereumEvnetTypes.connect: [],
-    EthereumEvnetTypes.message: [],
-    EthereumEvnetTypes.disconnect: []
+  final Map<EthereumEventTypes, List<JSFunction>> _listeners = {
+    EthereumEventTypes.accountsChanged: [],
+    EthereumEventTypes.chainChanged: [],
+    EthereumEventTypes.connect: [],
+    EthereumEventTypes.message: [],
+    EthereumEventTypes.disconnect: []
   };
 
   EthereumPageController({required super.getWalletMessage});
@@ -38,36 +38,36 @@ class EthereumPageController extends PageNetworkController {
     final JSWalletMessageResponseEthereum eventMessage = message.cast();
     JSAny? eventData;
     switch (eventMessage.event) {
-      case EthereumEvnetTypes.connect:
+      case EthereumEventTypes.connect:
         final connectionInfo =
             ProviderConnectInfo.fromJson(eventMessage.dataAs());
         eventData = connectionInfo.toJSEvent;
         _ethereum?.object.chainId = connectionInfo.chainId;
         _ethereum?.object.networkVersion = connectionInfo.netVersion.toString();
         break;
-      case EthereumEvnetTypes.chainChanged:
+      case EthereumEventTypes.chainChanged:
         final connectionInfo =
             ProviderConnectInfo.fromJson(eventMessage.dataAs());
         eventData = connectionInfo.chainId.jsify();
         _ethereum?.object.chainId = connectionInfo.chainId;
         _ethereum?.object.networkVersion = connectionInfo.netVersion.toString();
         break;
-      case EthereumEvnetTypes.disconnect:
+      case EthereumEventTypes.disconnect:
         _ethereum?.object.chainId = null;
         _ethereum?.object.networkVersion = null;
         _ethereum?.object.selectedAddress = null;
         break;
-      case EthereumEvnetTypes.accountsChanged:
+      case EthereumEventTypes.accountsChanged:
         final changeInfo =
             EthereumAccountsChanged.fromJson(eventMessage.dataAs());
 
         eventData = changeInfo.toJSEvent;
         _ethereum?.object.selectedAddress = changeInfo.defaultAddress?.toJS;
         break;
-      case EthereumEvnetTypes.disable:
+      case EthereumEventTypes.disable:
         _disable(eventMessage.dataAs());
         break;
-      case EthereumEvnetTypes.active:
+      case EthereumEventTypes.active:
         _init();
         break;
       default:
@@ -75,7 +75,7 @@ class EthereumPageController extends PageNetworkController {
     _eventListeners(eventMessage.event, jsObject: eventData);
   }
 
-  void _eventListeners(EthereumEvnetTypes type, {JSAny? jsObject}) {
+  void _eventListeners(EthereumEventTypes type, {JSAny? jsObject}) {
     if (jsObject == null || !_listeners.containsKey(type)) return;
     final listeners = <JSFunction>[..._listeners[type]!];
     for (final i in listeners) {
@@ -86,17 +86,17 @@ class EthereumPageController extends PageNetworkController {
   void _disconnect() {}
 
   void _addListener(String type, JSFunction listener) {
-    final event = EthereumEvnetTypes.fromName(type);
+    final event = EthereumEventTypes.fromName(type);
     if (event == null) return;
     _listeners[event]?.add(listener);
-    if (event != EthereumEvnetTypes.message &&
-        event != EthereumEvnetTypes.disconnect) {
+    if (event != EthereumEventTypes.message &&
+        event != EthereumEventTypes.disconnect) {
       getWalletMessage(ClientMessageEthereum.event(event));
     }
   }
 
   void _removeListener(String type, JSFunction listener) {
-    final event = EthereumEvnetTypes.fromName(type);
+    final event = EthereumEventTypes.fromName(type);
     _listeners[event]?.remove(listener);
   }
 

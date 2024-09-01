@@ -11,6 +11,7 @@ import 'package:mrt_wallet/wallet/web3/core/permission/types/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
+import 'package:mrt_wallet/wallet/web3/networks/solana/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/permission/models/permission.dart';
 
 class Web3APPAuthentication with CborSerializable {
@@ -136,6 +137,9 @@ class Web3APPAuthentication with CborSerializable {
         break;
       case NetworkType.tron:
         chain ??= Web3TronChain.create();
+        break;
+      case NetworkType.solana:
+        chain ??= Web3SolanaChain.create();
         break;
       default:
         throw Web3RequestExceptionConst.networkNotSupported;

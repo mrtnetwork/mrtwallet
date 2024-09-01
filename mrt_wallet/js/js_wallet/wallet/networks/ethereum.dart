@@ -98,7 +98,7 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
 
   void _onSubscribe(EthereumSubscribeResult result) {
     sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEvnetTypes.message, data: result.toJson()));
+        event: EthereumEventTypes.message, data: result.toJson()));
   }
 
   void initChain(
@@ -139,48 +139,48 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
 
   void _disconnect() {
     sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEvnetTypes.disconnect,
+        event: EthereumEventTypes.disconnect,
         data: Web3RequestExceptionConst.disconnectedChain.toJson()));
   }
 
   void _connect(EthereumWeb3State state) async {
     if (state.chain == null) return;
     sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEvnetTypes.connect,
+        event: EthereumEventTypes.connect,
         data: state.chainChangedEvent.toJson()));
   }
 
   void _accountChanged(EthereumWeb3State state) async {
     sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEvnetTypes.accountsChanged,
+        event: EthereumEventTypes.accountsChanged,
         data: state.accountsChange.toJson()));
   }
 
   void _chainChanged(EthereumWeb3State state) async {
     if (state.chain == null) return;
     sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEvnetTypes.chainChanged,
+        event: EthereumEventTypes.chainChanged,
         data: state.chainChangedEvent.toJson()));
   }
 
   void _toggleEthereum(EthereumWeb3State state) {
     if (state.chain != null) {
       sendMessageToClient(JSWalletMessageResponseEthereum(
-          event: EthereumEvnetTypes.active, data: null));
+          event: EthereumEventTypes.active, data: null));
     } else {
       sendMessageToClient(JSWalletMessageResponseEthereum(
-          event: EthereumEvnetTypes.disable,
+          event: EthereumEventTypes.disable,
           data: Web3RequestExceptionConst.bannedHost.data));
     }
   }
 
   Web3MessageCore _eventMessage(
-      EthereumEvnetTypes type, EthereumWeb3State state) {
+      EthereumEventTypes type, EthereumWeb3State state) {
     switch (type) {
-      case EthereumEvnetTypes.accountsChanged:
+      case EthereumEventTypes.accountsChanged:
         _accountChanged(state);
         break;
-      case EthereumEvnetTypes.chainChanged:
+      case EthereumEventTypes.chainChanged:
         _chainChanged(state);
         break;
       default:
@@ -192,7 +192,7 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
   @override
   Future<Web3MessageCore> request(ClientMessageEthereum params) async {
     final state = this.state;
-    final isEvent = EthereumEvnetTypes.fromName(params.method);
+    final isEvent = EthereumEventTypes.fromName(params.method);
     if (isEvent != null) {
       return _eventMessage(isEvent, state);
     }
@@ -419,6 +419,12 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
         break;
       default:
     }
+  }
+
+  @override
+  Web3MessageCore finilize(
+      ClientMessageEthereum request, Web3MessageCore response) {
+    return response;
   }
 
   @override

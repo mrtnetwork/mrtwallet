@@ -82,6 +82,7 @@ class PageRouter {
   /// web3
   static const String web3Ethereum = "web3/ethereum";
   static const String web3Tron = "web3/tron";
+  static const String web3Solana = "web3/solana";
 
   static const String webview = "web/";
 
@@ -183,6 +184,8 @@ class PageRouter {
         return const EthereumWeb3FieldsView();
       case web3Tron:
         return const TronWeb3FieldsView();
+      case web3Solana:
+        return const SolanaWeb3FieldsView();
       case updateEthereumProvider:
         return const UpdateEthereumProvider();
       case webview:
@@ -244,12 +247,16 @@ class PageRouter {
     }
   }
 
-  static String web3Page(WalletNetwork network) {
+  static String? web3Page(WalletNetwork network) {
     switch (network.type) {
       case NetworkType.ethereum:
         return web3Ethereum;
+      case NetworkType.solana:
+        return web3Solana;
+      case NetworkType.tron:
+        return web3Tron;
       default:
-        throw UnimplementedError();
+        return null;
     }
   }
 

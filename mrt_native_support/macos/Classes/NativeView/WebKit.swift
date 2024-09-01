@@ -167,15 +167,31 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
                 scriptId: '\(self.id)'
             };
             (function() {
+        window.addEventListener("error", function (e) {
+                                   window.webkit.messageHandlers.MRT.postMessage({
+                                       type: 'log',
+                                       data: "Error occurred: " + e.error.message,
+                                       id: '1',
+                                       requestId: '0',
+                                   });
+           return false;
+        })
+            window.addEventListener('unhandledrejection', function (e) {
+                        // Send the message to the native side
+                        window.webkit.messageHandlers.MRT.postMessage({
+                            type: 'log',
+                            data: "Error occurred: " + e.reason.message,
+                            id: '1',
+                            requestId: '0',
+                        });
+            })
             // Capture uncaught errors
             window.onerror = function(message, source, lineno, colno, error) {
-                // Concatenate all the details into a single message string
-                var fullMessage = `Error: ${error ? error.toString() : 'No additional details'}`;
-        
+          
                 // Send the message to the native side
                 window.webkit.messageHandlers.MRT.postMessage({
                     type: 'log',
-                    data: fullMessage,
+                    data: "Error occurred: " + message,
                     id: '1',
                     requestId: '0',
                 });

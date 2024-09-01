@@ -39,7 +39,7 @@
       {
         "world": "MAIN",
         "matches": ["<all_urls>"],
-        "js": ["tron_web.js","page.js"]
+        "js": ["bn.js","tron_web.js","page.js"]
       }
     ],
     "background": {

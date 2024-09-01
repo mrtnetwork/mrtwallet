@@ -16,15 +16,16 @@ typedef Web3PageChainBuilder<T extends Web3RequestControllerState>
 
 class Web3PageRequestControllerView<T extends Web3RequestControllerState>
     extends StatelessWidget {
-  const Web3PageRequestControllerView({
-    super.key,
-    required this.request,
-    required this.builder,
-    required this.controller,
-  });
+  const Web3PageRequestControllerView(
+      {super.key,
+      required this.request,
+      required this.builder,
+      required this.controller,
+      this.showRequestAccount = true});
   final Web3PageChainBuilder<T> builder;
   final T Function() controller;
   final Web3Request request;
+  final bool showRequestAccount;
 
   @override
   Widget build(BuildContext context) {
@@ -46,35 +47,39 @@ class Web3PageRequestControllerView<T extends Web3RequestControllerState>
         onAccsess: (_, __, ___) {
           return MrtViewBuilder(
               controller: controller,
-              builder: (controller) => Web3PageProgress(
-                  key: controller.progressKey,
-                  initialStatus: Web3ProgressStatus.progress,
-                  child: (c) => CustomScrollView(slivers: [
-                        SliverConstraintsBoxView(
-                            padding: WidgetConstant.paddingHorizontal20,
-                            sliver: SliverMainAxisGroup(slivers: [
-                              SliverToBoxAdapter(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (controller.permissionAccount !=
-                                        null) ...[
-                                      Text("account".tr,
-                                          style: context.textTheme.titleLarge),
-                                      Text("web3_request_account_desc".tr),
-                                      WidgetConstant.height8,
-                                      ContainerWithBorder(
-                                          child: AddressDetailsView(
-                                              address: controller
-                                                  .permissionAccount!)),
-                                      WidgetConstant.height20,
+              builder: (controller) {
+                final bool hasAccount = controller.permissionAccount != null;
+                return Web3PageProgress(
+                    key: controller.progressKey,
+                    initialStatus: Web3ProgressStatus.progress,
+                    child: (c) => CustomScrollView(slivers: [
+                          SliverConstraintsBoxView(
+                              padding: WidgetConstant.paddingHorizontal20,
+                              sliver: SliverMainAxisGroup(slivers: [
+                                SliverToBoxAdapter(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (showRequestAccount && hasAccount) ...[
+                                        Text("account".tr,
+                                            style:
+                                                context.textTheme.titleLarge),
+                                        Text("web3_request_account_desc".tr),
+                                        WidgetConstant.height8,
+                                        ContainerWithBorder(
+                                            child: AddressDetailsView(
+                                                address: controller
+                                                    .permissionAccount!)),
+                                        WidgetConstant.height20,
+                                      ],
                                     ],
-                                  ],
+                                  ),
                                 ),
-                              ),
-                              ...builder(context, controller)
-                            ])),
-                      ])),
+                                ...builder(context, controller)
+                              ])),
+                        ]));
+              },
               repositoryId: request.info.request.requestId);
         },
       ),

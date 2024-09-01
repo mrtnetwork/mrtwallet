@@ -31,6 +31,11 @@ class Web3RequestException implements Exception {
         walletCode: walletCode,
         data: data);
   }
+
+  @override
+  String toString() {
+    return message;
+  }
 }
 
 class Web3RejectException implements AppException {

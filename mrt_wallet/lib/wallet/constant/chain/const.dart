@@ -331,13 +331,13 @@ class _DefaultAppCoins {
   static final SolanaNetworkParams solana = SolanaNetworkParams(
       transactionExplorer: "https://explorer.solana.com/tx/#txid",
       addressExplorer: "https://explorer.solana.com/address/#address",
-      genesis: "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+      genesis: SolanaConst.mainnetGenesis,
       mainnet: true,
       token: Token(
         name: "Solana",
         symbol: "SOL",
         market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
-        decimal: 9,
+        decimal: SolanaConst.decimal,
         assetLogo: APPConst.sol,
       ),
       providers: []);
@@ -346,13 +346,28 @@ class _DefaultAppCoins {
           "https://explorer.solana.com/tx/#txid?cluster=testnet",
       addressExplorer:
           "https://explorer.solana.com/address/#address?cluster=testnet",
-      genesis: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
+      genesis: SolanaConst.testnetGenesis,
       mainnet: false,
       token: Token(
         name: "Solana testnet",
         symbol: "tSOL",
         market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
-        decimal: 9,
+        decimal: SolanaConst.decimal,
+        assetLogo: APPConst.sol,
+      ),
+      providers: []);
+  static final SolanaNetworkParams solanaDevnet = SolanaNetworkParams(
+      transactionExplorer:
+          "https://explorer.solana.com/tx/#txid?cluster=devnet",
+      addressExplorer:
+          "https://explorer.solana.com/address/#address?cluster=devnet",
+      genesis: SolanaConst.devnetGenesis,
+      mainnet: false,
+      token: Token(
+        name: "Solana devnet",
+        symbol: "tSOL",
+        market: const CoingeckoCoin(apiId: "solana", coinName: "solana"),
+        decimal: SolanaConst.decimal,
         assetLogo: APPConst.sol,
       ),
       providers: []);
@@ -603,6 +618,7 @@ class ChainConst {
     32: WalletXRPNetwork(32, _DefaultAppCoins.xrpDevnet),
     33: WalletSolanaNetwork(33, _DefaultAppCoins.solana),
     34: WalletSolanaNetwork(34, _DefaultAppCoins.solanaTestnet),
+    35: WalletSolanaNetwork(35, _DefaultAppCoins.solanaDevnet),
     50: WalletCardanoNetwork(50, _DefaultAppCoins.cardano),
     51: WalletCardanoNetwork(51, _DefaultAppCoins.cardanoTestnet),
     100: WalletEthereumNetwork(100, _DefaultAppCoins.ethreumMainnet),

@@ -1,6 +1,7 @@
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/methods/methods.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/methods/methods.dart';
 
 abstract class Web3RequestMethods {
@@ -19,6 +20,8 @@ abstract class Web3RequestMethods {
         return Web3EthereumRequestMethods.fromId(tag!.last);
       case NetworkType.tron:
         return Web3TronRequestMethods.fromId(tag!.last);
+      case NetworkType.solana:
+        return Web3SolanaRequestMethods.fromId(tag!.last);
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }

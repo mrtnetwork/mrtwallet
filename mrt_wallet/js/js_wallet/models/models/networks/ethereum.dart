@@ -137,7 +137,7 @@ extension type EthereumRequestParams._(JSObject o)
 
 class ClientMessageEthereum extends PageMessage {
   const ClientMessageEthereum({required super.method, required super.params});
-  factory ClientMessageEthereum.event(EthereumEvnetTypes event) {
+  factory ClientMessageEthereum.event(EthereumEventTypes event) {
     return ClientMessageEthereum(method: event.name, params: null);
   }
   @override
@@ -162,7 +162,7 @@ class ClientMessageEthereum extends PageMessage {
   }
 }
 
-enum EthereumEvnetTypes {
+enum EthereumEventTypes {
   accountsChanged([100]),
   chainChanged([101]),
   message([102]),
@@ -172,13 +172,13 @@ enum EthereumEvnetTypes {
   disable([106]);
 
   final List<int> tag;
-  const EthereumEvnetTypes(this.tag);
-  static EthereumEvnetTypes fromTag(List<int>? tag) {
+  const EthereumEventTypes(this.tag);
+  static EthereumEventTypes fromTag(List<int>? tag) {
     return values.firstWhere((e) => BytesUtils.bytesEqual(e.tag, tag),
         orElse: () => throw Web3RequestExceptionConst.internalError);
   }
 
-  static EthereumEvnetTypes? fromName(String? name) {
+  static EthereumEventTypes? fromName(String? name) {
     try {
       return values.firstWhere((e) => e.name == name,
           orElse: () => throw Web3RequestExceptionConst.internalError);
@@ -193,7 +193,7 @@ class JSWalletMessageResponseEthereum extends JSWalletNetworkEvent {
     required this.event,
     required super.data,
   }) : super(client: JSClientType.ethereum);
-  final EthereumEvnetTypes event;
+  final EthereumEventTypes event;
   factory JSWalletMessageResponseEthereum.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborListValue values = CborSerializable.cborTagValue(
@@ -206,7 +206,7 @@ class JSWalletMessageResponseEthereum extends JSWalletNetworkEvent {
       throw Web3RequestExceptionConst.internalError;
     }
     return JSWalletMessageResponseEthereum(
-        event: EthereumEvnetTypes.fromTag(values.elementAt(1)),
+        event: EthereumEventTypes.fromTag(values.elementAt(1)),
         data: StringUtils.toJson(values.elementAt<String>(2))["result"]);
   }
 

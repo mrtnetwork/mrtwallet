@@ -5,18 +5,19 @@ import 'transaction_impl.dart';
 typedef OnSetMemo = Future<String?> Function(String? memo);
 
 mixin SolanaMemoImpl on SolanaTransactionImpl {
-  MemoProgram? _memo;
-  String? get memoStr => (_memo?.layout as MemoLayout?)?.memo;
-  bool get hasMemo => _memo != null;
+  String? _memoStr;
+  String? get memoStr => _memoStr;
+  bool get hasMemo => _memoStr != null;
   @override
-  MemoProgram? get memo => _memo;
+  MemoProgram? get memo =>
+      hasMemo ? MemoProgram(layout: MemoLayout(memo: _memoStr!)) : null;
 
   void onTapMemo(OnSetMemo onTapMemo) async {
     final txt = await onTapMemo(memoStr);
     if (txt == null) {
-      _memo = null;
+      _memoStr = null;
     } else {
-      _memo = MemoProgram(layout: MemoLayout(memo: txt));
+      _memoStr = txt;
     }
     onChange();
   }

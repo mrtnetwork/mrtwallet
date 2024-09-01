@@ -75,7 +75,7 @@ mixin TonSignerImpl on TonTransactionImpl {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
             network: network,
-            txId: result.result.toString(),
+            txId: [result.result.toString()],
           ),
           backToIdle: false);
     }

@@ -34,7 +34,12 @@ abstract class _WalletController with CryptoWokerImpl {
 }
 
 class WalletController extends _WalletController
-    with WalletManager, Web3EthereumImpl, Web3TronImpl, Web3Impl {
+    with
+        WalletManager,
+        Web3SolanaImpl,
+        Web3EthereumImpl,
+        Web3TronImpl,
+        Web3Impl {
   WalletController._(WalletCore core, HDWallet wallet, ChainsHandler chains)
       : super(core, wallet, chains);
   static Future<ChainsHandler> _setupNetwork(

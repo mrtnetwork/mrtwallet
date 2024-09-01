@@ -5,6 +5,7 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'account.dart';
 import '../models/activity.dart';
@@ -42,6 +43,9 @@ abstract class Web3Chain<
         break;
       case NetworkType.tron:
         chain = Web3TronChain.deserialize(object: decode);
+        break;
+      case NetworkType.solana:
+        chain = Web3SolanaChain.deserialize(object: decode);
         break;
       default:
         throw WalletExceptionConst.unsuportedFeature;

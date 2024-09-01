@@ -11,7 +11,6 @@ import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
-import 'package:mrt_wallet/crypto/models/networks.dart';
 
 abstract class UIWallet extends WalletCore {
   UIWallet(this.navigatorKey);
@@ -58,14 +57,17 @@ abstract class UIWallet extends WalletCore {
 
   Future<MethodResult<T>> signTransaction<T>(
       {required WalletSigningRequest<T> request}) async {
-    late final Set<ChainAccount> addresses = request.addresses.toSet();
-    late final Set<AddressDerivationIndex> keys =
-        addresses.map((e) => e.signerKeyIndexes()).expand((e) => e).toSet();
-    if (wallet.protectWallet) {
-      final password = await _getPassword(addresses: addresses, keys: keys);
-      return await super.signRequest(request: request, password: password);
-    }
-    return await super.signRequest(request: request);
+    return await MethodUtils.call(() async {
+      late final Set<ChainAccount> addresses = request.addresses.toSet();
+      late final Set<AddressDerivationIndex> keys =
+          addresses.map((e) => e.signerKeyIndexes()).expand((e) => e).toSet();
+      if (wallet.protectWallet) {
+        final password = await _getPassword(addresses: addresses, keys: keys);
+        return (await super.signRequest(request: request, password: password))
+            .result;
+      }
+      return (await super.signRequest(request: request)).result;
+    });
   }
 
   final GlobalKey<RefreshIndicatorState> refreshState =
@@ -113,18 +115,10 @@ abstract class UIWallet extends WalletCore {
 
   @override
   bool onWeb3Request(Web3Request request) {
-    switch (request.params.method.network) {
-      case NetworkType.ethereum:
-        return navigatorKey.currentContext
-                ?.toSync(PageRouter.web3Ethereum, argruments: request) ??
-            false;
-      case NetworkType.tron:
-        return navigatorKey.currentContext
-                ?.toSync(PageRouter.web3Tron, argruments: request) ??
-            false;
-      default:
-    }
-    return false;
+    final page = PageRouter.web3Page(request.chain.network);
+    if (page == null) return false;
+    return navigatorKey.currentContext?.toSync(page, argruments: request) ??
+        false;
   }
 
   void init(DynamicVoid onNotification) {

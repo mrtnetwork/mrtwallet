@@ -31,7 +31,7 @@ class TronWeb3TransactionFieldsView extends StatelessWidget {
       builder: (context, controller) {
         return [
           _TransactionFieldsView(
-              form: controller.form as TronWeb3TransactionForm,
+              form: controller.form as Web3TronReadOnlyForm,
               controller: controller)
         ];
       },
@@ -45,8 +45,8 @@ class _TransactionFieldsView extends StatelessWidget {
       {required this.form, required this.controller, Key? key})
       : super(key: key);
   final Web3TronTransactionRequestController controller;
-  final TronWeb3TransactionForm form;
-  Web3TronTransactionInfo get info => form.transactionInfo;
+  final Web3TronReadOnlyForm form;
+  Web3TronTransactionInfo get info => controller.info;
   @override
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
@@ -62,7 +62,7 @@ class _TransactionFieldsView extends StatelessWidget {
           Text("tron_transaction_type".tr),
           WidgetConstant.height8,
           ContainerWithBorder(
-            child: Text(form.type.name,
+            child: Text(controller.type.name,
                 style: context.colors.onPrimaryContainer.bodyMedium(context)),
           ),
           WidgetConstant.height20,

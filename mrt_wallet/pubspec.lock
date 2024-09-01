@@ -376,10 +376,10 @@ packages:
     dependency: "direct main"
     description:
       name: on_chain
-      sha256: "4040c187be82f6f6414110139f6e70fe304f23f63111c3ee60438c539b1a1dce"
+      sha256: "8ac4dbef8c7fa6817e3853d1d4b6ff66a9367ab307ed54b9b3641b4f0793b1fb"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.1"
+    version: "4.1.0"
   package_config:
     dependency: transitive
     description:

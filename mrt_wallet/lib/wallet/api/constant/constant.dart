@@ -258,6 +258,13 @@ class ProvidersConst {
           serviceName: "solana",
           websiteUri: "solana.com")
     ],
+    35: <APIProvider>[
+      const SolanaAPIProvider(
+          httpNodeUri: "https://api.devnet.solana.com",
+          identifier: "default-200",
+          serviceName: "solana",
+          websiteUri: "solana.com")
+    ],
     50: <APIProvider>[
       CardanoAPIProvider(
         uri: "https://cardano-mainnet.blockfrost.io/api/v0/",

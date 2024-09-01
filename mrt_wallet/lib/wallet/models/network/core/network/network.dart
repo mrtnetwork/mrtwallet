@@ -357,6 +357,7 @@ class WalletSolanaNetwork extends WalletNetwork<SolanaNetworkParams> {
   final int value;
   @override
   final SolanaNetworkParams coinParam;
+  String get genesisBlock => coinParam.genesis;
   const WalletSolanaNetwork(this.value, this.coinParam);
   factory WalletSolanaNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {

@@ -53,7 +53,7 @@ enum CryptoRequestMethod {
 }
 
 enum WalletRequestMethod {
-  ethereumPersonalSign(CryptoKeyConst.ethereumPersonalSign),
+  signMessage(CryptoKeyConst.ethereumPersonalSign),
   ethereumTypedDataSign(CryptoKeyConst.ethereumTypedDataSign),
   deriveAddress(CryptoKeyConst.deriveAddress),
   readPublicKeys(CryptoKeyConst.readPublicKeys),
@@ -153,8 +153,8 @@ abstract class WalletRequest<T, A extends MessageArgs>
     final request = WalletRequestMethod.fromTag(decode.tags);
     final WalletRequest args;
     switch (request) {
-      case WalletRequestMethod.ethereumPersonalSign:
-        args = WalletRequestEthereumPersonalSign.deserialize(object: decode);
+      case WalletRequestMethod.signMessage:
+        args = WalletRequestSignMessage.deserialize(object: decode);
         break;
       case WalletRequestMethod.ethereumTypedDataSign:
         args = WalletRequestEthereumTypedDataSign.deserialize(object: decode);

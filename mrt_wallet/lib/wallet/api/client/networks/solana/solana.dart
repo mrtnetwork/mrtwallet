@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/solana.dart';
@@ -40,7 +41,22 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider> {
   Future<BigInt?> getFee(SolanaTransaction transaction) async {
     return await provider.request(SolanaRPCGetFeeForMessage(
         encodedMessage: StringUtils.decode(transaction.message.serialize(),
-            type: StringEncoding.base64)));
+            type: StringEncoding.base64),
+        commitment: Commitment.processed));
+  }
+
+  Future<SimulateTranasctionResponse> simulate(
+      {required SolanaTransaction transaction,
+      bool replaceRecentBlockhash = true,
+      bool sigVerify = false}) async {
+    return await provider.request(
+      SolanaRPCSimulateTransaction(
+          encodedTransaction: transaction.serializeString(
+              encoding: TransactionSerializeEncoding.base64),
+          sigVerify: sigVerify,
+          replaceRecentBlockhash: replaceRecentBlockhash,
+          encoding: SolanaRPCEncoding.base64),
+    );
   }
 
   Future<SolAddress> getBlockHash() async {
@@ -99,6 +115,27 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider> {
 
   Future<String> genesis() async {
     return await provider.request(SolanaRPCGetGenesisHash());
+  }
+
+  Future<String> sendTransaction(SolanaTransaction transaction,
+      {int? maxRetries,
+      bool skipPreflight = false,
+      int? minContextSlot,
+      Commitment? commitment,
+      SolanaRPCEncoding encoding = SolanaRPCEncoding.base64}) async {
+    return await provider.request(SolanaRPCSendTransaction(
+        encodedTransaction: transaction.serializeString(
+          encoding: encoding == SolanaRPCEncoding.base64
+              ? TransactionSerializeEncoding.base64
+              : TransactionSerializeEncoding.base58,
+        ),
+        encoding: encoding,
+        skipPreflight: skipPreflight,
+        maxRetries: maxRetries,
+        commitment: skipPreflight ? Commitment.processed : commitment,
+        minContextSlot: minContextSlot == null
+            ? null
+            : MinContextSlot(slot: minContextSlot)));
   }
 
   @override

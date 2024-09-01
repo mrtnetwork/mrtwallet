@@ -40,6 +40,7 @@ abstract class JSNetworkHandler<
   STATE get state;
 
   Future<Web3MessageCore> request(MESSAGE message);
+  Web3MessageCore finilize(MESSAGE request, Web3MessageCore response);
 
   void onRequestDone(MESSAGE message);
   final SendMessageToClient sendMessageToClient;

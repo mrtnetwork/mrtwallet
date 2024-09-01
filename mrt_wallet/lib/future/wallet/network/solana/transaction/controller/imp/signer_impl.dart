@@ -71,8 +71,8 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
           showBackButton: true, backToIdle: false);
     } else {
       progressKey.success(
-          progressWidget:
-              SuccessTransactionTextView(network: network, txId: result.result),
+          progressWidget: SuccessTransactionTextView(
+              network: network, txId: [result.result]),
           backToIdle: false);
     }
   }

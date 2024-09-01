@@ -19,8 +19,8 @@ class Web3EthereumGlobalRequestController<RESPONSE,
     Object? result = obj;
     switch (request.params.method) {
       case Web3EthereumRequestMethods.persoalSign:
-        final sign = await walletProvider.wallet
-            .walletRequest(WalletRequestEthereumPersonalSign(
+        final sign =
+            await walletProvider.wallet.walletRequest(WalletRequestSignMessage(
           message:
               request.params.cast<Web3EthreumPersonalSign>().chalengBytes(),
           index: address.keyIndex as Bip32AddressIndex,
@@ -29,7 +29,7 @@ class Web3EthereumGlobalRequestController<RESPONSE,
           progressKey.error(text: sign.error!.tr);
           return;
         }
-        result = sign.result;
+        result = sign.result.signatureHex;
         break;
       case Web3EthereumRequestMethods.typedData:
         final sign = await walletProvider.wallet
@@ -45,7 +45,7 @@ class Web3EthereumGlobalRequestController<RESPONSE,
         break;
       default:
     }
-    request.completeRequest(result);
+    request.completeResponse(result);
     progressKey.response(text: "request_completed_success".tr);
   }
 

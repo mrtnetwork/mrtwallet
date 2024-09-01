@@ -6,7 +6,7 @@ import 'package:mrt_native_support/web/mrt_native_web.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/app/utils/list/extention.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
-import '../ethreum/ethereum.dart';
+import 'ethereum.dart';
 import '../requests.dart';
 
 @JS("tron")
@@ -85,8 +85,6 @@ extension type HttpProvider._(JSAny _) implements JSAny {
 
 @JS("TIP-1193")
 extension type TIP1193(JSObject _) implements EIP1193 {
-  // @JS("tronWeb")
-  // external TronWeb get tronWebb;
   @JS("tronWeb")
   external set tronWeb(Proxy tronWeb);
 
@@ -287,7 +285,7 @@ class TronAccountsChanged {
     return {"accounts": accounts, "defaultAddress": defaultAddress?.toJson()};
   }
 
-  JSAny? get toJSEvenet => accounts.jsify();
+  JSAny? get toJSEvent => accounts.jsify();
 
   @JSExport("toString")
   @override

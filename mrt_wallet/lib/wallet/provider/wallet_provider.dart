@@ -15,6 +15,7 @@ part 'controller/manager.dart';
 part 'controller/web3.dart';
 part 'controller/networks/tron_web3.dart';
 part 'controller/networks/ethereum_web3.dart';
+part 'controller/networks/solana.dart';
 part 'core/core.dart';
 part 'impl/manager.dart';
 part 'impl/storage_impl.dart';

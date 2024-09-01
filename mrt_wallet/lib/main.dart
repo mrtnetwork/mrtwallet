@@ -21,7 +21,9 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() async {
-  runZonedGuarded(run, (error, stack) {});
+  runZonedGuarded(run, (error, stack) {
+    WalletLogging.log("zone error: $error");
+  });
 }
 
 void run() async {

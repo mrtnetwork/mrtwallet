@@ -9,11 +9,13 @@ class APPAnimatedSwitcher<T> extends StatelessWidget {
       {required this.enable,
       required this.widgets,
       this.height,
+      this.width,
       this.transitionBuilder,
       this.duration = APPConst.animationDuraion,
       Key? key})
       : super(key: key);
   final double? height;
+  final double? width;
   final T? enable;
   final Map<T?, WidgetContext> widgets;
   final Duration duration;
@@ -29,6 +31,7 @@ class APPAnimatedSwitcher<T> extends StatelessWidget {
         widgets[enable]?.call(context) ?? WidgetConstant.sizedBox,
         key: ValueKey(enable),
         height: height,
+        width: width,
       ),
     );
   }
@@ -57,13 +60,15 @@ class APPSliverAnimatedSwitcher<T> extends StatelessWidget {
 }
 
 class _Wrap extends StatelessWidget {
-  const _Wrap(this.widget, {this.height, Key? key}) : super(key: key);
+  const _Wrap(this.widget, {this.height, this.width, Key? key})
+      : super(key: key);
   final Widget widget;
   final double? height;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(height: height, child: widget);
+    return SizedBox(height: height, width: width, child: widget);
   }
 }
 
