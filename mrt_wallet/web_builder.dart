@@ -234,12 +234,6 @@ void main(List<String> args) async {
     await _buildWeb(
         extension: true, mozila: mozila, minify: minify, clean: clean);
   } else if (fixedArgs.contains("-web")) {
-    // final baseHrefIndex =
-    //     fixedArgs.indexWhere((e) => e.startsWith("--base-href="));
-    // String? baseHref;
-    // if (baseHrefIndex > 0) {
-    //   baseHref = fixedArgs.elementAt(baseHrefIndex);
-    // }
     await _buildWeb(
         minify: minify, baseHref: "--base-href=/mrtwallet/", clean: clean);
   } else if (fixedArgs.contains("-webview")) {
