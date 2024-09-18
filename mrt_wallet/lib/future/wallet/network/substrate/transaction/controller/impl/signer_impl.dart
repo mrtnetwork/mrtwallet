@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/crypto/crypto/schnorrkel/keys/keys.dart';
-import 'package:mrt_wallet/future/state_managment/extention/app_extentions/string.dart';
+import 'package:mrt_wallet/future/state_managment/extension/app_extensions/string.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/signing/signing.dart';

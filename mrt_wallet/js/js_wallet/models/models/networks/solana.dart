@@ -3,11 +3,6 @@ import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import '../../models.dart';
 
-import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:blockchain_utils/utils/string/string.dart';
-import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
-import 'package:mrt_native_support/web/mrt_native_web.dart';
-
 @JS("BN")
 extension type JSBN._(JSAny _) implements JSAny {
   external factory JSBN(JSAny val);
@@ -18,16 +13,19 @@ extension type JSBN._(JSAny _) implements JSAny {
 external JSAny? get solanaWeb3;
 @JS("solana")
 external set solana(Proxy? solana);
-extension type SolanaWalletAdapter(JSObject _) implements MRTJsObject {
+extension type SolanaWalletAdapter(JSObject _) implements MRTNetworkAdapter {
   external set publicKey(JSObject? publicKey);
+
   external bool get isConnected;
   external set isConnected(bool isConnected);
+  external set connect(JSFunction f);
+
   external set signMessage(JSFunction f);
-  @JS("signAndSendTransaction")
+  @JS("signTransaction")
   external set signTransaction(JSFunction f);
   @JS("signAndSendTransaction")
   external set signAndSendTransaction(JSFunction f);
-
+  @JS("signAllTransactions")
   external set signAllTransactions(JSFunction f);
   @JS("signAndSendAllTransactions")
   external set signAndSendAllTransactions(JSFunction f);
@@ -35,7 +33,6 @@ extension type SolanaWalletAdapter(JSObject _) implements MRTJsObject {
   external set on(JSFunction f);
   external set removeListener(JSFunction f);
 
-  external set connect(JSFunction f);
   factory SolanaWalletAdapter.setup() {
     return SolanaWalletAdapter(JSObject());
   }
@@ -44,6 +41,9 @@ extension type SolanaWalletAdapter(JSObject _) implements MRTJsObject {
 extension type JSUint8Array(JSAny _) implements JSAny {
   external static JSUint8Array from(JSAny? v);
   external JSUint8Array slice();
+  factory JSUint8Array.fromList(List<int> bytes) {
+    return JSUint8Array.from(bytes.jsify());
+  }
   List<int> toListInt() {
     return (dartify() as List?)?.cast() ?? [];
   }
@@ -57,9 +57,37 @@ extension type JSSolanaTransactionSerializationConfig._(JSObject _)
 @JS()
 extension type JSSolanaSignMessageResponse._(JSObject _) implements JSAny {
   external factory JSSolanaSignMessageResponse(
-      {required JSUint8Array signature});
+      {required JSUint8Array signature, required JSObject publicKey});
+
+  factory JSSolanaSignMessageResponse.fromJson(Map<String, dynamic> json) {
+    return JSSolanaSignMessageResponse(
+        signature: JSUint8Array.fromList((json["signature"] as List).cast()),
+        publicKey: JSSolanaPublicKey(
+                base58: json["signer"],
+                bytes: (json["signerAddressBytes"] as List).cast())
+            .toJS);
+  }
 }
 
+class JSSolanaSignTransactionResponse {
+  final List<int> signature;
+  final List<int> addressBytes;
+  final String address;
+  JSSolanaSignTransactionResponse(
+      {required List<int> signature,
+      required List<int> addressBytes,
+      required this.address})
+      : signature = BytesUtils.toBytes(signature, unmodifiable: true),
+        addressBytes = BytesUtils.toBytes(addressBytes, unmodifiable: true);
+  factory JSSolanaSignTransactionResponse.fromJson(Map<String, dynamic> json) {
+    return JSSolanaSignTransactionResponse(
+        signature: (json["signature"] as List).cast(),
+        addressBytes: (json["signerAddressBytes"] as List).cast(),
+        address: json["signer"]);
+  }
+}
+
+@JS()
 extension type JSSolanaTranasctionSendOptions._(JSObject _) implements JSAny {
   external factory JSSolanaTranasctionSendOptions(
       {bool? skipPreflight,
@@ -91,10 +119,9 @@ extension type JSSolanaTransaction(JSObject _) implements JSAny {
       JSSolanaTransactionSerializationConfig? config);
   external void addSignature(JSObject pubkey, JSAny? signature);
 
-  List<int> transactionSerialize() {
-    final serialize = this.serialize(
+  JSUint8Array transactionSerialize() {
+    return serialize(
         JSSolanaTransactionSerializationConfig(verifySignatures: false));
-    return serialize.toListInt();
   }
 }
 extension type SolanaWeb3JSPubKey._(JSObject _) implements JSAny {
@@ -130,7 +157,6 @@ class JSSolanaPublicKey {
   @JSExport("_bn")
   final JSBN _bn;
 
-  ///  JSBN(toBytes())
   @JSExport("toBase58")
   String toBase58() {
     return base58;
@@ -184,7 +210,7 @@ class SolanaAccountsChanged {
     };
   }
 
-  JSAny? get toJSEvent => accounts.jsify();
+  JSAny? get accountJS => accounts.map((e) => e.toJS).toList().toJS;
 
   JSSolanaPublicKey? toJSPublicKey() {
     if (defaultAddress != null && defaultAddressBytes != null) {
@@ -198,58 +224,6 @@ class SolanaAccountsChanged {
   @override
   String toString() {
     return "SolanaAccountsChanged${toJson()}";
-  }
-}
-
-enum SolanaEventTypes {
-  accountsChanged([100]),
-  chainChanged([101]),
-  message([112]),
-  connect([113]),
-  disconnect([114]),
-  active([115]),
-  disable([116]);
-
-  final List<int> tag;
-  const SolanaEventTypes(this.tag);
-  static SolanaEventTypes fromTag(List<int>? tag) {
-    return values.firstWhere((e) => BytesUtils.bytesEqual(e.tag, tag),
-        orElse: () => throw Web3RequestExceptionConst.internalError);
-  }
-
-  static SolanaEventTypes? fromName(String? name) {
-    return values.firstWhereOrNull((e) => e.name == name);
-  }
-}
-
-class ClientMessageSolana extends PageMessage {
-  const ClientMessageSolana({required super.method, super.params});
-
-  factory ClientMessageSolana.event(SolanaEventTypes event) {
-    return ClientMessageSolana(method: event.name, params: null);
-  }
-  @override
-  JSClientType get type => JSClientType.solana;
-
-  factory ClientMessageSolana.deserialize(
-      {List<int>? bytes, String? cborHex, CborObject? object}) {
-    final CborListValue values = CborSerializable.cborTagValue(
-        cborBytes: bytes,
-        tags: JSClientType.solana.tag,
-        hex: cborHex,
-        object: object);
-    final params = StringUtils.toJson(values.elementAt(1));
-    return ClientMessageSolana(
-        method: values.elementAt(0), params: params["result"]);
-  }
-  @override
-  CborTagValue toCbor() {
-    return CborTagValue(
-        CborListValue.fixedLength([
-          method,
-          StringUtils.fromJson({"result": params})
-        ]),
-        type.tag);
   }
 }
 
@@ -272,40 +246,6 @@ class ClientSolanaTransactionMessage {
   }
 }
 
-class JSWalletMessageResponseSolana extends JSWalletNetworkEvent {
-  JSWalletMessageResponseSolana({
-    required this.event,
-    super.data,
-  }) : super(client: JSClientType.solana);
-  final SolanaEventTypes event;
-  factory JSWalletMessageResponseSolana.deserialize(
-      {List<int>? bytes, CborObject? object, String? hex}) {
-    final CborListValue values = CborSerializable.cborTagValue(
-        cborBytes: bytes,
-        object: object,
-        hex: hex,
-        tags: JSWalletMessageType.event.tag);
-    final client = JSClientType.fromTag(values.elementAt(0));
-    if (client != JSClientType.solana) {
-      throw Web3RequestExceptionConst.internalError;
-    }
-    return JSWalletMessageResponseSolana(
-        event: SolanaEventTypes.fromTag(values.elementAt(1)),
-        data: StringUtils.toJson(values.elementAt<String>(2))["result"]);
-  }
-
-  @override
-  CborTagValue toCbor() {
-    return CborTagValue(
-        CborListValue.fixedLength([
-          CborBytesValue(client.tag),
-          CborBytesValue(event.tag),
-          resultAsJsonString
-        ]),
-        type.tag);
-  }
-}
-
 class SolanaProviderConnectInfo {
   @JSExport("genesisBlock")
   final String genesisBlock;
@@ -324,13 +264,4 @@ class SolanaProviderConnectInfo {
   String toString() {
     return genesisBlock;
   }
-}
-
-@JS("SolanaRequestParams")
-extension type SolanaRequestParams._(JSObject o)
-    implements Web3JSRequestParams {
-  external factory SolanaRequestParams({String? method, JSAny? params});
-  external String get method;
-  external set method(String? method);
-  external JSAny? get params;
 }

@@ -376,10 +376,10 @@ packages:
     dependency: "direct main"
     description:
       name: on_chain
-      sha256: "8ac4dbef8c7fa6817e3853d1d4b6ff66a9367ab307ed54b9b3641b4f0793b1fb"
+      sha256: ea828a1f62ce4afdb3fb7d3e05d3e1e9dd3b8a356f44dfa83586d30b5da470a5
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.0"
+    version: "4.2.0"
   package_config:
     dependency: transitive
     description:
@@ -557,10 +557,10 @@ packages:
     dependency: "direct main"
     description:
       name: ton_dart
-      sha256: "997b08219220807df4aaceaaa8038c2e722ae76c979cf6a7478bd52f58d222d8"
+      sha256: "2112e3cdcb64162bde67cc1c6a3d140e1f29273c85ddba046201d37cc51a9b03"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.4"
+    version: "0.1.1"
   typed_data:
     dependency: transitive
     description:
@@ -581,10 +581,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: f652077d0bdf60abe4c1f6377448e8655008eef28f128bc023f7b5e8dfeb48fc
+      sha256: "5c5f338a667b4c644744b661f309fb8080bb94b18a7e91ef1dbd343bed00ed6d"
       url: "https://pub.dev"
     source: hosted
-    version: "14.2.4"
+    version: "14.2.5"
   watcher:
     dependency: transitive
     description:

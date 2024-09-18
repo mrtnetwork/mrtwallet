@@ -68,6 +68,10 @@ class CborTagsConst {
 
   ///
   static const List<int> tonAccount = [200, 199];
+  static const List<int> tonAddressLegacy = [200, 199, 0];
+  static const List<int> tonAddressSubWallet = [200, 199, 1];
+  static const List<int> tonAddressV5 = [200, 199, 2];
+  static const List<int> tonAddressV5SubWallet = [200, 199, 3];
 
   static const List<int> substrateAccount = [200, 200];
 
@@ -147,6 +151,8 @@ class CborTagsConst {
   static const List<int> web3App = [161, 0, 0];
   static const List<int> web3EthereumAccount = [161, 1, 1];
   static const List<int> web3TronAccount = [161, 2, 1];
+  static const List<int> web3SolanaAccount = [161, 2, 2];
+  static const List<int> web3TonAccount = [161, 2, 3];
 
   /// address params
   static const List<int> bitcoinCashNewAddressParams = [12, 0];

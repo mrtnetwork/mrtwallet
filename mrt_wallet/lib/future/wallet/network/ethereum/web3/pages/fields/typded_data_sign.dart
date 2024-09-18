@@ -9,7 +9,6 @@ import 'package:on_chain/solidity/solidity.dart';
 class EthereumWeb3TypedDataSignRequestView extends StatelessWidget {
   const EthereumWeb3TypedDataSignRequestView({required this.request, Key? key})
       : super(key: key);
-  // final Web3EthereumGlobalRequestController controller;
   final EthereumWeb3Form<Web3EthreumTypdedData> request;
   Web3EthreumTypdedData get param => request.request.params;
   @override

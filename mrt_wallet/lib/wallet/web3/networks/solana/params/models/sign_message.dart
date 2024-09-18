@@ -9,7 +9,28 @@ import 'package:mrt_wallet/wallet/web3/networks/solana/params/core/request.dart'
 import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
 import 'package:on_chain/solana/solana.dart';
 
-class Web3SolanaSignMessage extends Web3SolanaRequestParam<List<int>> {
+class Web3SolanaSignMessageResponse {
+  final SolAddress address;
+  final List<int> signature;
+  Web3SolanaSignMessageResponse(
+      {required this.address, required List<int> signature})
+      : signature = BytesUtils.toBytes(signature, unmodifiable: true);
+  factory Web3SolanaSignMessageResponse.fromJson(Map<String, dynamic> json) {
+    return Web3SolanaSignMessageResponse(
+        address: SolAddress(json["signer"]),
+        signature: (json["signature"] as List).cast());
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "signer": address.address,
+      "signerAddressBytes": address.toBytes(),
+      "signature": signature,
+    };
+  }
+}
+
+class Web3SolanaSignMessage
+    extends Web3SolanaRequestParam<Web3SolanaSignMessageResponse> {
   final SolAddress address;
   final String challeng;
   final String? content;
@@ -57,6 +78,11 @@ class Web3SolanaSignMessage extends Web3SolanaRequestParam<List<int>> {
   Web3SolanaRequestMethods get method => Web3SolanaRequestMethods.signMessage;
 
   @override
+  Object? toJsWalletResponse(Web3SolanaSignMessageResponse response) {
+    return response.toJson();
+  }
+
+  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -80,12 +106,14 @@ class Web3SolanaSignMessage extends Web3SolanaRequestParam<List<int>> {
   @override
   SolAddress? get account => address;
   @override
-  Web3SolanaRequest<List<int>, Web3SolanaSignMessage> toRequest({
+  Web3SolanaRequest<Web3SolanaSignMessageResponse, Web3SolanaSignMessage>
+      toRequest({
     required Web3RequestApplicationInformation request,
     required Web3APPAuthentication authenticated,
     required SolanaChain chain,
   }) {
-    return Web3SolanaRequest<List<int>, Web3SolanaSignMessage>(
+    return Web3SolanaRequest<Web3SolanaSignMessageResponse,
+        Web3SolanaSignMessage>(
       params: this,
       authenticated: authenticated,
       chain: chain,

@@ -16,7 +16,7 @@ class CopyTextIcon extends StatefulWidget {
       this.size,
       this.messaage,
       this.color,
-       this.isSensitive =false});
+      this.isSensitive = false});
   final String dataToCopy;
   final double? size;
   final String? messaage;

@@ -4,11 +4,11 @@ import 'package:mrt_wallet/future/wallet/global/pages/token_details.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TonAccountPageView extends StatelessWidget {
   const TonAccountPageView({required this.chainAccount, super.key});
-  final TonChain chainAccount;
+  final TheOpenNetworkChain chainAccount;
   @override
   Widget build(BuildContext context) {
     return TabBarView(children: [
@@ -20,7 +20,7 @@ class TonAccountPageView extends StatelessWidget {
 
 class _TonJettonsView extends StatelessWidget {
   const _TonJettonsView({required this.account});
-  final TonChain account;
+  final TheOpenNetworkChain account;
   ITonAddress get address => account.address;
 
   @override

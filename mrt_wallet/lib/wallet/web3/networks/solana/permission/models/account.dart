@@ -24,13 +24,6 @@ class Web3SolanaChainAccount extends Web3ChainAccount<SolAddress> {
         genesis: genesis,
         defaultAddress: isDefault);
   }
-  Web3SolanaChainAccount changeDefault(bool defaultAddress) {
-    return Web3SolanaChainAccount(
-        keyIndex: keyIndex,
-        address: address,
-        defaultAddress: defaultAddress,
-        genesis: genesis);
-  }
 
   factory Web3SolanaChainAccount.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -38,7 +31,7 @@ class Web3SolanaChainAccount extends Web3ChainAccount<SolAddress> {
         object: object,
         cborBytes: bytes,
         hex: hex,
-        tags: CborTagsConst.web3TronAccount);
+        tags: CborTagsConst.web3SolanaAccount);
     return Web3SolanaChainAccount(
         keyIndex: AddressDerivationIndex.fromCborBytesOrObject(
             obj: values.getCborTag(0)),
@@ -52,7 +45,7 @@ class Web3SolanaChainAccount extends Web3ChainAccount<SolAddress> {
     return CborTagValue(
         CborListValue.fixedLength(
             [keyIndex.toCbor(), address.address, genesis, defaultAddress]),
-        CborTagsConst.web3TronAccount);
+        CborTagsConst.web3SolanaAccount);
   }
 
   @override

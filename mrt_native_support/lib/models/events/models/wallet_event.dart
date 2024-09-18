@@ -8,7 +8,7 @@ enum WalletEventTypes {
   ping,
   popup,
   windowId,
-  openExtention;
+  openExtension;
 
   static WalletEventTypes fromName(String name) {
     return values.firstWhere((e) => e.name == name,

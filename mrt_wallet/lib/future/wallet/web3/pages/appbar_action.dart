@@ -51,10 +51,7 @@ class Web3PermissionAppbarActionView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleTokenImgaeView(
-              network.token,
-              radius: 15,
-            ),
+            CircleTokenImgaeView(network.token, radius: 15),
             Text(network.token.nameView, style: context.textTheme.labelMedium)
           ],
         ),

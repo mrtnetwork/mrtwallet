@@ -6,7 +6,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:on_chain/on_chain.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class ImportTRC20TokenView extends StatelessWidget {
   const ImportTRC20TokenView({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/resource_v2/forms/freez_balance_v2.dart';

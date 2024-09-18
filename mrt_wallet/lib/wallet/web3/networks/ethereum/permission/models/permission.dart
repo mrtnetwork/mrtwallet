@@ -20,7 +20,9 @@ class Web3EthereumChain
   @override
   Web3EthereumChain clone() {
     return Web3EthereumChain._(
-        accounts: accounts, currentChain: currentChain, activities: activities);
+        accounts: activeAccounts,
+        currentChain: currentChain,
+        activities: activities);
   }
 
   factory Web3EthereumChain.create({BigInt? chainId}) {
@@ -31,7 +33,8 @@ class Web3EthereumChain
   }
 
   @override
-  List<Web3EthereumChainAccount> get accounts => super.accounts.cast();
+  List<Web3EthereumChainAccount> get activeAccounts =>
+      super.activeAccounts.cast();
 
   factory Web3EthereumChain.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -56,7 +59,8 @@ class Web3EthereumChain
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
+          CborListValue.fixedLength(
+              activeAccounts.map((e) => e.toCbor()).toList()),
           _currentChain,
           CborListValue.fixedLength(activities.map((e) => e.toCbor()).toList()),
         ]),
@@ -70,8 +74,8 @@ class Web3EthereumChain
   IEthAddress getAccountPermission(
       {required ETHAddress address, required EthereumChain chain}) {
     try {
-      final permissionAccount =
-          accounts.firstWhere((e) => e.address == address);
+      final permissionAccount = activeAccounts.firstWhere(
+          (e) => e.address == address && e.chainId == chain.chainId);
       final chainAccount = chain.addresses.firstWhere((e) {
         return e.networkAddress == permissionAccount.address &&
             e.keyIndex == permissionAccount.keyIndex;
@@ -83,25 +87,11 @@ class Web3EthereumChain
   }
 
   @override
-  List<Web3EthereumChainAccount> currentChainAccounts(EthereumChain chain) {
-    final currentAccounts =
-        accounts.where((e) => e.chainId == _currentChain).toList();
-    List<Web3EthereumChainAccount> existsAccounts = [];
-    for (final i in chain.addresses) {
-      final chainAccount = currentAccounts.firstWhereOrNull(
-          (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);
-      if (chainAccount != null) {
-        existsAccounts.add(chainAccount);
-      }
-    }
-    return existsAccounts;
+  Web3EthereumChainAccount? getPermission(ETHAddress address) {
+    return activeAccounts.firstWhereOrNull((e) => e.address == address);
   }
 
   @override
-  Web3EthereumChainAccount? getPermission(ETHAddress address) {
-    return accounts.firstWhereOrNull((e) => e.address == address);
-  }
-
   void setActiveChain(EthereumChain chain) {
     _currentChain = chain.chainId;
   }
@@ -113,6 +103,17 @@ class Web3EthereumChain
   }
 
   @override
-  bool hasPermission(EthereumChain chain) =>
-      currentChainAccounts(chain).isNotEmpty;
+  List<Web3EthereumChainAccount> chainAccounts(EthereumChain chain) {
+    final currentAccounts =
+        activeAccounts.where((e) => e.chainId == chain.chainId).toList();
+    List<Web3EthereumChainAccount> existsAccounts = [];
+    for (final i in chain.addresses) {
+      final chainAccount = currentAccounts.firstWhereOrNull(
+          (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);
+      if (chainAccount != null) {
+        existsAccounts.add(chainAccount);
+      }
+    }
+    return existsAccounts;
+  }
 }

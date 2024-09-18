@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/models/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
@@ -8,7 +9,6 @@ import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/crypto/utils/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';
@@ -22,11 +22,9 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
     required this.address,
     required this.network,
     required this.networkAddress,
-    required this.subWalletId,
-    required this.version,
+    required this.context,
     required List<TokenCore<BigInt>> tokens,
     required List<NFTCore> nfts,
-    required this.bouncable,
     String? accountName,
   })  : publicKey = List.unmodifiable(publicKey),
         _tokens = List.unmodifiable(tokens),
@@ -38,10 +36,10 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
       required List<int> publicKey,
       required WalletTonNetwork network}) {
     final tonAddress = accountParams.toAddress(
-        publicKey: publicKey, workChain: network.coinParam.workchain);
+        publicKey: publicKey, chain: network.coinParam.chainType);
     final addressDetauls = AccountBalance(
-        address:
-            tonAddress.toFriendlyAddress(bounceable: accountParams.bouncable),
+        address: tonAddress.toFriendlyAddress(
+            bounceable: accountParams.context.bouncable),
         balance: IntegerBalance.zero(network.coinParam.decimal));
     return ITonAddress._(
         coin: accountParams.coin,
@@ -50,11 +48,9 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
         keyIndex: accountParams.deriveIndex,
         networkAddress: tonAddress,
         network: network.value,
-        version: accountParams.version,
-        subWalletId: accountParams.subWalletId,
+        context: accountParams.context,
         tokens: const [],
-        nfts: const [],
-        bouncable: accountParams.bouncable);
+        nfts: const []);
   }
   factory ITonAddress.fromCbsorHex(String hex, WalletNetwork network) {
     return ITonAddress.fromCborBytesOrObject(network,
@@ -79,12 +75,25 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
-    final WalletVersion version = WalletVersion.fromValue(cbor.elementAt(7));
-    final int? subWalletId = cbor.elementAt(8);
+    TonAccountContext context;
+    final String? version = cbor.elemetAs(7);
+    final int? subWalletId = cbor.elemetAs(8);
     final List<TonJettonToken> tokens = (cbor.elementAt<List<dynamic>>(9))
         .map((e) => TonJettonToken.fromCborBytesOrObject(obj: e))
         .toList();
     final String? accountName = cbor.elementAt(11);
+    final bool? bouncable = cbor.elemetAs(12);
+    final CborTagValue? contextObject = cbor.elemetAs(13);
+    if (contextObject != null) {
+      context = TonAccountContext.deserialize(object: contextObject);
+    } else if (version != null && bouncable != null) {
+      context = TonAccountContext.merge(
+          version: WalletVersion.fromValue(version),
+          bouncable: bouncable,
+          subwalletId: subWalletId);
+    } else {
+      throw WalletExceptionConst.invalidAccountDetails;
+    }
 
     return ITonAddress._(
         coin: coin,
@@ -96,9 +105,7 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
         tokens: tokens,
         nfts: [],
         accountName: accountName,
-        version: version,
-        subWalletId: subWalletId,
-        bouncable: cbor.elementAt(12));
+        context: context);
   }
 
   @override
@@ -106,8 +113,7 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
     return address.toAddress;
   }
 
-  final WalletVersion version;
-  final int? subWalletId;
+  final TonAccountContext context;
 
   @override
   final AccountBalance address;
@@ -123,7 +129,7 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
 
   final List<int> publicKey;
 
-  final bool bouncable;
+  // final bool bouncable;
 
   @override
   CborTagValue toCbor() {
@@ -136,26 +142,28 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
           address.toCbor(),
           networkAddress.toFriendlyAddress(),
           network,
-          CborStringValue(version.name),
-          subWalletId ?? const CborNullValue(),
+          const CborNullValue(),
+          const CborNullValue(),
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
           accountName ?? const CborNullValue(),
-          bouncable
+          const CborNullValue(),
+          context.toCbor()
         ]),
         CborTagsConst.tonAccount);
   }
 
   @override
   List get variabels {
-    return [keyIndex, network];
+    return [keyIndex, network, context];
   }
 
   @override
   final TonAddress networkAddress;
 
   @override
-  late final String? type = "${networkAddress.type.name} (${version.name})";
+  late final String? type =
+      "${networkAddress.type.name} (${context.version.name})";
 
   List<TonJettonToken> _tokens;
   @override
@@ -209,32 +217,23 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
 
   @override
   late final String orginalAddress = networkAddress.toRawAddress();
-  // @override
-  // List<AddressDerivationIndex> get keyIndexes => [keyIndex];
 
-  WalletContract toWalletContract() {
-    return TonUtils.fromVersion(
+  VersionedWalletContract toWalletContract() {
+    return context.toWalletContract(
         publicKey: publicKey,
-        workChain: networkAddress.workChain,
-        version: version,
-        subWalletId: subWalletId,
-        bouncable: bouncable);
+        chain: TonChain.fromWorkchain(networkAddress.workChain));
   }
 
   @override
   bool isEqual(ChainAccount other) {
     if (other is! ITonAddress) return false;
-    return bouncable == other.bouncable &&
+    return context == other.context &&
         BytesUtils.bytesEqual(other.networkAddress.hash, networkAddress.hash);
   }
 
   @override
   TonNewAddressParams toAccountParams() {
     return TonNewAddressParams(
-        deriveIndex: keyIndex,
-        coin: coin,
-        version: version,
-        bouncable: bouncable,
-        subWalletId: subWalletId);
+        deriveIndex: keyIndex, coin: coin, context: context);
   }
 }

@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'transaction.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 mixin CosmosSignerImpl on CosmosTransactiomImpl {
   Future<String> _buildTransaction() async {

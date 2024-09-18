@@ -1,23 +1,9 @@
 part of '../scripts.dart';
 
-class _SolanaPageControllerConst {
-  static const String signTransaction = "solana_signTransaction";
-  static const String requestAccounts = "solana_requestAccounts";
-  static const String signMessage = "solana_signMessage";
-}
-
 class SolanaPageController extends PageNetworkController {
-  SolanaPageController({required super.getWalletMessage});
+  SolanaPageController();
   ProxyMethodHandler<SolanaWalletAdapter>? _solana;
-  final Map<SolanaEventTypes, List<JSFunction>> _listeners = {
-    SolanaEventTypes.connect: [],
-    SolanaEventTypes.message: [],
-    SolanaEventTypes.disconnect: [],
-    SolanaEventTypes.chainChanged: [],
-    SolanaEventTypes.accountsChanged: [],
-  };
-
-  void _init() {
+  ProxyMethodHandler<SolanaWalletAdapter> _createAdapter() {
     final adapter = SolanaWalletAdapter.setup();
     adapter.signTransaction = _signTranaction.toJS;
     adapter.signAllTransactions = _signAllTransactions.toJS;
@@ -28,35 +14,39 @@ class SolanaPageController extends PageNetworkController {
     adapter.signMessage = _signMessage.toJS;
     adapter.connect = _connect.toJS;
     adapter.isConnected = false;
-    final handler = ProxyMethodHandler<SolanaWalletAdapter>(adapter);
-    final proxy = Proxy(handler.object, createJSInteropWrapper(handler));
-    _solana = handler;
+    adapter.on = _addListener.toJS;
+    adapter.cancelListener = _removeListener.toJS;
+    adapter.sendWalletRequest = _buildWalletRequest.toJS;
+    return ProxyMethodHandler<SolanaWalletAdapter>(adapter);
+  }
+
+  void _init() {
+    _solana ??= _createAdapter();
+    final proxy = Proxy(_solana!.object, createJSInteropWrapper(_solana!));
     solana = proxy;
   }
 
-  JSPromise<JSAny?> _signMessage(JSUint8Array transaction) {
-    final result = _personalSign(transaction);
-    return result.toPromise;
-  }
-
-  Future<JSSolanaSignMessageResponse?> _personalSign(
-      JSUint8Array transaction) async {
-    final result = await getWalletMessage(ClientMessageSolana(
-        method: _SolanaPageControllerConst.signMessage,
-        params: transaction.toListInt()));
-    final data = JSUint8Array.from(result);
-
-    return JSSolanaSignMessageResponse(signature: data);
+  JSPromise<JSAny?> _signMessage(JSAny? message) {
+    return _onNetworkRequest(PageMessageRequest.create(
+            method: Web3SolanaConst.signMessage, params: [message].toJS))
+        .then((e) {
+      return JSSolanaSignMessageResponse.fromJson((e.dartify() as Map).cast());
+    }).toPromise;
   }
 
   JSPromise<JSAny?> _signTranaction(JSSolanaTransaction transaction) {
-    return _buildTransaction(transactions: [transaction].toJS, batch: false)
+    return _buildTransaction(
+            transactions: [transaction].toJS,
+            method: Web3SolanaConst.signTransaction)
         .toPromise;
   }
 
   JSPromise<JSAny?> _signAllTransactions(
       JSArray<JSSolanaTransaction> transaction) {
-    return _buildTransaction(transactions: transaction, batch: true).toPromise;
+    return _buildTransaction(
+            transactions: transaction,
+            method: Web3SolanaConst.signAllTransactions)
+        .toPromise;
   }
 
   JSPromise<JSAny?> _signAndSendTransaction(JSSolanaTransaction transaction,
@@ -64,7 +54,7 @@ class SolanaPageController extends PageNetworkController {
     return _buildTransaction(
             transactions: [transaction].toJS,
             option: options ?? JSSolanaTranasctionSendOptions.defaulConfig(),
-            batch: false)
+            method: Web3SolanaConst.sendTransaction)
         .toPromise;
   }
 
@@ -74,81 +64,164 @@ class SolanaPageController extends PageNetworkController {
     return _buildTransaction(
             transactions: transaction,
             option: options ?? JSSolanaTranasctionSendOptions.defaulConfig(),
-            batch: true)
+            method: Web3SolanaConst.sendAllTransactions)
         .toPromise;
+  }
+
+  JSPromise<JSAny?> _buildWalletRequest(Web3JSRequestParams request) {
+    switch (request.method) {
+      case Web3SolanaConst.requestAccounts:
+        return _onWalletRequest(request);
+      case Web3SolanaConst.signMessage:
+        final message = PageMessageRequest.create(
+            method: request.method,
+            params: request.params,
+            id: request.id ?? (_id++).toString());
+        return _onWalletRequest_(message).then((e) {
+          if (e.error != null) return e;
+          return WalletResponseSuccess(
+              result: JSSolanaSignMessageResponse.fromJson(
+                  (e.result.dartify() as Map).cast()),
+              id: e.id);
+        }).toPromise;
+      default:
+        return _toWalletRequest(request).toPromise;
+    }
+  }
+
+  Future<JSAny?> _toWalletRequest(Web3JSRequestParams request) async {
+    final method = Web3SolanaRequestMethods.fromName(request.method);
+    String id = request.id ?? (_id++).toString();
+    if (method == null) {
+      return WalletResponseError(
+          error: JSWalletError.fromJson(
+              message: Web3RequestExceptionConst.methodDoesNotExist.toJson()),
+          id: id);
+    }
+    final params = request.params;
+    if (params == null || params.length == 0) {
+      return WalletResponseError(
+          error: JSWalletError.fromJson(
+              message: Web3SolanaExceptionConstant.invalidTransaction.toJson()),
+          id: id);
+    }
+    List<JSSolanaTransaction> transactions = [];
+    JSSolanaTranasctionSendOptions? options;
+    switch (method) {
+      case Web3SolanaRequestMethods.sendAllTransactions:
+      case Web3SolanaRequestMethods.signAllTransactions:
+        final JSArray<JSSolanaTransaction>? items = params.elemetAt(0);
+        if (items == null) {
+          return WalletResponseError(
+              error: JSWalletError.fromJson(
+                  message: Web3SolanaExceptionConstant
+                      .invalidBatchTransactionRequest
+                      .toJson()),
+              id: id);
+        }
+        transactions.addAll(items.toDart);
+        if (method == Web3SolanaRequestMethods.sendAllTransactions) {
+          options = params.elemetAt(1);
+          options ??= JSSolanaTranasctionSendOptions.defaulConfig();
+        }
+        break;
+      case Web3SolanaRequestMethods.sendTransaction:
+      case Web3SolanaRequestMethods.signTransaction:
+        final JSSolanaTransaction? item = params.elemetAt(0);
+        if (item == null) {
+          return WalletResponseError(
+              error: JSWalletError.fromJson(
+                  message:
+                      Web3SolanaExceptionConstant.invalidTransaction.toJson()),
+              id: id);
+        }
+        transactions.add(item);
+        if (method == Web3SolanaRequestMethods.sendTransaction) {
+          options = params.elemetAt(1);
+          options ??= JSSolanaTranasctionSendOptions.defaulConfig();
+        }
+        break;
+      default:
+        return WalletResponseError(
+            error: JSWalletError.fromJson(
+                message: Web3RequestExceptionConst.methodDoesNotExist.toJson()),
+            id: id);
+    }
+    final result = _onWalletRequest_(PageMessageRequest.create(
+            method: request.method,
+            params:
+                transactions.map((e) => e.transactionSerialize()).toList().toJS,
+            additionalData: options,
+            id: id))
+        .then((e) {
+      if (e.error != null) {
+        return e;
+      }
+      return WalletResponseSuccess(
+          id: e.id,
+          result: _onTransactionResponse(
+              method: request.method,
+              transactions: transactions.toJS,
+              result: e.result));
+    });
+    return result.toPromise;
   }
 
   Future<JSAny?> _buildTransaction(
       {required JSArray<JSSolanaTransaction> transactions,
       JSSolanaTranasctionSendOptions? option,
-      required bool batch}) async {
-    final toDart = transactions.toDart;
-    final messages = List.generate(toDart.length, (index) {
-      return ClientSolanaTransactionMessage(
-          id: index,
-          message: toDart[index].transactionSerialize(),
-          sendOption: option?.toJson());
+      required String method}) async {
+    final message =
+        transactions.toDart.map((e) => e.transactionSerialize()).toList();
+    final result = _onNetworkRequest(PageMessageRequest.create(
+            method: method, params: message.toJS, additionalData: option))
+        .then((e) {
+      return _onTransactionResponse(
+          method: method, transactions: transactions, result: e);
     });
-    final Completer<JSAny?> completer = Completer<JSAny?>();
-    final result = getWalletMessage(ClientMessageSolana(
-        method: _SolanaPageControllerConst.signTransaction,
-        params: messages.map((e) => e.toJson()).toList()));
-    result.catchError((e) {
-      completer.completeError(e);
-      return null;
-    });
-    result.then((e) {
-      final response =
-          (e.dartify() as List).map((e) => Map<String, dynamic>.from(e));
-      final results = response
-          .map((e) => SolanaWeb3TransactionResponse.fromJson(e))
-          .toList();
-      if (option != null) {
-        final List<String?> txHash = List.generate(toDart.length, (e) => null);
-        for (final i in results) {
-          switch (i.type) {
-            case SolanaWeb3TransactionResponseType.send:
-              final message =
-                  results[i.id].cast<SolanaWeb3TransactionSendResponse>();
-              txHash[i.id] = message.txHash;
-              break;
-            default:
-          }
+    return result.toPromise;
+  }
+
+  JSAny? _onTransactionResponse(
+      {required String method,
+      required JSArray<JSSolanaTransaction> transactions,
+      JSAny? result}) {
+    switch (method) {
+      case Web3SolanaConst.signTransaction:
+      case Web3SolanaConst.signAllTransactions:
+        final List<JSSolanaSignTransactionResponse?> toDart =
+            (result.dartify() as List).map((e) {
+          if (e == null) return null;
+          return JSSolanaSignTransactionResponse.fromJson((e as Map).cast());
+        }).toList();
+        for (int i = 0; i < transactions.length; i++) {
+          final signature = toDart.elementAt(i);
+          if (signature == null) continue;
+          transactions[i]?.addSignature(
+              JSSolanaPublicKey(
+                      base58: signature.address, bytes: signature.addressBytes)
+                  .toJS,
+              JSUint8Array.fromList(signature.signature));
         }
-        if (batch) {
-          completer.complete(txHash.map((e) => e?.toJS).toList().toJS);
-        } else {
-          completer.complete(txHash.first?.toJS);
+        if (method == Web3SolanaConst.signTransaction) {
+          return transactions[0];
         }
-      } else {
-        for (final i in results) {
-          switch (i.type) {
-            case SolanaWeb3TransactionResponseType.sign:
-              final message = i.cast<SolanaWeb3TransactionSignResponse>();
-              toDart[i.id].addSignature(
-                  JSSolanaPublicKey(
-                          base58: message.signer,
-                          bytes: message.signerAddressBytes)
-                      .toJS,
-                  JSUint8Array.from(message.signature.jsify()));
-              break;
-            default:
-          }
-        }
-        if (batch) {
-          completer.complete(List<JSAny>.from(toDart).toJS);
-        } else {
-          completer.complete(toDart[0]);
-        }
-      }
-    });
-    return completer.future;
+        return transactions;
+      case Web3SolanaConst.requestAccounts:
+      case Web3SolanaConst.sendTransaction:
+      case Web3SolanaConst.sendAllTransactions:
+        return result;
+      default:
+        return null;
+    }
   }
 
   JSPromise<JSAny?> _connect() {
-    const params =
-        ClientMessageSolana(method: _SolanaPageControllerConst.requestAccounts);
-    return _onRequest(params);
+    final params = PageMessageRequest.create(
+      method: Web3SolanaConst.requestAccounts,
+    );
+    final promise = _onNetworkRequest(params).toPromise;
+    return promise;
   }
 
   void _disable(String? message) {
@@ -156,48 +229,45 @@ class SolanaPageController extends PageNetworkController {
     jsConsole.error(message);
   }
 
-  void onEvent(JSWalletMessageResponseSolana message) {
-    final JSWalletMessageResponseSolana eventMessage = message.cast();
-    JSAny? eventData;
-    switch (eventMessage.event) {
-      case SolanaEventTypes.connect:
-        final changeInfo =
-            SolanaAccountsChanged.fromJson(eventMessage.dataAs());
+  void onEvent(WalletMessageEvent message) {
+    JSAny? eventData = message.data;
+    switch (message.eventType) {
+      case JSEventType.connect:
+        final changeInfo = SolanaAccountsChanged.fromJson(message.asMap());
         final addr = changeInfo.toJSPublicKey()?.toJS;
-        eventData = addr;
+        eventData = changeInfo.connectInfo.toJS;
         _solana?.object.publicKey = addr;
         _solana?.object.isConnected = addr != null;
         break;
-      case SolanaEventTypes.chainChanged:
-        final changeInfo =
-            SolanaProviderConnectInfo.fromJson(eventMessage.dataAs());
+      case JSEventType.chainChanged:
+        final changeInfo = SolanaProviderConnectInfo.fromJson(message.asMap());
         eventData = changeInfo.toJS;
         break;
-      case SolanaEventTypes.accountsChanged:
-        final changeInfo =
-            SolanaAccountsChanged.fromJson(eventMessage.dataAs());
+      case JSEventType.accountsChanged:
+        final changeInfo = SolanaAccountsChanged.fromJson(message.asMap());
         final addr = changeInfo.defaultAddress?.toJS;
-        eventData = changeInfo.accounts.map((e) => e.toJS).toList().toJS;
+        eventData = changeInfo.accountJS;
+        _solana?.object.selectedAddress = changeInfo.defaultAddress?.toJS;
         _solana?.object.publicKey = changeInfo.toJSPublicKey()?.toJS;
         _solana?.object.isConnected = addr != null;
         break;
-      case SolanaEventTypes.disconnect:
+      case JSEventType.disconnect:
         _solana?.object.publicKey = null;
         _solana?.object.isConnected = false;
         break;
-      case SolanaEventTypes.disable:
-        _disable(eventMessage.dataAs());
+      case JSEventType.disable:
+        _disable(message.asString());
         return;
-      case SolanaEventTypes.active:
+      case JSEventType.active:
         _init();
         return;
       default:
         return;
     }
-    _eventListeners(eventMessage.event, jsObject: eventData);
+    _eventListeners(message.eventType, jsObject: eventData);
   }
 
-  void _eventListeners(SolanaEventTypes type, {JSAny? jsObject}) {
+  void _eventListeners(JSEventType type, {JSAny? jsObject}) {
     if (!_listeners.containsKey(type)) return;
     final listeners = <JSFunction>[..._listeners[type]!];
     for (final i in listeners) {
@@ -206,22 +276,17 @@ class SolanaPageController extends PageNetworkController {
   }
 
   void _addListener(String type, JSFunction listener) {
-    final event = SolanaEventTypes.fromName(type);
+    final event = JSEventType.fromName(type);
     if (event == null || !_listeners.containsKey(event)) return;
     _listeners[event]?.add(listener);
-    if (event != SolanaEventTypes.message &&
-        event != SolanaEventTypes.disconnect) {
-      getWalletMessage(ClientMessageSolana.event(event));
-    }
+    _emitEvent(PageMessageEvent.build(event: event));
   }
 
   void _removeListener(String type, JSFunction listener) {
-    final event = SolanaEventTypes.fromName(type);
+    final event = JSEventType.fromName(type);
     _listeners[event]?.remove(listener);
   }
 
-  JSPromise<JSAny?> _onRequest(ClientMessageSolana params) {
-    final promise = getWalletMessage(params).toPromise;
-    return promise;
-  }
+  @override
+  JSClientType get _client => JSClientType.solana;
 }

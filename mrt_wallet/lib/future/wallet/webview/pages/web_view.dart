@@ -75,16 +75,13 @@ class WebView extends StatelessWidget {
                                               onPressed: status.inProgress
                                                   ? null
                                                   : () {
-                                                      context.openSliverBottomSheet(
-                                                          "update_permission"
-                                                              .tr,
-                                                          bodyBuilder: (c) =>
-                                                              Web3PermissionUpdateView(
-                                                                  controller:
-                                                                      model,
-                                                                  scrollController:
-                                                                      c),
-                                                          centerContent: false);
+                                                      context.openDialogPage(
+                                                        "update_permission".tr,
+                                                        fullWidget:
+                                                            Web3PermissionUpdateView(
+                                                                controller:
+                                                                    model),
+                                                      );
                                                     },
                                               icon: APPAnimatedSwitcher(
                                                 enable: status,

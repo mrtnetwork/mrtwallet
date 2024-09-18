@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -9,7 +9,7 @@ class TonSettingsView extends StatelessWidget {
   const TonSettingsView({super.key});
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<TonChain>(
+    return NetworkAccountControllerView<TheOpenNetworkChain>(
       title: "settings",
       childBulder: (wallet, chain, switchAccount) {
         return ConstraintsBoxView(

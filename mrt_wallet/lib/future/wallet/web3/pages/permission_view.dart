@@ -2,41 +2,116 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/web3/web3.dart';
+import 'package:mrt_wallet/future/wallet/network/ton/web3/permission/permission.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/web3.dart';
+import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/client_info.dart';
 import 'package:mrt_wallet/future/wallet/controller/impl/web3_request_controller.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/web3/permission/ethereum_permission_view.dart';
-import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/access/wallet_access.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 
-typedef OnUpdateChainPermission = void Function(Web3Chain update);
+mixin Web3PermissionState<
+        T extends StatefulWidget,
+        NETWORKADDRESS,
+        CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
+        ADDRESS extends NETWORKCHAINACCOUNT<NETWORKADDRESS>,
+        CHAINACCOUT extends Web3ChainAccount<NETWORKADDRESS>,
+        WEB3CHAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUT>>
+    on SafeState<T> {
+  WEB3CHAIN createNewChainPermission();
+  CHAINACCOUT createNewAccountPermission(ADDRESS address);
+
+  Future<WEB3CHAIN> getPermission() async {
+    final WEB3CHAIN newPermission = createNewChainPermission();
+    List<CHAINACCOUT> accounts = [];
+    for (final i in permissions.entries) {
+      if (i.value.isEmpty) continue;
+      final defaultAddresses = i.value.where((e) => e.defaultAddress);
+      if (defaultAddresses.isEmpty) {
+        i.value.first.changeDefault(true);
+      } else if (defaultAddresses.length > 1) {
+        for (final e in i.value) {
+          e.changeDefault(false);
+        }
+        i.value.first.changeDefault(true);
+      }
+      accounts.addAll(i.value);
+    }
+    newPermission.updateChainAccount(accounts);
+    return newPermission;
+  }
+
+  late final WEB3CHAIN permission;
+  late final List<CHAIN> chains;
+  Map<CHAIN, List<CHAINACCOUT>> permissions = {};
+  late CHAIN chain;
+  List<CHAINACCOUT> get chainPermission => permissions[chain]!;
+  void onChangeDefaultPermission(CHAINACCOUT? address) {
+    if (address == null) return;
+    if (address.defaultAddress) return;
+    for (final e in chainPermission) {
+      e.changeDefault(false);
+    }
+    address.changeDefault(true);
+    updateState();
+  }
+
+  CHAINACCOUT? hasPermission(ADDRESS address) {
+    return chainPermission.firstWhereOrNull((e) =>
+        e.address == address.networkAddress && e.keyIndex == address.keyIndex);
+  }
+
+  void addAccount(ADDRESS address) {
+    final exists = hasPermission(address);
+    if (exists != null) {
+      chainPermission.remove(exists);
+    } else {
+      chainPermission.add(createNewAccountPermission(address));
+    }
+    if (chainPermission.isNotEmpty &&
+        !chainPermission.any((e) => e.defaultAddress)) {
+      chainPermission[0].changeDefault(true);
+    }
+
+    updateState();
+  }
+
+  void onChangeChain(CHAIN? updateChain) {
+    chain = updateChain ?? chain;
+    updateState();
+  }
+}
 
 class Web3PermissionUpdateView extends StatelessWidget {
-  const Web3PermissionUpdateView(
-      {required this.controller, required this.scrollController, Key? key})
+  const Web3PermissionUpdateView({required this.controller, Key? key})
       : super(key: key);
   final Web3RequestControllerImpl controller;
-  final ScrollController scrollController;
+
   @override
   Widget build(BuildContext context) {
-    return PasswordCheckerView(
-      accsess: WalletAccsessType.unlock,
-      onAccsess: (credential, password, network) => _Web3APPPermissionView(
-          controller: controller, scrollController: scrollController),
-      title: "update_permission".tr,
+    return ConstraintsBoxView(
+      alignment: Alignment.center,
+      maxHeight: APPConst.maxDialogHeight,
+      padding: WidgetConstant.padding20,
+      maxWidth: APPConst.dialogWidth,
+      child: ClipRRect(
+          borderRadius: WidgetConstant.border25,
+          child: PasswordCheckerView(
+            accsess: WalletAccsessType.unlock,
+            onAccsess: (credential, password, network) =>
+                _Web3APPPermissionView(controller: controller),
+          )),
     );
   }
 }
 
 class _Web3APPPermissionView extends StatefulWidget {
-  const _Web3APPPermissionView(
-      {required this.controller, required this.scrollController, Key? key})
+  const _Web3APPPermissionView({required this.controller, Key? key})
       : super(key: key);
   final Web3RequestControllerImpl controller;
-  final ScrollController scrollController;
 
   @override
   State<_Web3APPPermissionView> createState() => __Web3APPPermissionViewState();
@@ -70,7 +145,7 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
 
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
 
-  NetworkType? chainType;
+  NetworkType chainType = NetworkType.ethereum;
 
   Future<void> onChangePermission() async {
     application = await controller.getCurrentApplication();
@@ -89,11 +164,16 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     }
   }
 
-  void onUpdateChainPermission(Web3Chain update) async {
+  void onUpdateChainPermission() async {
+    final update =
+        await permissionState[_selectedIndex]?.currentState?.getPermission();
     Web3APPAuthentication? permission = application;
     if (permission == null) return;
     progressKey.progressText("updating_permission".tr);
-    permission.updateChainAccount(update);
+    updateState();
+    if (update != null) {
+      permission.updateChainAccount(update);
+    }
     if (permission.name != applicationName || permission.active != active) {
       permission = permission.clone(active: active, name: applicationName);
     }
@@ -104,10 +184,18 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     } else {
       progressKey.success();
     }
+    updateState();
   }
 
-  void changeChain(NetworkType? chainType) {
-    this.chainType = chainType;
+  int _selectedIndex = 1;
+  void changeChain(int index) {
+    if (index == 0) {
+      _selectedIndex = 0;
+      updateState();
+      return;
+    }
+    chainType = Web3Const.supportedWeb3.elementAt(index - 1);
+    _selectedIndex = index;
     updateState();
   }
 
@@ -122,65 +210,97 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     super.didUpdateWidget(oldWidget);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: PageProgress(
-          initialStatus: StreamWidgetStatus.progress,
-          key: progressKey,
-          backToIdle: APPConst.oneSecoundDuration,
-          child: (c) => CustomScrollView(
-                controller: widget.scrollController,
-                // mainAxisSize: MainAxisSize.max,
-                slivers: [
-                  SliverConstraintsBoxView(
-                      padding: WidgetConstant.paddingHorizontal20,
-                      sliver: APPSliverAnimatedSwitcher(
-                          enable: chainType != null,
-                          widgets: {
-                            true: (c) => _APPPermissionWidget(this),
-                            false: (c) => _SelectAPPPermissionChainWidget(this),
-                          }))
-                ],
-              )),
-    );
-  }
-}
-
-class _SelectAPPPermissionChainWidget extends StatelessWidget {
-  const _SelectAPPPermissionChainWidget(this.state, {Key? key})
-      : super(key: key);
-  final __Web3APPPermissionViewState state;
+  late final Map<int, GlobalKey<Web3PermissionState>> permissionState = {
+    1: GlobalKey<Web3PermissionState>(
+        debugLabel: "Web3PermissionState_ethereumm"),
+    2: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_tron"),
+    3: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_solana"),
+    4: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_ton"),
+  };
 
   @override
   Widget build(BuildContext context) {
-    return SliverFillRemaining(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.security,
-                  size: APPConst.double80,
-                  color: context.colors.inversePrimary),
-            ],
-          ),
-          const Padding(padding: WidgetConstant.paddingVertical40),
-          Text("network".tr, style: context.textTheme.titleMedium),
-          Text("update_client_permission_desc".tr),
-          WidgetConstant.height8,
-          AppDropDownBottom(
-            items: {
-              for (final i in Web3Const.supportedWeb3) i: Text(i.name.camelCase)
-            },
-            label: "network".tr,
-            onChanged: state.changeChain,
-            value: state.chainType,
-          )
-        ],
+    return Scaffold(
+      floatingActionButton:
+          APPAnimatedSwitcher<bool>(enable: progressKey.inProgress, widgets: {
+        false: (context) => FloatingActionButton.extended(
+              onPressed: () {
+                onUpdateChainPermission();
+              },
+              label: Text("update_permission".tr),
+              icon: const Icon(Icons.save),
+            ),
+        true: (context) => WidgetConstant.sizedBox,
+      }),
+      body: PageProgress(
+        backToIdle: APPConst.milliseconds100,
+        initialStatus: StreamWidgetStatus.progress,
+        key: progressKey,
+        child: (context) => Row(
+          children: [
+            Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                          maxWidth: APPConst.naviationRailWidth),
+                      child: IntrinsicHeight(
+                        child: NavigationRail(
+                          useIndicator: true,
+                          onDestinationSelected: changeChain,
+                          labelType: NavigationRailLabelType.none,
+                          destinations: [
+                            const NavigationRailDestination(
+                                icon: Icon(Icons.settings),
+                                label: WidgetConstant.sizedBox),
+                            NavigationRailDestination(
+                                icon: CircleAssetsImgaeView(APPConst.eth,
+                                    radius: 15),
+                                label: WidgetConstant.sizedBox),
+                            NavigationRailDestination(
+                                icon: CircleAssetsImgaeView(APPConst.trx,
+                                    radius: 15),
+                                label: WidgetConstant.sizedBox),
+                            NavigationRailDestination(
+                                icon: CircleAssetsImgaeView(APPConst.sol,
+                                    radius: 15),
+                                label: WidgetConstant.sizedBox),
+                            NavigationRailDestination(
+                                icon: CircleAssetsImgaeView(APPConst.ton,
+                                    radius: 15),
+                                label: WidgetConstant.sizedBox),
+                          ],
+                          selectedIndex: _selectedIndex,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                TappedTooltipView(
+                  tooltipWidget: ToolTipView(
+                      padding: WidgetConstant.padding5,
+                      tooltipWidget: (context) => ConstrainedBox(
+                          constraints: const BoxConstraints(
+                              maxWidth: APPConst.tooltipConstrainedWidth),
+                          child: Container(
+                              decoration: BoxDecoration(
+                                color: context.colors.surface,
+                                borderRadius: WidgetConstant.border8,
+                              ),
+                              padding: WidgetConstant.padding10,
+                              child: Web3ClientInfoView(
+                                  permission: application!))),
+                      child: CircleAPPImageView(application?.icon,
+                          radius: 35,
+                          onError: (c) => const Icon(Icons.broken_image,
+                              size: APPConst.double40))),
+                ),
+              ],
+            ),
+            Expanded(child: _APPPermissionWidget(this))
+          ],
+        ),
       ),
     );
   }
@@ -192,14 +312,45 @@ class _APPPermissionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverMainAxisGroup(slivers: [
-      SliverToBoxAdapter(
-          child: Web3ClientInfoView(permission: state.application!)),
-      WidgetConstant.sliverPaddingVertial20,
-      SliverToBoxAdapter(
+    return CustomScrollView(
+      slivers: [
+        APPSliverAnimatedSwitcher<int>(enable: state._selectedIndex, widgets: {
+          0: (context) => _APPSettingView(state),
+          1: (context) => EthereumWeb3PermissionView(
+              key: state.permissionState[1],
+              permission: state.application
+                  ?.getChainFromNetworkType(NetworkType.ethereum)),
+          2: (context) => TronWeb3PermissionView(
+              key: state.permissionState[2],
+              permission:
+                  state.application?.getChainFromNetworkType(NetworkType.tron)),
+          3: (context) => SolanaWeb3PermissionView(
+              key: state.permissionState[3],
+              permission: state.application
+                  ?.getChainFromNetworkType(NetworkType.solana)),
+          4: (context) => TonWeb3PermissionView(
+              key: state.permissionState[4],
+              permission:
+                  state.application?.getChainFromNetworkType(NetworkType.ton)),
+        }),
+      ],
+    );
+  }
+}
+
+class _APPSettingView extends StatelessWidget {
+  const _APPSettingView(this.state, {Key? key}) : super(key: key);
+  final __Web3APPPermissionViewState state;
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: WidgetConstant.padding20,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Web3ClientInfoView(permission: state.application!),
+            WidgetConstant.height20,
             Text("application_name".tr, style: context.textTheme.titleMedium),
             Text("edit_application_name_desc".tr),
             WidgetConstant.height8,
@@ -219,25 +370,10 @@ class _APPPermissionWidget extends StatelessWidget {
               maxLine: 3,
               value: state.active,
               onChanged: state.onChangeActivation,
-            )
+            ),
           ],
         ),
       ),
-      WidgetConstant.sliverPaddingVertial20,
-      APPSliverAnimatedSwitcher(enable: state.chainType, widgets: {
-        NetworkType.ethereum: (c) => EthereumWeb3PermissionView(
-            permission: state.application
-                ?.getChainFromNetworkType(NetworkType.ethereum),
-            onUpdateChainPermission: state.onUpdateChainPermission),
-        NetworkType.tron: (c) => TronWeb3PermissionView(
-            permission:
-                state.application?.getChainFromNetworkType(NetworkType.tron),
-            onUpdateChainPermission: state.onUpdateChainPermission),
-        NetworkType.solana: (c) => SolanaWeb3PermissionView(
-            permission:
-                state.application?.getChainFromNetworkType(NetworkType.solana),
-            onUpdateChainPermission: state.onUpdateChainPermission),
-      })
-    ]);
+    );
   }
 }

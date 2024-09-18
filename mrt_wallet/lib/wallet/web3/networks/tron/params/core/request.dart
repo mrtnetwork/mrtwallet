@@ -13,10 +13,14 @@ import 'package:mrt_wallet/wallet/web3/core/core.dart';
 abstract class Web3TronPermissionRequestParam
     extends Web3TronRequestParam<Web3TronChain>
     implements
-        Web3PermissionRequest<Web3TronChain, TronAddress, TronChain,
-            Web3TronChainAccount, Web3TronChain> {
+        Web3PermissionRequest<TronAddress, TronChain, Web3TronChainAccount,
+            Web3TronChain> {
   @override
   bool get isPermissionRequest => true;
+  @override
+  Object? toJsWalletResponse(Web3TronChain response) {
+    return null;
+  }
 }
 
 abstract class Web3TronRequestParam<RESPONSE> extends Web3RequestParams<

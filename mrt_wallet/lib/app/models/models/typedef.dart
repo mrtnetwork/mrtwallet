@@ -14,7 +14,7 @@ typedef FuncBool<T> = bool Function(T);
 
 typedef FuncBoolString = bool Function(String);
 typedef FuncFutureBoolString = Future<bool> Function(String);
-
+typedef FuncFutureNullableBoold = Future<bool?> Function();
 typedef IntVoid = void Function(int);
 
 typedef FuncVoidNullT<T> = void Function(T);

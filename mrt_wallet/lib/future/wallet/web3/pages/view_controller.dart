@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/wallet/web3/controller/controller.dart';
@@ -21,11 +22,13 @@ class Web3PageRequestControllerView<T extends Web3RequestControllerState>
       required this.request,
       required this.builder,
       required this.controller,
-      this.showRequestAccount = true});
+      this.showRequestAccount = true,
+      this.width = APPConst.maxViewWidth});
   final Web3PageChainBuilder<T> builder;
   final T Function() controller;
   final Web3Request request;
   final bool showRequestAccount;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +38,14 @@ class Web3PageRequestControllerView<T extends Web3RequestControllerState>
       },
       child: PasswordCheckerView(
         appbar: AppBar(
-          title: Text(request.params.method.name),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(request.params.method.name.tr),
+              Text(request.params.method.name,
+                  style: context.textTheme.bodySmall),
+            ],
+          ),
           actions: [
             Web3PermissionAppbarActionView(request: request),
             WidgetConstant.width8,
@@ -52,10 +62,12 @@ class Web3PageRequestControllerView<T extends Web3RequestControllerState>
                 return Web3PageProgress(
                     key: controller.progressKey,
                     initialStatus: Web3ProgressStatus.progress,
-                    child: (c) => CustomScrollView(slivers: [
+                    child: (context) => CustomScrollView(slivers: [
                           SliverConstraintsBoxView(
+                              maxWidth: width,
                               padding: WidgetConstant.paddingHorizontal20,
                               sliver: SliverMainAxisGroup(slivers: [
+                                WidgetConstant.sliverPaddingVertial20,
                                 SliverToBoxAdapter(
                                   child: Column(
                                     crossAxisAlignment:

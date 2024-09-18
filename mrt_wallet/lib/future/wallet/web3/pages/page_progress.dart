@@ -137,7 +137,13 @@ class Web3PageProgressState extends State<Web3PageProgress> with SafeState {
               future: MethodUtils.after(() async => widget.child(c)),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return WidgetConstant.errorIcon;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      WidgetConstant.errorIcon,
+                      Text(snapshot.error?.toString() ?? "")
+                    ],
+                  );
                 }
                 if (snapshot.hasData) {
                   _child = snapshot.data!;

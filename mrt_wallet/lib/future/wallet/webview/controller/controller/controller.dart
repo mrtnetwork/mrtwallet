@@ -28,7 +28,6 @@ class WebViewStateController extends StateController
         WebViewListener,
         WebViewTabImpl {
   final WalletProvider walletProvider;
-  // Web3APPAuthentication? _LastApplication;
   final Cancelable _cancelable = Cancelable();
   final _lock = SynchronizedLock();
   @override
@@ -99,43 +98,48 @@ class WebViewStateController extends StateController
   Live<MRTScriptWalletStatus> get web3Status => _web3Status;
   Future<MRTScriptWalletStatus> _activeScript(WebViewEvent event) async {
     return await _lock.synchronized(() async {
-      _cancelable.cancel();
-      final applicationId =
-          Web3APPAuthentication.toApplicationId(lastEvent?.url);
-      onCloseClinet(applicationId);
-      final auth = tabsAuthenticated[event.viewId];
-      if (auth == null) return MRTScriptWalletStatus.failed;
-      final client = await createClientInfos(
-          clientId: event.viewId,
-          url: event.url,
-          title: event.title,
-          faviIcon: event.favicon);
-      final tronWeb = await FileUtils.loadAssetText(APPConst.assetsTronWeb);
-      await _loadScript(viewType: event.viewId, script: tronWeb);
-      final solanaJs = await FileUtils.loadAssetText(APPConst.bnJs);
-      await _loadScript(viewType: event.viewId, script: solanaJs);
-      String script;
-      if (kDebugMode) {
-        if (PlatformInterface.appPlatform == AppPlatform.android) {
-          script = (await HttpUtils.get<String>("http://10.0.2.2:3000/webview"))
-              .result;
+      try {
+        _cancelable.cancel();
+        final applicationId =
+            Web3APPAuthentication.toApplicationId(lastEvent?.url);
+        onCloseClinet(applicationId);
+        final auth = tabsAuthenticated[event.viewId];
+        if (auth == null) return MRTScriptWalletStatus.failed;
+        final client = await createClientInfos(
+            clientId: event.viewId,
+            url: event.url,
+            title: event.title,
+            faviIcon: event.favicon);
+        final tronWeb = await FileUtils.loadAssetText(APPConst.assetsTronWeb);
+        await _loadScript(viewType: event.viewId, script: tronWeb);
+        final solanaJs = await FileUtils.loadAssetText(APPConst.bnJs);
+        await _loadScript(viewType: event.viewId, script: solanaJs);
+        String script;
+        if (kDebugMode) {
+          if (PlatformInterface.appPlatform == AppPlatform.android) {
+            script =
+                (await HttpUtils.get<String>("http://10.0.2.2:3000/webview"))
+                    .result;
+          } else {
+            script =
+                (await HttpUtils.get<String>("http://localhost:3000/webview"))
+                    .result;
+          }
         } else {
-          script =
-              (await HttpUtils.get<String>("http://localhost:3000/webview"))
-                  .result;
+          script = await FileUtils.loadAssetText(APPConst.assetWebviewScript);
         }
-      } else {
-        script = await FileUtils.loadAssetText(APPConst.assetWebviewScript);
-      }
-      await _loadScript(viewType: event.viewId, script: script);
+        await _loadScript(viewType: event.viewId, script: script);
 
-      final responseEvent =
-          await getPageAuthenticated(clientId: auth.viewType, info: client);
-      final result = await _postEvent(responseEvent);
-      if (result) {
-        return MRTScriptWalletStatus.active;
+        final responseEvent =
+            await getPageAuthenticated(clientId: auth.viewType, info: client);
+        final result = await _postEvent(responseEvent);
+        if (result) {
+          return MRTScriptWalletStatus.active;
+        }
+        return MRTScriptWalletStatus.failed;
+      } catch (e) {
+        rethrow;
       }
-      return MRTScriptWalletStatus.failed;
     });
   }
 

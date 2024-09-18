@@ -12,10 +12,14 @@ import 'package:on_chain/ethereum/src/address/evm_address.dart';
 abstract class Web3EthereumPermissionRequestParam
     extends Web3EthereumRequestParam<Web3EthereumChain>
     implements
-        Web3PermissionRequest<Web3EthereumChain, ETHAddress, EthereumChain,
+        Web3PermissionRequest<ETHAddress, EthereumChain,
             Web3EthereumChainAccount, Web3EthereumChain> {
   @override
   bool get isPermissionRequest => true;
+  @override
+  Object? toJsWalletResponse(Web3EthereumChain response) {
+    return null;
+  }
 }
 
 abstract class Web3EthereumRequestParam<RESPONSE> extends Web3RequestParams<

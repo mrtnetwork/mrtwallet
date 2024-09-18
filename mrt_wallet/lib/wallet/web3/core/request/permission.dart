@@ -3,7 +3,6 @@ import 'package:mrt_wallet/wallet/web3/core/permission/permission.dart';
 import 'params.dart';
 
 abstract class Web3PermissionRequest<
-        RESULT,
         NETWORKADDRESS,
         CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
         CHAINACCOUNT extends Web3ChainAccount<NETWORKADDRESS>,

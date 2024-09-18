@@ -21,7 +21,7 @@ class Web3SolanaChain
   @override
   Web3SolanaChain clone() {
     return Web3SolanaChain._(
-        accounts: accounts,
+        accounts: activeAccounts,
         genesis: SolanaConst.mainnetGenesis,
         activities: activities);
   }
@@ -34,7 +34,8 @@ class Web3SolanaChain
   }
 
   @override
-  List<Web3SolanaChainAccount> get accounts => super.accounts.cast();
+  List<Web3SolanaChainAccount> get activeAccounts =>
+      super.activeAccounts.cast();
 
   factory Web3SolanaChain.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -59,7 +60,8 @@ class Web3SolanaChain
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
+          CborListValue.fixedLength(
+              activeAccounts.map((e) => e.toCbor()).toList()),
           _genesis,
           CborListValue.fixedLength(activities.map((e) => e.toCbor()).toList()),
         ]),
@@ -73,8 +75,8 @@ class Web3SolanaChain
   ISolanaAddress getAccountPermission(
       {required SolAddress address, required SolanaChain chain}) {
     try {
-      final permissionAccount =
-          accounts.firstWhere((e) => e.address == address);
+      final permissionAccount = activeAccounts.firstWhere((e) =>
+          e.address == address && e.genesis == chain.network.genesisBlock);
       final chainAccount = chain.addresses.firstWhere((e) {
         return e.networkAddress == permissionAccount.address &&
             e.keyIndex == permissionAccount.keyIndex;
@@ -86,25 +88,11 @@ class Web3SolanaChain
   }
 
   @override
-  List<Web3SolanaChainAccount> currentChainAccounts(SolanaChain chain) {
-    final currentAccounts =
-        accounts.where((e) => e.genesis == _genesis).toList();
-    List<Web3SolanaChainAccount> existsAccounts = [];
-    for (final i in chain.addresses) {
-      final chainAccount = currentAccounts.firstWhereOrNull(
-          (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);
-      if (chainAccount != null) {
-        existsAccounts.add(chainAccount);
-      }
-    }
-    return existsAccounts;
+  Web3SolanaChainAccount? getPermission(SolAddress address) {
+    return activeAccounts.firstWhereOrNull((e) => e.address == address);
   }
 
   @override
-  Web3SolanaChainAccount? getPermission(SolAddress address) {
-    return accounts.firstWhereOrNull((e) => e.address == address);
-  }
-
   void setActiveChain(SolanaChain chain) {
     _genesis = chain.network.genesisBlock;
   }
@@ -118,6 +106,18 @@ class Web3SolanaChain
   }
 
   @override
-  bool hasPermission(SolanaChain chain) =>
-      currentChainAccounts(chain).isNotEmpty;
+  List<Web3SolanaChainAccount> chainAccounts(SolanaChain chain) {
+    final currentAccounts = activeAccounts
+        .where((e) => e.genesis == chain.network.genesisBlock)
+        .toList();
+    List<Web3SolanaChainAccount> existsAccounts = [];
+    for (final i in chain.addresses) {
+      final chainAccount = currentAccounts.firstWhereOrNull(
+          (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);
+      if (chainAccount != null) {
+        existsAccounts.add(chainAccount);
+      }
+    }
+    return existsAccounts;
+  }
 }

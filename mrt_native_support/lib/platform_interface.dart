@@ -11,6 +11,7 @@ class PlatformInterface {
   static AppPlatform get appPlatform => instance.platform;
   static bool get isWindows => appPlatform == AppPlatform.windows;
   static bool get isWeb => appPlatform == AppPlatform.web;
+  static bool get isMacos => appPlatform == AppPlatform.macos;
   static PlatformWebView get webViewController => instance.webView;
   static bool get supportWebView => webViewController.supported;
 }

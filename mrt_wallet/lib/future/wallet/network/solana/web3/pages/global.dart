@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/solana/web3/controller/controll
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'fields/request_account.dart';
-import 'fields/sign_message_v2.dart';
+import 'fields/sign_message.dart';
 
 class SolanaWeb3GlobalFieldsView<RESPONSE,
     T extends Web3SolanaRequestParam<RESPONSE>> extends StatelessWidget {
@@ -45,7 +45,7 @@ class _GlobalFieldsView extends StatelessWidget {
         );
       case Web3SolanaRequestMethods.signMessage:
         return SolanaWeb3SignMessageRequestView(
-          request: form as SolanaWeb3Form<Web3SolanaSignMessage>,
+          request: form as Web3SolanaSignMessageForm<Web3SolanaSignMessage>,
         );
       default:
         return const SliverPadding(padding: EdgeInsets.zero);

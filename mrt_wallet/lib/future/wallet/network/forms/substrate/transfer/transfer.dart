@@ -3,7 +3,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/substrate/core/substrate.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class SubstrateTransferForm extends SubstrateTransactionForm {
   SubstrateTransferForm({required this.network});

@@ -7,7 +7,6 @@ import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/personal_sign_response.dart';
-import 'package:on_chain/solana/src/transaction/core/core.dart';
 
 class WalletRequestSignMessage
     implements WalletRequest<CryptoPersonalSignResponse, MessageArgsOneBytes> {
@@ -70,18 +69,6 @@ class WalletRequestSignMessage
         final signer = TronSigner.fromKeyBytes(responseKeys.privateKeyBytes());
         return signer.signProsonalMessage(message,
             payloadLength: payloadLength);
-      case NetworkType.solana:
-        try {
-          VersionedMessage.fromBuffer(message);
-          throw WalletExceptionConst.dataVerificationFailed;
-        } on WalletException {
-          rethrow;
-        } catch (_) {}
-        final responseKeys = wallet
-            .readKeys([AccessCryptoPrivateKeyRequest(index: index)]).first;
-        final signer =
-            SolanaSigner.fromKeyBytes(responseKeys.privateKeyBytes());
-        return signer.sign(message);
       default:
         throw WalletExceptionConst.unsuportedFeature;
     }

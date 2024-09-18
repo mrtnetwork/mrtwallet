@@ -7,7 +7,7 @@ import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/crypto/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 mixin TronSignerImpl on TronTransactionImpl {
   Future<void> signAndSendTransaction(TronBaseContract transaction) async {

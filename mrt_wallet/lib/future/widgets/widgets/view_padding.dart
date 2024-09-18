@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class ViewPadding extends StatelessWidget {
   const ViewPadding({required this.child, this.padding, super.key});

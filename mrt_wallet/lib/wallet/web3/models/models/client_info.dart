@@ -28,7 +28,7 @@ class Web3ClientInfo with Equatable {
         url: url!,
         applicationId: applicationId,
         clientId: clientId,
-        name: name ?? uri.host);
+        name: (name?.isEmpty ?? true) ? uri.host : name!);
   }
 
   @override

@@ -4,7 +4,7 @@ import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:on_chain/solana/solana.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class SolanaTransferForm extends SolanaTransactionForm {
   SolanaTransferForm({required this.token, this.splToken});

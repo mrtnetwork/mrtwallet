@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 
@@ -164,7 +164,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
   Widget build(BuildContext context) {
     return ConstraintsBoxView(
       alignment: Alignment.center,
-      maxHeight: 600,
+      maxHeight: APPConst.maxDialogHeight,
       padding: WidgetConstant.padding20,
       maxWidth: APPConst.dialogWidth,
       child: ClipRRect(

@@ -6,7 +6,7 @@ import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class RipplePaymentForm implements RippleTransactionForm {
   RipplePaymentForm({required this.token, this.issueToken});

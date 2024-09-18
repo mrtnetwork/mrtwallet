@@ -260,7 +260,7 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
     } else {
       pageProgressKey.successText("network_imported_to_your_wallet".tr,
           backToIdle: false);
-      widget.web3?.onCompeleteForm?.call(null);
+      widget.web3?.onCompeleteForm?.call(chainId.toRadix16);
     }
   }
 

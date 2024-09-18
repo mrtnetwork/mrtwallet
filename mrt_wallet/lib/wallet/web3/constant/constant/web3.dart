@@ -5,5 +5,6 @@ class Web3Const {
     NetworkType.ethereum,
     NetworkType.tron,
     NetworkType.solana,
+    NetworkType.ton,
   ];
 }

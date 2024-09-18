@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extention/app_extentions/context.dart';
+import 'package:mrt_wallet/future/state_managment/extension/app_extensions/context.dart';
 import 'widget_constant.dart';
 
 class PageTitleSubtitle extends StatelessWidget {
@@ -20,10 +20,7 @@ class PageTitleSubtitle extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (title != null)
-          Text(
-            title ?? "",
-            style: titleStyle ?? context.textTheme.titleLarge,
-          ),
+          Text(title ?? "", style: titleStyle ?? context.textTheme.titleLarge),
         Padding(
           padding: title == null ? EdgeInsets.zero : WidgetConstant.padding10,
           child: Column(

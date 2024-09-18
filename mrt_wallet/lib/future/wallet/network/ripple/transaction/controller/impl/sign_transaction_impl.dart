@@ -4,7 +4,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 mixin RippleSignTransactionImpl on RippleTransactionImpl {
   Future<void> signAndSendTransaction(

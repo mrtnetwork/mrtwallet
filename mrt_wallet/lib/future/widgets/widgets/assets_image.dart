@@ -45,8 +45,8 @@ class CircleAPPImageView extends StatelessWidget {
       return _CircleAPPImageView(radius: radius, onNull: onNull, child: null);
     }
     return Image(
-        height: radius,
         color: imageColor,
+        fit: BoxFit.cover,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress != null && onProgress != null) {
             return onProgress!.call(context);

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extention/app_extentions/context.dart'
+import 'package:mrt_wallet/future/state_managment/extension/app_extensions/context.dart'
     show QuickContextAccsess;
 import 'package:mrt_wallet/app/models/models/typedef.dart'
     show DynamicVoid, NullBoolVoid;
+import 'package:mrt_wallet/future/widgets/widgets/widget_constant.dart';
 
 class AppListTile extends StatelessWidget {
   const AppListTile(
@@ -60,7 +61,7 @@ class AppCheckListTile extends StatelessWidget {
   const AppCheckListTile(
       {Key? key,
       this.onChanged,
-      this.value,
+      required this.value,
       this.title,
       this.subtitle,
       this.contentPadding,
@@ -68,7 +69,7 @@ class AppCheckListTile extends StatelessWidget {
       : super(key: key);
   final int? maxLine;
   final NullBoolVoid? onChanged;
-  final bool? value;
+  final bool value;
   final Widget? title;
   final Widget? subtitle;
   final EdgeInsets? contentPadding;
@@ -167,5 +168,32 @@ class AppSwitchListTile extends StatelessWidget {
               child: subtitle!,
             ),
     );
+  }
+}
+
+class APPExpansionListTime extends StatelessWidget {
+  const APPExpansionListTime(
+      {required this.title,
+      this.subtitle,
+      this.trailing,
+      this.children = const <Widget>[],
+      Key? key})
+      : super(key: key);
+  final Widget title;
+  final Widget? subtitle;
+  final Widget? trailing;
+  final List<Widget> children;
+  @override
+  Widget build(BuildContext context) {
+    return ExpansionTile(
+        shape: RoundedRectangleBorder(borderRadius: WidgetConstant.border8),
+        collapsedShape:
+            RoundedRectangleBorder(borderRadius: WidgetConstant.border8),
+        backgroundColor: context.colors.primaryContainer,
+        collapsedBackgroundColor: context.colors.primaryContainer,
+        title: title,
+        subtitle: subtitle,
+        trailing: trailing,
+        children: children);
   }
 }

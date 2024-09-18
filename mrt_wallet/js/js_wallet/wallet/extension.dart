@@ -17,6 +17,7 @@ class JSExtentionWallet extends JSWalletHandler {
   @override
   final String clientId;
   RuntimePort? _port;
+  Web3APPAuthentication? _initializeAuthenticated;
 
   bool onMessage(
       JSWalletEvent message, MessageSender sender, JSFunction sendResponse) {
@@ -27,8 +28,10 @@ class JSExtentionWallet extends JSWalletHandler {
   JSExtentionWallet._(
       {required ChaCha20Poly1305 crypto,
       required ChainsHandler chain,
-      required this.clientId})
+      required this.clientId,
+      required Web3APPAuthentication authenticated})
       : _chain = chain,
+        _initializeAuthenticated = authenticated,
         super._(crypto);
 
   static JSExtentionWallet initialize(WalletEvent activationEvent) {
@@ -43,11 +46,19 @@ class JSExtentionWallet extends JSWalletHandler {
     final handler = JSExtentionWallet._(
         crypto: ChaCha20Poly1305(message.authenticated.token),
         chain: chain,
-        clientId: activationEvent.clientId);
+        clientId: activationEvent.clientId,
+        authenticated: message.authenticated);
     handler._listenOnClients();
-    extention.runtime.onMessage.addListener(handler.onMessage.toJS);
-    handler._updateAuthenticated(message.authenticated, network: null);
+    extension.runtime.onMessage.addListener(handler.onMessage.toJS);
+    // handler._updateAuthenticated(message.authenticated, network: null);
     return handler;
+  }
+
+  void initClients() {
+    final auth = _initializeAuthenticated;
+    if (auth == null) return;
+    _initializeAuthenticated = null;
+    _updateAuthenticated(auth, network: null);
   }
 
   void _onExtentionPortDiscounect(RuntimePort port) {
@@ -85,8 +96,8 @@ class JSExtentionWallet extends JSWalletHandler {
       if (port != null) return port;
       _port?.disconnect();
       _port = null;
-      final newPort = await _pingPort(extention.runtime
-          .connect(extention.runtime.id, ConnectConnectionInf(name: clientId)));
+      final newPort = await _pingPort(extension.runtime
+          .connect(extension.runtime.id, ConnectConnectionInf(name: clientId)));
       if (newPort == null) {
         throw UnimplementedError();
       }
@@ -107,7 +118,7 @@ class JSExtentionWallet extends JSWalletHandler {
         if (event?.type != WalletEventTypes.ping) {
           return false;
         }
-        final result = extention.runtime.sendMessage_(message: event!);
+        final result = extension.runtime.sendMessage_(message: event!);
         result.then((e) {
           completer.complete(e);
         });
@@ -118,20 +129,20 @@ class JSExtentionWallet extends JSWalletHandler {
         return true;
       }
 
-      final result = extention.runtime.sendMessage_(message: message);
+      final result = extension.runtime.sendMessage_(message: message);
       result.then((e) {
         completer.complete(e);
       });
       result.catchError((e) {
         _OnBackgroundListener = onMessage.toJS;
-        extention.runtime.onMessage.addListener(_OnBackgroundListener);
+        extension.runtime.onMessage.addListener(_OnBackgroundListener);
         hasListener = true;
         return null;
       });
       return await completer.future;
     } finally {
       if (hasListener) {
-        extention.runtime.onMessage.removeListener(_OnBackgroundListener);
+        extension.runtime.onMessage.removeListener(_OnBackgroundListener);
       }
     }
   }

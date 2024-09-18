@@ -17,7 +17,7 @@ import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'io.dart';
 
 UIWallet uiWallet(GlobalKey<NavigatorState> navigatorKey) {
-  if (PlatformInterface.isWeb && isExtention) {
+  if (PlatformInterface.isWeb && isExtension) {
     return ExtentionWallet(navigatorKey);
   }
   return Wallet(navigatorKey);

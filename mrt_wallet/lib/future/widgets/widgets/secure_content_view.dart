@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/app/models/models/typedef.dart' show DynamicVoid;
 import 'animated/widgets/animated_switcher.dart';
 import 'container_with_border.dart';

@@ -1,6 +1,6 @@
 import 'package:mrt_wallet/app/models/models/image.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
-import 'package:mrt_wallet/app/utils/list/extention.dart';
+import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';

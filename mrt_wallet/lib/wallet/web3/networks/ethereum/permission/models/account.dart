@@ -14,13 +14,6 @@ class Web3EthereumChainAccount extends Web3ChainAccount<ETHAddress> {
     required super.defaultAddress,
     required this.chainId,
   });
-  Web3EthereumChainAccount changeDefault(bool defaultAddress) {
-    return Web3EthereumChainAccount(
-        keyIndex: keyIndex,
-        address: address,
-        defaultAddress: defaultAddress,
-        chainId: chainId);
-  }
 
   factory Web3EthereumChainAccount.fromChainAccount(
       {required IEthAddress address,

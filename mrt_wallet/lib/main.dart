@@ -9,8 +9,6 @@ import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
-import 'dart:ui' as ui;
-
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -22,7 +20,7 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() async {
   runZonedGuarded(run, (error, stack) {
-    WalletLogging.log("zone error: $error");
+    WalletLogging.log("zone error: $error $stack");
   });
 }
 
@@ -32,11 +30,6 @@ void run() async {
   if (PlatformInterface.appPlatform.isDesktop) {
     await PlatformInterface.instance.desktop.init();
     await PlatformInterface.instance.desktop.waitUntilReadyToShow();
-    final pixelRatio =
-        ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
-    await PlatformInterface.instance.desktop.setBounds(
-        pixelRatio: pixelRatio,
-        size: const WidgetSize(width: 500, height: 700));
     await PlatformInterface.instance.desktop.setMaximumSize(const WidgetSize(
         width: APPConst.desktopAppWidth, height: APPConst.desktopAppHeight));
   }

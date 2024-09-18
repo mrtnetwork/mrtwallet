@@ -81,7 +81,10 @@ Future<void> buildContent({bool minify = false, bool isMozila = false}) async {
   }
   file = File("web/content.js.deps");
   file.deleteSync(recursive: true);
-  // await file.copy("build/web/content.js");
+  if (Directory("build/web/").existsSync()) {
+    file = File("web/content.js");
+    await file.copy("build/web/content.js");
+  }
 }
 
 Future<void> buildBackground({bool minify = false}) async {
@@ -97,8 +100,12 @@ Future<void> buildBackground({bool minify = false}) async {
     'js/background.dart'
   ];
   await _doProcess(command, args);
-  final file = File("web/background.js.deps");
+  File file = File("web/background.js.deps");
   file.deleteSync(recursive: true);
+  if (Directory("build/web/").existsSync()) {
+    file = File("web/background.js");
+    await file.copy("build/web/background.js");
+  }
 }
 
 Future<void> buildPage({bool minify = false}) async {
@@ -116,6 +123,10 @@ Future<void> buildPage({bool minify = false}) async {
   await _doProcess(command, args);
   File file = File("web/page.js.deps");
   file.deleteSync(recursive: true);
+  if (Directory("build/web/").existsSync()) {
+    file = File("web/page.js");
+    await file.copy("build/web/page.js");
+  }
 }
 
 Future<void> _doProcess(String command, List<String> args) async {
@@ -174,17 +185,17 @@ Future<void> _build(
 }
 
 Future<void> _buildWeb(
-    {bool extention = false,
+    {bool extension = false,
     bool mozila = false,
     bool minify = false,
     bool clean = false,
     String? baseHref}) async {
-  print("come build $extention $mozila $minify");
+  print("come build $extension $mozila $minify");
 
   if (clean) {
     await _clean();
   }
-  await buildCrypto();
+  //await buildCrypto();
   final r = Directory("web");
   if (r.existsSync()) {
     await r.delete(recursive: true);
@@ -193,24 +204,24 @@ Future<void> _buildWeb(
   final browserFiles = Directory("browser");
   _copyDirectory(browserFiles, r);
 
-  if (extention) {
+  if (extension) {
     await buildBackground(minify: minify);
     await buildPage(minify: minify);
     await buildContent(minify: minify, isMozila: mozila);
-    File file = File("extentions/tron_web.js");
+    File file = File("extensions/tron_web.js");
     await file.copy("web/tron_web.js");
-    file = File("extentions/bn.js");
+    file = File("extensions/bn.js");
     await file.copy("web/bn.js");
-    file = File("extentions/index.html");
+    file = File("extensions/index.html");
     await file.copy("web/index.html");
-    file = File("extentions/popup.html");
+    file = File("extensions/popup.html");
     await file.copy("web/popup.html");
     file = File(mozila
-        ? "extentions/mozila_manifest.json"
-        : "extentions/chrome_manifest.json");
+        ? "extensions/mozila_manifest.json"
+        : "extensions/chrome_manifest.json");
     await file.copy("web/manifest.json");
   }
-  await _build(minify: minify, csp: extention, wasm: true, baseHref: baseHref);
+  await _build(minify: minify, csp: extension, wasm: true, baseHref: baseHref);
 }
 
 void main(List<String> args) async {
@@ -218,10 +229,10 @@ void main(List<String> args) async {
   bool minify = fixedArgs.contains("--release");
   bool clean = fixedArgs.contains("--clean");
 
-  if (fixedArgs.contains("-extention")) {
+  if (fixedArgs.contains("-extension")) {
     final bool mozila = fixedArgs.contains("--mozila");
     await _buildWeb(
-        extention: true, mozila: mozila, minify: minify, clean: clean);
+        extension: true, mozila: mozila, minify: minify, clean: clean);
   } else if (fixedArgs.contains("-web")) {
     // final baseHrefIndex =
     //     fixedArgs.indexWhere((e) => e.startsWith("--base-href="));
@@ -255,4 +266,4 @@ void main(List<String> args) async {
   }
 }
 
-/// dart compile js -m -o extention/content.js js/extention.dart
+/// dart compile js -m -o extension/content.js js/extension.dart

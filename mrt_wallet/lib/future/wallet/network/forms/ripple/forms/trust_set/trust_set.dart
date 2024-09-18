@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.dart';

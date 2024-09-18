@@ -39,6 +39,7 @@ class WalletController extends _WalletController
         Web3SolanaImpl,
         Web3EthereumImpl,
         Web3TronImpl,
+        Web3TonImpl,
         Web3Impl {
   WalletController._(WalletCore core, HDWallet wallet, ChainsHandler chains)
       : super(core, wallet, chains);

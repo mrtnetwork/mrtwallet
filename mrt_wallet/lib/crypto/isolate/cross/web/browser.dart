@@ -12,7 +12,7 @@ external JSFunction get onWorkerErrorListener;
 
 class BrowserCryptoWorker extends IsolateCryptoWoker {
   BrowserCryptoWorker._() : super();
-  late final bool isExtention = web.isExtention;
+  late final bool isExtention = web.isExtension;
 
   static const String _wasmPath = "assets/wasm/crypto.wasm";
   static const String _extentionJs = "assets/wasm/wasm.mjs";
@@ -49,15 +49,6 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
     final f = await FileUtils.loadAssets(path);
     return Uint8List.fromList(f).buffer;
   }
-
-  // String _getAssetPath(String assetPath) {
-  //   assetPath = "assets/$assetPath";
-  //   if (isExtention) {
-  //     final path = web.extention.runtime.getURL(assetPath);
-  //     return path;
-  //   }
-  //   return assetPath;
-  // }
 
   Future<ByteBuffer> _loadWasm() async {
     final file = await loadFileBinary(_wasmPath);

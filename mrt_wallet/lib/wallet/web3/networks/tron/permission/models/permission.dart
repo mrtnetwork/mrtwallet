@@ -21,7 +21,9 @@ class Web3TronChain
   @override
   Web3TronChain clone() {
     return Web3TronChain._(
-        accounts: accounts, currentChain: currentChain, activities: activities);
+        accounts: activeAccounts,
+        currentChain: currentChain,
+        activities: activities);
   }
 
   factory Web3TronChain.create({TronChainType? chain}) {
@@ -32,7 +34,7 @@ class Web3TronChain
   }
 
   @override
-  List<Web3TronChainAccount> get accounts => super.accounts.cast();
+  List<Web3TronChainAccount> get activeAccounts => super.activeAccounts.cast();
 
   factory Web3TronChain.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -54,7 +56,8 @@ class Web3TronChain
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
+          CborListValue.fixedLength(
+              activeAccounts.map((e) => e.toCbor()).toList()),
           _currentChain.genesisBlockNumber,
           CborListValue.fixedLength(activities.map((e) => e.toCbor()).toList()),
         ]),
@@ -68,8 +71,8 @@ class Web3TronChain
   ITronAddress getAccountPermission(
       {required TronAddress address, required TronChain chain}) {
     try {
-      final permissionAccount =
-          accounts.firstWhere((e) => e.address == address);
+      final permissionAccount = activeAccounts.firstWhere((e) =>
+          e.address == address && e.chain == chain.network.tronNetworkType);
       final chainAccount = chain.addresses.firstWhere((e) {
         return e.networkAddress == permissionAccount.address &&
             e.keyIndex == permissionAccount.keyIndex;
@@ -81,25 +84,11 @@ class Web3TronChain
   }
 
   @override
-  List<Web3TronChainAccount> currentChainAccounts(TronChain chain) {
-    final currentAccounts =
-        accounts.where((e) => e.chain == _currentChain).toList();
-    List<Web3TronChainAccount> existsAccounts = [];
-    for (final i in chain.addresses) {
-      final chainAccount = currentAccounts.firstWhereOrNull(
-          (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);
-      if (chainAccount != null) {
-        existsAccounts.add(chainAccount);
-      }
-    }
-    return existsAccounts;
+  Web3TronChainAccount? getPermission(TronAddress address) {
+    return activeAccounts.firstWhereOrNull((e) => e.address == address);
   }
 
   @override
-  Web3TronChainAccount? getPermission(TronAddress address) {
-    return accounts.firstWhereOrNull((e) => e.address == address);
-  }
-
   void setActiveChain(TronChain chain) {
     _currentChain = chain.network.tronNetworkType;
   }
@@ -111,5 +100,18 @@ class Web3TronChain
   }
 
   @override
-  bool hasPermission(TronChain chain) => currentChainAccounts(chain).isNotEmpty;
+  List<Web3TronChainAccount> chainAccounts(TronChain chain) {
+    final currentAccounts = activeAccounts
+        .where((e) => e.chain == chain.network.tronNetworkType)
+        .toList();
+    List<Web3TronChainAccount> existsAccounts = [];
+    for (final i in chain.addresses) {
+      final chainAccount = currentAccounts.firstWhereOrNull(
+          (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);
+      if (chainAccount != null) {
+        existsAccounts.add(chainAccount);
+      }
+    }
+    return existsAccounts;
+  }
 }

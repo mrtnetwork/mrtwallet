@@ -7,6 +7,8 @@ import 'package:mrt_wallet/wallet/api/client/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/constant/networks/solana.dart';
 import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
 import 'package:mrt_wallet/wallet/models/networks/solana/models/web3_transaction_info.dart';
+import 'package:on_chain/solana/src/address/sol_address.dart';
+import 'package:on_chain/solana/src/transaction/transaction/transaction.dart';
 
 class Web3SolanaSendTransactionForm
     extends SolanaWeb3Form<Web3SolanaSendTransaction> {
@@ -23,12 +25,17 @@ class Web3SolanaSendTransactionForm
     if (transaction.status.canRetry) {
       transaction.setSimulatePending();
       onChanged?.call();
-      final result = await MethodUtils.call(() async =>
-          await _client.simulate(transaction: transaction.transaction));
+      final result = await MethodUtils.call(() async => await _client.simulate(
+          transaction: transaction.transaction,
+          account: transaction.signer.networkAddress));
       if (result.hasError) {
         transaction.setSimulateErr();
       } else {
         transaction.setSimulateSuccess(result.result);
+        if (transaction.simulateInfo.accounts?.isNotEmpty ?? false) {
+          transaction.accountChange
+              .updateBalance(transaction.simulateInfo.accounts?[0]?.lamports);
+        }
       }
     }
     onChanged?.call();
@@ -50,6 +57,18 @@ class Web3SolanaSendTransactionForm
         _transactions.fold(BigInt.zero, (p, c) => p + c.fee.balance);
     fee.updateBalance(totalFee);
     onChanged?.call();
+  }
+
+  Future<void> replateBlockHash() async {
+    SolAddress? blockHash;
+    for (final i in transaction) {
+      if (!i.canUpdateBlockHash) continue;
+      blockHash ??= await _client.getBlockHash();
+      final updateMessage =
+          i.transaction.message.copyWith(recentBlockhash: blockHash);
+      final newTransaction = SolanaTransaction.fromMessage(updateMessage);
+      i.updateTransaction(newTransaction);
+    }
   }
 
   void init(

@@ -1,5 +1,6 @@
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/forms/forms.dart';
@@ -16,43 +17,91 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
   @override
   Web3SolanaSendTransactionForm get form =>
       liveRequest.validator as Web3SolanaSendTransactionForm;
-  bool get isMultipleTransaction => form.transaction.length > 1;
+  bool get isMultipleTransaction => request.params.isBatchRequest;
   Web3SolanaSendTransactionOptions? _sendOption;
-  bool get isSend => _sendOption != null;
-  // bool _instructionReady = false;
+  bool get isSend => request.params.isSend;
+  bool _hasSimulateError = false;
+  bool _isReady = false;
+  bool get isReady => _isReady;
+  bool _canReplaceBlockHash = false;
+  bool get canReplaceBlockHash => _canReplaceBlockHash;
+  bool _replaceBlockHash = false;
+  bool get replaceBlockHash => _replaceBlockHash;
+  late final IntegerBalance total = IntegerBalance.zero(network.coinDecimal);
+  bool _isMultipleWithSameOwner = false;
+  bool get isMultipleWithSameOwner => _isMultipleWithSameOwner;
 
   Web3SolanaTransactionRequestController({
     required super.walletProvider,
     required super.request,
   }) : super(account: request.chain);
 
+  void toggleReplaceBlockHash(bool? _) {
+    if (!isSend) return;
+    _replaceBlockHash = !_replaceBlockHash;
+    notify();
+  }
+
   Future<void> _init() async {
+    progressKey.process(text: "transaction_retrieval_requirment".tr);
     try {
-      progressKey.process(text: "transaction_retrieval_requirment".tr);
       final params = request.params.messages;
       List<SolanaWeb3TransactionInfo> messagess = [];
       for (final i in params) {
+        final permission = request.authenticated
+            .getChainFromNetworkType<Web3SolanaChain>(NetworkType.solana)
+            ?.getAccountPermission(chain: account, address: i.account);
+
+        if (permission == null) {
+          throw Web3RequestExceptionConst.missingPermission;
+        }
         final message = SolanaTransaction.deserialize(i.messageBytes);
         final simulate = SolanaWeb3TransactionInfo(
-            transaction: message,
-            signer: account.getAddress(i.account.address)!,
-            id: i.id);
+            transaction: message, signer: permission, id: i.id);
         messagess.add(simulate);
+        apiProvider
+            .updateBalance(permission, updateTokens: false)
+            .then((e) => _checkTransaction);
       }
       _sendOption = request.params.sendConfig;
       form.init(transactions: messagess, client: apiProvider);
+      final hasSameOwner =
+          form.transaction.map((e) => e.signer.networkAddress).toSet().length !=
+              form.transaction.length;
+      _isMultipleWithSameOwner = isMultipleTransaction && hasSameOwner;
+      _canReplaceBlockHash =
+          isSend && form.transaction.any((e) => e.canUpdateBlockHash);
       progressKey.idle();
-      // ignore: empty_catches
-    } catch (e) {}
+    } on Web3RequestException catch (e) {
+      progressKey.error(
+          text: "web3_permission_error_desc".tr, backToIdle: null);
+      request.error(e);
+    }
   }
 
-  Future<void> confirm(Future<bool?> Function() onFailedInstruction) async {
-    final isReady = !form.transaction.any((e) => e.status.hasSimulateError);
-    if (!isReady) {
-      final accept = await onFailedInstruction();
+  void _checkTransaction() {
+    _hasSimulateError = form.transaction.any((e) => e.status.hasSimulateError);
+    _isReady = !form.transaction.any((e) => !e.status.isSuccess);
+    final totalAccountsBalances = form.transaction
+        .fold(BigInt.zero, (p, c) => p + c.signer.address.currencyBalance);
+    final totalSol = form.transaction
+        .fold(BigInt.zero, (p, c) => p + c.accountChange.balance);
+    total.updateBalance(totalAccountsBalances - totalSol);
+    notify();
+  }
+
+  Future<void> confirm(
+      Future<bool?> Function(String error) onFailedInstruction) async {
+    if (!_isReady) {
+      final accept = await onFailedInstruction(_hasSimulateError
+          ? "simulation_failed_continue_desc".tr
+          : "simulation_process_continue_desc".tr);
       if (accept != true) return;
     }
     progressKey.process(text: "signing_transaction_please_wait".tr);
+    if (_canReplaceBlockHash) {
+      await form.replateBlockHash();
+    }
     final signerAccounts = form.transaction.map((e) => e.signer).toList();
 
     final signedTr = await walletProvider.wallet.signTransaction(
@@ -78,7 +127,7 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
       },
     ));
     if (signedTr.hasError) {
-      progressKey.error(text: signedTr.error);
+      progressKey.error(text: signedTr.error!.tr);
       return;
     }
     final List<SolanaWeb3SignedTransactionInfo> result = signedTr.result;
@@ -153,7 +202,7 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
   }
 
   void onChange([bool? changed]) {
-    notify();
+    _checkTransaction();
   }
 
   @override

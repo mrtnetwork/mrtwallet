@@ -27,12 +27,16 @@ abstract class Web3SolanaImpl<RESPONSE,
   SolanaWeb3Form<T> _buildForm() {
     switch (request.params.method) {
       case Web3SolanaRequestMethods.requestAccounts:
-        final tronChains = walletProvider.wallet.getChains<SolanaChain>();
-        return SolanaRequestAccountForm(request: request, chains: tronChains)
+        final solanaChains = walletProvider.wallet.getChains<SolanaChain>();
+        return SolanaRequestAccountForm(request: request, chains: solanaChains)
             as SolanaWeb3Form<T>;
       case Web3SolanaRequestMethods.signMessage:
-        return Web3SolanaReadOnlyForm<T>(request: request) as SolanaWeb3Form<T>;
+        return Web3SolanaSignMessageForm<T>(request: request)
+            as SolanaWeb3Form<T>;
       case Web3SolanaRequestMethods.signTransaction:
+      case Web3SolanaRequestMethods.signAllTransactions:
+      case Web3SolanaRequestMethods.sendTransaction:
+      case Web3SolanaRequestMethods.sendAllTransactions:
         return Web3SolanaSendTransactionForm(
             request: request as Web3SolanaRequest<List<Map<String, dynamic>>,
                 Web3SolanaSendTransaction>) as SolanaWeb3Form<T>;

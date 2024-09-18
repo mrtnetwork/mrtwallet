@@ -20,7 +20,7 @@ class TonTransactionFieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final LiveTransactionForm<TonTransactionForm> validator =
         field ?? context.getArgruments();
-    return NetworkAccountControllerView<TonChain>(
+    return NetworkAccountControllerView<TheOpenNetworkChain>(
         childBulder: (wallet, chain, switchAccount) {
           return MrtViewBuilder<TonTransactionStateController>(
             repositoryId: StateConst.ton,
@@ -83,11 +83,10 @@ class TonTransactionFieldsView extends StatelessWidget {
                                     error: controller.error,
                                     showErrorIcon: false),
                                 InsufficientBalanceErrorView(
-                                  verticalMargin:
-                                      WidgetConstant.paddingVertical10,
-                                  balance: controller.remindAmount,
-                                  token: controller.network.token,
-                                ),
+                                    verticalMargin:
+                                        WidgetConstant.paddingVertical10,
+                                    balance: controller.remindAmount,
+                                    token: controller.network.token),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [

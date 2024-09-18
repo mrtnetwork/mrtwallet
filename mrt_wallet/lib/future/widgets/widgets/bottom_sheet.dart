@@ -38,9 +38,9 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   final DraggableScrollableController controller =
       DraggableScrollableController();
   double appBarAnimationRadius = 25.0;
-  bool _calculateAppBarRadius(DraggableScrollableNotification v) {
-    if (v.extent > 0.9) {
-      final double extent = 1 - v.extent;
+  bool _calculateAppBarRadius(double v) {
+    if (v > 0.9) {
+      final double extent = 1 - v;
       appBarAnimationRadius = (25 * extent) * 10;
       if (mounted) setState(() {});
     } else if (appBarAnimationRadius < 25) {
@@ -63,6 +63,10 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    if (widget.initiaalExtend != null) {
+      _calculateAppBarRadius(widget.initiaalExtend!);
+    }
     final height = context.mediaQuery.viewInsets.bottom;
     if (height > 0 && controller.isAttached) {
       inChangeExtend = true;
@@ -102,7 +106,7 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
                 if (!inChangeExtend) {
                   context.clearFocus();
                 }
-                return _calculateAppBarRadius(v);
+                return _calculateAppBarRadius(v.extent);
               },
               child: DraggableScrollableSheet(
                 minChildSize: widget.minExtent,

@@ -102,11 +102,11 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
             self.channel.invokeMethod(WebViewConst.webView, arguments: data.toJson())
         }
     }
+ 
     func dispose(){
-        
-        webView?.stopLoading()
-        
-        webView?.removeFromSuperview()
+        webView.reload()
+        webView.stopLoading()
+        webView.removeFromSuperview()
         
     }
     func openPage(url: String) {
@@ -170,7 +170,7 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
         window.addEventListener("error", function (e) {
                                    window.webkit.messageHandlers.MRT.postMessage({
                                        type: 'log',
-                                       data: "Error occurred: " + e.error.message,
+                                       data: "Error occurred: " + e.error.message + e + e.error,
                                        id: '1',
                                        requestId: '0',
                                    });
@@ -180,7 +180,7 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
                         // Send the message to the native side
                         window.webkit.messageHandlers.MRT.postMessage({
                             type: 'log',
-                            data: "Error occurred: " + e.reason.message,
+                            data: "Error occurred: " + e.reason.message + e + e.reason, 
                             id: '1',
                             requestId: '0',
                         });
@@ -191,7 +191,7 @@ class NativeViewFactory: NSObject, FlutterPlatformViewFactory,WKNavigationDelega
                 // Send the message to the native side
                 window.webkit.messageHandlers.MRT.postMessage({
                     type: 'log',
-                    data: "Error occurred: " + message,
+                    data: "Error occurred: " + message + source + lineno + colno,
                     id: '1',
                     requestId: '0',
                 });

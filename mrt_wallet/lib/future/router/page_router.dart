@@ -83,6 +83,7 @@ class PageRouter {
   static const String web3Ethereum = "web3/ethereum";
   static const String web3Tron = "web3/tron";
   static const String web3Solana = "web3/solana";
+  static const String web3Ton = "web3/ton";
 
   static const String webview = "web/";
 
@@ -184,6 +185,8 @@ class PageRouter {
         return const EthereumWeb3FieldsView();
       case web3Tron:
         return const TronWeb3FieldsView();
+      case web3Ton:
+        return const TonWeb3FieldsView();
       case web3Solana:
         return const SolanaWeb3FieldsView();
       case updateEthereumProvider:
@@ -255,6 +258,8 @@ class PageRouter {
         return web3Solana;
       case NetworkType.tron:
         return web3Tron;
+      case NetworkType.ton:
+        return web3Ton;
       default:
         return null;
     }

@@ -24,12 +24,7 @@ class Web3RequestException implements Exception {
   Web3ExceptionMessage toResponseMessage(
       {Map<String, dynamic>? request, String? requestId}) {
     return Web3ExceptionMessage(
-        message: message,
-        code: code,
-        request: request,
-        requestId: requestId,
-        walletCode: walletCode,
-        data: data);
+        message: message, code: code, walletCode: walletCode, data: data);
   }
 
   @override

@@ -8,5 +8,5 @@ export 'share/utils.dart';
 export 'string/utils.dart';
 export 'file/utils.dart';
 export 'numbers/numbers.dart';
-export 'list/extention.dart';
+export 'list/extension.dart';
 export 'map/extension.dart';

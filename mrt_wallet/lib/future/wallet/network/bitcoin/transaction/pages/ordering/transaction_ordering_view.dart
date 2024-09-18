@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/bch/token/pages/cash_token_info
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/utils/bitcoin/bitcoin.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TransactionOrderingView extends StatefulWidget {
   const TransactionOrderingView({

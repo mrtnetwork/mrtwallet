@@ -5,7 +5,6 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/token/chains_tokens/jetton.dart';
 import 'package:mrt_wallet/crypto/utils/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
-import 'message_body_type.dart';
 
 class TonOutputWithBalance {
   TonOutputWithBalance({
@@ -93,7 +92,7 @@ class TonOutputWithBalance {
           payload: payload,
           queryId: queryId);
     }
-    return TransactioUtils.internal(
+    return TonHelper.internal(
         destination: address.networkAddress,
         amount: balance.balance,
         bounce: bounce,

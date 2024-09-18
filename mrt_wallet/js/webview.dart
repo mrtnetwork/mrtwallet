@@ -50,6 +50,5 @@ void main(List<String> args) async {
   }
 
   mrt.onMrtMessage = onActivation.toJS;
-
   await completer.future;
 }

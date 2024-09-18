@@ -47,6 +47,8 @@ class APPConst {
   static const double double20 = 20;
   static const double tooltipConstrainedWidth = 300;
   static const double dialogWidth = 650;
+  static const double maxViewWidth = 650;
+  static const double maxDialogHeight = 600;
   static const double maxTextFieldWidth = 400;
   static const double qrCodeWidth = 300;
   static final RegExp accountNameRegExp = RegExp(r'^[^\n]{0,20}$');
@@ -54,6 +56,7 @@ class APPConst {
   static const double circleRadius25 = 25;
   static const double desktopAppWidth = 1200;
   static const double desktopAppHeight = 768;
+  static const double naviationRailWidth = 80;
   static const String exampleBase58 = "sEd7FSsSXz9CGy18ajtP8nAkrr....";
   static const String exampleHex = "";
 

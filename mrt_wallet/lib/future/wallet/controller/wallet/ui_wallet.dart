@@ -40,9 +40,11 @@ abstract class UIWallet extends WalletCore {
       required Set<ChainAccount> addresses}) async {
     final pw = await navigatorKey.currentContext?.openSliverBottomSheet<String>(
       "sign_transaction".tr,
-      child: WalletSigningPassword(
+      initialExtend: 1,
+      bodyBuilder: (controller) => WalletSigningPassword(
         addresses: addresses,
         keys: keys,
+        controller: controller,
         onPasswordForm: (password) async {
           final result = await login(password);
           return result.hasResult;

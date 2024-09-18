@@ -60,8 +60,8 @@ class SafestorageUtils {
   }
 
   static Future<String?> _key() async {
-    if (isExtention) {
-      return await extention.storage.local.getStorage_(StorageConst.key);
+    if (isExtension) {
+      return await extension.storage.local.getStorage_(StorageConst.key);
     }
     return localStorage.getItem(StorageConst.key);
   }
@@ -73,8 +73,8 @@ class SafestorageUtils {
     }
     final generateKey = _generateKey();
     final ChaCha20Poly1305 chacha = generateKey.$2;
-    if (isExtention) {
-      await extention.storage.local
+    if (isExtension) {
+      await extension.storage.local
           .setStorage_(StorageConst.key, generateKey.$1);
       return chacha;
     }
@@ -106,7 +106,7 @@ abstract class SafeStorage {
   const SafeStorage(this._chacha);
   static Future<SafeStorage> init() async {
     final key = await SafestorageUtils.migrateLegacy();
-    if (isExtention) {
+    if (isExtension) {
       return ChromeStorage(key);
     }
     return WebStorage(key);

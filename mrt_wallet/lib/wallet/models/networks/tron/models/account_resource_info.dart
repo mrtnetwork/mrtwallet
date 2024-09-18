@@ -51,6 +51,8 @@ class TronAccountResourceInfo with CborSerializable {
   int get howManyVote => tronPowerLimit - tronPowerUsed;
   BigInt get howManyBandwIth => totalBandWith - totalBandWithUsed;
 
+  /// {freeNetLimit: 600, assetNetUsed: [{key: 1001470, value: 0}], assetNetLimit: [{key: 1001470, value: 0}], TotalNetLimit: 43200000000, TotalNetWeight: 84045925899, TotalEnergyLimit: 50000000000000, TotalEnergyWeight: 564732458708}
+  /// {freeNetUsed: 265, freeNetLimit: 600, assetNetUsed: [{key: 1001470, value: 0}], assetNetLimit: [{key: 1001470, value: 0}], TotalNetLimit: 43200000000, TotalNetWeight: 84045925899, TotalEnergyLimit: 50000000000000, TotalEnergyWeight: 564732458708}
   TronAccountResourceInfo({
     required this.freeNetUsed,
     required this.freeNetLimit,

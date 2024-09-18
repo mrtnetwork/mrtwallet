@@ -13,6 +13,8 @@ class LinkConst {
       "https://docs.ton.org/participate/wallets/contracts#basic-wallets";
   static const String reviewTonSubWalletId =
       "https://docs.ton.org/participate/wallets/contracts#wallet-v3";
+  static const String reviewTonV5 =
+      "https://github.com/ton-blockchain/wallet-contract-v5/tree/main";
   static const String tonBouncableReview =
       "https://docs.ton.org/develop/smart-contracts/guidelines/non-bouncable-messages";
   static const String tonMessageBodyReview =

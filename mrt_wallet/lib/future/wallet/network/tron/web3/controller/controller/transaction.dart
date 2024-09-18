@@ -21,8 +21,9 @@ class Web3TronTransactionRequestController
   TronFee? _consumedFee;
   TronFee? get consumedFee => _consumedFee;
   @override
-  // ignore: overridden_fields
-  late final LiveTransactionForm<Web3TronReadOnlyForm> liveRequest;
+  late final LiveTransactionForm<Web3TronReadOnlyForm<Web3TronSendTransaction>>
+      // ignore: overridden_fields
+      liveRequest;
 
   Web3TronTransactionRequestController({
     required super.walletProvider,
@@ -156,6 +157,17 @@ class Web3TronTransactionRequestController
     final transactionInfo = await MethodUtils.call(() async =>
         await apiProvider.getWeb3TransactionInfo(
             transaction: transaction.rawData, chain: account));
+    if (address.multiSigAccount) {
+      final multiSigAddress = address as ITronMultisigAddress;
+      if (transaction.rawData.permissionId() !=
+          multiSigAddress.multiSignatureAccount.permissionID) {
+        progressKey.error(
+            text: "tron_account_permission_not_access_desc".tr,
+            backToIdle: null);
+        return;
+      }
+    }
+
     if (transactionInfo.hasError) {
       progressKey.error(text: transactionInfo.error!.tr, backToIdle: null);
     } else {
@@ -178,7 +190,8 @@ class Web3TronTransactionRequestController
             BytesUtils.toHexString(transaction.rawData.data!);
       }
       liveRequest = LiveTransactionForm(
-          validator: Web3TronReadOnlyForm(request: request));
+          validator:
+              Web3TronReadOnlyForm<Web3TronSendTransaction>(request: request));
       _trIsReady = _checkTransaction();
       progressKey.idle();
     }
@@ -205,14 +218,14 @@ class Web3TronTransactionRequestController
               try {
                 final signRequest = GlobalSignRequest.tron(
                     digest: transactionDigest, index: i.keyIndex);
-                final sss = await generateSignature(signRequest);
-                signerSignatures.add(sss.signature);
+                final response = await generateSignature(signRequest);
+                signerSignatures.add(response.signature);
                 threshHold += i.weight;
                 if (threshHold >=
                     multiSigAddress.multiSignatureAccount.threshold) {
                   break;
                 }
-              } catch (e) {
+              } catch (_) {
                 continue;
               }
             }
@@ -224,10 +237,11 @@ class Web3TronTransactionRequestController
           final signRequest = GlobalSignRequest.tron(
               digest: transactionDigest,
               index: address.keyIndex as Bip32AddressIndex);
-          final sss = await generateSignature(signRequest);
-          return [sss.signature];
+          final response = await generateSignature(signRequest);
+          return [response.signature];
         },
       );
+
       final signature =
           await walletProvider.wallet.signTransaction(request: request);
       if (signature.hasError) {

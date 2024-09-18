@@ -332,12 +332,11 @@ extension type CustomEvent._(JSObject _) implements WebEvent {
   external factory CustomEvent(String? type, EventInit? options);
   factory CustomEvent.create(
       {required String? type,
-      required List<int> data,
+      required JSAny? eventData,
       bool bubbles = true,
       bool cancelable = false,
       bool clone = false}) {
-    JSAny? eventData = data.jsify();
-    if (clone && isExtention && cloneInto != null) {
+    if (clone && isExtension && cloneInto != null) {
       eventData = _cloneInto(eventData, jsWindow.document.defaultView);
     }
 
@@ -363,4 +362,6 @@ extension type JSConsole._(JSObject _) implements JSObject {
   external void debug(String? text);
   external void info(String? text);
   external void error(String? text);
+  @JS("error")
+  external void errorObject(JSAny? obj);
 }

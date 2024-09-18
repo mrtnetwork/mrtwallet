@@ -115,6 +115,10 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
     controller.text = "$newIndex";
   }
 
+  void setValue(int newIndex) {
+    controller.text = "$newIndex";
+  }
+
   int? getValue() {
     return int.tryParse(controller.text);
   }

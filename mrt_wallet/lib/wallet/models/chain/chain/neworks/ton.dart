@@ -1,8 +1,15 @@
 part of 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 
-class TonChain extends Chain<TonAPIProvider, TonNetworkParams, TonAddress,
-    TonJettonToken, NFTCore, ITonAddress, WalletTonNetwork, TonClient> {
-  TonChain._(
+class TheOpenNetworkChain extends Chain<
+    TonAPIProvider,
+    TonNetworkParams,
+    TonAddress,
+    TonJettonToken,
+    NFTCore,
+    ITonAddress,
+    WalletTonNetwork,
+    TonClient> {
+  TheOpenNetworkChain._(
       {required super.network,
       required super.totalBalance,
       required super.addressIndex,
@@ -12,7 +19,7 @@ class TonChain extends Chain<TonAPIProvider, TonNetworkParams, TonAddress,
       super.addresses})
       : super._();
   @override
-  TonChain copyWith({
+  TheOpenNetworkChain copyWith({
     WalletTonNetwork? network,
     Live<IntegerBalance>? totalBalance,
     List<ITonAddress>? addresses,
@@ -21,7 +28,7 @@ class TonChain extends Chain<TonAPIProvider, TonNetworkParams, TonAddress,
     TonClient? client,
     String? id,
   }) {
-    return TonChain._(
+    return TheOpenNetworkChain._(
         network: network ?? this.network,
         totalBalance: totalBalance ?? this.totalBalance,
         addressIndex: addressIndex ?? _addressIndex,
@@ -31,11 +38,11 @@ class TonChain extends Chain<TonAPIProvider, TonNetworkParams, TonAddress,
         id: id ?? this.id);
   }
 
-  factory TonChain.setup(
+  factory TheOpenNetworkChain.setup(
       {required WalletTonNetwork network,
       required String id,
       TonClient? client}) {
-    return TonChain._(
+    return TheOpenNetworkChain._(
         network: network,
         id: id,
         addressIndex: 0,
@@ -44,7 +51,7 @@ class TonChain extends Chain<TonAPIProvider, TonNetworkParams, TonAddress,
         client: client);
   }
 
-  factory TonChain.deserialize(
+  factory TheOpenNetworkChain.deserialize(
       {required WalletTonNetwork network,
       required CborListValue cbor,
       required String id,
@@ -76,7 +83,7 @@ class TonChain extends Chain<TonAPIProvider, TonNetworkParams, TonAddress,
     }
     final BigInt? totalBalance = cbor.elementAt(4);
 
-    return TonChain._(
+    return TheOpenNetworkChain._(
       network: network,
       addresses: toAccounts,
       addressIndex: addressIndex < 0 ? 0 : addressIndex,

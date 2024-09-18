@@ -21,9 +21,7 @@ class PasswordCheckerView extends StatefulWidget {
       this.password,
       this.customKey,
       this.controller,
-      this.appbar})
-      : assert(appbar != null || title != null,
-            "use appbar or title to build page appbar.");
+      this.appbar});
   final FuncWidgetStringPaagePrgoressKey onAccsess;
   final WalletAccsessType accsess;
   final String? title;
@@ -66,7 +64,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
   String? error;
   String? psaswordForm(String? v) {
     if (StrUtils.isStrongPassword(v)) return null;
-    return "password_desc".tr;
+    return "password_validator".tr;
   }
 
   void onChange(String v) {
@@ -152,10 +150,15 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     _lifeCycle?.dispose();
   }
 
+  PreferredSizeWidget? appBar() {
+    if (widget.appbar == null && widget.title == null) return null;
+    return widget.appbar ?? AppBar(title: Text(widget.title ?? ''));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: widget.appbar ?? AppBar(title: Text(widget.title ?? '')),
+      appBar: appBar(),
       body: UnfocusableChild(
         child: APPAnimatedSwitcher(
           duration: APPConst.animationDuraion,

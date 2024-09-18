@@ -271,9 +271,9 @@ class Localization {
           "account_not_found": "Account not found",
           "sign_transaction": "Sign transaction",
           "signing_tx_desc":
-              "The wallet requests the signing of the transaction using the following accounts.",
+              "The wallet is requesting you to sign the data with the following accounts.",
           "signing_tx_desc1":
-              "Kindly provide your wallet password to sign the transaction; otherwise, close the page.",
+              "Kindly provide your wallet password to sign the data (Transaction, Message, etc.). otherwise, close the page.",
           "wallet_is_locked": "Wallet is locked.",
           "to_many_request": "Too many requests",
           "user_rejected_signing_request":
@@ -882,7 +882,7 @@ class Localization {
           "accounts": "Accounts",
           "private_keys": "Private keys",
           "private_keys__signing_access_desc":
-              "The transaction requires the use of the following private keys for signing.",
+              "The data requires the use of the following private keys to complete the signing process.",
           "amount_for_each_output":
               "Kindly input the preferred quantity for each output.",
           "cancel": "Cancel",
@@ -1423,7 +1423,7 @@ class Localization {
           "a_minimum_a_ada_required": "A minimum of 1 ADA output is required.",
           "unsuported_feature": "Unsuported feature",
           "cosmos_networks": "Cosmos and forked",
-          "ton_networks": "Ton",
+          "ton_networks": "Ton networks",
           "add_least_one_receipt": "Add at least one recipient",
           "the_amount_is_unspecified": "The amount is unspecified.",
           "elliptic_curve_options": "Elliptic Curve Options",
@@ -1593,9 +1593,9 @@ class Localization {
           "wallet_type": "Wallet type",
           "types_of_wallet_contracts": "Types of Wallet Contracts",
           "ton_wallet_contract_desc":
-              "Wallet Contracts on TON (V1, V2, V3, V4) are smart contracts designed to manage cryptocurrency transactions with increasing levels of security, functionality, and customization.",
+              "Wallet Contracts on TON (V1, V2, V3, V4, V5) are smart contracts designed to manage cryptocurrency transactions with increasing levels of security, functionality, and customization.",
           "sub_wallet_id_validator":
-              "The sub wallet id must be a value between 0 and 2^32-1.",
+              "The sub wallet id must be a value between 0 and ___1__.",
           "sub_wallet_id": "Sub wallet id",
           "sub_wallet_id_desc":
               "which allows you to create multiple wallets using the same public key (so you can have only one seed phrase and lots of wallets)",
@@ -2036,6 +2036,7 @@ class Localization {
           "tron_call_token_value_desc":
               "The amount of a TRC-10 token during contract interaction",
           "tron_networks": "Tron networks.",
+          "solana_networks": "Solana networks.",
           "default_address": "Default address",
           "default_address_desc":
               "Enabling multiple account permissions allows Web3 apps to automatically detect the default address.",
@@ -2065,7 +2066,73 @@ class Localization {
           "fee_estimate_failed": "Fee estimation failed",
           "submit_transaction": "Submit transaction.",
           "simulation_failed_continue_desc":
-              "Some transaction simulations failed. Do you want to continue?"
+              "Some transaction simulations failed. Do you want to continue?",
+          "simulation_process_continue_desc":
+              "Some transaction simulations are in process. Do you want to continue?",
+          "total_transaction_const": "Total transaction cost",
+          "simulation_are_not_ready":
+              "Some transaction simulations are not complete.",
+          "web3_permission_error_desc":
+              "Insufficient permissions to complete this request.",
+          "change_balance": "Change balance",
+          "solana_change_balance_desc":
+              "Remaining balance after transaction submission.",
+          "solana_change_balance_desc2":
+              "In a multiple transaction request with the same owner, the balance change applies only to this instruction and does not affect previous or subsequent simulations.",
+          "replace_recent_block_hash": "Replace recent block hash",
+          "replace_block_hash_desc":
+              "this feature only effect transactions with one signature requirement",
+          "message_amount": "Message amount",
+          "amount_of_ton_message": "Amount of TON Linked to the Message",
+          "transaction_messages": "Transaction messages",
+          "ton_tx_message_details": "TON transaction message details.",
+          "message_payload": "Message payload",
+          "jetton_info": "Jetton info",
+          "jetton_transfer_amount": "Jetton transfer amount",
+          "content_of_payload": "The content of payload.",
+          "payload_deserialize_failed":
+              "Failed to deserialize and access the payload content.",
+          "unknown_payload_desc":
+              "Unknown payload detected. Some payloads may have full access to contracts. Only accept Web3 transactions from trusted sites.",
+          "deploy_contract": "Deploy contract",
+          "initialization_state": "Initialization state",
+          "encrypted_message": "Encrypted message",
+          "use_wallet_id": "Use Wallet id",
+          "ton_v5_wallet_desc":
+              "The Wallet ID may resemble a Sub Wallet ID, but it follows a different serialization concept. To understand this better, you should read about version 5.",
+          "wallet_id": "Wallet ID",
+          "unknow_jetton_owner": "Unknown Jetton Owner",
+          "switch_permission_chain_desc":
+              "To switch chains, please select the desired chain and update the permissions accordingly.",
+          "writable": "Writable",
+          "read_only": "Read only",
+          "sign_message_private_key":
+              "The message should be signed using account private key.",
+          "sign_message_private_key_desc":
+              "Sign Message: Warning! The message you're about to sign could contain anything, including transactions. We cannot validate the contents of the message. Only proceed if you fully trust the request. Otherwise, you may risk losing your funds.",
+          "signing_request": "Signing request",
+          "eth_sendTransaction": "Send Transaction",
+          "personal_sign": "Personal Sign",
+          "eth_signTypedData": "Sign Typed Data",
+          "eth_signTypedData_v3": "Sign Typed Data V3",
+          "eth_signTypedData_v4": "Sign Typed Data V4",
+          "eth_requestAccounts": "Request Accounts",
+          "wallet_addEthereumChain": "Add Ethereum Chain",
+          "wallet_switchEthereumChain": "Switch Ethereum Chain",
+          "wallet_disconnect": "Disconnect",
+          "solana_sendTransaction": "Send Transaction",
+          "solana_sendAllTransactions": "Send All Transactions",
+          "solana_signAllTransactions": "Sign All Transactions",
+          "solana_signMessage": "Sign Message",
+          "solana_signTransaction": "Sign Transaction",
+          "solana_requestAccounts": "Request Accounts",
+          "ton_signMessage": "Sign Message",
+          "ton_sendTransaction": "Send Transaction",
+          "ton_signTransaction": "Sign Transaction",
+          "ton_requestAccounts": "Request Accounts",
+          "tron_signTransaction": "Sign Transaction",
+          "tron_signMessageV2": "Sign Message",
+          "tron_requestAccounts": "Request Accounts"
         }
       };
 }

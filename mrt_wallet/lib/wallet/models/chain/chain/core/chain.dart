@@ -130,7 +130,7 @@ abstract class Chain<
             client: APIUtils.createApiClient(network),
             id: id);
       case NetworkType.ton:
-        return TonChain.setup(
+        return TheOpenNetworkChain.setup(
             network: network.toNetwork(),
             client: APIUtils.createApiClient(network),
             id: id);
@@ -190,7 +190,7 @@ abstract class Chain<
             client: APIUtils.createApiClient(network, service: provider));
         break;
       case NetworkType.ton:
-        chain = TonChain.deserialize(
+        chain = TheOpenNetworkChain.deserialize(
             network: network.toNetwork(),
             cbor: values,
             id: id,

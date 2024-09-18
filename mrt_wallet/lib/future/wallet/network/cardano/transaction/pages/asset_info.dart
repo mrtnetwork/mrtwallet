@@ -4,7 +4,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/networks/cardano/models/utxo_multi_asset.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class CardanoAssetsInfoView extends StatelessWidget {
   const CardanoAssetsInfoView({super.key, required this.asset});

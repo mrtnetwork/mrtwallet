@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/resource_v2/fo
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/utils/tron/tron.dart';
 import 'package:on_chain/tron/src/address/tron_address.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TronDelegatedResourceFieldsView extends StatelessWidget {
   const TronDelegatedResourceFieldsView(

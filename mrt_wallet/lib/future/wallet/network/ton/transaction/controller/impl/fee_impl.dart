@@ -2,11 +2,16 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:ton_dart/ton_dart.dart';
-import 'transaction_impl.dart';
 
 enum TonFeeStatus { estimate, progress, error, idle }
 
-mixin TonFeeImpl on TonTransactionImpl {
+mixin TonFeeImpl {
+  ITonAddress get address;
+  TonClient get apiProvider;
+  Future<Message> buildTransaction({bool fakeSignature = false});
+  void onChange();
+  WalletTonNetwork get network;
+
   TonTransactionFeeDetails _feeDetails = TonTransactionFeeDetails.nonEstimate();
   TonTransactionFeeDetails get feeDetails => _feeDetails;
   BigInt get fee => _feeDetails.fee.balance;
@@ -40,7 +45,6 @@ mixin TonFeeImpl on TonTransactionImpl {
     _feeDetails = TonTransactionFeeDetails.nonEstimate();
     onChange();
     final estimate = await MethodUtils.call(() async => await _estimateFee());
-
     if (estimate.hasError) {
       if (!estimate.isCancel) {
         _feeStatus = StreamWidgetStatus.error;

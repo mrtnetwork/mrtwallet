@@ -12,7 +12,7 @@ class TonImportJettonsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<TonChain>(
+    return NetworkAccountControllerView<TheOpenNetworkChain>(
       title: "import_jettons".tr,
       childBulder: (wallet, account, onAccountChanged) {
         return _TonImportJettonsView(
@@ -26,7 +26,7 @@ class _TonImportJettonsView extends StatefulWidget {
   const _TonImportJettonsView(
       {required this.apiProvider, required this.account, required this.wallet});
   final TonClient apiProvider;
-  final TonChain account;
+  final TheOpenNetworkChain account;
   final WalletProvider wallet;
   @override
   State<_TonImportJettonsView> createState() => __TonImportJettonsViewState();
@@ -171,44 +171,41 @@ class __TonImportJettonsViewState extends State<_TonImportJettonsView>
       child: (c) {
         return CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: ConstraintsBoxView(
-                  padding: WidgetConstant.padding20,
-                  child: PageTitleSubtitle(
-                      title: "import_token_alert".tr,
-                      body: Text("import_token_desc".tr))),
+            SliverConstraintsBoxView(
+              padding: WidgetConstant.paddingHorizontal20,
+              sliver: SliverToBoxAdapter(
+                child: PageTitleSubtitle(
+                    title: "import_token_alert".tr,
+                    body: Text("import_token_desc".tr)),
+              ),
             ),
-            EmptyItemSliverWidgetView(
-              isEmpty: tokens.isEmpty,
-              itemBuilder: () => SliverPadding(
-                padding: WidgetConstant.paddingHorizontal20,
-                sliver: SliverList.builder(
+            SliverConstraintsBoxView(
+              padding: WidgetConstant.paddingHorizontal20,
+              sliver: EmptyItemSliverWidgetView(
+                isEmpty: tokens.isEmpty,
+                itemBuilder: () => SliverList.separated(
+                  separatorBuilder: (context, index) => WidgetConstant.divider,
                   itemBuilder: (context, index) {
                     final TonAccountJettonResponse token = tokens[index];
                     final bool exist =
                         address.tokens.contains(token.jettonToken);
                     getContent(token);
-                    return Column(
-                      children: [
-                        APPAnimatedSwitcher(
-                            enable: token.jettonToken != null,
-                            widgets: {
-                              true: (c) => _NonContentJettonView(
-                                    token: token,
-                                    state: this,
-                                    exist: exist,
-                                    key: const ValueKey<bool>(true),
-                                  ),
-                              false: (c) => _NonContentJettonView(
-                                    token: token,
-                                    state: this,
-                                    exist: exist,
-                                    key: const ValueKey<bool>(false),
-                                  )
-                            }),
-                        const Divider(),
-                      ],
-                    );
+                    return APPAnimatedSwitcher(
+                        enable: token.jettonToken != null,
+                        widgets: {
+                          true: (c) => _NonContentJettonView(
+                                token: token,
+                                state: this,
+                                exist: exist,
+                                key: const ValueKey<bool>(true),
+                              ),
+                          false: (c) => _NonContentJettonView(
+                                token: token,
+                                state: this,
+                                exist: exist,
+                                key: const ValueKey<bool>(false),
+                              )
+                        });
                   },
                   itemCount: tokens.length,
                 ),
@@ -290,11 +287,8 @@ class _NonContentJettonView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (isVerify)
-                    Text(
-                      token.jettonToken!.token.name,
-                      style: context.textTheme.bodyLarge,
-                      maxLines: 1,
-                    ),
+                    Text(token.jettonToken!.token.name,
+                        style: context.textTheme.bodyLarge, maxLines: 1),
                   Text(token.tokenAddress.toFriendlyAddress(),
                       style: isVerify ? null : context.textTheme.labelLarge),
                   CoinPriceView(

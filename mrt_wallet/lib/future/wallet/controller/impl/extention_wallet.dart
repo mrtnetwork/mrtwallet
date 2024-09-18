@@ -4,7 +4,7 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/controller/models/key.dart';
 import 'package:mrt_wallet/future/wallet/controller/models/login_history.dart';
 import 'package:mrt_wallet/future/wallet/controller/impl/web3_request_controller.dart';
@@ -21,11 +21,11 @@ class ExtentionSessionStorageConst {
 
 mixin ExtentionWalletHandler on Web3RequestControllerImpl {
   bool _fromAction = true;
-  final sessionStorage = extention.storage.session;
+  final sessionStorage = extension.storage.session;
   StreamSubscription<int>? _onWalletExpireTime;
   @override
   Future<Web3ClientInfo?> currentApllicationId() async {
-    final tabs = await extention.tabs.query_(
+    final tabs = await extension.tabs.query_(
         active: true,
         lastFocusedWindow: _fromAction ? true : false,
         currentWindow: _fromAction);
@@ -132,7 +132,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
         }
         return true;
       case WalletEventTypes.windowId:
-        extention.windows
+        extension.windows
             .getCurrent_(populate: false, windowTypes: ["popup"]).then((e) {
           sendResponse.callAsFunction(
               sendResponse,
@@ -169,7 +169,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
         port.postMessage(message);
         return;
       }
-      final tab = await extention.tabs.get_(int.parse(event.clientId));
+      final tab = await extension.tabs.get_(int.parse(event.clientId));
 
       final Web3ClientInfo? client = await createClientInfos(
           clientId: tab.id?.toString(),
@@ -214,7 +214,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
 
   void _onActivateChain(ActiveInfo info) {
     final tabInfo =
-        extention.tabs.query_(windowId: info.windowId, active: true);
+        extension.tabs.query_(windowId: info.windowId, active: true);
     tabInfo.then(_updateTabs);
   }
 
@@ -238,16 +238,16 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
   }
 
   static final popEvent = WalletEvent(
-      clientId: extention.runtime.id,
+      clientId: extension.runtime.id,
       data: const [],
       requestId: "",
       type: WalletEventTypes.popup);
 
   void initExtention() {
-    extention.runtime.onMessage.addListener(_onRuntimeMessage.toJS);
-    extention.runtime.onConnect.addListener(_onConnet.toJS);
-    extention.tabs.onActivated.addListener(_onActivateChain.toJS);
-    extention.runtime.sendMessage_(message: popEvent);
+    extension.runtime.onMessage.addListener(_onRuntimeMessage.toJS);
+    extension.runtime.onConnect.addListener(_onConnet.toJS);
+    extension.tabs.onActivated.addListener(_onActivateChain.toJS);
+    extension.runtime.sendMessage_(message: popEvent);
   }
 
   @override
@@ -255,7 +255,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
     final update =
         (await walletCore.updateWeb3Application(updatePermission)).result;
     final tabs =
-        await extention.tabs.query_(host: updatePermission.applicationId);
+        await extension.tabs.query_(host: updatePermission.applicationId);
     if (tabs.isNotEmpty) {
       for (final i in tabs) {
         if (i.id == null) continue;
@@ -270,7 +270,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
 
   @override
   Future<void> sendToClient(WalletEvent event) async {
-    await extention.tabs
+    await extension.tabs
         .sendMessage_(
             tabId: int.parse(event.clientId), message: event.toJsEvent())
         .timeout(APPConst.tenSecoundDuration, onTimeout: () => null)

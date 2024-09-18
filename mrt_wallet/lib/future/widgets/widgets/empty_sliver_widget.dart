@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart' show APPConst;
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/widgets/widgets/animated/animation.dart';
 
 import 'widget_constant.dart';

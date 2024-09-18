@@ -26,7 +26,7 @@ class WebViewIoInterface implements PlatformWebView {
 
   Future<void> _methodCallHandler(Map<String, dynamic> args) async {
     if (args['type'] == "log") {
-      print('\x1B[33m${args['data']}\x1B[0m');
+      print('console: \x1B[33m${args['data']}\x1B[0m');
       return;
     }
     if (args["eventName"] == null) return;

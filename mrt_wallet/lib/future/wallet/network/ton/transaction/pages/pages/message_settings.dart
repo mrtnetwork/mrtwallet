@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/utils/ton/ton.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/networks/ton/ton.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TonTransactionMessageSettingsView extends StatefulWidget {
   const TonTransactionMessageSettingsView(this.receiver, {super.key});
@@ -28,6 +29,7 @@ class _TonTransactionMessageSettingsViewState
   }
 
   void onChageBodyType(TonMessageBodyType? type) {
+    if (type == TonMessageBodyType.encryptedMessage) return;
     setState(() {
       bodyType = type ?? bodyType;
     });
@@ -104,7 +106,8 @@ class _TonTransactionMessageSettingsViewState
             WidgetConstant.height8,
             AppDropDownBottom(
               items: {
-                for (final i in TonMessageBodyType.values) i: Text(i.name.tr)
+                for (final i in TonMessageBodyType.supportValues)
+                  i: Text(i.name.tr)
               },
               label: "choose_the_type".tr,
               onChanged: onChageBodyType,

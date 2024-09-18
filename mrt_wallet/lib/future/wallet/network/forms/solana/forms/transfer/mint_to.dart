@@ -6,7 +6,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart'
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/solana.dart';
 import 'package:on_chain/solana/solana.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class SolanaMintToForm extends SolanaTransactionForm {
   Token _token =

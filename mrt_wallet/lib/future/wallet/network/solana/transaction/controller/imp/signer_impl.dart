@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/models/signing/signing.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:on_chain/solana/solana.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 mixin SolanaSignerImpl on SolanaTransactionImpl {
   Future<String> _buildAndSigneTransaction() async {

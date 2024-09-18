@@ -19,8 +19,8 @@ Future<String> bytesToFile(
 
 Future<List<int>> loadAssetBuffer(String assetPath) async {
   assetPath = toAssetPath(assetPath);
-  if (isExtention) {
-    assetPath = extention.runtime.getURL(assetPath);
+  if (isExtension) {
+    assetPath = extension.runtime.getURL(assetPath);
   }
   final data = await jsWindow.fetch_(assetPath);
   if (!data.ok) {
@@ -32,8 +32,8 @@ Future<List<int>> loadAssetBuffer(String assetPath) async {
 
 Future<String> loadAssetText(String assetPath) async {
   assetPath = toAssetPath(assetPath);
-  if (isExtention) {
-    assetPath = extention.runtime.getURL(assetPath);
+  if (isExtension) {
+    assetPath = extension.runtime.getURL(assetPath);
   }
   final data = await jsWindow.fetch_(assetPath);
   if (!data.ok) {

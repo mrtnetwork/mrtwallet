@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/constant/constant.dart';
-import 'package:mrt_wallet/future/state_managment/extention/app_extentions/color.dart';
+import 'package:mrt_wallet/future/state_managment/extension/app_extensions/color.dart';
 import 'package:mrt_wallet/app/models/models/seting.dart';
 
 class ThemeController {

@@ -7,17 +7,16 @@ import 'package:mrt_wallet/future/wallet/controller/impl/web3_request_controller
 import 'package:mrt_wallet/future/wallet/web3/pages/permission_view.dart';
 
 List<Widget> bottomAppBarWidgets(BuildContext context) {
-  if (isExtention) {
+  if (isExtension) {
     return [
       IconButton(
           onPressed: () {
             final wallet = context.watch<WalletProvider>(StateConst.main);
-
-            context.openSliverBottomSheet("update_permission".tr,
-                bodyBuilder: (c) => Web3PermissionUpdateView(
-                    controller: wallet.wallet as Web3RequestControllerImpl,
-                    scrollController: c),
-                centerContent: false);
+            context.openDialogPage(
+              "update_permission".tr,
+              fullWidget: Web3PermissionUpdateView(
+                  controller: wallet.wallet as Web3RequestControllerImpl),
+            );
           },
           icon: const Icon(Icons.travel_explore))
     ];

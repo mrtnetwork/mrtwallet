@@ -39,13 +39,13 @@ external Browser get _browser;
 @JS("browser")
 external Browser? get _browserNullabe;
 
-ChromeAPI get extention {
+ChromeAPI get extension {
   if (_chromeNullabe != null) {
     return _chrome;
   }
   return _browser;
 }
 
-bool get isExtention =>
+bool get isExtension =>
     _chromeNullabe?.runtimeNullable?.idNullabe != null ||
     _browserNullabe?.runtimeNullable?.idNullabe != null;

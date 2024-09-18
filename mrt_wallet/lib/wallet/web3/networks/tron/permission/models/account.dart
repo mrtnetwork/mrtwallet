@@ -25,13 +25,6 @@ class Web3TronChainAccount extends Web3ChainAccount<TronAddress> {
         chain: chain,
         defaultAddress: isDefault);
   }
-  Web3TronChainAccount changeDefault(bool defaultAddress) {
-    return Web3TronChainAccount(
-        keyIndex: keyIndex,
-        address: address,
-        defaultAddress: defaultAddress,
-        chain: chain);
-  }
 
   factory Web3TronChainAccount.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {

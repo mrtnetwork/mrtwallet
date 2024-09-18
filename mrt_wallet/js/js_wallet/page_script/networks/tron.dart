@@ -1,16 +1,18 @@
 part of '../scripts.dart';
 
+class _TronPageControllerConst {
+  static const String signMessage = "tron_signMessageV2";
+  static const String signTransaction = "tron_signTransaction";
+  static const String requestAccount = "tron_requestAccounts";
+  static const String providedPrivateKeyError =
+      "Please use static method `TronWeb.TRX.sign` for signing with own private key";
+}
+
 class TronPageController extends PageNetworkController {
   ProxyMethodHandler<TIP1193>? _tron;
   ProxyMethodHandler<TronWeb>? _tronWeb;
-  TronPageController({required super.getWalletMessage});
-  final Map<TronEventTypes, List<JSFunction>> _listeners = {
-    TronEventTypes.accountsChanged: [],
-    TronEventTypes.chainChanged: [],
-    TronEventTypes.connect: [],
-    TronEventTypes.message: [],
-    TronEventTypes.disconnect: [],
-  };
+  TronPageController();
+
   ProxyMethodHandler<TIP1193> _setupTIP1193(Proxy tronWeb) {
     final eip = TIP1193.setup(
         request: _onRequest.toJS,
@@ -18,11 +20,17 @@ class TronPageController extends PageNetworkController {
         removeListener: _removeListener.toJS,
         disconnect: _disconnect.toJS,
         tronWeb: tronWeb,
-        enable: _enable.toJS);
+        enable: _enable.toJS,
+        cancelAllListener: _cancelAllListeners.toJS,
+        sendWalletRequest: _onWalletRequest.toJS);
     return ProxyMethodHandler(eip);
   }
 
   void _init(TronWebNodeInfo info) {
+    if (_tron != null && _tronWeb != null) {
+      final proxy = Proxy(_tron!.object, createJSInteropWrapper(_tron!));
+      tron = proxy;
+    }
     if (_tron != null) {
       _tronWeb?.object.fullNode = HttpProvider(info.fullNode);
       _tronWeb?.object.solidityNode = HttpProvider(info.fullNode);
@@ -41,7 +49,7 @@ class TronPageController extends PageNetworkController {
     tronWeb.setHeader = _disabledFeature.toJS;
     tronWeb.setFullNodeHeader = _disabledFeature.toJS;
     tronWeb.setDefaultBlock = _disabledFeature.toJS;
-    tronWeb.trxx = Proxy(tronWeb.trx, createJSInteropWrapper(trxHandler));
+    tronWeb.trx_ = Proxy(tronWeb.trx, createJSInteropWrapper(trxHandler));
     final tronWebMethodHandler = ProxyMethodHandler<TronWeb>(tronWeb);
     final adapter = _setupTIP1193(Proxy(tronWebMethodHandler.object,
         createJSInteropWrapper(tronWebMethodHandler)));
@@ -52,25 +60,38 @@ class TronPageController extends PageNetworkController {
   }
 
   void _disabledFeature(JSAny? args) {
-    throw Exception("this feature disabled by wallet provider.");
+    throw JSWalletError(message: "this feature disabled by wallet provider.");
   }
 
-  JSPromise<JSAny?> _signMessageV2_(JSAny message) {
-    final params =
-        TronRequestParams(method: "tron_signMessageV2", params: message);
-    return _onRequest(params);
+  JSPromise<JSAny?> _signMessageV2_(JSAny message, [String? privateKey]) {
+    if (privateKey != null) {
+      throw JSWalletError(
+          message: _TronPageControllerConst.providedPrivateKeyError);
+    }
+
+    return _sendRequest(
+        method: _TronPageControllerConst.signMessage,
+        params: message.dartify());
   }
 
-  JSPromise<JSAny?> _signTransaction_(JSAny message) {
-    final params =
-        TronRequestParams(method: "tron_signTransaction", params: message);
-    return _onRequest(params);
+  JSPromise<JSAny?> _signTransaction_(JSAny message, [String? privateKey]) {
+    if (privateKey != null) {
+      throw JSWalletError(
+          message: _TronPageControllerConst.providedPrivateKeyError);
+    }
+    return _sendRequest(
+        method: _TronPageControllerConst.signTransaction,
+        params: message.dartify());
   }
 
-  JSPromise<JSAny?> _multiSign(JSAny message) {
-    final params =
-        TronRequestParams(method: "tron_signTransaction", params: message);
-    return _onRequest(params);
+  JSPromise<JSAny?> _multiSign(JSAny message, [String? privateKey]) {
+    if (privateKey != null) {
+      throw JSWalletError(
+          message: _TronPageControllerConst.providedPrivateKeyError);
+    }
+    return _sendRequest(
+        method: _TronPageControllerConst.signTransaction,
+        params: message.dartify());
   }
 
   void _disableProvider(String? message) {
@@ -78,45 +99,47 @@ class TronPageController extends PageNetworkController {
     jsConsole.error(message);
   }
 
-  void onEvent(JSWalletMessageResponseTron eventMessage) {
-    JSAny? eventData;
-    switch (eventMessage.event) {
-      case TronEventTypes.connect:
-        final connectionInfo =
-            ProviderConnectInfo.fromJson(eventMessage.dataAs());
+  void onEvent(WalletMessageEvent message) {
+    JSAny? eventData = message.data;
+    switch (message.eventType) {
+      case JSEventType.connect:
+        final connectionInfo = TronChainChanged.fromJson(message.asMap());
         _tron?.object.chainId = connectionInfo.chainId;
         eventData = connectionInfo.toJSEvent;
         break;
-      case TronEventTypes.chainChanged:
-        final connectionInfo =
-            ProviderConnectInfo.fromJson(eventMessage.dataAs());
+      case JSEventType.chainChanged:
+        final connectionInfo = TronChainChanged.fromJson(message.asMap());
         _tron?.object.chainId = connectionInfo.chainId;
+        _tronWeb?.object.fullNode = HttpProvider(connectionInfo.fullNode);
+        _tronWeb?.object.solidityNode = HttpProvider(connectionInfo.fullNode);
         eventData = connectionInfo.chainId.jsify();
         break;
-      case TronEventTypes.disconnect:
+      case JSEventType.disconnect:
         _tron?.object.chainId = null;
+        _tronWeb?.object.defaultAddress = null;
         break;
-      case TronEventTypes.accountsChanged:
-        final changeInfo = TronAccountsChanged.fromJson(eventMessage.dataAs());
+      case JSEventType.accountsChanged:
+        final changeInfo = TronAccountsChanged.fromJson(message.asMap());
         _tronWeb?.object.defaultAddress = changeInfo.defaultAddress == null
             ? null
             : createJSInteropWrapper(changeInfo.defaultAddress!);
+        _tron?.object.selectedAddress = changeInfo.defaultAddress?.base58.toJS;
         eventData = changeInfo.toJSEvent;
         break;
-      case TronEventTypes.disable:
-        _disableProvider(eventMessage.dataAs());
+      case JSEventType.disable:
+        _disableProvider(message.asString());
         break;
-      case TronEventTypes.active:
-        final info = TronWebNodeInfo.fromJson(eventMessage.dataAs());
+      case JSEventType.active:
+        final info = TronWebNodeInfo.fromJson(message.asMap());
         _init(info);
         break;
       default:
     }
-    _eventListeners(eventMessage.event, jsObject: eventData);
+    _eventListeners(message.eventType, jsObject: eventData);
   }
 
-  void _eventListeners(TronEventTypes type, {JSAny? jsObject}) {
-    if (type == TronEventTypes.disconnect) return;
+  void _eventListeners(JSEventType type, {JSAny? jsObject}) {
+    if (type == JSEventType.disconnect) return;
     if (jsObject == null || !_listeners.containsKey(type)) return;
     final listeners = <JSFunction>[..._listeners[type]!];
     for (final i in listeners) {
@@ -127,29 +150,43 @@ class TronPageController extends PageNetworkController {
   void _disconnect() {}
 
   void _addListener(String type, JSFunction listener) {
-    final event = TronEventTypes.fromName(type);
+    final event = JSEventType.fromName(type);
     if (event == null) return;
     _listeners[event]?.add(listener);
-    if (event != TronEventTypes.message && event != TronEventTypes.disconnect) {
-      getWalletMessage(ClientMessageTron.event(event));
-    }
+    _emitEvent(PageMessageEvent.build(event: event));
   }
 
   void _removeListener(String type, JSFunction listener) {
-    final event = TronEventTypes.fromName(type);
+    final event = JSEventType.fromName(type);
     _listeners[event]?.remove(listener);
   }
 
-  JSPromise<JSAny?> _enable() {
-    final params = TronRequestParams(method: "eth_requestAccounts");
-    return _onRequest(params);
+  void _cancelAllListeners() {
+    for (final i in _listeners.keys.toList()) {
+      _listeners[i]!.clear();
+    }
   }
 
-  JSPromise<JSAny?> _onRequest(TronRequestParams params) {
-    final message = ClientMessageTron(
-        method: params.method, params: params.params?.dartify());
-    final promise = getWalletMessage(message).toPromise;
+  JSPromise<JSAny?> _enable() {
+    return _sendRequest(method: _TronPageControllerConst.requestAccount);
+  }
+
+  JSPromise<JSAny?> _sendRequest({required String method, Object? params}) {
+    final message = PageMessageRequest.create(
+        method: method, params: [params?.jsify()].toJS);
+    final promise = _onNetworkRequest(message).toPromise;
 
     return promise;
   }
+
+  JSPromise<JSAny?> _onRequest(EthereumRequestParams params) {
+    final message =
+        PageMessageRequest.create(method: params.method, params: params.params);
+    final promise = _onNetworkRequest(message).toPromise;
+
+    return promise;
+  }
+
+  @override
+  JSClientType get _client => JSClientType.tron;
 }

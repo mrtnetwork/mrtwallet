@@ -13,19 +13,26 @@ import '../../utils/utils.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../networks/ethereum.dart';
 import '../networks/solana.dart';
+import '../networks/ton.dart';
 import '../networks/tron.dart';
+import 'network_handler.dart';
 part "../webview.dart";
-part "../extention.dart";
+part "../extension.dart";
 
-typedef SendMessageToClient = void Function(JSWalletMessage);
+typedef SendMessageToClient = void Function(
+    WalletMessageEvent, JSClientType client);
+
+extension _FindClient on JSClientType {}
 
 abstract class JSWalletHandler {
-  late final JSEthereumHandler ethereumHandler =
-      JSEthereumHandler(sendMessageToClient: _sendMessageToClient);
-  late final JSTronHandler tronHandler =
-      JSTronHandler(sendMessageToClient: _sendMessageToClient);
-  late final JSSolanaHandler solanaHandler =
-      JSSolanaHandler(sendMessageToClient: _sendMessageToClient);
+  late final Map<JSClientType, JSNetworkHandler> _networks = {
+    JSClientType.ethereum:
+        JSEthereumHandler(sendMessageToClient: _sendEventToClient),
+    JSClientType.tron: JSTronHandler(sendMessageToClient: _sendEventToClient),
+    JSClientType.solana:
+        JSSolanaHandler(sendMessageToClient: _sendEventToClient),
+    JSClientType.ton: JSTonHandler(sendMessageToClient: _sendEventToClient)
+  };
 
   String get clientId;
   late final String _id = JsUtils.toWalletId(clientId);
@@ -35,22 +42,44 @@ abstract class JSWalletHandler {
   JSWalletHandler._(this._crypto);
 
   void _onClientEvent(CustomEvent response) {
-    final JSPageRequest request =
-        JSPageRequest.deserialize(bytes: response.detailBytes());
-    final result = _completeJsRequest(request);
-    result.then(_sendMessageToClient);
+    final PageMessage request = response.detail as PageMessage;
+    switch (request.data.messageType) {
+      case PageMessageType.event:
+        _networks[request.clientType]?.event(request.data.cast());
+        break;
+      case PageMessageType.request:
+        final result = _completeJsRequest(request);
+        result.then(_sendMessageToClient);
+        result.catchError((e) {
+          final message = WalletMessage.response(
+              client: request.clientType,
+              requestId: request.id,
+              id: request.data.cast<PageMessageRequest>().id,
+              data: WalletMessageResponse.fail(
+                  Web3RequestExceptionConst.internalError.toJson().jsify()));
+          _sendMessageToClient(message);
+          return message;
+        });
+        break;
+      default:
+        throw UnimplementedError("Invalid page request.");
+    }
   }
 
   void _listenOnClients() {
     jsWindow.addEventListener(_id, _onClientEvent.toJS);
   }
 
-  void _sendMessageToClient(JSWalletMessage response) {
+  void _sendMessageToClient(WalletMessage response) {
     final event = CustomEvent.create(
         type: JsUtils.toEthereumClientId(clientId),
-        data: response.toCbor().encode(),
+        eventData: response,
         clone: true);
     jsWindow.dispatchEvent(event);
+  }
+
+  void _sendEventToClient(WalletMessageEvent event, JSClientType client) {
+    _sendMessageToClient(WalletMessage.event(client: client, data: event));
   }
 
   Future<void> _sendMessageToWallet(
@@ -63,17 +92,17 @@ abstract class JSWalletHandler {
     return Web3EncryptedMessage(message: encryptedBytes, nonce: nonce);
   }
 
-  Future<void> _buildAndSendMessage(
-      {required JSPageRequest? params, required String requestId}) async {
+  Future<(Web3MessageCore, Web3RequestParams?)> _buildAndSendMessage(
+      {required PageMessage params, required JSClientType client}) async {
+    final request = completer.nextRequest;
+    final String requestId = request.id;
+    Web3MessageCore? message;
     try {
-      Web3MessageCore message = switch (params?.type) {
-        JSClientType.ethereum =>
-          await ethereumHandler.request(params!.message.cast()),
-        JSClientType.tron => await tronHandler.request(params!.message.cast()),
-        JSClientType.solana =>
-          await solanaHandler.request(params!.message.cast()),
-        _ => throw Web3RequestExceptionConst.invalidRequest
-      };
+      final handler = _networks[client];
+      if (handler == null) {
+        throw WalletExceptionConst.invalidRequest;
+      }
+      message = await handler.request(params.data.cast());
       switch (message.type) {
         case Web3MessageTypes.response:
         case Web3MessageTypes.walletResponse:
@@ -91,84 +120,56 @@ abstract class JSWalletHandler {
           Web3RequestExceptionConst.internalError.toResponseMessage();
       completer.complete(response: exception, requestId: requestId);
     }
+    final response = await request.wait;
+    if (message?.type != Web3MessageTypes.walletRequest) {
+      return (response, null);
+    }
+    return (response, message?.cast<Web3RequestParams>());
   }
 
-  Future<JSWalletMessageResponse> _completeJsRequest(
-      JSPageRequest params) async {
+  Future<WalletMessage> _completeJsRequest(PageMessage params) async {
+    final client = params.clientType;
+    final handler = _networks[client];
     try {
-      final request = completer.nextRequest;
-      _buildAndSendMessage(params: params, requestId: request.id);
-      Web3MessageCore message = await request.wait;
-      switch (params.type) {
-        case JSClientType.ethereum:
-          message = ethereumHandler.finilize(params.message.cast(), message);
-          break;
-        case JSClientType.tron:
-          message = tronHandler.finilize(params.message.cast(), message);
-          break;
-        case JSClientType.solana:
-          message = solanaHandler.finilize(params.message.cast(), message);
-          break;
-        default:
-      }
-      return switch (message.type) {
-        Web3MessageTypes.response => JSWalletMessageResponse(
-            requestId: params.id,
-            data: message.cast<Web3ResponseMessage>().result,
-            client: params.type,
-            status: JSWalletResponseType.success),
-        Web3MessageTypes.walletResponse => JSWalletMessageResponse(
-            requestId: params.id,
-            data: message.cast<Web3WalletResponseMessage>().result,
-            client: params.type,
-            status: JSWalletResponseType.success),
-        Web3MessageTypes.error => JSWalletMessageResponse(
-            requestId: params.id,
-            data: message.cast<Web3ExceptionMessage>().toJson(),
-            client: params.type,
-            status: JSWalletResponseType.failed),
-        _ => throw Web3RequestExceptionConst.invalidRequest
+      final result = await _buildAndSendMessage(params: params, client: client);
+      final Web3MessageCore response = result.$1;
+      final Web3RequestParams? request = result.$2;
+      final WalletMessageResponse message = switch (response.type) {
+        Web3MessageTypes.response => handler!.finilizeResponse(
+            message: params.data.cast(), response: response.cast()),
+        Web3MessageTypes.walletResponse => handler!.finilizeWalletResponse(
+            message: params.data.cast(),
+            response: response.cast(),
+            params: request!),
+        Web3MessageTypes.error => handler?.finilizeError(
+                message: params.data.cast(),
+                error: response.cast(),
+                params: request) ??
+            WalletMessageResponse.fail(response.toJson().jsify()),
+        _ => WalletMessageResponse.fail(
+            Web3RequestExceptionConst.invalidRequest.toJson().jsify())
       };
+      return WalletMessage.response(
+          requestId: params.id,
+          id: params.data.cast<PageMessageRequest>().id,
+          client: params.clientType,
+          data: message);
     } finally {
-      switch (params.type) {
-        case JSClientType.ethereum:
-          ethereumHandler.onRequestDone(params.message.cast());
-          break;
-        case JSClientType.tron:
-          tronHandler.onRequestDone(params.message.cast());
-          break;
-        case JSClientType.solana:
-          solanaHandler.onRequestDone(params.message.cast());
-          break;
-        default:
-      }
+      handler?.onRequestDone(params.data.cast());
     }
   }
 
   void _updateAuthenticated(Web3APPAuthentication authenticated,
       {NetworkType? network}) {
-    switch (network) {
-      case NetworkType.ethereum:
-        ethereumHandler.initChain(
-            chainHandler: _chain, authenticated: authenticated);
-        break;
-      case NetworkType.tron:
-        tronHandler.initChain(
-            chainHandler: _chain, authenticated: authenticated);
-        break;
-      case NetworkType.solana:
-        solanaHandler.initChain(
-            chainHandler: _chain, authenticated: authenticated);
-        break;
-      default:
-        tronHandler.initChain(
-            chainHandler: _chain, authenticated: authenticated);
-        ethereumHandler.initChain(
-            chainHandler: _chain, authenticated: authenticated);
-        solanaHandler.initChain(
-            chainHandler: _chain, authenticated: authenticated);
-        break;
+    final client = JSClientType.fronNetworkName(network?.name);
+    if (client == JSClientType.global) {
+      for (final i in _networks.values) {
+        i.initChain(authenticated: authenticated, chainHandler: _chain);
+      }
+      return;
     }
+    _networks[client]
+        ?.initChain(chainHandler: _chain, authenticated: authenticated);
   }
 
   void _handleOnResponse(WalletEvent request) {
@@ -179,13 +180,12 @@ abstract class JSWalletHandler {
           _crypto.decrypt(encryptedMessage.nonce, encryptedMessage.message);
       final message = Web3MessageCore.deserialize(bytes: decode);
       switch (message.type) {
-        case Web3MessageTypes.response:
-          final Web3ResponseMessage msg = message.cast<Web3ResponseMessage>();
-          completer.complete(response: msg, requestId: request.requestId);
-          break;
         case Web3MessageTypes.walletResponse:
           final Web3WalletResponseMessage msg =
               message.cast<Web3WalletResponseMessage>();
+          if (msg.chain != null) {
+            _chain = ChainsHandler.deserialize(bytes: msg.chain);
+          }
           _updateAuthenticated(msg.authenticated, network: msg.network);
           completer.complete(response: msg, requestId: request.requestId);
           break;
@@ -196,13 +196,8 @@ abstract class JSWalletHandler {
           break;
         case Web3MessageTypes.chains:
           final Web3ChainMessage msg = message.cast<Web3ChainMessage>();
-          final chains = ChainsHandler.deserialize(bytes: msg.message);
-          _chain = chains;
+          _chain = ChainsHandler.deserialize(bytes: msg.message);
           _updateAuthenticated(msg.authenticated, network: null);
-          if (msg.response != null) {
-            completer.complete(
-                response: msg.response!, requestId: request.requestId);
-          }
           break;
         default:
       }

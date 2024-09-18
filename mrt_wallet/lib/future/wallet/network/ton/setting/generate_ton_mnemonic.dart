@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/setup/setup.dart';
 import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/worker.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 enum _MnemonicOption { import, generate }
 
@@ -25,7 +25,7 @@ class GenerateTonMnemonicView extends StatelessWidget {
   const GenerateTonMnemonicView({super.key});
   @override
   Widget build(BuildContext context) {
-    return NetworkAccountControllerView<TonChain>(
+    return NetworkAccountControllerView<TheOpenNetworkChain>(
       title: "ton_mnemonic".tr,
       childBulder: (wallet, chain, switchAccount) {
         return _GenerateTonMnemonicView(

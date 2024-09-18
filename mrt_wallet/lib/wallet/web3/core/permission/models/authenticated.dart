@@ -4,14 +4,13 @@ import 'package:mrt_wallet/app/models/models/image.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/app/utils/map/extension.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
-import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
-import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/permission.dart';
+import 'package:mrt_wallet/wallet/web3/networks/ton/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/permission/models/permission.dart';
 
 class Web3APPAuthentication with CborSerializable {
@@ -108,26 +107,6 @@ class Web3APPAuthentication with CborSerializable {
         CborTagsConst.web3App);
   }
 
-  T? getChain<
-          NETWORKADDRESS,
-          T extends Web3Chain<NETWORKADDRESS, APPCHAINNETWORK<NETWORKADDRESS>,
-              Web3ChainAccount<NETWORKADDRESS>>>(
-      {NETWORKADDRESS? address,
-      required APPCHAINNETWORK<NETWORKADDRESS> chain}) {
-    if (!active) {
-      throw Web3RequestExceptionConst.bannedHost;
-    }
-    final chainPermission = _chains[chain.network.type] as T?;
-    if (address != null) {
-      final accountPermission =
-          chainPermission?.getAccountPermission(address: address, chain: chain);
-      if (accountPermission == null) {
-        throw Web3RequestExceptionConst.missingPermission;
-      }
-    }
-    return chainPermission;
-  }
-
   T? getChainFromNetworkType<T extends Web3ChainNetwork>(NetworkType network) {
     if (!active) return null;
     Web3Chain? chain = _chains[network];
@@ -140,6 +119,9 @@ class Web3APPAuthentication with CborSerializable {
         break;
       case NetworkType.solana:
         chain ??= Web3SolanaChain.create();
+        break;
+      case NetworkType.ton:
+        chain ??= Web3TonChain.create();
         break;
       default:
         throw Web3RequestExceptionConst.networkNotSupported;

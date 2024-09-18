@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/future/state_managment/extention/app_extentions/string.dart';
+import 'package:mrt_wallet/future/state_managment/extension/app_extensions/string.dart';
 
 extension QuickBooleanExtension on bool {
   String get tr {

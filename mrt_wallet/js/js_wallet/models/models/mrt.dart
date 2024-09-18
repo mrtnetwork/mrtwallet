@@ -1,7 +1,11 @@
 import 'dart:js_interop';
 import 'package:mrt_native_support/web/api/core/js.dart';
 
-import 'networks/ethereum.dart';
+import 'networks.dart';
+import 'requests.dart';
+
+@JS("ton")
+external set ton(Proxy? ton);
 
 @JS("MRT")
 external MRTWallet? get mrtNull;
@@ -37,6 +41,7 @@ extension type MRTWallet(JSObject _) implements MRTJsObject {
   external JSAny get ethereum2;
 
   external EIP1193 get ethereum;
+  external set tonconnect(TonWalletAdapter tonconnect);
 
   @JS("onMrtMessage")
   external set onMrtMessage(JSFunction? f);
@@ -54,13 +59,21 @@ extension type MRTWallet(JSObject _) implements MRTJsObject {
   }
 }
 
-@JS()
-extension type Web3JSRequestParams._(JSObject o) implements MRTJsObject {
-  external String? get method;
-  external String? get id;
-  external JSAny? get params;
-
-  Map<String, dynamic> toJson() {
-    return {"method": method, "params": params == null ? [] : params.dartify()};
-  }
+extension type MRTNetworkAdapter(JSObject _) implements MRTJsObject {
+  @JS("sendWalletRequest")
+  external set sendWalletRequest(JSFunction f);
+  @JS("sendWalletRequest")
+  external JSPromise<T> sendWalletRequest_<T extends JSAny>(
+      Web3JSRequestParams params);
+  @JS("selectedAddress")
+  external set selectedAddress(JSString? selectedAddress);
+  external set on(JSFunction f);
+  external set removeListener(JSFunction f);
+  external set cancelListener(JSFunction f);
+  external set cancelAllListener(JSFunction f);
+  external set providerInfo(EIP6963ProviderInfo f);
+  external set disconnect(JSFunction f);
+  external set enable(JSFunction? f);
+  external EIP6963ProviderInfo get providerInfo;
+  external bool get isMRT;
 }

@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/address/pages/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/address/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/address/address.dart';

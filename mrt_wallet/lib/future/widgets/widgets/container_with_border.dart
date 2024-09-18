@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extention/app_extentions/context.dart'
+import 'package:mrt_wallet/future/state_managment/extension/app_extensions/context.dart'
     show QuickContextAccsess;
 import 'package:mrt_wallet/app/models/models/typedef.dart';
 

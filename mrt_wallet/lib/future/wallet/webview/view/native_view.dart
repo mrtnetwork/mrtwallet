@@ -24,12 +24,10 @@ class MRTAndroidViewController<T> {
       {required String viewType,
       Map<String, String> createParms = const {},
       TextDirection layoutDirection = TextDirection.ltr}) async {
-    /// platformViewsRegistry.getNextPlatformViewId()
     final id = Random.secure().nextInt(100) + 50;
     final node = FocusNode(debugLabel: "MRTAndroidViewController $id");
     Object controller;
 
-    /// AndroidViewController
     if (PlatformInterface.appPlatform == AppPlatform.android) {
       controller = PlatformViewsService.initAndroidView(
         id: id,
@@ -57,12 +55,12 @@ class MRTAndroidViewController<T> {
         controller: controller, id: id, node: node, viewType: viewType);
   }
 
-  void dispose() {
+  Future<void> dispose() async {
     if (PlatformInterface.appPlatform == AppPlatform.android) {
-      (controller as AndroidViewController).dispose();
+      await (controller as AndroidViewController).dispose();
     } else {
-      (controller as UiKitViewController).dispose();
-      PlatformInterface.webViewController.dispose(viewType);
+      await PlatformInterface.webViewController.dispose(viewType);
+      await (controller as UiKitViewController).dispose();
     }
 
     node.dispose();

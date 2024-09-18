@@ -5,7 +5,7 @@ import 'package:mrt_native_support/web/storage/constant/constant.dart';
 
 class ChromeStorage extends SafeStorage {
   ChromeStorage(super.chacha);
-  StorageArea get _storage => extention.storage.local;
+  StorageArea get _storage => extension.storage.local;
   @override
   Future<void> clear() async {
     await _storage.clear_();

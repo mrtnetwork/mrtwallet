@@ -146,12 +146,7 @@ class MrtNativeWeb extends MrtPlatformInterface {
 
   @override
   Future<MRTAPPConfig> getConfig() async {
-    final now = DateTime.now();
-
     storage = await SafeStorage.init();
-    final end = DateTime.now();
-    print(
-        "difference initiale storage ${now.difference(end).inMilliseconds.abs()}");
     final barcode = await hasBarcodeScanner().catchError((e) => false);
     return MRTAPPConfig(platform: platform, hasBarcodeScanner: barcode);
   }

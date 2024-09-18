@@ -2,6 +2,7 @@ import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message_types.dart';
 
@@ -36,4 +37,27 @@ class Web3ResponseMessage extends Web3MessageCore {
 
   @override
   Web3MessageTypes get type => Web3MessageTypes.response;
+
+  List<T> resultAsList<T>({int? length}) {
+    try {
+      final list = (result as List).cast<T>();
+      if (length == null) return list;
+      return list.sublist(0, length);
+    } catch (e) {
+      throw Web3RequestExceptionConst.internalError;
+    }
+  }
+
+  Map<String, dynamic> resultAsMap() {
+    try {
+      return (result as Map).cast<String, dynamic>();
+    } catch (e) {
+      throw Web3RequestExceptionConst.internalError;
+    }
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return {"type": type.name, "result": result, "network": network.name};
+  }
 }

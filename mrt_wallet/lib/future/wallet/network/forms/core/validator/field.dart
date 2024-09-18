@@ -53,6 +53,8 @@ class TransactionListFormField<T> {
   bool get isCompleted => optional || _value.isNotEmpty;
   final FuncTResult<T> onChangeForm;
   int get length => value.length;
+  bool get isEmpty => value.isEmpty;
+  bool get isNotEmpty => value.isNotEmpty;
   bool addValue(T v) {
     if (v == null) return false;
     if (_value.contains(v)) return false;

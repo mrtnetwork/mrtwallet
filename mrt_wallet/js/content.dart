@@ -1,3 +1,5 @@
+import 'dart:js_interop';
+
 import 'package:mrt_native_support/models/events/models/wallet_event.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
@@ -13,31 +15,24 @@ void main() async {
   if (applicationId == null) {
     throw Web3RequestExceptionConst.invalidHost;
   }
-  final future =
-      JSExtentionWallet.sendBackgroudMessage(JSWalletConstant.tabIdEvent);
-
-  future.then((backgroundEvent) async {
-    JSWalletMessageResponse message;
-    if (backgroundEvent.type == WalletEventTypes.exception) {
-      final exception =
-          Web3ExceptionMessage.deserialize(bytes: backgroundEvent.data);
-      message = JSWalletMessageResponse(
-          requestId: backgroundEvent.requestId,
-          data: exception.toJson(),
-          client: JSClientType.ethereum,
-          status: JSWalletResponseType.failed);
-    } else {
-      message = JSWalletMessageResponse(
-          requestId: backgroundEvent.requestId,
-          data: backgroundEvent.clientId,
-          client: JSClientType.ethereum,
-          status: JSWalletResponseType.success);
-      jsWindow.dispatchEvent(CustomEvent.create(
-          type: JSWalletConstant.activationEventName,
-          data: message.toCbor().encode(),
-          clone: true));
-      await Future.delayed(const Duration(seconds: 1));
-      JSExtentionWallet.initialize(backgroundEvent);
-    }
-  });
+  final backgroundEvent =
+      await JSExtentionWallet.sendBackgroudMessage(JSWalletConstant.tabIdEvent);
+  WalletMessageResponse message;
+  if (backgroundEvent.type == WalletEventTypes.exception) {
+    final exception =
+        Web3ExceptionMessage.deserialize(bytes: backgroundEvent.data);
+    message = WalletMessageResponse.fail(exception.toJson().jsify());
+  } else {
+    message = WalletMessageResponse.success(backgroundEvent.clientId.jsify());
+  }
+  JSExtentionWallet? wallet;
+  if (message.statusType == JSWalletResponseType.success) {
+    wallet = JSExtentionWallet.initialize(backgroundEvent);
+  }
+  jsWindow.dispatchEvent(CustomEvent.create(
+      type: JSWalletConstant.activationEventName,
+      eventData: WalletMessage.response(
+          requestId: "0", client: JSClientType.global, data: message),
+      clone: true));
+  wallet?.initClients();
 }

@@ -6,6 +6,7 @@ import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/permission.dart';
+import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'account.dart';
 import '../models/activity.dart';
@@ -19,12 +20,13 @@ abstract class Web3Chain<
         CHAINACCOUT extends Web3ChainAccount<NETWORKADDRESS>>
     with CborSerializable {
   List<CHAINACCOUT> _accounts;
-  List<CHAINACCOUT> get accounts => _accounts;
-  List<CHAINACCOUT> currentChainAccounts(CHAIN chain);
+  List<CHAINACCOUT> get activeAccounts => _accounts;
+  // List<CHAINACCOUT> currentChainAccounts(CHAIN chain);
+  List<CHAINACCOUT> chainAccounts(CHAIN chain);
   List<Web3AccountAcitvity> _activities;
   List<Web3AccountAcitvity> get activities => _activities;
   abstract final NetworkType network;
-  bool hasPermission(CHAIN chain);
+  bool hasPermission(CHAIN chain) => chainAccounts(chain).isNotEmpty;
   Web3Chain(
       {required List<CHAINACCOUT> accounts,
       required List<Web3AccountAcitvity> activities})
@@ -46,6 +48,9 @@ abstract class Web3Chain<
         break;
       case NetworkType.solana:
         chain = Web3SolanaChain.deserialize(object: decode);
+        break;
+      case NetworkType.ton:
+        chain = Web3TonChain.deserialize(object: decode);
         break;
       default:
         throw WalletExceptionConst.unsuportedFeature;
@@ -79,4 +84,6 @@ abstract class Web3Chain<
   void updateChainAccount(List<CHAINACCOUT> updatedAccounts) {
     _accounts = updatedAccounts.imutable;
   }
+
+  void setActiveChain(CHAIN chain);
 }

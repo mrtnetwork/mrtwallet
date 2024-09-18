@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:blockchain_utils/uuid/uuid.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'dart:js_interop';
-import 'exception.dart';
 import 'requests.dart';
 
 class MessageCompleterHandler {
@@ -42,16 +40,10 @@ class PageRequestCompeleter {
   factory PageRequestCompeleter.nextRequest() {
     return PageRequestCompeleter._(UUID.generateUUIDv4());
   }
-  final Completer<JSAny?> _completer = Completer();
+  final Completer<WalletMessageResponse> _completer = Completer();
 
-  Future<JSAny?> get wait => _completer.future;
-  void completeMessage(JSWalletMessageResponse response) {
-    switch (response.status) {
-      case JSWalletResponseType.success:
-        _completer.complete(response.data.jsify());
-      case JSWalletResponseType.failed:
-        _completer.completeError(JSWalletError.fromJson(
-            message: response.data as Map<String, dynamic>));
-    }
+  Future<WalletMessageResponse> get wait => _completer.future;
+  void completeMessage(WalletMessageResponse response) {
+    _completer.complete(response);
   }
 }

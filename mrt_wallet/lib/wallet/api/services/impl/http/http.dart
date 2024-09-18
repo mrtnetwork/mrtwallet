@@ -22,7 +22,7 @@ abstract class HTTPService<P extends APIProvider>
   Future<T> _callSynchronized<T>(Future<http.Response> Function() t,
       {List<int> allowStatus = const [200]}) async {
     if (requestTimeout == null) {
-      return _onException(t, allowStatus: allowStatus);
+      return _onException<T>(t, allowStatus: allowStatus);
     }
     await _lock.synchronized(() async {
       await Future.delayed(requestTimeout!);
@@ -48,7 +48,7 @@ abstract class HTTPService<P extends APIProvider>
       Map<String, String>? headers}) async {
     T? response;
     try {
-      response = await _callSynchronized(() async {
+      response = await _callSynchronized<T>(() async {
         return await client
             .post(_toUri(url),
                 headers: {
@@ -60,7 +60,6 @@ abstract class HTTPService<P extends APIProvider>
                 body: params)
             .timeout(timeout ?? defaultTimeOut);
       }, allowStatus: allowStatus);
-
       return response!;
     } on ApiProviderException catch (e) {
       tracker.addRequest(
@@ -92,7 +91,6 @@ abstract class HTTPService<P extends APIProvider>
                     })
             .timeout(timeout ?? defaultTimeOut);
       }, allowStatus: allowStatus);
-
       return response!;
     } on ApiProviderException catch (e) {
       tracker.addRequest(ApiRequest(uri: url, params: null, error: e));

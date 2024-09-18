@@ -1,4 +1,4 @@
-import 'package:mrt_wallet/app/utils/list/extention.dart';
+import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/constant/constant.dart';

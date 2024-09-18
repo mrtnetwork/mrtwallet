@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/models/signing/signing.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:on_chain/ada/ada.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 import 'transaction.dart';
 

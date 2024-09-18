@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart' show UriUtils;
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class LaunchBrowserIcon extends StatelessWidget {
   const LaunchBrowserIcon({required this.url, this.color, Key? key, this.size})

@@ -14,10 +14,14 @@ import 'package:on_chain/solana/solana.dart';
 abstract class Web3SolanaPermissionRequestParam
     extends Web3SolanaRequestParam<Web3SolanaChain>
     implements
-        Web3PermissionRequest<Web3SolanaChain, SolAddress, SolanaChain,
-            Web3SolanaChainAccount, Web3SolanaChain> {
+        Web3PermissionRequest<SolAddress, SolanaChain, Web3SolanaChainAccount,
+            Web3SolanaChain> {
   @override
   bool get isPermissionRequest => true;
+  @override
+  Object? toJsWalletResponse(Web3SolanaChain response) {
+    return null;
+  }
 }
 
 abstract class Web3SolanaRequestParam<RESPONSE> extends Web3RequestParams<
@@ -61,6 +65,9 @@ abstract class Web3SolanaRequestParam<RESPONSE> extends Web3RequestParams<
         param = Web3SolanaRequestAccounts.deserialize(
             bytes: bytes, object: object, hex: hex);
       case Web3SolanaRequestMethods.signTransaction:
+      case Web3SolanaRequestMethods.signAllTransactions:
+      case Web3SolanaRequestMethods.sendTransaction:
+      case Web3SolanaRequestMethods.sendAllTransactions:
         param = Web3SolanaSendTransaction.deserialize(
             bytes: bytes, object: object, hex: hex);
       case Web3SolanaRequestMethods.signMessage:

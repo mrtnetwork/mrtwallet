@@ -10,7 +10,7 @@ class JSWalletConstant {
       clientId: "content_script",
       data: const [],
       requestId: "0",
-      type: WalletEventTypes.openExtention);
+      type: WalletEventTypes.openExtension);
   static final ping = WalletEvent(
       clientId: "content_script",
       data: const [],

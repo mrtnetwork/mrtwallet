@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/impl/transac
 import 'package:mrt_wallet/future/wallet/network/bitcoin/transaction/pages/ordering/transaction_ordering_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class BitcoinBuildTransactionView extends StatelessWidget {
   const BitcoinBuildTransactionView({super.key, required this.controller});

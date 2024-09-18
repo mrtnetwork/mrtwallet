@@ -6,10 +6,11 @@ import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ton.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:ton_dart/ton_dart.dart' as ton;
 
 class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
   final int workchain;
-
+  ton.TonChain get chainType => ton.TonChain.fromWorkchain(workchain);
   TonNetworkParams(
       {required super.transactionExplorer,
       required super.addressExplorer,

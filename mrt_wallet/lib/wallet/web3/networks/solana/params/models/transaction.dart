@@ -2,6 +2,7 @@ import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
+import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/constant/constants/constant.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/methods/methods.dart';
@@ -105,12 +106,32 @@ class Web3SolanaSendTransaction
     extends Web3SolanaRequestParam<List<Map<String, dynamic>>> {
   final List<Web3SolanaSendTransactionData> messages;
   final Web3SolanaSendTransactionOptions? sendConfig;
-  bool get isSend => sendConfig != null;
 
   @override
   SolAddress get account => messages.first.account;
 
-  Web3SolanaSendTransaction({required this.messages, required this.sendConfig});
+  Web3SolanaSendTransaction._(
+      {required this.messages, required this.sendConfig, required this.method});
+
+  factory Web3SolanaSendTransaction({
+    required List<Web3SolanaSendTransactionData> messages,
+    Web3SolanaSendTransactionOptions? sendConfig,
+    required Web3RequestMethods method,
+  }) {
+    switch (method) {
+      case Web3SolanaRequestMethods.sendAllTransactions:
+      case Web3SolanaRequestMethods.signAllTransactions:
+      case Web3SolanaRequestMethods.sendTransaction:
+      case Web3SolanaRequestMethods.signTransaction:
+        break;
+      default:
+        throw Web3RequestExceptionConst.internalError;
+    }
+    return Web3SolanaSendTransaction._(
+        messages: messages,
+        sendConfig: sendConfig,
+        method: method as Web3SolanaRequestMethods);
+  }
 
   factory Web3SolanaSendTransaction.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -119,6 +140,7 @@ class Web3SolanaSendTransaction
         object: object,
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
+    final method = Web3RequestMethods.fromTag(values.elementAt(0));
     return Web3SolanaSendTransaction(
         messages: values
             .elemetAs<CborListValue>(1)
@@ -126,12 +148,18 @@ class Web3SolanaSendTransaction
             .map((e) => Web3SolanaSendTransactionData.deserialize(object: e))
             .toList(),
         sendConfig: values.getCborTag(2)?.to(
-            (e) => Web3SolanaSendTransactionOptions.deserialize(object: e)));
+            (e) => Web3SolanaSendTransactionOptions.deserialize(object: e)),
+        method: method);
   }
 
   @override
-  Web3SolanaRequestMethods get method =>
-      Web3SolanaRequestMethods.signTransaction;
+  final Web3SolanaRequestMethods method;
+
+  late final bool isSend = method == Web3SolanaRequestMethods.sendTransaction ||
+      method == Web3SolanaRequestMethods.sendAllTransactions;
+  late final bool isBatchRequest =
+      method == Web3SolanaRequestMethods.sendAllTransactions ||
+          method == Web3SolanaRequestMethods.signAllTransactions;
 
   @override
   CborTagValue toCbor() {

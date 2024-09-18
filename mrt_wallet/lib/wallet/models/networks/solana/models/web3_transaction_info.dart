@@ -8,19 +8,43 @@ import 'package:on_chain/solana/src/borsh_serialization/program_layout.dart';
 
 class SolanaWeb3TransactionInstructionInfo {
   final ProgramLayout layout;
+  final List<SolanaAccountStatus> accounts;
   final SolAddress programAddress;
   final Map<String, dynamic>? content;
 
   SolanaWeb3TransactionInstructionInfo(
       {required this.layout,
       required this.programAddress,
+      required List<SolanaAccountStatus> accounts,
       Map<String, dynamic>? content})
-      : content = content?.imutable;
+      : content = content?.imutable,
+        accounts = accounts.imutable;
+}
+
+class SolanaAccountStatus {
+  final AccountMeta account;
+  final List<String> status;
+  SolanaAccountStatus._({required this.account, required List<String> status})
+      : status = status.imutable;
+  factory SolanaAccountStatus(AccountMeta account) {
+    List<String> status = [];
+    if (account.isSigner) {
+      status.add("signer");
+    }
+    if (account.isWritable) {
+      status.add("writable");
+    }
+    if (status.isEmpty) {
+      status.add("read_only");
+    }
+    return SolanaAccountStatus._(account: account, status: status);
+  }
 }
 
 class SolanaWeb3TransactionInfo {
-  final SolanaTransaction transaction;
-  final IntegerBalance value;
+  SolanaTransaction _transaction;
+  SolanaTransaction get transaction => _transaction;
+  final IntegerBalance accountChange;
   final SolAddress feePayer;
   final ISolanaAddress signer;
   final List<SolanaWeb3TransactionInstructionInfo> instructions;
@@ -31,6 +55,7 @@ class SolanaWeb3TransactionInfo {
   SolanaWeb3FeeStatus get feeStatus => _feeStatus;
   late final SimulateTranasctionResponse _simulate;
   SimulateTranasctionResponse get simulateInfo => _simulate;
+  bool get canUpdateBlockHash => _transaction.signers.length == 1;
 
   final IntegerBalance fee = IntegerBalance.zero(SolanaConst.decimal);
 
@@ -72,14 +97,26 @@ class SolanaWeb3TransactionInfo {
     }
   }
 
+  void updateTransaction(SolanaTransaction transaction) {
+    if (transaction.signers.length != 1) return;
+    final signer = transaction.signers[0];
+    if (this.signer.networkAddress != signer) return;
+    if (!CompareUtils.iterableIsEqual(transaction.message.compiledInstructions,
+        this.transaction.message.compiledInstructions)) {
+      return;
+    }
+    _transaction = transaction;
+  }
+
   SolanaWeb3TransactionInfo._({
-    required this.transaction,
-    required this.value,
+    required SolanaTransaction transaction,
+    required this.accountChange,
     required this.feePayer,
     required List<SolanaWeb3TransactionInstructionInfo> instructions,
     required this.signer,
     required this.id,
-  }) : instructions = instructions.imutable;
+  })  : instructions = instructions.imutable,
+        _transaction = transaction;
   factory SolanaWeb3TransactionInfo(
       {required SolanaTransaction transaction,
       required ISolanaAddress signer,
@@ -91,15 +128,24 @@ class SolanaWeb3TransactionInfo {
       final layout = ProgramLayout.fromBytes(
           programId: programId, instructionBytes: i.data);
       final content = layout.toJson();
+      final accountKeys = List.generate(i.accounts.length, (e) {
+        final int index = i.accounts[e];
+        final account = transaction.message.accountKeys.elementAt(index);
+        final isWritable = transaction.message.isAccountWritable(index);
+        final isSigner = transaction.message.isAccountSigner(index);
+        return SolanaAccountStatus(AccountMeta(
+            publicKey: account, isSigner: isSigner, isWritable: isWritable));
+      });
       final instructionInfo = SolanaWeb3TransactionInstructionInfo(
           layout: layout,
           programAddress: programId,
-          content: content.isEmpty ? null : content);
+          content: content.isEmpty ? null : content,
+          accounts: accountKeys);
       instructions.add(instructionInfo);
     }
     return SolanaWeb3TransactionInfo._(
         transaction: transaction,
-        value: IntegerBalance.zero(SolanaUtils.decimal),
+        accountChange: IntegerBalance.zero(SolanaUtils.decimal),
         feePayer: accounts[0],
         instructions: instructions,
         signer: signer,
@@ -124,6 +170,7 @@ enum SolanaWeb3SimulationStatus {
 
   bool get canRetry => this == idle || this == error;
   bool get isError => this == error;
+  bool get isSuccess => this == success;
   bool get isPending => this == pending;
   bool get hasSimulateError => this == error || this == simulateError;
 }

@@ -9,7 +9,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/solana/forms/core/solana.
 import 'package:on_chain/solana/src/address/sol_address.dart';
 import 'package:on_chain/solana/src/instructions/instructions.dart';
 import 'package:on_chain/solana/src/models/transaction/instruction.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class SolanaCreateAccountForm extends SolanaTransactionForm {
   bool _manuallyLamports = false;

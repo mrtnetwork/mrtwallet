@@ -6,7 +6,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/networks/tron/models/tron_fee.dart';
 import 'package:on_chain/tron/src/models/contract/base_contract/transaction_type.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TronFeeDetailsView extends StatelessWidget {
   const TronFeeDetailsView({super.key, required this.transaction});
@@ -177,11 +177,15 @@ class TronFeeInfoWidget extends StatelessWidget {
                           ?.copyWith(color: context.colors.onTertiary),
                     ),
                     RichText(
-                        text: TextSpan(children: [
-                      TextSpan(text: consumedFee.connsumedEnergy.toString()),
-                      const TextSpan(text: "/"),
-                      TextSpan(text: consumedFee.stackedEnergy.toString()),
-                    ])),
+                        text: TextSpan(
+                            style:
+                                context.colors.onTertiary.bodyMedium(context),
+                            children: [
+                          TextSpan(
+                              text: consumedFee.connsumedEnergy.toString()),
+                          const TextSpan(text: "/"),
+                          TextSpan(text: consumedFee.stackedEnergy.toString()),
+                        ])),
                   ],
                 ),
                 Row(

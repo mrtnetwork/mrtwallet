@@ -3,7 +3,7 @@ import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/pages/fee_select.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class EthereumGasFeeView extends StatelessWidget {
   const EthereumGasFeeView({super.key, required this.transaction});

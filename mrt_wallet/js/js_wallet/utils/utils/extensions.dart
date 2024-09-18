@@ -18,3 +18,7 @@ extension WalletPromise<T extends JSAny?> on Future<T> {
     }.toJS);
   }
 }
+
+extension QuickJS on JSAny {
+  external bool hasOwnProperty(String prop);
+}

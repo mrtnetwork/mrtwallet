@@ -1,3 +1,5 @@
+import 'dart:js_interop';
+
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
 import 'dart:async';
@@ -39,8 +41,10 @@ class EthereumWeb3State
     }
     final chains = chainHandler.chains().whereType<EthereumChain>().toList();
     final currentChain =
-        chains.firstWhere((e) => e.chainId == permission.currentChain);
-    final permissionAccounts = permission.currentChainAccounts(currentChain);
+        chains.firstWhereOrNull((e) => e.chainId == permission.currentChain);
+    final permissionAccounts = currentChain == null
+        ? <Web3EthereumChainAccount>[]
+        : permission.chainAccounts(currentChain);
     final defaultAddress = permissionAccounts
         .firstWhereOrNull((e) => e.defaultAddress, orElse: () {
       if (permissionAccounts.isEmpty) return null;
@@ -52,19 +56,12 @@ class EthereumWeb3State
         permission: permission,
         permissionAccounts: permissionAccounts.map((e) => e.addressStr).toList()
           ..sort(
-            (a, b) {
-              if (a == defaultAddress?.addressStr) {
-                return -1;
-              } else if (b == defaultAddress?.addressStr) {
-                return 1;
-              }
-              return a.compareTo(b);
-            },
+            (a, b) => JsUtils.compareAddress(a, b, defaultAddress?.addressStr),
           ),
         state: JSNetworkState.init,
         defaultAddress: defaultAddress?.addressStr,
         chain: currentChain,
-        client: currentChain.getWeb3Provider(
+        client: currentChain?.getWeb3Provider(
             requestTimeout: ChainWeb3State.requestTimeout));
   }
 
@@ -87,20 +84,29 @@ class EthereumWeb3State
   ProviderConnectInfo get chainChangedEvent =>
       ProviderConnectInfo(chain!.chainId);
 
-  bool get isConnect => chain != null;
+  bool get isConnect => client != null;
 }
 
-class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
-    Web3EthereumChain, ClientMessageEthereum, EthereumWeb3State> {
+class JSEthereumHandler extends JSNetworkHandler<
+    ETHAddress,
+    EthereumChain,
+    Web3EthereumChainAccount,
+    Web3EthereumChain,
+    // PageMessageRequest,
+    EthereumWeb3State> {
   @override
   EthereumWeb3State state = EthereumWeb3State.init();
   JSEthereumHandler({required super.sendMessageToClient});
-
-  void _onSubscribe(EthereumSubscribeResult result) {
-    sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEventTypes.message, data: result.toJson()));
+  void _sendEvent({required JSEventType event, Object? data}) {
+    sendMessageToClient(WalletMessageEvent.build(event: event, data: data),
+        JSClientType.ethereum);
   }
 
+  void _onSubscribe(EthereumSubscribeResult result) {
+    _sendEvent(event: JSEventType.message, data: result.toJson());
+  }
+
+  @override
   void initChain(
       {required Web3APPAuthentication authenticated,
       required ChainsHandler chainHandler}) {
@@ -138,64 +144,43 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
   }
 
   void _disconnect() {
-    sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEventTypes.disconnect,
-        data: Web3RequestExceptionConst.disconnectedChain.toJson()));
+    _sendEvent(
+        event: JSEventType.disconnect,
+        data: Web3RequestExceptionConst.disconnectedChain.toJson());
   }
 
   void _connect(EthereumWeb3State state) async {
-    if (state.chain == null) return;
-    sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEventTypes.connect,
-        data: state.chainChangedEvent.toJson()));
+    if (state.client == null) return;
+    _sendEvent(
+        event: JSEventType.connect, data: state.chainChangedEvent.toJson());
   }
 
   void _accountChanged(EthereumWeb3State state) async {
-    sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEventTypes.accountsChanged,
-        data: state.accountsChange.toJson()));
+    _sendEvent(
+        event: JSEventType.accountsChanged,
+        data: state.accountsChange.toJson());
   }
 
   void _chainChanged(EthereumWeb3State state) async {
     if (state.chain == null) return;
-    sendMessageToClient(JSWalletMessageResponseEthereum(
-        event: EthereumEventTypes.chainChanged,
-        data: state.chainChangedEvent.toJson()));
+    _sendEvent(
+        event: JSEventType.chainChanged,
+        data: state.chainChangedEvent.toJson());
   }
 
   void _toggleEthereum(EthereumWeb3State state) {
     if (state.chain != null) {
-      sendMessageToClient(JSWalletMessageResponseEthereum(
-          event: EthereumEventTypes.active, data: null));
+      _sendEvent(event: JSEventType.active);
     } else {
-      sendMessageToClient(JSWalletMessageResponseEthereum(
-          event: EthereumEventTypes.disable,
-          data: Web3RequestExceptionConst.bannedHost.data));
+      _sendEvent(
+          event: JSEventType.disable,
+          data: Web3RequestExceptionConst.bannedHost.data);
     }
-  }
-
-  Web3MessageCore _eventMessage(
-      EthereumEventTypes type, EthereumWeb3State state) {
-    switch (type) {
-      case EthereumEventTypes.accountsChanged:
-        _accountChanged(state);
-        break;
-      case EthereumEventTypes.chainChanged:
-        _chainChanged(state);
-        break;
-      default:
-        break;
-    }
-    return buildResponse(null);
   }
 
   @override
-  Future<Web3MessageCore> request(ClientMessageEthereum params) async {
+  Future<Web3MessageCore> request(PageMessageRequest params) async {
     final state = this.state;
-    final isEvent = EthereumEventTypes.fromName(params.method);
-    if (isEvent != null) {
-      return _eventMessage(isEvent, state);
-    }
     final method = Web3EthereumRequestMethods.fromName(params.method);
     if (method == null) return _rpcCall(params, state);
     switch (method) {
@@ -239,7 +224,7 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
   }
 
   Future<Web3MessageCore> _rpcCall(
-      ClientMessageEthereum params, EthereumWeb3State state) async {
+      PageMessageRequest params, EthereumWeb3State state) async {
     final cl = state.client;
     if (cl == null) {
       throw Web3RequestExceptionConst.disconnected();
@@ -258,11 +243,10 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
         if (!cl.supportSubscribe) {
           throw Web3RequestExceptionConst.methodDoesNotSupport;
         }
-        final result =
-            await cl.subscribe(params: params.paramsAsList() ?? const []);
+        final result = await cl.subscribe(params: params.dartParams);
         return buildResponse(result);
       }
-      final call = await cl.dynamicCall(method.value, params.params);
+      final call = await cl.dynamicCall(method.value, params.dartParams);
       return buildResponse(call);
     } on Web3RequestException {
       rethrow;
@@ -286,24 +270,26 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
   }
 
   static Web3EthreumTypdedData _parseTypedData(
-      ClientMessageEthereum params, BigInt chainId) {
+      PageMessageRequest params, BigInt chainId) {
     try {
-      final toList = params.paramsAsList(length: 2);
-      if (toList == null) {
+      final items = params.getElements(2);
+      final item0 = items?.elementAt(0);
+      final item1 = items?.elementAt(1);
+      if (items == null) {
         throw Web3RequestExceptionConst.ethTypedData;
       }
+
       final EIP712Version version = _typedDataVersion(params.method);
       final String address;
       EIP712Base data;
       if (version == EIP712Version.v1) {
-        address = toList[1];
-        data = EIP712Legacy.fromJson(JsUtils.toList(toList[0])
+        address = item1 as String;
+        data = EIP712Legacy.fromJson(JsUtils.toList(item0)
             .map((e) => Map<String, dynamic>.from(e))
             .toList());
       } else {
-        address = toList[0];
-        data = Eip712TypedData.fromJson(JsUtils.toMap(toList[1]),
-            version: version);
+        address = item0 as String;
+        data = Eip712TypedData.fromJson(JsUtils.toMap(item1), version: version);
       }
       final typdedDataParams = Web3EthreumTypdedData.fromJson({
         "address": address,
@@ -319,24 +305,24 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
   }
 
   static Web3EthreumSwitchChain _parseSwitchEthereumChain(
-      ClientMessageEthereum params) {
-    final toList = params.paramsAsList(length: 1);
+      PageMessageRequest params) {
+    final toList = params.getFirstParam;
     if (toList == null) {
-      throw Web3RequestExceptionConst.invalidList(params.method);
+      throw Web3RequestExceptionConst.invalidList(parameterName: params.method);
     }
-    final toObject = JsUtils.toMap<String, dynamic>(toList[0],
+    final toObject = JsUtils.toMap(toList,
         error:
             Web3RequestExceptionConst.invalidMethodArgruments(params.method));
     return Web3EthreumSwitchChain.fromJson(toObject);
   }
 
   Future<Web3EthereumAddNewChain> _parseAddEthereumChain(
-      ClientMessageEthereum params) async {
-    final toList = params.paramsAsList(length: 1);
+      PageMessageRequest params) async {
+    final toList = params.getFirstParam;
     if (toList == null) {
       throw Web3RequestExceptionConst.invalidMethodArgruments(params.method);
     }
-    final toObject = JsUtils.toMap<String, dynamic>(toList[0],
+    final toObject = JsUtils.toMap(toList,
         error:
             Web3RequestExceptionConst.invalidMethodArgruments(params.method));
 
@@ -369,43 +355,29 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
   }
 
   static Web3EthreumSendTransaction _parseTransaction(
-      ClientMessageEthereum params, BigInt chainId) {
-    final toList = params.paramsAsList(length: 1);
-    if (toList == null) {
-      throw Web3RequestExceptionConst.invalidMethodArgruments(params.method);
-    }
-    final transactionParam = toList[0];
-    final Map<String, dynamic>? toJson = MethodUtils.nullOnException(() {
-      if (transactionParam is String) {
-        return StringUtils.tryToJson(transactionParam);
-      } else {
-        return Map<String, dynamic>.from(transactionParam);
-      }
-    });
-    if (toJson == null) {
-      throw Web3RequestExceptionConst.invalidMethodArgruments(params.method);
-    }
+      PageMessageRequest params, BigInt chainId) {
+    final Map<String, dynamic> toJson = JsUtils.toMap(params.getFirstParam,
+        error:
+            Web3RequestExceptionConst.invalidMethodArgruments(params.method));
     return Web3EthreumSendTransaction.fromJson(toJson);
   }
 
-  Web3EthreumPersonalSign _personalSign(ClientMessageEthereum params) {
-    try {
-      final toList = params.paramsAsList(length: 2);
-      if (toList == null) {
-        throw Web3RequestExceptionConst.invalidMethodArgruments(params.method);
-      }
-      final Map<String, dynamic> message = {
-        "address": toList[0],
-        "challeng": toList[1]
-      };
-      return Web3EthreumPersonalSign.fromJson(message);
-    } catch (e) {
-      rethrow;
+  Web3EthreumPersonalSign _personalSign(PageMessageRequest params) {
+    final items = params.getElements(2);
+    final address = items?.elementAt(0);
+    final challeng = items?.elementAt(1);
+    if (address == null || challeng == null) {
+      throw Web3RequestExceptionConst.invalidMethodArgruments(params.method);
     }
+    final Map<String, dynamic> message = {
+      "address": address,
+      "challeng": challeng
+    };
+    return Web3EthreumPersonalSign.fromJson(message);
   }
 
   @override
-  void onRequestDone(ClientMessageEthereum message) {
+  void onRequestDone(PageMessageRequest message) {
     final method = Web3EthereumRequestMethods.fromName(message.method);
     switch (method) {
       case Web3EthereumRequestMethods.addEthereumChain:
@@ -422,11 +394,46 @@ class JSEthereumHandler extends JSNetworkHandler<ETHAddress, EthereumChain,
   }
 
   @override
-  Web3MessageCore finilize(
-      ClientMessageEthereum request, Web3MessageCore response) {
-    return response;
+  NetworkType get networkType => NetworkType.ethereum;
+
+  @override
+  WalletMessageResponse finilizeWalletResponse(
+      {required PageMessageRequest message,
+      required Web3RequestParams params,
+      required Web3WalletResponseMessage response}) {
+    final method = Web3EthereumRequestMethods.fromName(message.method);
+
+    switch (method) {
+      case Web3EthereumRequestMethods.requestAccounts:
+        if (state.permissionAccounts.isNotEmpty) {
+          return WalletMessageResponse.success(
+              state.permissionAccounts.jsify());
+        }
+        return WalletMessageResponse.fail(Web3RequestExceptionConst
+            .rejectedByUser
+            .toResponseMessage()
+            .toJson()
+            .jsify());
+      default:
+    }
+    return super.finilizeWalletResponse(
+        message: message, params: params, response: response);
   }
 
   @override
-  NetworkType get networkType => NetworkType.ethereum;
+  void event(PageMessageEvent event) {
+    switch (event.eventType) {
+      case JSEventType.accountsChanged:
+        _accountChanged(state);
+        break;
+      case JSEventType.chainChanged:
+        _chainChanged(state);
+        break;
+      case JSEventType.connect:
+        _connect(state);
+        break;
+      default:
+        break;
+    }
+  }
 }

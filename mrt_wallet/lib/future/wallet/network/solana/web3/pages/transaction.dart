@@ -71,6 +71,40 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
                       balance: controller.form.fee,
                       style: context.textTheme.titleLarge,
                     )),
+                WidgetConstant.height20,
+                Text("total_transaction_const".tr,
+                    style: context.textTheme.titleMedium),
+                WidgetConstant.height8,
+                ContainerWithBorder(
+                  onTapWhenOnRemove: false,
+                  onRemove: () {},
+                  onRemoveWidget: controller.isReady
+                      ? Icon(
+                          Icons.check_circle,
+                          color: context.colors.onPrimaryContainer,
+                        )
+                      : TappedTooltipView(
+                          tooltipWidget: ToolTipView(
+                              message: "simulation_are_not_ready".tr,
+                              child: Icon(Icons.warning,
+                                  color: context.colors.tertiary)),
+                        ),
+                  child: CoinPriceView(
+                      token: controller.network.coinParam.token,
+                      balance: controller.total,
+                      style: context.textTheme.titleLarge),
+                ),
+                if (controller.isSend) ...[
+                  WidgetConstant.height20,
+                  AppSwitchListTile(
+                    value: controller.replaceBlockHash,
+                    title: Text("replace_recent_block_hash".tr,
+                        style: context.textTheme.titleMedium),
+                    subtitle: Text("replace_block_hash_desc".tr),
+                    contentPadding: EdgeInsets.zero,
+                    onChanged: controller.toggleReplaceBlockHash,
+                  )
+                ],
               ],
             ),
           ),
@@ -82,11 +116,11 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
                     padding: WidgetConstant.paddingVertical40,
                     child: Text("submit".tr),
                     onPressed: () {
-                      controller.confirm(() async {
+                      controller.confirm((message) async {
                         return context.openSliverDialog(
-                            (ctx) => DialogTextView(
+                            (context) => DialogTextView(
                                 buttonWidget: const DialogDoubleButtonView(),
-                                text: "simulation_failed_continue_desc".tr),
+                                text: message),
                             "submit_transaction".tr);
                       });
                     }),
@@ -163,6 +197,43 @@ class _SolanaWeb3MessageView extends StatelessWidget {
                                   )
                                 ],
                               ),
+                            )),
+                        WidgetConstant.height20,
+                        Text("accounts".tr,
+                            style: context.colors.onPrimaryContainer
+                                .lableLarge(context)),
+                        WidgetConstant.height8,
+                        ContainerWithBorder(
+                            backgroundColor: context.colors.onPrimaryContainer,
+                            child: Column(
+                              children: List.generate(
+                                  instruction.accounts.length, (index) {
+                                final account =
+                                    instruction.accounts[index].account;
+                                final String status = instruction
+                                    .accounts[index].status
+                                    .map((e) => e.tr)
+                                    .join(", ");
+                                return ContainerWithBorder(
+                                    child: CopyTextIcon(
+                                  dataToCopy: account.publicKey.address,
+                                  widget: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        account.publicKey.address,
+                                        style: context.colors.onPrimaryContainer
+                                            .bodyMedium(context),
+                                      ),
+                                      Text(status,
+                                          style: context
+                                              .colors.onPrimaryContainer
+                                              .bodySmall(context))
+                                    ],
+                                  ),
+                                ));
+                              }),
                             )),
                         if (instruction.content != null) ...[
                           WidgetConstant.height20,
@@ -259,6 +330,7 @@ class _SolanaWeb3MessageView extends StatelessWidget {
                 )
             },
           ),
+          onTapWhenOnRemove: status.canRetry,
           onRemove: () {
             if (status.canRetry) {
               controller.form.simulate(message);
@@ -299,7 +371,26 @@ class _SolanaWeb3MessageView extends StatelessWidget {
             }
           },
           child: _FeeInfo(message: message, network: controller.network),
-        )
+        ),
+        if (!message.accountChange.isZero) ...[
+          WidgetConstant.height20,
+          Text("change_balance".tr, style: context.textTheme.titleMedium),
+          Text("solana_change_balance_desc".tr),
+          WidgetConstant.height8,
+          ContainerWithBorder(
+            onRemove: controller.isMultipleWithSameOwner ? () {} : null,
+            onTapWhenOnRemove: false,
+            onRemoveWidget: TappedTooltipView(
+                tooltipWidget: ToolTipView(
+                    message: "solana_change_balance_desc2".tr,
+                    child:
+                        Icon(Icons.warning, color: context.colors.tertiary))),
+            child: CoinPriceView(
+                token: controller.network.coinParam.token,
+                balance: message.accountChange,
+                style: context.textTheme.titleLarge),
+          ),
+        ]
       ],
     );
   }
@@ -346,9 +437,9 @@ class _SimulateInfo extends StatelessWidget {
                 style: context.colors.onPrimaryContainer.titleMedium(context),
               ),
               subtitle: ToolTipView(
-                message: simulate.err ?? "",
+                message: simulate.err?.toString() ?? "",
                 child: Text(
-                  simulate.err ?? "",
+                  simulate.err?.toString() ?? "",
                   style: context.colors.onPrimaryContainer.bodyMedium(context),
                 ),
               ),

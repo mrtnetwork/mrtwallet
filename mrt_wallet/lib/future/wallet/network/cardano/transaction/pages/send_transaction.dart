@@ -10,7 +10,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
 import 'transaction_certificate_view.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class CardanoBuildTransactionView extends StatelessWidget {
   const CardanoBuildTransactionView({super.key, required this.controller});

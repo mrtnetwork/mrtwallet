@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:on_chain/solana/src/instructions/spl_token/constant.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class SolanaImportSPLTokensView extends StatelessWidget {
   const SolanaImportSPLTokensView({super.key});

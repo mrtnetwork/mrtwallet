@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/constant/global/state.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'add_ethereum_chains.dart';
+import 'fields/add_ethereum_chains.dart';
 import 'transaction.dart';
 
 class EthereumWeb3FieldsView extends StatelessWidget {

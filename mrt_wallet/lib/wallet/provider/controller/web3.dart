@@ -1,7 +1,12 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
 mixin Web3Impl
-    on WalletManager, Web3EthereumImpl, Web3SolanaImpl, Web3TronImpl {
+    on
+        WalletManager,
+        Web3EthereumImpl,
+        Web3TonImpl,
+        Web3SolanaImpl,
+        Web3TronImpl {
   Chain _getWeb3ChainId(
       {required Web3RequestParams param,
       required Web3APPAuthentication authenticated}) {
@@ -39,6 +44,19 @@ mixin Web3Impl
                 e.network.genesisBlock ==
                 (web3Chain?.currentChain ?? TronChainType.mainnet),
             orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+      case NetworkType.ton:
+        final web3Chain = authenticated
+            .getChainFromNetworkType<Web3TonChain>(param.method.network);
+        if (param.account != null && web3Chain == null) {
+          throw Web3RequestExceptionConst.missingPermission;
+        }
+        return _appChains._networks.values
+            .whereType<TheOpenNetworkChain>()
+            .firstWhere(
+                (e) =>
+                    e.network.coinParam.workchain ==
+                    (web3Chain?.currentChain ?? TonConst.mainnetWokchainId),
+                orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
@@ -120,6 +138,9 @@ mixin Web3Impl
         return await _getTronWeb3Result(request as Web3TronRequest);
       case NetworkType.solana:
         return await _getSolanaWeb3Result(request as Web3SolanaRequest);
+      case NetworkType.ton:
+        return await _getTonWeb3Result(request as Web3TonRequest);
+
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
@@ -142,36 +163,18 @@ mixin Web3Impl
     final request = requestParams.toRequest(
         request: walletRequest, chain: chain, authenticated: authenticated);
     request.verifyPermissioon();
-    final params = request.params;
     Object? result = await _getWeb3Result(request: request);
-
-    if (params.isPermissionRequest) {
-      request.authenticated.updateChainAccount(result as Web3Chain);
-      result = request.currentPermission!
-          .currentChainAccounts(chain)
-          .map((e) => e.addressStr)
-          .toList();
-    }
     request.authenticated
         .addActivity(param: request.params, url: request.info.info.url);
     await _core._savePermission(wallet: _wallet, permission: authenticated);
-    if (params.isPermissionRequest) {
-      if (!request.hasAnyPermission) {
-        throw Web3RequestExceptionConst.rejectedByUser;
-      }
-    }
-    if (params.isPermissionRequest) {
-      return Web3ChainMessage(
-          type: Web3MessageTypes.chains,
-          authenticated: authenticated,
-          message: _appChains.toCbor().encode(),
-          response:
-              Web3ResponseMessage(result: result, network: chain.network.type));
-    }
+    final walletResponse = request.params.toJsWalletResponse(result);
     return Web3WalletResponseMessage(
-        result: result,
+        result: walletResponse,
         authenticated: authenticated,
-        network: chain.network.type);
+        network: chain.network.type,
+        chain: request.params.isPermissionRequest
+            ? _appChains.toCbor().encode()
+            : null);
   }
 
   Future<Web3EncryptedMessage> _web3Request(

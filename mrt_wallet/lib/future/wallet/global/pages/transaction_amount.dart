@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TransactionAmountView extends StatelessWidget {
-  const TransactionAmountView(
-      {super.key,
-      required this.amount,
-      required this.token,
-      this.onTap,
-      this.onRemoveIcon,
-      this.title,
-      this.subtitle,
-      this.validate = true,
-      this.validateError});
+  const TransactionAmountView({
+    super.key,
+    required this.amount,
+    required this.token,
+    this.onTap,
+    this.onRemoveIcon,
+    this.title,
+    this.subtitle,
+    this.validate = true,
+    this.validateError,
+  });
   final BalanceCore? amount;
   final Token token;
   final DynamicVoid? onTap;
@@ -23,6 +24,7 @@ class TransactionAmountView extends StatelessWidget {
   final String? subtitle;
   final String? title;
   final Widget? onRemoveIcon;
+
   @override
   Widget build(BuildContext context) {
     bool hasAmount = amount != null && !amount!.isZero;

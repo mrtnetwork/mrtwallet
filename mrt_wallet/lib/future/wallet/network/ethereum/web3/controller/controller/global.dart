@@ -14,17 +14,21 @@ class Web3EthereumGlobalRequestController<RESPONSE,
     notify();
   }
 
-  void onCompeleteForm(Object? obj) async {
+  void onCompeleteForm(Object? response) async {
     progressKey.process(text: "processing_request".tr);
-    Object? result = obj;
+    Object? result = response;
     switch (request.params.method) {
+      case Web3EthereumRequestMethods.requestAccounts:
+        final web3Chain = result as Web3EthereumChain;
+        request.authenticated.updateChainAccount(web3Chain);
+        break;
       case Web3EthereumRequestMethods.persoalSign:
-        final sign =
-            await walletProvider.wallet.walletRequest(WalletRequestSignMessage(
-          message:
-              request.params.cast<Web3EthreumPersonalSign>().chalengBytes(),
-          index: address.keyIndex as Bip32AddressIndex,
-        ));
+        final sign = await walletProvider.wallet.walletRequest(
+            WalletRequestSignMessage(
+                message: request.params
+                    .cast<Web3EthreumPersonalSign>()
+                    .chalengBytes(),
+                index: address.keyIndex as Bip32AddressIndex));
         if (sign.hasError) {
           progressKey.error(text: sign.error!.tr);
           return;

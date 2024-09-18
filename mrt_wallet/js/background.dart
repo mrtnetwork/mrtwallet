@@ -32,15 +32,15 @@ class _Wallet extends WalletCore {
 
   @override
   Future<void> initWallet(
-      {bool useIsolate = true, String? initialPassword}) async {
+      {bool useIsolate = false, String? initialPassword}) async {
     await PlatformInterface.instance.getConfig();
-    await super.initWallet(useIsolate: false);
+    await super.initWallet(useIsolate: useIsolate);
   }
 }
 
 Future<void> send(JSWalletEvent? event, int? tabId) async {
   if (event == null || tabId == null) return;
-  await extention.tabs
+  await extension.tabs
       .sendMessage_(tabId: tabId, message: event)
       .catchError((e) {
     return null;
@@ -48,7 +48,7 @@ Future<void> send(JSWalletEvent? event, int? tabId) async {
 }
 
 Future<void> sendAlive() async {
-  final tabs = await extention.tabs.query_();
+  final tabs = await extension.tabs.query_();
   for (final i in tabs) {
     send(JSWalletConstant.ping.toJsEvent(), i.id);
   }
@@ -65,7 +65,7 @@ Future<WalletEvent> sendPopupRuntimeMessage(WalletEvent messageToSend) async {
       if (event?.type != WalletEventTypes.popup) {
         return false;
       }
-      extention.runtime.sendMessage_(message: messageToSend).then((e) {
+      extension.runtime.sendMessage_(message: messageToSend).then((e) {
         completer.complete(e);
         sendResponse.callAsFunction(sendResponse, null);
         return e;
@@ -77,52 +77,55 @@ Future<WalletEvent> sendPopupRuntimeMessage(WalletEvent messageToSend) async {
       return true;
     }
 
-    extention.runtime.sendMessage_(message: messageToSend).then((e) {
+    extension.runtime.sendMessage_(message: messageToSend).then((e) {
       completer.complete(e);
     }).catchError((e) {
       _OnContentListener = onMessage.toJS;
-      extention.runtime.onMessage.addListener(_OnContentListener);
+      extension.runtime.onMessage.addListener(_OnContentListener);
       hasListener = true;
       return null;
     });
     return await completer.future;
   } finally {
     if (hasListener) {
-      extention.runtime.onMessage.removeListener(_OnContentListener);
+      extension.runtime.onMessage.removeListener(_OnContentListener);
     }
   }
-}
-
-Future<WalletEvent> openPopup() async {
-  final WalletEvent? windowIdResponse = await extention.runtime
-      .sendMessage_(message: JSWalletConstant.windowIdEvent)
-      .then((e) => e)
-      .catchError((e) => null);
-  if (windowIdResponse != null) {
-    final int windowId = IntUtils.fromBytes(windowIdResponse.data);
-    if (windowId > 0) {
-      await extention.windows.update_(windowId, focused: true);
-    }
-    return JSWalletConstant.popEvent;
-  }
-  final info = await extention.windows.getCurrent_(populate: true);
-  final top = info.top! + 50;
-  final left = info.width! - 175;
-  await extention.windows.create_(
-    url: extention.runtime.getURL("index.html"),
-    type: JSWalletConstant.extentionType,
-    width: JSWalletConstant.extentionWidth,
-    height: JSWalletConstant.extentionHeight,
-    top: top,
-    focused: true,
-    left: left,
-  );
-  final result = await sendPopupRuntimeMessage(JSWalletConstant.create);
-  return result;
 }
 
 void main() async {
   final wallet = _Wallet();
+  final lock = SynchronizedLock();
+  Future<WalletEvent> openPopup() async {
+    return await lock.synchronized(() async {
+      final WalletEvent? windowIdResponse = await extension.runtime
+          .sendMessage_(message: JSWalletConstant.windowIdEvent)
+          .then((e) => e)
+          .catchError((e) => null);
+      if (windowIdResponse != null) {
+        final int windowId = IntUtils.fromBytes(windowIdResponse.data);
+        if (windowId > 0) {
+          await extension.windows.update_(windowId, focused: true);
+        }
+        return JSWalletConstant.popEvent;
+      }
+      final info = await extension.windows.getCurrent_(populate: true);
+      final top = info.top! + 50;
+      final left = info.width! - 175;
+      await extension.windows.create_(
+        url: extension.runtime.getURL("index.html"),
+        type: JSWalletConstant.extentionType,
+        width: JSWalletConstant.extentionWidth,
+        height: JSWalletConstant.extentionHeight,
+        top: top,
+        focused: true,
+        left: left,
+      );
+      final result = await sendPopupRuntimeMessage(JSWalletConstant.create);
+      return result;
+    });
+  }
+
   Future<WalletEvent> tabInformation(ChromeTab tab, WalletEvent event) async {
     try {
       if (tab.id == null) {
@@ -167,15 +170,15 @@ void main() async {
     }
   }
 
-  extention.runtime.onInstalled
+  extension.runtime.onInstalled
       .addListener((OnInstalledDetails details) {}.toJS);
-  extention.runtime.onMessage.addListener(
+  extension.runtime.onMessage.addListener(
       (JSWalletEvent message, MessageSender sender, JSFunction sendResponse) {
     final event = message.toEvent();
 
     if (event == null) return false;
     switch (event.type) {
-      case WalletEventTypes.openExtention:
+      case WalletEventTypes.openExtension:
         openPopup()
             .then(
                 (e) => sendResponse.callAsFunction(sendResponse, e.toJsEvent()))

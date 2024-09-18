@@ -1,3 +1,5 @@
+import 'dart:js_interop';
+
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
@@ -7,6 +9,8 @@ import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/networks.dart';
 import 'package:on_chain/on_chain.dart';
 import '../../models/models/networks/solana.dart';
+import '../../models/models/requests.dart';
+import '../../utils/utils/utils.dart';
 import '../core/network_handler.dart';
 
 class SolanaWeb3State
@@ -39,7 +43,7 @@ class SolanaWeb3State
     final chains = chainHandler.chains().whereType<SolanaChain>().toList();
     final currentChain = chains
         .firstWhere((e) => e.network.genesisBlock == permission.currentChain);
-    final permissionAccounts = permission.currentChainAccounts(currentChain);
+    final permissionAccounts = permission.chainAccounts(currentChain);
     final defaultAddress = permissionAccounts
         .firstWhereOrNull((e) => e.defaultAddress, orElse: () {
       if (permissionAccounts.isEmpty) return null;
@@ -50,14 +54,8 @@ class SolanaWeb3State
         permission: permission,
         permissionAccounts:
             permissionAccounts.map((e) => e.address.address).toList()
-              ..sort((a, b) {
-                if (a == defaultAddress?.addressStr) {
-                  return -1;
-                } else if (b == defaultAddress?.addressStr) {
-                  return 1;
-                }
-                return a.compareTo(b);
-              }),
+              ..sort((a, b) =>
+                  JsUtils.compareAddress(a, b, defaultAddress?.addressStr)),
         state: JSNetworkState.init,
         chain: currentChain,
         defaultAddress: defaultAddress?.address,
@@ -93,13 +91,23 @@ class SolanaWeb3State
   bool get isConnect => defaultAddress != null;
 }
 
-class JSSolanaHandler extends JSNetworkHandler<SolAddress, SolanaChain,
-    Web3SolanaChain, ClientMessageSolana, SolanaWeb3State> {
+class JSSolanaHandler extends JSNetworkHandler<
+    SolAddress,
+    SolanaChain,
+    Web3SolanaChainAccount,
+    Web3SolanaChain,
+    // PageMessageRequest,
+    SolanaWeb3State> {
   @override
   SolanaWeb3State state = SolanaWeb3State.init();
 
   JSSolanaHandler({required super.sendMessageToClient});
+  void _sendEvent({required JSEventType event, Object? data}) {
+    sendMessageToClient(WalletMessageEvent.build(event: event, data: data),
+        JSClientType.solana);
+  }
 
+  @override
   void initChain(
       {required Web3APPAuthentication authenticated,
       required ChainsHandler chainHandler}) {
@@ -137,25 +145,9 @@ class JSSolanaHandler extends JSNetworkHandler<SolAddress, SolanaChain,
     });
   }
 
-  Web3MessageCore _eventMessage(SolanaEventTypes type, SolanaWeb3State state) {
-    switch (type) {
-      case SolanaEventTypes.connect:
-        _connect(state);
-        break;
-
-      default:
-        break;
-    }
-    return buildResponse(null);
-  }
-
   @override
-  Future<Web3MessageCore> request(ClientMessageSolana params) async {
+  Future<Web3MessageCore> request(PageMessageRequest params) async {
     final state = this.state;
-    final isEvent = SolanaEventTypes.fromName(params.method);
-    if (isEvent != null) {
-      return _eventMessage(isEvent, state);
-    }
     final method = Web3SolanaRequestMethods.fromName(params.method);
     switch (method) {
       case Web3SolanaRequestMethods.requestAccounts:
@@ -164,7 +156,10 @@ class JSSolanaHandler extends JSNetworkHandler<SolAddress, SolanaChain,
         }
         return Web3SolanaRequestAccounts();
       case Web3SolanaRequestMethods.signTransaction:
-        return _parseTransaction(params, state);
+      case Web3SolanaRequestMethods.signAllTransactions:
+      case Web3SolanaRequestMethods.sendTransaction:
+      case Web3SolanaRequestMethods.sendAllTransactions:
+        return _parseTransaction(method: method!, params: params, state: state);
       case Web3SolanaRequestMethods.signMessage:
         final signMessageV2 = _signMessage(params, state);
         return signMessageV2;
@@ -174,14 +169,15 @@ class JSSolanaHandler extends JSNetworkHandler<SolAddress, SolanaChain,
   }
 
   Web3SolanaSignMessage _signMessage(
-      ClientMessageSolana params, SolanaWeb3State state) {
+      PageMessageRequest params, SolanaWeb3State state) {
     if (state.defaultAddress == null) {
       throw Web3RequestExceptionConst.missingPermission;
     }
-    final data = List<int>.from(params.params as List);
+    final data = JsUtils.toList<int>(params.getFirstParam,
+        error: Web3RequestExceptionConst.invalidSignMessageData);
     try {
       VersionedMessage.fromBuffer(data);
-      throw Web3SolanaExceptionConstant.invalidSignMessageData;
+      throw Web3SolanaExceptionConstant.singTransactionInsteadMessage;
     } on Web3RequestException {
       rethrow;
     } catch (_) {}
@@ -191,24 +187,21 @@ class JSSolanaHandler extends JSNetworkHandler<SolAddress, SolanaChain,
         content: StringUtils.tryDecode(data));
   }
 
-  Future<Web3SolanaSendTransaction> _parseTransaction(
-      ClientMessageSolana params, SolanaWeb3State state) async {
+  Future<Web3SolanaSendTransaction> _parseTransaction({
+    required PageMessageRequest params,
+    required SolanaWeb3State state,
+    required Web3SolanaRequestMethods method,
+  }) async {
     try {
-      final List<ClientSolanaTransactionMessage> requests =
-          (params.params as List?)
-                  ?.map((e) => ClientSolanaTransactionMessage.fromJson(e))
-                  .toList() ??
-              [];
-
-      if (requests.isEmpty) {
+      final transactions = params.getJSParamsAs<JSUint8Array>();
+      if (transactions?.isEmpty ?? true) {
         throw Web3SolanaExceptionConstant.emptyTransactionParameters;
       }
       List<Web3SolanaSendTransactionData> messages = [];
-
-      for (final i in requests) {
-        // if (i.sendOption != null && option == null) {}
+      for (int i = 0; i < transactions!.length; i++) {
+        final messageBytes = transactions[i].toListInt();
         List<SolAddress> activeAccounts = [];
-        final message = SolanaTransaction.deserialize(i.message);
+        final message = SolanaTransaction.deserialize(messageBytes);
         final signers = message.signers;
         for (final i in signers) {
           if (state.hasPermission(i)) {
@@ -222,64 +215,78 @@ class JSSolanaHandler extends JSNetworkHandler<SolAddress, SolanaChain,
             (e) => e.address == state.defaultAddress?.address,
             orElse: () => activeAccounts.first);
         messages.add(Web3SolanaSendTransactionData(
-            account: account, messageByte: i.message, id: i.id));
+            account: account, messageByte: messageBytes, id: i));
       }
-
-      final Web3SolanaSendTransactionOptions? option =
-          requests.first.sendOption == null
-              ? null
-              : Web3SolanaSendTransactionOptions.fromJson(
-                  requests.first.sendOption!);
+      Web3SolanaSendTransactionOptions? option;
+      switch (method) {
+        case Web3SolanaRequestMethods.signTransaction:
+          if (messages.length > 1) {
+            throw Web3SolanaExceptionConstant.signleRequestInsteadBatchError;
+          }
+          break;
+        case Web3SolanaRequestMethods.sendTransaction:
+          if (messages.length > 1) {
+            throw Web3SolanaExceptionConstant.signleRequestInsteadBatchError;
+          }
+          option = Web3SolanaSendTransactionOptions.fromJson(
+              (params.additionalData as JSSolanaTranasctionSendOptions)
+                  .toJson());
+          break;
+        case Web3SolanaRequestMethods.sendAllTransactions:
+          option = Web3SolanaSendTransactionOptions.fromJson(
+              (params.additionalData as JSSolanaTranasctionSendOptions)
+                  .toJson());
+          break;
+        default:
+      }
       if (option?.signers ?? false) {
         throw Web3SolanaExceptionConstant.invalidTransactionOptionsSigner;
       }
-      return Web3SolanaSendTransaction(messages: messages, sendConfig: option);
+      return Web3SolanaSendTransaction(
+          messages: messages, sendConfig: option, method: method);
     } on Web3RequestException {
       rethrow;
-    } catch (e) {
-      throw Web3SolanaExceptionConstant.invalidTransaction;
-    }
+    } catch (_) {}
+    throw Web3SolanaExceptionConstant.invalidTransaction;
   }
 
   void _disconnect() async {
-    sendMessageToClient(JSWalletMessageResponseSolana(
-        event: SolanaEventTypes.disconnect,
-        data: Web3RequestExceptionConst.disconnectedChain.toJson()));
+    _sendEvent(
+        event: JSEventType.disconnect,
+        data: Web3RequestExceptionConst.disconnectedChain.toJson());
   }
 
   void _connect(SolanaWeb3State state) async {
     if (state.defaultAddress == null) return;
-    sendMessageToClient(JSWalletMessageResponseSolana(
-        event: SolanaEventTypes.connect, data: state.accountsChange.toJson()));
+    _sendEvent(event: JSEventType.connect, data: state.accountsChange.toJson());
   }
 
   void _accountChanged(SolanaWeb3State state) async {
-    sendMessageToClient(JSWalletMessageResponseSolana(
-        event: SolanaEventTypes.accountsChanged,
-        data: state.accountsChange.toJson()));
+    _sendEvent(
+        event: JSEventType.accountsChanged,
+        data: state.accountsChange.toJson());
   }
 
   void _chainChanged(SolanaWeb3State state) async {
     if (state.chain == null) return;
-    sendMessageToClient(JSWalletMessageResponseSolana(
-        event: SolanaEventTypes.chainChanged,
-        data: state.chainChangedEvent.toJson()));
+    _sendEvent(
+        event: JSEventType.chainChanged,
+        data: state.chainChangedEvent.toJson());
   }
 
   void _toggleSolana(SolanaWeb3State state) {
     final chain = state.chain;
     if (chain != null) {
-      sendMessageToClient(
-          JSWalletMessageResponseSolana(event: SolanaEventTypes.active));
+      _sendEvent(event: JSEventType.active);
     } else {
-      sendMessageToClient(JSWalletMessageResponseSolana(
-          event: SolanaEventTypes.disable,
-          data: Web3RequestExceptionConst.bannedHost.data));
+      _sendEvent(
+          event: JSEventType.disable,
+          data: Web3RequestExceptionConst.bannedHost.data);
     }
   }
 
   @override
-  void onRequestDone(ClientMessageSolana message) {
+  void onRequestDone(PageMessageRequest message) {
     final method = Web3SolanaRequestMethods.fromName(message.method);
 
     switch (method) {
@@ -294,8 +301,80 @@ class JSSolanaHandler extends JSNetworkHandler<SolAddress, SolanaChain,
   NetworkType get networkType => NetworkType.solana;
 
   @override
-  Web3MessageCore finilize(
-      ClientMessageSolana request, Web3MessageCore response) {
-    return response;
+  WalletMessageResponse finilizeWalletResponse(
+      {required PageMessageRequest message,
+      required Web3RequestParams params,
+      required Web3WalletResponseMessage response}) {
+    final method = Web3SolanaRequestMethods.fromName(message.method);
+    switch (method) {
+      case Web3SolanaRequestMethods.requestAccounts:
+        if (state.permissionAccounts.isNotEmpty) {
+          return WalletMessageResponse.success(
+              state.permissionAccounts.jsify());
+        }
+        return WalletMessageResponse.fail(Web3RequestExceptionConst
+            .rejectedByUser
+            .toResponseMessage()
+            .toJson()
+            .jsify());
+      case Web3SolanaRequestMethods.signTransaction:
+      case Web3SolanaRequestMethods.signAllTransactions:
+        final transactions = message.getJSParamsAs<JSUint8Array>();
+        final transactionResponse = response
+            .resultAsList<Map<String, dynamic>>(length: transactions!.length)
+            .map((e) => SolanaWeb3TransactionResponse.fromJson(e));
+        final List<Map<String, dynamic>?> result =
+            List.filled(transactions.length, null);
+        for (int i = 0; i < transactionResponse.length; i++) {
+          final item = transactionResponse.elementAt(i);
+          if (item.type != SolanaWeb3TransactionResponseType.sign) continue;
+          final signResponse = item.cast<SolanaWeb3TransactionSignResponse>();
+          result[i] = signResponse.toJson();
+        }
+        return WalletMessageResponse.success(result.jsify());
+      case Web3SolanaRequestMethods.sendTransaction:
+        final transactionResponse =
+            response.resultAsList<Map<String, dynamic>>(length: 1);
+        final txHash =
+            SolanaWeb3TransactionResponse.fromJson(transactionResponse[0])
+                .cast<SolanaWeb3TransactionSendResponse>();
+        return WalletMessageResponse.success(txHash.txHash.toJS);
+      case Web3SolanaRequestMethods.sendAllTransactions:
+        final transactions = message.getJSParamsAs<JSUint8Array>();
+        final transactionResponse = response
+            .resultAsList<Map<String, dynamic>>(length: transactions!.length)
+            .map((e) => SolanaWeb3TransactionResponse.fromJson(e));
+        List<String?> txHashes = List.filled(transactions.length, null);
+        for (int i = 0; i < transactionResponse.length; i++) {
+          final item = transactionResponse.elementAt(i);
+          if (item.type != SolanaWeb3TransactionResponseType.send) continue;
+          final sendResponse = item.cast<SolanaWeb3TransactionSendResponse>();
+          txHashes[i] = sendResponse.txHash;
+        }
+        return WalletMessageResponse.success(txHashes.jsify());
+      case Web3SolanaRequestMethods.signMessage:
+        final signer =
+            Web3SolanaSignMessageResponse.fromJson(response.resultAsMap());
+        return WalletMessageResponse.success(signer.toJson().jsify());
+    }
+    return super.finilizeWalletResponse(
+        message: message, params: params, response: response);
+  }
+
+  @override
+  void event(PageMessageEvent event) {
+    switch (event.eventType) {
+      case JSEventType.connect:
+        _connect(state);
+        break;
+      case JSEventType.accountsChanged:
+        _accountChanged(state);
+        break;
+      case JSEventType.chainChanged:
+        _chainChanged(state);
+        break;
+      default:
+        break;
+    }
   }
 }

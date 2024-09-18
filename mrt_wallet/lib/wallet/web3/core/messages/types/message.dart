@@ -1,12 +1,14 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
+import 'package:mrt_wallet/wallet/web3/core/exception/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'message_types.dart';
 
-abstract class Web3MessageCore with CborSerializable {
+abstract class Web3MessageCore with CborSerializable, JsonSerialization {
   abstract final Web3MessageTypes type;
+
   const Web3MessageCore();
   factory Web3MessageCore.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -31,7 +33,9 @@ abstract class Web3MessageCore with CborSerializable {
         default:
           throw Web3RequestExceptionConst.internalError;
       }
-    } catch (e) {
+    } on Web3RequestException {
+      rethrow;
+    } catch (_) {
       throw Web3RequestExceptionConst.internalError;
     }
   }

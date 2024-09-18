@@ -4,7 +4,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
 import 'package:on_chain/on_chain.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TronCreateWitnessForm extends TronTransactionForm {
   @override

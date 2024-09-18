@@ -22,6 +22,10 @@ class Web3TronGlobalRequestController<RESPONSE,
     progressKey.process(text: "processing_request".tr);
     Object? result = obj;
     switch (request.params.method) {
+      case Web3TronRequestMethods.requestAccounts:
+        final web3Chain = result as Web3TronChain;
+        request.authenticated.updateChainAccount(web3Chain);
+        break;
       case Web3TronRequestMethods.signMessageV2:
         final sign = await walletProvider.wallet.walletRequest(
             WalletRequestSignMessage(

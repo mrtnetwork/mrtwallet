@@ -4,12 +4,12 @@ import 'package:mrt_wallet/wallet/web3/core/messages/models/models/exception.dar
 
 @JS("Error")
 extension type JSError._(JSAny _) implements JSAny {
-  external factory JSError();
+  external factory JSError({String? message});
   external String? get message;
 }
 
-@JS("JSWalletError")
 extension type JSWalletError._(JSAny _) implements JSError {
+  external factory JSWalletError({String? message});
   external String? get stack;
   external set stack(String? info);
   @JS("toString")

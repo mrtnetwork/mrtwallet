@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart' show WalletException;
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
-import 'package:mrt_wallet/future/state_managment/extention/extention.dart';
+import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/crypto/utils/utils.dart';
 import 'package:mrt_wallet/wallet/wallet.dart'
     show BlockchainConst, WalletNetwork;

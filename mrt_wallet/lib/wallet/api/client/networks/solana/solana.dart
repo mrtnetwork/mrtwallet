@@ -19,11 +19,13 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider> {
       provider.rpc as BaseServiceProtocol<SolanaAPIProvider>;
 
   @override
-  Future<void> updateBalance(ISolanaAddress account) async {
+  Future<void> updateBalance(ISolanaAddress account,
+      {bool updateTokens = true}) async {
     final accountInfo = await getAccountInfo(account.networkAddress);
-    if (accountInfo == null) return;
-    account.address.updateBalance(accountInfo.lamports);
-    await updateAccounts(account);
+    account.address.updateBalance(accountInfo?.lamports);
+    if (updateTokens) {
+      await updateAccounts(account);
+    }
   }
 
   Future<SolanaAccountInfo?> getAccountInfo(SolAddress account) async {
@@ -47,6 +49,7 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider> {
 
   Future<SimulateTranasctionResponse> simulate(
       {required SolanaTransaction transaction,
+      SolAddress? account,
       bool replaceRecentBlockhash = true,
       bool sigVerify = false}) async {
     return await provider.request(
@@ -55,7 +58,12 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider> {
               encoding: TransactionSerializeEncoding.base64),
           sigVerify: sigVerify,
           replaceRecentBlockhash: replaceRecentBlockhash,
-          encoding: SolanaRPCEncoding.base64),
+          encoding: SolanaRPCEncoding.base64,
+          commitment: Commitment.processed,
+          accounts: account == null
+              ? null
+              : RPCAccountConfig(
+                  addresses: [account], encoding: SolanaRPCEncoding.base64)),
     );
   }
 

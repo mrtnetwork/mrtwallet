@@ -369,14 +369,18 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
     _progress.value = null;
   }
 
-  @override
-  void close() {
-    super.close();
+  void _dipose() async {
+    liveNotifier.dispose();
+    _progress.dispose();
     for (final i in tabsAuthenticated.values) {
       i.dispose();
     }
-    liveNotifier.dispose();
-    _progress.dispose();
+  }
+
+  @override
+  void close() {
+    super.close();
+    _dipose();
   }
 
   @override

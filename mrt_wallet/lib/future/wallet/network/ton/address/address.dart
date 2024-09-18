@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/address_derivation/controller.dart';
@@ -7,6 +6,13 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/worker.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+
+enum _V5ContectType {
+  custom,
+  client;
+
+  bool get isCustomWalletId => this == client;
+}
 
 class SetupTonAddressView extends StatefulWidget {
   final AddressDerivationController controller;
@@ -17,21 +23,55 @@ class SetupTonAddressView extends StatefulWidget {
 
 class _SetupTonAddressViewState extends State<SetupTonAddressView>
     with SafeState {
-  WalletVersion version = WalletVersion.v4;
+  final GlobalKey<NumberTextFieldState> subwalletKey = GlobalKey();
+  WalletVersion version = WalletVersion.v5R1;
+  _V5ContectType v5Type = _V5ContectType.client;
   bool get hasSubWalletId => version.version > 2;
   WalletTonNetwork get network => widget.controller.network.toNetwork();
   bool bouncable = false;
-  int get defaultSubWalletId =>
-      TonConst.defaultSubWalletId + network.coinParam.workchain;
+  int defaultSubWalletId() {
+    if (isVersion5) return 0;
+    return TonConst.defaultSubWalletId + network.coinParam.workchain;
+  }
+
   int? subWalletId;
+  bool get isVersion5 => version == WalletVersion.v5R1;
+
+  String subwalletIdLable = "sub_wallet_id";
+
+  late int maximumSubWalletId = getMaximumSubWalletId();
 
   void onChangeVersion(WalletVersion? onChange) {
-    final bool hasId = hasSubWalletId;
-    version = onChange ?? version;
-    if (hasId != hasSubWalletId) {
-      subWalletId = defaultSubWalletId;
+    if (onChange == null) return;
+    version = onChange;
+    maximumSubWalletId = getMaximumSubWalletId();
+    updateSubWalletIdLable();
+    updateState();
+    subwalletKey.currentState?.setValue(defaultSubWalletId());
+  }
+
+  void updateSubWalletIdLable() {
+    if (!isVersion5) {
+      v5Type = _V5ContectType.client;
+    } else {
+      if (v5Type.isCustomWalletId) {
+        subwalletIdLable = "wallet_id";
+      } else {
+        subwalletIdLable = "sub_wallet_id";
+      }
     }
-    setState(() {});
+  }
+
+  void onChangeV5Type(bool? _) {
+    if (v5Type == _V5ContectType.client) {
+      v5Type = _V5ContectType.custom;
+    } else {
+      v5Type = _V5ContectType.client;
+    }
+    maximumSubWalletId = getMaximumSubWalletId();
+    updateSubWalletIdLable();
+    updateState();
+    subwalletKey.currentState?.setValue(defaultSubWalletId());
   }
 
   void onChangeBounce(bool? v) {
@@ -39,18 +79,34 @@ class _SetupTonAddressViewState extends State<SetupTonAddressView>
     setState(() {});
   }
 
+  int getMaximumSubWalletId() {
+    if (isVersion5) {
+      switch (v5Type) {
+        case _V5ContectType.client:
+          return TonConst.maximumV5SubWalletId;
+        default:
+          return TonConst.maximumWalletId;
+      }
+    }
+    return TonConst.maximumSubWalletId;
+  }
+
   void onChangeSubWalletId(int id) {
-    if (id < 0 || id > mask32 - 1) {
+    if (id < 0 || id > maximumSubWalletId) {
       subWalletId = null;
     } else {
       subWalletId = id;
     }
+
+    // TonConst.deciaml
   }
 
   String? validateSubWalletId(String? v) {
     if (!hasSubWalletId) return null;
     if (subWalletId == null) {
-      return "sub_wallet_id_validator".tr;
+      return "sub_wallet_id_validator"
+          .tr
+          .replaceOne(maximumSubWalletId.toString());
     }
     return null;
   }
@@ -61,11 +117,42 @@ class _SetupTonAddressViewState extends State<SetupTonAddressView>
     if (keyIndex == null) return;
     if (widget.controller.form.currentState?.validate() ?? false) {
       if (hasSubWalletId && subWalletId == null) return;
+      TonAccountContext? context;
+      switch (version) {
+        case WalletVersion.v1R1:
+        case WalletVersion.v1R2:
+        case WalletVersion.v1R3:
+        case WalletVersion.v2R1:
+        case WalletVersion.v2R2:
+          context =
+              TonAccountLegacyContext(version: version, bouncable: bouncable);
+          break;
+        case WalletVersion.v3R1:
+        case WalletVersion.v3R2:
+        case WalletVersion.v4:
+          context = TonAccountSubWalletContext(
+              version: version,
+              bouncable: bouncable,
+              subwalletId: subWalletId!);
+          break;
+        case WalletVersion.v5R1:
+          context = switch (v5Type) {
+            _V5ContectType.client => TonAccountV5SubWalletContext(
+                version: version,
+                bouncable: bouncable,
+                subwalletId: subWalletId!),
+            _V5ContectType.custom => TonAccountV5CustomContext(
+                version: version,
+                bouncable: bouncable,
+                contextId: subWalletId!),
+          };
+          break;
+        default:
+      }
+      if (context == null) return;
       final newAccount = TonNewAddressParams(
           deriveIndex: keyIndex,
-          version: version,
-          subWalletId: subWalletId,
-          bouncable: bouncable,
+          context: context,
           coin: widget.controller.coin);
       widget.controller.generateAddress(newAccount);
     }
@@ -104,13 +191,29 @@ class _SetupTonAddressViewState extends State<SetupTonAddressView>
                         url: LinkConst.reviewTonSubWalletId,
                         linkDesc: "read_more".tr,
                       ),
+                      if (isVersion5) ...[
+                        WidgetConstant.height20,
+                        AppCheckListTile(
+                          contentPadding: EdgeInsets.zero,
+                          onChanged: onChangeV5Type,
+                          value: v5Type == _V5ContectType.custom,
+                          title: Text("use_wallet_id".tr,
+                              style: context.textTheme.titleMedium),
+                          subtitle: TextAndLinkView(
+                            text: "ton_v5_wallet_desc".tr,
+                            url: LinkConst.reviewTonV5,
+                            linkDesc: "read_more".tr,
+                          ),
+                        )
+                      ],
                       WidgetConstant.height8,
                       NumberTextField(
-                          label: "sub_wallet_id".tr,
+                          key: subwalletKey,
+                          label: subwalletIdLable.tr,
                           onChange: onChangeSubWalletId,
                           validator: validateSubWalletId,
-                          defaultValue: subWalletId ?? defaultSubWalletId,
-                          max: mask32 - 1,
+                          defaultValue: subWalletId,
+                          max: maximumSubWalletId,
                           min: 0),
                     ],
                   )

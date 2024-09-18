@@ -11,10 +11,12 @@ class WalletSigningPassword extends StatefulWidget {
       {super.key,
       required this.keys,
       required this.addresses,
-      required this.onPasswordForm});
+      required this.onPasswordForm,
+      required this.controller});
   final Set<AddressDerivationIndex> keys;
   final Set<ChainAccount> addresses;
   final FuncFutureBoolString onPasswordForm;
+  final ScrollController controller;
 
   @override
   State<WalletSigningPassword> createState() => _WalletSigningPasswordState();
@@ -26,6 +28,8 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
       GlobalKey<StreamWidgetState>(debugLabel: "WalletSigningPassword_1");
   final GlobalKey<FormState> formKey =
       GlobalKey<FormState>(debugLabel: "WalletSigningPassword");
+  final GlobalKey textFieldKey =
+      GlobalKey(debugLabel: "_WalletSigningPasswordState_textFieldKey");
 
   List<String> singerPubKeys = [];
 
@@ -44,7 +48,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
 
   String? validator(String? v) {
     if (!StrUtils.isStrongPassword(v)) {
-      return "password_desc".tr;
+      return "password_validator".tr;
     }
     return null;
   }
@@ -100,129 +104,165 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    textFieldKey.ensureKeyVisible();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          PageTitleSubtitle(
-              title: "sign_transaction".tr,
-              body: Column(
-                children: [
-                  Text("signing_tx_desc1".tr),
-                  WidgetConstant.height8,
-                  Text("signing_tx_desc".tr),
-                ],
-              )),
-          WidgetConstant.height20,
-          Text("accounts".tr, style: context.textTheme.titleMedium),
-          WidgetConstant.height8,
-          AnimatedSize(
-              duration: APPConst.animationDuraion,
-              alignment: Alignment.topCenter,
-              child: SizedBox(
-                width: context.mediaQuery.size.width,
-                child: ContainerWithBorder(
-                    onRemove: () {
-                      toggleShowAllAddresses();
-                    },
-                    iconAlginment: showAllAddresses
-                        ? CrossAxisAlignment.start
-                        : CrossAxisAlignment.center,
-                    onRemoveIcon: showAllAddresses
-                        ? const Icon(Icons.arrow_drop_up_sharp)
-                        : const Icon(Icons.arrow_drop_down_sharp),
-                    key: ValueKey(showAllAddresses),
-                    child: showAllAddresses
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children:
-                                List.generate(widget.addresses.length, (index) {
-                              final address = widget.addresses.elementAt(index);
-                              final bool isLastIndex =
-                                  index == widget.addresses.length - 1;
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AddressDetailsView(address: address),
-                                  if (!isLastIndex)
-                                    Divider(
-                                        color:
-                                            context.colors.onPrimaryContainer)
-                                ],
-                              );
-                            }),
-                          )
-                        : Text("transaction_generated_with_number_accounts"
-                            .tr
-                            .replaceOne(widget.addresses.length.toString()))),
-              )),
-          WidgetConstant.height20,
-          Text("private_keys".tr, style: context.textTheme.titleMedium),
-          Text("private_keys__signing_access_desc".tr),
-          WidgetConstant.height8,
-          AnimatedSize(
-              duration: APPConst.animationDuraion,
-              alignment: Alignment.topCenter,
-              child: SizedBox(
-                width: context.mediaQuery.size.width,
-                child: ContainerWithBorder(
-                  onRemove: () {
-                    toggleShowAllPrivateKey();
-                  },
-                  iconAlginment: showAllPrivateKeys
-                      ? CrossAxisAlignment.start
-                      : CrossAxisAlignment.center,
-                  onRemoveIcon: showAllPrivateKeys
-                      ? const Icon(Icons.arrow_drop_up_sharp)
-                      : const Icon(Icons.arrow_drop_down_sharp),
-                  key: ValueKey(showAllPrivateKeys),
-                  child: showAllPrivateKeys
-                      ? Column(
+    return Scaffold(
+      appBar: AppBar(title: Text("signing_request".tr)),
+      body: CustomScrollView(
+        controller: widget.controller,
+        slivers: [
+          SliverConstraintsBoxView(
+            sliver: SliverToBoxAdapter(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    PageTitleSubtitle(
+                        title: "signing_request".tr,
+                        body: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: List.generate(widget.keys.length, (index) {
-                            final keyIndex = widget.keys.elementAt(index);
-                            final bool isLastIndex =
-                                index == widget.keys.length - 1;
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _HDWalletDerivationDetails(keyIndex: keyIndex),
-                                if (!isLastIndex)
-                                  Divider(
-                                      color: context.colors.onPrimaryContainer)
-                              ],
-                            );
-                          }),
+                          children: [
+                            Text("signing_tx_desc1".tr),
+                            WidgetConstant.height8,
+                            Text("signing_tx_desc".tr),
+                          ],
+                        )),
+                    WidgetConstant.height20,
+                    Text("accounts".tr, style: context.textTheme.titleMedium),
+                    WidgetConstant.height8,
+                    AnimatedSize(
+                        duration: APPConst.animationDuraion,
+                        alignment: Alignment.topCenter,
+                        child: SizedBox(
+                          width: context.mediaQuery.size.width,
+                          child: ContainerWithBorder(
+                              onRemove: () {
+                                toggleShowAllAddresses();
+                              },
+                              iconAlginment: showAllAddresses
+                                  ? CrossAxisAlignment.start
+                                  : CrossAxisAlignment.center,
+                              onRemoveIcon: showAllAddresses
+                                  ? const Icon(Icons.arrow_drop_up_sharp)
+                                  : const Icon(Icons.arrow_drop_down_sharp),
+                              key: ValueKey(showAllAddresses),
+                              child: showAllAddresses
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: List.generate(
+                                          widget.addresses.length, (index) {
+                                        final address =
+                                            widget.addresses.elementAt(index);
+                                        final bool isLastIndex = index ==
+                                            widget.addresses.length - 1;
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            AddressDetailsView(
+                                                address: address),
+                                            if (!isLastIndex)
+                                              Divider(
+                                                  color: context.colors
+                                                      .onPrimaryContainer)
+                                          ],
+                                        );
+                                      }),
+                                    )
+                                  : Text(
+                                      "transaction_generated_with_number_accounts"
+                                          .tr
+                                          .replaceOne(widget.addresses.length
+                                              .toString()))),
+                        )),
+                    WidgetConstant.height20,
+                    Text("private_keys".tr,
+                        style: context.textTheme.titleMedium),
+                    Text("private_keys__signing_access_desc".tr),
+                    WidgetConstant.height8,
+                    AnimatedSize(
+                        duration: APPConst.animationDuraion,
+                        alignment: Alignment.topCenter,
+                        child: SizedBox(
+                          width: context.mediaQuery.size.width,
+                          child: ContainerWithBorder(
+                            onRemove: () {
+                              toggleShowAllPrivateKey();
+                            },
+                            iconAlginment: showAllPrivateKeys
+                                ? CrossAxisAlignment.start
+                                : CrossAxisAlignment.center,
+                            onRemoveIcon: showAllPrivateKeys
+                                ? const Icon(Icons.arrow_drop_up_sharp)
+                                : const Icon(Icons.arrow_drop_down_sharp),
+                            key: ValueKey(showAllPrivateKeys),
+                            child: showAllPrivateKeys
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: List.generate(widget.keys.length,
+                                        (index) {
+                                      final keyIndex =
+                                          widget.keys.elementAt(index);
+                                      final bool isLastIndex =
+                                          index == widget.keys.length - 1;
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _HDWalletDerivationDetails(
+                                              keyIndex: keyIndex),
+                                          if (!isLastIndex)
+                                            Divider(
+                                                color: context
+                                                    .colors.onPrimaryContainer)
+                                        ],
+                                      );
+                                    }),
+                                  )
+                                : Text(
+                                    "transaction_need_number_private_key_to_complete"
+                                        .tr
+                                        .replaceOne(
+                                            widget.keys.length.toString())),
+                          ),
+                        )),
+                    WidgetConstant.height20,
+                    AppTextField(
+                      label: "password".tr,
+                      validator: validator,
+                      error: _error,
+                      onChanged: onChagePassword,
+                      obscureText: true,
+                      initialValue: _password,
+                      readOnly: keyState.inProgress,
+                      key: textFieldKey,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        StreamWidget(
+                          key: keyState,
+                          buttonWidget: FixedElevatedButton(
+                              onPressed: onPassword,
+                              child: Text("sign_transaction".tr)),
+                          backToIdle: APPConst.oneSecoundDuration,
+                          padding: WidgetConstant.paddingVertical40,
                         )
-                      : Text("transaction_need_number_private_key_to_complete"
-                          .tr
-                          .replaceOne(widget.keys.length.toString())),
+                      ],
+                    )
+                  ],
                 ),
-              )),
-          WidgetConstant.height20,
-          AppTextField(
-            label: "password".tr,
-            validator: validator,
-            error: _error,
-            onChanged: onChagePassword,
-            obscureText: true,
-            initialValue: _password,
-            readOnly: keyState.inProgress,
+              ),
+            ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              StreamWidget(
-                key: keyState,
-                buttonWidget: FixedElevatedButton(
-                    onPressed: onPassword, child: Text("sign_transaction".tr)),
-                backToIdle: APPConst.oneSecoundDuration,
-                padding: WidgetConstant.paddingVertical20,
-              )
-            ],
-          )
         ],
       ),
     );

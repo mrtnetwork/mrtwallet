@@ -1,2 +1,2 @@
-export 'utils/promise.dart';
+export 'utils/extensions.dart';
 export 'utils/utils.dart';
