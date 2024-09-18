@@ -211,7 +211,7 @@ abstract class WalletCore extends _WalletCore
     return await _callSynchronized(
         () async => await _controller._deriveNewAccount(
             newAccountParams: newAccountParams, chain: chain),
-        conditionStatus: isUnlock,
+        conditionStatus: newAccountParams.isMultiSig ? isOpen : isUnlock,
         delay: APPConst.milliseconds100,
         update: true,
         refresh: false);

@@ -190,7 +190,7 @@ Future<void> _buildWeb(
     bool minify = false,
     bool clean = false,
     String? baseHref}) async {
-  print("come build $extension $mozila $minify");
+  print("come build Extension: $extension Mozila: $mozila Minify: $minify");
 
   if (clean) {
     await _clean();

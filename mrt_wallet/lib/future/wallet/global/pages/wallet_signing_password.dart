@@ -117,6 +117,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
         controller: widget.controller,
         slivers: [
           SliverConstraintsBoxView(
+            padding: WidgetConstant.paddingHorizontal20,
             sliver: SliverToBoxAdapter(
               child: Form(
                 key: formKey,
