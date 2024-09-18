@@ -56,7 +56,7 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 - **Features:** Seamless support for Solana transactions.
 - **Highlights:**
   - SPLToken transfer, account creation and token minting.
-  - **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, Microsoft Edge, Android and macos platforms.
+- **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, Microsoft Edge, Android and macos platforms.
 
 ### Cardano
 
