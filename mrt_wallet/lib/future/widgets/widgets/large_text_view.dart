@@ -42,13 +42,9 @@ class _LargeTextViewState extends State<LargeTextView> with SafeState {
                 crossAxisAlignment: WrapCrossAlignment.end,
                 children: [
                   Text(text, maxLines: widget.maxLine),
-                  // GestureDetector(
-                  //   onTap: onTap,
-                  //   child: ,
-                  // ),
                   Text("read_more".tr,
                       style: context.textTheme.bodySmall
-                          ?.copyWith(color: context.colors.tertiary))
+                          ?.copyWith(color: context.colors.tertiaryFixed))
                 ],
               ),
             );

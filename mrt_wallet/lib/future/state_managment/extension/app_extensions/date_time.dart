@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 extension QuickDateTimeFormater on DateTime {
   static DateTime fromSecondsSinceEpoch(int s) {
     return DateTime.fromMillisecondsSinceEpoch(s * 1000);
@@ -32,6 +34,10 @@ extension QuickDateTimeFormater on DateTime {
 
   DateTime toOnlyDate() {
     return DateTime(year, month, day);
+  }
+
+  TimeOfDay timeOfDay() {
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
   int get secondsSinceEpoch => millisecondsSinceEpoch ~/ 1000;

@@ -117,7 +117,7 @@ class _TokenDetailsView extends StatelessWidget {
           ],
         ),
         const Divider(),
-        CircleTokenImgaeView(token.token, radius: 60),
+        CircleTokenImageView(token.token, radius: 60),
         WidgetConstant.height8,
         RichText(
           text: TextSpan(children: [

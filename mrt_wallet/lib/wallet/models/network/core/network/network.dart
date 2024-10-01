@@ -82,6 +82,8 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
         return WalletPolkadotNetwork.fromCborBytesOrObject(obj: toCborTag);
       case NetworkType.kusama:
         return WalletKusamaNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.stellar:
+        return WalletStellarNetwork.fromCborBytesOrObject(obj: toCborTag);
       default:
         throw UnimplementedError("network does not exist.");
     }
@@ -649,6 +651,54 @@ class WalletKusamaNetwork extends WalletPolkadotNetwork {
   WalletKusamaNetwork copyWith(
       {int? value, SubstrateNetworkParams? coinParam}) {
     return WalletKusamaNetwork(
+        value ?? this.value, coinParam ?? this.coinParam);
+  }
+}
+
+class WalletStellarNetwork extends WalletNetwork<StellarNetworkParams> {
+  @override
+  final int value;
+  @override
+  final StellarNetworkParams coinParam;
+
+  const WalletStellarNetwork(this.value, this.coinParam);
+  factory WalletStellarNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, CborTagsConst.stellarNetwork);
+    return WalletStellarNetwork(
+      cbor.elementAt(0),
+      StellarNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
+  }
+
+  @override
+  List<BipCoins> get coins {
+    if (coinParam.mainnet) {
+      return [Bip44Coins.stellar];
+    }
+    return [Bip44Coins.stellarTestnet];
+  }
+
+  @override
+  List get variabels => [value];
+  @override
+  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.ed25519];
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        CborTagsConst.stellarNetwork);
+  }
+
+  @override
+  bool get supportCustomNode => false;
+  @override
+  NetworkType get type => NetworkType.stellar;
+
+  @override
+  WalletStellarNetwork copyWith({int? value, StellarNetworkParams? coinParam}) {
+    return WalletStellarNetwork(
         value ?? this.value, coinParam ?? this.coinParam);
   }
 }

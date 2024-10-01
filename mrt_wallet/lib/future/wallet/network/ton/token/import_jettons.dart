@@ -280,7 +280,7 @@ class _NonContentJettonView extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleTokenImgaeView(token.token, radius: 40),
+              CircleTokenImageView(token.token, radius: 40),
               WidgetConstant.width8,
               Expanded(
                   child: Column(

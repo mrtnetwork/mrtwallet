@@ -86,8 +86,8 @@ class _CircleAPPImageView extends StatelessWidget {
   }
 }
 
-class CircleTokenImgaeView extends StatelessWidget {
-  const CircleTokenImgaeView(this.token, {this.radius = 120, super.key});
+class CircleTokenImageView extends StatelessWidget {
+  const CircleTokenImageView(this.token, {this.radius = 120, super.key});
   final Token token;
   final double radius;
 

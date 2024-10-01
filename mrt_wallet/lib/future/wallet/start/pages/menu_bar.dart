@@ -24,7 +24,7 @@ class AccountMenuButtonView extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleTokenImgaeView(chain.network.token, radius: 30),
+            CircleTokenImageView(chain.network.token, radius: 30),
             WidgetConstant.width8,
             Expanded(
               child: CopyTextIcon(

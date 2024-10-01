@@ -16,7 +16,8 @@ class AppDropDownBottom<T> extends StatelessWidget {
       this.suffixIcon,
       this.isExpanded = false,
       this.focusColor,
-      this.fillColor});
+      this.fillColor,
+      this.helperText});
   final Map<T, Widget> items;
   final Map<T, Widget>? itemBuilder;
   final FuncVoidNullT<T?>? onChanged;
@@ -29,6 +30,7 @@ class AppDropDownBottom<T> extends StatelessWidget {
   final bool isExpanded;
   final Color? focusColor;
   final Color? fillColor;
+  final String? helperText;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +62,9 @@ class AppDropDownBottom<T> extends StatelessWidget {
           errorText: error,
           fillColor: fillColor,
           errorMaxLines: 3,
-          suffixIcon: suffixIcon),
+          suffixIcon: suffixIcon,
+          helperText: helperText,
+          helperMaxLines: 3),
     );
   }
 }

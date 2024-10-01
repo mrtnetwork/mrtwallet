@@ -16,8 +16,10 @@ class PageRouter {
   static const String rippleMultisigAddress = "/ripple/setup_multisig_address";
   static const String rippleSettingPage = "setting/ripple";
   static const String rippleKeyConversion = "setting/ripple/key_conversion";
-
   static const String ethereumTransaction = "/ethereum/transfer";
+
+  static const String stellarTransaction = "/stellar/transfer";
+  static const String stellarImportToken = "/stellar/import_token";
 
   // tron
   static const String tronTransfer = "/tron/transfer";
@@ -84,6 +86,7 @@ class PageRouter {
   static const String web3Tron = "web3/tron";
   static const String web3Solana = "web3/solana";
   static const String web3Ton = "web3/ton";
+  static const String web3Stellar = "web3/stellar";
 
   static const String webview = "web/";
 
@@ -126,12 +129,16 @@ class PageRouter {
         return const NetworkGenericAddressDerivationView();
       case rippleTransfer:
         return const RippleTransferTransactionView();
+      case stellarTransaction:
+        return const StellarTransferTransactionView();
       case ethereumTransaction:
         return const EthereumTransferTransactionView();
       case tronTransfer:
         return const TronTransferTransactionView();
       case rippleAddToken:
         return const MonitorRippleTokenView();
+      case stellarImportToken:
+        return const MonitorStellarTokenView();
       case rippleAddNfts:
         return const MonitorRippleNFTsView();
       case rippleTransaction:
@@ -187,6 +194,8 @@ class PageRouter {
         return const TronWeb3FieldsView();
       case web3Ton:
         return const TonWeb3FieldsView();
+      case web3Stellar:
+        return const StellarWeb3FieldsView();
       case web3Solana:
         return const SolanaWeb3FieldsView();
       case updateEthereumProvider:
@@ -245,6 +254,8 @@ class PageRouter {
       case NetworkType.polkadot:
       case NetworkType.kusama:
         return substrateTransfer;
+      case NetworkType.stellar:
+        return stellarTransaction;
       default:
         return rippleTransfer;
     }
@@ -260,6 +271,8 @@ class PageRouter {
         return web3Tron;
       case NetworkType.ton:
         return web3Ton;
+      case NetworkType.stellar:
+        return web3Stellar;
       default:
         return null;
     }

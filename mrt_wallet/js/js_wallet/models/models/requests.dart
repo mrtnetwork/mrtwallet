@@ -185,7 +185,8 @@ enum JSClientType {
   ethereum(tag: [151], networkName: "Ethereum"),
   tron(tag: [152], networkName: "Tron"),
   solana(tag: [153], networkName: "Solana"),
-  ton(tag: [154], networkName: "TON");
+  ton(tag: [154], networkName: "TON"),
+  stellar(tag: [155], networkName: "Stellar");
 
   final List<int> tag;
   final String networkName;

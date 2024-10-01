@@ -11,3 +11,4 @@ part 'networks/tron.dart';
 part 'controller/controller.dart';
 part 'networks/solana.dart';
 part 'networks/ton.dart';
+part 'networks/stellar.dart';

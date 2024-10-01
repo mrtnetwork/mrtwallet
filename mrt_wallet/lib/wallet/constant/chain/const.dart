@@ -4,6 +4,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:stellar_dart/stellar_dart.dart';
 
 class _DefaultAppCoins {
   static final BitcoinParams bitcoinCashMainnet = BitcoinParams(
@@ -598,6 +599,35 @@ class _DefaultAppCoins {
               apiId: "kusama", coinName: "kusama", symbol: "KSM"),
           assetLogo: APPConst.kusama),
       providers: []);
+
+  static final StellarNetworkParams stellarMainnet = StellarNetworkParams(
+      transactionExplorer: "https://stellar.expert/explorer/public/tx/#txid",
+      addressExplorer:
+          "https://stellar.expert/explorer/public/account/#address",
+      token: Token(
+          name: "Stellar",
+          symbol: "XLM",
+          decimal: StellarConst.decimal,
+          market: const CoingeckoCoin(
+              apiId: "stellar", coinName: "stellar", symbol: "XLM"),
+          assetLogo: APPConst.stellar),
+      providers: const [],
+      mainnet: true,
+      passphrase: StellarNetwork.mainnet.passphrase);
+  static final StellarNetworkParams stellarTestnet = StellarNetworkParams(
+      transactionExplorer: "https://stellar.expert/explorer/testnet/tx/#txid",
+      addressExplorer:
+          "https://stellar.expert/explorer/testnet/account/#address",
+      token: Token(
+          name: "Stellar testnet",
+          symbol: "tXLM",
+          decimal: StellarConst.decimal,
+          market: const CoingeckoCoin(
+              apiId: "stellar", coinName: "stellar", symbol: "XLM"),
+          assetLogo: APPConst.stellar),
+      providers: const [],
+      mainnet: false,
+      passphrase: StellarNetwork.testnet.passphrase);
 }
 
 class ChainConst {
@@ -640,6 +670,12 @@ class ChainConst {
     400: WalletPolkadotNetwork(400, _DefaultAppCoins.polkadot),
     450: WalletKusamaNetwork(450, _DefaultAppCoins.kusama),
     451: WalletKusamaNetwork(451, _DefaultAppCoins.westend),
+
+    ///
+    600: WalletStellarNetwork(600, _DefaultAppCoins.stellarMainnet),
+    601: WalletStellarNetwork(601, _DefaultAppCoins.stellarTestnet),
+
+    ///
     TronChainType.mainnet.id:
         WalletTronNetwork(TronChainType.mainnet.id, _DefaultAppCoins.tron),
     TronChainType.shasta.id:

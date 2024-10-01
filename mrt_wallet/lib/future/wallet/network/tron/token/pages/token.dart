@@ -98,7 +98,7 @@ class __ImportTrc20TokenViewState extends State<_ImportTrc20TokenView> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleTokenImgaeView(token!.token, radius: 60),
+                    CircleTokenImageView(token!.token, radius: 60),
                     WidgetConstant.height8,
                     Text(token!.token.name,
                         style: context.textTheme.labelLarge),

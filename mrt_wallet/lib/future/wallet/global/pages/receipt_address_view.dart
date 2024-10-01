@@ -10,6 +10,7 @@ class ReceiptAddressView extends StatelessWidget {
       {this.address,
       this.onTap,
       this.title = "recipient",
+      this.errorText,
       super.key,
       this.subtitle,
       this.validate,
@@ -23,6 +24,7 @@ class ReceiptAddressView extends StatelessWidget {
   final bool? validate;
   final Icon? onEditIcon;
   final Widget? onEditWidget;
+  final String? errorText;
   final bool onTapWhenOnRemove;
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class ReceiptAddressView extends StatelessWidget {
         if (title != null) ...[
           Text(title?.tr ?? "recipient".tr,
               style: context.textTheme.titleMedium),
-          if (subtitle != null) Text(subtitle!),
+          if (subtitle != null) LargeTextView([subtitle!], maxLine: 2),
           WidgetConstant.height8,
         ],
         ContainerWithBorder(
@@ -41,18 +43,31 @@ class ReceiptAddressView extends StatelessWidget {
             onTapWhenOnRemove: onTapWhenOnRemove,
             onRemoveWidget: onEditWidget,
             onRemoveIcon: address == null
-                ? const Icon(Icons.add)
-                : onEditIcon ?? const Icon(Icons.edit),
-            child: address == null
-                ? Text("tap_to_choose_address".tr)
-                : Row(
-                    children: [
-                      Expanded(
-                          child: ReceiptAddressDetailsView(address: address!)),
-                      CopyTextIcon(
-                          dataToCopy: address?.view ?? "", isSensitive: false)
-                    ],
-                  )),
+                ? Icon(Icons.add, color: context.colors.onPrimaryContainer)
+                : onEditIcon ??
+                    Icon(Icons.edit, color: context.colors.onPrimaryContainer),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                address == null
+                    ? Text("tap_to_choose_address".tr,
+                        style: context.colors.onPrimaryContainer
+                            .bodyMedium(context))
+                    : Row(
+                        children: [
+                          Expanded(
+                              child: ReceiptAddressDetailsView(
+                                  address: address!,
+                                  color: context.colors.onPrimaryContainer)),
+                          CopyTextIcon(
+                              dataToCopy: address?.view ?? "",
+                              isSensitive: false)
+                        ],
+                      ),
+                ErrorTextContainer(
+                    error: errorText, padding: WidgetConstant.paddingVertical10)
+              ],
+            )),
       ],
     );
   }

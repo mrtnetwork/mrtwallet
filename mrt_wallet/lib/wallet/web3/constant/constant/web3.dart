@@ -6,5 +6,6 @@ class Web3Const {
     NetworkType.tron,
     NetworkType.solana,
     NetworkType.ton,
+    NetworkType.stellar,
   ];
 }

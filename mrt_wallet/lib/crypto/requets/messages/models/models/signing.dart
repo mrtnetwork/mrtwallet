@@ -33,7 +33,8 @@ enum SigningRequestNetwork {
   cosmos([32, 105]),
   solana([32, 106]),
   tron([32, 107]),
-  substrate([32, 108]);
+  substrate([32, 108]),
+  stellar([32, 109]);
 
   final List<int> tag;
   const SigningRequestNetwork(this.tag);
@@ -143,6 +144,13 @@ class GlobalSignRequest implements SignRequest {
   }) {
     return GlobalSignRequest._(
         digest: digest, network: SigningRequestNetwork.solana, index: index);
+  }
+  factory GlobalSignRequest.stellar({
+    required List<int> digest,
+    required Bip32AddressIndex index,
+  }) {
+    return GlobalSignRequest._(
+        digest: digest, network: SigningRequestNetwork.stellar, index: index);
   }
   factory GlobalSignRequest.cosmos({
     required List<int> digest,

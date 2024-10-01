@@ -5,6 +5,7 @@ import 'package:mrt_wallet/wallet/models/contact/networks/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/cardano.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/ethereum.dart';
+import 'package:mrt_wallet/wallet/models/contact/networks/stellar.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/substrate.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/xrp.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/solana.dart';
@@ -52,10 +53,16 @@ abstract class ContactCore<T> with CborSerializable {
       case NetworkType.xrpl:
         contact = RippleContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
         break;
-      default:
+      case NetworkType.stellar:
+        contact = StellarContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
         contact =
             SubstrateContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
         break;
+      default:
+        throw WalletExceptionConst.networkDoesNotExist;
     }
     if (contact is! ContactCore<T>) {
       throw WalletExceptionConst.invalidArgruments(
@@ -91,6 +98,8 @@ abstract class ContactCore<T> with CborSerializable {
         contact = SubstrateContact.newContact(address: address, name: name);
       case NetworkType.xrpl:
         contact = RippleContact.newContact(address: address, name: name);
+      case NetworkType.stellar:
+        contact = StellarContact.newContact(address: address, name: name);
       default:
         throw WalletExceptionConst.networkDoesNotExist;
     }

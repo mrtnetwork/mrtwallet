@@ -44,7 +44,7 @@ class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
                         children: [
                           Column(
                             children: [
-                              CircleTokenImgaeView(
+                              CircleTokenImageView(
                                   chainAccount.network.coinParam.token,
                                   radius: 40),
                               WidgetConstant.height8,

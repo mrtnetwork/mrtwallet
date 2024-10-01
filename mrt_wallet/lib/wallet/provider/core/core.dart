@@ -505,13 +505,14 @@ abstract class WalletCore extends _WalletCore
 
   Future<MethodResult<void>> switchAccount<CHAINTOKEN extends ChainAccount>(
       {required APPCHAINACCOUNT<CHAINTOKEN> account,
-      required CHAINTOKEN address}) async {
+      required CHAINTOKEN address,
+      bool? closePages}) async {
     onChangeStatus(WalletPageStatus.progress, message: "switching_account");
     return await _callSynchronized(
       () async =>
           _controller._switchAccount(account: account, address: address),
       conditionStatus: isOpen,
-      refresh: true,
+      refresh: closePages ?? true,
       update: true,
     );
   }

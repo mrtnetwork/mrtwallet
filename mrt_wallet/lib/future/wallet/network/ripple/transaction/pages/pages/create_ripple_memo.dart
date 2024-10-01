@@ -42,6 +42,7 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         PageTitleSubtitle(
             title: "memos_field".tr,

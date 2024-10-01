@@ -8,6 +8,7 @@ import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/crypto/utils/global/utils.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:stellar_dart/stellar_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:bitcoin_base/bitcoin_base.dart';
@@ -117,6 +118,13 @@ class APIUtils {
         network: network);
   }
 
+  static StellarClient buildStellarClient(
+      StellarAPIProvider provider, WalletStellarNetwork network) {
+    return StellarClient(
+        provider: HorizonProvider(StellarHTTPService(provider)),
+        network: network);
+  }
+
   static TronClient buildTronProvider(
       TronAPIProvider httpProviderService, WalletTronNetwork network) {
     final httpNode = TronProvider(
@@ -161,6 +169,10 @@ class APIUtils {
         break;
       case NetworkType.solana:
         client = buildSoalanaProvider(
+            serviceProvider.toProvider(), network.toNetwork());
+        break;
+      case NetworkType.stellar:
+        client = buildStellarClient(
             serviceProvider.toProvider(), network.toNetwork());
         break;
       case NetworkType.tron:

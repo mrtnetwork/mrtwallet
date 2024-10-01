@@ -19,7 +19,6 @@ class NumberWriteView extends StatefulWidget {
     required this.buttonText,
     this.allowDecimal = true,
     this.defaultValue,
-    this.maxPrecision,
     this.min,
     this.max,
     this.regExp,
@@ -33,7 +32,7 @@ class NumberWriteView extends StatefulWidget {
   final BigRational? max;
   final RegExp? regExp;
   final BigRational? defaultValue;
-  final int? maxPrecision;
+  // final int? maxPrecision;
   final bool allowDecimal;
   final bool allowSign;
   final NullStringString? customForm;
@@ -88,6 +87,7 @@ class _NumberWriteViewState extends State<NumberWriteView> with SafeState {
   void onPressed() {
     if (!(formKey.currentState?.validate() ?? false)) return;
     final parse = BigRational.tryParseDecimaal(text);
+
     if (context.mounted && parse != null) {
       context.pop(parse);
     }
@@ -116,8 +116,7 @@ class _NumberWriteViewState extends State<NumberWriteView> with SafeState {
                 BigRetionalRangeTextInputFormatter(
                     max: widget.max,
                     min: widget.min,
-                    allowDecimal: widget.allowDecimal,
-                    maxPrecision: widget.maxPrecision),
+                    allowDecimal: widget.allowDecimal),
               ],
               validator: widget.customForm ?? validator,
               suffixIcon: PasteTextIcon(onPaste: onPaste, isSensitive: false),

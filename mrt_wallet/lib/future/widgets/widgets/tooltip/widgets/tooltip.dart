@@ -17,7 +17,8 @@ class ToolTipView extends StatelessWidget {
       this.padding = const EdgeInsets.all(10),
       this.selectableTooltip = false,
       this.backgroundColor,
-      this.waitDuration = const Duration(seconds: 2)});
+      this.waitDuration = const Duration(seconds: 2),
+      this.textStyle});
 
   ToolTipView setKey(GlobalKey<TooltipState>? toolTipKey) {
     return ToolTipView(
@@ -35,6 +36,7 @@ class ToolTipView extends StatelessWidget {
       tooltipWidget: tooltipWidget,
       verticalOffset: verticalOffset,
       waitDuration: waitDuration,
+      textStyle: textStyle,
       child: child,
     );
   }
@@ -53,6 +55,7 @@ class ToolTipView extends StatelessWidget {
   final Decoration? boxDecoration;
   final Duration? waitDuration;
   final Color? backgroundColor;
+  final TextStyle? textStyle;
   @override
   Widget build(BuildContext context) {
     if (tooltipWidget == null && message == null) {
@@ -63,14 +66,17 @@ class ToolTipView extends StatelessWidget {
       key: toolTipKey,
       waitDuration: waitDuration,
       enableFeedback: true,
+      // textStyle: textStyle,
       richMessage: WidgetSpan(
           child: tooltipWidget?.call(context) ??
               Container(
                   constraints: const BoxConstraints(maxWidth: 300),
                   child: Text(
                     message!,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onTertiary.withOpacity(0.8)),
+                    style: textStyle ??
+                        theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onTertiaryContainer
+                                .withOpacity(0.8)),
                   ))),
       margin: margin,
       padding: padding,
@@ -81,7 +87,7 @@ class ToolTipView extends StatelessWidget {
       decoration: boxDecoration ??
           BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: backgroundColor ?? theme.colorScheme.tertiary),
+              color: backgroundColor ?? theme.colorScheme.tertiaryContainer),
       child: child,
     );
   }

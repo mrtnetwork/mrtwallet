@@ -186,7 +186,7 @@ class _CardanoTransactionAssetSelectorViewState
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      CircleTokenImgaeView(
+                                      CircleTokenImageView(
                                         asset.token,
                                         radius: APPConst.circleRadius25,
                                       ),

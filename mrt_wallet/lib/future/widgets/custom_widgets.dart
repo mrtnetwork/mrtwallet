@@ -42,3 +42,4 @@ export 'widgets/custom_spinner.dart';
 export 'widgets/status_icon_widget.dart';
 export 'widgets/tooltip/tooltip.dart';
 export 'widgets/future/future_builder.dart';
+export 'widgets/text_view.dart';

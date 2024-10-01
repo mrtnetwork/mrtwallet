@@ -21,7 +21,7 @@ class EthereumWeb3SwitchEthereumChainView extends StatelessWidget {
           ContainerWithBorder(
             child: Row(
               children: [
-                CircleTokenImgaeView(
+                CircleTokenImageView(
                   request.request.chain.network.token,
                   radius: 40,
                 ),
@@ -52,7 +52,7 @@ class EthereumWeb3SwitchEthereumChainView extends StatelessWidget {
           ContainerWithBorder(
             child: Row(
               children: [
-                CircleTokenImgaeView(
+                CircleTokenImageView(
                   request.newChain.network.token,
                   radius: 40,
                 ),

@@ -169,7 +169,7 @@ class _JettonPayloadView extends StatelessWidget {
           onSelectWidget: TappedTooltipView(
               tooltipWidget: ToolTipView(
             message: "unknow_jetton_owner".tr,
-            child: Icon(Icons.warning, color: context.colors.tertiary),
+            child: Icon(Icons.warning, color: context.colors.tertiaryFixed),
           )),
         ),
         if (payload.amount != null) ...[
@@ -206,7 +206,8 @@ class _PayloadContentView extends StatelessWidget {
                 ? TappedTooltipView(
                     tooltipWidget: ToolTipView(
                     message: 'unknown_payload_desc'.tr,
-                    child: Icon(Icons.warning, color: context.colors.tertiary),
+                    child: Icon(Icons.warning,
+                        color: context.colors.tertiaryFixed),
                   ))
                 : null,
             title: Text(payload.type.name.camelCase,

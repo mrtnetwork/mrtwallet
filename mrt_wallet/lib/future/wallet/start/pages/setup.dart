@@ -91,7 +91,7 @@ class WalletSetupPageWidget extends StatelessWidget {
                                             context.colors.surface)),
                                     onPressed: () async {
                                       context.openSliverDialog(
-                                          (ctx) => const AbountWalletView(),
+                                          (c) => const AbountWalletView(),
                                           APPConst.name);
                                     },
                                     child: Text("about_mrt_wallet".tr)),

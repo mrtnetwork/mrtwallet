@@ -2,6 +2,7 @@ import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/address/pages/setup_address.dart';
+import 'package:mrt_wallet/future/wallet/network/stellar/stellar.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/address/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/address/address.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -20,6 +21,8 @@ class SetupGenericAddressView extends StatelessWidget {
     switch (controller.network.type) {
       case NetworkType.xrpl:
         return SetupRippleAddressView(controller: controller);
+      case NetworkType.stellar:
+        return SetupStellarAddressView(controller: controller);
       case NetworkType.ton:
         return SetupTonAddressView(controller: controller);
       case NetworkType.polkadot:

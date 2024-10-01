@@ -34,6 +34,7 @@ class CryptoKeyConst {
   static const List<int> tonNetwork = [80, 0, 11];
   static const List<int> polkadotNetwork = [80, 0, 12];
   static const List<int> kusamaNetwork = [80, 0, 13];
+  static const List<int> stellar = [80, 0, 14];
 
   /// network tags
   static const List<int> generateToneMenemonic = [111, 1];

@@ -97,12 +97,15 @@ abstract class CryptoAddress<X> with CborSerializable {
       case NetworkType.ton:
         address = ITonAddress.fromCborBytesOrObject(network, obj: cbor);
         break;
+      case NetworkType.stellar:
+        address = IStellarAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
       case NetworkType.polkadot:
       case NetworkType.kusama:
         address = ISubstrateAddress.fromCborBytesOrObject(network, obj: cbor);
         break;
       default:
-        throw UnimplementedError("Network does not exists. ");
+        throw WalletExceptionConst.networkDoesNotExist;
     }
     return address;
   }

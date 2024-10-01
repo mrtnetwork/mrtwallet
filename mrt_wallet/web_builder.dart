@@ -195,7 +195,7 @@ Future<void> _buildWeb(
   if (clean) {
     await _clean();
   }
-  //await buildCrypto();
+  await buildCrypto();
   final r = Directory("web");
   if (r.existsSync()) {
     await r.delete(recursive: true);

@@ -9,3 +9,4 @@ export 'params/cardano.dart';
 export 'params/cosmos.dart';
 export 'params/ton.dart';
 export 'params/substrate.dart';
+export 'params/stellar.dart';

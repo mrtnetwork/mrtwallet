@@ -6,6 +6,7 @@ import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/permission.dart';
+import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'account.dart';
@@ -21,7 +22,6 @@ abstract class Web3Chain<
     with CborSerializable {
   List<CHAINACCOUT> _accounts;
   List<CHAINACCOUT> get activeAccounts => _accounts;
-  // List<CHAINACCOUT> currentChainAccounts(CHAIN chain);
   List<CHAINACCOUT> chainAccounts(CHAIN chain);
   List<Web3AccountAcitvity> _activities;
   List<Web3AccountAcitvity> get activities => _activities;
@@ -51,6 +51,9 @@ abstract class Web3Chain<
         break;
       case NetworkType.ton:
         chain = Web3TonChain.deserialize(object: decode);
+        break;
+      case NetworkType.stellar:
+        chain = Web3StellarChain.deserialize(object: decode);
         break;
       default:
         throw WalletExceptionConst.unsuportedFeature;

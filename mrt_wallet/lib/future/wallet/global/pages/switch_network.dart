@@ -16,7 +16,7 @@ class SwitchNetworkView extends StatefulWidget {
 
 class _SwitchNetworkViewState extends State<SwitchNetworkView>
     with SingleTickerProviderStateMixin {
-  late final tabController = TabController(length: 10, vsync: this);
+  late final tabController = TabController(length: 11, vsync: this);
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>();
 
@@ -38,6 +38,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
   late List<Chain> tonNetworks;
   late List<Chain> polkadotNetworks;
   late List<Chain> kusamaNetworks;
+  late List<Chain> stellarNetworks;
 
   void initNetwork() {
     final wallet = context.watch<WalletProvider>(StateConst.main).wallet;
@@ -86,6 +87,11 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         .toList()
       ..sort((a, b) => a.network.value.compareTo(b.network.value));
 
+    stellarNetworks = networks
+        .where((element) => element.network.type == NetworkType.stellar)
+        .toList()
+      ..sort((a, b) => a.network.value.compareTo(b.network.value));
+
     final currentNetwork = MethodUtils.nullOnException(() =>
         networks.firstWhere((element) =>
             element.network.value == widget.selectedNetwork.value));
@@ -117,6 +123,8 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
       case NetworkType.kusama:
         initialIndex = 9;
         break;
+      case NetworkType.stellar:
+        initialIndex = 10;
       default:
         initialIndex = 0;
         break;
@@ -192,6 +200,9 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                       icon:
                           CircleAssetsImgaeView(APPConst.polkadot, radius: 15)),
                   Tab(icon: CircleAssetsImgaeView(APPConst.kusama, radius: 15)),
+                  Tab(
+                      icon:
+                          CircleAssetsImgaeView(APPConst.stellar, radius: 15)),
                 ]),
             // pinned: false,
             // floating: true,
@@ -226,7 +237,8 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
               _NetworksView(widget.selectedNetwork, cosmosNetworks),
               _NetworksView(widget.selectedNetwork, tonNetworks),
               _NetworksView(widget.selectedNetwork, polkadotNetworks),
-              _NetworksView(widget.selectedNetwork, kusamaNetworks)
+              _NetworksView(widget.selectedNetwork, kusamaNetworks),
+              _NetworksView(widget.selectedNetwork, stellarNetworks)
             ]),
           ),
         ),
@@ -266,7 +278,7 @@ class _NetworksView extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          CircleTokenImgaeView(net.coinParam.token, radius: 20),
+                          CircleTokenImageView(net.coinParam.token, radius: 20),
                           WidgetConstant.width8,
                           Expanded(
                               child: Column(

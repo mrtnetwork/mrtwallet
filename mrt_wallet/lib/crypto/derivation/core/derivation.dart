@@ -59,4 +59,12 @@ abstract class AddressDerivationIndex with CborSerializable, Equatable {
       {Bip44Levels maxLevel = Bip44Levels.addressIndex});
 
   SeedTypes get seedGeneration;
+
+  T cast<T extends AddressDerivationIndex>() {
+    if (this is! T) {
+      throw WalletExceptionConst.invalidArgruments(
+          "$T", runtimeType.toString());
+    }
+    return this as T;
+  }
 }

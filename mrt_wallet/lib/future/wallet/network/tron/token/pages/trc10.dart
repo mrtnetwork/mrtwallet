@@ -184,7 +184,7 @@ class __MonitorTronTRC10TokenViewState extends State<_MonitorTronTRC10TokenView>
                               children: [
                                 Row(
                                   children: [
-                                    CircleTokenImgaeView(token.token,
+                                    CircleTokenImageView(token.token,
                                         radius: 40),
                                     WidgetConstant.width8,
                                     Expanded(

@@ -30,6 +30,8 @@ class NetworkType {
       NetworkType._(name: "Polkadot", tag: CryptoKeyConst.polkadotNetwork);
   static const NetworkType kusama =
       NetworkType._(name: "Kusama", tag: CryptoKeyConst.kusamaNetwork);
+  static const NetworkType stellar =
+      NetworkType._(name: "Stellar", tag: CryptoKeyConst.stellar);
 
   static const List<NetworkType> values = [
     bitcoinAndForked,
@@ -42,7 +44,8 @@ class NetworkType {
     ton,
     cosmos,
     polkadot,
-    kusama
+    kusama,
+    stellar
   ];
 
   static NetworkType fromTag(List<int>? tag) {

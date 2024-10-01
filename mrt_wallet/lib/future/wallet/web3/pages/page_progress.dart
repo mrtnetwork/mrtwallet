@@ -92,17 +92,16 @@ class Web3PageProgressState extends State<Web3PageProgress> with SafeState {
 
   void error(
       {String? text,
-      Widget? widget,
+      // Widget? widget,
       Duration? backToIdle = APPConst.twoSecoundDuration}) {
     _update(
         backToIdle == null
             ? Web3ProgressStatus.errorResponse
             : Web3ProgressStatus.error,
-        widget ??
-            ProgressWithTextView(
-              text: text ?? "",
-              icon: WidgetConstant.errorIconLarge,
-            ));
+        ProgressWithTextView(
+          text: text ?? "",
+          icon: WidgetConstant.errorIconLarge,
+        ));
     if (backToIdle != null) {
       Future.delayed(backToIdle, () => _update(Web3ProgressStatus.idle, null));
     }
@@ -155,18 +154,24 @@ class Web3PageProgressState extends State<Web3PageProgress> with SafeState {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                    child: _responseWidget ??
-                        const Center(
-                          child: CircularProgressIndicator(),
-                        )),
+                    child: Padding(
+                  padding: WidgetConstant.paddingHorizontal10,
+                  child: _responseWidget ??
+                      const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                )),
               ],
             ),
         Web3ProgressStatus.error: (c) => Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Expanded(
-                    child: _responseWidget ??
-                        Center(child: WidgetConstant.errorIconLarge)),
+                    child: Padding(
+                  padding: WidgetConstant.paddingHorizontal10,
+                  child: _responseWidget ??
+                      Center(child: WidgetConstant.errorIconLarge),
+                )),
               ],
             ),
         Web3ProgressStatus.errorResponse: (c) => _ProgressSuccessChildWidget(
@@ -208,15 +213,19 @@ class _ProgressSuccessChildWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return ConstraintsBoxView(
       padding: WidgetConstant.padding20,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          successText,
-          WidgetConstant.height20,
-          WidgetConstant.divider,
-          _CompleteRequestStatusWidget(status: status),
-        ],
+      child: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              successText,
+              WidgetConstant.height20,
+              WidgetConstant.divider,
+              _CompleteRequestStatusWidget(status: status),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -263,15 +272,13 @@ extension QuickAccsessWeb3PageProgressState
         widget: SuccessTransactionTextView(txId: [hash], network: network));
   }
 
-  void process({String? text, Widget? widget}) {
-    currentState?.processs(text: text, widget: widget);
+  void process({String? text}) {
+    currentState?.processs(text: text);
   }
 
   void error(
-      {Duration? backToIdle = APPConst.twoSecoundDuration,
-      String? text,
-      Widget? widget}) {
-    currentState?.error(text: text, widget: widget, backToIdle: backToIdle);
+      {Duration? backToIdle = APPConst.twoSecoundDuration, String? text}) {
+    currentState?.error(text: text, backToIdle: backToIdle);
   }
 
   void closedRequest() {

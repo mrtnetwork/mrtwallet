@@ -33,6 +33,7 @@ class APPConst {
   static final APPImage ton = APPImage.local("assets/image/ton.png");
   static final APPImage polkadot = APPImage.local("assets/image/polkadot.png");
   static final APPImage kusama = APPImage.local("assets/image/ksm.png");
+  static final APPImage stellar = APPImage.local("assets/image/xlm.png");
 
   static const String name = "MRT WALLET";
   static const Duration animationDuraion = Duration(milliseconds: 400);
@@ -45,6 +46,7 @@ class APPConst {
   static const double double80 = 80;
   static const double double40 = 40;
   static const double double20 = 20;
+  static const double iconSize = 24;
   static const double tooltipConstrainedWidth = 300;
   static const double dialogWidth = 650;
   static const double maxViewWidth = 650;
@@ -53,6 +55,7 @@ class APPConst {
   static const double qrCodeWidth = 300;
   static final RegExp accountNameRegExp = RegExp(r'^[^\n]{0,20}$');
   static final RegExp keyNameRegex = RegExp(r'^[^\n]{0,20}$');
+  static final RegExp hex32Bytes = RegExp(r'^(0x)?[0-9a-fA-F]{64}$');
   static const double circleRadius25 = 25;
   static const double desktopAppWidth = 1200;
   static const double desktopAppHeight = 768;
@@ -70,4 +73,6 @@ class APPConst {
   static const int defaultDecimalPlaces = 8;
 
   static const int maximumHeaderValue = 400;
+
+  static const double largeCircleRadius = 60;
 }

@@ -64,10 +64,10 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider> {
         BytesUtils.toHexString(txRaw, prefix: "0x")));
     if (!result.isSuccess) {
       throw RPCError(
-          message: result.checkTx.log ?? "",
-          errorCode: result.checkTx.code ?? 0,
-          data: result.toJson(),
-          request: {});
+        message: result.checkTx.log ?? "",
+        errorCode: result.checkTx.code,
+        details: result.toJson(),
+      );
     }
     return result.hash;
   }

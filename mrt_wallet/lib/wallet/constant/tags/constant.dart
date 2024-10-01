@@ -72,8 +72,13 @@ class CborTagsConst {
   static const List<int> tonAddressSubWallet = [200, 199, 1];
   static const List<int> tonAddressV5 = [200, 199, 2];
   static const List<int> tonAddressV5SubWallet = [200, 199, 3];
-
   static const List<int> substrateAccount = [200, 200];
+
+  // xrp
+  static const List<int> stellarAccount = [200, 201];
+  static const List<int> stellarMultisigAccount = [200, 201, 1];
+  static const List<int> stellarMultiSignaturAddress = [200, 201, 1, 0];
+  static const List<int> stellarMultiSigSignerAddress = [200, 201, 1, 0, 0];
 
   // contacts
   static const List<int> bitcoinContact = [100, 0];
@@ -85,6 +90,7 @@ class CborTagsConst {
   static const List<int> cosmosContact = [100, 6];
   static const List<int> tonContact = [100, 7];
   static const List<int> substrateContact = [100, 8];
+  static const List<int> stellarContact = [100, 9];
 
   /// network tokens
   static const List<int> token = [110];
@@ -95,6 +101,7 @@ class CborTagsConst {
   static const List<int> trc10Token = [110, 31];
   static const List<int> spltoken = [110, 32];
   static const List<int> jettonToken = [110, 33];
+  static const List<int> stellarIssueToken = [110, 34];
 
   /// network nfts
   static const List<int> nft = [120];
@@ -112,9 +119,9 @@ class CborTagsConst {
   static const List<int> cosmosNetwork = [80, 0, 7];
   static const List<int> bitcoinCashNetwork = [80, 0, 10];
   static const List<int> tonNetwork = [80, 0, 11];
-
   static const List<int> polkadotNetwork = [80, 0, 12];
   static const List<int> kusamaNetwork = [80, 0, 13];
+  static const List<int> stellarNetwork = [80, 0, 14];
 
   static const List<int> bitconNetworkParam = [80, 1, 1];
   static const List<int> xrpNetworkParam = [80, 1, 2];
@@ -125,6 +132,7 @@ class CborTagsConst {
   static const List<int> solNetworkParam = [80, 1, 7];
   static const List<int> tonNetworkParam = [80, 1, 8];
   static const List<int> substrateNetworkParams = [80, 1, 9];
+  static const List<int> stellarNetworkParam = [80, 1, 10];
 
   ///
 
@@ -139,6 +147,7 @@ class CborTagsConst {
   static const List<int> tonApiServiceProvider = [90, 8];
   static const List<int> rippleApiServiceProvider = [90, 9];
   static const List<int> substrateApiServiceProvider = [90, 10];
+  static const List<int> stellarApiProvider = [90, 11];
 
   /// web3 permission
   static const List<int> appPermission = [150, 1];
@@ -153,6 +162,7 @@ class CborTagsConst {
   static const List<int> web3TronAccount = [161, 2, 1];
   static const List<int> web3SolanaAccount = [161, 2, 2];
   static const List<int> web3TonAccount = [161, 2, 3];
+  static const List<int> web3StellarAccount = [161, 2, 4];
 
   /// address params
   static const List<int> bitcoinCashNewAddressParams = [12, 0];
@@ -169,4 +179,6 @@ class CborTagsConst {
   static const List<int> tonNewAddressParams = [12, 12];
   static const List<int> rippleNewAddressParams = [12, 13];
   static const List<int> rippleMultiSigNewAddressParams = [12, 14];
+  static const List<int> stellarNewAddressParams = [12, 15];
+  static const List<int> stellarMultiSigNewAddressParams = [12, 16];
 }

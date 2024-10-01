@@ -182,6 +182,7 @@ class ISubstrateAddress
 
   @override
   bool isEqual(ChainAccount other) {
+    if (other is! ISubstrateAddress) return false;
     return other.networkAddress.address == networkAddress.address &&
         other.networkAddress.ss58Format == networkAddress.ss58Format;
   }

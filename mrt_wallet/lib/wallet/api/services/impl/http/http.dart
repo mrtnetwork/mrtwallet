@@ -107,7 +107,8 @@ abstract class HTTPService<P extends APIProvider>
       {List<int> allowStatus = const [200]}) async {
     try {
       final response = await t();
-      if (!allowStatus.contains(response.statusCode)) {
+      if (allowStatus.isNotEmpty &&
+          !allowStatus.contains(response.statusCode)) {
         final decode = StringUtils.tryToJson(response.body);
         final Map<String, dynamic>? map =
             (decode is Map<String, dynamic>?) ? decode : null;
@@ -137,6 +138,8 @@ abstract class HTTPService<P extends APIProvider>
   T _readResponse<T>(http.Response response) {
     final String toString = StringUtils.decode(response.bodyBytes);
     switch (T) {
+      case http.Response:
+        return response as T;
       case String:
         return toString as T;
       case List:

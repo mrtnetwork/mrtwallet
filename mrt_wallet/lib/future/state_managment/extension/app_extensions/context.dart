@@ -12,6 +12,10 @@ extension CustomColorsSchame on ColorScheme {
 }
 
 extension QuickColor on Color {
+  TextStyle? titleLarge(BuildContext context) {
+    return context.textTheme.titleLarge?.copyWith(color: this);
+  }
+
   TextStyle? titleMedium(BuildContext context) {
     return context.textTheme.titleMedium?.copyWith(color: this);
   }

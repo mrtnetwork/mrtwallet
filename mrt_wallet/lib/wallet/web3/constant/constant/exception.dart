@@ -17,9 +17,9 @@ class Web3RequestExceptionConst {
     if (exception is RPCError) {
       return Web3RequestException(
           message: exception.message,
-          code: exception.errorCode,
+          code: exception.errorCode ?? -1,
           walletCode: "WALLET-001",
-          data: StringUtils.tryFromJson(exception.data));
+          data: StringUtils.tryFromJson(exception.details));
     } else if (exception is ApiProviderException) {
       return Web3RequestException(
           message: "The Provider is disconnected.",

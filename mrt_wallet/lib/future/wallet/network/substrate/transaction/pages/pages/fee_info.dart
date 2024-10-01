@@ -52,7 +52,7 @@ class _FeeInfoWidget extends StatelessWidget {
     return TappedTooltipView(
         tooltipWidget: ToolTipView(
       tooltipWidget: (c) {
-        final Color styleColor = c.colors.onTertiary;
+        final Color styleColor = c.colors.onTertiaryContainer;
         final TextStyle textStyle =
             c.textTheme.bodyMedium!.copyWith(color: styleColor);
         final TextStyle coinStyle =

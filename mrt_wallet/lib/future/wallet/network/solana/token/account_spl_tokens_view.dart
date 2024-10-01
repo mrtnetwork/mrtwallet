@@ -166,7 +166,7 @@ class __SolanaImportSPLTokensViewState
                               children: [
                                 Row(
                                   children: [
-                                    CircleTokenImgaeView(token.token,
+                                    CircleTokenImageView(token.token,
                                         radius: 40),
                                     WidgetConstant.width8,
                                     Expanded(

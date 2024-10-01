@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/web3/web3.dart';
+import 'package:mrt_wallet/future/wallet/network/stellar/web3/permission/permission.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/web3/permission/permission.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
@@ -216,6 +217,8 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     2: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_tron"),
     3: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_solana"),
     4: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_ton"),
+    5: GlobalKey<Web3PermissionState>(
+        debugLabel: "Web3PermissionState_stellar"),
   };
 
   @override
@@ -268,6 +271,10 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
                                 label: WidgetConstant.sizedBox),
                             NavigationRailDestination(
                                 icon: CircleAssetsImgaeView(APPConst.ton,
+                                    radius: 15),
+                                label: WidgetConstant.sizedBox),
+                            NavigationRailDestination(
+                                icon: CircleAssetsImgaeView(APPConst.stellar,
                                     radius: 15),
                                 label: WidgetConstant.sizedBox),
                           ],
@@ -332,6 +339,10 @@ class _APPPermissionWidget extends StatelessWidget {
               key: state.permissionState[4],
               permission:
                   state.application?.getChainFromNetworkType(NetworkType.ton)),
+          5: (context) => StellarWeb3PermissionView(
+              key: state.permissionState[5],
+              permission: state.application
+                  ?.getChainFromNetworkType(NetworkType.stellar)),
         }),
       ],
     );

@@ -45,7 +45,7 @@ abstract class BaseSocketService<T extends APIProvider>
           statusCode: e.errorCode,
           responseData: e.request,
           code: e.errorCode,
-          requestPayload: e.data);
+          requestPayload: e.details);
     } on TimeoutException {
       throw const ApiProviderException(message: "api_http_timeout_error");
     } on ArgumentError catch (e) {

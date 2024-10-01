@@ -5,6 +5,7 @@ mixin Web3Impl
         WalletManager,
         Web3EthereumImpl,
         Web3TonImpl,
+        Web3StellarImpl,
         Web3SolanaImpl,
         Web3TronImpl {
   Chain _getWeb3ChainId(
@@ -57,6 +58,17 @@ mixin Web3Impl
                     e.network.coinParam.workchain ==
                     (web3Chain?.currentChain ?? TonConst.mainnetWokchainId),
                 orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+      case NetworkType.stellar:
+        final web3Chain = authenticated
+            .getChainFromNetworkType<Web3StellarChain>(param.method.network);
+        if (param.account != null && web3Chain == null) {
+          throw Web3RequestExceptionConst.missingPermission;
+        }
+        return _appChains._networks.values.whereType<StellarChain>().firstWhere(
+            (e) =>
+                e.network.coinParam.passphrase ==
+                (web3Chain?.currentChain ?? StellarConst.mainnetPassphrase),
+            orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
@@ -140,6 +152,8 @@ mixin Web3Impl
         return await _getSolanaWeb3Result(request as Web3SolanaRequest);
       case NetworkType.ton:
         return await _getTonWeb3Result(request as Web3TonRequest);
+      case NetworkType.stellar:
+        return await _getStellarWeb3Result(request as Web3StellarRequest);
 
       default:
         throw Web3RequestExceptionConst.networkNotSupported;

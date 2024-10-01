@@ -33,14 +33,17 @@ class TransactionAmountView extends StatelessWidget {
       children: [
         Text(title ?? "transfer_amount".tr,
             style: context.textTheme.titleMedium),
-        if (subtitle != null) Text(subtitle!.tr),
+        if (subtitle != null) LargeTextView([subtitle!.tr], maxLine: 2),
         WidgetConstant.height8,
         ContainerWithBorder(
             validate: hasAmount && validate,
             onRemove: onTap,
             validateText: validateError,
             onRemoveIcon: onRemoveIcon ??
-                (hasAmount ? const Icon(Icons.edit) : const Icon(Icons.add)),
+                (hasAmount
+                    ? Icon(Icons.edit, color: context.colors.onPrimaryContainer)
+                    : Icon(Icons.add,
+                        color: context.colors.onPrimaryContainer)),
             child: hasAmount
                 ? CoinPriceView(
                     token: token,

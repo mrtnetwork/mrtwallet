@@ -79,7 +79,7 @@ class _EthereumTokenView extends StatelessWidget {
             onRemoveWidget: WidgetConstant.sizedBox,
             child: Row(
               children: [
-                CircleTokenImgaeView(token.token, radius: 40),
+                CircleTokenImageView(token.token, radius: 40),
                 WidgetConstant.width8,
                 Expanded(
                     child: Column(

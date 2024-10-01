@@ -39,7 +39,8 @@ class _SetupRippleMutlisigAddressView extends StatefulWidget {
 class _SetupRippleMutlisigAddressViewState
     extends State<_SetupRippleMutlisigAddressView> with SafeState {
   late WalletProvider wallet;
-  final Map<AccountObjectSignerEntry, RippleMultiSigSignerDetais?> signers = {};
+  final Map<AccountObjectSignerEntry, RippleMultiSigSignerDetails?> signers =
+      {};
   int sumOfWeight = 0;
   bool get sigerListIsReady => sumOfWeight >= signerList!.signerQuorum;
 
@@ -62,7 +63,7 @@ class _SetupRippleMutlisigAddressViewState
         return;
       }
 
-      final newAcc = RippleMultiSigSignerDetais(
+      final newAcc = RippleMultiSigSignerDetails(
           publicKey: acc.publicKey,
           keyIndex: acc.keyIndex as Bip32AddressIndex,
           weight: signer.signerWeight);
@@ -132,7 +133,7 @@ class _SetupRippleMutlisigAddressViewState
     pickedRegular = RippleMultiSignatureAddress(
         threshold: 1,
         signers: [
-          RippleMultiSigSignerDetais(
+          RippleMultiSigSignerDetails(
               keyIndex: addr.keyIndex as Bip32AddressIndex,
               publicKey: addr.publicKey,
               weight: 1)
@@ -461,7 +462,7 @@ class _SetupRippleMutlisigAddressViewState
 }
 
 typedef _OnTapSigner = void Function(
-    AccountObjectSignerEntry, RippleMultiSigSignerDetais?);
+    AccountObjectSignerEntry, RippleMultiSigSignerDetails?);
 
 class _SignerListFeatureView extends StatelessWidget {
   const _SignerListFeatureView(
@@ -471,7 +472,7 @@ class _SignerListFeatureView extends StatelessWidget {
       required this.onTapSigner,
       required this.onTapSetup});
   final int signerQuorum;
-  final Map<AccountObjectSignerEntry, RippleMultiSigSignerDetais?> signers;
+  final Map<AccountObjectSignerEntry, RippleMultiSigSignerDetails?> signers;
   final int sumOfWeight;
   final _OnTapSigner onTapSigner;
   final DynamicVoid onTapSetup;

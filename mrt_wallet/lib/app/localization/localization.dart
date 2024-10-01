@@ -1162,6 +1162,8 @@ class Localization {
               "The transaction fee has been modified.",
           "transaction_fee_warning":
               "The transaction fee is currently lower than the prevailing network conditions.",
+          "transaction_fee_high_warning":
+              "The transaction fee is currently higher than the prevailing network conditions.",
           "bch_specific": "BCH Specific",
           "token_aware": "Token-aware",
           "cash_token_desc":
@@ -2132,7 +2134,227 @@ class Localization {
           "ton_requestAccounts": "Request Accounts",
           "tron_signTransaction": "Sign Transaction",
           "tron_signMessageV2": "Sign Message",
-          "tron_requestAccounts": "Request Accounts"
+          "tron_requestAccounts": "Request Accounts",
+          "muxed_address": "Muxed address",
+          "pubkey_address": "Public key address",
+          "stellar_muxed_address_desc":
+              "a new type of Stellar account that makes it easy to map a single Stellar address to multiple users.",
+          "id": "Id",
+          "enter_stellar_muxed_id_desc":
+              "The Id must be a value between 0 and 2^64-1.",
+          "uint64_validator":
+              "The ___1__ must be a value between 0 and 2^64-1.",
+          "recipient_account_active": "The recipient account is active.",
+          "recipient_account_inactive": "The recipient account is inactive.",
+          "retrieve_account_activity_failed":
+              "Failed to retrieve account activity.",
+          "32bytes_hex_validator_desc":
+              "The value must be a valid 32-byte hexadecimal string.",
+          "text_max_validator": "Text must be ___1__ characters max.",
+          "add_stellar_memo_type_desc":
+              "Please choose the type of Stellar memo to add to the transaction.",
+          "stellar_memo_text_desc":
+              "Memo can be up to 28 characters. Note: the text is deserialized using UTF-8 encoding.",
+          "stellar_memo": "Stellar transaction memo",
+          "stellar_memo_desc":
+              "Stellar offers different memo types for transactions, each designed for a specific purpose.",
+          "stellar_memo_desc2":
+              "If no memo is needed, select '___1__' and use '___2__' to confirm.",
+          "stellar": "Stellar",
+          "stellar_starting_balance_desc":
+              "The starting balance for a non-active account must reach ___1__ XLM.",
+          "submit_transaction_error": "Transaction submission error. ___1__",
+          "fee_zero_validator_desc": "Transaction fee must not be zero.",
+          "add_operation": "Add Operation",
+          "tap_to_add_new_operation":
+              "Tap to add a new operation to the transaction",
+          "change_trust": "Change trust",
+          "asset_type": "Asset type",
+          "stellar_invalid_asset4_validator":
+              "Invalid asset code: must contain 1 to 4 alphanumeric characters (a-z, A-Z, 0-9).",
+          "stellar_invalid_asset12_validator":
+              "Invalid asset code: must contain 5 to 12 alphanumeric characters (a-z, A-Z, 0-9).",
+          "asset_issue_address_validator":
+              "Cannot use the contract address as the asset issuer address.",
+          "setup_asset": "Setup asset",
+          "asset": "Asset",
+          "pool_id": "Pool ID",
+          "stellar_liquidity_pool_id_desc":
+              "Stellar Liquidity Pool ID: A unique 32-byte hash representing the liquidity pool asset, used for facilitating decentralized trading between two assets on the Stellar network.",
+          "tap_to_select_or_create_asset": "Tap to select or create an asset",
+          "pick_an_asset": "Pick an asset",
+          "change_trust_desc":
+              "The Stellar changeTrust operation lets an account establish, modify, or remove trust lines for an asset. This is necessary before holding or transacting with non-native assets like tokens issued by other accounts.",
+          "modify_trust_line_desc":
+              "Please select an asset to modify the trust line.",
+          "change_trust_limit":
+              "the maximum amount of an asset that an account is willing to trust",
+          "limit": "Limit",
+          "setup_amount": "Setup amount",
+          "stellar_change_trust_limit_zero_desc":
+              "A limit of zero means the trust line is removed.",
+          "payment": "Payment",
+          "stellar_payment_desc":
+              "The Stellar payment operation sends a specified amount of an asset from one account to another, supporting both XLM and tokens.",
+          "select_stellar_payment_assets_desc":
+              "Please select the asset you want to transfer.",
+          "stellar_new_token_created":
+              "Token not found in your account. A new token will be created.",
+          "create_assets": "Create an asset.",
+          "remove_operation_close_page_desc":
+              "For removing the operation please close the page.",
+          "update_operation": "Update operation",
+          "send_asset": "Send asset",
+          "stellar_path_receive_send_asset_desc":
+              "The asset being sent by the sender. It is the currency or token that will be deducted from the sender's account and converted into the recipient's desired asset.",
+          "stellar_path_receive_destination_desc":
+              "The account that will receive the payment. This is the recipient's address, who will receive the destination asset.",
+          "send_max": "Send max",
+          "stellar_path_receive_send_max_desc":
+              "The maximum amount of the Send asset that the sender is willing to pay. The actual amount sent may be less, but it will never exceed this limit. If the network can't convert the Send asset into the destination asset within this maximum, the operation will fail.",
+          "destination_asset": "Destination asset",
+          "stellar_path_receive_dest_asset_desc":
+              "The asset that the recipient will receive. This is the currency or token that the operation aims to deliver to the destination account, after any necessary conversions from the send asset",
+          "destination_amount": "Destination amount",
+          "stellar_path_receive_dest_amount_desc":
+              "The exact amount of destination asset that the recipient will receive. This value is guaranteed by the operation, meaning the recipient will always receive this specified amount if the transaction succeeds",
+          "stellar_path_payment_strict_receive_desc":
+              "This operation allows the sender to specify the exact amount the recipient will receive, while the network calculates the amount of the sending asset needed, up to a specified maximum. If the conversion cannot be completed within the limit, the operation fails",
+          "stellar_path_payment_strict_receive": "Path Payment Strict Receive",
+          "stellar_path_receive_path_desc":
+              "A list of intermediate assets used for converting the send_asset to the dest_asset. These assets serve as hops in the payment path, allowing the network to find the best conversion route if no direct trade exists between the two assets. This field is optional.",
+          "path_already_exist": "The path already exists.",
+          "stellar_path_send_send_asset_desc":
+              "The asset being sent from the sender's account. It is the currency or token that will be deducted from the sender’s balance and converted into the desired asset for the recipient.",
+          "stellar_path_receive_send_amount_desc":
+              "The exact amount of the sendAsset that the sender will transfer. This amount is fixed, and the operation will convert it into the recipient's desired asset, regardless of how much the recipient ends up receiving.",
+          "send_amount": "Send amount",
+          "stellar_path_send_destination_desc":
+              "The account that will receive the payment. This field specifies the recipient's address, indicating where the converted asset will be sent once the transaction is completed.",
+          "stellar_path_send_dest_asset_desc":
+              "The asset that the recipient will receive. This specifies the currency or token that the operation aims to deliver to the destination account after converting from the sendAsset",
+          "stellar_path_send_dest_min_desc":
+              "The minimum amount of destination asset that the recipient must receive. If the conversion from send asset does not result in at least this specified amount, the operation will fail to ensure that the recipient is adequately compensated.",
+          "stellar_path_send_path_desc":
+              "A list of intermediate assets used to facilitate the conversion from sendAsset to destAsset. This optional field allows the network to find the best conversion route through multiple assets if a direct trade between the two assets is not available.",
+          "minimum_destination_amount": "Minimum Destination Amount",
+          "stellar_path_payment_strict_send": "Path Payment Strict Send",
+          "stellar_path_payment_strict_send_desc":
+              "This operation allows the sender to specify an exact amount of a sending asset to convert into a desired destination asset. The operation guarantees a minimum amount of the destination asset to be received by the recipient, and if the conversion cannot be completed to meet this requirement, the operation will fail.",
+          "create_an_account": "Create an account.",
+          "stellar_create_account_operation_desc":
+              "This operation is used to create a new Stellar account by specifying the account's destination and funding it with an initial balance. It requires the source account to have sufficient funds to cover the minimum balance requirement and transaction fees. Once executed, the new account becomes active on the Stellar network.",
+          "starting_balance": "Starting balance",
+          "stellar_create_account_starting_balance_desc":
+              "The initial amount of Lumens (XLM) to fund the newly created account. This value must meet the minimum balance requirement set by the Stellar network, ensuring that the account remains active.",
+          "transaction_operation": "Transaction operation",
+          "stellar_transaction_operation_desc":
+              "Please choose the operation you would like to configure for the transaction.",
+          "operation_type": "Operation type",
+          "stellar_account_inactive_desc":
+              "The destination account is inactive. Be sure to include a Create Account operation; otherwise, the transaction will fail.",
+          "assets_not_found_in_account":
+              "We couldn't detect any assets in your account",
+          "account_is_active": "the account is already active.",
+          "time_bound": "Time bound (Maximum time)",
+          "stellar_time_bound_desc":
+              "Specifies a time window for when a Stellar transaction is valid. Without it, the transaction never expires.",
+          "stellar_time_bound_auto_desc":
+              "The timebound (maximum time) will be set to 1 minute before the transaction is signed.",
+          "stellar_time_bound_none_desc":
+              "The time bound for the transaction will not be set.",
+          "time_bound_type": "Type of timebound",
+          "expiration_time": "Expiration time",
+          "stellar_time_bound_max_time_desc":
+              "The latest ledger time by which the transaction must be included. If the transaction is not confirmed by this time, it will be rejected.",
+          "tap_to_choose_data": "Tap to choose a date.",
+          "setup_time_bound": "Setup time bound",
+          "time_is_insufficient": "The entered time is insufficient.",
+          "manual": "Manual",
+          "auto": "Auto",
+          "timebound_expired": "The timebound has expired.",
+          "transaction_empty_operation_validator_desc":
+              "at least one operation is required.",
+          "selling": "Selling",
+          "stellar_manage_sell_offer_selling":
+              "The asset you are offering to sell in exchange for another asset.",
+          "stellar_manage_sell_offer_amount":
+              "The total quantity of the selling asset that you want to offer in the exchange.",
+          "buying": "Buying",
+          "stellar_manage_sell_offer_buying":
+              "The asset you want to receive in exchange for the asset you're selling.",
+          "price": "Price",
+          "stellar_manage_sell_offer_price":
+              "The rate at which you are willing to sell the selling asset in terms of the buying asset, expressed as the amount of the buying asset you receive for each unit of the selling asset.",
+          "offer_id": "Offer id",
+          "stellar_manage_sell_offer_offer_id":
+              "A unique identifier for the offer. An OfferID of 0 indicates that a new offer will be created, while a non-zero OfferID indicates that an existing offer will be updated.",
+          "setup_price": "Setup price",
+          "tap_to_setup_price": "Tap to setup price",
+          "exchange_entred_price_desc":
+              "You will receive ___1__ for each ___2__.",
+          "exchange_entred_price_buy_desc":
+              "You will pay ___1__ for each ___2__.",
+          "setup_offer_id": "Setup offer id",
+          "different_selling_from_buying_validator_desc":
+              "The buying asset must be different from the selling asset.",
+          "stellar_manage_sell_offer": "Manage sell offer",
+          "stellar_manage_sell_offer_desc":
+              "is an operation in the Stellar network that allows users to create, update, or delete a sell offer for a specific asset. This operation is primarily used in the context of trading assets on the Stellar decentralized exchange (DEX).",
+          "stellar_manage_buy_offer_selling":
+              "The asset you are offering to sell in exchange for another asset.",
+          "buy_amount": "Buy amount",
+          "stellar_manage_buy_offer_buy_amount":
+              "The amount of the asset you wish to purchase.",
+          "stellar_manage_buy_offer_buying":
+              "The asset you want to acquire in exchange for the selling asset.",
+          "stellar_manage_buy_offer_price":
+              "The exchange rate at which you are willing to buy the asset, expressed as a fraction.",
+          "stellar_manage_buy_offer": "Manage buy offer",
+          "stellar_manage_buy_offer_desc":
+              "is an operation in Stellar that allows users to create, update, or delete a buy order for an asset, specifying the asset to acquire, the selling asset, the amount to buy, and the price.",
+          "stellar_networks": "Stellar networks",
+          "stellar_web3_signing_operations_desc":
+              "Please ensure you fully understand each operation before signing the transaction.",
+          "transaction_version": "Transaction version",
+          "version_1": "Version 1",
+          "fee_bump_transaction": "Fee bump transaction",
+          "stellar_requestAccounts": "Request Accounts",
+          "stellar_signTransaction": "Sign Transaction",
+          "stellar_signMessage": "Sign Message",
+          "stellar_sendTransaction": "Send transaction",
+          "create_passive_sell_offer": "Create Passive Sell Offer",
+          "set_options": "Set Options",
+          "allow_trust": "Allow Trust",
+          "account_merge": "Account Merge",
+          "inflation": "Inflation",
+          "manage_data": "Manage Data",
+          "bump_sequence": "Bump Sequence",
+          "create_claimable_balance": "Create Claimable Balance",
+          "claim_claimable_balance": "Claim Claimable Balance",
+          "begin_sponsoring_future_reserves":
+              "Begin Sponsoring Future Reserves",
+          "end_sponsoring_future_reserves": "End Sponsoring Future Reserves",
+          "revoke_sponsorship": "Revoke Sponsorship",
+          "clawback": "Clawback",
+          "clawback_claimable_balance": "Clawback Claimable Balance",
+          "set_trust_line_flags": "Set Trust Line Flags",
+          "liquidity_pool_deposit": "Liquidity Pool Deposit",
+          "liquidity_pool_withdraw": "Liquidity Pool Withdraw",
+          "invoke_host_function": "Invoke Host Function",
+          "extend_footprint_ttl": "Extend Footprint TTL",
+          "restore_footprint": "Restore Footprint",
+          "low": "Low",
+          "medium": "Medium",
+          "accessibility": "Accessibility",
+          "stellar_low_operation_desc": "low-risk operation.",
+          "stellar_medium_operation_desc": "Medium-risk operation.",
+          "stellar_high_operation_desc": "High-risk operation.",
+          "source_account": "Source account",
+          "stellar_high_operation_desc2":
+              "High-risk operation. Please ensure you fully understand this operation before proceeding, as you may lose funds or control of your account.",
+          "soroban_data": "Soroban data",
+          "fee_source": "Fee source",
         }
       };
 }

@@ -9,6 +9,7 @@ import 'package:mrt_wallet/wallet/web3/core/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/global.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/solana.dart';
+import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'web_request.dart';
@@ -96,6 +97,10 @@ abstract class Web3RequestParams<
         break;
       case NetworkType.ton:
         param = Web3TonRequestParam.deserialize(
+            bytes: bytes, object: object, hex: hex);
+        break;
+      case NetworkType.stellar:
+        param = Web3StellarRequestParam.deserialize(
             bytes: bytes, object: object, hex: hex);
         break;
       default:

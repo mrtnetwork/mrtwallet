@@ -8,3 +8,4 @@ export 'networks/cardano.dart';
 export 'networks/cosmos.dart';
 export 'networks/ton.dart';
 export 'networks/substrate.dart';
+export 'networks/stellar.dart';

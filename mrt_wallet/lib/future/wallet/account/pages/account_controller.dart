@@ -17,6 +17,7 @@ class NetworkAccountControllerView<T extends APPCHAIN> extends StatefulWidget {
       {super.key, required this.childBulder, required this.title});
   final PageChainBuilder<T> childBulder;
   final String title;
+
   @override
   State<NetworkAccountControllerView> createState() =>
       _NetworkAccountControllerViewState<T>();
@@ -33,8 +34,8 @@ class _NetworkAccountControllerViewState<T extends APPCHAIN>
     if (updateAddress == null) return;
     if (updateAddress == account.address) return;
     progressKey.progressText("switch_account".tr);
-    final result = await wallet.wallet
-        .switchAccount(account: account, address: updateAddress);
+    final result = await wallet.wallet.switchAccount(
+        account: account, address: updateAddress, closePages: false);
     if (result.hasError) {
       progressKey.errorText(result.error!, backToIdle: false);
     } else {

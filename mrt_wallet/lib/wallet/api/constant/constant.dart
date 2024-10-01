@@ -465,6 +465,22 @@ class ProvidersConst {
           websiteUri: "https://polkadot.io",
           uri: "https://westend-rpc.polkadot.io"),
     ],
+    600: <APIProvider>[
+      const StellarAPIProvider(
+          identifier: "default-600",
+          serviceName: "Stellar",
+          websiteUri: "https://stellar.org",
+          horizonUrl: "https://horizon.stellar.org",
+          sorobanUrl: "https://soroban-rpc.mainnet.stellar.gateway.fm"),
+    ],
+    601: <APIProvider>[
+      const StellarAPIProvider(
+          identifier: "default-601",
+          serviceName: "Stellar",
+          websiteUri: "https://stellar.org",
+          horizonUrl: "https://horizon-testnet.stellar.org",
+          sorobanUrl: "https://soroban-testnet.stellar.org"),
+    ],
     1001: <APIProvider>[
       TronAPIProvider(
           identifier: "default-60",

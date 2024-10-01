@@ -83,6 +83,7 @@ class WalletRequestSign
         final ethsigner = ETHSigner.fromKeyBytes(keyBytes);
         signature = ethsigner.sign(digest).toBytes();
         break;
+      case SigningRequestNetwork.stellar:
       case SigningRequestNetwork.ton:
       case SigningRequestNetwork.solana:
         final solanaSigner = SolanaSigner.fromKeyBytes(keyBytes);

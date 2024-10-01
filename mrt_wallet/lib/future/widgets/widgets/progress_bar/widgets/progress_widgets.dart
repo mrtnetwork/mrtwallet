@@ -15,7 +15,7 @@ class ProgressWithTextView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ProgressWithTextView(
-      text: Text(text, textAlign: TextAlign.center),
+      text: LargeTextView([text], maxLine: 3),
       icon: icon,
     );
   }
@@ -189,8 +189,9 @@ class SuccessTransactionTextView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget successTrText = Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        CircleTokenImgaeView(network.coinParam.token,
+        CircleTokenImageView(network.coinParam.token,
             radius: APPConst.double80),
         WidgetConstant.height20,
         WidgetConstant.checkCircle,

@@ -18,7 +18,9 @@ abstract mixin class Equatable {
     for (int i = 0; i < variabels.length; i++) {
       final vi = variabels[i];
       final oI = other.variabels[i];
-      if (vi is Iterable && oI is Iterable) {
+      if (vi is Iterable) {
+        if (oI is! Iterable) return false;
+        if (vi.length != oI.length) return false;
         if (!CompareUtils.iterableIsEqual(vi, oI)) {
           return false;
         }

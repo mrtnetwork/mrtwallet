@@ -14,6 +14,7 @@ import 'package:mrt_wallet/crypto/worker.dart';
 
 import 'package:on_chain/on_chain.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:stellar_dart/stellar_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
@@ -30,3 +31,4 @@ part 'neworks/solana.dart';
 part 'neworks/ton.dart';
 part 'neworks/substrate.dart';
 part 'neworks/xrp.dart';
+part 'neworks/stellar.dart';

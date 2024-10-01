@@ -8,3 +8,4 @@ export 'cosmos/cosmos.dart';
 export 'ton/ton.dart';
 export 'cardano/cardano.dart';
 export 'substrate/substrate.dart';
+export 'stellar/stellar.dart';

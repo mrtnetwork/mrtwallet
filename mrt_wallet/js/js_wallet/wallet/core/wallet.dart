@@ -13,6 +13,7 @@ import '../../utils/utils.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../networks/ethereum.dart';
 import '../networks/solana.dart';
+import '../networks/stellar.dart';
 import '../networks/ton.dart';
 import '../networks/tron.dart';
 import 'network_handler.dart';
@@ -31,7 +32,9 @@ abstract class JSWalletHandler {
     JSClientType.tron: JSTronHandler(sendMessageToClient: _sendEventToClient),
     JSClientType.solana:
         JSSolanaHandler(sendMessageToClient: _sendEventToClient),
-    JSClientType.ton: JSTonHandler(sendMessageToClient: _sendEventToClient)
+    JSClientType.ton: JSTonHandler(sendMessageToClient: _sendEventToClient),
+    JSClientType.stellar:
+        JSStellarHandler(sendMessageToClient: _sendEventToClient)
   };
 
   String get clientId;

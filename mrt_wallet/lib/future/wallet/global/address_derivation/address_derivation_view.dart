@@ -12,6 +12,7 @@ import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:stellar_dart/stellar_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
@@ -52,6 +53,9 @@ class NetworkGenericAddressDerivationView extends StatelessWidget {
             case NetworkType.solana:
               return _NetworkGenericAddressDerivationView<SolAddress,
                   ISolanaAddress>(chain.cast());
+            case NetworkType.stellar:
+              return _NetworkGenericAddressDerivationView<StellarAddress,
+                  IStellarAddress>(chain.cast());
             default:
               throw UnimplementedError();
           }

@@ -11,6 +11,7 @@ import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/solana.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/stellar.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/substrate.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/ton.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/tron.dart';
@@ -33,7 +34,10 @@ enum NewAccountParamsType {
   tronMultisigNewAddressParams(CborTagsConst.tronMultisigNewAddressParams),
   tonNewAddressParams(CborTagsConst.tonNewAddressParams),
   rippleNewAddressParams(CborTagsConst.rippleNewAddressParams),
-  rippleMultiSigNewAddressParams(CborTagsConst.rippleMultiSigNewAddressParams);
+  rippleMultiSigNewAddressParams(CborTagsConst.rippleMultiSigNewAddressParams),
+  stellarNewAddressParams(CborTagsConst.stellarNewAddressParams),
+  stellarMultiSigNewAddressParams(
+      CborTagsConst.stellarMultiSigNewAddressParams);
 
   final List<int> tag;
   const NewAccountParamsType(this.tag);
@@ -101,6 +105,12 @@ abstract class NewAccountParams<NETWORKADDRESS> with CborSerializable {
         break;
       case NewAccountParamsType.rippleMultiSigNewAddressParams:
         params = RippleMultiSigNewAddressParams.deserialize(object: decode);
+        break;
+      case NewAccountParamsType.stellarNewAddressParams:
+        params = StellarNewAddressParams.deserialize(object: decode);
+        break;
+      case NewAccountParamsType.stellarMultiSigNewAddressParams:
+        params = StellarMultiSigNewAddressParams.deserialize(object: decode);
         break;
       default:
         throw UnimplementedError("Network does not exists.");

@@ -4,20 +4,20 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 
-class RippleMultiSigSignerDetais with Equatable, CborSerializable {
-  const RippleMultiSigSignerDetais._(
+class RippleMultiSigSignerDetails with Equatable, CborSerializable {
+  const RippleMultiSigSignerDetails._(
       {required this.publicKey, required this.weight, required this.keyIndex});
 
-  factory RippleMultiSigSignerDetais(
+  factory RippleMultiSigSignerDetails(
       {required List<int> publicKey,
       required Bip32AddressIndex keyIndex,
       required int weight}) {
-    return RippleMultiSigSignerDetais._(
+    return RippleMultiSigSignerDetails._(
         publicKey: BytesUtils.toHexString(publicKey),
         weight: weight,
         keyIndex: keyIndex);
   }
-  factory RippleMultiSigSignerDetais.fromCborBytesOrObject(
+  factory RippleMultiSigSignerDetails.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.rippleMultiSigSignerAddress);
@@ -26,7 +26,7 @@ class RippleMultiSigSignerDetais with Equatable, CborSerializable {
     final int weight = cbor.elementAt(1);
     final keyIndex =
         Bip32AddressIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    return RippleMultiSigSignerDetais(
+    return RippleMultiSigSignerDetails(
         publicKey: publicKey, weight: weight, keyIndex: keyIndex);
   }
 
@@ -52,7 +52,7 @@ class RippleMultiSigSignerDetais with Equatable, CborSerializable {
 }
 
 class RippleMultiSignatureAddress with Equatable, CborSerializable {
-  final List<RippleMultiSigSignerDetais> signers;
+  final List<RippleMultiSigSignerDetails> signers;
 
   final int threshold;
   final bool isRegular;
@@ -64,7 +64,7 @@ class RippleMultiSignatureAddress with Equatable, CborSerializable {
 
   factory RippleMultiSignatureAddress(
       {required int threshold,
-      required List<RippleMultiSigSignerDetais> signers,
+      required List<RippleMultiSigSignerDetails> signers,
       required bool isRegularKey}) {
     final sumWeight = signers.fold(0, (sum, signer) => sum + signer.weight);
 
@@ -93,9 +93,9 @@ class RippleMultiSignatureAddress with Equatable, CborSerializable {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.rippleMultiSignaturAddress);
     final List<dynamic> signersList = cbor.elementAt(0);
-    final List<RippleMultiSigSignerDetais> signers = signersList
-        .map<RippleMultiSigSignerDetais>(
-            (e) => RippleMultiSigSignerDetais.fromCborBytesOrObject(obj: e))
+    final List<RippleMultiSigSignerDetails> signers = signersList
+        .map<RippleMultiSigSignerDetails>(
+            (e) => RippleMultiSigSignerDetails.fromCborBytesOrObject(obj: e))
         .toList();
     final int threshHold = cbor.elementAt(1);
     final bool isRegularKey = cbor.elementAt(2);

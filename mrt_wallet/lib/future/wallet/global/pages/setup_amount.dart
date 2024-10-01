@@ -130,7 +130,7 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
             children: [
               Column(
                 children: [
-                  CircleTokenImgaeView(widget.token, radius: 60),
+                  CircleTokenImageView(widget.token, radius: 60),
                   OneLineTextWidget(widget.token.nameView,
                       style: context.textTheme.labelLarge)
                 ],
@@ -307,7 +307,7 @@ class _SetupDecimalTokenAmountViewState
             children: [
               Column(
                 children: [
-                  CircleTokenImgaeView(widget.token, radius: 60),
+                  CircleTokenImageView(widget.token, radius: 60),
                   OneLineTextWidget(widget.token.nameView,
                       style: context.textTheme.labelLarge)
                 ],
@@ -350,6 +350,189 @@ class _SetupDecimalTokenAmountViewState
                         padding: WidgetConstant.padding20,
                         child: Text(
                           widget.token.symbol,
+                          style: context.textTheme.labelLarge?.copyWith(
+                              color: context.colors.primary,
+                              fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FixedElevatedButton(
+                  padding: WidgetConstant.paddingVertical20,
+                  onPressed: onSetup,
+                  child: Text(widget.buttonText ?? "setup_output_amount".tr))
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class SetupDecimalExchangeRateInput extends StatefulWidget {
+  const SetupDecimalExchangeRateInput(
+      {super.key,
+      required this.tokenA,
+      required this.tokenB,
+      required this.isBuy,
+      this.subtitle,
+      this.subtitleText,
+      this.max,
+      this.min,
+      this.buttonText,
+      this.maxScale});
+  final Widget? subtitle;
+  final String? subtitleText;
+  final BigRational? max;
+  final BigRational? min;
+  final String? buttonText;
+  final Token tokenA;
+  final Token tokenB;
+  final int? maxScale;
+  final bool isBuy;
+
+  @override
+  State<SetupDecimalExchangeRateInput> createState() =>
+      _SetupDecimalExchangeRateInputState();
+}
+
+class _SetupDecimalExchangeRateInputState
+    extends State<SetupDecimalExchangeRateInput> with SafeState {
+  final GlobalKey<FormState> form =
+      GlobalKey<FormState>(debugLabel: "SetupNetworkAmount");
+  late final String? maxString = widget.max?.toDecimal();
+  late final String? minString = widget.min?.toDecimal();
+  String? validator(String? v) {
+    if (v == null) return "decimal_int_validator".tr;
+    final rational = BigRational.tryParseDecimaal(v);
+    if (rational == null) {
+      return "decimal_int_validator".tr;
+    }
+    if (widget.max != null && rational > widget.max!) {
+      return "price_less_than".tr.replaceOne(widget.max!.toDecimal(digits: 8));
+    } else if (widget.min != null && rational < widget.min!) {
+      return "price_greather_than"
+          .tr
+          .replaceOne(widget.min!.toDecimal(digits: 8));
+    }
+    return null;
+  }
+
+  String price = "0.0";
+  void onChaanged(String v) {
+    price = v;
+    buildHelper(v);
+  }
+
+  String? helper;
+  void buildHelper(String val) {
+    final currentHelper = helper;
+    final rational = BigRational.tryParseDecimaal(price);
+    if (rational == null) {
+      helper = null;
+    } else {
+      if (widget.isBuy) {
+        helper = "exchange_entred_price_buy_desc"
+            .tr
+            .replaceOne(PriceUtils.priceWithCoinName(
+                rational.toDecimal(), widget.tokenA.symbol))
+            .replaceTwo(widget.tokenB.symbol);
+      } else {
+        helper = "exchange_entred_price_desc"
+            .tr
+            .replaceOne(PriceUtils.priceWithCoinName(
+                rational.toDecimal(), widget.tokenA.symbol))
+            .replaceTwo(widget.tokenB.symbol);
+      }
+
+      /// exchange_entred_price_buy_desc
+    }
+    if (helper != currentHelper) {
+      updateState();
+    }
+  }
+
+  void onSetup() {
+    if (!(form.currentState?.validate() ?? false)) return;
+    final rational = BigRational.tryParseDecimaal(price);
+    if (rational == null) return;
+    if (mounted) {
+      context.pop(rational);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: form,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.subtitle != null || widget.subtitleText != null)
+            widget.subtitle ?? Text(widget.subtitleText ?? ""),
+          WidgetConstant.height20,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  CircleTokenImageView(widget.tokenB,
+                      radius: APPConst.largeCircleRadius),
+                  Container(
+                    padding: const EdgeInsets.only(left: 40),
+                    child: CircleTokenImageView(widget.tokenA,
+                        radius: APPConst.largeCircleRadius),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          WidgetConstant.height20,
+          Theme(
+            data: context.theme.copyWith(
+              inputDecorationTheme: InputDecorationTheme(
+                  border: OutlineInputBorder(
+                borderRadius: WidgetConstant.border25,
+              )),
+            ),
+            child: Align(
+              alignment: Alignment.center,
+              child: ConstraintsBoxView(
+                maxWidth: 350,
+                child: AppTextField(
+                  style: context.textTheme.titleLarge
+                      ?.copyWith(fontWeight: FontWeight.bold),
+                  keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true, signed: false),
+                  textAlign: TextAlign.center,
+                  inputFormatters: [
+                    BigRetionalRangeTextInputFormatter(
+                        min: widget.min,
+                        max: widget.max,
+                        allowSign: false,
+                        allowDecimal: true,
+                        maxScale: widget.maxScale),
+                  ],
+                  validator: validator,
+                  initialValue: price,
+                  onChanged: onChaanged,
+                  helperText: helper,
+                  suffixIcon: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: WidgetConstant.padding20,
+                        child: Text(
+                          "${widget.tokenA.symbol}/${widget.tokenB.symbol}",
                           style: context.textTheme.labelLarge?.copyWith(
                               color: context.colors.primary,
                               fontWeight: FontWeight.w900),

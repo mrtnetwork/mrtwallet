@@ -27,7 +27,7 @@ class Web3PermissionAppbarActionView extends StatelessWidget {
               ContainerWithBorder(
                 child: Row(
                   children: [
-                    CircleTokenImgaeView(network.coinParam.token, radius: 40),
+                    CircleTokenImageView(network.coinParam.token, radius: 40),
                     WidgetConstant.width8,
                     Expanded(
                         child: Column(
@@ -51,7 +51,7 @@ class Web3PermissionAppbarActionView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleTokenImgaeView(network.token, radius: 15),
+            CircleTokenImageView(network.token, radius: 15),
             Text(network.token.nameView, style: context.textTheme.labelMedium)
           ],
         ),

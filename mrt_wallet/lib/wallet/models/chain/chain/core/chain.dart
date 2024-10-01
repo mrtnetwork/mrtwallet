@@ -119,6 +119,12 @@ abstract class Chain<
             network: network.toNetwork(),
             client: APIUtils.createApiClient(network),
             id: id);
+      case NetworkType.stellar:
+        return StellarChain.setup(
+            network: network.toNetwork(),
+            client: APIUtils.createApiClient(network),
+            id: id);
+
       case NetworkType.cardano:
         return ADAChain.setup(
             network: network.toNetwork(),
@@ -212,6 +218,13 @@ abstract class Chain<
         break;
       case NetworkType.solana:
         chain = SolanaChain.deserialize(
+            network: network.toNetwork(),
+            cbor: values,
+            id: id,
+            client: APIUtils.createApiClient(network, service: provider));
+        break;
+      case NetworkType.stellar:
+        chain = StellarChain.deserialize(
             network: network.toNetwork(),
             cbor: values,
             id: id,
@@ -354,6 +367,8 @@ abstract class Chain<
         return ["services", "tokens"];
       case NetworkType.ton:
         return ["services", "jettons"];
+      case NetworkType.stellar:
+        return ["services", "tokens"];
       default:
         return ["services"];
     }

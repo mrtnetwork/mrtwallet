@@ -14,6 +14,7 @@ class JSPageController {
   final TronPageController tronPageController = TronPageController();
   final SolanaPageController solanaPageController = SolanaPageController();
   final TonPageController tonPageController = TonPageController();
+  final StellarPageController stellarPageController = StellarPageController();
 
   void _onWalletEvent(CustomEvent response) {
     try {
@@ -38,6 +39,9 @@ class JSPageController {
           break;
         case JSClientType.ton:
           tonPageController.onEvent(event);
+          break;
+        case JSClientType.stellar:
+          stellarPageController.onEvent(event);
           break;
         default:
           break;

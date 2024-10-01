@@ -7,6 +7,7 @@ import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:stellar_dart/stellar_dart.dart';
 import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
@@ -208,6 +209,13 @@ class BlockchainAddressUtils {
     });
   }
 
+  static StellarAddress? validateStallerAddress(
+      String address, WalletStellarNetwork network) {
+    return MethodUtils.nullOnException(() {
+      return StellarAddress.fromBase32Addr(address);
+    });
+  }
+
   static BitcoinBaseAddress? validateBitcoinNetwork(
       String address, WalletBitcoinNetwork network) {
     return MethodUtils.nullOnException(() {
@@ -266,6 +274,8 @@ class BlockchainAddressUtils {
         return validateCosmosAddress(address, network.toNetwork());
       case NetworkType.ton:
         return validateTonAddress(address, network.toNetwork());
+      case NetworkType.stellar:
+        return validateStallerAddress(address, network.toNetwork());
       case NetworkType.polkadot:
       case NetworkType.kusama:
         return validateSubstrateAddress(address, network.toNetwork());

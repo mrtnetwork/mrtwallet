@@ -8,6 +8,7 @@ import 'package:mrt_wallet/future/wallet/network/cosmos/cosmos.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/account/pages/account.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/account/account.dart';
+import 'package:mrt_wallet/future/wallet/network/stellar/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/substrate.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/account/account.dart';
@@ -79,6 +80,8 @@ class _AccountPageView extends StatelessWidget {
         return RippleAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.solana:
         return SolanaAccountPageView(chainAccount: chainAccount.cast());
+      case NetworkType.stellar:
+        return StellarAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.ethereum:
         return ETHAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.tron:

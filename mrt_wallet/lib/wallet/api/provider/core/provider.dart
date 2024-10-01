@@ -8,6 +8,7 @@ import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/solana.dart';
+import 'package:mrt_wallet/wallet/api/provider/networks/stellar.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/substrate.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ton.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/tron.dart';
@@ -66,6 +67,8 @@ abstract class APIProvider with Equatable, CborSerializable {
       case NetworkType.kusama:
         return SubstrateAPIProvider.fromCborBytesOrObject(
             obj: obj, bytes: bytes);
+      case NetworkType.stellar:
+        return StellarAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
       default:
         throw UnimplementedError(
             "Network does not exists ${network.type.name}");

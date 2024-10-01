@@ -215,7 +215,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
-              padding: WidgetConstant.paddingVertical20,
+              padding: WidgetConstant.paddingVertical40,
               onPressed: onSubmit,
               child: Text("generate_address".tr),
             )

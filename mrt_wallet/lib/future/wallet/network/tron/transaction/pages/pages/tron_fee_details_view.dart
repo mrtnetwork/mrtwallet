@@ -153,12 +153,12 @@ class TronFeeInfoWidget extends StatelessWidget {
                     Text(
                       "bandwidth".tr,
                       style: context.textTheme.labelMedium
-                          ?.copyWith(color: context.colors.onTertiary),
+                          ?.copyWith(color: context.colors.onTertiaryContainer),
                     ),
                     RichText(
                         text: TextSpan(
-                            style: context.textTheme.bodyMedium
-                                ?.copyWith(color: context.colors.onTertiary),
+                            style: context.textTheme.bodyMedium?.copyWith(
+                                color: context.colors.onTertiaryContainer),
                             children: [
                           TextSpan(
                               text: consumedFee.consumedBandwidth.toString()),
@@ -174,12 +174,12 @@ class TronFeeInfoWidget extends StatelessWidget {
                     Text(
                       "energy".tr,
                       style: context.textTheme.labelMedium
-                          ?.copyWith(color: context.colors.onTertiary),
+                          ?.copyWith(color: context.colors.onTertiaryContainer),
                     ),
                     RichText(
                         text: TextSpan(
-                            style:
-                                context.colors.onTertiary.bodyMedium(context),
+                            style: context.colors.onTertiaryContainer
+                                .bodyMedium(context),
                             children: [
                           TextSpan(
                               text: consumedFee.connsumedEnergy.toString()),
@@ -194,35 +194,35 @@ class TronFeeInfoWidget extends StatelessWidget {
                     Text(
                       "trx_burned_for_resource".tr,
                       style: context.textTheme.labelMedium
-                          ?.copyWith(color: context.colors.onTertiary),
+                          ?.copyWith(color: context.colors.onTertiaryContainer),
                     ),
                     CoinPriceView(
                         token: network.coinParam.token,
                         balance: consumedFee.burnedForResource,
-                        symbolColor: context.colors.onTertiary,
-                        style: context.textTheme.labelLarge
-                            ?.copyWith(color: context.colors.onTertiary))
+                        symbolColor: context.colors.onTertiaryContainer,
+                        style: context.textTheme.labelLarge?.copyWith(
+                            color: context.colors.onTertiaryContainer))
                   ],
                 ),
-                Divider(color: context.colors.onTertiary),
+                Divider(color: context.colors.onTertiaryContainer),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       "total_burn".tr,
                       style: context.textTheme.labelMedium
-                          ?.copyWith(color: context.colors.onTertiary),
+                          ?.copyWith(color: context.colors.onTertiaryContainer),
                     ),
                     CoinPriceView(
                       token: network.coinParam.token,
                       balance: consumedFee.totalBurn,
                       style: context.textTheme.labelLarge
-                          ?.copyWith(color: context.colors.onTertiary),
-                      symbolColor: context.colors.onTertiary,
+                          ?.copyWith(color: context.colors.onTertiaryContainer),
+                      symbolColor: context.colors.onTertiaryContainer,
                     ),
                   ],
                 ),
-                Divider(color: context.colors.onTertiary),
+                Divider(color: context.colors.onTertiaryContainer),
                 Text(
                   [
                     "1. Issue a TRC10 token: 1,024 TRX",
@@ -234,7 +234,7 @@ class TronFeeInfoWidget extends StatelessWidget {
                     "7. Transaction note: 1 TRX"
                   ].join("\n"),
                   style: context.textTheme.bodySmall
-                      ?.copyWith(color: context.colors.onTertiary),
+                      ?.copyWith(color: context.colors.onTertiaryContainer),
                 )
               ],
             ),

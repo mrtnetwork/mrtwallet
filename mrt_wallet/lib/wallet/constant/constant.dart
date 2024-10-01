@@ -5,5 +5,6 @@ export 'networks/ripple.dart';
 export 'networks/solana.dart';
 export 'networks/ton.dart';
 export 'networks/substrate.dart';
+export 'networks/stellar.dart';
 export 'tags/constant.dart';
 export 'chain/const.dart';

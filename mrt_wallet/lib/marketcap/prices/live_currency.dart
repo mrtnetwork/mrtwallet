@@ -42,7 +42,9 @@ mixin LiveCurrencies on StateController {
   Future<CoingeckoCoinInfo?> getCoinPrice(String id) async {
     CoingeckoCoinInfo? coin = _currenciesPrice.getCoin(id);
     coin ??= await _getCoinPrice(id);
-    _currenciesPrice.addCoin(coin!);
+    if (coin != null) {
+      _currenciesPrice.addCoin(coin);
+    }
     return coin;
   }
 

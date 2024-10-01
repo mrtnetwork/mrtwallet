@@ -10,6 +10,7 @@ class StateConst {
   static const String substrate = "substrate";
   static const String ton = "ton";
   static const String tron = "tron";
-  static const String setup = "tron";
+  static const String setup = "setup";
+  static const String stellar = "stellar";
   static const String webview = "webview";
 }

@@ -29,18 +29,18 @@ class PriceTooltipWidget extends StatelessWidget {
         child: RichText(
             text: TextSpan(
                 style: theme.textTheme.titleLarge
-                    ?.copyWith(color: theme.colorScheme.onTertiary),
+                    ?.copyWith(color: theme.colorScheme.onTertiaryContainer),
                 children: [
               TextSpan(text: price.to3Digits),
               const TextSpan(text: " "),
               TextSpan(
                   text: symbol,
                   style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.colorScheme.onTertiary)),
+                      ?.copyWith(color: theme.colorScheme.onTertiaryContainer)),
               TextSpan(
                   text: " ($currencyName) ",
                   style: theme.textTheme.labelMedium
-                      ?.copyWith(color: theme.colorScheme.onTertiary)),
+                      ?.copyWith(color: theme.colorScheme.onTertiaryContainer)),
             ])));
   }
 }
@@ -97,7 +97,7 @@ class CoinPriceView extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (showTokenImage) ...[
-                    CircleTokenImgaeView(token, radius: 10),
+                    CircleTokenImageView(token, radius: 10),
                     WidgetConstant.width8,
                   ],
                   Flexible(
