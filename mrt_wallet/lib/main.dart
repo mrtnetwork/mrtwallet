@@ -59,14 +59,20 @@ class MyBTC extends StatelessWidget {
           title: APPConst.name,
           scrollBehavior: AppScrollBehavior(PlatformInterface.appPlatform),
           builder: (context, child) {
+            double? maxWidth;
             if (PlatformInterface.appPlatform.isDesktop) {
-              return ConstraintsBoxView(
-                  maxWidth: APPConst.desktopAppWidth, child: child!);
+              maxWidth = APPConst.desktopAppWidth;
+            } else if (PlatformInterface.isWeb) {
+              maxWidth = APPConst.maxViewWidth;
             }
-            if (PlatformInterface.isWeb) {
-              return ConstraintsBoxView(child: child!);
-            }
-            return child!;
+            return MediaQuery(
+              data: context.mediaQuery.copyWith(
+                  textScaler:
+                      context.mediaQuery.textScaler.clamp(maxScaleFactor: 1.4)),
+              child: maxWidth == null
+                  ? child!
+                  : ConstraintsBoxView(maxWidth: maxWidth, child: child!),
+            );
           },
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,

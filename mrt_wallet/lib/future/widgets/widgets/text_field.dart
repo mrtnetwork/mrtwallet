@@ -36,6 +36,7 @@ class AppTextField extends StatefulWidget {
       this.textAlign = TextAlign.start,
       this.readOnly = false,
       this.pasteIcon = false,
+      this.isSensitive,
       this.helperStyle,
       this.onSubmitField});
   final String? label;
@@ -66,6 +67,7 @@ class AppTextField extends StatefulWidget {
   final TextAlign textAlign;
   final bool readOnly;
   final bool pasteIcon;
+  final bool? isSensitive;
   final TextStyle? helperStyle;
   @override
   State<AppTextField> createState() => AppTextFieldState();
@@ -189,7 +191,9 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
                 if (widget.obscureText)
                   ObscureIcon(show: obscureText, onTap: onChaangeObscureText),
                 if (widget.pasteIcon)
-                  PasteTextIcon(onPaste: updateText, isSensitive: false),
+                  PasteTextIcon(
+                      onPaste: updateText,
+                      isSensitive: widget.isSensitive ?? false),
                 if (widget.suffixIcon != null) widget.suffixIcon!,
               ],
             ),

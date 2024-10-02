@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/constant/global/app.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/client_info.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -18,10 +19,11 @@ class Web3PermissionAppbarActionView extends StatelessWidget {
         padding: EdgeInsets.zero,
         tooltipWidget: (c) => Container(
           padding: WidgetConstant.padding10,
+          constraints:
+              const BoxConstraints(maxWidth: APPConst.tooltipConstrainedWidth),
           decoration: BoxDecoration(
-            borderRadius: WidgetConstant.border8,
-            color: context.colors.surface,
-          ),
+              borderRadius: WidgetConstant.border8,
+              color: context.colors.surface),
           child: Column(
             children: [
               ContainerWithBorder(
@@ -33,10 +35,18 @@ class Web3PermissionAppbarActionView extends StatelessWidget {
                         child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        OneLineTextWidget(network.token.name),
+                        OneLineTextWidget(
+                          network.token.name,
+                          style: context.colors.onPrimaryContainer
+                              .bodyMedium(context),
+                        ),
                         CoinPriceView(
-                            token: network.token,
-                            balance: chain.totalBalance.value),
+                          token: network.token,
+                          balance: chain.totalBalance.value,
+                          style: context.colors.onPrimaryContainer
+                              .lableLarge(context),
+                          symbolColor: context.colors.onPrimaryContainer,
+                        )
                       ],
                     )),
                   ],

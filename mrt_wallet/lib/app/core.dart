@@ -7,7 +7,7 @@ export 'synchronized/basic_lock.dart';
 export 'utils/utils.dart';
 export 'constant/constant.dart';
 export 'external/external.dart';
-export 'file/file.dart';
+export 'platform_methods/methods.dart';
 export 'websocket/websocket.dart';
 export 'models/models.dart';
 export 'serialization/serialization.dart';

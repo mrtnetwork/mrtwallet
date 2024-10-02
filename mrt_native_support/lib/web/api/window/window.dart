@@ -48,6 +48,8 @@ extension type Window._(JSObject _) implements WebEventStream {
 
   @JS("postMessage")
   external void postMessage(JSAny message);
+  @JS("focus")
+  external void focus();
 
   Future<Response> fetch_(String url) async {
     final future = fetch(url);
@@ -90,6 +92,8 @@ extension type Document._(JSObject _) implements JSObject, WebEventStream {
   @JS("body")
   external JSNode get body;
   external JSAny? get defaultView;
+  @JS("hasFocus")
+  external bool hasFocus();
 
   HTMLVideoElement createVideoElement({String type = "video"}) {
     return createElement(type);
@@ -109,7 +113,32 @@ extension type Document._(JSObject _) implements JSObject, WebEventStream {
     return url;
   }
 }
+@JS("Clipboard")
+extension type Clipboard._(JSObject _) implements JSObject {
+  external factory Clipboard();
+  external JSPromise writeText(String? text);
+  external JSPromise<JSString?> readText();
+  Future<bool> writeText_(String text) async {
+    try {
+      if (!jsWindow.document.hasFocus()) {
+        jsWindow.focus();
+      }
+      await writeText(text).toDart;
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
+  Future<String?> readText_() async {
+    try {
+      final text = await readText().toDart;
+      return text?.toDart;
+    } catch (e) {
+      return null;
+    }
+  }
+}
 @JS("navigator")
 extension type JSNavigator._(JSObject _) implements JSObject {
   external factory JSNavigator();
@@ -119,7 +148,9 @@ extension type JSNavigator._(JSObject _) implements JSObject {
   bool get isWebKit => userAgent?.contains("AppleWebKit") ?? false;
   external JSPromise share(
       String? url, String? text, String? title, JSArray<JSFile>? files);
+  external Clipboard? get clipboard;
 
+  /// navigator.clipboard.writeText(text)
   Future<void> share_({
     required List<JSFile> files,
     String? url,

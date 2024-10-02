@@ -236,4 +236,21 @@ class IoPlatformInterface extends MrtPlatformInterface {
 
   @override
   late final AppPlatform platform = _getPlatform();
+
+  @override
+  Future<String?> readClipboard() async {
+    final data =
+        await Clipboard.getData(Clipboard.kTextPlain).catchError((e) => null);
+    return data?.text;
+  }
+
+  @override
+  Future<bool> writeClipboard(String text) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: text));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 }

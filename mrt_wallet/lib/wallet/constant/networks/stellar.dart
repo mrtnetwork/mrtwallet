@@ -4,6 +4,7 @@ import 'package:stellar_dart/stellar_dart.dart';
 class StellarConst {
   static const int decimal = 7;
   static const int memoTextMaxLength = 28;
+  static const int stellarBase32SecretKeyLength = 56;
   static const int newAccountReserveStroopMultiply = 2;
   static const int stellarPubkeyHintLength = 4;
   static final BigInt maxFee = BigInt.from(maxUint32);

@@ -49,67 +49,68 @@ class TronWeb3RequestAccountsView extends StatelessWidget {
           ),
         ),
         if (!field.chain.haveAddress)
-          SliverToBoxAdapter(child: NoAccountFoundInChainWidget(field.chain)),
-        APPSliverAnimatedSwitcher(enable: field.chain, widgets: {
-          field.chain: (c) => SliverMainAxisGroup(
-                slivers: [
-                  SliverList.builder(
-                      addAutomaticKeepAlives: false,
-                      itemBuilder: (c, index) {
-                        final addr = field.chain.addresses[index];
-                        final permission = field.accountPermission(addr);
-                        return ContainerWithBorder(
-                          onTapWhenOnRemove: false,
-                          onRemove: () {
-                            field.addAccount(addr);
-                          },
-                          onRemoveWidget: Column(
-                            children: [
-                              IconButton(
-                                onPressed: () => field.addAccount(addr),
-                                icon: IgnorePointer(
-                                  child: Checkbox(
-                                      value: permission != null,
-                                      onChanged: (e) {}),
+          SliverToBoxAdapter(child: NoAccountFoundInChainWidget(field.chain))
+        else
+          APPSliverAnimatedSwitcher(enable: field.chain, widgets: {
+            field.chain: (c) => SliverMainAxisGroup(
+                  slivers: [
+                    SliverList.builder(
+                        addAutomaticKeepAlives: false,
+                        itemBuilder: (c, index) {
+                          final addr = field.chain.addresses[index];
+                          final permission = field.accountPermission(addr);
+                          return ContainerWithBorder(
+                            onTapWhenOnRemove: false,
+                            onRemove: () {
+                              field.addAccount(addr);
+                            },
+                            onRemoveWidget: Column(
+                              children: [
+                                IconButton(
+                                  onPressed: () => field.addAccount(addr),
+                                  icon: IgnorePointer(
+                                    child: Checkbox(
+                                        value: permission != null,
+                                        onChanged: (e) {}),
+                                  ),
                                 ),
-                              ),
-                              APPAnimatedSize(
-                                  isActive: permission != null,
-                                  onActive: (context) => IconButton(
-                                      tooltip: "default_address".tr,
-                                      onPressed: () =>
-                                          field.onChangeDefaultPermission(
-                                              permission),
-                                      icon: IgnorePointer(
-                                        child: Radio<bool>(
-                                            value: permission!.defaultAddress,
-                                            groupValue: true,
-                                            onChanged: (e) {}),
-                                      )),
-                                  onDeactive: (context) =>
-                                      WidgetConstant.sizedBox)
-                            ],
-                          ),
-                          child: AddressDetailsView(address: addr),
-                        );
-                      },
-                      itemCount: field.chain.addresses.length),
-                  SliverToBoxAdapter(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        FixedElevatedButton(
-                            padding: WidgetConstant.paddingVertical40,
-                            child: Text("update_permission".tr),
-                            onPressed: () {
-                              field.complete();
-                            }),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-        }),
+                                APPAnimatedSize(
+                                    isActive: permission != null,
+                                    onActive: (context) => IconButton(
+                                        tooltip: "default_address".tr,
+                                        onPressed: () =>
+                                            field.onChangeDefaultPermission(
+                                                permission),
+                                        icon: IgnorePointer(
+                                          child: Radio<bool>(
+                                              value: permission!.defaultAddress,
+                                              groupValue: true,
+                                              onChanged: (e) {}),
+                                        )),
+                                    onDeactive: (context) =>
+                                        WidgetConstant.sizedBox)
+                              ],
+                            ),
+                            child: AddressDetailsView(address: addr),
+                          );
+                        },
+                        itemCount: field.chain.addresses.length),
+                    SliverToBoxAdapter(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FixedElevatedButton(
+                              padding: WidgetConstant.paddingVertical40,
+                              child: Text("update_permission".tr),
+                              onPressed: () {
+                                field.complete();
+                              }),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+          }),
       ],
     );
   }

@@ -1,8 +1,9 @@
+import 'package:mrt_native_support/platform_interface.dart';
 import 'cross_platform.dart'
     if (dart.library.js_interop) 'web.dart'
     if (dart.library.io) 'io.dart';
 
-class CrossFileWriter {
+class PlatformMethods {
   static Future<String> writeString(String data, String fileName,
       {bool validate = true}) async {
     return await writeTOFile(data, fileName, validate: validate);
@@ -26,5 +27,13 @@ class CrossFileWriter {
 
   static String assetPath(String assetPath) {
     return toAssetPath(assetPath);
+  }
+
+  static Future<bool> writeClipboard(String text) async {
+    return await PlatformInterface.instance.writeClipboard(text);
+  }
+
+  static Future<String?> readClipboard() {
+    return PlatformInterface.instance.readClipboard();
   }
 }

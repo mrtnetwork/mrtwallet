@@ -114,16 +114,7 @@ class _MyHomePageState extends State<MyHomePage> with WebViewListener {
       ),
       body: Container(
         color: Colors.red,
-        child: !init
-            ? Text("wait")
-            : LayoutBuilder(builder: (contect, cons) {
-                print("max width ${cons.maxWidth}");
-                controller.updateFrame(
-                    viewType: "jafar",
-                    size: WidgetSize(
-                        width: cons.maxWidth, height: cons.maxHeight));
-                return AppKitView(viewType: "jafar");
-              }),
+        child: Container(),
       ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );

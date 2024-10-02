@@ -137,7 +137,7 @@ class __RippleKeyConversionViewState extends State<_RippleKeyConversionView>
                                 children: [
                                   Text("ripple_key_conversion_desc".tr),
                                   WidgetConstant.height8,
-                                  Text("ripple_key_conversion_desc2".tr),
+                                  Text("secret_key_conversion_desc2".tr),
                                 ],
                               )),
                           Text("ripple_key_type".tr,

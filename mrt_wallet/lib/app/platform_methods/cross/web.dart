@@ -1,6 +1,7 @@
 // ignore: avoid_web_libraries_in_flutter
 
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import 'package:mrt_wallet/app/error/exception/generic_exception.dart';
 
@@ -44,4 +45,12 @@ Future<String> loadAssetText(String assetPath) async {
 
 String toAssetPath(String assetPath) {
   return "assets/$assetPath";
+}
+
+Future<void> writeClipboard(String text) async {
+  await PlatformInterface.instance.writeClipboard(text);
+}
+
+Future<String?> readClipboard() {
+  return PlatformInterface.instance.readClipboard();
 }

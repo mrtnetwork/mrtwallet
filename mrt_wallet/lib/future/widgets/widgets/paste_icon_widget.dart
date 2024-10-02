@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mrt_wallet/app/core.dart' show APPConst;
+import 'package:mrt_wallet/app/core.dart' show APPConst, PlatformUtils;
 import 'package:mrt_wallet/app/models/models/typedef.dart' show StringVoid;
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
@@ -28,9 +28,9 @@ class PasteTextIconState extends State<PasteTextIcon> with SafeState {
     inPaste = true;
     setState(() {});
     try {
-      final data = await Clipboard.getData("text/plain");
+      final data = await PlatformUtils.readClipboard();
       if (!mounted) return;
-      final String txt = data?.text ?? "";
+      final String txt = data ?? "";
       if (txt.isEmpty) {
         // ignore: use_build_context_synchronously
         context.showAlert("clipboard_empty".tr);
@@ -49,9 +49,9 @@ class PasteTextIconState extends State<PasteTextIcon> with SafeState {
   void _resetClipoard(String txt) {
     if (!widget.isSensitive) return;
     MethodUtils.after(() async {
-      final data = await Clipboard.getData(Clipboard.kTextPlain);
-      if (data?.text != txt) return;
-      Clipboard.setData(const ClipboardData(text: ''));
+      final data = await PlatformUtils.readClipboard();
+      if (data != txt) return;
+      PlatformUtils.writeClipboard('');
     }, milliseconds: APPConst.tenSecoundDuration);
   }
 

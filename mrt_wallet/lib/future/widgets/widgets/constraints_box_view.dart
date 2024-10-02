@@ -11,8 +11,8 @@ class ConstraintsBoxView extends StatelessWidget {
       this.alignment = Alignment.topCenter,
       super.key,
       this.padding = EdgeInsets.zero});
-  final double maxWidth;
-  final double maxHeight;
+  final double? maxWidth;
+  final double? maxHeight;
   final EdgeInsets padding;
   final Alignment alignment;
   @override
@@ -20,7 +20,9 @@ class ConstraintsBoxView extends StatelessWidget {
     return Align(
       alignment: alignment,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
+        constraints: BoxConstraints(
+            maxWidth: maxWidth ?? double.infinity,
+            maxHeight: maxHeight ?? double.infinity),
         child: Padding(
           padding: padding,
           child: child,

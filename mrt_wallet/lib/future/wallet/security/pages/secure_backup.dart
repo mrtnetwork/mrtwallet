@@ -67,7 +67,7 @@ class _SecureBackupViewState extends State<GenerateBackupView> with SafeState {
     buttonState.process();
     final result = await MethodUtils.call(() async {
       final name = "credentials_${StrUtils.toFileName(DateTime.now())}.txt";
-      final toFile = await FileUtils.writeString(backup!, name);
+      final toFile = await PlatformUtils.writeString(backup!, name);
       return await ShareUtils.shareFile(
         toFile,
         name,

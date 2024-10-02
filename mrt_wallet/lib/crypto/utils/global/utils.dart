@@ -13,6 +13,20 @@ class BlockchainUtils {
         .raw;
   }
 
+  static List<int> _toSecretKeyBytes(
+      {required List<int> keypair, required EllipticCurveTypes type}) {
+    const int ed25519KeyPairLength =
+        Ed25519KeysConst.privKeyByteLen + Ed25519KeysConst.pubKeyByteLen;
+    if (keypair.length != ed25519KeyPairLength) return keypair;
+    switch (type) {
+      case EllipticCurveTypes.ed25519:
+      case EllipticCurveTypes.ed25519Blake2b:
+        return keypair.sublist(0, Ed25519KeysConst.privKeyByteLen);
+      default:
+        return keypair;
+    }
+  }
+
   static ImportedKeyStorage extendeKeyToStorage(
       {required String extendedKey,
       required CryptoCoins coin,
@@ -69,10 +83,8 @@ class BlockchainUtils {
     }
   }
 
-  static IPrivateKey _validatePrivateKey({
-    required List<int> keyBytes,
-    required CryptoCoins coin,
-  }) {
+  static IPrivateKey _validatePrivateKey(
+      {required List<int> keyBytes, required CryptoCoins coin}) {
     switch (coin) {
       case Bip44Coins.ripple:
       case Bip44Coins.rippleEd25519:
@@ -90,7 +102,9 @@ class BlockchainUtils {
       {required List<int> keyBytes,
       required CryptoCoins coin,
       String? keyName}) {
-    final key = _validatePrivateKey(keyBytes: keyBytes, coin: coin);
+    final secretKeyBytes =
+        _toSecretKeyBytes(keypair: keyBytes, type: coin.conf.type);
+    final key = _validatePrivateKey(keyBytes: secretKeyBytes, coin: coin);
     return ImportedKeyStorage(
         checksum: _createCustomKeyChecksum(
             pubkeyBytes: key.publicKey.compressed, coin: coin),

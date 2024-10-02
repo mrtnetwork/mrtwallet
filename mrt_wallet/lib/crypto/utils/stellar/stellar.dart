@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:stellar_dart/stellar_dart.dart';
 
@@ -29,5 +30,15 @@ class StellarUtils {
     final toBig = rational.toBigInt();
     if (toBig.isNegative || toBig > StellarConst.maxIssueAmount) return null;
     return toBig;
+  }
+
+  static StellarPrivateKey stellarBase32SecretKeyToImportKey(
+    String? secretKey,
+  ) {
+    try {
+      return StellarPrivateKey.fromBase32(secretKey!);
+    } catch (_) {
+      throw WalletExceptionConst.invalidPrivateKey;
+    }
   }
 }

@@ -10,7 +10,7 @@ class TonSettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NetworkAccountControllerView<TheOpenNetworkChain>(
-      title: "settings",
+      title: "settings".tr,
       childBulder: (wallet, chain, switchAccount) {
         return ConstraintsBoxView(
             child: Column(

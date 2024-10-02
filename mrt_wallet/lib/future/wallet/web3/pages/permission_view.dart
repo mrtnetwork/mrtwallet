@@ -120,7 +120,7 @@ class _Web3APPPermissionView extends StatefulWidget {
 
 class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     with SafeState {
-  late Web3RequestControllerImpl controller = widget.controller;
+  Web3RequestControllerImpl get controller => widget.controller;
   final GlobalKey<FormState> formKey = GlobalKey();
   Web3APPAuthentication? application;
 
@@ -160,7 +160,7 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
                   size: APPConst.double80),
               text: "web_application_not_valid".tr));
     } else {
-      progressKey.backToIdle();
+      progressKey.successProgress();
       updateState();
     }
   }
@@ -236,7 +236,7 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
         true: (context) => WidgetConstant.sizedBox,
       }),
       body: PageProgress(
-        backToIdle: APPConst.milliseconds100,
+        backToIdle: APPConst.oneSecoundDuration,
         initialStatus: StreamWidgetStatus.progress,
         key: progressKey,
         child: (context) => Row(

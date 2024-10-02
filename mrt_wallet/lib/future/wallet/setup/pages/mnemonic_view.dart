@@ -37,8 +37,8 @@ class MnemonicView extends StatelessWidget {
                           ),
                           Badge.count(
                             count: index + 1,
-                            backgroundColor: context.colors.tertiaryFixed,
-                            textColor: context.colors.onTertiaryFixed,
+                            backgroundColor: context.colors.tertiary,
+                            textColor: context.colors.onTertiary,
                           )
                         ],
                       ),

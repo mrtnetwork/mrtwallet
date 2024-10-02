@@ -13,3 +13,4 @@ export 'derivation/bip_derivation.dart';
 export 'substrate/substrate.dart';
 export 'solidity/solidity.dart';
 export 'stellar/stellar.dart';
+export 'solana/solana.dart';

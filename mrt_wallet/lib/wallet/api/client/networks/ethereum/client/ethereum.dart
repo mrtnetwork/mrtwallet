@@ -171,7 +171,7 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
     }
     final assetPath = interface.getContractAssetPath;
     if (assetPath == null) return null;
-    final contractJson = await FileUtils.loadAssetText(assetPath);
+    final contractJson = await PlatformUtils.loadAssetText(assetPath);
     return (
       ContractABI.fromJson(StringUtils.toJson<List>(contractJson)
           .map((e) => Map<String, dynamic>.from(e))
@@ -215,7 +215,7 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
           }
         }
         if (contract == null) {
-          final contractJson = await FileUtils.loadAssetText(
+          final contractJson = await PlatformUtils.loadAssetText(
               SolidityContractInterface.erc20.getContractAssetPath!);
           contract = ContractABI.fromJson(StringUtils.toJson<List>(contractJson)
               .map((e) => Map<String, dynamic>.from(e))

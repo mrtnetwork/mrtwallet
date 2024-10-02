@@ -45,7 +45,7 @@ class CacheMemoryImageProvider extends ImageProvider<CacheMemoryImageProvider>
     ImmutableBuffer buffer;
     switch (image.type) {
       case ContentType.local:
-        final bytes = await FileUtils.loadAssets(image.uri);
+        final bytes = await PlatformUtils.loadAssets(image.uri);
         buffer = await ImmutableBuffer.fromUint8List(Uint8List.fromList(bytes));
         break;
       case ContentType.hex:

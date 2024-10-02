@@ -205,7 +205,9 @@ mixin Web3Impl
             key: authenticated.token,
             nonce: encryotedMessage.nonce,
             message: encryotedMessage.message))
-        .catchError((e) => throw Web3RequestExceptionConst.invalidRequest);
+        .catchError((e) {
+      throw Web3RequestExceptionConst.invalidRequest;
+    });
     Web3MessageCore response;
     try {
       final requestParams =

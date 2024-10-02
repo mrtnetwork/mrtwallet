@@ -15,7 +15,11 @@ class ProgressWithTextView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ProgressWithTextView(
-      text: LargeTextView([text], maxLine: 3),
+      text: LargeTextView(
+        [text],
+        maxLine: 3,
+        textAligen: TextAlign.center,
+      ),
       icon: icon,
     );
   }

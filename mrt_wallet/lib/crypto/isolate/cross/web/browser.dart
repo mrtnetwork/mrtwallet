@@ -46,7 +46,7 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
   }
 
   Future<ByteBuffer> loadFileBinary(String path) async {
-    final f = await FileUtils.loadAssets(path);
+    final f = await PlatformUtils.loadAssets(path);
     return Uint8List.fromList(f).buffer;
   }
 
@@ -56,7 +56,7 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
   }
 
   Future<web.Worker> _buildExtentionWorker() async {
-    final url = FileUtils.assetPath(_extentionJs);
+    final url = PlatformUtils.assetPath(_extentionJs);
     return web.Worker(url, WorkerOptions()..type = "module");
   }
 
@@ -66,7 +66,7 @@ class BrowserCryptoWorker extends IsolateCryptoWoker {
 
   Future<String?> _loadModuleScript() async {
     if (isExtention) return null;
-    final file = await loadFileText(FileUtils.assetPath(_scryptPath));
+    final file = await loadFileText(PlatformUtils.assetPath(_scryptPath));
     return file;
   }
 

@@ -1,0 +1,1 @@
+appdmg config.json mrt.dmg

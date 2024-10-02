@@ -173,7 +173,7 @@ class _PaymentOperationViewState extends State<PaymentOperationView>
                           tooltipWidget: ToolTipView(
                               message: "stellar_new_token_created".tr,
                               child: Icon(Icons.warning,
-                                  color: context.colors.tertiaryFixed)),
+                                  color: context.colors.tertiary)),
                         ),
                         child: TokenDetailsWidget(
                           token: asset!.currentToken,

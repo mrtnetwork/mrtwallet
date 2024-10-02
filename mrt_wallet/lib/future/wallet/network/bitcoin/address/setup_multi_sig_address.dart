@@ -250,7 +250,7 @@ class _SetupBitcoinMultiSigAddressViewState
     final result = await MethodUtils.call(() async {
       final name =
           "credentials_${_multiSigViewAddress}_${StrUtils.toFileName(DateTime.now())}.txt";
-      final toFile = await FileUtils.writeString(toText, name);
+      final toFile = await PlatformUtils.writeString(toText, name);
       return await ShareUtils.shareFile(
         toFile,
         name,

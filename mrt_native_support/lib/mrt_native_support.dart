@@ -46,6 +46,9 @@ abstract class MrtPlatformInterface extends PlatformInterface {
   Future<void> stopBarcodeScanner();
   Future<bool> hasBarcodeScanner();
   Future<MRTAPPConfig> getConfig();
+
+  Future<String?> readClipboard();
+  Future<bool> writeClipboard(String text);
 }
 
 abstract class PlatformWebView {

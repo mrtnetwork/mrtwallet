@@ -33,7 +33,7 @@ class QrUtils {
           .toImageData();
 
       final List<int> bufferData = bufferBytes!.buffer.asUint8List();
-      final write = await CrossFileWriter.writeBytes(
+      final write = await PlatformMethods.writeBytes(
           bytes: bufferData, fileName: fileName, validate: false);
       return (write, fileName);
     } catch (e) {

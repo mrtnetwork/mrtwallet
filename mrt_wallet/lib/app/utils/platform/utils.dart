@@ -1,9 +1,9 @@
 import 'package:mrt_wallet/app/core.dart';
 
-class FileUtils {
+class PlatformUtils {
   static Future<String> writeString(String data, String fileName,
       {bool validate = true}) async {
-    return await CrossFileWriter.writeString(data, fileName,
+    return await PlatformMethods.writeString(data, fileName,
         validate: validate);
   }
 
@@ -11,19 +11,27 @@ class FileUtils {
       {required List<int> bytes,
       required String fileName,
       bool validate = true}) async {
-    return await CrossFileWriter.writeBytes(
+    return await PlatformMethods.writeBytes(
         bytes: bytes, fileName: fileName, validate: validate);
   }
 
   static Future<List<int>> loadAssets(String assetPath) async {
-    return await CrossFileWriter.loadAssets(assetPath);
+    return await PlatformMethods.loadAssets(assetPath);
   }
 
   static Future<String> loadAssetText(String assetPath) async {
-    return await CrossFileWriter.loadAssetsText(assetPath);
+    return await PlatformMethods.loadAssetsText(assetPath);
   }
 
   static String assetPath(String assetPath) {
-    return CrossFileWriter.assetPath(assetPath);
+    return PlatformMethods.assetPath(assetPath);
+  }
+
+  static Future<bool> writeClipboard(String text) async {
+    return await PlatformMethods.writeClipboard(text);
+  }
+
+  static Future<String?> readClipboard() {
+    return PlatformMethods.readClipboard();
   }
 }

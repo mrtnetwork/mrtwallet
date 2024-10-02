@@ -60,8 +60,9 @@ class APPConst {
   static const double desktopAppWidth = 1200;
   static const double desktopAppHeight = 768;
   static const double naviationRailWidth = 80;
-  static const String exampleBase58 = "sEd7FSsSXz9CGy18ajtP8nAkrr....";
-  static const String exampleHex = "";
+  static const String exampleBase58 = "sEd7FSsSXz9CGy....";
+  static const String exampleBase32 = "GD2YLIOLNVQXNA....";
+  static const String exampleHex = "0xa3f1df47";
 
   static const String exampleAuthenticatedHeader = "Authorization";
   static const String exampleAuthenticatedQuery = "api_key";

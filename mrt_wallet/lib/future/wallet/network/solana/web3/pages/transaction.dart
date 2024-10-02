@@ -87,7 +87,7 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
                           tooltipWidget: ToolTipView(
                               message: "simulation_are_not_ready".tr,
                               child: Icon(Icons.warning,
-                                  color: context.colors.tertiaryFixed)),
+                                  color: context.colors.tertiary)),
                         ),
                   child: CoinPriceView(
                       token: controller.network.coinParam.token,
@@ -383,8 +383,8 @@ class _SolanaWeb3MessageView extends StatelessWidget {
             onRemoveWidget: TappedTooltipView(
                 tooltipWidget: ToolTipView(
                     message: "solana_change_balance_desc2".tr,
-                    child: Icon(Icons.warning,
-                        color: context.colors.tertiaryFixed))),
+                    child:
+                        Icon(Icons.warning, color: context.colors.tertiary))),
             child: CoinPriceView(
                 token: controller.network.coinParam.token,
                 balance: message.accountChange,

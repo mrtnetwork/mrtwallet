@@ -156,4 +156,15 @@ class MrtNativeWeb extends MrtPlatformInterface {
 
   @override
   AppPlatform get platform => AppPlatform.web;
+
+  @override
+  Future<String?> readClipboard() async {
+    return jsWindow.navigatorNullable?.clipboard?.readText_();
+  }
+
+  @override
+  Future<bool> writeClipboard(String text) async {
+    return await jsWindow.navigatorNullable?.clipboard?.writeText_(text) ??
+        false;
+  }
 }

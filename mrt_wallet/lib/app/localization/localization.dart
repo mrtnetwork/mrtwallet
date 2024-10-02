@@ -152,6 +152,7 @@ class Localization {
           "address_already_exist": "Address already exist",
           "generating_new_addr": "Generating new address",
           "copied_to_clipboard": "Copied to cliboard.",
+          "copied_to_clipboard_faild": "Copy action unsuccessful.",
           "selected": "Selected",
           "switch_account": "Switch account",
           "new_address": "New Address",
@@ -1727,8 +1728,8 @@ class Localization {
           "ripple_key_conversion": "Ripple key conversion",
           "ripple_key_conversion_desc":
               "Generate private key from ripple seed or enteropy",
-          "ripple_key_conversion_desc2":
-              "You can convert your Ripple seed or entropy into a private key, which can then be imported into a wallet to manage addresses, transactions, and other network operations.",
+          "secret_key_conversion_desc2":
+              "You can convert your specific blockchain key or recovery phrase into a private key, which can then be imported into a wallet to manage addresses, transactions, and other network operations.",
           "ripple_key": "Ripple key",
           "select_ripple_seed_or_entropy": "Please enter your Ripple key.",
           "example_s": "Example: ___1__ .",
@@ -2355,6 +2356,22 @@ class Localization {
               "High-risk operation. Please ensure you fully understand this operation before proceeding, as you may lose funds or control of your account.",
           "soroban_data": "Soroban data",
           "fee_source": "Fee source",
+          "secret_key": "Secret key",
+          "stellar_base32_secret_key_validator":
+              "Invalid Stellar secret key. The key must be a 56-character Base32 string.",
+          "stellar_key_conversion": "Stellar key conversion",
+          "stellar_key_conversion_desc":
+              "Convert a Stellar Base32 secret key into an Ed25519 private key for secure cryptographic operations on the Stellar network.",
+
+          "stellar_base32_secret_key_desc2":
+              "Please enter a valid Stellar Base32 secret key.",
+          "solana_key_conversion": "Solana key conversion",
+          "solana_key_conversion_desc":
+              "Convert a Solana Base58 keypair into an Ed25519 private key for secure cryptographic operations on the Solana network.",
+          "solana_base58_secret_key_validator":
+              "Invalid Solana keypair. The key must be at least an 88-character Base58 string.",
+          "solana_base58_secret_key_desc2":
+              "Please enter a valid Solana Base58 keypair.",
         }
       };
 }

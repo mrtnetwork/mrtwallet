@@ -20,6 +20,8 @@ class PageRouter {
 
   static const String stellarTransaction = "/stellar/transfer";
   static const String stellarImportToken = "/stellar/import_token";
+  static const String stellarSettingPage = "setting/stellar";
+  static const String stellarKeyConversion = "setting/stellar/key_conversion";
 
   // tron
   static const String tronTransfer = "/tron/transfer";
@@ -28,6 +30,9 @@ class PageRouter {
   // solana transfer
   static const String solanaTransfer = "/solana/transfer";
   static const String solanaTransaction = "/solana/transaction";
+
+  static const String solanaSettingPage = "setting/solana";
+  static const String solanaKeyConversion = "setting/solana/key_conversion";
 
   // ton transfer
   static const String tonTransfer = "/ton/transfer";
@@ -178,8 +183,16 @@ class PageRouter {
         return const GenerateTonMnemonicView();
       case rippleSettingPage:
         return const RippleFeaturePageView();
+      case stellarSettingPage:
+        return const StellarFeaturePageView();
+      case solanaSettingPage:
+        return const SolanaFeaturePageView();
       case rippleKeyConversion:
         return const RippleKeyConversionView();
+      case stellarKeyConversion:
+        return const StellarKeyConversionView();
+      case solanaKeyConversion:
+        return const SolanaKeyConversionView();
       case showPublicKey:
         return const AccountPublicKeyView();
       case createWallet:
@@ -284,6 +297,10 @@ class PageRouter {
         return tonSettings;
       case NetworkType.xrpl:
         return rippleSettingPage;
+      case NetworkType.stellar:
+        return stellarSettingPage;
+      case NetworkType.solana:
+        return solanaSettingPage;
       default:
         return null;
     }

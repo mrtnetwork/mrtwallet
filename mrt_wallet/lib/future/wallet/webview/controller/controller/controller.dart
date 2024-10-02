@@ -110,9 +110,10 @@ class WebViewStateController extends StateController
             url: event.url,
             title: event.title,
             faviIcon: event.favicon);
-        final tronWeb = await FileUtils.loadAssetText(APPConst.assetsTronWeb);
+        final tronWeb =
+            await PlatformUtils.loadAssetText(APPConst.assetsTronWeb);
         await _loadScript(viewType: event.viewId, script: tronWeb);
-        final solanaJs = await FileUtils.loadAssetText(APPConst.bnJs);
+        final solanaJs = await PlatformUtils.loadAssetText(APPConst.bnJs);
         await _loadScript(viewType: event.viewId, script: solanaJs);
         String script;
         if (kDebugMode) {
@@ -126,7 +127,8 @@ class WebViewStateController extends StateController
                     .result;
           }
         } else {
-          script = await FileUtils.loadAssetText(APPConst.assetWebviewScript);
+          script =
+              await PlatformUtils.loadAssetText(APPConst.assetWebviewScript);
         }
         await _loadScript(viewType: event.viewId, script: script);
 
