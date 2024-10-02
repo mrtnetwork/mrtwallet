@@ -97,6 +97,14 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 - **Highlights:** Jetton transfer, multiple message transfer.
 - **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, Microsoft Edge, Android and macos platforms.
 
+### Stellar
+
+- **Features:** Seamless Stellar transaction support.
+- **Highlights:** Supports Payment, ChangeTrust, PathPayment, ManageBuyOffer, ManageSellOffer, and more.
+- **Web3 Support** Compatible with Web3 on Chrome, Brave, Firefox, Edge, Android, and macOS for Soroban and native Stellar transactions.
+
+
+
 ### Kusama
 
 - **Features:** Seamless support for Kusama transactions.
@@ -106,11 +114,17 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 - **Features:** Seamless support for Polkadot transactions.
 
 
+## Web3
+
+Added Web3 support for select networks. Check `mrt_wallet_web3_js_examples` folder for instructions on sending Web3 transactions to the wallet.
+
+
 ## Decentralized, Secure, and Open Source
 
 At MRT Wallet, we believe in the power of decentralization. Our commitment to decentralization is at the core of our design philosophy, providing you with full control over your assets. Your private keys remain in your hands, ensuring the highest level of security.
 
 We take pride in being fully open source. You can explore and audit our code on [GitHub](https://github.com/mrtnetwork/mrtwallet) under the Apache License 2.0. This commitment to transparency means that every line of code is accessible, empowering the community to verify the security and integrity of our wallet.
+
 
 ## Platform Support
 
