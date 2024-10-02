@@ -116,7 +116,7 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 
 ## Web3
 
-Added Web3 support for select networks. Check `mrt_wallet_web3_js_examples` folder for instructions on sending Web3 transactions to the wallet.
+Added Web3 support for select networks. Check [mrt_wallet_web3_js_examples](https://github.com/mrtnetwork/mrt_wallet_web3_js_examples) repository for instructions on sending Web3 transactions to the wallet.
 
 
 ## Decentralized, Secure, and Open Source
