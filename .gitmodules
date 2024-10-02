@@ -1,0 +1,3 @@
+[submodule "mrt_wallet_web3_js_examples"]
+	path = mrt_wallet_web3_js_examples
+	url = ./mrt_wallet_web3_js_examples
