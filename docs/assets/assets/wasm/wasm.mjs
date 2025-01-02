@@ -1,28 +1,33 @@
 let _wasmInstance;
-let _inited =false;
+let _inited = false;
 self.addEventListener('message', async (event) => {
-    if(_inited){
-        const data = mrtJsHandler(event.data);
-        self.postMessage(data);
+    if (_inited) {
+        mrtJsHandler(event.data);
         return;
     }
-  
     let module;
-    if (event.module == null) {
-        // This is a Chrome extension
-        module = await import("./crypto.mjs");
+    console.log(event.data.isHttp)
+    if (event.data.module === null) {
+        if (event.data.isHttp) {
+            module = await import("./http.mjs");
+        } else {
+            module = await import("./crypto.mjs");
+        }
+
+
     } else {
-        // This is not a Chrome extension
-        module = await import("data:text/javascript,".concat(event.data.module));
-        // instantiate = module.instantiate;
-        // invoke = module.invoke;
+        const encodedModule = encodeURIComponent(event.data.module);
+        module = await import(`data:text/javascript,${encodedModule}`);
+
     }
-    const wasm = await WebAssembly.compile(event.data.wasm);
-    // const module = await import("data:text/javascript,".concat(event.data.module))
-    _wasmInstance = await module.instantiate(wasm);
-    module.invoke(_wasmInstance)
+    if (event.data.isWasm) {
+        const wasm = await WebAssembly.compile(event.data.wasm);
+        _wasmInstance = await module.instantiate(wasm);
+        module.invoke(_wasmInstance)
+    }
+
     _inited = true;
     const data = mrtWalletActivation();
     self.postMessage(data);
-          
+
 });
