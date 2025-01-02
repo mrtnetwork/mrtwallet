@@ -5,8 +5,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/params/models/personal_sign.dart';
 
 class EthereumWeb3PersonalSignRequestView extends StatelessWidget {
-  const EthereumWeb3PersonalSignRequestView({required this.request, Key? key})
-      : super(key: key);
+  const EthereumWeb3PersonalSignRequestView({required this.request, super.key});
   final EthereumWeb3Form<Web3EthreumPersonalSign> request;
   Web3EthreumPersonalSign get param => request.request.params;
   @override
@@ -25,7 +24,7 @@ class EthereumWeb3PersonalSignRequestView extends StatelessWidget {
               onRemove: () {},
               onRemoveWidget:
                   CopyTextIcon(dataToCopy: param.challeng, isSensitive: false),
-              onTapWhenOnRemove: false,
+              enableTap: false,
               child: Text(param.challeng,
                   style:
                       context.colors.onPrimaryContainer.bodyMedium(context))),
@@ -36,7 +35,7 @@ class EthereumWeb3PersonalSignRequestView extends StatelessWidget {
                 onRemove: () {},
                 onRemoveWidget: CopyTextIcon(
                     dataToCopy: param.content ?? "", isSensitive: false),
-                onTapWhenOnRemove: false,
+                enableTap: false,
                 child: SelectableText(
                   param.content ?? "",
                   style: context.colors.onPrimaryContainer.bodyMedium(context),

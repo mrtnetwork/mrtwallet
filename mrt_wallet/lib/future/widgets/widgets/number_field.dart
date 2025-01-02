@@ -2,7 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mrt_wallet/app/core.dart'
-    show APPConst, BigIntVoid, BoolVoid, DynamicVoid, IntVoid, StringVoid;
+    show
+        APPConst,
+        BigIntVoid,
+        BoolVoid,
+        DynamicVoid,
+        IntVoid,
+        MethodUtils,
+        StringVoid;
 import 'package:mrt_wallet/app/models/models/typedef.dart'
     show NullStringString;
 import 'package:mrt_wallet/future/text_field/input_formaters.dart';
@@ -120,6 +127,21 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
     controller.text = "$newIndex";
   }
 
+  String? validator(String? v) {
+    final number = int.tryParse(v ?? '');
+    if (number == null) {
+      return "enter_valid_number".tr;
+    }
+    if (number < widget.min) {
+      return "minium_numnber_validator".tr.replaceOne(widget.min.toString());
+    }
+    final max = widget.max;
+    if (max != null && number > max) {
+      return "maximum_number_validator".tr.replaceOne(max.toString());
+    }
+    return widget.validator?.call(v);
+  }
+
   int? getValue() {
     return int.tryParse(controller.text);
   }
@@ -128,8 +150,7 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
   void initState() {
     super.initState();
     controller.addListener(listener);
-
-    Future.delayed(Duration.zero, () {
+    MethodUtils.after(() async {
       changeIndex(widget.defaultValue ?? widget.min);
     });
   }
@@ -164,13 +185,14 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
       helperText: widget.helperText,
       hintText: widget.hintText,
       label: widget.label,
-      validator: widget.validator,
+      validator: validator,
       add: add,
       onSubmitField: onSubmitField,
       onPaste: onPaste,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
-        RangeTextInputFormatter(min: widget.min, max: widget.max)
+        if (widget.validator == null)
+          RangeTextInputFormatter(min: widget.min, max: widget.max)
       ],
     );
   }
@@ -344,7 +366,6 @@ class BigNumberTextFieldState extends State<BigNumberTextField> with SafeState {
 class _NumberTextFieldView extends StatelessWidget {
   const _NumberTextFieldView(
       {required this.padding,
-      Key? key,
       required this.minus,
       required this.onLongPressCancel,
       required this.onTap,
@@ -362,8 +383,7 @@ class _NumberTextFieldView extends StatelessWidget {
       required this.add,
       this.validator,
       required this.onSubmitField,
-      required this.onPaste})
-      : super(key: key);
+      required this.onPaste});
   final EdgeInsetsGeometry padding;
   final bool minus;
   final DynamicVoid onLongPressCancel;

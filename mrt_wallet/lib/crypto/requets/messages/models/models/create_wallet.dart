@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/utils/binary/utils.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:mrt_wallet/crypto/keys/keys.dart';
 
 class CryptoCreateWalletResponse {
@@ -9,5 +9,5 @@ class CryptoCreateWalletResponse {
       {required this.masterKey,
       required this.storageData,
       required List<int> checksum})
-      : checksum = BytesUtils.toBytes(checksum, unmodifiable: true);
+      : checksum = checksum.asImmutableBytes;
 }

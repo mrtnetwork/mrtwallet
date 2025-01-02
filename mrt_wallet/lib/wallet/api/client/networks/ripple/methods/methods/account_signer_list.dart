@@ -2,7 +2,7 @@ import 'package:mrt_wallet/wallet/models/networks/ripple/models/account_object_s
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class XRPRPCSignerAccountObject
-    extends XRPLedgerRequest<XRPAccountObjectEntry?> {
+    extends XRPLedgerRequest<XRPAccountObjectEntry?, Map<String, dynamic>> {
   XRPRPCSignerAccountObject({
     required this.account,
     XRPLLedgerIndex? ledgerIndex = XRPLLedgerIndex.validated,

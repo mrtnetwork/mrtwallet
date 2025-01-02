@@ -8,15 +8,19 @@ class TheOpenNetworkChain extends Chain<
     NFTCore,
     ITonAddress,
     WalletTonNetwork,
-    TonClient> {
+    TonClient,
+    ChainStorageKey,
+    DefaultChainConfig,
+    WalletTransaction<TonAddress>> {
   TheOpenNetworkChain._(
       {required super.network,
       required super.totalBalance,
       required super.addressIndex,
       required super.id,
-      super.client,
-      super.contacts,
-      super.addresses})
+      required super.config,
+      required super.client,
+      required super.contacts,
+      required super.addresses})
       : super._();
   @override
   TheOpenNetworkChain copyWith({
@@ -27,6 +31,7 @@ class TheOpenNetworkChain extends Chain<
     int? addressIndex,
     TonClient? client,
     String? id,
+    DefaultChainConfig? config,
   }) {
     return TheOpenNetworkChain._(
         network: network ?? this.network,
@@ -35,7 +40,8 @@ class TheOpenNetworkChain extends Chain<
         addresses: addresses ?? _addresses,
         contacts: contacts ?? _contacts,
         client: client ?? _client,
-        id: id ?? this.id);
+        id: id ?? this.id,
+        config: config ?? this.config);
   }
 
   factory TheOpenNetworkChain.setup(
@@ -48,20 +54,22 @@ class TheOpenNetworkChain extends Chain<
         addressIndex: 0,
         totalBalance:
             Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
-        client: client);
+        client: client,
+        addresses: [],
+        config: DefaultChainConfig.none,
+        contacts: []);
   }
 
   factory TheOpenNetworkChain.deserialize(
       {required WalletTonNetwork network,
       required CborListValue cbor,
-      required String id,
       TonClient? client}) {
     final int networkId = cbor.elementAt(0);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
     final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
-    List<ITonAddress> toAccounts = [];
+    final List<ITonAddress> toAccounts = [];
     for (final i in accounts) {
       final acc = MethodUtils.nullOnException(
           () => CryptoAddress.fromCbor(network, i).cast<ITonAddress>());
@@ -84,14 +92,14 @@ class TheOpenNetworkChain extends Chain<
     final BigInt? totalBalance = cbor.elementAt(4);
 
     return TheOpenNetworkChain._(
-      network: network,
-      addresses: toAccounts,
-      addressIndex: addressIndex < 0 ? 0 : addressIndex,
-      contacts: contacts,
-      totalBalance: Live(IntegerBalance(
-          totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
-      client: client,
-      id: cbor.elementAt<String?>(8) ?? id,
-    );
+        network: network,
+        addresses: toAccounts,
+        addressIndex: addressIndex < 0 ? 0 : addressIndex,
+        contacts: contacts,
+        totalBalance: Live(IntegerBalance(
+            totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
+        client: client,
+        id: cbor.elementAt<String>(8),
+        config: DefaultChainConfig.none);
   }
 }

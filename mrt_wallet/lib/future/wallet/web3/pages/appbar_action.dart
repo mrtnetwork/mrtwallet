@@ -7,8 +7,7 @@ import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 
 class Web3PermissionAppbarActionView extends StatelessWidget {
-  const Web3PermissionAppbarActionView({required this.request, Key? key})
-      : super(key: key);
+  const Web3PermissionAppbarActionView({required this.request, super.key});
   final Web3Request request;
   Chain get chain => request.chain;
   WalletNetwork get network => chain.network;
@@ -29,7 +28,8 @@ class Web3PermissionAppbarActionView extends StatelessWidget {
               ContainerWithBorder(
                 child: Row(
                   children: [
-                    CircleTokenImageView(network.coinParam.token, radius: 40),
+                    CircleTokenImageView(network.coinParam.token,
+                        radius: APPConst.circleRadius25),
                     WidgetConstant.width8,
                     Expanded(
                         child: Column(
@@ -37,21 +37,20 @@ class Web3PermissionAppbarActionView extends StatelessWidget {
                       children: [
                         OneLineTextWidget(
                           network.token.name,
-                          style: context.colors.onPrimaryContainer
-                              .bodyMedium(context),
+                          style: context.onPrimaryTextTheme.bodyMedium,
                         ),
                         CoinPriceView(
                           token: network.token,
                           balance: chain.totalBalance.value,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context),
-                          symbolColor: context.colors.onPrimaryContainer,
+                          style: context.onPrimaryTextTheme.labelLarge,
+                          symbolColor: context.onPrimaryContainer,
                         )
                       ],
                     )),
                   ],
                 ),
               ),
+              WidgetConstant.height20,
               Web3ClientInfoView(
                   permission: request.authenticated, info: request.info),
             ],

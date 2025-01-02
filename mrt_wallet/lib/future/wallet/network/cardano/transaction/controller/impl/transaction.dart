@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/wallet/global/pages/select_account_or_contact.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
@@ -19,8 +19,8 @@ abstract class CardanoTransactionImpl extends StateController {
   List<ADATransactionDeposit> get refundDeposit => _refundDepsit;
   bool get hasRefundDeposit => refundDeposit.isNotEmpty;
   void _findDeposits() {
-    List<ADATransactionDeposit> depositsValues = [];
-    List<ADATransactionDeposit> refund = [];
+    final List<ADATransactionDeposit> depositsValues = [];
+    final List<ADATransactionDeposit> refund = [];
     for (final i in certificates) {
       if (i.type == ADATransactionCertificateType.registraction) {
         depositsValues.add(ADATransactionDeposit.amount(
@@ -72,14 +72,14 @@ abstract class CardanoTransactionImpl extends StateController {
   final ADAChain chainAccount;
   // Bip32NetworkAccount get account => chainAccount.account;
   WalletCardanoNetwork get network => chainAccount.network.toNetwork();
-  CardanoClient get providers => chainAccount.provider()!;
+  CardanoClient get providers => chainAccount.client;
   ICardanoAddress get address => chainAccount.address;
   List<ICardanoAddress> get addresses => chainAccount.addresses;
 
   GeneralTransactionMetadata? get transactionMemo;
   IntegerBalance get transactionFee;
   ADAEpochParametersResponse get protocolParams;
-  Future<void> calculateFee() async {
+  void calculateFee() {
     _findDeposits();
   }
 
@@ -113,10 +113,9 @@ abstract class CardanoTransactionImpl extends StateController {
 
   bool get haveUtxos => _utxosCount > 0;
 
-  final List<ADAAddress> _addresses = [];
-  bool addressSelected(ICardanoAddress addr) =>
-      _addresses.contains(addr.networkAddress);
-  List<ADAAddress> get spenders => _addresses;
+  final List<ICardanoAddress> _addresses = [];
+  bool addressSelected(ICardanoAddress addr) => _addresses.contains(addr);
+  List<ICardanoAddress> get spenders => _addresses;
   bool get hasSpender => spenders.isNotEmpty;
 
   final Map<String, CardanoOutputWithBalance> _receivers = {};
@@ -128,7 +127,9 @@ abstract class CardanoTransactionImpl extends StateController {
 
   void changeOutputAddress(ICardanoAddress? changeAddr) {
     if (changeAddr == null ||
-        changeAddr.address.toAddress == _changeADAOutput.address.view) return;
+        changeAddr.address.toAddress == _changeADAOutput.address.view) {
+      return;
+    }
     final bool needRecalculationFee = changeAddr.networkAddress.addressType !=
         _changeADAOutput.address.networkAddress.addressType;
     final ReceiptAddress<ADAAddress> changeReceiptAddr =
@@ -146,7 +147,9 @@ abstract class CardanoTransactionImpl extends StateController {
 
   void changeAssetOutputAddress(ICardanoAddress? changeAddr) {
     if (changeAddr == null ||
-        changeAddr.address.toAddress == _changeAssetOutput.address.view) return;
+        changeAddr.address.toAddress == _changeAssetOutput.address.view) {
+      return;
+    }
     final bool needRecalculationFee = changeAddr.networkAddress.addressType !=
         _changeAssetOutput.address.networkAddress.addressType;
     _changeAssetOutput.setAddress(ReceiptAddress<ADAAddress>(
@@ -185,9 +188,9 @@ abstract class CardanoTransactionImpl extends StateController {
       onError("unable_to_spend_from_stake_address");
       return;
     }
-    final r = _addresses.remove(address.networkAddress);
+    final r = _addresses.remove(address);
     if (!r) {
-      _addresses.add(address.networkAddress);
+      _addresses.add(address);
     }
     notify();
   }
@@ -230,22 +233,23 @@ abstract class CardanoTransactionImpl extends StateController {
     progressKey.progressText("retreiving_account_utxos".tr);
     _accountUtxos.clear();
     for (final i in _addresses) {
-      if (_fetchedUtxos.containsKey(i.address)) {
-        _accountUtxos[i.address] = CardanoUtxoWithOwner(
-            owner: i,
+      if (_fetchedUtxos.containsKey(i.networkAddress.address)) {
+        _accountUtxos[i.networkAddress.address] = CardanoUtxoWithOwner(
+            owner: i.networkAddress,
             network: network,
-            utxos:
-                List<ADAAccountUTXOs>.unmodifiable(_fetchedUtxos[i.address]!));
+            utxos: List<ADAAccountUTXOs>.unmodifiable(
+                _fetchedUtxos[i.networkAddress.address]!));
         continue;
       }
       try {
-        final utxos = await providers.getUtxos(i);
-        _fetchedUtxos[i.address] = List<ADAAccountUTXOs>.unmodifiable(utxos);
-        _accountUtxos[i.address] = CardanoUtxoWithOwner(
-            owner: i,
+        final utxos = await providers.getUtxos(address: i, chain: chainAccount);
+        _fetchedUtxos[i.networkAddress.address] =
+            List<ADAAccountUTXOs>.unmodifiable(utxos);
+        _accountUtxos[i.networkAddress.address] = CardanoUtxoWithOwner(
+            owner: i.networkAddress,
             network: network,
-            utxos:
-                List<ADAAccountUTXOs>.unmodifiable(_fetchedUtxos[i.address]!));
+            utxos: List<ADAAccountUTXOs>.unmodifiable(
+                _fetchedUtxos[i.networkAddress.address]!));
         // ignore: empty_catches
       } catch (e) {}
     }
@@ -272,10 +276,10 @@ abstract class CardanoTransactionImpl extends StateController {
   void setupAccountAmount(String address, BigInt? amount) async {
     if (amount == null) return;
     _receivers[address]?.updateBalance(amount);
-    bool isMax = amount == remindAmount.balance;
+    final bool isMax = amount == remindAmount.balance;
     onCalculateAmount();
     if (isMax) {
-      await calculateFee();
+      calculateFee();
       final fixedAmount = amount + remindAmount.balance;
       _receivers[address]?.updateBalance(fixedAmount);
       onCalculateAmount();
@@ -302,7 +306,8 @@ abstract class CardanoTransactionImpl extends StateController {
     final hasNotReadyOutput = receivers.any((element) => !element.isReady);
     return !hasNotReadyOutput &&
         !remindAmount.isNegative &&
-        transactionFee.largerThanZero;
+        transactionFee.largerThanZero &&
+        (!hasAsset || _changeAssetOutput.isReady);
   }
 
   void onCalculateAmount() {
@@ -328,21 +333,41 @@ abstract class CardanoTransactionImpl extends StateController {
     notify();
   }
 
-  void onAddRecever(
-      ReceiptAddress<ADAAddress>? addr, StringVoid onAccountExists) {
-    if (addr == null) return;
-    if (addr.networkAddress.isRewardAddress) {
-      onAccountExists("cannot_send_ada_to_stake_address");
-      return;
-    }
-    if (_receivers.containsKey(addr.networkAddress.address)) {
-      onAccountExists("address_already_exist");
-      return;
-    } else {
+  bool _onAddRecever(ReceiptAddress<ADAAddress> addr) {
+    if (!_receivers.containsKey(addr.networkAddress.address) &&
+        !addr.networkAddress.isRewardAddress) {
       _receivers[addr.networkAddress.address] = CardanoOutputWithBalance(
           address: addr,
           network: network,
           coinsPerUtxoSize: protocolParams.coinsPerUtxoSize);
+      return true;
+    }
+    return false;
+  }
+
+  String? validateAddress(ADAAddress addr) {
+    if (addr.isRewardAddress) return "cannot_send_ada_to_stake_address".tr;
+    if (_receivers.containsKey(addr.address)) {
+      return "address_already_exist".tr;
+    }
+    return null;
+  }
+
+  Future<void> onAddRecever({
+    required OnSelectRecipients<ADAAddress> onSelectAddresses,
+    required StringVoid onAccountExists,
+  }) async {
+    final addresses = await onSelectAddresses(
+        account: chainAccount,
+        onFilterAccount: validateAddress,
+        selectedAddresses: receivers.map((e) => e.address).toList());
+    if (addresses == null) return;
+    bool allAdded = true;
+    for (final i in addresses) {
+      allAdded &= _onAddRecever(i);
+    }
+    if (!allAdded) {
+      onAccountExists("some_addresses_exist");
     }
     notify();
     calculateFee();
@@ -357,64 +382,38 @@ abstract class CardanoTransactionImpl extends StateController {
       remindOutputs.add(output);
     }
     if (changeAssetOutput.hasAssets) {
-      TransactionOutput assetOutput = changeAssetOutput.toOutput();
+      final TransactionOutput assetOutput = changeAssetOutput.toOutput();
       remindOutputs.add(assetOutput);
     }
     return remindOutputs;
   }
 
   ADATransactionBuilder buildTransaction(BigInt fee) {
+    final sortedCertificates = certificates.map((e) => e.certificate).toList()
+      ..sort((a, b) {
+        final aType = a.certificate.type;
+        final bType = b.certificate.type;
+        if (aType == CertificateType.stakeRegistration &&
+            bType != CertificateType.stakeRegistration) {
+          return -1;
+        } else if (aType != CertificateType.stakeRegistration &&
+            bType == CertificateType.stakeRegistration) {
+          return 1;
+        }
+        return 0;
+      });
     final transaction = ADATransactionBuilder(
         outputs: [
-          ...receivers.map((e) => e.toOutput()).toList(),
+          ...receivers.map((e) => e.toOutput()),
           ..._getRemindOutputs()
         ],
         utxos: selectedUtxos.map((e) => e.utxo.toUtxoResponse()).toList(),
         metadata: transactionMemo,
-        certificates: certificates.map((e) => e.certificate).toList(),
+        certificates: sortedCertificates,
         deposits: deposits.map((e) => e.toDepositBuilder()).toList(),
         refundDeposits: refundDeposit.map((e) => e.toDepositBuilder()).toList(),
         mints: mints.map((e) => e.toMintBuilder()).toList())
       ..setFee(fee);
     return transaction;
-  }
-
-  Set<ADAAddress> _signerAddresses() {
-    return {
-      ...selectedUtxos.map((e) => e.utxo.toAdddress),
-      ...mints.map((e) => e.owner),
-      ...certificates
-          .where((element) => element.certificate.signer != null)
-          .map((e) => e.certificate.signer!)
-    };
-  }
-
-  List<ICardanoAddress> getTransactionSignerAccounts() {
-    final Set<ADAAddress> signerAddrs = _signerAddresses();
-    List<ICardanoAddress> signers = [];
-    for (final i in signerAddrs) {
-      final signer = addresses.firstWhere((element) {
-        return element.networkAddress == i || element.rewardAddress == i;
-      }, orElse: () => throw WalletExceptionConst.accountDoesNotFound);
-      signers.add(signer);
-    }
-    return signers;
-  }
-
-  List<AddressDerivationIndex> getTransactionSignersKeysIndex() {
-    final Set<ADAAddress> signerAddrs = _signerAddresses();
-    List<AddressDerivationIndex> signers = [];
-    for (final i in signerAddrs) {
-      final signer = addresses.firstWhere(
-          (element) =>
-              element.networkAddress == i || element.rewardAddress == i,
-          orElse: () => throw WalletExceptionConst.accountDoesNotFound);
-      if (signer.rewardAddress == i) {
-        signers.add(signer.rewardKeyIndex ?? signer.keyIndex);
-      } else {
-        signers.add(signer.keyIndex);
-      }
-    }
-    return signers;
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/crypto/isolate/cross/exception.dart';
+import 'package:mrt_wallet/crypto/isolate/types/types.dart';
 import 'package:mrt_wallet/crypto/requets/messages.dart';
 import '../cross/cross.dart'
     if (dart.library.js_interop) '../cross/web/web.dart'
@@ -8,13 +9,16 @@ import '../cross/cross.dart'
 
 abstract class IsolateCryptoWoker {
   static final IsolateCryptoWoker isolate = getCryptoWorker();
+  Stream<A> getStream<A extends MessageArgsStream>(String streamId);
+
   void init(bool useIsolate);
   bool get hasIsolate;
 
   Future<T> _call<T>(
       {required Future<T> Function() onIsolate,
-      required Future<T> Function() onMain}) async {
-    if (!hasIsolate) {
+      required Future<T> Function() onMain,
+      bool useIsolate = true}) async {
+    if (!useIsolate || !hasIsolate) {
       return onMain();
     }
     try {
@@ -29,29 +33,54 @@ abstract class IsolateCryptoWoker {
     }
   }
 
-  Future<T> getResult<T extends MessageArgs>(WorkerRequestMessage message);
+  Future<T> sendRequest<T extends CborMessageArgs>(
+      {required RequestableMessage message,
+      WorkerMode mode = WorkerMode.main,
+      List<int>? encryptPart,
+      Duration? timeout});
+
+  Future<void> sendStreamMessage(
+      {required MessageArgsStream message,
+      required WorkerMode mode,
+      List<int>? encryptPart,
+      Duration? timeout});
+
+  Future<MessageArgsStreamId> sendStreamRequest(
+      {required StreamArgsRequestable message,
+      required WorkerMode mode,
+      List<int>? encryptPart,
+      Duration? timeout});
 
   ///
   Future<List<int>> generateRandomBytes(
       {int length = 32, List<List<int>> existsKeys = const []}) async {
-    return cryptoRequest(
-        CryptoRequestRandomGenerator(length: length, existsKeys: existsKeys));
+    List<int> rand = QuickCrypto.generateRandom(length);
+    if (existsKeys.isEmpty) return rand;
+    while (BytesUtils.isContains(existsKeys, rand)) {
+      rand = QuickCrypto.generateRandom(length);
+    }
+    return rand;
   }
 
   Future<List<int>> generateHash(
       {required CryptoRequestHashingType type,
       List<int>? dataBytes,
-      String? dataHex}) async {
-    return cryptoRequest(CryptoRequestHashing(
-        type: type, dataBytes: dataBytes, dataHex: dataHex));
+      String? dataHex,
+      bool isolate = true}) async {
+    return nonEncryptedRequest(
+        NoneEncryptedRequestHashing(
+            type: type, dataBytes: dataBytes, dataHex: dataHex),
+        isolate: isolate,
+        mode: WorkerMode.main);
   }
 
   Future<String> generateHashString(
       {required CryptoRequestHashingType type,
       List<int>? dataBytes,
-      String? dataHex}) async {
-    final hashing =
-        await generateHash(type: type, dataBytes: dataBytes, dataHex: dataHex);
+      String? dataHex,
+      bool isolate = true}) async {
+    final hashing = await generateHash(
+        type: type, dataBytes: dataBytes, dataHex: dataHex, isolate: isolate);
     switch (type) {
       case CryptoRequestHashingType.uuid:
       case CryptoRequestHashingType.generateUuid:
@@ -61,65 +90,124 @@ abstract class IsolateCryptoWoker {
     }
   }
 
-  String generateUUIDSync({List<int>? dataBytes, String? dataHex}) {
-    if (dataBytes == null && dataHex == null) {
-      final rand = QuickCrypto.generateRandom(16);
-      return UUID.fromBuffer(rand);
-    }
-    final hash = MD4.hash(dataBytes ?? StringUtils.toBytes(dataHex!));
-    return UUID.fromBuffer(hash);
-  }
-
-  Future<String> generateUUID({List<int>? dataBytes, String? dataHex}) async {
-    CryptoRequestHashingType type = CryptoRequestHashingType.uuid;
-    if (dataBytes == null && dataHex == null) {
-      type = CryptoRequestHashingType.generateUuid;
-    }
-    return await generateHashString(
-        type: type, dataBytes: dataBytes, dataHex: dataHex);
-  }
-
   Future<List<int>> hexToBytes(String hex) async {
-    return cryptoRequest(CryptoRequestHexToBytes(hex: hex));
+    return nonEncryptedRequest(NoneEncryptedRequestHexToBytes(hex: hex),
+        mode: WorkerMode.main);
   }
 
   Future<String> generateRandomHex(
       {int length = 32, List<List<int>> existsKeys = const []}) async {
-    final random = await cryptoRequest(
-        CryptoRequestRandomGenerator(length: length, existsKeys: existsKeys));
-    return BytesUtils.toHexString(random);
+    return BytesUtils.toHexString(QuickCrypto.generateRandom(length));
   }
 
-  Future<T> cryptoRequest<T, A extends MessageArgs>(
-      MessageArgsCompleter<T, A> message,
-      {bool isolate = true}) async {
-    if (!isolate) {
-      return message.result();
-    }
-    return _call(onIsolate: () async {
-      final args = CryptoArgs(message);
-      final request = WorkerRequestMessage(
-          args: args, message: CryptoMessageType.cryptoRequest);
-      final A response = await getResult(request);
-      return message.parsResult(response);
-    }, onMain: () async {
-      return message.result();
-    });
+  Future<T> cryptoIsolateRequest<T, A extends CborMessageArgs>(
+    CryptoArgsCompleter<T, A> message, {
+    bool isolate = true,
+    Duration? timeout,
+  }) async {
+    return _call(
+        onIsolate: () async {
+          final A response =
+              await sendRequest(message: message, timeout: timeout);
+          return message.parsResult(response);
+        },
+        onMain: () async {
+          return message.result();
+        },
+        useIsolate: isolate);
   }
 
-  Future<T> walletArgs<T, A extends MessageArgs>(
-      {required WalletMessageArgsCompleter<T, A> message,
+  Future<T> cryptoMainRequest<T, A extends CborMessageArgs>(
+    CryptoArgsCompleter<T, A> message, {
+    Duration? timeout,
+  }) async {
+    return message.result();
+  }
+
+  Future<T> nonEncryptedRequest<T, A extends CborMessageArgs>(
+      NoneEncryptedArgsCompleter<T, A> message,
+      {List<int>? encryptedPart,
+      Duration? timeout,
+      bool isolate = true,
+      required WorkerMode mode}) async {
+    return _call(
+        onIsolate: () async {
+          final A response = await sendRequest(
+              message: message,
+              encryptPart: encryptedPart,
+              timeout: timeout,
+              mode: mode);
+          return message.parsResult(response);
+        },
+        onMain: () async {
+          return message.result(encryptedPart: encryptedPart);
+        },
+        useIsolate: isolate);
+  }
+
+  Future<SyncRequestController<T, S>>
+      streamRequest<T, A extends MessageArgsStream, S>(
+          IsolateStreamRequest<T, S> message,
+          {List<int>? encryptedPart,
+          Duration? timeout,
+          bool isolate = true,
+          required WorkerMode mode}) async {
+    assert(mode != WorkerMode.main);
+    return _call(
+        onIsolate: () async {
+          final response = await sendStreamRequest(
+              message: message,
+              encryptPart: encryptedPart,
+              timeout: timeout,
+              mode: mode);
+          final streamId = response.streamId;
+          final stream = getStream<A>(streamId)
+              .transform(StreamTransformer<A, T>.fromHandlers(
+            handleData: (data, sink) {
+              final r = message.parsResult(data);
+              sink.add(r);
+            },
+          ));
+          message.streamController!.stream.listen((event) {
+            final msg = message.toRequest(message: event, streamId: streamId);
+            sendStreamMessage(message: msg, mode: mode);
+          }, onDone: () {
+            final msg = MessageArgsStream.close(streamId);
+            sendStreamMessage(message: msg, mode: mode);
+            message.close();
+          });
+          return SyncRequestController(
+              controller: message.streamController!, stream: stream);
+        },
+        onMain: () async {
+          final stream = message.result();
+          message.streamController!.stream.listen((event) {
+            message.streamController!.add(event);
+          }, onDone: () {
+            message.close();
+          });
+          return SyncRequestController(
+              controller: message.streamController!, stream: stream);
+        },
+        useIsolate: isolate);
+  }
+
+  Future<T> walletArgs<T, A extends CborMessageArgs>(
+      {required WalletArgsCompleter<T, A> message,
       required List<int> encryptedMasterKey,
-      required List<int> key}) async {
+      required List<int> key,
+      Duration? timeout,
+      bool isolate = true}) async {
     final args = WalletArgs.fromStorage(
         args: message, encryptedMasterKey: encryptedMasterKey, key: key);
-    return _call(onIsolate: () async {
-      final request = WorkerRequestMessage(
-          args: args, message: CryptoMessageType.walletRequest);
-      final A response = await getResult(request);
-      return message.parsResult(response);
-    }, onMain: () async {
-      return args.result();
-    });
+    return _call(
+        onIsolate: () async {
+          final A response = await sendRequest(message: args, timeout: timeout);
+          return message.parsResult(response);
+        },
+        onMain: () async {
+          return args.result();
+        },
+        useIsolate: isolate);
   }
 }

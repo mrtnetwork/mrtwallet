@@ -3,18 +3,21 @@ part of '../scripts.dart';
 typedef PostWalletMessage = void Function(PageMessage);
 
 abstract class PageNetworkController {
+  final POSTPAGEMESSAGE postMessage;
+  PageNetworkController(this.postMessage);
   int _id = 0;
   abstract final JSClientType _client;
   static late final String _walletId;
-  static final Map<String, PageRequestCompeleter> _waitingRequest = {};
+  static final Map<String, PageRequestCompleter> _waitingRequest = {};
   final Map<JSEventType, List<JSFunction>> _listeners = {
     JSEventType.accountsChanged: [],
     JSEventType.chainChanged: [],
     JSEventType.connect: [],
     JSEventType.message: [],
     JSEventType.disconnect: [],
+    JSEventType.change: []
   };
-  static void _compeleteRequest(
+  static void _completeRequest(
       {required WalletMessageResponse walletResponse,
       required String requestId}) {
     _waitingRequest[requestId]?.completeMessage(walletResponse);
@@ -31,13 +34,14 @@ abstract class PageNetworkController {
 
   Future<WalletMessageResponse> _getWalleResponse(
       PageMessageRequest message) async {
-    final request = PageRequestCompeleter.nextRequest();
+    final request = PageRequestCompleter.nextRequest();
     try {
       final toWalletRequest =
           PageMessage.request(data: message, id: request.id, client: _client);
-      final event =
-          CustomEvent.create(type: _walletId, eventData: toWalletRequest);
-      jsWindow.dispatchEvent(event);
+      postMessage(toWalletRequest);
+      // final event =
+      //     CustomEvent.create(type: _walletId, eventData: toWalletRequest);
+      // jsWindow.dispatchEvent(event);
       _waitingRequest[request.id] ??= request;
       return await request.wait;
     } finally {
@@ -49,9 +53,10 @@ abstract class PageNetworkController {
     if (!message.eventType.needEmit) return;
     final toWalletRequest =
         PageMessage.event(data: message, id: "", client: _client);
-    final event =
-        CustomEvent.create(type: _walletId, eventData: toWalletRequest);
-    jsWindow.dispatchEvent(event);
+    postMessage(toWalletRequest);
+    // final event =
+    //     CustomEvent.create(type: _walletId, eventData: toWalletRequest);
+    //
   }
 
   Future<T> _onNetworkRequest<T extends JSAny?>(

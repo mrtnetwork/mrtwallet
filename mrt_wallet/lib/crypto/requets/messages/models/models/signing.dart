@@ -1,6 +1,10 @@
+import 'package:blockchain_utils/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 
 import 'package:blockchain_utils/utils/binary/utils.dart';
+import 'package:cosmos_sdk/cosmos_sdk.dart';
+import 'package:monero_dart/monero_dart.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
@@ -9,18 +13,28 @@ import 'signing_response.dart';
 typedef OnSignRequest = Future<GlobalSignResponse> Function(SignRequest);
 
 abstract class SignRequest with CborSerializable {
-  abstract final List<int> digest;
-  abstract final AddressDerivationIndex index;
-  abstract final SigningRequestNetwork network;
+  final AddressDerivationIndex index;
+  final SigningRequestNetwork network;
+  const SignRequest({required this.index, required this.network});
   factory SignRequest.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborTagValue tag =
         CborSerializable.decode(cborBytes: bytes, hex: hex, object: object);
     final network = SigningRequestNetwork.fromTag(tag.tags);
-    if (network == SigningRequestNetwork.bitcoin) {
-      return BitcoinSigning.deserialize(object: tag);
+    return switch (network) {
+      SigningRequestNetwork.bitcoin => BitcoinSigning.deserialize(object: tag),
+      SigningRequestNetwork.cosmos =>
+        CosmosSigningRequest.deserialize(object: tag),
+      SigningRequestNetwork.monero =>
+        MoneroSigningRequest.deserialize(object: tag),
+      _ => GlobalSignRequest.deserialize(object: tag)
+    };
+  }
+  T cast<T extends SignRequest>() {
+    if (this is! T) {
+      throw WalletExceptionConst.dataVerificationFailed;
     }
-    return GlobalSignRequest.deserialize(object: tag);
+    return this as T;
   }
 }
 
@@ -34,7 +48,8 @@ enum SigningRequestNetwork {
   solana([32, 106]),
   tron([32, 107]),
   substrate([32, 108]),
-  stellar([32, 109]);
+  stellar([32, 109]),
+  monero([32, 110]);
 
   final List<int> tag;
   const SigningRequestNetwork(this.tag);
@@ -45,19 +60,15 @@ enum SigningRequestNetwork {
   }
 }
 
-class BitcoinSigning implements SignRequest {
-  @override
-  final List<int> digest;
-  @override
-  final Bip32AddressIndex index;
+class BitcoinSigning extends GlobalSignRequest {
   final int sighash;
   final bool useTaproot;
   BitcoinSigning(
-      {required List<int> digest,
+      {required super.digest,
       required this.sighash,
       required this.useTaproot,
-      required this.index})
-      : digest = BytesUtils.toBytes(digest);
+      required Bip32AddressIndex super.index})
+      : super._(network: SigningRequestNetwork.bitcoin);
 
   factory BitcoinSigning.deserialize({
     List<int>? bytes,
@@ -84,23 +95,15 @@ class BitcoinSigning implements SignRequest {
             [index.toCbor(), digest, sighash, useTaproot]),
         network.tag);
   }
-
-  @override
-  SigningRequestNetwork get network => SigningRequestNetwork.bitcoin;
 }
 
-class GlobalSignRequest implements SignRequest {
-  @override
+class GlobalSignRequest extends SignRequest {
   final List<int> digest;
-  @override
-  final SigningRequestNetwork network;
-  @override
-  final AddressDerivationIndex index;
   GlobalSignRequest._({
     required List<int> digest,
-    required this.network,
-    required this.index,
-  }) : digest = BytesUtils.toBytes(digest);
+    required super.network,
+    required super.index,
+  }) : digest = digest.asImmutableBytes;
 
   factory GlobalSignRequest.deserialize({
     List<int>? bytes,
@@ -145,20 +148,12 @@ class GlobalSignRequest implements SignRequest {
     return GlobalSignRequest._(
         digest: digest, network: SigningRequestNetwork.solana, index: index);
   }
-  factory GlobalSignRequest.stellar({
-    required List<int> digest,
-    required Bip32AddressIndex index,
-  }) {
+  factory GlobalSignRequest.stellar(
+      {required List<int> digest, required Bip32AddressIndex index}) {
     return GlobalSignRequest._(
         digest: digest, network: SigningRequestNetwork.stellar, index: index);
   }
-  factory GlobalSignRequest.cosmos({
-    required List<int> digest,
-    required Bip32AddressIndex index,
-  }) {
-    return GlobalSignRequest._(
-        digest: digest, network: SigningRequestNetwork.cosmos, index: index);
-  }
+
   factory GlobalSignRequest.ton({
     required List<int> digest,
     required Bip32AddressIndex index,
@@ -186,5 +181,116 @@ class GlobalSignRequest implements SignRequest {
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([index.toCbor(), digest]), network.tag);
+  }
+}
+
+class CosmosSigningRequest extends SignRequest {
+  final List<int> digest;
+  final CosmosKeysAlgs alg;
+  CosmosSigningRequest._({
+    required List<int> digest,
+    required super.network,
+    required super.index,
+    required this.alg,
+  }) : digest = digest.asImmutableBytes;
+  factory CosmosSigningRequest({
+    required List<int> digest,
+    required AddressDerivationIndex index,
+    required CosmosKeysAlgs alg,
+  }) {
+    if (!CosmosKeysAlgs.supportedAlgs.contains(alg)) {
+      throw WalletExceptionConst.dataVerificationFailed;
+    }
+    if (alg.coin(ChainType.mainnet).conf.type != index.currencyCoin.conf.type) {
+      throw WalletExceptionConst.dataVerificationFailed;
+    }
+    return CosmosSigningRequest._(
+        digest: digest,
+        network: SigningRequestNetwork.cosmos,
+        index: index,
+        alg: alg);
+  }
+  factory CosmosSigningRequest.deserialize(
+      {List<int>? bytes, CborObject? object, String? hex}) {
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes,
+        hex: hex,
+        object: object,
+        tags: SigningRequestNetwork.cosmos.tag);
+    final index =
+        AddressDerivationIndex.fromCborBytesOrObject(obj: values.getCborTag(0));
+    final List<int> digest = values.elementAt(1);
+    final CosmosKeysAlgs alg = CosmosKeysAlgs.fromName(values.elementAs(2));
+    return CosmosSigningRequest(digest: digest, index: index, alg: alg);
+  }
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(
+        CborListValue.fixedLength([index.toCbor(), digest, alg.name]),
+        network.tag);
+  }
+}
+
+class MoneroSigningRequest extends SignRequest {
+  final List<MoneroTxDestination> destinations;
+  final BigInt fee;
+  final MoneroTxDestination? change;
+  final List<SpendablePayment<MoneroLockedPayment>> utxos;
+
+  MoneroSigningRequest(
+      {required List<MoneroTxDestination> destinations,
+      required this.fee,
+      this.change,
+      required List<SpendablePayment<MoneroLockedPayment>> utxos,
+      required super.index})
+      : destinations = destinations.immutable,
+        utxos = utxos.immutable,
+        super(network: SigningRequestNetwork.monero);
+  factory MoneroSigningRequest.deserialize(
+      {List<int>? bytes, CborObject? object, String? hex}) {
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes,
+        object: object,
+        hex: hex,
+        tags: SigningRequestNetwork.monero.tag);
+
+    return MoneroSigningRequest(
+        index:
+            Bip32AddressIndex.fromCborBytesOrObject(obj: values.getCborTag(0)),
+        destinations: values
+            .elementAsListOf<CborBytesValue>(1)
+            .map((e) => MoneroTxDestination.deserialize(e.value))
+            .toList(),
+        fee: values.elementAs(2),
+        change: values.elemetMybeAs<MoneroTxDestination, CborBytesValue>(
+            3, (e) => MoneroTxDestination.deserialize(e.value)),
+        utxos: values
+            .elementAsListOf<CborBytesValue>(4)
+            .map((e) =>
+                SpendablePayment<MoneroLockedPayment>.deserialize(e.value))
+            .toList()
+            .cast());
+  }
+
+  List<MoneroAccountIndex> getAccountsIndexes() {
+    return utxos.map((e) => e.payment.output.accountIndex).toSet().toList();
+  }
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(
+        CborListValue.fixedLength([
+          index.toCbor(),
+          CborListValue.fixedLength(
+              destinations.map((e) => CborBytesValue(e.serialize())).toList()),
+          fee,
+          change == null
+              ? const CborNullValue()
+              : CborBytesValue(change!.serialize()),
+          CborListValue.fixedLength(
+              utxos.map((e) => CborBytesValue(e.serialize())).toList()),
+        ]),
+        network.tag);
   }
 }

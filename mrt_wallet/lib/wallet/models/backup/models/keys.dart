@@ -49,10 +49,9 @@ class MRTKeyBackup implements MRTBackup {
   @override
   MRTBackup decrypt(List<int> decryptedKeyBytes) {
     return MRTKeyBackup._(
-      key: type.fromDecyrptBytes(decryptedKeyBytes),
-      type: type,
-      created: created,
-      isEncrypted: false,
-    );
+        key: type.fromDecyrptBytes(decryptedKeyBytes),
+        type: type,
+        created: created,
+        isEncrypted: false);
   }
 }

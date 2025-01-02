@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:blockchain_utils/utils/utils.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message_types.dart';
@@ -15,7 +15,7 @@ class Web3ChainMessage extends Web3MessageCore {
     required List<int> message,
     required this.type,
     required this.authenticated,
-  }) : message = BytesUtils.toBytes(message, unmodifiable: true);
+  }) : message = message.asImmutableBytes;
   factory Web3ChainMessage.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborTagValue tag =

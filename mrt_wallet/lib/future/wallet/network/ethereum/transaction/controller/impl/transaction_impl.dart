@@ -7,6 +7,6 @@ abstract class EthTransactionImpl extends StateController {
   WalletProvider walletProvider;
   final EthereumChain account;
   WalletEthereumNetwork get network => account.network;
-  EthereumClient get apiProvider => account.provider()!;
+  EthereumClient get apiProvider => account.client;
   IEthAddress get address => account.address;
 }

@@ -1,7 +1,6 @@
 import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/utils/utils.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -36,11 +35,19 @@ class SetupDerivationModeView extends StatefulWidget {
 class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     with SafeState {
   EncryptedCustomKey? selectedCustomKey;
+  bool allowDerivation = true;
+  bool get isImportedKey => selectedCustomKey != null;
   WalletNetwork get network => chainAccount.network;
   Chain get chainAccount => widget.chainAccout;
   late CryptoCoins coin = widget.coin;
   late final bool useByronLegacyDeriavation =
       coin.proposal == CustomProposal.cip0019;
+
+  List<EncryptedCustomKey> get customKeys => widget.customKeys;
+  bool get derivationStandard => customKeyIndex == null;
+  AddressDerivationIndex? customKeyIndex;
+
+  final generateAddressKey = GlobalKey();
 
   AddressDerivationIndex derivationkey(CryptoCoins coin) {
     if (selectedCustomKey != null) {
@@ -64,6 +71,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     if (newSelected == null) {
       selectedCustomKey = null;
       coin = widget.coin;
+      allowDerivation = true;
     } else {
       bool canUseKey = false;
       coin = widget.coin;
@@ -81,16 +89,17 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
           canUseKey = true;
         }
       }
-      if (!canUseKey) {
+      if (canUseKey) {
+        allowDerivation = selectedCustomKey!.allowDerivation;
+        if (!allowDerivation) {
+          customKeyIndex = null;
+        }
+      } else {
         context.showAlert("unsuported_key".tr);
       }
     }
     setState(() {});
   }
-
-  List<EncryptedCustomKey> get customKeys => widget.customKeys;
-  bool get derivationStandard => customKeyIndex == null;
-  AddressDerivationIndex? customKeyIndex;
 
   void onChangeDerivation(_OnGenerateDerivation onGenerateDerivation) async {
     if (derivationStandard) {
@@ -104,6 +113,14 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
   void onSubmit() {
     final key = derivationkey(coin);
     context.pop(key);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MethodUtils.after(() async {
+      generateAddressKey.ensureKeyVisible();
+    });
   }
 
   @override
@@ -125,53 +142,71 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
           style: context.textTheme.titleMedium,
         ),
         WidgetConstant.height8,
+        // APPAnimatedSwitcher(enable: enable, widgets: widgets),
         ContainerWithBorder(
-            onRemove: () {
-              onChangeDerivation(
-                () async {
-                  if (useByronLegacyDeriavation) {
-                    return context.openSliverBottomSheet<Bip32AddressIndex>(
-                        "key_derivation".tr,
-                        child: ByronLegacyKeyDerivationView(
-                            coin: coin, curve: coin.conf.type));
-                  }
-                  return context.openSliverBottomSheet<AddressDerivationIndex>(
-                      "key_derivation".tr,
-                      child: Bip32KeyDerivationView(
-                          coin: coin,
-                          curve: coin.conf.type,
-                          network: network,
-                          defaultPath: nextDerivation.hdPath,
-                          seedGeneration: widget.seedGenerationType));
-                },
-              );
-            },
-            onRemoveIcon: derivationStandard
-                ? const Icon(Icons.edit)
-                : const Icon(Icons.remove_circle),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                selectedCustomKey == null
-                    ? Text(
+          onRemove: allowDerivation
+              ? () {
+                  onChangeDerivation(
+                    () async {
+                      if (useByronLegacyDeriavation) {
+                        return context.openSliverBottomSheet<Bip32AddressIndex>(
+                            "key_derivation".tr,
+                            child: ByronLegacyKeyDerivationView(
+                                coin: coin, curve: coin.conf.type));
+                      }
+                      return context
+                          .openSliverBottomSheet<AddressDerivationIndex>(
+                              "key_derivation".tr,
+                              child: Bip32KeyDerivationView(
+                                  coin: coin,
+                                  curve: coin.conf.type,
+                                  network: network,
+                                  defaultPath: nextDerivation.hdPath,
+                                  seedGeneration: widget.seedGenerationType));
+                    },
+                  );
+                }
+              : null,
+          onRemoveIcon:
+              ConditionalWidgets<bool>(enable: derivationStandard, widgets: {
+            true: (e) =>
+                Icon(Icons.edit, color: context.colors.onPrimaryContainer),
+            false: (e) => Icon(Icons.remove_circle,
+                color: context.colors.onPrimaryContainer)
+          }),
+          child: ConditionalWidgets(enable: isImportedKey, widgets: {
+            true: (context) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        derivationStandard
+                            ? "non_derivation".tr
+                            : "custom_derivation".tr,
+                        style: context.textTheme.labelLarge),
+                    derivationStandard
+                        ? Text("import_key_derivation_desc2".tr)
+                        : AddressDrivationInfo(
+                            customKeyIndex ?? nextDerivation),
+                    if (!allowDerivation)
+                      ErrorTextContainer(
+                        error: "key_derivation_disabled_desc".tr,
+                        showErrorIcon: false,
+                      ),
+                  ],
+                ),
+            false: (context) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                         derivationStandard
                             ? "standard_derivation".tr
                             : "custom_derivation".tr,
-                        style: context.textTheme.labelLarge,
-                      )
-                    : Text(
-                        customKeyIndex == null
-                            ? "non_derivation".tr
-                            : "custom_derivation".tr,
-                        style: context.textTheme.labelLarge,
-                      ),
-                selectedCustomKey == null
-                    ? AddressDrivationInfo(customKeyIndex ?? nextDerivation)
-                    : customKeyIndex != null
-                        ? AddressDrivationInfo(customKeyIndex ?? nextDerivation)
-                        : Text("import_key_derivation_desc2".tr)
-              ],
-            )),
+                        style: context.textTheme.labelLarge),
+                    AddressDrivationInfo(customKeyIndex ?? nextDerivation)
+                  ],
+                )
+          }),
+        ),
         WidgetConstant.height20,
         Text(
           "select_creation_type".tr,
@@ -215,6 +250,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
+              key: generateAddressKey,
               padding: WidgetConstant.paddingVertical40,
               onPressed: onSubmit,
               child: Text("generate_address".tr),

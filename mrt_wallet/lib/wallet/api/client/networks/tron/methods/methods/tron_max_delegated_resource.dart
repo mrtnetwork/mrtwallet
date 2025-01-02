@@ -2,7 +2,7 @@ import 'package:mrt_wallet/wallet/models/networks/tron/models/delegated_resouce_
 import 'package:on_chain/tron/tron.dart';
 
 class TronRequestGetCanDelegatedMaxSizeV2
-    extends TVMRequestParam<MaxDelegatedResourceAmount, Map<String, dynamic>> {
+    extends TronRequest<MaxDelegatedResourceAmount, Map<String, dynamic>> {
   TronRequestGetCanDelegatedMaxSizeV2(
       {required this.ownerAddress, required this.type, this.visible = true});
   final TronAddress ownerAddress;

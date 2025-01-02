@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
-import 'package:mrt_wallet/crypto/keys/access/private_key_response.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
+import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/crypto/keys/models/seed.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 
@@ -47,7 +47,7 @@ class MultiSigAddressIndex extends AddressDerivationIndex {
   }
 
   @override
-  PrivateKeyData derive(PrivateKeyData masterKey,
+  CryptoPrivateKeyData derive(CryptoPrivateKeyData masterKey,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
     throw WalletExceptionConst.multiSigDerivationNotSuported;
   }

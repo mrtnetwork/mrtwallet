@@ -4,6 +4,7 @@ import 'package:mrt_wallet/app/constant/constant.dart';
 class OneLineTextWidget extends StatelessWidget {
   const OneLineTextWidget(this.text,
       {this.style, super.key, this.maxLine = 1, this.align});
+
   final String text;
   final TextStyle? style;
   final int maxLine;

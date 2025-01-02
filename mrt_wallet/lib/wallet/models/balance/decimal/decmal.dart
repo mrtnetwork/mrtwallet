@@ -33,11 +33,13 @@ class DecimalBalance implements BalanceCore<BigRational> {
   late final int showDecimal;
 
   @override
-  void updateBalance([BigRational? updateBalance]) {
-    if (updateBalance == null) return;
+  bool updateBalance([BigRational? updateBalance]) {
+    if (updateBalance == null) return false;
+    if (_balance == updateBalance) return false;
     _balance = updateBalance;
     _price = _balance.toDecimal(digits: showDecimal);
     _viewPrice = StrUtils.to3Digits(_price, separator: ",");
+    return true;
   }
 
   @override

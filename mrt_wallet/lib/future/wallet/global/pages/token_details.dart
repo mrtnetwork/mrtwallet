@@ -36,6 +36,11 @@ class TokenDetailsModalView<NETWORKADDRESS, TOKEN extends TokenCore,
           leadingWidth: 0,
           pinned: true,
           actions: [
+            if (token.issuer != null)
+              LaunchBrowserIcon(
+                  url: wallet.wallet.network.coinParam
+                      .getAccountExplorer(token.issuer!),
+                  size: APPConst.double20),
             IconButton(
                 onPressed: () {
                   context
@@ -116,25 +121,10 @@ class _TokenDetailsView extends StatelessWidget {
                     AddressDetailsView(address: address, showBalance: false)),
           ],
         ),
-        const Divider(),
+        WidgetConstant.divider,
         CircleTokenImageView(token.token, radius: 60),
         WidgetConstant.height8,
-        RichText(
-          text: TextSpan(children: [
-            TextSpan(text: token.token.name),
-            if (token.type != null)
-              TextSpan(
-                  text: " (${token.type!.tr}) ",
-                  style: context.textTheme.bodySmall),
-            if (token.issuer != null)
-              WidgetSpan(
-                  alignment: PlaceholderAlignment.middle,
-                  child: LaunchBrowserIcon(
-                      url: wallet.wallet.network.coinParam
-                          .getAccountExplorer(token.issuer!),
-                      size: APPConst.double20)),
-          ], style: context.textTheme.labelLarge),
-        ),
+        Text(token.token.nameView, style: context.textTheme.labelLarge),
         WidgetConstant.height8,
         CoinPriceView(
             liveBalance: token.balance,

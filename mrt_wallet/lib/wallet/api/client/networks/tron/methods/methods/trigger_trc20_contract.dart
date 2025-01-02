@@ -2,14 +2,19 @@ import 'package:on_chain/solidity/contract/fragments.dart';
 import 'package:on_chain/tron/tron.dart';
 
 class TronRequestTriggerTRC20TransferContract
-    extends TVMRequestParam<ParsedSmartContractRequest, Map<String, dynamic>> {
+    extends TronRequest<ParsedSmartContractRequest, Map<String, dynamic>> {
   TronRequestTriggerTRC20TransferContract(
       {required this.ownerAddress,
       required this.contractAddress,
       required this.data,
       required this.fragment,
+      this.callValue,
+      this.callTokenValue,
+      this.tokenID,
       this.visible = true});
-
+  final BigInt? callValue;
+  final BigInt? callTokenValue;
+  final BigInt? tokenID;
   final TronAddress ownerAddress;
 
   final TronAddress contractAddress;
@@ -29,7 +34,10 @@ class TronRequestTriggerTRC20TransferContract
       "owner_address": ownerAddress,
       "contract_address": contractAddress,
       "data": data,
-      "visible": visible
+      "visible": visible,
+      "call_value": callValue,
+      "call_token_value": callTokenValue,
+      "token_id": tokenID
     };
   }
 
@@ -40,10 +48,17 @@ class TronRequestTriggerTRC20TransferContract
 }
 
 class TronRequestCreateContractEstimateEnergy
-    extends TVMRequestParam<ParsedSmartContractRequest, Map<String, dynamic>> {
+    extends TronRequest<ParsedSmartContractRequest, Map<String, dynamic>> {
   TronRequestCreateContractEstimateEnergy(
-      {required this.data, required this.ownerAddress, this.visible = true});
-
+      {required this.data,
+      required this.ownerAddress,
+      this.callValue,
+      this.callTokenValue,
+      this.tokenID,
+      this.visible = true});
+  final BigInt? callValue;
+  final BigInt? callTokenValue;
+  final BigInt? tokenID;
   final TronAddress ownerAddress;
   final String data;
 
@@ -55,7 +70,14 @@ class TronRequestCreateContractEstimateEnergy
 
   @override
   Map<String, dynamic> toJson() {
-    return {"owner_address": ownerAddress, "data": data, "visible": visible};
+    return {
+      "owner_address": ownerAddress,
+      "data": data,
+      "visible": visible,
+      "call_value": callValue,
+      "call_token_value": callTokenValue,
+      "token_id": tokenID
+    };
   }
 
   @override

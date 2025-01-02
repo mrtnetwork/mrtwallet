@@ -8,9 +8,8 @@ import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/generate_master_key.dart';
 import 'package:mrt_wallet/crypto/utils/crypto/utils.dart';
 
-class CryptoRequestGenerateMasterKey
-    implements
-        CryptoRequest<CryptoGenerateMasterKeyResponse, MessageArgsThreeBytes> {
+class CryptoRequestGenerateMasterKey extends CryptoRequest<
+    CryptoGenerateMasterKeyResponse, MessageArgsThreeBytes> {
   final List<int> walletData;
   final int version;
   final List<int>? key;
@@ -24,11 +23,11 @@ class CryptoRequestGenerateMasterKey
     List<int>? keyString,
     List<int>? keyChecksum,
     List<int>? newKey,
-  })  : walletData = BytesUtils.toBytes(walletData, unmodifiable: true),
-        key = BytesUtils.tryToBytes(key, unmodifiable: true),
-        newKey = BytesUtils.tryToBytes(newKey, unmodifiable: true),
-        keyString = BytesUtils.tryToBytes(keyString, unmodifiable: true),
-        keyChecksum = BytesUtils.tryToBytes(keyChecksum, unmodifiable: true);
+  })  : walletData = walletData.asImmutableBytes,
+        key = key?.asImmutableBytes,
+        newKey = newKey?.asImmutableBytes,
+        keyString = keyString?.asImmutableBytes,
+        keyChecksum = keyChecksum?.asImmutableBytes;
   factory CryptoRequestGenerateMasterKey.fromStorage(
       {required String storageData,
       required List<int> key,
@@ -102,7 +101,7 @@ class CryptoRequestGenerateMasterKey
 
   @override
   MessageArgsThreeBytes getResult() {
-    List<int> walletKey = key ??
+    final List<int> walletKey = key ??
         WorkerCryptoUtils.hashKey(key: keyString!, checksum: keyChecksum!);
     final data = generateMasterKey(
         key: walletKey, walletData: walletData, newKey: newKey);
@@ -196,7 +195,7 @@ class CryptoRequestGenerateMasterKey
 
   @override
   CryptoGenerateMasterKeyResponse result() {
-    List<int> walletKey = key ??
+    final List<int> walletKey = key ??
         WorkerCryptoUtils.hashKey(key: keyString!, checksum: keyChecksum!);
     final data = generateMasterKey(
         key: walletKey, walletData: walletData, newKey: newKey);

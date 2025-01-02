@@ -5,28 +5,33 @@ import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cardano.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:blockchain_utils/bip/bip.dart';
 
 class CardanoNetworkParams extends NetworkCoinParams<CardanoAPIProvider> {
+  final int magic;
   factory CardanoNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
+    final CborListValue values = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.cardanoNetworkParams);
 
     return CardanoNetworkParams(
-        transactionExplorer: cbor.elementAt(0),
-        addressExplorer: cbor.elementAt(1),
-        token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        providers: (cbor.elementAt(3) as List)
+        transactionExplorer: values.elementAs(0),
+        addressExplorer: values.elementAs(1),
+        token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
+        providers: values
+            .elementAsListOf<CborTagValue>(3)
             .map((e) => CardanoAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        mainnet: cbor.elementAt(4));
+        chainType: ChainType.fromValue(values.elementAs(4)),
+        magic: values.elementAs(5));
   }
   CardanoNetworkParams(
       {required super.transactionExplorer,
       required super.addressExplorer,
       required super.token,
       required super.providers,
-      required super.mainnet});
+      required super.chainType,
+      required this.magic});
 
   @override
   CborTagValue toCbor() {
@@ -36,7 +41,8 @@ class CardanoNetworkParams extends NetworkCoinParams<CardanoAPIProvider> {
           addressExplorer,
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          mainnet
+          chainType.name,
+          magic
         ]),
         CborTagsConst.cardanoNetworkParams);
   }
@@ -48,6 +54,10 @@ class CardanoNetworkParams extends NetworkCoinParams<CardanoAPIProvider> {
         addressExplorer: addressExplorer,
         token: token,
         providers: updateProviders.cast<CardanoAPIProvider>(),
-        mainnet: mainnet);
+        chainType: chainType,
+        magic: magic);
   }
+
+  @override
+  int get identifier => magic;
 }

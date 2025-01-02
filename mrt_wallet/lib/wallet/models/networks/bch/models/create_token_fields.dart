@@ -1,7 +1,7 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
-import 'package:mrt_wallet/wallet/models/networks/bitcoin/models/memo.dart';
 import 'package:mrt_wallet/wallet/models/networks/bch/models/cash_token.dart';
 import 'package:mrt_wallet/wallet/models/networks/bch/models/cash_token_bcmr.dart';
+import 'package:mrt_wallet/wallet/models/networks/bitcoin/models/models.dart';
 
 class BCMRWithCategory extends BCMR {
   BCMRWithCategory(

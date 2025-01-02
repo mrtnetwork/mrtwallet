@@ -1,8 +1,7 @@
 import 'package:mrt_wallet/wallet/models/networks/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
 
-class TonRquestGetFee
-    extends TonApiRequestParam<TonTransactionFeeDetails, dynamic> {
+class TonRquestGetFee extends TonApiRequest<TonTransactionFeeDetails, dynamic> {
   final Message message;
   final TonAddress address;
   final TonApiType api;
@@ -12,8 +11,8 @@ class TonRquestGetFee
       required this.address,
       required this.forwardPrice,
       required this.api});
-  TonApiRequestParam? _request;
-  TonApiRequestParam _getRequest() {
+  TonApiRequest? _request;
+  TonApiRequest _getRequest() {
     if (!api.isTonCenter) {
       return TonApiEmulateMessageToTrace(
           boc: beginCell().store(message).endCell().toBase64(),
@@ -27,40 +26,37 @@ class TonRquestGetFee
   }
 
   @override
-  TonRequestInfo toRequest(int v) {
+  TonRequestDetails buildRequest(int v) {
     _request = _getRequest();
-    return _request!.toRequest(v);
+    return _request!.buildRequest(v);
   }
 
   @override
   String get method => throw UnimplementedError();
 
   @override
-  TonTransactionFeeDetails onResonse(json) {
+  TonTransactionFeeDetails onResonse(result) {
     final externalMessageFee = TonFeeUtils.computeExternalMessageFees(
         forwardPrice, message.serialize());
     if (api.isTonCenter) {
-      final result = (_request as TonCenterEstimateFee).onResonse(json);
+      final r = (_request as TonCenterEstimateFee).onResonse(result);
       return TonTransactionFeeDetails(
-          actionPhase: result.sourceFees.inFwdFee +
-              result.sourceFees.fwdFee +
-              externalMessageFee,
-          storageFee: result.sourceFees.storageFee,
-          gasFee: result.sourceFees.gasFee,
+          actionPhase:
+              r.sourceFees.inFwdFee + r.sourceFees.fwdFee + externalMessageFee,
+          storageFee: r.sourceFees.storageFee,
+          gasFee: r.sourceFees.gasFee,
           success: true);
     }
-    final result = (_request as TonApiEmulateMessageToTrace).onResonse(json);
+    final r = (_request as TonApiEmulateMessageToTrace).onResonse(result);
 
     return TonTransactionFeeDetails(
-        actionPhase: ((result.transaction.actionPhase?.fwdFees ?? BigInt.zero) +
+        actionPhase: ((r.transaction.actionPhase?.fwdFees ?? BigInt.zero) +
             externalMessageFee),
-        gasFee: result.transaction.computePhase?.gasFees ?? BigInt.zero,
-        storageFee:
-            result.transaction.storagePhase?.feesCollected ?? BigInt.zero,
-        success: result.transaction.success,
-        resultDescription:
-            result.transaction.actionPhase?.resultCodeDescription,
-        internalMessages: result.children.map(
+        gasFee: r.transaction.computePhase?.gasFees ?? BigInt.zero,
+        storageFee: r.transaction.storagePhase?.feesCollected ?? BigInt.zero,
+        success: r.transaction.success,
+        resultDescription: r.transaction.actionPhase?.resultCodeDescription,
+        internalMessages: r.children.map(
           (e) {
             final bool success =
                 e.transaction.actionPhase?.success ?? e.transaction.success;
@@ -72,10 +68,9 @@ class TonRquestGetFee
             }
             return TonEmulatedMessage(
                 destination: e.transaction.inMsg!.destination?.address,
-                actionPhase: result.internalActionFees + e.internalActionFees,
-                gasFee: result.internalGasFees + e.internalGasFees,
-                storageFee:
-                    result.internalStorageFeees + e.internalStorageFeees,
+                actionPhase: r.internalActionFees + e.internalActionFees,
+                gasFee: r.internalGasFees + e.internalGasFees,
+                storageFee: r.internalStorageFeees + e.internalStorageFeees,
                 success: success,
                 resultDescription: errorMessage);
           },

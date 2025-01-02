@@ -1,5 +1,6 @@
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:flutter/material.dart';
+import 'package:monero_dart/monero_dart.dart';
 import 'package:mrt_wallet/app/core.dart' show APPConst, StateConst;
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
@@ -17,7 +18,7 @@ import 'package:ton_dart/ton_dart.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class NetworkGenericAddressDerivationView extends StatelessWidget {
-  const NetworkGenericAddressDerivationView({Key? key}) : super(key: key);
+  const NetworkGenericAddressDerivationView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +57,9 @@ class NetworkGenericAddressDerivationView extends StatelessWidget {
             case NetworkType.stellar:
               return _NetworkGenericAddressDerivationView<StellarAddress,
                   IStellarAddress>(chain.cast());
+            case NetworkType.monero:
+              return _NetworkGenericAddressDerivationView<MoneroAddress,
+                  IMoneroAddress>(chain.cast());
             default:
               throw UnimplementedError();
           }

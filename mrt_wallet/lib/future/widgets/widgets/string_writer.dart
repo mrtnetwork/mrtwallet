@@ -8,22 +8,25 @@ import 'widget_constant.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class StringWriterView extends StatefulWidget {
-  const StringWriterView({
-    super.key,
-    required this.title,
-    required this.label,
-    required this.buttonText,
-    this.customForm,
-    this.defaultValue,
-    this.minLength,
-    this.maxLength,
-    this.regExp,
-  });
+  const StringWriterView(
+      {super.key,
+      required this.title,
+      required this.label,
+      required this.buttonText,
+      this.customForm,
+      this.defaultValue,
+      this.minLength,
+      this.maxLength,
+      this.regExp,
+      this.minLines,
+      this.maxLines});
   final Widget title;
   final String label;
   final String buttonText;
   final int? minLength;
   final int? maxLength;
+  final int? minLines;
+  final int? maxLines;
   final RegExp? regExp;
   final String? defaultValue;
   final NullStringString? customForm;
@@ -45,7 +48,9 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
   String? validator(String? v) {
     if (widget.minLength == null &&
         widget.maxLength == null &&
-        widget.regExp == null) return null;
+        widget.regExp == null) {
+      return null;
+    }
     if (widget.regExp != null) {
       if (!widget.regExp!.hasMatch(v!)) {
         return "regular_exception_validate_desc"
@@ -89,8 +94,8 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
           WidgetConstant.height20,
           AppTextField(
             label: widget.label,
-            minlines: 2,
-            maxLines: 5,
+            minlines: widget.minLines ?? 2,
+            maxLines: widget.maxLines ?? 5,
             initialValue: text,
             validator: widget.customForm ?? validator,
             suffixIcon: PasteTextIcon(
@@ -104,7 +109,7 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical20,
+                padding: WidgetConstant.paddingVertical40,
                 onPressed: onPressed,
                 child: Text(widget.buttonText),
               )

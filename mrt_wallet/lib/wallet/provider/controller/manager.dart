@@ -6,6 +6,8 @@ mixin WalletManager on _WalletController {
   final Cancelable _balanceUpdaterCancelable = Cancelable();
   StreamSubscription<void>? _balanceUpdaterStream;
 
+  void _onUnlock() {}
+
   late final WalletTimeoutListener _timeout = WalletTimeoutListener(() {
     _core.lock();
   }, () {
@@ -31,7 +33,7 @@ mixin WalletManager on _WalletController {
   }
 
   Future<void> _login(String password) async {
-    final storageKey = await crypto.cryptoRequest(
+    final storageKey = await crypto.cryptoIsolateRequest(
         CryptoRequestGenerateMasterKey.fromStorageWithStringKey(
             storageData: _wallet._data,
             key: password,
@@ -40,6 +42,7 @@ mixin WalletManager on _WalletController {
     _walletKey = storageKey.walletKey;
     _status = HDWalletStatus.unlock;
     _timeout.init();
+    _onUnlock();
   }
 
   Future<NETWORKCHAINACCOUNT<NETWORKADDRESS>> _deriveNewAccount<NETWORKADDRESS>(
@@ -47,7 +50,7 @@ mixin WalletManager on _WalletController {
       required APPCHAINNETWORK<NETWORKADDRESS> chain}) async {
     final NETWORKCHAINACCOUNT<NETWORKADDRESS> account;
     if (newAccountParams.isMultiSig) {
-      account = chain.addNewAddress(const [], newAccountParams);
+      account = await chain.addNewAddress(null, newAccountParams);
     } else {
       if (newAccountParams.deriveIndex.isMultiSig) {
         throw WalletExceptionConst.dataVerificationFailed;
@@ -57,11 +60,11 @@ mixin WalletManager on _WalletController {
               addressParams: newAccountParams),
           key: _walletKey!,
           encryptedMasterKey: _massterKey!.masterKey);
-      account = chain.addNewAddress(
+      account = await chain.addNewAddress(
           updateParams.publicKey, updateParams.accountParams);
     }
     await _saveAccount(chain);
-    _updateAaddressBalance(account: chain, address: account);
+    _updateAddressBalance(account: chain, address: account);
     await MethodUtils.wait();
 
     return account;
@@ -113,7 +116,7 @@ mixin WalletManager on _WalletController {
     final keyBytes = await _validatePassword(password);
     final newKey =
         await _core._toWalletPassword(newPassword, _wallet._checksum);
-    final encrypt = await crypto.cryptoRequest(
+    final encrypt = await crypto.cryptoIsolateRequest(
         CryptoRequestGenerateMasterKey.fromStorage(
             storageData: _wallet._data, key: keyBytes, newKey: newKey));
     await _updateWallet(_wallet._updateData(encrypt.storageData));
@@ -124,7 +127,7 @@ mixin WalletManager on _WalletController {
       {required String data,
       required MrtBackupTypes type,
       required String password}) async {
-    final encrypt = await crypto.cryptoRequest(CryptoRequestEncodeBackup(
+    final encrypt = await crypto.cryptoIsolateRequest(CryptoRequestEncodeBackup(
         password: password,
         backup: type.toEncryptionBytes(data),
         encoding: type.encoding));
@@ -141,18 +144,32 @@ mixin WalletManager on _WalletController {
         message: WalletRequestBackupWallet(password),
         encryptedMasterKey: _massterKey!.masterKey,
         key: key);
-    final mrtBackup =
-        MRTWalletBackup(key: encrypt, chains: _appChains.chains());
+    final List<MRTWalletChainBackup> backupChains = [];
+    final appChains = _appChains.chains();
+    for (final i in appChains) {
+      final chainBackup = await i.toBackup();
+      backupChains.add(chainBackup);
+    }
+    final mrtBackup = MRTWalletBackupV2(key: encrypt, chains: backupChains);
+    final decode = MRTWalletBackupV2.fromCborBytesOrObject(
+        bytes: mrtBackup.toCbor().encode());
+    for (final i in decode.chains) {
+      await i.chain.restoreChainRepositories(i.repositories);
+    }
+    assert(() {
+      return decode.toCbor().toCborHex() == mrtBackup.toCbor().toCborHex();
+    }(), "invalid backup.");
+
     return mrtBackup.toCbor().toCborHex();
   }
 
   Future<List<CryptoKeyData>> _accsess(WalletAccsessType accsessType,
-      {ChainAccount? account, String? accountId}) async {
-    if (accsessType.isAccsessKey && account == null && accountId == null) {
-      throw WalletException.invalidArgruments(["ChainAccount", "null"]);
-    }
+      {ChainAccount? account, String? keyId}) async {
     if (accsessType.isUnlock && isUnlock) {
       return [FakeKeyData()];
+    }
+    if (accsessType.isAccsessKey && account == null && keyId == null) {
+      throw WalletException.invalidArgruments(["ChainAccount", "null"]);
     }
     if (accsessType.isAccsessKey) {
       if (account != null) {
@@ -164,11 +181,10 @@ mixin WalletManager on _WalletController {
                     .toList())),
             key: _walletKey!,
             encryptedMasterKey: _massterKey!.masterKey);
-
         return accountKeys;
       } else {
         final importedKey = await crypto.walletArgs(
-            message: WalletRequestReadImportedKey(accountId!),
+            message: WalletRequestReadImportedKey(keyId!),
             key: _walletKey!,
             encryptedMasterKey: _massterKey!.masterKey);
         return [importedKey];
@@ -200,7 +216,8 @@ mixin WalletManager on _WalletController {
   Future<T> _signTransaction<T>(
       {required String? password,
       required Set<AddressDerivationIndex> signers,
-      required WalletSigningRequest<T> request}) async {
+      required WalletSigningRequest<T> request,
+      Duration? timeout}) async {
     if (_wallet.protectWallet) {
       if (password == null) {
         throw WalletExceptionConst.incorrectPassword;
@@ -215,20 +232,21 @@ mixin WalletManager on _WalletController {
       return await crypto.walletArgs(
           message: WalletRequestSign(request),
           encryptedMasterKey: _massterKey!.masterKey,
-          key: _walletKey!);
+          key: _walletKey!,
+          timeout: timeout);
     });
     return sign;
   }
 
-  List<EncryptedCustomKey> _getCustomKeysForCoin(List<CryptoCoins> coin) {
-    final curves = coin.map((e) => e.conf.type).toList();
-    return List<EncryptedCustomKey>.unmodifiable(
-      _massterKey!.customKeys.where((element) {
-        return coin.contains(element.coin) ||
-            (element.keyType.isPrivateKey &&
-                curves.contains(element.coin.conf.type));
-      }),
-    );
+  List<EncryptedCustomKey> _getCustomKeysForCoin(CryptoCoins derivationCoin) {
+    final List<EncryptedCustomKey> coins = [];
+    final customKeys = _massterKey!.customKeys;
+    for (final c in customKeys) {
+      if (c.canUseFor(derivationCoin)) {
+        coins.add(c);
+      }
+    }
+    return coins.toSet().toImutableList;
   }
 
   Future<List<EncryptedCustomKey>> _getImportedAccounts(String password) async {
@@ -264,13 +282,13 @@ mixin WalletManager on _WalletController {
       required CHAINTOKEN address}) async {
     account.switchAccount(address);
     await _saveAccount(account);
-    _updateAaddressBalance(account: account, address: address);
+    _updateAddressBalance(account: account, address: address);
   }
 
   Future<bool> _removeAccount<CHAINTOKEN extends ChainAccount>(
       {required APPCHAINACCOUNT<CHAINTOKEN> account,
       required CHAINTOKEN address}) async {
-    final remove = account.removeAccount(address);
+    final remove = await account.removeAccount(address);
     if (remove) {
       await _saveAccount(account);
     }
@@ -348,7 +366,7 @@ mixin WalletManager on _WalletController {
   }
 
   Future<void> _removeChain(Chain chain) async {
-    _appChains.removeChain(chain);
+    await _appChains.removeChain(chain);
     await _core._removeAccount(chain);
   }
 
@@ -363,30 +381,37 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
-  Future<void> _updateAaddressBalance<CHAINTOKEN extends ChainAccount>(
+  Future<void> _updateAddressBalance<CHAINTOKEN extends ChainAccount>(
       {required APPCHAINACCOUNT<CHAINTOKEN> account,
       required CHAINTOKEN address}) async {
     await MethodUtils.call(() async {
-      await account.provider()?.updateBalance(address);
+      await account.clientNullable?.updateBalance(address, account);
     });
-    account.refreshTotalBalance();
     await _saveAccount(account);
   }
 
-  Future<void> _updateAccountBalance(Chain account) async {
-    final provider = account.provider();
-    if (!account.haveAddress || provider == null) return;
-    for (final i in account.addresses) {
+  Future<void> _updateAccountBalance<CHAINACCOUNT extends ChainAccount>(
+      APPCHAINACCOUNT<CHAINACCOUNT> account,
+      {CHAINACCOUNT? address}) async {
+    final provider = account.clientNullable;
+    if (provider == null) return;
+    if (address != null) {
       await MethodUtils.call(() async {
-        await provider.updateBalance(i);
+        await provider.updateBalance(address, account);
       });
+    } else {
+      if (!account.haveAddress) return;
+      for (final i in account.addresses) {
+        await MethodUtils.call(() async {
+          await provider.updateBalance(i, account);
+        });
+      }
     }
-    account.refreshTotalBalance();
     await _saveAccount(account);
   }
 
   Future<void> _switchNetwork(int changeNetwork) async {
-    final change = _appChains.switchNetwork(changeNetwork);
+    final change = await _appChains.switchNetwork(changeNetwork);
     if (change) {
       await _updateWallet(_wallet.updateNetwork(_appChains.network.value));
     }
@@ -399,16 +424,31 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
-  Future<T> _walletRequest<T, A extends MessageArgs>(
-      WalletMessageArgsCompleter<T, A> message) async {
+  Future<T?> _callWalletInternal<T>(
+      Future<T> Function({
+        required List<int> masterKey,
+        required List<int> wKey,
+      }) t) async {
+    final masterKey = _massterKey?.masterKey;
+    final wKey = _walletKey;
+    if (masterKey == null || wKey == null) {
+      return null;
+    }
+    return t(masterKey: masterKey, wKey: wKey);
+  }
+
+  Future<T> _walletRequest<T, A extends CborMessageArgs>(
+      {required WalletArgsCompleter<T, A> message,
+      List<int>? masterkey,
+      List<int>? walletKey}) async {
     return await crypto.walletArgs(
         message: message,
-        encryptedMasterKey: _massterKey!.masterKey,
-        key: _walletKey!);
+        encryptedMasterKey: masterkey ?? _massterKey!.masterKey,
+        key: walletKey ?? _walletKey!);
   }
 
   Future<void> _cleanUpdateRemovedKeyAccounts(String removedKey) async {
-    List<ChainAccount> removeList = [];
+    final List<ChainAccount> removeList = [];
     final List<ChainAccount> accs = _appChains.accounts;
     for (final address in accs) {
       if (address.multiSigAccount) {
@@ -432,22 +472,24 @@ mixin WalletManager on _WalletController {
       if (account == null) {
         continue;
       }
-      if (account.removeAccount(address)) {
+      if (await account.removeAccount(address)) {
         await _saveAccount(account);
       }
     }
   }
 
   Future<void> _saveAccount(Chain account) async {
-    await _core._saveAccount(account);
+    await account.save();
   }
 
-  void _streamBalances() {
+  Future<void> _onInitController() async {
+    await chain.init();
     if (_core.isJsWallet) return;
     final chains = _appChains.chains();
     _balanceUpdaterStream = MethodUtils.prediocCaller(
             () async => await MethodUtils.call(() async {
                   for (final chain in chains) {
+                    await chain.init();
                     await _updateAccountBalance(chain);
                   }
                 }),
@@ -457,7 +499,7 @@ mixin WalletManager on _WalletController {
         .listen((s) {});
   }
 
-  void _disposeBalanceUpdater() {
+  void _dispose() {
     MethodUtils.nullOnException(() {
       _balanceUpdaterStream?.cancel();
       _balanceUpdaterStream = null;

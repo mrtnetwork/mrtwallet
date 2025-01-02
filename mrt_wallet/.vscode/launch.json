@@ -7,7 +7,7 @@
         {
             "name": "mrt_wallet",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
         },
         {
             "name": "mrt_wallet (profile mode)",

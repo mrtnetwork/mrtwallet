@@ -10,14 +10,14 @@ import 'package:ton_dart/ton_dart.dart' as ton;
 
 class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
   final int workchain;
-  ton.TonChain get chainType => ton.TonChain.fromWorkchain(workchain);
+  ton.TonChain get chain => ton.TonChain.fromWorkchain(workchain);
   TonNetworkParams(
       {required super.transactionExplorer,
       required super.addressExplorer,
       required super.token,
       required super.providers,
       required this.workchain,
-      required super.mainnet});
+      required super.chainType});
   TonNetworkParams copyWith(
       {String? transactionExplorer,
       String? addressExplorer,
@@ -25,7 +25,7 @@ class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
       List<TonAPIProvider>? providers,
       int? workchain,
       bool? supportEIP1559,
-      bool? mainnet,
+      ChainType? chainType,
       bool? defaultNetwork}) {
     return TonNetworkParams(
         transactionExplorer: transactionExplorer ?? this.transactionExplorer,
@@ -33,7 +33,7 @@ class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
         token: token ?? this.token,
         providers: providers ?? List.from(this.providers),
         workchain: workchain ?? this.workchain,
-        mainnet: mainnet ?? this.mainnet);
+        chainType: chainType ?? this.chainType);
   }
 
   factory TonNetworkParams.fromCborBytesOrObject(
@@ -42,7 +42,7 @@ class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
         bytes, obj, CborTagsConst.tonNetworkParam);
     return TonNetworkParams(
         workchain: cbor.elementAt(0),
-        mainnet: cbor.elementAt(1),
+        chainType: ChainType.fromValue(cbor.elementAt(1)),
         transactionExplorer: cbor.elementAt(2),
         addressExplorer: cbor.elementAt(3),
         token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(4)),
@@ -55,7 +55,7 @@ class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
     return CborTagValue(
         CborListValue.fixedLength([
           workchain,
-          mainnet,
+          chainType.name,
           transactionExplorer,
           addressExplorer,
           token.toCbor(),
@@ -71,8 +71,11 @@ class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
         token: token,
-        providers: providers.cast<TonAPIProvider>(),
+        providers: updateProviders.cast<TonAPIProvider>(),
         workchain: workchain,
-        mainnet: mainnet);
+        chainType: chainType);
   }
+
+  @override
+  int get identifier => workchain;
 }

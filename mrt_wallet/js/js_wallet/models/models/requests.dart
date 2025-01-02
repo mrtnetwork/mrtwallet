@@ -141,7 +141,8 @@ enum JSEventType {
   connect([113]),
   disconnect([114]),
   active([115]),
-  disable([116]);
+  disable([116]),
+  change([117]);
 
   bool get needEmit =>
       this == accountsChanged || this == chainChanged || this == connect;
@@ -251,14 +252,31 @@ enum PageMessageType {
   }
 }
 
+@JS("PageMessageRequest")
 extension type PageMessageData._(JSObject object) implements JSAny {
   external String get type;
   PageMessageType get messageType => PageMessageType.fromName(type);
-  T cast<T extends PageMessageData>() {
-    if (this is! T) {
+  // T cast<T extends JSAny>() {
+  //   final JSAny? value = this;
+  //   print(value.isA<Web3JSRequestParams>());
+  //   if (this is! T) {
+  //     throw Web3RequestExceptionConst.internalError;
+  //   }
+  //   return this as T;
+  // }
+
+  PageMessageRequest asRequest() {
+    if (type != PageMessageType.request.name) {
       throw Web3RequestExceptionConst.internalError;
     }
-    return this as T;
+    return this as PageMessageRequest;
+  }
+
+  PageMessageEvent asEvent() {
+    if (type != PageMessageType.event.name) {
+      throw Web3RequestExceptionConst.internalError;
+    }
+    return this as PageMessageEvent;
   }
 }
 
@@ -266,16 +284,17 @@ extension JSArrayFuture<T extends JSAny> on JSArray<T?> {
   external T? operator [](int index);
   external int get length;
 
-  E? elemetAt<E extends JSAny?>(int index) {
+  E elemetAt<E extends JSAny?>(int index) {
     try {
+      // ignore: invalid_runtime_check_with_js_interop_types
       return this[index] as E;
     } catch (_) {
-      return null;
+      return null as E;
     }
   }
 }
 
-@JS()
+@JS("Web3JSRequestParams")
 extension type Web3JSRequestParams._(JSObject o) implements JSAny {
   external String get method;
   external String? get id;
@@ -307,6 +326,7 @@ extension type Web3JSRequestParams._(JSObject o) implements JSAny {
     }
   }
 }
+@JS("PageMessageRequest")
 extension type PageMessageRequest._(JSObject object)
     implements PageMessageData {
   external factory PageMessageRequest(
@@ -346,7 +366,7 @@ extension type PageMessageRequest._(JSObject object)
 
   List<T>? getJSParamsAs<T extends JSAny>() {
     try {
-      return List<T>.from(params as List);
+      return List<T>.from(params!.toDart as List);
     } catch (e) {
       return null;
     }
@@ -383,4 +403,56 @@ extension type PageMessageEvent._(JSObject object) implements PageMessageData {
   external String get event;
   external JSAny? get data;
   JSEventType get eventType => JSEventType.name(event);
+}
+
+enum JSWorkerType {
+  client,
+  wallet,
+  error,
+  ready,
+  active;
+
+  static JSWorkerType fronName(String? name) {
+    return values.firstWhere((e) => e.name == name);
+  }
+}
+
+@JS()
+extension type JSWorkerEvent._(JSObject o) implements JSAny {
+  factory JSWorkerEvent({required JSWorkerType type, JSAny? data}) {
+    return JSWorkerEvent._(JSObject())
+      ..type = type.name
+      ..data = data;
+  }
+  external String? get type;
+  external JSAny? get data;
+  external set type(String? _);
+  external set data(JSAny? _);
+  JSWorkerType get eventType => JSWorkerType.fronName(type);
+}
+@JS()
+extension type JSWorkerWalletData._(JSObject o) implements JSAny {
+  factory JSWorkerWalletData(
+      {required String clientId,
+      required String requestId,
+      required String data,
+      required String type}) {
+    return JSWorkerWalletData._(JSObject())
+      ..data = data
+      ..type = type
+      ..clientId = clientId
+      ..requestId = requestId;
+  }
+  external String get clientId;
+  external String get requestId;
+  external String get data;
+  external String get type;
+  external set clientId(String? _);
+  external set requestId(String? _);
+  external set data(String? _);
+  external set type(String? _);
+
+  Map<String, dynamic> toJson() {
+    return {"id": clientId, "requestId": requestId, "data": data, "type": type};
+  }
 }

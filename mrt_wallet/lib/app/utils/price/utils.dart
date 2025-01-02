@@ -41,7 +41,7 @@ class PriceUtils {
   }
 
   static String encodePrice(BigInt price, int decimal, {int amoutDecimal = 8}) {
-    BigRational dec =
+    final BigRational dec =
         BigRational(price) / RetionalConst.fromDecimalNumber(decimal);
     return dec.toDecimal(digits: amoutDecimal);
   }

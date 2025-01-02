@@ -11,8 +11,8 @@ class TonTransferForm extends TonTransactionForm {
   final WalletTonNetwork network;
 
   TonTransferForm({required this.network});
-  final TransactionFormField<List<TonOutputWithBalance>> destination =
-      TransactionFormField(
+  final TransactionListFormField<TonOutputWithBalance> destination =
+      TransactionListFormField(
           name: "destination",
           optional: false,
           onChangeForm: (p0) {
@@ -22,13 +22,12 @@ class TonTransferForm extends TonTransactionForm {
 
   BigInt _getTokenSpenBalance(TonJettonToken token) {
     final values = destination.value
-        ?.where((element) => element.hasToken && element.jetton == token);
+        .where((element) => element.hasToken && element.jetton == token);
 
-    return values?.fold<BigInt>(
-            BigInt.zero,
-            (previousValue, element) =>
-                element.tokenBalance.balance + previousValue) ??
-        BigInt.zero;
+    return values.fold<BigInt>(
+        BigInt.zero,
+        (previousValue, element) =>
+            element.tokenBalance.balance + previousValue);
   }
 
   void _calcTokenBalances(TonJettonToken? token) {
@@ -44,12 +43,8 @@ class TonTransferForm extends TonTransactionForm {
   }
 
   @override
-  BigInt get callValue =>
-      destination.value?.fold(
-          BigInt.zero,
-          (previousValue, element) =>
-              previousValue! + element.balance.balance) ??
-      BigInt.zero;
+  BigInt get callValue => destination.value.fold<BigInt>(BigInt.zero,
+      (previousValue, element) => previousValue + element.balance.balance);
 
   List<TransactionFormField> get fields => throw UnimplementedError();
 
@@ -57,128 +52,67 @@ class TonTransferForm extends TonTransactionForm {
   @override
   String get name => "transfer".tr;
 
-  void setReceiver(
-      {required ReceiptAddress<TonAddress>? address,
-      required DynamicVoid onExists}) {
-    if (address == null) return;
-
-    final bool exists = destination.value?.any((element) =>
-            element.address.networkAddress == address.networkAddress) ??
-        false;
+  bool _setReceiver(ReceiptAddress<TonAddress> address) {
+    final bool exists = destination.value.any(
+        (element) => element.address.networkAddress == address.networkAddress);
     if (exists) {
+      return false;
+    }
+    destination
+        .addValue(TonOutputWithBalance(address: address, network: network));
+    return true;
+  }
+
+  void setReceiver(
+      {required List<ReceiptAddress<TonAddress>>? address,
+      required DynamicVoid onExists}) {
+    if (address == null || address.isEmpty) return;
+    bool allAdded = true;
+    for (final i in address) {
+      allAdded &= _setReceiver(i);
+    }
+    if (!allAdded) {
       onExists.call();
-      return;
     }
-    if (destination.setValue([
-      ...destination.value ?? <TonOutputWithBalance>[],
-      TonOutputWithBalance(address: address, network: network),
-    ])) {
-      onChanged?.call();
-    }
-  }
-
-  void onRemoveReceiver(TonAddress? address, bool? remove) {
-    if (address == null || remove != true) return;
-    final dest = MethodUtils.nullOnException(() => destination.value
-        ?.firstWhere((element) => element.address.networkAddress == address));
-    if (dest == null) return;
-    destination.setValue(List.from(destination.value
-            ?.where((element) => element.address.networkAddress != address)
-            .toList() ??
-        []));
-    _calcTokenBalances(dest.jetton);
     onChanged?.call();
-    final isValid = validateError();
-    if (isValid == null) {
-      final int hashCode = destination.value.hashCode;
-      onReadyField?.call(hashCode.toString());
-    }
   }
 
-  void setBalance(TonAddress address, BigInt? balance) {
+  void onRemoveReceiver(TonOutputWithBalance? address, bool? remove) {
+    if (address == null || remove != true) return;
+    destination.removeValue(address);
+    _calcTokenBalances(address.jetton);
+    onChanged?.call();
+  }
+
+  void setBalance(TonOutputWithBalance address, BigInt? balance) {
     if (balance == null) return;
-    try {
-      final des = MethodUtils.nullOnException(() => destination.value
-          ?.firstWhere((element) => element.address.networkAddress == address));
-      if (des == null) return;
-      des.updateBalance(balance);
-      onChanged?.call();
-      final isValid = validateError();
-      if (isValid == null) {
-        final int hashCode = destination.value.hashCode;
-        onReadyField?.call(hashCode.toString());
-      }
-      // ignore: empty_catches
-    } on StateError {}
+    address.updateBalance(balance);
+    onChanged?.call();
   }
 
-  void setForwardBalance(TonAddress address, BigInt? balance) {
+  void setForwardBalance(TonOutputWithBalance address, BigInt? balance) {
     if (balance == null) return;
-    try {
-      final des = MethodUtils.nullOnException(() => destination.value
-          ?.firstWhere((element) => element.address.networkAddress == address));
-      if (des == null) return;
-      des.updateForwardBalance(balance);
-      onChanged?.call();
-      final isValid = validateError();
-      if (isValid == null) {
-        final int hashCode = destination.value.hashCode;
-        onReadyField?.call(hashCode.toString());
-      }
-      // ignore: empty_catches
-    } on StateError {}
+    address.updateForwardBalance(balance);
+    onChanged?.call();
   }
 
-  void setQueryId(TonAddress address, BigRational? queryId) {
+  void setQueryId(TonOutputWithBalance address, BigRational? queryId) {
     if (queryId == null) return;
-    try {
-      final des = MethodUtils.nullOnException(() => destination.value
-          ?.firstWhere((element) => element.address.networkAddress == address));
-      if (des == null) return;
-      des.updateQueryId(queryId.toBigInt());
-      onChanged?.call();
-      final isValid = validateError();
-      if (isValid == null) {
-        final int hashCode = destination.value.hashCode;
-        onReadyField?.call(hashCode.toString());
-      }
-      // ignore: empty_catches
-    } on StateError {}
+    address.updateQueryId(queryId.toBigInt());
+    onChanged?.call();
   }
 
-  void setJettonBalance(TonAddress address, BigInt? balance) {
+  void setJettonBalance(TonOutputWithBalance address, BigInt? balance) {
     if (balance == null) return;
-    try {
-      final des = MethodUtils.nullOnException(() => destination.value
-          ?.firstWhere((element) => element.address.networkAddress == address));
-      if (des == null) return;
-      des.updateJettonBalance(balance);
-      onChanged?.call();
-      _calcTokenBalances(des.jetton);
-      final isValid = validateError();
-      if (isValid == null) {
-        final int hashCode = destination.value.hashCode;
-        onReadyField?.call(hashCode.toString());
-      }
-      // ignore: empty_catches
-    } on StateError {}
+    address.updateJettonBalance(balance);
+    onChanged?.call();
+    _calcTokenBalances(address.jetton);
   }
 
-  void setJetton(TonAddress address, TonJettonToken? jetton) {
-    try {
-      final des = MethodUtils.nullOnException(() => destination.value
-          ?.firstWhere((element) => element.address.networkAddress == address));
-      if (des == null) return;
-      des.setToken(jetton);
-      _calcTokenBalances(jetton);
-      onChanged?.call();
-      final isValid = validateError();
-      if (isValid == null) {
-        final int hashCode = destination.value.hashCode;
-        onReadyField?.call(hashCode.toString());
-      }
-      // ignore: empty_catches
-    } on StateError {}
+  void setJetton(TonOutputWithBalance address, TonJettonToken? jetton) {
+    address.setToken(jetton);
+    _calcTokenBalances(jetton);
+    onChanged?.call();
   }
 
   String? queryIdForm(String? v) {
@@ -193,20 +127,15 @@ class TonTransferForm extends TonTransactionForm {
   void updateMessage(bool? updated) {
     if (updated == true) {
       onChanged?.call();
-      final isValid = validateError();
-      if (isValid == null) {
-        final int hashCode = destination.value.hashCode;
-        onReadyField?.call(hashCode.toString());
-      }
     }
   }
 
   @override
   String? validateError({ITonAddress? account}) {
-    if (destination.value?.isEmpty ?? true) {
+    if (destination.value.isEmpty) {
       return "add_least_one_receipt".tr;
     }
-    for (final i in destination.value!) {
+    for (final i in destination.value) {
       if (!i.hasAmount) {
         return "the_amount_is_unspecified".tr;
       }
@@ -225,8 +154,6 @@ class TonTransferForm extends TonTransactionForm {
 
   @override
   List<MessageRelaxed> toMessages(TonAddress account) {
-    return destination.value!
-        .map((e) => e.toMessage(network, account))
-        .toList();
+    return destination.value.map((e) => e.toMessage(network, account)).toList();
   }
 }

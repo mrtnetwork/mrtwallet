@@ -58,7 +58,7 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
                 children: [
                   PageTitleSubtitle(
                       title: null, body: Text("wallet_login_desc".tr)),
-                  CircleAssetsImgaeView(APPConst.logo),
+                  CircleAssetsImageView(APPConst.logo),
                   WidgetConstant.height20,
                   AppTextField(
                     obscureText: true,

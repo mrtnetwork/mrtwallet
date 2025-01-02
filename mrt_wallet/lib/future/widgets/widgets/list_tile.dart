@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/state_managment/extension/app_extensions/context.dart'
     show QuickContextAccsess;
 import 'package:mrt_wallet/app/models/models/typedef.dart'
-    show DynamicVoid, NullBoolVoid;
+    show BoolVoid, DynamicVoid, NullBoolVoid;
 import 'package:mrt_wallet/future/widgets/widgets/widget_constant.dart';
 
 class AppListTile extends StatelessWidget {
   const AppListTile(
-      {Key? key,
+      {super.key,
       this.title,
       this.subtitle,
       this.trailing,
@@ -18,8 +18,7 @@ class AppListTile extends StatelessWidget {
       this.enabled = true,
       this.selected = false,
       this.disabled = false,
-      this.maxLine = 2})
-      : super(key: key);
+      this.maxLine = 2});
   final Widget? title;
   final Widget? subtitle;
   final Widget? trailing;
@@ -59,14 +58,13 @@ class AppListTile extends StatelessWidget {
 
 class AppCheckListTile extends StatelessWidget {
   const AppCheckListTile(
-      {Key? key,
+      {super.key,
       this.onChanged,
       required this.value,
       this.title,
       this.subtitle,
       this.contentPadding,
-      this.maxLine = 2})
-      : super(key: key);
+      this.maxLine = 2});
   final int? maxLine;
   final NullBoolVoid? onChanged;
   final bool value;
@@ -97,13 +95,12 @@ class AppCheckListTile extends StatelessWidget {
 
 class AppRadioListTile<T> extends StatelessWidget {
   const AppRadioListTile(
-      {Key? key,
+      {super.key,
       required this.groupValue,
       this.onChanged,
       required this.value,
       this.title,
-      this.subtitle})
-      : super(key: key);
+      this.subtitle});
   final void Function(T? value)? onChanged;
   final T value;
   final Widget? title;
@@ -133,14 +130,13 @@ class AppRadioListTile<T> extends StatelessWidget {
 
 class AppSwitchListTile extends StatelessWidget {
   const AppSwitchListTile(
-      {Key? key,
+      {super.key,
       this.onChanged,
       required this.value,
       this.title,
       this.subtitle,
       this.maxLine = 2,
-      this.contentPadding})
-      : super(key: key);
+      this.contentPadding});
   final NullBoolVoid? onChanged;
   final bool value;
   final Widget? title;
@@ -171,29 +167,69 @@ class AppSwitchListTile extends StatelessWidget {
   }
 }
 
-class APPExpansionListTime extends StatelessWidget {
-  const APPExpansionListTime(
+class APPExpansionListTile extends StatelessWidget {
+  const APPExpansionListTile(
       {required this.title,
       this.subtitle,
       this.trailing,
       this.children = const <Widget>[],
-      Key? key})
-      : super(key: key);
+      this.tilePadding,
+      this.onExpansionChanged,
+      super.key});
   final Widget title;
   final Widget? subtitle;
   final Widget? trailing;
   final List<Widget> children;
+  final EdgeInsetsGeometry? tilePadding;
+  final BoolVoid? onExpansionChanged;
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
         shape: RoundedRectangleBorder(borderRadius: WidgetConstant.border8),
         collapsedShape:
             RoundedRectangleBorder(borderRadius: WidgetConstant.border8),
-        backgroundColor: context.colors.primaryContainer,
-        collapsedBackgroundColor: context.colors.primaryContainer,
+        backgroundColor: context.primaryContainer,
+        collapsedBackgroundColor: context.primaryContainer,
+        tilePadding: tilePadding,
+        collapsedIconColor: context.onPrimaryContainer,
+        iconColor: context.onPrimaryContainer,
         title: title,
         subtitle: subtitle,
         trailing: trailing,
+        onExpansionChanged: onExpansionChanged,
         children: children);
+  }
+}
+
+class APPCheckBox extends StatelessWidget {
+  const APPCheckBox(
+      {super.key,
+      this.ignoring = false,
+      this.color,
+      this.value,
+      this.onChanged,
+      this.activePress = true,
+      this.backgroundColor});
+  final bool ignoring;
+  final Color? color;
+  final Color? backgroundColor;
+  final bool? value;
+  final NullBoolVoid? onChanged;
+  final bool activePress;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      ignoring: ignoring,
+      child: Checkbox(
+        fillColor: backgroundColor == null
+            ? null
+            : WidgetStatePropertyAll(backgroundColor),
+        checkColor: color,
+        activeColor: backgroundColor,
+        value: value,
+        onChanged: activePress ? onChanged : null,
+      ),
+    );
   }
 }

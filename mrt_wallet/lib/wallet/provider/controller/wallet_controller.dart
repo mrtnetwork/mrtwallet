@@ -41,19 +41,19 @@ class WalletController extends _WalletController
         Web3TronImpl,
         Web3TonImpl,
         Web3StellarImpl,
-        Web3Impl {
-  WalletController._(WalletCore core, HDWallet wallet, ChainsHandler chains)
-      : super(core, wallet, chains);
+        Web3Impl,
+        WalletMoneroImpl {
+  WalletController._(WalletCore super.core, super.wallet, super.chains);
   static Future<ChainsHandler> _setupNetwork(
       WalletCore core, HDWallet wallet) async {
-    List<Chain> chains = [];
+    final List<Chain> chains = [];
     final keys = await core._readAccounts(wallet);
-    for (final i in keys) {
+    final keyBytes = keys.map((e) => BytesUtils.fromHexString(e.$2)).toList();
+    for (final i in keyBytes) {
       try {
-        final chain = Chain.deserialize(id: wallet._checksum, hex: i.$2);
+        final chain = Chain.deserialize(bytes: i);
         chains.add(chain);
-        // ignore: empty_catches
-      } catch (e) {}
+      } catch (_) {}
     }
     final chain = ChainsHandler(
         chains: chains, currentNetwork: wallet.network, id: wallet._checksum);
@@ -64,16 +64,17 @@ class WalletController extends _WalletController
       WalletCore core, HDWallet wallet) async {
     final chains = await _setupNetwork(core, wallet);
     final controller = WalletController._(core, wallet, chains);
-    controller.chain.initProvider();
-    controller._streamBalances();
+    await controller._onInitController();
     return controller;
   }
 
-  Future<void> _dispose() async {
+  @override
+  void _dispose() {
     _walletCore = null;
     _walletKey = null;
     _massterKey = null;
     _timeout.dispose();
-    _disposeBalanceUpdater();
+    chain.disposeProvider();
+    super._dispose();
   }
 }

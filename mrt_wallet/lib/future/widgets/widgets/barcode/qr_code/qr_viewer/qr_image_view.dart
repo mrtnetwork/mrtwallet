@@ -6,7 +6,7 @@ class QrImageView extends StatefulWidget {
   /// using the default options).
   QrImageView({
     required String data,
-    Key? key,
+    super.key,
     this.size,
     this.padding = const EdgeInsets.all(10.0),
     this.backgroundColor = Colors.transparent,
@@ -30,14 +30,13 @@ class QrImageView extends StatefulWidget {
     this.embeddedImageEmitsError = false,
   })  : assert(QrVersions.isSupportedVersion(version)),
         _data = data,
-        _qrCode = null,
-        super(key: key);
+        _qrCode = null;
 
   /// Create a new QR code using the [QrCode] data and the passed options (or
   /// using the default options).
   QrImageView.withQr({
     required QrCode qr,
-    Key? key,
+    super.key,
     this.size,
     this.padding = const EdgeInsets.all(10.0),
     this.backgroundColor = Colors.transparent,
@@ -61,8 +60,7 @@ class QrImageView extends StatefulWidget {
     this.embeddedImageEmitsError = false,
   })  : assert(QrVersions.isSupportedVersion(version)),
         _data = null,
-        _qrCode = qr,
-        super(key: key);
+        _qrCode = qr;
 
   // The data passed to the widget
   final String? _data;

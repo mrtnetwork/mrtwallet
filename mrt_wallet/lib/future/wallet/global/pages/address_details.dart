@@ -7,12 +7,8 @@ import 'package:mrt_wallet/wallet/wallet.dart' show ContactCore, ChainAccount;
 import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
 
 class AddressDetailsView extends StatelessWidget {
-  const AddressDetailsView({
-    required this.address,
-    super.key,
-    this.showBalance = true,
-    this.color,
-  });
+  const AddressDetailsView(
+      {required this.address, super.key, this.showBalance = true, this.color});
 
   final ChainAccount address;
   final bool showBalance;
@@ -51,7 +47,7 @@ class AddressDetailsView extends StatelessWidget {
         if (showBalance && network != null)
           CoinPriceView(
               account: address,
-              style: context.textTheme.titleLarge?.copyWith(color: color),
+              style: context.textTheme.titleMedium?.copyWith(color: color),
               token: network.token,
               symbolColor: color),
       ],
@@ -60,8 +56,7 @@ class AddressDetailsView extends StatelessWidget {
 }
 
 class AddressDrivationInfo extends StatelessWidget {
-  const AddressDrivationInfo(this.keyIndex, {this.color, Key? key})
-      : super(key: key);
+  const AddressDrivationInfo(this.keyIndex, {this.color, super.key});
   final AddressDerivationIndex keyIndex;
   final Color? color;
   @override
@@ -77,17 +72,21 @@ class AddressDrivationInfo extends StatelessWidget {
 }
 
 class ContactAddressView extends StatelessWidget {
-  const ContactAddressView({super.key, required this.contact});
+  const ContactAddressView({super.key, required this.contact, this.color});
   final ContactCore contact;
+  final Color? color;
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        OneLineTextWidget(contact.name, style: context.textTheme.labelLarge),
+        OneLineTextWidget(contact.name,
+            style: context.textTheme.labelLarge?.copyWith(color: color)),
         if (contact.type != null)
-          Text(contact.type!.tr, style: context.textTheme.bodySmall),
-        OneLineTextWidget(contact.address),
+          Text(contact.type!.tr,
+              style: context.textTheme.bodySmall?.copyWith(color: color)),
+        OneLineTextWidget(contact.address,
+            style: context.textTheme.bodyMedium?.copyWith(color: color)),
       ],
     );
   }

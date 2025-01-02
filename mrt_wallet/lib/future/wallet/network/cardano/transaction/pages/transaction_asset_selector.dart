@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/global/app.dart';
-import 'package:mrt_wallet/future/wallet/global/pages/setup_amount.dart';
+import 'package:mrt_wallet/app/utils/list/extension.dart';
+import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
@@ -31,17 +32,18 @@ class _CardanoTransactionAssetSelectorViewState
     final List<_AssetWithPolicyId> assets = [];
     for (final i in widget.totalAssets.assets.entries) {
       for (final b in i.value.assets.entries) {
-        assets.add(_AssetWithPolicyId(
+        final asset = _AssetWithPolicyId(
             name: b.key,
             policyID: i.key,
             balance: b.value,
-            decimal: b.value.currencyDecimal));
+            decimal: b.value.currencyDecimal);
+        assets.add(asset);
       }
     }
     return assets;
   }
 
-  late final List<_AssetWithPolicyId> assets = toAssetsWithPolicyId();
+  late final List<_AssetWithPolicyId> assets;
 
   Map<_AssetWithPolicyId, IntegerBalance> assetsToTransfer = {};
 
@@ -49,14 +51,9 @@ class _CardanoTransactionAssetSelectorViewState
     if (!widget.receiver.asset.hasAsset) return;
     for (final i in widget.receiver.asset.assets.entries) {
       for (final b in i.value.assets.entries) {
-        try {
-          final a = assets.firstWhere(
-              (element) => element.policyID == i.key && element.name == b.key);
-          assetsToTransfer[a] =
-              IntegerBalance(b.value.balance, b.value.currencyDecimal);
-        } on StateError {
-          continue;
-        }
+        final asset = assets.firstWhereOrNull(
+            (element) => element.policyID == i.key && element.name == b.key);
+        assetsToTransfer[asset]?.updateBalance(b.value.balance);
       }
     }
   }
@@ -64,23 +61,22 @@ class _CardanoTransactionAssetSelectorViewState
   void onSelectAsset(
       _AssetWithPolicyId assets, _OnSelectAssets onSelectAssets) async {
     try {
-      final r = assetsToTransfer.remove(assets);
+      final r = assetsToTransfer[assets]?.balance ?? BigInt.zero;
       final rAssets = (widget.remindAsset.assets[assets.policyID]
                   ?.assets[assets.name]?.balance ??
               BigInt.zero) +
-          (r?.balance ?? BigInt.zero);
-      final val = await onSelectAssets(
-          rAssets + (assetsToTransfer[assets]?.balance ?? BigInt.zero));
-      if (val == null || val <= BigInt.zero) return;
-      assetsToTransfer[assets] = IntegerBalance(val, assets.decimal);
+          r;
+      final val = await onSelectAssets(rAssets);
+      assetsToTransfer[assets]?.updateBalance(val);
     } finally {
-      setState(() {});
+      updateState();
     }
   }
 
   UtxoMultiAsset toAsset() {
     final Map<PolicyID, UtxoAssets> assets = {};
     for (final i in assetsToTransfer.entries) {
+      if (i.value.isZero) continue;
       final UtxoAssets utxoAsset = UtxoAssets({i.key.name: i.value});
       if (assets.containsKey(i.key.policyID)) {
         assets[i.key.policyID] = assets[i.key.policyID]! + utxoAsset;
@@ -91,15 +87,19 @@ class _CardanoTransactionAssetSelectorViewState
     return UtxoMultiAsset(assets);
   }
 
-  void onSetuo() {
-    if (context.mounted) {
-      Navigator.of(context).pop(toAsset());
-    }
+  void onSetup() {
+    Navigator.of(context).pop(toAsset());
   }
 
   @override
   void initState() {
     super.initState();
+    assets = toAssetsWithPolicyId();
+    for (final i in assets) {
+      assetsToTransfer[i] =
+          IntegerBalance.zero(i.balance.currencyDecimal, allowNegative: false);
+    }
+
     checkAssets();
   }
 
@@ -109,138 +109,97 @@ class _CardanoTransactionAssetSelectorViewState
       appBar: AppBar(
         title: Text("setup_output_asset_amount".tr),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              controller: widget.controller,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: ConstraintsBoxView(
-                    padding: WidgetConstant.padding20,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        PageTitleSubtitle(
-                            title: "receiver".tr,
-                            body: ContainerWithBorder(
-                                child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                    widget.receiver.address.networkAddress
-                                        .addressType.name,
-                                    style: context.textTheme.labelLarge),
-                                OneLineTextWidget(widget.receiver.address.view)
-                              ],
-                            ))),
-                        WidgetConstant.height20,
-                        Text("choose_asset_you_want_to_transfer".tr,
-                            style: context.textTheme.titleMedium),
-                        WidgetConstant.height8,
-                        ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: assets.length,
-                          physics: WidgetConstant.noScrollPhysics,
-                          itemBuilder: (c, index) {
-                            final asset = assets[index];
-                            return ContainerWithCheckBoxAndBorder(
-                              value: assetsToTransfer.containsKey(asset),
-                              onChange: (p0) {
-                                onSelectAsset(asset, (max) async {
-                                  return await context
-                                      .openSliverBottomSheet<BigInt>(
-                                    "setup_output_amount".tr,
-                                    child: SetupNetworkAmount(
-                                      token: asset.token,
-                                      max: max,
-                                      min: BigInt.zero,
-                                      subtitle: PageTitleSubtitle(
-                                          title: "receiver".tr,
-                                          body: ContainerWithBorder(
-                                              child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                  widget
-                                                      .receiver
-                                                      .address
-                                                      .networkAddress
-                                                      .addressType
-                                                      .name,
-                                                  style: context
-                                                      .textTheme.labelLarge),
-                                              OneLineTextWidget(
-                                                  widget.receiver.address.view)
-                                            ],
-                                          ))),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: onSetup,
+        label: Text("setup_recipient_assets".tr),
+      ),
+      body: CustomScrollView(
+        controller: widget.controller,
+        slivers: [
+          SliverToBoxAdapter(
+            child: ConstraintsBoxView(
+              padding: WidgetConstant.padding20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PageTitleSubtitle(
+                      title: "receiver".tr,
+                      body: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ReceiptAddressView(
+                              address: widget.receiver.address, title: null),
+                          ErrorTextContainer(
+                              error: "assets_balance_not_supported_desc".tr,
+                              enableTap: false),
+                        ],
+                      )),
+                  WidgetConstant.height20,
+                  Text("assets".tr, style: context.textTheme.titleMedium),
+                  Text("set_amount_for_each_assets_or_zero".tr),
+                  WidgetConstant.height8,
+                  ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: assets.length,
+                    physics: WidgetConstant.noScrollPhysics,
+                    separatorBuilder: (context, index) =>
+                        WidgetConstant.divider,
+                    itemBuilder: (c, index) {
+                      final asset = assets[index];
+                      return ContainerWithBorder(
+                          child: Column(
+                        children: [
+                          ContainerWithBorder(
+                            backgroundColor: context.onPrimaryContainer,
+                            child: TokenDetailsWidget(
+                              token: asset.token,
+                              radius: APPConst.circleRadius25,
+                              balance: asset.balance,
+                              color: context.primaryContainer,
+                            ),
+                          ),
+                          ContainerWithBorder(
+                            backgroundColor: context.onPrimaryContainer,
+                            onRemove: () {
+                              onSelectAsset(asset, (max) async {
+                                return await context
+                                    .openSliverBottomSheet<BigInt>(
+                                  "setup_output_amount".tr,
+                                  initialExtend: 1,
+                                  child: SetupNetworkAmount(
+                                    token: asset.token,
+                                    max: max,
+                                    min: BigInt.zero,
+                                    subtitle: PageTitleSubtitle(
+                                      title: "receiver".tr,
+                                      body: ReceiptAddressView(
+                                        address: widget.receiver.address,
+                                        title: null,
+                                      ),
                                     ),
-                                  );
-                                });
-                              },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      CircleTokenImageView(
-                                        asset.token,
-                                        radius: APPConst.circleRadius25,
-                                      ),
-                                      WidgetConstant.width8,
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(asset.token.nameView,
-                                                maxLines: 1,
-                                                style: context
-                                                    .textTheme.labelLarge),
-                                            if (assetsToTransfer
-                                                .containsKey(asset)) ...[
-                                              CoinPriceView(
-                                                token: asset.token,
-                                                balance:
-                                                    assetsToTransfer[asset],
-                                                style: context
-                                                    .textTheme.titleMedium,
-                                              )
-                                            ]
-                                          ],
-                                        ),
-                                      ),
-                                      CoinPriceView(
-                                          token: asset.token,
-                                          balance: asset.balance,
-                                          style: context.textTheme.titleMedium)
-                                    ],
                                   ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                                );
+                              });
+                            },
+                            onRemoveIcon: AddOrEditIconWidget(
+                              assetsToTransfer[asset]!.largerThanZero,
+                              color: context.primaryContainer,
+                            ),
+                            child: CoinPriceView(
+                                token: asset.token,
+                                balance: assetsToTransfer[asset],
+                                style: context.primaryTextTheme.titleMedium,
+                                symbolColor: context.primaryContainer),
+                          ),
+                        ],
+                      ));
+                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-          Padding(
-            padding: WidgetConstant.paddingVertical20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                    onPressed: onSetuo, child: Text("setup_output_amount".tr))
-              ],
-            ),
-          )
+          WidgetConstant.sliverPaddingVertial20,
         ],
       ),
     );

@@ -58,7 +58,7 @@ abstract class TonAccountContext with CborSerializable, Equatable {
     final type = TonAccountContextType.fromTag(decode.tags);
     final list = decode.getList;
     final WalletVersion version =
-        WalletVersion.fromValue(list.elemetAs<String>(0));
+        WalletVersion.fromValue(list.elementAs<String>(0));
     final bool bouncable = list.elementAt(1);
     switch (type) {
       case TonAccountContextType.legacy:
@@ -67,19 +67,17 @@ abstract class TonAccountContext with CborSerializable, Equatable {
         return TonAccountSubWalletContext(
             version: version,
             bouncable: bouncable,
-            subwalletId: list.elemetAs<int>(2));
+            subwalletId: list.elementAs<int>(2));
       case TonAccountContextType.v5:
         return TonAccountV5CustomContext(
             version: version,
             bouncable: bouncable,
-            contextId: list.elemetAs<int>(2));
+            contextId: list.elementAs<int>(2));
       case TonAccountContextType.v5SubWallet:
         return TonAccountV5SubWalletContext(
             version: version,
             bouncable: bouncable,
-            subwalletId: list.elemetAs<int>(2));
-      default:
-        throw WalletExceptionConst.invalidAccountDetails;
+            subwalletId: list.elementAs<int>(2));
     }
   }
   factory TonAccountContext.merge(
@@ -113,12 +111,8 @@ abstract class TonAccountContext with CborSerializable, Equatable {
 }
 
 class TonAccountLegacyContext extends TonAccountContext {
-  TonAccountLegacyContext._(
-      {required WalletVersion version, required bool bouncable})
-      : super(
-            type: TonAccountContextType.legacy,
-            version: version,
-            bouncable: bouncable);
+  TonAccountLegacyContext._({required super.version, required super.bouncable})
+      : super(type: TonAccountContextType.legacy);
   factory TonAccountLegacyContext(
       {required WalletVersion version, required bool bouncable}) {
     if (version.version > 2) {
@@ -164,13 +158,10 @@ class TonAccountLegacyContext extends TonAccountContext {
 class TonAccountSubWalletContext extends TonAccountContext {
   final int subwalletId;
   const TonAccountSubWalletContext._(
-      {required WalletVersion version,
+      {required super.version,
       required this.subwalletId,
-      required bool bouncable})
-      : super(
-            type: TonAccountContextType.subwallet,
-            version: version,
-            bouncable: bouncable);
+      required super.bouncable})
+      : super(type: TonAccountContextType.subwallet);
 
   factory TonAccountSubWalletContext(
       {required WalletVersion version,
@@ -221,11 +212,8 @@ class TonAccountSubWalletContext extends TonAccountContext {
 class TonAccountV5CustomContext extends TonAccountContext {
   final int walletId;
   const TonAccountV5CustomContext._(
-      {required this.walletId, required bool bouncable})
-      : super(
-            type: TonAccountContextType.v5,
-            version: WalletVersion.v5R1,
-            bouncable: bouncable);
+      {required this.walletId, required super.bouncable})
+      : super(type: TonAccountContextType.v5, version: WalletVersion.v5R1);
   factory TonAccountV5CustomContext(
       {required WalletVersion version,
       required int contextId,
@@ -292,11 +280,10 @@ class TonAccountV5CustomContext extends TonAccountContext {
 class TonAccountV5SubWalletContext extends TonAccountContext {
   final int subwalletId;
   const TonAccountV5SubWalletContext._(
-      {required this.subwalletId, required bool bouncable})
+      {required this.subwalletId, required super.bouncable})
       : super(
             type: TonAccountContextType.v5SubWallet,
-            version: WalletVersion.v5R1,
-            bouncable: bouncable);
+            version: WalletVersion.v5R1);
 
   factory TonAccountV5SubWalletContext(
       {required WalletVersion version,

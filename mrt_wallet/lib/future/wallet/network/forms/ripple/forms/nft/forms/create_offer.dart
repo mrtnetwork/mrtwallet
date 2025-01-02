@@ -66,6 +66,7 @@ class RippleCreateOfferForm implements RippleTransactionForm {
       TransactionFormField(
     name: "NFTokenCreateOfferFlags",
     subject: "nft_offer_flag_desc",
+    value: NftTokenCreateOfferFlag.tfSellNftoken,
     id: "nft_offer_flag",
     onChangeForm: (v) {
       return v;
@@ -76,7 +77,7 @@ class RippleCreateOfferForm implements RippleTransactionForm {
   String? validateError({IXRPAddress? account}) {
     for (final i in fields) {
       if (!i.optional && !i.hasValue) {
-        return "field_is_req".tr.replaceOne(i.name);
+        return "field_is_req".tr.replaceOne(i.name.tr);
       }
     }
     return toTransaction(XRPAddressConst.accountZero).validate;

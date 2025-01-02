@@ -93,12 +93,6 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
     coinType = v;
   }
 
-  void changeChainId() {
-    if (!editableChainId) return;
-    page = _Page.chainId;
-    updateState();
-  }
-
   String? validateCoinType(String? v) {
     if (v?.trim().isEmpty ?? true) return null;
     final parse = int.tryParse(v ?? "");
@@ -108,6 +102,12 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
       return "slip_44_desc".tr;
     }
     return null;
+  }
+
+  void changeChainId() {
+    if (!editableChainId) return;
+    page = _Page.chainId;
+    updateState();
   }
 
   String? validateChainId(String? v) {
@@ -235,8 +235,8 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
         updateNetwork = network.copyWith(
             coinParam: network.coinParam.updateProviders(importedProviders));
       } else {
-        final client =
-            APIUtils.buildEthereumProvider(importedProviders[0], network);
+        final client = APIUtils.buildEthereumProvider(
+            provider: importedProviders[0], network: network);
         final info = await client.getNetworkInfo();
         updateNetwork = network.copyWith(
             coinParam: EthereumNetworkParams(
@@ -250,7 +250,7 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
                 chainId: chain,
                 supportEIP1559: info.$2,
                 defaultNetwork: false,
-                mainnet: true,
+                chainType: ChainType.mainnet,
                 bip32CoinType: coinType));
       }
       return await wallet.wallet.updateImportNetwork(updateNetwork);
@@ -260,7 +260,7 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
     } else {
       pageProgressKey.successText("network_imported_to_your_wallet".tr,
           backToIdle: false);
-      widget.web3?.onCompeleteForm?.call(chainId.toRadix16);
+      widget.web3?.onCompleteForm?.call(chainId.toRadix16);
     }
   }
 
@@ -340,7 +340,7 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
 }
 
 class _SetupChainId extends StatelessWidget {
-  const _SetupChainId(this.state, {Key? key}) : super(key: key);
+  const _SetupChainId(this.state);
   final __ImportEthereumNetworkState state;
   @override
   Widget build(BuildContext context) {
@@ -378,7 +378,7 @@ class _SetupChainId extends StatelessWidget {
 }
 
 class _ChainInfos extends StatelessWidget {
-  const _ChainInfos(this.state, {Key? key}) : super(key: key);
+  const _ChainInfos(this.state);
   final __ImportEthereumNetworkState state;
 
   @override
@@ -476,8 +476,8 @@ class _ChainInfos extends StatelessWidget {
                   child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(provider.serviceName),
-                  Text(provider.websiteUri),
+                  Text(provider.protocol.name),
+                  Text(provider.callUrl),
                 ],
               ));
             }),
@@ -489,42 +489,42 @@ class _ChainInfos extends StatelessWidget {
           APPAnimatedSize(
             isActive: true,
             onDeactive: (c) => WidgetConstant.sizedBox,
-            onActive: (c) => ContainerWithBorder(
-                validate: state.defaultProviders.isNotEmpty ||
-                    state.importedProviders.isNotEmpty,
-                child: Column(
-                  children: [
-                    ContainerWithBorder(
+            onActive: (c) => Column(
+              children: [
+                ContainerWithBorder(
+                  validate: state.defaultProviders.isNotEmpty ||
+                      state.importedProviders.isNotEmpty,
+                  onRemove: () {
+                    state.onTapUpdateProviders();
+                  },
+                  onRemoveIcon: Icon(Icons.add_box,
+                      color: context.colors.onPrimaryContainer),
+                  child: Text(
+                    "tap_to_add_new_service_provider".tr,
+                    style: context.onPrimaryTextTheme.bodyMedium,
+                  ),
+                ),
+                ...List.generate(state.importedProviders.length, (index) {
+                  final provider = state.importedProviders[index];
+                  return ContainerWithBorder(
                       onRemove: () {
-                        state.onTapUpdateProviders();
+                        state.onRemoveProvider(provider);
                       },
-                      onRemoveIcon: const Icon(Icons.add_box),
-                      child: Text("tap_to_add_new_service_provider".tr),
-                    ),
-                    ...List.generate(state.importedProviders.length, (index) {
-                      final provider = state.importedProviders[index];
-                      return ContainerWithBorder(
-                          backgroundColor: context.colors.onPrimaryContainer,
-                          onRemove: () {
-                            state.onRemoveProvider(provider);
-                          },
-                          onRemoveIcon: Icon(Icons.remove_circle,
-                              color: context.colors.primaryContainer),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(provider.protocol.value.tr,
-                                  style: context.colors.primaryContainer
-                                      .lableLarge(context)),
-                              Text(provider.websiteUri,
-                                  style: context.colors.primaryContainer
-                                      .bodyMedium(context),
-                                  maxLines: 2),
-                            ],
-                          ));
-                    }),
-                  ],
-                )),
+                      onRemoveIcon: Icon(Icons.remove_circle,
+                          color: context.colors.onPrimaryContainer),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(provider.protocol.value.tr,
+                              style: context.onPrimaryTextTheme.labelLarge),
+                          Text(provider.callUrl,
+                              style: context.onPrimaryTextTheme.bodyMedium,
+                              maxLines: 2),
+                        ],
+                      ));
+                }),
+              ],
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

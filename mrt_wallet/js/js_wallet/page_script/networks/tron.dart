@@ -11,7 +11,7 @@ class _TronPageControllerConst {
 class TronPageController extends PageNetworkController {
   ProxyMethodHandler<TIP1193>? _tron;
   ProxyMethodHandler<TronWeb>? _tronWeb;
-  TronPageController();
+  TronPageController(super.postMessage);
 
   ProxyMethodHandler<TIP1193> _setupTIP1193(Proxy tronWeb) {
     final eip = TIP1193.setup(
@@ -22,7 +22,12 @@ class TronPageController extends PageNetworkController {
         tronWeb: tronWeb,
         enable: _enable.toJS,
         cancelAllListener: _cancelAllListeners.toJS,
-        sendWalletRequest: _onWalletRequest.toJS);
+        sendWalletRequest: _onWalletRequest.toJS,
+        params: TronLinkParams(JSObject())
+          ..dappIcon = ''
+          ..dappName = ''
+          ..openTronLinkAppOnMobile = true
+          ..openUrlWhenWalletNotFound = true);
     return ProxyMethodHandler(eip);
   }
 
@@ -45,18 +50,54 @@ class TronPageController extends PageNetworkController {
     tronWeb.setAddress = _disabledFeature.toJS;
     tronWeb.setFullNode = _disabledFeature.toJS;
     tronWeb.setSolidityNode = _disabledFeature.toJS;
-    tronWeb.setAddress = _disabledFeature.toJS;
     tronWeb.setHeader = _disabledFeature.toJS;
     tronWeb.setFullNodeHeader = _disabledFeature.toJS;
     tronWeb.setDefaultBlock = _disabledFeature.toJS;
+    tronWeb.defaultPrivateKey = '';
     tronWeb.trx_ = Proxy(tronWeb.trx, createJSInteropWrapper(trxHandler));
+    tronWeb.defaultAddress = JSTronAddress.none().toJS;
+
     final tronWebMethodHandler = ProxyMethodHandler<TronWeb>(tronWeb);
-    final adapter = _setupTIP1193(Proxy(tronWebMethodHandler.object,
-        createJSInteropWrapper(tronWebMethodHandler)));
+    final tronWebProxy = Proxy(tronWebMethodHandler.object,
+        createJSInteropWrapper(tronWebMethodHandler));
+    final adapter = _setupTIP1193(tronWebProxy);
     final proxy = Proxy(adapter.object, createJSInteropWrapper(adapter));
+    tronLink = proxy;
+    tronWeb_ = tronWebProxy;
     _tron = adapter;
     _tronWeb = tronWebMethodHandler;
     tron = proxy;
+  }
+
+  void postAddress(String? address) {
+    jsWindow.postMessage({
+      "message": {
+        "action": "accountsChanged",
+        "data": {"address": address}
+      }
+    }.jsify());
+  }
+
+  void postChainChanged(TronChainChanged? node) {
+    jsWindow.postMessage({
+      "message": {
+        "action": "setNode",
+        "data": node == null
+            ? null
+            : {
+                "chainId": node.chainId,
+                "fullNode": node.fullNode,
+                "solidityNode": node.solidityNode,
+                "eventServer": node.fullNode
+              }
+      }
+    }.jsify());
+  }
+
+  void postConnect() {
+    jsWindow.postMessage({
+      "message": {"action": "connect"}
+    }.jsify());
   }
 
   void _disabledFeature(JSAny? args) {
@@ -75,7 +116,7 @@ class TronPageController extends PageNetworkController {
   }
 
   JSPromise<JSAny?> _signTransaction_(JSAny message, [String? privateKey]) {
-    if (privateKey != null) {
+    if (privateKey?.isNotEmpty ?? false) {
       throw JSWalletError(
           message: _TronPageControllerConst.providedPrivateKeyError);
     }
@@ -106,6 +147,7 @@ class TronPageController extends PageNetworkController {
         final connectionInfo = TronChainChanged.fromJson(message.asMap());
         _tron?.object.chainId = connectionInfo.chainId;
         eventData = connectionInfo.toJSEvent;
+        postConnect();
         break;
       case JSEventType.chainChanged:
         final connectionInfo = TronChainChanged.fromJson(message.asMap());
@@ -113,18 +155,20 @@ class TronPageController extends PageNetworkController {
         _tronWeb?.object.fullNode = HttpProvider(connectionInfo.fullNode);
         _tronWeb?.object.solidityNode = HttpProvider(connectionInfo.fullNode);
         eventData = connectionInfo.chainId.jsify();
+        postChainChanged(connectionInfo);
+
         break;
       case JSEventType.disconnect:
         _tron?.object.chainId = null;
-        _tronWeb?.object.defaultAddress = null;
+        _tronWeb?.object.defaultAddress = JSTronAddress.none().toJS;
         break;
       case JSEventType.accountsChanged:
         final changeInfo = TronAccountsChanged.fromJson(message.asMap());
-        _tronWeb?.object.defaultAddress = changeInfo.defaultAddress == null
-            ? null
-            : createJSInteropWrapper(changeInfo.defaultAddress!);
+        _tronWeb?.object.defaultAddress =
+            changeInfo.defaultAddress?.toJS ?? JSTronAddress.none().toJS;
         _tron?.object.selectedAddress = changeInfo.defaultAddress?.base58.toJS;
         eventData = changeInfo.toJSEvent;
+        postAddress(changeInfo.defaultAddress?.base58);
         break;
       case JSEventType.disable:
         _disableProvider(message.asString());
@@ -143,7 +187,7 @@ class TronPageController extends PageNetworkController {
     if (jsObject == null || !_listeners.containsKey(type)) return;
     final listeners = <JSFunction>[..._listeners[type]!];
     for (final i in listeners) {
-      i.callAsFunction(i, jsObject);
+      i.callAsFunction(null, jsObject);
     }
   }
 

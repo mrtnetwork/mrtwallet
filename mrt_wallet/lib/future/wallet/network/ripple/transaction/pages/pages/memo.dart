@@ -45,16 +45,18 @@ class RippleMemosView extends StatelessWidget {
           child: memos.isEmpty
               ? ContainerWithBorder(
                   onRemove: onCreateMemo,
-                  onRemoveIcon: const Icon(Icons.add),
-                  child: Text("tap_to_create_memo".tr),
+                  onRemoveIcon: Icon(
+                    Icons.add,
+                    color: context.colors.onPrimaryContainer,
+                  ),
+                  child: Text(
+                    "tap_to_create_memo".tr,
+                    style: context.onPrimaryTextTheme.bodyMedium,
+                  ),
                 )
               : Column(
-                  children: List.generate(
-                      memos.length,
-                      (index) => _RippleMemoView(
-                            memos[index],
-                            onTapMemo,
-                          )),
+                  children: List.generate(memos.length,
+                      (index) => _RippleMemoView(memos[index], onTapMemo)),
                 ),
         )
       ],
@@ -71,8 +73,13 @@ class _RippleMemoView extends StatelessWidget {
     final bool memoIsEmpty = memo.memoType == null &&
         memo.memoFormat == null &&
         memo.memoData == null;
+    final bodyMedium = context.onPrimaryTextTheme.bodyMedium;
+    final labelLarge = context.onPrimaryTextTheme.labelLarge;
     return ContainerWithBorder(
-        onRemoveIcon: const Icon(Icons.edit),
+        onRemoveIcon: Icon(
+          Icons.edit,
+          color: context.colors.onPrimaryContainer,
+        ),
         onRemove: () {
           onTapMemo(memo);
         },
@@ -82,16 +89,16 @@ class _RippleMemoView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (memo.memoData != null) ...[
-                    Text("memo_data".tr, style: context.textTheme.labelLarge),
-                    Text(memo.memoData!)
+                    Text("memo_data".tr, style: labelLarge),
+                    Text(memo.memoData!, style: bodyMedium)
                   ],
                   if (memo.memoFormat != null) ...[
-                    Text("memo_format".tr, style: context.textTheme.labelLarge),
-                    Text(memo.memoFormat!)
+                    Text("memo_format".tr, style: labelLarge),
+                    Text(memo.memoFormat!, style: bodyMedium)
                   ],
                   if (memo.memoType != null) ...[
-                    Text("memo_type".tr, style: context.textTheme.labelLarge),
-                    Text(memo.memoType!)
+                    Text("memo_type".tr, style: labelLarge),
+                    Text(memo.memoType!, style: bodyMedium)
                   ],
                 ],
               ));

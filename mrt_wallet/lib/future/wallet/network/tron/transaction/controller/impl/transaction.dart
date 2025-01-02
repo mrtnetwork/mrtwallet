@@ -11,7 +11,7 @@ abstract class TronTransactionImpl extends StateController {
   final WalletProvider walletProvider;
   final TronChain account;
   WalletTronNetwork get network => account.network;
-  TronClient get apiProvider => account.provider()!;
+  TronClient get apiProvider => account.client;
   ITronAddress get address => account.address;
   TronChainParameters get tronChainParameters;
   TronTransactionForm get field;

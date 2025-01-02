@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/wallet/network/network.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
@@ -77,7 +79,7 @@ class AccountMenuButtonView extends StatelessWidget {
 }
 
 class AccountAppbarPopupMenu extends StatelessWidget {
-  const AccountAppbarPopupMenu(this.wallet, {Key? key}) : super(key: key);
+  const AccountAppbarPopupMenu(this.wallet, {super.key});
   final WalletProvider wallet;
   Chain get chain => wallet.wallet.chain;
   @override
@@ -130,11 +132,15 @@ class AccountAppbarPopupMenu extends StatelessWidget {
             case 5:
               UriUtils.lunch(chain.network.coinParam.marketUri!);
               break;
+            case 6:
+              wallet.wallet.removeChain(chain);
+              break;
             default:
           }
         },
-        itemBuilder: (c) {
+        itemBuilder: (context) {
           return [
+            ..._chainCustomButton(chain: chain, context: context, value: 20),
             PopupMenuItem<int>(
               value: 0,
               child: AppListTile(
@@ -181,12 +187,30 @@ class AccountAppbarPopupMenu extends StatelessWidget {
                 value: 5,
                 child: AppListTile(
                   trailing:
-                      CircleAssetsImgaeView(CoinGeckoUtils.logo, radius: 12),
+                      CircleAssetsImageView(CoinGeckoUtils.logo, radius: 12),
                   title: Text("CoinGecko".tr,
+                      style: context.textTheme.labelMedium),
+                ),
+              ),
+            if (chain.network.isImportedNetwork)
+              PopupMenuItem<int>(
+                value: 6,
+                child: AppListTile(
+                  trailing: const Icon(Icons.remove),
+                  title: Text("remove_network".tr,
                       style: context.textTheme.labelMedium),
                 ),
               ),
           ];
         });
   }
+}
+
+List<PopupMenuItem<int>> _chainCustomButton(
+    {required Chain chain, required BuildContext context, required int value}) {
+  return switch (chain.network.type) {
+    NetworkType.cardano => cardanoAccountMenuButton(
+        chain: chain.cast(), context: context, value: value),
+    _ => []
+  };
 }

@@ -20,7 +20,7 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() async {
   runZonedGuarded(run, (error, stack) {
-    WalletLogging.log("zone error: $error $stack");
+    // WalletLogging.log("zone error: $error $stack");
   });
 }
 
@@ -55,41 +55,40 @@ class MyBTC extends StatelessWidget {
       repositoryId: StateConst.main,
       builder: (m) {
         return MaterialApp(
-          scaffoldMessengerKey: StateRepository.messengerKey(context),
-          title: APPConst.name,
-          scrollBehavior: AppScrollBehavior(PlatformInterface.appPlatform),
-          builder: (context, child) {
-            double? maxWidth;
-            if (PlatformInterface.appPlatform.isDesktop) {
-              maxWidth = APPConst.desktopAppWidth;
-            } else if (PlatformInterface.isWeb) {
-              maxWidth = APPConst.maxViewWidth;
-            }
-            return MediaQuery(
-              data: context.mediaQuery.copyWith(
-                  textScaler:
-                      context.mediaQuery.textScaler.clamp(maxScaleFactor: 1.4)),
-              child: maxWidth == null
-                  ? child!
-                  : ConstraintsBoxView(maxWidth: maxWidth, child: child!),
-            );
-          },
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: ThemeController.appTheme,
-          locale: ThemeController.locale,
-          onGenerateRoute: PageRouter.onGenerateRoute,
-          initialRoute: PageRouter.home,
-          navigatorObservers: [MyRouteObserver()],
-          showSemanticsDebugger: false,
-          debugShowCheckedModeBanner: false,
-          color: ThemeController.appTheme.colorScheme.primary,
-          darkTheme: ThemeController.appTheme,
-          navigatorKey: StateRepository.navigatorKey(context),
-        );
+            scaffoldMessengerKey: StateRepository.messengerKey(context),
+            title: APPConst.name,
+            scrollBehavior: AppScrollBehavior(PlatformInterface.appPlatform),
+            builder: (context, child) {
+              double? maxWidth;
+              if (PlatformInterface.appPlatform.isDesktop) {
+                maxWidth = APPConst.desktopAppWidth;
+              } else if (PlatformInterface.isWeb) {
+                maxWidth = APPConst.maxViewWidth;
+              }
+              ThemeController.updatePrimary(context.theme);
+              return MediaQuery(
+                  data: context.mediaQuery.copyWith(
+                      textScaler: context.mediaQuery.textScaler
+                          .clamp(maxScaleFactor: 1.4)),
+                  child: maxWidth == null
+                      ? child!
+                      : ConstraintsBoxView(maxWidth: maxWidth, child: child!));
+            },
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            theme: ThemeController.appTheme,
+            darkTheme: ThemeController.appTheme,
+            locale: ThemeController.locale,
+            onGenerateRoute: PageRouter.onGenerateRoute,
+            initialRoute: PageRouter.home,
+            navigatorObservers: [MyRouteObserver()],
+            showSemanticsDebugger: false,
+            debugShowCheckedModeBanner: false,
+            color: ThemeController.appTheme.colorScheme.primary,
+            navigatorKey: StateRepository.navigatorKey(context));
       },
     );
   }

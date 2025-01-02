@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/utils/utils.dart';
+import 'package:blockchain_utils/blockchain_utils.dart';
 
 class CryptoPersonalSignResponse {
   final String signatureHex;
@@ -6,5 +6,5 @@ class CryptoPersonalSignResponse {
   CryptoPersonalSignResponse({
     required this.signatureHex,
     required List<int> signature,
-  }) : signature = BytesUtils.toBytes(signature, unmodifiable: true);
+  }) : signature = signature.asImmutableBytes;
 }

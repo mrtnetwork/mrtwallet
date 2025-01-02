@@ -12,7 +12,7 @@ class StellarAccountPageView extends StatelessWidget {
   final StellarChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    return TabBarView(children: [
+    return TabBarView(physics: WidgetConstant.noScrollPhysics, children: [
       const _StellarServices(),
       _StellarTokenView(account: chainAccount),
     ]);
@@ -40,6 +40,16 @@ class _StellarServices extends StatelessWidget {
           },
           separatorBuilder: (context, index) => WidgetConstant.divider,
           itemCount: StellarConst.supportedOperations.length),
+      SliverToBoxAdapter(
+        child: AppListTile(
+          leading: const Icon(Icons.password),
+          title: Text("stellar_key_conversion".tr),
+          subtitle: Text("stellar_key_conversion_desc".tr),
+          onTap: () {
+            context.to(PageRouter.stellarKeyConversion);
+          },
+        ),
+      )
     ]);
   }
 }

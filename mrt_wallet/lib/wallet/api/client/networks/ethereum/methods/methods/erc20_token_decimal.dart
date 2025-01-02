@@ -3,12 +3,12 @@ import 'package:mrt_wallet/crypto/utils/solidity/solidity.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solidity/address/core.dart';
 
-class RPCERC20Decimal extends ETHRPCRequest<int?> {
+class RPCERC20Decimal extends EthereumRequest<int?, String> {
   RPCERC20Decimal(this.contractAddress, {BlockTagOrNumber? blockNumber})
       : super(blockNumber: blockNumber ?? BlockTagOrNumber.latest);
 
   @override
-  EthereumMethods get method => EthereumMethods.call;
+  String get method => EthereumMethods.call.value;
 
   final SolidityAddress contractAddress;
 
@@ -17,7 +17,7 @@ class RPCERC20Decimal extends ETHRPCRequest<int?> {
   @override
   int? onResonse(result) {
     if (result == "0x") return null;
-    return ETHRPCRequest.onIntResponse(result);
+    return EthereumRequest.onIntResponse(result);
   }
 
   @override

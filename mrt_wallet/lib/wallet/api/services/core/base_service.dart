@@ -1,3 +1,4 @@
+import 'package:mrt_wallet/app/isolate/types.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/core/tracker.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models/protocols.dart';
@@ -7,4 +8,5 @@ abstract class BaseServiceProtocol<T extends APIProvider> {
   abstract final APIServiceTracker tracker;
   void disposeService();
   ServiceProtocol get protocol;
+  APPIsolate get isolate;
 }

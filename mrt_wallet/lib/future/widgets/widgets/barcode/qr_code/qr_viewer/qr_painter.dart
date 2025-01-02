@@ -386,7 +386,7 @@ class _PaintMetrics {
 
   void _calculateMetrics() {
     final gapTotal = (moduleCount - 1) * gapSize;
-    var pixelSize = (containerSize - gapTotal) / moduleCount;
+    final pixelSize = (containerSize - gapTotal) / moduleCount;
     _pixelSize = (pixelSize * 2).roundToDouble() / 2;
     _innerContentSize = (_pixelSize * moduleCount) + gapTotal;
     _inset = (containerSize - _innerContentSize) / 2;

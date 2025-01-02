@@ -5,8 +5,7 @@ import 'tooltip/widgets/tooltip.dart';
 
 class TooltipHelper extends StatelessWidget {
   const TooltipHelper(this.message,
-      {this.iconColor, this.iconSize = APPConst.double20, Key? key})
-      : super(key: key);
+      {this.iconColor, this.iconSize = APPConst.double20, super.key});
   final String message;
   final Color? iconColor;
   final double iconSize;

@@ -1,6 +1,8 @@
 import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/substrate/substrate.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';
@@ -41,11 +43,15 @@ class SubstrateNewAddressParams implements NewAccountParams<SubstrateAddress> {
   }
 
   @override
-  ISubstrateAddress toAccount(WalletNetwork network, List<int> publicKey) {
+  ISubstrateAddress toAccount(
+      WalletNetwork network, CryptoPublicKeyData? publicKey) {
+    if (publicKey == null) {
+      throw WalletExceptionConst.pubkeyRequired;
+    }
     return ISubstrateAddress.newAccount(
         accountParams: this,
-        publicKey: publicKey,
-        network: network as WalletPolkadotNetwork);
+        publicKey: publicKey.keyBytes(),
+        network: network.toNetwork());
   }
 
   @override

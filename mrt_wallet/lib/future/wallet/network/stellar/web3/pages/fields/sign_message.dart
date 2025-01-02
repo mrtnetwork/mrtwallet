@@ -5,8 +5,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 
 class StellarWeb3SignMessageRequestView extends StatelessWidget {
-  const StellarWeb3SignMessageRequestView({required this.request, Key? key})
-      : super(key: key);
+  const StellarWeb3SignMessageRequestView({required this.request, super.key});
   final Web3StellarSignMessageForm<Web3StellarSignMessage> request;
   Web3StellarSignMessage get param => request.request.params;
   @override
@@ -17,7 +16,7 @@ class StellarWeb3SignMessageRequestView extends StatelessWidget {
         children: [
           ContainerWithBorder(
               backgroundColor: context.colors.errorContainer,
-              onTapWhenOnRemove: false,
+              enableTap: false,
               child: Row(
                 children: [
                   Icon(
@@ -41,7 +40,7 @@ class StellarWeb3SignMessageRequestView extends StatelessWidget {
               onRemove: () {},
               onRemoveWidget:
                   CopyTextIcon(dataToCopy: param.challeng, isSensitive: false),
-              onTapWhenOnRemove: false,
+              enableTap: false,
               child: Text(param.challeng,
                   style:
                       context.colors.onPrimaryContainer.bodyMedium(context))),
@@ -52,7 +51,7 @@ class StellarWeb3SignMessageRequestView extends StatelessWidget {
                 onRemove: () {},
                 onRemoveWidget: CopyTextIcon(
                     dataToCopy: param.content ?? "", isSensitive: false),
-                onTapWhenOnRemove: false,
+                enableTap: false,
                 child: SelectableText(
                   param.content ?? "",
                   style: context.colors.onPrimaryContainer.bodyMedium(context),
@@ -81,7 +80,7 @@ class StellarWeb3SignMessageRequestView extends StatelessWidget {
                                   ContainerWithBorder(
                                       backgroundColor:
                                           context.colors.errorContainer,
-                                      onTapWhenOnRemove: false,
+                                      enableTap: false,
                                       child: Text(
                                           "sign_message_private_key_desc".tr,
                                           style: context.colors.onErrorContainer

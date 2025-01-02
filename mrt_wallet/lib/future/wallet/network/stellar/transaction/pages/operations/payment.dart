@@ -12,8 +12,7 @@ class PaymentOperationView extends StatefulWidget {
   final StellarTransactionStateController controller;
   final StellarPaymentOperation? operation;
   const PaymentOperationView(
-      {required this.controller, this.operation, Key? key})
-      : super(key: key);
+      {required this.controller, this.operation, super.key});
 
   @override
   State<PaymentOperationView> createState() => _PaymentOperationViewState();
@@ -24,9 +23,9 @@ class _PaymentOperationViewState extends State<PaymentOperationView>
   StellarTransactionStateController get controller => widget.controller;
   StellarChain get chain => controller.account;
   @override
-  late final StellarClient client = chain.provider()!;
+  StellarClient get client => chain.client;
+  @override
   StellarPickedIssueAsset? asset;
-  // StellarIssueToken? token;
   bool get isNative => asset?.asset.type.isNative ?? false;
   late IntegerBalance amount = IntegerBalance.zero(chain.network.coinDecimal);
   BigInt maximumAmount = BigInt.zero;
@@ -66,6 +65,7 @@ class _PaymentOperationViewState extends State<PaymentOperationView>
     amount.zero();
     calculateMaximumAmount();
     calculateRemindAmount();
+    checkTrustPathLimit(asset, amount.balance);
     checkIsReady();
     updateState();
   }
@@ -75,7 +75,12 @@ class _PaymentOperationViewState extends State<PaymentOperationView>
     this.amount.updateBalance(amount);
     calculateRemindAmount();
     checkIsReady();
-    updateState();
+    checkTrustPathLimit(asset, this.amount.balance);
+  }
+
+  @override
+  void onAccountActivityUpdated() {
+    checkTrustPathLimit(asset, amount.balance);
   }
 
   void setupOperation() {
@@ -129,73 +134,55 @@ class _PaymentOperationViewState extends State<PaymentOperationView>
         Text("select_stellar_payment_assets_desc".tr),
         WidgetConstant.height8,
         ContainerWithBorder(
-          iconAlginment: asset == null
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
-          onRemoveIcon: asset == null
-              ? Icon(
-                  Icons.add_box,
-                  color: context.colors.onPrimaryContainer,
-                )
-              : Icon(
-                  Icons.edit,
-                  color: context.colors.onPrimaryContainer,
-                ),
-          child: asset == null
-              ? Text("tap_to_select_or_create_asset".tr)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (asset!.asset.type.isNative) ...[
-                      Text(asset!.asset.type.name,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      WidgetConstant.height8,
-                      ContainerWithBorder(
-                          backgroundColor: context.colors.onPrimaryContainer,
-                          child: TokenDetailsWidget(
-                            token: asset!.token,
-                            liveBalance: chain.address.address.balance,
-                            color: context.colors.primaryContainer,
-                          )),
-                    ] else ...[
-                      Text(asset!.asset.type.name,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      OneLineTextWidget(asset!.issuer ?? '',
-                          style: context.colors.onPrimaryContainer
-                              .bodyMedium(context)),
-                      ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
-                        onTapWhenOnRemove: false,
-                        onRemove: asset?.issueToken == null ? () {} : null,
-                        onRemoveWidget: TappedTooltipView(
-                          tooltipWidget: ToolTipView(
-                              message: "stellar_new_token_created".tr,
-                              child: Icon(Icons.warning,
-                                  color: context.colors.tertiary)),
-                        ),
-                        child: TokenDetailsWidget(
-                          token: asset!.currentToken,
-                          balance: asset?.tokenBalance,
-                          color: context.colors.primaryContainer,
-                        ),
-                      ),
-                    ]
-                  ],
-                ),
+          onRemoveIcon: AddOrEditIconWidget(asset != null),
+          child: ConditionalWidget(
+            onActive: (context) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: TokenDetailsWidget(
+                      token: asset!.asset.type.isNative
+                          ? asset!.token
+                          : asset!.currentToken,
+                      balance: asset!.asset.type.isNative
+                          ? chain.address.address.balance.value
+                          : asset?.tokenBalance,
+                      tokenAddress: asset!.issuer,
+                      color: context.onPrimaryContainer,
+                      radius: APPConst.circleRadius25,
+                    ),
+                  ),
+                  if (!asset!.asset.type.isNative &&
+                      asset?.issueToken == null) ...[
+                    WidgetConstant.width8,
+                    TappedTooltipView(
+                      tooltipWidget: ToolTipView(
+                          message: "stellar_new_token_created".tr,
+                          child: Icon(Icons.warning,
+                              color: context.colors.tertiary)),
+                    )
+                  ]
+                ],
+              );
+            },
+            enable: asset != null,
+            onDeactive: (context) => Text(
+              "tap_to_select_or_create_asset".tr,
+              style: context.onPrimaryTextTheme.bodyMedium,
+            ),
+          ),
           onRemove: () {
             context
                 .openSliverDialog<StellarPickedIssueAsset>(
                     (c) => PickFromAccountAssets(
                         accountInfo: controller.accountInfo, chain: chain),
                     "assets".tr,
-                    content: (c) => [
+                    content: (context) => [
                           IconButton(
                             tooltip: "create_assets".tr,
                             icon: const Icon(Icons.add_box),
                             onPressed: () {
-                              c.pop();
+                              context.pop();
                               context
                                   .openSliverBottomSheet<
                                           StellarPickedIssueAsset>(
@@ -225,7 +212,7 @@ class _PaymentOperationViewState extends State<PaymentOperationView>
 
 class _Amount extends StatelessWidget {
   final _PaymentOperationViewState state;
-  const _Amount(this.state, {Key? key}) : super(key: key);
+  const _Amount(this.state);
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +220,7 @@ class _Amount extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ReceiptAddressView(
-          onTapWhenOnRemove: state.receiver == null,
+          enableTap: state.receiver == null,
           address: state.receiver?.address,
           onEditWidget: state.receiver == null
               ? null
@@ -294,6 +281,7 @@ class _Amount extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "setup_output_amount".tr,
+                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: state.asset!.token,
@@ -322,7 +310,7 @@ class _Amount extends StatelessWidget {
         ),
         ErrorTextContainer(
             margin: WidgetConstant.paddingVertical10,
-            error: state.destinationInactiveError),
+            error: state.destinationInactiveError ?? state.pathLimitError),
       ],
     );
   }

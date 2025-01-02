@@ -12,31 +12,30 @@ class TokenDetailsView extends StatelessWidget {
     this.onSelect,
     this.onSelectWidget,
     this.onSelectIcon,
-    this.backgroundColor,
     this.textColor,
     this.radius = 40,
     this.showBalance = true,
-    this.onTapWhenOnRemove = true,
+    this.enableTap = true,
   });
   final TokenCore token;
   final DynamicVoid? onSelect;
   final Widget? onSelectWidget;
   final Widget? onSelectIcon;
-  final Color? backgroundColor;
+  // final Color? backgroundColor;
   final Color? textColor;
   final double radius;
   final bool showBalance;
-  final bool onTapWhenOnRemove;
+  final bool enableTap;
   @override
   Widget build(BuildContext context) {
     return ContainerWithBorder(
       onRemove: onSelect,
       onRemoveIcon: onSelectIcon,
       onRemoveWidget: onSelectWidget,
-      backgroundColor: backgroundColor,
-      onTapWhenOnRemove: onTapWhenOnRemove,
+      enableTap: enableTap,
       child: TokenDetailsWidget(
           token: token.token,
+          tokenAddress: token.issuer,
           color: textColor ?? context.colors.onPrimaryContainer,
           radius: radius,
           liveBalance: showBalance ? token.balance : null),
@@ -50,17 +49,19 @@ class TokenDetailsWidget extends StatelessWidget {
   final Color? color;
   final Live<BalanceCore>? liveBalance;
   final BalanceCore? balance;
+  final String? tokenAddress;
   const TokenDetailsWidget(
       {required this.token,
       this.liveBalance,
       this.balance,
       this.radius = APPConst.double40,
       this.color,
-      Key? key})
-      : super(key: key);
+      this.tokenAddress,
+      super.key});
 
   @override
   Widget build(BuildContext context) {
+    final bool sameNameSymport = token.nameView == token.symbolView;
     return Row(
       children: [
         CircleTokenImageView(token, radius: radius),
@@ -71,15 +72,18 @@ class TokenDetailsWidget extends StatelessWidget {
           children: [
             Text(token.nameView,
                 style: context.textTheme.labelLarge?.copyWith(color: color)),
+            if (tokenAddress != null)
+              OneLineTextWidget(tokenAddress!,
+                  style: context.textTheme.bodyMedium?.copyWith(color: color)),
             if (liveBalance != null || balance != null)
               CoinPriceView(
                 liveBalance: liveBalance,
                 balance: balance,
                 token: token,
-                style: context.textTheme.titleLarge?.copyWith(color: color),
+                style: context.textTheme.titleMedium?.copyWith(color: color),
                 symbolColor: color,
               )
-            else
+            else if (!sameNameSymport)
               Text(token.symbolView,
                   style: context.textTheme.labelSmall?.copyWith(color: color)),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/token_details.dart';
+import 'package:mrt_wallet/future/wallet/global/pages/token_details_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
@@ -11,9 +12,9 @@ class TonAccountPageView extends StatelessWidget {
   final TheOpenNetworkChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    return TabBarView(children: [
+    return TabBarView(physics: WidgetConstant.noScrollPhysics, children: [
       const _TonServices(),
-      _TonJettonsView(account: chainAccount),
+      _TonJettonsView(account: chainAccount)
     ]);
   }
 }
@@ -65,37 +66,18 @@ class _TonJettonsView extends StatelessWidget {
       SliverList.builder(
         itemBuilder: (context, index) {
           final TonJettonToken token = address.tokens[index];
-          return ContainerWithBorder(
-            onRemove: () {
-              context.openDialogPage<TonJettonToken>("token_info".tr,
-                  child: (ctx) => TokenDetailsModalView(
+          return TokenDetailsView(
+              onSelectWidget: WidgetConstant.sizedBox,
+              onSelect: () {
+                context.openDialogPage<TokenAction>("token_info".tr,
+                    child: (ctx) => TokenDetailsModalView(
                         token: token,
                         address: address,
-                        transferPath: PageRouter.tonTransfer,
-                        transferArgruments: account,
                         account: account,
-                      ));
-            },
-            onRemoveWidget: WidgetConstant.sizedBox,
-            child: Row(
-              children: [
-                CircleTokenImageView(token.token, radius: 40),
-                WidgetConstant.width8,
-                Expanded(
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(token.token.name, style: context.textTheme.labelLarge),
-                    Text(token.issuer!, style: context.textTheme.bodySmall),
-                    CoinPriceView(
-                        liveBalance: token.balance,
-                        token: token.token,
-                        style: context.textTheme.titleLarge),
-                  ],
-                )),
-              ],
-            ),
-          );
+                        transferArgruments: account,
+                        transferPath: PageRouter.tonTransfer));
+              },
+              token: token);
         },
         itemCount: address.tokens.length,
         addAutomaticKeepAlives: false,
@@ -110,10 +92,19 @@ class _TonServices extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AccountTabbarScrollWidget(slivers: [
+    return AccountTabbarScrollWidget(slivers: [
       SliverToBoxAdapter(
         child: Column(
-          children: [],
+          children: [
+            AppListTile(
+              leading: const Icon(Icons.password),
+              title: Text("ton_mnemonic".tr),
+              subtitle: Text("generate_ton_private_key".tr),
+              onTap: () {
+                context.to(PageRouter.tonMnemonic);
+              },
+            ),
+          ],
         ),
       )
     ]);

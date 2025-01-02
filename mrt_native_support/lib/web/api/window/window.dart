@@ -47,7 +47,7 @@ extension type Window._(JSObject _) implements WebEventStream {
   external WebKit get webkit;
 
   @JS("postMessage")
-  external void postMessage(JSAny message);
+  external void postMessage(JSAny? message);
   @JS("focus")
   external void focus();
 
@@ -280,6 +280,12 @@ extension type Worker._(JSObject _) implements JSObject, WebEventStream {
   @JS("removeEventListener")
   external void removeEventListener(String type, JSFunction callback);
   external void postMessage(JSAny message);
+  @JS("postMessage")
+  external void postMessage_<T extends Object>(
+      ExternalDartReference<T> message);
+
+  @JS("terminate")
+  external void terminate();
 }
 extension type WorkerOptions._(JSObject _) implements JSObject {
   external factory WorkerOptions(
@@ -307,8 +313,13 @@ extension type EventInit._(JSObject _) implements JSObject {
   external set cancelable(bool? cancelable);
   external set composed(bool? composed);
   external set detail(JSAny? detail);
+  external set data(JSAny? data);
   external factory EventInit(
-      {bool? bubbles, bool? cancelable, bool? composed, JSAny? detail});
+      {bool? bubbles,
+      bool? cancelable,
+      bool? composed,
+      JSAny? detail,
+      JSAny? data});
 
   List<int>? detailBytes() {
     try {
@@ -363,17 +374,19 @@ extension type CustomEvent._(JSObject _) implements WebEvent {
   external factory CustomEvent(String? type, EventInit? options);
   factory CustomEvent.create(
       {required String? type,
-      required JSAny? eventData,
+      JSAny? detail,
+      JSAny? data,
       bool bubbles = true,
       bool cancelable = false,
       bool clone = false}) {
     if (clone && isExtension && cloneInto != null) {
-      eventData = _cloneInto(eventData, jsWindow.document.defaultView);
+      detail = _cloneInto(detail, jsWindow.document.defaultView);
     }
 
     return CustomEvent(
       type,
-      EventInit(bubbles: bubbles, cancelable: cancelable, detail: eventData),
+      EventInit(
+          bubbles: bubbles, cancelable: cancelable, detail: detail, data: data),
     );
   }
 }
@@ -390,8 +403,23 @@ extension type JSON._(JSObject _) implements JSObject {
 extension type JSConsole._(JSObject _) implements JSObject {
   external factory JSConsole();
   external void log(String? text);
+
+  @JS("log")
+  external void log_(JSAny? text);
+  @JS("log")
+  external JSFunction get logFunc;
+  @JS("log")
+  external set setLog(JSFunction _);
+
   external void debug(String? text);
   external void info(String? text);
+
+  @JS("info")
+  external JSFunction get infoFunc;
+
+  @JS("info")
+  external set setInfo(JSFunction _);
+
   external void error(String? text);
   @JS("error")
   external void errorObject(JSAny? obj);

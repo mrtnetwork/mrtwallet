@@ -12,11 +12,13 @@ class SolanaConst {
   static const int decimal = 9;
   static final BigRational maximumAccountSizeBytes = BigRational.from(10240);
   static final BigRational maxSPLTokenDecimalPlaces = BigRational.from(18);
-  static const int minimumSolanaBase58SecretKey = 88;
+  static const int minimumSolanaBase58SecretKey = 87;
   static const String mainnetGenesis =
       "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
   static const String testnetGenesis =
       "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY";
   static const String devnetGenesis =
       "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG";
+  static const String tokenListUri =
+      "https://cdn.jsdelivr.net/gh/solana-labs/token-list@latest/src/tokens/solana.tokenlist.json";
 }

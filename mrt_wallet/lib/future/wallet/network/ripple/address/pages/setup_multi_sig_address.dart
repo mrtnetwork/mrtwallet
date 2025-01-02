@@ -5,7 +5,6 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
@@ -65,7 +64,7 @@ class _SetupRippleMutlisigAddressViewState
 
       final newAcc = RippleMultiSigSignerDetails(
           publicKey: acc.publicKey,
-          keyIndex: acc.keyIndex as Bip32AddressIndex,
+          keyIndex: acc.keyIndex.cast(),
           weight: signer.signerWeight);
 
       signers.addAll({signer: newAcc});
@@ -96,8 +95,7 @@ class _SetupRippleMutlisigAddressViewState
     if (address == null || progressKey.inProgress) return;
     progressKey.progressText("retrieving_account_information".tr);
     final result = await MethodUtils.call(() async {
-      final account = await widget.account
-          .provider()!
+      final account = await widget.account.client
           .getAccountRegularAndSignerList(
               RippleUtils.ensureClassicAddress(address!.view));
       return account;
@@ -134,7 +132,7 @@ class _SetupRippleMutlisigAddressViewState
         threshold: 1,
         signers: [
           RippleMultiSigSignerDetails(
-              keyIndex: addr.keyIndex as Bip32AddressIndex,
+              keyIndex: addr.keyIndex.cast(),
               publicKey: addr.publicKey,
               weight: 1)
         ],

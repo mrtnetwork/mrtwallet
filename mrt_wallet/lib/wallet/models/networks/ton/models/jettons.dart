@@ -43,7 +43,7 @@ class TonAccountJettonResponse {
   }
 
   @override
-  operator ==(other) {
+  bool operator ==(other) {
     if (other is! TonAccountJettonResponse) return false;
     return other.balance == balance && other.tokenAddress == tokenAddress;
   }

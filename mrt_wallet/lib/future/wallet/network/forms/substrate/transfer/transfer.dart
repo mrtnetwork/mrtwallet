@@ -58,18 +58,28 @@ class SubstrateTransferForm extends SubstrateTransactionForm {
     _callValue = _calcNativeValue();
   }
 
-  void setReceiver(
-      {required ReceiptAddress<SubstrateAddress>? address,
-      required DynamicVoid onExists}) {
-    if (address == null) return;
+  bool _setReceiver(ReceiptAddress<SubstrateAddress> address) {
     final bool exists =
         destination.value.any((element) => element.address == address);
     if (exists) {
-      onExists.call();
-      return;
+      return false;
     }
     destination.addValue(
         SubstrateOutputWithBalance(address: address, network: network));
+    return true;
+  }
+
+  void setReceiver(
+      {required List<ReceiptAddress<SubstrateAddress>>? addresses,
+      required DynamicVoid onExists}) {
+    if (addresses == null || addresses.isEmpty) return;
+    bool allAdded = true;
+    for (final i in addresses) {
+      allAdded &= _setReceiver(i);
+    }
+    if (!allAdded) {
+      onExists.call();
+    }
     _check();
   }
 
@@ -100,8 +110,8 @@ class SubstrateTransferForm extends SubstrateTransactionForm {
   }
 
   @override
-  List<Map<String, dynamic>> toMessage() {
-    final bool usePallet = destination.length > 1;
+  List<Map<String, dynamic>> toMessage({bool forceBatch = false}) {
+    final bool usePallet = forceBatch || destination.length > 1;
     return destination.value
         .map((e) => e.toMessage(usePallet: usePallet))
         .toList();

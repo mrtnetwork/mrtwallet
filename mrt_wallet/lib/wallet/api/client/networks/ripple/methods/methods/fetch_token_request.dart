@@ -2,13 +2,13 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
-class XRPRPCFetchTokens extends XRPLedgerRequest<List<XRPIssueToken>> {
-  XRPRPCFetchTokens({
-    required this.account,
-    this.hotWallet,
-    this.strict = false,
-    XRPLLedgerIndex? ledgerIndex = XRPLLedgerIndex.validated,
-  });
+class XRPRPCFetchTokens
+    extends XRPLedgerRequest<List<XRPIssueToken>, Map<String, dynamic>> {
+  XRPRPCFetchTokens(
+      {required this.account,
+      this.hotWallet,
+      this.strict = false,
+      XRPLLedgerIndex? ledgerIndex = XRPLLedgerIndex.validated});
   @override
   String get method => XRPRequestMethod.gatewayBalances;
 
@@ -17,15 +17,6 @@ class XRPRPCFetchTokens extends XRPLedgerRequest<List<XRPIssueToken>> {
 
   /// should be string or list String
   final dynamic hotWallet;
-  @override
-  String? get validate {
-    if (hotWallet != null) {
-      if (hotWallet is! String && hotWallet is! List<String>) {
-        return "hotWallet variable should be string or list String";
-      }
-    }
-    return null;
-  }
 
   @override
   Map<String, dynamic> toJson() {

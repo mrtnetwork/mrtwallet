@@ -26,7 +26,7 @@ class EthereumRequestAccountForm extends EthereumWeb3Form {
   factory EthereumRequestAccountForm(
       {required Web3EthereumRequest request,
       required List<EthereumChain> chains}) {
-    Map<EthereumChain, TransactionListFormField<Web3EthereumChainAccount>>
+    final Map<EthereumChain, TransactionListFormField<Web3EthereumChainAccount>>
         fields = {};
     for (final i in chains) {
       fields[i] = TransactionListFormField(
@@ -66,7 +66,7 @@ class EthereumRequestAccountForm extends EthereumWeb3Form {
 
   void onChangeDefaultPermission(Web3EthereumChainAccount? account) {
     if (account == null || account.defaultAddress) return;
-    for (var e in chainPermission) {
+    for (final e in chainPermission) {
       e.changeDefault(false);
     }
     account.changeDefault(true);
@@ -92,15 +92,15 @@ class EthereumRequestAccountForm extends EthereumWeb3Form {
   }
 
   void complete() {
-    assert(onCompeleteForm != null, "Must not be null");
-    List<Web3EthereumChainAccount> accounts = [];
+    assert(onCompleteForm != null, "Must not be null");
+    final List<Web3EthereumChainAccount> accounts = [];
     for (final i in permissions.entries) {
       if (i.value.isEmpty) continue;
       final defaultAddresses = i.value.value.where((e) => e.defaultAddress);
       if (defaultAddresses.isEmpty) {
         i.value.value.first.changeDefault(true);
       } else if (defaultAddresses.length > 1) {
-        for (var e in i.value.value) {
+        for (final e in i.value.value) {
           e.changeDefault(false);
         }
         i.value.value.first.changeDefault(true);
@@ -109,7 +109,7 @@ class EthereumRequestAccountForm extends EthereumWeb3Form {
     }
     newPermission.updateChainAccount(accounts);
     newPermission.setActiveChain(chain);
-    onCompeleteForm?.call(newPermission);
+    onCompleteForm?.call(newPermission);
   }
 
   @override

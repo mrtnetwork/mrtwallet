@@ -1,6 +1,5 @@
 import 'dart:convert';
-import 'package:blockchain_utils/utils/utils.dart';
-
+import 'package:blockchain_utils/helper/helper.dart';
 import 'bit_buffer.dart';
 import 'qr_code.dart' show mode8bitByte, modeNumber, modeAlphaNum;
 
@@ -17,7 +16,7 @@ class QrByte implements QrDatum {
 
   factory QrByte(String input) => QrByte.fromBytes(utf8.encoder.convert(input));
 
-  QrByte.fromBytes(List<int> input) : _data = BytesUtils.toBytes(input);
+  QrByte.fromBytes(List<int> input) : _data = input.asImmutableBytes;
 
   @override
   int get length => _data.length;
@@ -35,7 +34,7 @@ class QrNumeric implements QrDatum {
   factory QrNumeric.fromString(String numberString) {
     final newList = List<int>.filled(numberString.length, 0);
     var count = 0;
-    for (var char in numberString.codeUnits) {
+    for (final char in numberString.codeUnits) {
       if (char < 0x30 || char > 0x39) {
         throw ArgumentError('string can only contain alpha numeric 0-9');
       }

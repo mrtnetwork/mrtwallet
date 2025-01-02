@@ -107,9 +107,8 @@ class _SecureBackupViewState extends State<GenerateBackupView> with SafeState {
                 WidgetConstant.height8,
                 APPAnimatedSwitcher(enable: useKeyStore, widgets: {
                   true: (c) => Text("use_key_store_backup_desc".tr),
-                  false: (c) => Text("mrt_backup_encoding_desc".tr,
-                      style: context.textTheme.bodyMedium
-                          ?.copyWith(color: context.colors.error)),
+                  false: (c) => ErrorTextContainer(
+                      error: "mrt_backup_encoding_desc".tr, enableTap: false),
                 }),
                 if (widget.descriptions.isNotEmpty) ...[
                   WidgetConstant.height8,

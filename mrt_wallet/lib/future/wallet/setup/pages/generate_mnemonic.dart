@@ -65,9 +65,7 @@ class GenerateMnemonicView extends StatelessWidget {
                   WidgetConstant.height8,
                   DropdownButtonFormField<Bip39Languages>(
                     value: model.language,
-                    decoration: InputDecoration(
-                      label: Text("Language".tr),
-                    ),
+                    decoration: InputDecoration(label: Text("Language".tr)),
                     items: Bip39Languages.values.map((language) {
                       return DropdownMenuItem<Bip39Languages>(
                         value: language,

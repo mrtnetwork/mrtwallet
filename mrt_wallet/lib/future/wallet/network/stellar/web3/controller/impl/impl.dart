@@ -19,7 +19,7 @@ abstract class Web3StellarImpl<RESPONSE,
   final WalletProvider walletProvider;
   final StellarChain account;
   WalletStellarNetwork get network => account.network;
-  StellarClient get apiProvider => account.provider()!;
+  StellarClient get apiProvider => account.client;
   IStellarAddress get address => request.accountPermission()!;
 
   final Web3StellarRequest<RESPONSE, T> request;

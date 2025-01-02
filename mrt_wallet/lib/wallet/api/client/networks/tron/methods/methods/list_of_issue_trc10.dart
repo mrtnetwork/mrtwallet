@@ -2,7 +2,7 @@ import 'package:mrt_wallet/wallet/models/networks/tron/models/issue_token.dart';
 import 'package:on_chain/tron/src/provider/provider.dart';
 
 class TronRequestListOfIssueTRC10
-    extends TVMRequestParam<List<TronIssueTRC10Token>, Map<String, dynamic>> {
+    extends TronRequest<List<TronIssueTRC10Token>, Map<String, dynamic>> {
   TronRequestListOfIssueTRC10();
 
   @override

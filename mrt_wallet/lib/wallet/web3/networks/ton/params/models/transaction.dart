@@ -125,7 +125,7 @@ class Web3TonSendTransaction
     return Web3TonSendTransaction(
         account: TonAddress(values.elementAt(1)),
         messages: values
-            .elemetAs<CborListValue>(2)
+            .elementAs<CborListValue>(2)
             .value
             .cast<CborTagValue>()
             .map((e) => Web3TonTransactionMessage.deserialize(object: e))

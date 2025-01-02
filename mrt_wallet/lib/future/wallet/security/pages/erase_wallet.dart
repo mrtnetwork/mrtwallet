@@ -60,43 +60,49 @@ class _EraseWalletViewState extends State<_EraseWalletView> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: (c) => UnfocusableChild(
-        child: ConstraintsBoxView(
-          padding: WidgetConstant.paddingHorizontal20,
-          alignment: Alignment.center,
-          child: SingleChildScrollView(
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              WidgetConstant.height20,
-              PageTitleSubtitle(
-                  title: "delete_wallet_confirmation".tr,
-                  body: Column(
+      child: (c) => Center(
+        child: CustomScrollView(
+          shrinkWrap: true,
+          slivers: [
+            SliverConstraintsBoxView(
+              padding: WidgetConstant.paddingHorizontal20,
+              sliver: SliverToBoxAdapter(
+                child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("delete_wallet_desc".tr),
-                    ],
-                  )),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FixedElevatedButton(
-                    onPressed: () {
-                      context
-                          .openSliverDialog<bool>(
-                              (p0) => DialogTextView(
-                                    text: "wallet_deletation_desc".tr,
-                                    buttonWidget:
-                                        const DialogDoubleButtonView(),
-                                  ),
-                              "erase_wallet".tr)
-                          .then(onDelete);
-                    },
-                    child: Text("delete_wallet".tr),
-                  )
-                ],
-              )
-            ]),
-          ),
+                      WidgetConstant.height20,
+                      PageTitleSubtitle(
+                          title: "delete_wallet_confirmation".tr,
+                          body: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("delete_wallet_desc".tr),
+                            ],
+                          )),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FixedElevatedButton(
+                            padding: WidgetConstant.paddingVertical40,
+                            onPressed: () {
+                              context
+                                  .openSliverDialog<bool>(
+                                      (p0) => DialogTextView(
+                                            text: "wallet_deletation_desc".tr,
+                                            buttonWidget:
+                                                const DialogDoubleButtonView(),
+                                          ),
+                                      "erase_wallet".tr)
+                                  .then(onDelete);
+                            },
+                            child: Text("delete_wallet".tr),
+                          )
+                        ],
+                      )
+                    ]),
+              ),
+            ),
+          ],
         ),
       ),
     );

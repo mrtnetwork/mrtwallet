@@ -49,7 +49,7 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
   final Cancelable _requestCancelable = Cancelable();
   String? _inLoadingError;
   String? get inLoadingError => _inLoadingError;
-  final Map<String, DelegatedAccountResourceInfo> _fetchedResource = {};
+  final Map<TronAddress, DelegatedAccountResourceInfo> _fetchedResource = {};
 
   Future<void> _fetchAccountDelegateInfo(TronAddress to) async {
     _requestCancelable.cancel();
@@ -60,8 +60,8 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
 
     onChanged?.call(true);
     final result = await MethodUtils.call(() async {
-      if (_fetchedResource.containsKey(to.toAddress())) {
-        return _fetchedResource[to.toAddress()]!;
+      if (_fetchedResource.containsKey(to)) {
+        return _fetchedResource[to]!;
       }
       return await _provider!
           .getDelegatedResourceInfo(_address!.networkAddress, to);
@@ -70,8 +70,8 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
     if (result.hasError) {
       _inLoadingError = result.error!;
     } else {
-      _fetchedResource[to.toAddress()] = result.result;
-      _delegatedAccountResourceInfo = _fetchedResource[to.toAddress()];
+      _fetchedResource[to] = result.result;
+      _delegatedAccountResourceInfo = _fetchedResource[to];
     }
     _isLoading = false;
     onChanged?.call(false);

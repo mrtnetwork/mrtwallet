@@ -9,12 +9,11 @@ class RippleTransferTransactionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final RippleChain? token = context.getNullArgruments();
     final RippleIssueToken? issueToken = context.getNullArgruments();
     return RippleTransactionFieldsView(
         field: LiveTransactionForm(
-            validator: RipplePaymentForm(
-                issueToken: issueToken,
-                token: token?.network.coinParam.token ?? issueToken!.token)));
+            validator: RipplePaymentForm(issueToken == null
+                ? null
+                : XRPPickedAssets.account(issueToken))));
   }
 }

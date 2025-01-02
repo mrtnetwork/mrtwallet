@@ -16,6 +16,6 @@ class Web3TonSignMessageForm<PARAMS extends Web3TonRequestParam>
   Future<void> signMessage(FuncFutureNullableBoold confirm) async {
     final accept = await confirm();
     if (accept != true) return;
-    onCompeleteForm?.call(true);
+    onCompleteForm?.call(true);
   }
 }

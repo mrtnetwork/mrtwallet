@@ -28,7 +28,7 @@ class SubstrateTransactionFieldsView extends StatelessWidget {
                   walletProvider: wallet,
                   account: chain,
                   network: chain.network,
-                  apiProvider: chain.provider()!,
+                  apiProvider: chain.client,
                   address: chain.address,
                   validator: validator),
               builder: (controller) {
@@ -48,9 +48,13 @@ class SubstrateTransactionFieldsView extends StatelessWidget {
                                   style: context.textTheme.titleLarge),
                               WidgetConstant.height8,
                               ContainerWithBorder(
-                                onRemoveIcon: const Icon(Icons.edit),
+                                onRemoveIcon: Icon(
+                                  Icons.edit,
+                                  color: context.onPrimaryContainer,
+                                ),
                                 child: AddressDetailsView(
                                     address: controller.address,
+                                    color: context.onPrimaryContainer,
                                     key: ValueKey<ISubstrateAddress?>(
                                         controller.address)),
                                 onRemove: () {
@@ -89,7 +93,7 @@ class SubstrateTransactionFieldsView extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   FixedElevatedButton(
-                                      padding: WidgetConstant.paddingVertical20,
+                                      padding: WidgetConstant.paddingVertical40,
                                       onPressed: controller.trIsReady
                                           ? controller.sendTransaction
                                           : null,
@@ -144,7 +148,11 @@ class _SubstrateTransactionTransferFields extends StatelessWidget {
                 field.destination.value[index];
             return ContainerWithBorder(
               iconAlginment: CrossAxisAlignment.start,
-              onRemoveIcon: const Icon(Icons.remove_circle),
+              enableTap: false,
+              onRemoveIcon: Icon(
+                Icons.remove_circle,
+                color: context.onPrimaryContainer,
+              ),
               validate: receiver.hasAmount,
               onRemove: () {
                 field.onRemoveReceiver(receiver);
@@ -153,16 +161,17 @@ class _SubstrateTransactionTransferFields extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ContainerWithBorder(
-                      backgroundColor: context.colors.secondary,
+                      backgroundColor: context.colors.onPrimaryContainer,
                       child: ReceiptAddressDetailsView(
                         address: receiver.address,
-                        color: context.colors.onSecondary,
+                        color: context.primaryContainer,
                       )),
                   ContainerWithBorder(
                     onRemove: () {
                       context
                           .openSliverBottomSheet<BigInt>(
                         "setup_output_amount".tr,
+                        initialExtend: 1,
                         child: SetupNetworkAmount(
                           token: field.network.coinParam.token,
                           max: field.maxTransfer(
@@ -185,14 +194,13 @@ class _SubstrateTransactionTransferFields extends StatelessWidget {
                     },
                     validate: receiver.hasAmount,
                     onRemoveIcon:
-                        Icon(Icons.edit, color: context.colors.onSecondary),
-                    backgroundColor: context.colors.secondary,
+                        Icon(Icons.edit, color: context.primaryContainer),
+                    backgroundColor: context.onPrimaryContainer,
                     child: CoinPriceView(
                       balance: receiver.balance,
                       token: field.network.coinParam.token,
-                      style: context.textTheme.titleLarge
-                          ?.copyWith(color: context.colors.onSecondary),
-                      symbolColor: context.colors.onSecondary,
+                      style: context.primaryTextTheme.titleMedium,
+                      symbolColor: context.colors.primaryContainer,
                       showTokenImage: true,
                     ),
                   ),
@@ -205,26 +213,35 @@ class _SubstrateTransactionTransferFields extends StatelessWidget {
           validate: field.destination.hasValue,
           onRemove: () {
             context
-                .openSliverBottomSheet<ReceiptAddress<SubstrateAddress>>(
+                .openSliverBottomSheet<List<ReceiptAddress<SubstrateAddress>>>(
                     "receiver_address".tr,
-                    bodyBuilder: (c) =>
+                    bodyBuilder: (scrollController) =>
                         SelectRecipientAccountView<SubstrateAddress>(
-                            account: controller.account, scrollController: c),
+                          account: controller.account,
+                          scrollController: scrollController,
+                          multipleSelect: true,
+                        ),
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9)
                 .then(
               (value) {
                 field.setReceiver(
-                    address: value,
+                    addresses: value,
                     onExists: () {
-                      context.showAlert("address_already_exist".tr);
+                      context.showAlert("some_addresses_exist".tr);
                     });
               },
             );
           },
-          onRemoveIcon: const Icon(Icons.add_box),
-          child: Text("tap_to_add_new_receipment".tr),
+          onRemoveIcon: Icon(
+            Icons.add_box,
+            color: context.onPrimaryContainer,
+          ),
+          child: Text(
+            "tap_to_add_new_receipment".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
       ],
     );

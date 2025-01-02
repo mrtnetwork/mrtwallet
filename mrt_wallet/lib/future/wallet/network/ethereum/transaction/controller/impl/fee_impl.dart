@@ -84,7 +84,7 @@ mixin ETHTransactionFeeImpl on EthTransactionImpl {
 
   Map<EIP1559FeeSpeed, EthereumFee?>? _updateFessGasLimit(int gasLimit) {
     if (_fees[EIP1559FeeSpeed.normal] == null) return null;
-    Map<EIP1559FeeSpeed, EthereumFee?> updatedFees = {};
+    final Map<EIP1559FeeSpeed, EthereumFee?> updatedFees = {};
     final maxGas = BigInt.from(gasLimit);
     for (final i in fees.entries) {
       if (i.value == null) continue;

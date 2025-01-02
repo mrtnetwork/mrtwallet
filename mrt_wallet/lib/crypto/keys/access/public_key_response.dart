@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 
 class PublicKeyData extends CryptoPublicKeyData {
@@ -68,6 +68,9 @@ class PublicKeyData extends CryptoPublicKeyData {
           keyName,
           chainCode
         ]),
-        CryptoKeyConst.accessPubliKeyResponse);
+        type.tag);
   }
+
+  @override
+  CryptoPublicKeyDataType get type => CryptoPublicKeyDataType.public;
 }

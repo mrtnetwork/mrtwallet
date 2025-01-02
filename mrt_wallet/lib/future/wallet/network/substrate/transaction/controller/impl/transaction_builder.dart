@@ -1,5 +1,6 @@
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/crypto/utils/substrate/substrate.dart';
+import 'package:mrt_wallet/wallet/models/networks/substrate/substrate.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 import 'transaction.dart';
 
@@ -17,7 +18,8 @@ mixin SubstrateTransactionBuilderImpl on SubstrateTransactiomImpl {
     final blockHash = await apiProvider.getFinalizBlock();
     final era = await apiProvider.getBlockEra(blockHash.toHex(prefix: "0x"));
     final version = api.runtimeVersion();
-    final messages = validator.validator.toMessage();
+    final messages =
+        validator.validator.toMessage(forceBatch: memos.isNotEmpty);
     final memoMessages = SubstrateUtils.buildRemarks(memos);
     return await _buildTransfer(
         era: era,
@@ -29,13 +31,14 @@ mixin SubstrateTransactionBuilderImpl on SubstrateTransactiomImpl {
             [...messages, ...memoMessages]));
   }
 
-  Future<TransactionPayload> _buildTransfer(
-      {required SubstrateBaseEra era,
-      required int nonce,
-      required SubstrateBlockHash blockHash,
-      required SubstrateBlockHash genesisHash,
-      required RuntimeVersion version,
-      required List<Map<String, dynamic>> messages}) async {
+  Future<TransactionPayload> _buildTransfer({
+    required SubstrateBaseEra era,
+    required int nonce,
+    required SubstrateBlockHash blockHash,
+    required SubstrateBlockHash genesisHash,
+    required RuntimeVersion version,
+    required List<Map<String, dynamic>> messages,
+  }) async {
     final message = SubstrateUtils.buildMethod(messages);
     final List<int> messageBytes;
     if (messages.length == 1) {
@@ -48,6 +51,17 @@ mixin SubstrateTransactionBuilderImpl on SubstrateTransactiomImpl {
           palletNameOrIndex: SubstrateConst.utilityPalletName,
           value: message,
           fromTemplate: false);
+    }
+    if (network.coinParam.extrinsicType == SubstrateExtrinsicType.asset) {
+      return AssetTransactionPayload(
+          blockHash: blockHash,
+          era: era,
+          genesisHash: genesisHash,
+          method: messageBytes,
+          nonce: nonce,
+          specVersion: version.specVersion,
+          transactionVersion: version.transactionVersion,
+          tip: BigInt.zero);
     }
     return TransactionPayload(
         blockHash: blockHash,

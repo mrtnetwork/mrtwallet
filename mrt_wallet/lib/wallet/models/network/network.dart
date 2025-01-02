@@ -10,3 +10,4 @@ export 'params/cosmos.dart';
 export 'params/ton.dart';
 export 'params/substrate.dart';
 export 'params/stellar.dart';
+export 'params/monero.dart';

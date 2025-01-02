@@ -17,7 +17,8 @@ class Web3EthereumRequestMethods extends Web3RequestMethods {
   static const Web3EthereumRequestMethods persoalSign =
       Web3EthereumRequestMethods._(
           id: Web3EthereumConst.personalSignTag,
-          name: Web3EthereumConst.personalSign);
+          name: Web3EthereumConst.personalSign,
+          methodsName: [Web3EthereumConst.ethSign]);
   static const Web3EthereumRequestMethods typedData =
       Web3EthereumRequestMethods._(
           id: Web3EthereumConst.typedDataTag,
@@ -72,4 +73,9 @@ class Web3EthereumRequestMethods extends Web3RequestMethods {
 
   @override
   final bool needWalletOwnerAction;
+
+  @override
+  String toString() {
+    return name;
+  }
 }

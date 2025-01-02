@@ -1,3 +1,4 @@
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -23,5 +24,16 @@ class SubstrateOutputWithBalance {
         destination: address.networkAddress,
         value: balance.balance,
         usePallet: usePallet);
+  }
+}
+
+enum SubstrateExtrinsicType {
+  legacy,
+  metadata,
+  asset;
+
+  static SubstrateExtrinsicType fromName(String? name) {
+    return values.firstWhere((e) => e.name == name,
+        orElse: () => throw WalletExceptionConst.dataVerificationFailed);
   }
 }

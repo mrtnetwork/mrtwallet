@@ -90,7 +90,7 @@ class EthereumTransactionStateController extends EthTransactionImpl
         progressKey.success(
             progressWidget: SuccessTransactionTextView(
               network: network,
-              txId: [result.result],
+              txIds: [result.result],
             ),
             backToIdle: false);
       }

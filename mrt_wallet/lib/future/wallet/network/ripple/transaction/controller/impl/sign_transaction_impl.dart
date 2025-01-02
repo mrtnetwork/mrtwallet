@@ -21,8 +21,8 @@ mixin RippleSignTransactionImpl on RippleTransactionImpl {
         throw signature.exception!;
       }
       final trBlob = signature.result.toBlob(forSigning: false);
-      final send =
-          await apiProvider.provider.request(RPCSubmitOnly(txBlob: trBlob));
+      final send = await apiProvider.provider
+          .request(XRPRequestSubmitOnly(txBlob: trBlob));
       return send;
     });
     if (result.hasError) {
@@ -36,7 +36,7 @@ mixin RippleSignTransactionImpl on RippleTransactionImpl {
         progressKey.success(
             progressWidget: SuccessTransactionTextView(
               network: network,
-              txId: [result.result.txJson.hash],
+              txIds: [result.result.txJson.hash],
             ),
             backToIdle: false);
       }

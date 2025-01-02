@@ -27,7 +27,7 @@ mixin Web3PermissionState<
 
   Future<WEB3CHAIN> getPermission() async {
     final WEB3CHAIN newPermission = createNewChainPermission();
-    List<CHAINACCOUT> accounts = [];
+    final List<CHAINACCOUT> accounts = [];
     for (final i in permissions.entries) {
       if (i.value.isEmpty) continue;
       final defaultAddresses = i.value.where((e) => e.defaultAddress);
@@ -50,6 +50,7 @@ mixin Web3PermissionState<
   Map<CHAIN, List<CHAINACCOUT>> permissions = {};
   late CHAIN chain;
   List<CHAINACCOUT> get chainPermission => permissions[chain]!;
+
   void onChangeDefaultPermission(CHAINACCOUT? address) {
     if (address == null) return;
     if (address.defaultAddress) return;
@@ -87,8 +88,7 @@ mixin Web3PermissionState<
 }
 
 class Web3PermissionUpdateView extends StatelessWidget {
-  const Web3PermissionUpdateView({required this.controller, Key? key})
-      : super(key: key);
+  const Web3PermissionUpdateView({required this.controller, super.key});
   final Web3RequestControllerImpl controller;
 
   @override
@@ -101,17 +101,15 @@ class Web3PermissionUpdateView extends StatelessWidget {
       child: ClipRRect(
           borderRadius: WidgetConstant.border25,
           child: PasswordCheckerView(
-            accsess: WalletAccsessType.unlock,
-            onAccsess: (credential, password, network) =>
-                _Web3APPPermissionView(controller: controller),
-          )),
+              accsess: WalletAccsessType.unlock,
+              onAccsess: (credential, password, network) =>
+                  _Web3APPPermissionView(controller: controller))),
     );
   }
 }
 
 class _Web3APPPermissionView extends StatefulWidget {
-  const _Web3APPPermissionView({required this.controller, Key? key})
-      : super(key: key);
+  const _Web3APPPermissionView({required this.controller});
   final Web3RequestControllerImpl controller;
 
   @override
@@ -147,11 +145,12 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
 
   NetworkType chainType = NetworkType.ethereum;
-
+  bool showUpdateButton = false;
   Future<void> onChangePermission() async {
     application = await controller.getCurrentApplication();
     applicationName = application?.name ?? "";
     active = application?.active ?? true;
+
     if (application == null) {
       progressKey.success(
           backToIdle: false,
@@ -160,6 +159,7 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
                   size: APPConst.double80),
               text: "web_application_not_valid".tr));
     } else {
+      showUpdateButton = true;
       progressKey.successProgress();
       updateState();
     }
@@ -217,24 +217,23 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     2: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_tron"),
     3: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_solana"),
     4: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_ton"),
-    5: GlobalKey<Web3PermissionState>(
-        debugLabel: "Web3PermissionState_stellar"),
+    5: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_stellar")
   };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton:
-          APPAnimatedSwitcher<bool>(enable: progressKey.inProgress, widgets: {
-        false: (context) => FloatingActionButton.extended(
-              onPressed: () {
-                onUpdateChainPermission();
-              },
-              label: Text("update_permission".tr),
-              icon: const Icon(Icons.save),
-            ),
-        true: (context) => WidgetConstant.sizedBox,
-      }),
+      floatingActionButton: APPAnimatedSwitcher<bool>(
+          enable: showUpdateButton && !progressKey.inProgress,
+          widgets: {
+            true: (context) => FloatingActionButton.extended(
+                onPressed: () {
+                  onUpdateChainPermission();
+                },
+                label: Text("update_permission".tr),
+                icon: const Icon(Icons.save)),
+            false: (context) => WidgetConstant.sizedBox
+          }),
       body: PageProgress(
         backToIdle: APPConst.oneSecoundDuration,
         initialStatus: StreamWidgetStatus.progress,
@@ -258,23 +257,23 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
                                 icon: Icon(Icons.settings),
                                 label: WidgetConstant.sizedBox),
                             NavigationRailDestination(
-                                icon: CircleAssetsImgaeView(APPConst.eth,
+                                icon: CircleAssetsImageView(APPConst.eth,
                                     radius: 15),
                                 label: WidgetConstant.sizedBox),
                             NavigationRailDestination(
-                                icon: CircleAssetsImgaeView(APPConst.trx,
+                                icon: CircleAssetsImageView(APPConst.trx,
                                     radius: 15),
                                 label: WidgetConstant.sizedBox),
                             NavigationRailDestination(
-                                icon: CircleAssetsImgaeView(APPConst.sol,
+                                icon: CircleAssetsImageView(APPConst.sol,
                                     radius: 15),
                                 label: WidgetConstant.sizedBox),
                             NavigationRailDestination(
-                                icon: CircleAssetsImgaeView(APPConst.ton,
+                                icon: CircleAssetsImageView(APPConst.ton,
                                     radius: 15),
                                 label: WidgetConstant.sizedBox),
                             NavigationRailDestination(
-                                icon: CircleAssetsImgaeView(APPConst.stellar,
+                                icon: CircleAssetsImageView(APPConst.stellar,
                                     radius: 15),
                                 label: WidgetConstant.sizedBox),
                           ],
@@ -314,7 +313,7 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
 }
 
 class _APPPermissionWidget extends StatelessWidget {
-  const _APPPermissionWidget(this.state, {Key? key}) : super(key: key);
+  const _APPPermissionWidget(this.state);
   final __Web3APPPermissionViewState state;
 
   @override
@@ -350,7 +349,7 @@ class _APPPermissionWidget extends StatelessWidget {
 }
 
 class _APPSettingView extends StatelessWidget {
-  const _APPSettingView(this.state, {Key? key}) : super(key: key);
+  const _APPSettingView(this.state);
   final __Web3APPPermissionViewState state;
   @override
   Widget build(BuildContext context) {
@@ -366,22 +365,20 @@ class _APPSettingView extends StatelessWidget {
             Text("edit_application_name_desc".tr),
             WidgetConstant.height8,
             AppTextField(
-              label: "application_name".tr,
-              onChanged: state.onChangeName,
-              validator: state.validateApplicationName,
-              hint: "application_name".tr,
-              initialValue: state.applicationName,
-            ),
+                label: "application_name".tr,
+                onChanged: state.onChangeName,
+                validator: state.validateApplicationName,
+                hint: "application_name".tr,
+                initialValue: state.applicationName),
             WidgetConstant.height20,
             AppSwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text("web3_activation".tr,
-                  style: context.textTheme.titleMedium),
-              subtitle: Text("web3_activation_desc".tr),
-              maxLine: 3,
-              value: state.active,
-              onChanged: state.onChangeActivation,
-            ),
+                contentPadding: EdgeInsets.zero,
+                title: Text("web3_activation".tr,
+                    style: context.textTheme.titleMedium),
+                subtitle: Text("web3_activation_desc".tr),
+                maxLine: 3,
+                value: state.active,
+                onChanged: state.onChangeActivation),
           ],
         ),
       ),

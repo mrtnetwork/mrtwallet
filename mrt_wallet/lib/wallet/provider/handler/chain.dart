@@ -6,24 +6,45 @@ class ChainsHandler with CborSerializable {
   int _network;
   ChainsHandler._(this._networks, this._network, this.id);
 
-  factory ChainsHandler.deserialize(
+  // factory ChainsHandler.deserialize(
+  //     {String? hex, CborObject? obj, List<int>? bytes}) {
+  //   final CborListValue values = CborSerializable.cborTagValue(
+  //       cborBytes: bytes,
+  //       object: obj,
+  //       hex: hex,
+  //       tags: CborTagsConst.chainHandler);
+  //   final String id = values.elementAs(2);
+  //   return ChainsHandler(
+  //       chains: values
+  //           .elementAsListOf<CborObject>(0)
+  //           .map((e) => Chain.deserialize(obj: e))
+  //           .toList(),
+  //       currentNetwork: values.elementAs(1),
+  //       id: id);
+  // }
+  factory ChainsHandler.fromWeb3(
       {String? hex, CborObject? obj, List<int>? bytes}) {
     final CborListValue values = CborSerializable.cborTagValue(
         cborBytes: bytes,
         object: obj,
         hex: hex,
         tags: CborTagsConst.chainHandler);
-    final String id = values.elementAt(2);
-    return ChainsHandler(
-        chains: values
-            .elementAt<List<dynamic>>(0)
-            .map((e) => Chain.deserialize(id: id, obj: e))
-            .toList(),
-        currentNetwork: values.elementAt(1),
-        id: values.elementAt(2));
+    final String id = values.elementAs(2);
+    final chains = values
+        .elementAsListOf<CborObject>(0)
+        .map((e) => Chain.deserialize(obj: e))
+        .toList();
+    return ChainsHandler.__(
+        chains: chains, currentNetwork: values.elementAs(1), id: id);
   }
   factory ChainsHandler(
       {required List<Chain> chains, required String id, int? currentNetwork}) {
+    for (final i in chains) {
+      if (i.id != id) {
+        throw WalletExceptionConst.invalidData(
+            messsage: "Invalid chain data. different wallet ids detected.");
+      }
+    }
     final toMap = {for (final i in chains) i.network.value: i};
     for (final i in ChainConst.defaultCoins.keys) {
       if (toMap.containsKey(i)) {
@@ -35,6 +56,20 @@ class ChainsHandler with CborSerializable {
     }
     if (!toMap.containsKey(currentNetwork)) {
       currentNetwork = 0;
+    }
+    return ChainsHandler._(toMap, currentNetwork ?? 0, id);
+  }
+  factory ChainsHandler.__(
+      {required List<Chain> chains, required String id, int? currentNetwork}) {
+    final toMap = {for (final i in chains) i.network.value: i};
+    if (!toMap.containsKey(currentNetwork)) {
+      currentNetwork = 0;
+    }
+    for (final i in chains) {
+      if (i.id != id) {
+        throw WalletExceptionConst.invalidData(
+            messsage: "Invalid chain data. different wallet ids detected.");
+      }
     }
     return ChainsHandler._(toMap, currentNetwork ?? 0, id);
   }
@@ -63,14 +98,14 @@ class ChainsHandler with CborSerializable {
 
   List<Chain> chains() => _networks.values.toList();
 
-  bool switchNetwork(int networkId) {
+  Future<bool> switchNetwork(int networkId) async {
     if (_network == networkId || !_networks.containsKey(networkId)) {
       return false;
     }
     final currentChain = chain;
     _network = networkId;
     currentChain.disposeProvider();
-    chain.initProvider();
+    await chain.init();
     return true;
   }
 
@@ -83,27 +118,24 @@ class ChainsHandler with CborSerializable {
   }
 
   Chain updateImportNetwork(WalletNetwork network) {
-    if (network.coinParam.providers.isEmpty) {
-      if (ProvidersConst.getDefaultProvider(network).isEmpty) {
-        throw WalletException("invalid_network_information");
-      }
-    }
-
     int networkId = network.value;
     if (!network.isWalletNetwork) {
-      if (network.type != NetworkType.ethereum) {
-        throw WalletException("invalid_network_information");
+      if (!network.supportImportNetwork) {
+        throw const WalletException("invalid_network_information");
       }
-      if (network.coinParam.token.decimal != EthereumUtils.decimal) {
-        throw WalletException("invalid_network_information");
+      if (_networks.values.any((e) =>
+          e.network.type == network.type &&
+          e.network.coinParam.identifier == network.coinParam.identifier)) {
+        throw const WalletException("network_chain_id_already_exist");
       }
-      final evmIds = _networks.values.map((e) => e.network.value).toList();
-      networkId = StrUtils.findFirstMissingNumber(evmIds, start: 2000);
+      final ids = _networks.values.map((e) => e.network.value).toList();
+      networkId = StrUtils.findFirstMissingNumber(ids,
+          start: ChainConst.importedNetworkStartId);
       network = network.copyWith(value: networkId);
     } else {
       if (_networks[networkId] == null ||
           _networks[networkId]!.network.type != network.type) {
-        throw WalletException("invalid_network_information");
+        throw const WalletException("invalid_network_information");
       }
     }
     _networks[networkId] = _networks[networkId]?.copyWith(network: network) ??
@@ -111,12 +143,7 @@ class ChainsHandler with CborSerializable {
     return _networks[networkId]!;
   }
 
-  void updateChain(Chain? chain) {
-    if (chain == null) return;
-    _networks[chain.network.value] = chain;
-  }
-
-  void removeChain(Chain removeChain) {
+  Future<void> removeChain(Chain removeChain) async {
     if (removeChain.id != id) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
@@ -129,17 +156,23 @@ class ChainsHandler with CborSerializable {
       final changeNetwork = _networks.keys.firstWhere((e) =>
           e != removeChain.network.value &&
           _networks[e]!.network.type == removeChain.network.type);
-      switchNetwork(changeNetwork);
+      await switchNetwork(changeNetwork);
     }
     _networks.remove(removeChain.network.value);
   }
 
   @override
-  CborTagValue toCbor() {
+  CborTagValue toCbor({bool onlyWeb3Chains = false}) {
     return CborTagValue(
         CborListValue.fixedLength([
-          CborListValue.fixedLength(
-              _networks.values.map((e) => e.toCbor()).toList()),
+          if (onlyWeb3Chains)
+            CborListValue.fixedLength(_networks.values
+                .where((e) => e.network.supportWeb3)
+                .map((e) => e.toCbor())
+                .toList())
+          else
+            CborListValue.fixedLength(
+                _networks.values.map((e) => e.toCbor()).toList()),
           _network,
           id
         ]),

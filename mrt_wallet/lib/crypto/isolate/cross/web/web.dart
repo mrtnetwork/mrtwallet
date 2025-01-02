@@ -1,4 +1,4 @@
-library web_crypto;
+library;
 
 import 'dart:async';
 import 'dart:js_interop';
@@ -10,6 +10,7 @@ import 'package:mrt_native_support/web/api/window/window.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/isolate/core/worker.dart';
 import 'package:mrt_wallet/crypto/isolate/controller/message_controller.dart';
+import 'package:mrt_wallet/crypto/isolate/types/types.dart';
 import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/completer/completer.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models.dart';

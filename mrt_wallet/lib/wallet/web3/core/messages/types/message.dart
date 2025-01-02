@@ -29,9 +29,6 @@ abstract class Web3MessageCore with CborSerializable, JsonSerialization {
           return Web3GlobalRequestParams.deserialize(object: cbor);
         case Web3MessageTypes.error:
           return Web3ExceptionMessage.deserialize(object: cbor);
-
-        default:
-          throw Web3RequestExceptionConst.internalError;
       }
     } on Web3RequestException {
       rethrow;

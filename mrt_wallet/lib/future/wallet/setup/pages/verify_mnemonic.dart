@@ -5,8 +5,6 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/constant/constant.dart';
-
 import 'mnemonic_view.dart';
 
 typedef OnValidateMnemonic = void Function(List<String>);
@@ -25,7 +23,7 @@ class VerifyMnemonicView extends StatefulWidget {
 }
 
 class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
-    with SafeState {
+    with SafeState<VerifyMnemonicView> {
   late final List<String> shuffleMnemonic = List<String>.from(widget.mnemonic)
     ..shuffle();
 
@@ -61,7 +59,7 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
           inSelectMnemonic.indexWhere((element) => element.index == null);
       inSelectMnemonic[emptyIndex] = SelectedMnemonic.select(index, word);
     } finally {
-      setState(() {
+      updateState(() {
         isEqual();
       });
     }
@@ -73,7 +71,7 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
     }
     selectedIndex.clear();
     isEqual();
-    setState(() {});
+    updateState(() {});
   }
 
   @override
@@ -88,7 +86,7 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
         inSelectMnemonic[i] = SelectedMnemonic.select(i, widget.mnemonic[i]);
       }
       isEqual();
-      setState(() {});
+      updateState(() {});
     }
   }
 
@@ -119,13 +117,9 @@ class _VerifyMnemonicViewState extends State<VerifyMnemonicView>
                   children: [
                     Column(
                       children: [
-                        const Icon(
-                          Icons.check_circle,
-                          size: APPConst.double80,
-                          color: ColorConst.green,
-                        ),
+                        WidgetConstant.checkCircleLarge,
                         FixedElevatedButton(
-                            padding: WidgetConstant.paddingVertical20,
+                            padding: WidgetConstant.paddingVertical40,
                             onPressed: validate,
                             child: Text(widget.submitText ?? "passphrase".tr)),
                       ],

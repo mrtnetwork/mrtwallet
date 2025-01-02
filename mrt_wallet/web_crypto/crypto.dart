@@ -1,9 +1,14 @@
 import 'package:blockchain_utils/crypto/crypto/crypto.dart';
 import 'package:blockchain_utils/crypto/quick_crypto.dart';
 import 'package:blockchain_utils/utils/utils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/isolate/controller/message_controller.dart';
+import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models.dart';
 import 'dart:js_interop';
+
+@JS("postMessage")
+external void postMessage(JSAny data);
 
 @JS()
 external set mrtJsHandler(JSFunction handler);
@@ -11,9 +16,14 @@ external set mrtJsHandler(JSFunction handler);
 @JS()
 external set mrtWalletActivation(JSFunction? handler);
 
-String _handler(String message) {
-  final response = _cryptoHandler.sentResult(message);
-  return BytesUtils.toHexString(response.toCbor().encode());
+void _send(String message) {
+  _cryptoHandler.sentResult(message).then((e) {
+    try {
+      postMessage(BytesUtils.toHexString(e.serialize()).toJS);
+    } catch (e) {
+      WalletLogging.error("post message rror $e");
+    }
+  });
 }
 
 late _WebIsolateInitialData _cryptoHandler;
@@ -33,45 +43,134 @@ String _readKey() {
 }
 
 void main(List<String> args) {
-  mrtJsHandler = _handler.toJS;
+  mrtJsHandler = _send.toJS;
   mrtWalletActivation = _readKey.toJS;
 }
 
 class _WebIsolateInitialData {
-  static const IsolateMessageController crypto = IsolateMessageController();
+  late final EncryptedIsolateMessageController crypto =
+      EncryptedIsolateMessageController((message, id) {
+    final encrypted =
+        _toEncryptedMessage(request: message, encrypted: true, requestId: id);
+    // final encrypted = _toEncryptedMessage(message, true);
+    postMessage(BytesUtils.toHexString(encrypted.serialize()).toJS);
+  });
   final ChaCha20Poly1305 chacha;
   _WebIsolateInitialData({required List<int> key})
       : chacha = ChaCha20Poly1305(key);
-
-  WorkerResponseMessage _getResult(List<int> message) {
+  Future<(CborMessageArgs, bool, int)> _getResult(List<int> message) async {
     int? id;
+    bool? encrypted;
     try {
-      final encryptedMessage = WorkerEncryptedMessage.deserialize(message);
-      id = encryptedMessage.id;
-      final decode =
-          chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message);
-      return crypto.handleMessage(decode!, id);
-    } catch (e) {
-      return WorkerResponseMessage(
-          args: IsolateMessageController.verificationFailed, id: id ?? -1);
+      final msg = WorkerMessage.deserialize(bytes: message);
+      id = msg.id;
+      encrypted = msg.type.isEncrypted;
+      List<int> messageBytes = msg.message;
+      if (encrypted) {
+        final encryptedMessage = msg.cast<WorkerEncryptedMessage>();
+        messageBytes =
+            chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message)!;
+      }
+      final args = CborMessageArgs.deserialize(messageBytes);
+      List<int>? encryptedPart;
+      if (!encrypted) {
+        final nonEncryptedMessage = msg.cast<WorkerNoneEncryptedMessage>();
+        if (nonEncryptedMessage.encryptedPart != null) {
+          encryptedPart = chacha.decrypt(
+              nonEncryptedMessage.encryptedPart!.nonce,
+              nonEncryptedMessage.encryptedPart!.message)!;
+        }
+      }
+
+      final response = await crypto.handleMessage(
+          args: args, id: id, encryptedPart: encryptedPart);
+      return (response, encrypted, id);
+    } catch (e, s) {
+      WalletLogging.log("error $e $s");
+      return (
+        EncryptedIsolateMessageController.verificationFailed,
+        encrypted ?? true,
+        id ?? -1
+      );
     }
+    // Future<(IsolateCborResponseMessage, bool)> _getResult(
+    //     List<int> message) async {
+    //   int? id;
+    //   bool? encrypted;
+    //   try {
+    //     final msg = WorkerMessage.deserialize(bytes: message);
+    //     id = msg.id;
+    //     encrypted = msg.type.isEncrypted;
+    //     List<int> messageBytes = msg.message;
+    //     if (encrypted) {
+    //       final encryptedMessage = msg.cast<WorkerEncryptedMessage>();
+    //       messageBytes =
+    //           chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message)!;
+    //     }
+    //     CborMessageArgs args = CborMessageArgs.deserialize(messageBytes);
+    //     List<int>? encryptedPart;
+    //     if (!encrypted) {
+    //       final nonEncryptedMessage = msg.cast<WorkerNoneEncryptedMessage>();
+    //       if (nonEncryptedMessage.encryptedPart != null) {
+    //         encryptedPart = chacha.decrypt(
+    //             nonEncryptedMessage.encryptedPart!.nonce,
+    //             nonEncryptedMessage.encryptedPart!.message)!;
+    //       }
+    //     }
+
+    //     final response = await crypto.handleMessage(
+    //         args: args, id: id, encryptedPart: encryptedPart);
+    //     return (response, encrypted);
+    //   } catch (e, s) {
+    //     WalletLogging.error("isolate result failed $e ");
+    //     return (
+    //       IsolateCborResponseMessage(
+    //           args: EncryptedIsolateMessageController.verificationFailed,
+    //           id: id ?? -1),
+    //       encrypted ?? true
+    //     );
+    //   }
   }
 
-  WorkerEncryptedMessage sentResult(String message) {
+  Future<WorkerMessage> sentResult(String message) async {
     final List<int>? messagesBytes = BytesUtils.tryFromHexString(message);
-    WorkerResponseMessage? result;
+    CborMessageArgs? result;
+    bool isEncrypted = true;
+    int id = -1;
     if (messagesBytes == null) {
-      result = const WorkerResponseMessage(
-          args: IsolateMessageController.verificationFailed, id: -1);
+      result = EncryptedIsolateMessageController.verificationFailed;
+    } else {
+      final r = await _getResult(messagesBytes);
+      result = r.$1;
+      isEncrypted = r.$2;
+      id = r.$3;
     }
-    result ??= _getResult(messagesBytes!);
-    final encrypted = _toEncryptedMessage(result);
+    final encrypted = _toEncryptedMessage(
+        request: result, requestId: id, encrypted: isEncrypted);
     return encrypted;
   }
 
-  WorkerEncryptedMessage _toEncryptedMessage(WorkerResponseMessage request) {
-    final nonce = QuickCrypto.generateRandom(16);
-    final enc = chacha.encrypt(nonce, request.toCbor().encode());
-    return WorkerEncryptedMessage(message: enc, nonce: nonce, id: request.id);
+  WorkerMessage _toEncryptedMessage(
+      {required CborMessageArgs request,
+      required bool encrypted,
+      required int requestId}) {
+    if (encrypted) {
+      final nonce = QuickCrypto.generateRandom(16);
+      final enc = chacha.encrypt(nonce, request.toCbor().encode());
+
+      return WorkerEncryptedMessage(message: enc, nonce: nonce, id: requestId);
+    }
+    return WorkerNoneEncryptedMessage(
+        message: request.toCbor().encode(), id: requestId);
   }
+  // WorkerMessage _toEncryptedMessage(
+  //     IsolateCborResponseMessage request, bool isEncrypted) {
+  //   if (isEncrypted) {
+  //     final nonce = QuickCrypto.generateRandom(16);
+  //     final enc = chacha.encrypt(nonce, request.toCbor().encode());
+  //     return WorkerEncryptedMessage(message: enc, nonce: nonce, id: request.id);
+  //   }
+  //   return WorkerNoneEncryptedMessage(
+  //       message: request.toCbor().encode(), id: request.id);
+  // }
 }

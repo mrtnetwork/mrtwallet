@@ -3,7 +3,7 @@ import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
-import 'dart:math' as math;
+// import 'dart:math' as math;
 
 class BlockchainUtils {
   static List<int> privateKeyToBytes(
@@ -48,17 +48,6 @@ class BlockchainUtils {
     );
   }
 
-  static PrivateKeyData seedToPrivateKeyData(
-      {required List<int> seedBytes,
-      required CryptoCoins coin,
-      required String keyName}) {
-    if (coin.conf is! BipCoinConfig) {
-      throw WalletExceptionConst.invalidCoin;
-    }
-    final key = seedToBipKey(coin: coin as BipCoins, seedBytes: seedBytes);
-    return PrivateKeyData.fromBip32(account: key, coin: coin, keyName: keyName);
-  }
-
   static ImportedKeyStorage privateKeyToStorage(
       {required String privateKey,
       required CryptoCoins coin,
@@ -67,6 +56,35 @@ class BlockchainUtils {
         keyBytes: BytesUtils.fromHexString(privateKey),
         coin: coin,
         keyName: keyName);
+  }
+
+  CryptoPrivateKeyData convertCustomKey(
+      {required ImportedKeyStorage key, required CryptoCoins coin}) {
+    if (key.keyType.isPrivateKey) {
+      if (coin.conf.type != key.coin.conf.type) {
+        throw WalletExceptionConst.invalidPrivateKey;
+      }
+      if (coin != Bip44Coins.moneroEd25519Slip) {
+        return PrivateKeyData(
+            coin: coin,
+            keyName: key.checksum,
+            key: IPrivateKey.fromHex(key.extendedPrivateKey, coin.conf.type));
+      }
+      return MoneroPrivateKeyData(
+          coin: coin,
+          keyName: key.checksum,
+          spendPrivateKey: key.coin == Bip44Coins.moneroEd25519Slip
+              ? MoneroPrivateKey.fromHex(key.extendedPrivateKey)
+              : MoneroPrivateKey.fromBip44Hex(key.extendedPrivateKey));
+    }
+    if (coin != Bip44Coins.moneroEd25519Slip) {
+      return PrivateKeyData.fromExtendedKey(
+          coin: coin,
+          keyName: key.checksum,
+          extendedKey: key.extendedPrivateKey);
+    }
+    return MoneroPrivateKeyData.fromExtendedKey(
+        coin: coin, keyName: key.checksum, extendedKey: key.extendedPrivateKey);
   }
 
   static List<int> privateKeyToKeypairBytes(
@@ -92,6 +110,8 @@ class BlockchainUtils {
       case Bip44Coins.rippleTestnetED25519:
         keyBytes = privateKeyToKeypairBytes(coin: coin, privateKey: keyBytes);
         break;
+      case Bip44Coins.moneroEd25519Slip:
+        return MoneroPrivateKey.fromBytes(keyBytes);
       default:
         break;
     }
@@ -225,17 +245,13 @@ class BlockchainUtils {
   }
 
   static List<String> normalizeMnemonic(String mnemonic) {
-    return mnemonic
-        .replaceAll(RegExp(r'\s+'), " ")
-        .split(" ")
-        .where((element) => element.isNotEmpty)
-        .toList();
+    return Mnemonic.fromString(mnemonic).toList();
   }
 
   static Bip32Base seedToBipKey(
       {required List<int> seedBytes, required BipCoins coin}) {
     Bip32Base validate(Bip32Base bip32Obj) {
-      int depth = bip32Obj.depth.depth;
+      final depth = bip32Obj.depth.depth;
       if (bip32Obj.isPublicOnly) {
         if (depth < Bip44Levels.account.value ||
             depth > Bip44Levels.addressIndex.value) {
@@ -337,9 +353,12 @@ class BlockchainUtils {
   static String generateRandomString(int length) {
     const String chars =
         'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    math.Random random = math.Random();
-
-    return List.generate(length, (index) => chars[random.nextInt(chars.length)])
+    return List.generate(
+            length, (index) => chars[QuickCrypto.prng.nextInt(chars.length)])
         .join('');
+  }
+
+  static String generateStringIndentifier(String str) {
+    return BytesUtils.toHexString(MD4.hash(StringUtils.encode(str)));
   }
 }

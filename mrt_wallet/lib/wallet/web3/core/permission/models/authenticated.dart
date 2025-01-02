@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:blockchain_utils/utils/binary/utils.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:mrt_wallet/app/models/models/image.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/app/utils/map/extension.dart';
@@ -23,7 +23,7 @@ class Web3APPAuthentication with CborSerializable {
   final List<int> token;
   Map<NetworkType, Web3Chain> _chains;
   static String? toApplicationId(String? url) {
-    Uri? uri = Uri.tryParse(url ?? "");
+    final Uri? uri = Uri.tryParse(url ?? "");
     if (uri?.host.isEmpty ?? true) {
       return null;
     }
@@ -40,7 +40,7 @@ class Web3APPAuthentication with CborSerializable {
     this.active = true,
     Map<NetworkType, Web3Chain> chains = const {},
   })  : _chains = chains.imutable,
-        token = BytesUtils.toBytes(token);
+        token = token.asImmutableBytes;
   Web3APPAuthentication clone({String? name, bool? active}) {
     return Web3APPAuthentication(
         name: name ?? this.name,

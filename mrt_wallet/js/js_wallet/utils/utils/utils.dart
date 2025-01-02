@@ -23,8 +23,8 @@ class JsUtils {
   }
 
   static Map<String, dynamic> toMap(dynamic object, {Object? error}) {
-    // if (obj == null) return null;
     try {
+      // ignore: invalid_runtime_check_with_js_interop_types
       if (object is JSAny) {
         try {
           if (!object.isA<JSString>()) {

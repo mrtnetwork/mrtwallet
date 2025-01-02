@@ -6,9 +6,9 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/models/events/models/wallet_event.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
+import '../../../webview.dart';
 import '../../constant/constant.dart';
 import '../../models/models.dart';
-import '../../page_script/scripts.dart';
 import '../../utils/utils.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../networks/ethereum.dart';
@@ -20,6 +20,8 @@ import 'network_handler.dart';
 part "../webview.dart";
 part "../extension.dart";
 
+@JS("onmessage")
+external set onMessage(JSFunction _);
 typedef SendMessageToClient = void Function(
     WalletMessageEvent, JSClientType client);
 
@@ -44,11 +46,10 @@ abstract class JSWalletHandler {
   abstract ChainsHandler _chain;
   JSWalletHandler._(this._crypto);
 
-  void _onClientEvent(CustomEvent response) {
-    final PageMessage request = response.detail as PageMessage;
+  void handleClientMessage(PageMessage request) {
     switch (request.data.messageType) {
       case PageMessageType.event:
-        _networks[request.clientType]?.event(request.data.cast());
+        _networks[request.clientType]?.event(request.data.asEvent());
         break;
       case PageMessageType.request:
         final result = _completeJsRequest(request);
@@ -57,16 +58,19 @@ abstract class JSWalletHandler {
           final message = WalletMessage.response(
               client: request.clientType,
               requestId: request.id,
-              id: request.data.cast<PageMessageRequest>().id,
+              id: request.data.asRequest().id,
               data: WalletMessageResponse.fail(
                   Web3RequestExceptionConst.internalError.toJson().jsify()));
           _sendMessageToClient(message);
           return message;
         });
         break;
-      default:
-        throw UnimplementedError("Invalid page request.");
     }
+  }
+
+  void _onClientEvent(CustomEvent response) {
+    final PageMessage request = response.detail as PageMessage;
+    handleClientMessage(request);
   }
 
   void _listenOnClients() {
@@ -76,7 +80,7 @@ abstract class JSWalletHandler {
   void _sendMessageToClient(WalletMessage response) {
     final event = CustomEvent.create(
         type: JsUtils.toEthereumClientId(clientId),
-        eventData: response,
+        detail: response,
         clone: true);
     jsWindow.dispatchEvent(event);
   }
@@ -105,7 +109,7 @@ abstract class JSWalletHandler {
       if (handler == null) {
         throw WalletExceptionConst.invalidRequest;
       }
-      message = await handler.request(params.data.cast());
+      message = await handler.request(params.data.asRequest());
       switch (message.type) {
         case Web3MessageTypes.response:
         case Web3MessageTypes.walletResponse:
@@ -139,13 +143,13 @@ abstract class JSWalletHandler {
       final Web3RequestParams? request = result.$2;
       final WalletMessageResponse message = switch (response.type) {
         Web3MessageTypes.response => handler!.finilizeResponse(
-            message: params.data.cast(), response: response.cast()),
+            message: params.data.asRequest(), response: response.cast()),
         Web3MessageTypes.walletResponse => handler!.finilizeWalletResponse(
-            message: params.data.cast(),
+            message: params.data.asRequest(),
             response: response.cast(),
             params: request!),
         Web3MessageTypes.error => handler?.finilizeError(
-                message: params.data.cast(),
+                message: params.data.asRequest(),
                 error: response.cast(),
                 params: request) ??
             WalletMessageResponse.fail(response.toJson().jsify()),
@@ -154,11 +158,11 @@ abstract class JSWalletHandler {
       };
       return WalletMessage.response(
           requestId: params.id,
-          id: params.data.cast<PageMessageRequest>().id,
+          id: params.data.asRequest().id,
           client: params.clientType,
           data: message);
     } finally {
-      handler?.onRequestDone(params.data.cast());
+      handler?.onRequestDone(params.data.asRequest());
     }
   }
 
@@ -187,7 +191,7 @@ abstract class JSWalletHandler {
           final Web3WalletResponseMessage msg =
               message.cast<Web3WalletResponseMessage>();
           if (msg.chain != null) {
-            _chain = ChainsHandler.deserialize(bytes: msg.chain);
+            _chain = ChainsHandler.fromWeb3(bytes: msg.chain);
           }
           _updateAuthenticated(msg.authenticated, network: msg.network);
           completer.complete(response: msg, requestId: request.requestId);
@@ -199,7 +203,7 @@ abstract class JSWalletHandler {
           break;
         case Web3MessageTypes.chains:
           final Web3ChainMessage msg = message.cast<Web3ChainMessage>();
-          _chain = ChainsHandler.deserialize(bytes: msg.message);
+          _chain = ChainsHandler.fromWeb3(bytes: msg.message);
           _updateAuthenticated(msg.authenticated, network: null);
           break;
         default:
@@ -228,7 +232,6 @@ abstract class JSWalletHandler {
         _handleOnResponse(request);
         break;
     }
-
     return true;
   }
 }

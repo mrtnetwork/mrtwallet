@@ -8,9 +8,8 @@ import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/crypto/requests/generate_master_key.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/generate_master_key.dart';
 
-class WalletRequestImportNewKey
-    implements
-        WalletRequest<CryptoGenerateMasterKeyResponse, MessageArgsThreeBytes> {
+class WalletRequestImportNewKey extends WalletRequest<
+    CryptoGenerateMasterKeyResponse, MessageArgsThreeBytes> {
   final ImportedKeyStorage newKey;
   WalletRequestImportNewKey(this.newKey);
 

@@ -5,18 +5,22 @@ import 'package:mrt_wallet/marketcap/prices/coingecko.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
-mixin LiveCurrencies on StateController {
+mixin LiveCurrencies on StateController, HttpImpl {
   WalletCore get wallet;
   Future<CoingeckoPriceHandler> _getCoinPrices(List<String> coins) async {
     final url = CoinGeckoUtils.toCoingeckoPriceUri(
         Currency.toApiCall(), coins.join(","));
-    final json = await HttpUtils.get<Map<String, dynamic>>(url);
+    final json = await httpGet<Map<String, dynamic>>(url,
+        responseType: HTTPResponseType.map);
     return CoingeckoPriceHandler.fromJson(json.result);
   }
 
   Future<CoingeckoCoinInfo?> _getCoinPrice(String id) async {
     final url = CoinGeckoUtils.toCoingeckoPriceUri(Currency.toApiCall(), id);
-    final json = await HttpUtils.get<Map<String, dynamic>>(url);
+    final json = await httpGet<Map<String, dynamic>>(
+      url,
+      responseType: HTTPResponseType.map,
+    );
     if (json.result.isEmpty) return null;
     return CoingeckoCoinInfo.fromJson(json.result[id]!, id);
   }

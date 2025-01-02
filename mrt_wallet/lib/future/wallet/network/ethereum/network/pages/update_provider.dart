@@ -30,7 +30,7 @@ class __UpdateEthereumNetworkState extends State<_UpdateEthereumProvider>
     with SafeState {
   late final BigInt chainId = widget.chainId;
   final Set<String> existsProviders = {};
-  EthereumAPIProvider? provider;
+  // EthereumAPIProvider? provider;
   ProviderAuthType auth = ProviderAuthType.header;
   void onChangeAuthMode(ProviderAuthType? auth) {
     this.auth = auth ?? this.auth;
@@ -44,7 +44,7 @@ class __UpdateEthereumNetworkState extends State<_UpdateEthereumProvider>
 
   late bool addNewProviders = providers.isEmpty;
 
-  late String rpcUrl = provider?.callUrl ?? "";
+  late String rpcUrl = "";
 
   String authKey = "";
   String authValue = "";
@@ -102,7 +102,6 @@ class __UpdateEthereumNetworkState extends State<_UpdateEthereumProvider>
     useAuthenticated = false;
     useInWeb3 = true;
     addNewProviders = false;
-    provider = null;
   }
 
   String? validateRpcUrl(String? v) {
@@ -126,35 +125,27 @@ class __UpdateEthereumNetworkState extends State<_UpdateEthereumProvider>
           context.watch<WalletProvider>(StateConst.main);
       final ethNetwork = wallet.wallet.networks<WalletEthereumNetwork>();
       final uri = Uri.parse(rpcUrl.trim()).normalizePath();
-      ProviderAuth? auth;
+      ProviderAuthenticated? auth;
       if (useAuthenticated) {
-        auth = ProviderAuth(type: this.auth, key: authKey, value: authValue);
+        auth = BasicProviderAuthenticated(
+            type: this.auth, key: authKey, value: authValue);
       }
       final serviceProvider = EthereumAPIProvider(
-          serviceName: uri.host,
-          identifier:
-              provider?.identifier ?? APIUtils.getProviderIdentifier(null),
-          websiteUri: StrUtils.removeSchame(uri.host),
+          identifier: APIUtils.getProviderIdentifier(),
           uri: uri.toString(),
           auth: auth,
           allowInWeb3: useInWeb3);
-      client =
-          APIUtils.buildEthereumProvider(serviceProvider, ethNetwork.first);
+      client = APIUtils.buildEthereumProvider(
+          provider: serviceProvider, network: ethNetwork.first);
       final info = await client!.getNetworkInfo();
       if (info.$1 != widget.chainId) {
         throw WalletException("invalid_chain_id");
       }
-      if (provider != null) {
-        final index = providers.indexOf(provider!);
-        if (index >= 0) {
-          providers[index] = serviceProvider;
-          return;
-        }
-      }
       providers.add(serviceProvider);
     });
     if (result.hasError) {
-      pageProgressKey.errorText(result.error!.tr);
+      pageProgressKey.errorText(result.error!.tr,
+          backToIdle: false, showBackButton: true);
     } else {
       setState(() {});
       pageProgressKey.successText("network_providers_has_been_updated".tr,
@@ -165,7 +156,6 @@ class __UpdateEthereumNetworkState extends State<_UpdateEthereumProvider>
   }
 
   void addNewProvider() {
-    provider = null;
     addNewProviders = true;
     updateState();
   }
@@ -180,13 +170,6 @@ class __UpdateEthereumNetworkState extends State<_UpdateEthereumProvider>
   void removeProvider(EthereumAPIProvider provider) {
     providers.remove(provider);
 
-    updateState();
-  }
-
-  void editProver(EthereumAPIProvider provider) {
-    this.provider = provider;
-    rpcUrl = provider.callUrl;
-    addNewProviders = true;
     updateState();
   }
 
@@ -229,7 +212,7 @@ class __UpdateEthereumNetworkState extends State<_UpdateEthereumProvider>
 }
 
 class _ShowProvidersWidget extends StatelessWidget {
-  const _ShowProvidersWidget(this.state, {Key? key}) : super(key: key);
+  const _ShowProvidersWidget(this.state);
   final __UpdateEthereumNetworkState state;
 
   @override
@@ -251,31 +234,19 @@ class _ShowProvidersWidget extends StatelessWidget {
           return ContainerWithBorder(
               iconAlginment: CrossAxisAlignment.start,
               onRemove: () {},
-              onRemoveWidget: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                      onPressed: () => state.editProver(provider),
-                      icon: Icon(Icons.edit,
-                          color: context.colors.onPrimaryContainer)),
-                  IconButton(
-                      onPressed: () => state.removeProvider(provider),
-                      icon: Icon(
-                        Icons.remove,
-                        color: context.colors.onPrimaryContainer,
-                      )),
-                ],
-              ),
+              onRemoveWidget: IconButton(
+                  onPressed: () => state.removeProvider(provider),
+                  icon: Icon(Icons.remove_circle,
+                      color: context.colors.onPrimaryContainer)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(provider.protocol.value.tr,
                       style: context.colors.onPrimaryContainer
                           .lableLarge(context)),
-                  Text(provider.websiteUri,
-                      style:
-                          context.colors.onPrimaryContainer.bodyMedium(context),
-                      maxLines: 2),
+                  OneLineTextWidget(provider.callUrl,
+                      style: context.colors.onPrimaryContainer
+                          .bodyMedium(context)),
                 ],
               ));
         },
@@ -286,8 +257,12 @@ class _ShowProvidersWidget extends StatelessWidget {
           children: [
             ContainerWithBorder(
               onRemove: state.addNewProvider,
-              onRemoveIcon: const Icon(Icons.add_box),
-              child: Text("tap_to_add_new_service_provider".tr),
+              onRemoveIcon: Icon(
+                Icons.add_box,
+                color: context.onPrimaryContainer,
+              ),
+              child: Text("tap_to_add_new_service_provider".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -307,7 +282,7 @@ class _ShowProvidersWidget extends StatelessWidget {
 }
 
 class _ImportProviderWidget extends StatelessWidget {
-  const _ImportProviderWidget(this.state, {Key? key}) : super(key: key);
+  const _ImportProviderWidget(this.state);
   final __UpdateEthereumNetworkState state;
 
   @override
@@ -384,18 +359,16 @@ class _ImportProviderWidget extends StatelessWidget {
             value: state.useInWeb3,
             onChanged: state.onChangeUseInWeb3,
           ),
-          Padding(
-            padding: WidgetConstant.paddingVertical40,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FixedElevatedButton.icon(
-                  label: Text("import_providers".tr),
-                  onPressed: state.onUpdate,
-                  icon: const Icon(Icons.update),
-                ),
-              ],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FixedElevatedButton.icon(
+                padding: WidgetConstant.paddingVertical40,
+                label: Text("import_providers".tr),
+                onPressed: state.onUpdate,
+                icon: const Icon(Icons.update),
+              ),
+            ],
           )
         ],
       ),

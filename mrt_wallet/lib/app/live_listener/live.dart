@@ -19,11 +19,11 @@ abstract class _Live<T> extends LiveListenable<T> {
     super.value = val;
   }
 
-  _Live(T initial) : super(initial);
+  _Live(super.initial);
 }
 
 class Live<T> extends _Live<T> {
-  Live(T initial) : super(initial);
+  Live(super.initial);
 }
 
 mixin _LiveListenable {
@@ -38,7 +38,7 @@ mixin _LiveListenable {
   }
 
   void notify() {
-    for (DynamicVoid i in [..._noneIdsListeners]) {
+    for (final i in [..._noneIdsListeners]) {
       i();
     }
   }
@@ -55,14 +55,6 @@ class LiveListenable<T> with _LiveListenable {
       listen.addListener(listenable);
     }
   }
-
-  // static Widget _sycronizedBuld(
-  //     DynamicVoid listener, Widget Function() builder) {
-  //   _listener = listener;
-  //   final build = builder();
-  //   _listener = null;
-  //   return build;
-  // }
 
   void dispose() {
     _noneIdsListeners.clear();

@@ -57,7 +57,7 @@ class _SetupSubstrateAddressViewState extends State<SetupSubstrateAddressView>
         context: context,
         seedGeneration:
             coin is BipCoins ? SeedTypes.bip39 : SeedTypes.bip39Entropy,
-        selectedCoins: [coin]);
+        selectedCoin: coin);
     if (keyIndex == null || keyIndex.currencyCoin.conf.type != coin.conf.type) {
       return;
     }
@@ -94,7 +94,7 @@ class _SetupSubstrateAddressViewState extends State<SetupSubstrateAddressView>
                     WidgetConstant.height8,
                     AppDropDownBottom(
                       items: algorithmTypesWidget,
-                      label: "keypair_type".tr,
+                      hint: "keypair_type".tr,
                       onChanged: onChangeAlgorithm,
                       isExpanded: true,
                       value: algorithm,

@@ -2,10 +2,9 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation/substrate.dart';
-import 'package:mrt_wallet/crypto/keys/access/private_key_response.dart';
-import 'package:mrt_wallet/crypto/keys/models/seed.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation/multisig.dart';
 
@@ -50,12 +49,10 @@ abstract class AddressDerivationIndex with CborSerializable, Equatable {
         return SubstrateAddressIndex.fromCborBytesOrObject(obj: cbor);
       case AddressDerivationType.multisig:
         return const MultiSigAddressIndex();
-      default:
-        throw UnimplementedError("Unsuported key index.");
     }
   }
 
-  PrivateKeyData derive(PrivateKeyData masterKey,
+  CryptoPrivateKeyData derive(CryptoPrivateKeyData masterKey,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex});
 
   SeedTypes get seedGeneration;

@@ -1,4 +1,3 @@
-import 'package:example/app_kit_view.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/platform_interface.dart';
@@ -55,30 +54,16 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with WebViewListener {
   bool init = false;
-  final controller = PlatformInterface.webViewController;
-  MRTAndroidViewController? ca;
-  void initWebView() async {
-    await controller.init("jafar",
-        url: "https://google.com", jsInterface: "MRT");
-    ca = await MRTAndroidViewController.create(viewType: "jafar");
-    init = true;
-    setState(() {});
-  }
+  void initWebView() async {}
 
   @override
-  void onPageProgress(WebViewEvent event) {
-    print("onPageProgress ${event.progress}");
-  }
+  void onPageProgress(WebViewEvent event) {}
 
   @override
-  void onPageFinished(WebViewEvent event) {
-    print("onPageFinished ${event.url}");
-  }
+  void onPageFinished(WebViewEvent event) {}
 
   @override
-  void onPageStart(WebViewEvent event) {
-    print("onPageStart ${event.url}");
-  }
+  void onPageStart(WebViewEvent event) {}
 
   @override
   Widget build(BuildContext context) {
@@ -96,20 +81,15 @@ class _MyHomePageState extends State<MyHomePage> with WebViewListener {
               onPressed: () {
                 initWebView();
               },
-              child: Text("init")),
+              child: const Text("init")),
           TextButton(
               onPressed: () {
                 init = false;
                 setState(() {});
               },
-              child: Text("change")),
-          TextButton(
-              onPressed: () {
-                ca?.dispose();
-                controller.dispose("jafar");
-                print("ca $ca");
-              },
-              child: Text("dispose")),
+              child: const Text(
+                  "changewqeqwe  qweqwe qweqwe wqeq qweqwewe qweqasd asd we qweqwe")),
+          TextButton(onPressed: () {}, child: const Text("dispose")),
         ],
       ),
       body: Container(
@@ -121,5 +101,5 @@ class _MyHomePageState extends State<MyHomePage> with WebViewListener {
   }
 
   @override
-  String? get viewType => "jafar";
+  String? get viewType => "j qweqweafar";
 }

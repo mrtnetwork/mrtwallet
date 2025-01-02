@@ -328,11 +328,12 @@ class JSEthereumHandler extends JSNetworkHandler<
 
     final newChain = Web3EthereumAddNewChain.fromJson(toObject);
     final network = newChain.toNewNetwork();
-    List<String> rpcsUrls = [];
+    final List<String> rpcsUrls = [];
     bool hasWrongChainId = false;
     for (final i in network.coinParam.providers) {
       final chainId = await MethodUtils.call(() async {
-        final client = APIUtils.buildEthereumProvider(i, network);
+        final client = APIUtils.buildEthereumProvider(
+            provider: i, network: network, isolate: APPIsolate.current);
         return await client.getChainId();
       });
 
@@ -364,8 +365,8 @@ class JSEthereumHandler extends JSNetworkHandler<
 
   Web3EthreumPersonalSign _personalSign(PageMessageRequest params) {
     final items = params.getElements(2);
-    final address = items?.elementAt(0);
-    final challeng = items?.elementAt(1);
+    final address = items?.elementAt(1);
+    final challeng = items?.elementAt(0);
     if (address == null || challeng == null) {
       throw Web3RequestExceptionConst.invalidMethodArgruments(params.method);
     }
@@ -378,19 +379,19 @@ class JSEthereumHandler extends JSNetworkHandler<
 
   @override
   void onRequestDone(PageMessageRequest message) {
-    final method = Web3EthereumRequestMethods.fromName(message.method);
-    switch (method) {
-      case Web3EthereumRequestMethods.addEthereumChain:
-      case Web3EthereumRequestMethods.switchEthereumChain:
-      case Web3EthereumRequestMethods.ethChainId:
-        _chainChanged(state);
-        break;
-      case Web3EthereumRequestMethods.requestAccounts:
-      case Web3EthereumRequestMethods.ethAccounts:
-        _accountChanged(state);
-        break;
-      default:
-    }
+    // final method = Web3EthereumRequestMethods.fromName(message.method);
+    // // switch (method) {
+    // //   case Web3EthereumRequestMethods.addEthereumChain:
+    // //   case Web3EthereumRequestMethods.switchEthereumChain:
+    // //   case Web3EthereumRequestMethods.ethChainId:
+    // //     _chainChanged(state);
+    // //     break;
+    // //   case Web3EthereumRequestMethods.requestAccounts:
+    // //   case Web3EthereumRequestMethods.ethAccounts:
+    // //     _accountChanged(state);
+    // //     break;
+    // //   default:
+    // // }
   }
 
   @override

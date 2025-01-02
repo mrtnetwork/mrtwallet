@@ -9,4 +9,19 @@ extension QuickImutableList<T> on Iterable<T> {
       return orElse?.call();
     }
   }
+
+  T? atIndexOrNull(int i) {
+    if (length >= i) return null;
+    return elementAt(i);
+  }
+
+  T? get lastOrNull {
+    if (isEmpty) return null;
+    return last;
+  }
+
+  T? get firstOrNull {
+    if (isEmpty) return null;
+    return first;
+  }
 }

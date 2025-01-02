@@ -19,7 +19,12 @@ typedef NFTCHAINACCOUNT<NFT extends NFTCore>
     = ChainAccount<dynamic, TokenCore, NFT>;
 
 abstract class ChainAccount<X, T extends TokenCore, N extends NFTCore>
-    extends CryptoAddress<X> implements CryptoAddressToken<T, N> {}
+    extends CryptoAddress<X> implements CryptoAddressToken<T, N> {
+  @override
+  String toString() {
+    return address.address;
+  }
+}
 
 abstract class CryptoAddressToken<T extends TokenCore, N extends NFTCore> {
   abstract final List<T> tokens;
@@ -59,6 +64,11 @@ abstract class CryptoAddress<X> with CborSerializable {
     return [keyIndex];
   }
 
+  String get identifier {
+    return BlockchainUtils.generateStringIndentifier(address.address);
+  }
+
+  /// for checking duplicate account. different from == operation
   bool isEqual(ChainAccount other);
 
   bool get multiSigAccount;
@@ -99,6 +109,9 @@ abstract class CryptoAddress<X> with CborSerializable {
         break;
       case NetworkType.stellar:
         address = IStellarAddress.fromCborBytesOrObject(network, obj: cbor);
+        break;
+      case NetworkType.monero:
+        address = IMoneroAddress.fromCborBytesOrObject(network, obj: cbor);
         break;
       case NetworkType.polkadot:
       case NetworkType.kusama:
@@ -146,18 +159,22 @@ class AccountBalance {
     return address;
   }
 
+  String get identifier {
+    return BlockchainUtils.generateStringIndentifier(address);
+  }
+
   final Live<IntegerBalance> balance;
 
   String get viewBalance => balance.toString();
   BigInt get currencyBalance => balance.value.balance;
+  bool get hasBalance => balance.value.largerThanZero;
 
   DateTime _updated;
 
   DateTime get updated => _updated;
 
-  void updateBalance([BigInt? updateBalance]) {
-    balance.value.updateBalance(updateBalance);
-    if (updateBalance != null) {
+  void updateAddressBalance([BigInt? updateBalance]) {
+    if (balance.value.updateBalance(updateBalance)) {
       balance.notify();
     }
   }

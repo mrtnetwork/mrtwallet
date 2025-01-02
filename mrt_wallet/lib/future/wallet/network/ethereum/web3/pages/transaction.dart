@@ -91,8 +91,9 @@ class _ETHTransactionTransferFields extends StatelessWidget {
             child: CoinPriceView(
                 token: controller.network.token,
                 balance: field.value,
-                style: context.textTheme.titleLarge,
-                showTokenImage: true)),
+                style: context.onPrimaryTextTheme.titleMedium,
+                showTokenImage: true,
+                symbolColor: context.onPrimaryContainer)),
         WidgetConstant.height20,
         if (field.destination?.networkAddress != null) ...[
           ReceiptAddressView(
@@ -111,8 +112,7 @@ class _ETHTransactionTransferFields extends StatelessWidget {
 
 class _EthereumTransactionDataView extends StatelessWidget {
   const _EthereumTransactionDataView(
-      {required this.data, required this.network, Key? key})
-      : super(key: key);
+      {required this.data, required this.network});
   final EthereumTransactionDataInfo? data;
   final WalletNetwork network;
   @override
@@ -127,18 +127,15 @@ class _EthereumTransactionDataView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(data?.localizationName.tr ?? "transfer".tr,
-                style: context.colors.onPrimaryContainer.bodyMedium(context)),
+                style: context.onPrimaryTextTheme.bodyMedium),
             if (data?.selector != null)
               Text(data!.selector!,
-                  style: context.colors.onPrimaryContainer.bodyMedium(context))
+                  style: context.onPrimaryTextTheme.bodyMedium)
           ],
         )),
         if (data != null) ...[
           WidgetConstant.height20,
-          EthereumTransactionDataWidget(
-            data: data!,
-            network: network,
-          )
+          EthereumTransactionDataWidget(data: data!, network: network)
         ],
       ],
     );
@@ -147,8 +144,7 @@ class _EthereumTransactionDataView extends StatelessWidget {
 
 class EthereumTransactionDataWidget extends StatelessWidget {
   const EthereumTransactionDataWidget(
-      {required this.data, required this.network, Key? key})
-      : super(key: key);
+      {required this.data, required this.network, super.key});
   final EthereumTransactionDataInfo data;
   final WalletNetwork network;
   @override
@@ -170,19 +166,14 @@ class EthereumTransactionDataWidget extends StatelessWidget {
         return _EthereumTransactionERC20DataWidget(data: data.cast());
       case SolidityMethodInfoTypes.nameAndInputs:
         return _EthereumTransactionNameAndInputsWidget(
-          data: data.cast(),
-          network: network,
-        );
-      default:
-        throw UnimplementedError("unknow data infos.");
+            data: data.cast(), network: network);
     }
   }
 }
 
 class _EthereumTransactionNameAndInputsWidget extends StatelessWidget {
   const _EthereumTransactionNameAndInputsWidget(
-      {required this.network, required this.data, Key? key})
-      : super(key: key);
+      {required this.network, required this.data});
   final SolidityNameAndInputValues data;
   final WalletNetwork network;
   @override
@@ -191,32 +182,27 @@ class _EthereumTransactionNameAndInputsWidget extends StatelessWidget {
         child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("method_name".tr,
-            style: context.colors.onPrimaryContainer.titleMedium(context)),
+        Text("method_name".tr, style: context.onPrimaryTextTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
           constraints: null,
-          backgroundColor: context.colors.onPrimaryContainer,
-          child: Text(
-            data.localizationName.tr,
-            style: context.colors.primaryContainer.bodyMedium(context),
-          ),
+          backgroundColor: context.onPrimaryContainer,
+          child: Text(data.localizationName.tr,
+              style: context.primaryTextTheme.bodyMedium),
         ),
         if (data.inputs.isNotEmpty) ...[
           WidgetConstant.height20,
-          Text("inputs".tr,
-              style: context.colors.onPrimaryContainer.titleMedium(context)),
+          Text("inputs".tr, style: context.onPrimaryTextTheme.titleMedium),
           WidgetConstant.height8,
           ...List.generate(data.inputs.length, (i) {
             final value = data.inputs[i];
             return ContainerWithBorder(
-              backgroundColor: context.colors.onPrimaryContainer,
-              constraints: null,
-              child: _SolidityTypesView(
-                  value: value,
-                  network: network,
-                  style: context.colors.primaryContainer.bodyMedium(context)),
-            );
+                backgroundColor: context.onPrimaryContainer,
+                constraints: null,
+                child: _SolidityTypesView(
+                    value: value,
+                    network: network,
+                    style: context.primaryTextTheme.bodyMedium));
           })
         ],
       ],
@@ -226,8 +212,7 @@ class _EthereumTransactionNameAndInputsWidget extends StatelessWidget {
 
 class _SolidityTypesView extends StatelessWidget {
   const _SolidityTypesView(
-      {required this.value, required this.network, this.style, Key? key})
-      : super(key: key);
+      {required this.value, required this.network, this.style});
   final dynamic value;
   final WalletNetwork network;
   final TextStyle? style;
@@ -242,12 +227,13 @@ class _SolidityTypesView extends StatelessWidget {
                 tooltipWidget: (context) {
                   final SolidityAddress addr = value;
                   return Container(
-                      constraints: const BoxConstraints(maxWidth: 300),
+                      constraints: const BoxConstraints(
+                          maxWidth: APPConst.tooltipConstrainedWidth),
                       color: context.colors.tertiary,
                       child: Text(
                         addr.toTronAddress().toAddress(),
-                        style: context.colors.onTertiaryContainer
-                            .bodyMedium(context),
+                        style: context.textTheme.bodyMedium?.copyWith(
+                            color: context.colors.onTertiaryContainer),
                       ));
                 },
                 child: Icon(Icons.help, color: style?.color)),
@@ -258,8 +244,7 @@ class _SolidityTypesView extends StatelessWidget {
 }
 
 class _EthereumTransactionERC20DataWidget extends StatelessWidget {
-  const _EthereumTransactionERC20DataWidget({required this.data, Key? key})
-      : super(key: key);
+  const _EthereumTransactionERC20DataWidget({required this.data});
   final SolidityERC20MethodInfo data;
   @override
   Widget build(BuildContext context) {
@@ -270,23 +255,20 @@ class _EthereumTransactionERC20DataWidget extends StatelessWidget {
           Text("token_info".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           TokenDetailsView(
-            token: data.token,
-            onSelectWidget: WidgetConstant.sizedBox,
-            radius: APPConst.circleRadius25,
-          ),
+              token: data.token,
+              onSelectWidget: WidgetConstant.sizedBox,
+              radius: APPConst.circleRadius25),
           WidgetConstant.height20,
           Text("transaction_data".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           ContainerWithBorder(
             child: CopyTextIcon(
-              color: context.colors.onPrimaryContainer,
+              color: context.onPrimaryContainer,
               dataToCopy: data.dataHex,
-              widget: SelectableText(
-                data.dataHex,
-                style: context.colors.onPrimaryContainer.bodyMedium(context),
-                minLines: 1,
-                maxLines: 3,
-              ),
+              widget: SelectableText(data.dataHex,
+                  style: context.onPrimaryTextTheme.bodyMedium,
+                  minLines: 1,
+                  maxLines: 3),
             ),
           )
         ],
@@ -299,10 +281,9 @@ class _EthereumTransactionERC20DataWidget extends StatelessWidget {
           Text("token_info".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           TokenDetailsView(
-            token: data.token,
-            onSelectWidget: WidgetConstant.sizedBox,
-            radius: APPConst.circleRadius25,
-          ),
+              token: data.token,
+              onSelectWidget: WidgetConstant.sizedBox,
+              radius: APPConst.circleRadius25),
           WidgetConstant.height20,
           ReceiptAddressView(address: transferData.to),
           WidgetConstant.height20,
@@ -313,7 +294,8 @@ class _EthereumTransactionERC20DataWidget extends StatelessWidget {
               child: CoinPriceView(
                   balance: transferData.value,
                   token: transferData.token.token,
-                  style: context.textTheme.titleLarge,
+                  style: context.onPrimaryTextTheme.titleMedium,
+                  symbolColor: context.onPrimaryContainer,
                   showTokenImage: true))
         ],
       );
@@ -322,9 +304,7 @@ class _EthereumTransactionERC20DataWidget extends StatelessWidget {
 }
 
 class _UnknownTransactionDataView extends StatelessWidget {
-  const _UnknownTransactionDataView(
-      {required this.dataHex, this.content, Key? key})
-      : super(key: key);
+  const _UnknownTransactionDataView({required this.dataHex, this.content});
   final String dataHex;
   final String? content;
   @override
@@ -336,29 +316,27 @@ class _UnknownTransactionDataView extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
           onRemove: () {},
-          onTapWhenOnRemove: false,
-          onRemoveWidget: CopyTextIcon(dataToCopy: dataHex, isSensitive: false),
-          child: Text(
-            dataHex,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          enableTap: false,
+          onRemoveWidget: CopyTextIcon(
+              dataToCopy: dataHex,
+              isSensitive: false,
+              color: context.onPrimaryContainer),
+          child: OneLineTextWidget(dataHex,
+              maxLine: 2, style: context.onPrimaryTextTheme.bodyMedium),
         ),
         if (content != null) ...[
           WidgetConstant.height20,
           Text("content".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           ContainerWithBorder(
-            onRemove: () {},
-            onTapWhenOnRemove: false,
-            onRemoveWidget:
-                CopyTextIcon(dataToCopy: content!, isSensitive: false),
-            child: Text(
-              content!,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+              onRemove: () {},
+              enableTap: false,
+              onRemoveWidget: CopyTextIcon(
+                  dataToCopy: content!,
+                  isSensitive: false,
+                  color: context.onPrimaryContainer),
+              child: OneLineTextWidget(content!,
+                  maxLine: 2, style: context.onPrimaryTextTheme.bodyMedium)),
         ],
       ],
     );

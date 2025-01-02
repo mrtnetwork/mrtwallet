@@ -78,7 +78,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
     final expire = DateTime.now().add(Duration(seconds: reminig));
     final walletKey = ExtentionWalletKey(key);
     final encryptionKey = ExtentionKey.generate();
-    final encrypt = await crypto.cryptoRequest(CryptoRequestEncryptChacha(
+    final encrypt = await crypto.cryptoMainRequest(CryptoRequestEncryptChacha(
         message: walletKey.toCbor().encode(),
         key: encryptionKey.keyBytes,
         nonce: encryptionKey.nonceBytes));
@@ -102,7 +102,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
           int.parse(keys[ExtentionSessionStorageConst.expireKey]!));
       final ExtentionKey key =
           ExtentionKey.deserialize(hex: keys[ExtentionSessionStorageConst.key]);
-      final decrypt = await crypto.cryptoRequest(
+      final decrypt = await crypto.cryptoMainRequest(
           CryptoRequestDecryptChacha.fromHex(
               message: keys[ExtentionSessionStorageConst.history]!,
               key: key.key,
@@ -126,7 +126,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
     final event = message?.toEvent();
     switch (event?.type) {
       case WalletEventTypes.popup:
-        sendResponse.callAsFunction(sendResponse, message);
+        sendResponse.callAsFunction(null, message);
         if (event?.requestId == "1") {
           _fromAction = false;
         }
@@ -135,7 +135,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
         extension.windows
             .getCurrent_(populate: false, windowTypes: ["popup"]).then((e) {
           sendResponse.callAsFunction(
-              sendResponse,
+              null,
               WalletEvent(
                       clientId: event!.clientId,
                       data: IntUtils.toBytes(e.id!,
@@ -145,7 +145,7 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
                   .toJsEvent());
         }).catchError((e) {
           sendResponse.callAsFunction(
-              sendResponse,
+              null,
               WalletEvent(
                       clientId: event!.clientId,
                       data: const [],

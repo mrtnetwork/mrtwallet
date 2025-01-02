@@ -88,7 +88,7 @@ class SubstrateTransactionStateController extends SubstrateTransactiomImpl
   @override
   Future<void> signAndSendTransaction() async {
     if (!_trIsReady) return;
-    super.signAndSendTransaction();
+    await super.signAndSendTransaction();
   }
 
   @override

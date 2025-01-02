@@ -7,8 +7,8 @@ import 'package:mrt_wallet/wallet/web3/networks/ethereum/params/models/sign_type
 import 'package:on_chain/solidity/solidity.dart';
 
 class EthereumWeb3TypedDataSignRequestView extends StatelessWidget {
-  const EthereumWeb3TypedDataSignRequestView({required this.request, Key? key})
-      : super(key: key);
+  const EthereumWeb3TypedDataSignRequestView(
+      {required this.request, super.key});
   final EthereumWeb3Form<Web3EthreumTypdedData> request;
   Web3EthreumTypdedData get param => request.request.params;
   @override
@@ -21,7 +21,7 @@ class EthereumWeb3TypedDataSignRequestView extends StatelessWidget {
           WidgetConstant.height8,
           ContainerWithBorder(
             child: Text(param.typedData.version.name.toString(),
-                style: context.colors.onPrimaryContainer.bodyMedium(context)),
+                style: context.onPrimaryTextTheme.bodyMedium),
           ),
           _EIP712FieldsView(
             typedData: param.typedData,
@@ -29,60 +29,57 @@ class EthereumWeb3TypedDataSignRequestView extends StatelessWidget {
           ),
           WidgetConstant.height20,
           ContainerWithBorder(
-            onTapWhenOnRemove: false,
+            enableTap: false,
             padding: EdgeInsets.zero,
-            child: Theme(
-                data: context.theme
-                    .copyWith(dividerColor: context.colors.transparent),
-                child: ExpansionTile(
-                  title:
-                      Text("message".tr, style: context.textTheme.titleMedium),
-                  subtitle: TextAndLinkView(
-                      text: "eth_sign_typed_data_desc"
-                          .tr
-                          .replaceOne(param.method.name),
-                      url: LinkConst.aboutEthereumTypedData,
-                      linkDesc: "read_more".tr),
-                  children: List.generate(param.typedDataJson.length, (index) {
-                    final key = param.typedDataJson.keys.elementAt(index);
-                    final value = param.typedDataJson[key];
-                    if (value == null) return WidgetConstant.sizedBox;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ContainerWithBorder(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                key.camelCase,
-                                style: context.colors.onPrimaryContainer
-                                    .lableLarge(context),
-                              ),
-                              ContainerWithBorder(
-                                backgroundColor:
-                                    context.colors.onPrimaryContainer,
-                                constraints: null,
-                                child: CopyTextIcon(
-                                  dataToCopy: value.toString(),
-                                  isSensitive: false,
-                                  color: context.colors.primaryContainer,
-                                  widget: SelectableText(
-                                    value.toString(),
-                                    style: context.colors.primaryContainer
-                                        .bodyMedium(context),
-                                    maxLines: 4,
-                                    minLines: 1,
-                                  ),
-                                ),
-                              ),
-                            ],
+            child: APPExpansionListTile(
+              title: Text("message".tr,
+                  style: context.onPrimaryTextTheme.titleMedium),
+              subtitle: TextAndLinkView(
+                text:
+                    "eth_sign_typed_data_desc".tr.replaceOne(param.method.name),
+                url: LinkConst.aboutEthereumTypedData,
+                linkDesc: "read_more".tr,
+                style: context.onPrimaryTextTheme.bodyMedium,
+              ),
+              children: List.generate(param.typedDataJson.length, (index) {
+                final key = param.typedDataJson.keys.elementAt(index);
+                final value = param.typedDataJson[key];
+                if (value == null) return WidgetConstant.sizedBox;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ContainerWithBorder(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            key.camelCase,
+                            style: context.colors.onPrimaryContainer
+                                .lableLarge(context),
                           ),
-                        ),
-                      ],
-                    );
-                  }),
-                )),
+                          ContainerWithBorder(
+                            backgroundColor: context.colors.onPrimaryContainer,
+                            constraints: null,
+                            child: CopyTextIcon(
+                              dataToCopy: value.toString(),
+                              isSensitive: false,
+                              color: context.colors.primaryContainer,
+                              widget: SelectableText(
+                                value.toString(),
+                                style: context.colors.primaryContainer
+                                    .bodyMedium(context),
+                                maxLines: 4,
+                                minLines: 1,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -102,9 +99,7 @@ class EthereumWeb3TypedDataSignRequestView extends StatelessWidget {
 }
 
 class _EIP712FieldsView extends StatelessWidget {
-  const _EIP712FieldsView(
-      {required this.typedData, required this.domain, Key? key})
-      : super(key: key);
+  const _EIP712FieldsView({required this.typedData, required this.domain});
   final EIP712Base typedData;
   final EIP712Domain? domain;
   @override
@@ -121,11 +116,9 @@ class _EIP712FieldsView extends StatelessWidget {
             onRemove: () {},
             onRemoveWidget: CopyTextIcon(
                 dataToCopy: eip712.primaryType, isSensitive: false),
-            onTapWhenOnRemove: false,
-            child: Text(
-              eip712.primaryType,
-              style: context.colors.onPrimaryContainer.bodyMedium(context),
-            ),
+            enableTap: false,
+            child: Text(eip712.primaryType,
+                style: context.onPrimaryTextTheme.bodyMedium),
           ),
           _EIP712DomainView(domain)
         ],
@@ -151,34 +144,29 @@ class _EIP712DomainView extends StatelessWidget {
             child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("name".tr,
-                style: context.colors.onPrimaryContainer.lableLarge(context)),
+            Text("name".tr, style: context.onPrimaryTextTheme.labelLarge),
             ContainerWithBorder(
-                backgroundColor: context.colors.onPrimaryContainer,
+                backgroundColor: context.onPrimaryContainer,
                 child: Text(domain!.name,
-                    style:
-                        context.colors.primaryContainer.bodyMedium(context))),
-            WidgetConstant.height8,
-            Text("version".tr,
-                style: context.colors.onPrimaryContainer.lableLarge(context)),
+                    style: context.primaryTextTheme.bodyMedium)),
+            WidgetConstant.height20,
+            Text("version".tr, style: context.onPrimaryTextTheme.titleMedium),
             ContainerWithBorder(
-                backgroundColor: context.colors.onPrimaryContainer,
+                backgroundColor: context.onPrimaryContainer,
                 child: Text(domain!.version,
-                    style:
-                        context.colors.primaryContainer.bodyMedium(context))),
-            WidgetConstant.height8,
+                    style: context.primaryTextTheme.bodyMedium)),
+            WidgetConstant.height20,
             Text("verifying_contract".tr,
-                style: context.colors.onPrimaryContainer.lableLarge(context)),
+                style: context.onPrimaryTextTheme.titleMedium),
             ContainerWithBorder(
-                backgroundColor: context.colors.onPrimaryContainer,
+                backgroundColor: context.onPrimaryContainer,
                 onRemove: () {},
                 onRemoveWidget: CopyTextIcon(
                     dataToCopy: domain!.verifyingContract.address,
                     isSensitive: false,
-                    color: context.colors.primaryContainer),
+                    color: context.primaryContainer),
                 child: Text(domain!.verifyingContract.address,
-                    style:
-                        context.colors.primaryContainer.bodyMedium(context))),
+                    style: context.primaryTextTheme.bodyMedium)),
           ],
         )),
         WidgetConstant.height20,

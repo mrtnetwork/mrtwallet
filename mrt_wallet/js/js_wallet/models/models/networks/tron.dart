@@ -7,6 +7,12 @@ import 'ethereum.dart';
 @JS("tron")
 external set tron(Proxy? tron);
 
+@JS("tronWeb")
+external set tronWeb_(Proxy? tronWeb);
+
+@JS("tronLink")
+external set tronLink(Proxy? tronLink);
+
 class JSTronAddress {
   @JSExport("base58")
   final String base58;
@@ -15,6 +21,9 @@ class JSTronAddress {
   const JSTronAddress({required this.base58, required this.hex});
   factory JSTronAddress.fromJson(Map<String, dynamic> json) {
     return JSTronAddress(base58: json["base58"], hex: json["hex"]);
+  }
+  factory JSTronAddress.none() {
+    return JSTronAddress(base58: '', hex: '');
   }
 
   Map<String, dynamic> toJson() {
@@ -28,7 +37,7 @@ class JSTronAddress {
   }
 
   @override
-  operator ==(other) {
+  bool operator ==(other) {
     if (other is! JSTronAddress) return false;
     return hex == other.hex;
   }
@@ -37,6 +46,14 @@ class JSTronAddress {
 
   @override
   int get hashCode => hex.hashCode ^ base58.hashCode;
+}
+
+@JS()
+extension type TronLinkParams(JSAny _) implements JSAny {
+  external set dappIcon(String _);
+  external set dappName(String _);
+  external set openUrlWhenWalletNotFound(bool _);
+  external set openTronLinkAppOnMobile(bool _);
 }
 
 @JS()
@@ -58,6 +75,7 @@ extension type TronWeb._(JSAny _) implements JSAny {
   external set setFullNode(JSFunction setPrivateKey);
   external set setAddress(JSFunction setAddress);
   external set setPrivateKey(JSFunction setPrivateKey);
+  external set defaultPrivateKey(String s);
   external set solidityNode(HttpProvider? solidityNode);
   external set fullNode(HttpProvider? fullNode);
   external set setHeader(JSFunction setHeader);
@@ -65,7 +83,6 @@ extension type TronWeb._(JSAny _) implements JSAny {
   external set setDefaultBlock(JSAny? fullNodsetDefaultBlocke);
   external HttpProvider get solidityNode;
   external HttpProvider get fullNode;
-
   external JSObject? get defaultAddress;
   external set defaultAddress(JSObject? defaultAddress);
 }
@@ -79,8 +96,9 @@ extension type HttpProvider._(JSAny _) implements JSAny {
 extension type TIP1193(JSObject _) implements EIP1193 {
   @JS("tronWeb")
   external set tronWeb(Proxy tronWeb);
-
+  @JS("ready")
   external set ready(bool ready);
+  external set tronlinkParams(TronLinkParams _);
 
   static TIP1193 setup({
     required JSFunction request,
@@ -91,11 +109,13 @@ extension type TIP1193(JSObject _) implements EIP1193 {
     required Proxy tronWeb,
     required JSFunction enable,
     required JSFunction sendWalletRequest,
+    required TronLinkParams params,
   }) {
     final tip = TIP1193(JSObject());
     tip.sendWalletRequest = sendWalletRequest;
     tip.cancelAllListener = cancelAllListener;
     tip.cancelAllListener = removeListener;
+    tip.tronlinkParams = params;
 
     tip.request = request;
     tip.on = on;

@@ -6,8 +6,6 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:on_chain/tron/tron.dart';
 
-abstract class TronToken implements TokenCore<BigInt> {}
-
 class TronTRC20Token with Equatable implements SolidityToken, TronToken {
   TronTRC20Token._(
       this.balance, this.token, this.contractAddress, this._updated);
@@ -38,6 +36,7 @@ class TronTRC20Token with Equatable implements SolidityToken, TronToken {
       throw WalletExceptionConst.invalidTokenInformation;
     }
   }
+  @override
   TronTRC20Token updateToken(Token updateToken) {
     return TronTRC20Token._(balance, updateToken, contractAddress, _updated);
   }
@@ -79,7 +78,7 @@ class TronTRC20Token with Equatable implements SolidityToken, TronToken {
   final Token token;
 
   @override
-  String? get issuer => contractAddress.toAddress();
+  String get issuer => contractAddress.toAddress();
 
   @override
   String toHexAddress() {
@@ -87,5 +86,8 @@ class TronTRC20Token with Equatable implements SolidityToken, TronToken {
   }
 
   @override
-  late final String? type = "trc20";
+  TronTokenTypes get tronTokenType => TronTokenTypes.trc20;
+
+  @override
+  late final String? type = tronTokenType.name;
 }

@@ -4,21 +4,17 @@ import 'package:blockchain_utils/cbor/types/list.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
-import 'package:mrt_wallet/wallet/api/utils/utils.dart';
-
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'ethereum.dart';
+import 'package:mrt_wallet/app/http/models/auth.dart';
 
 class TronAPIProvider extends APIProvider {
-  const TronAPIProvider({
-    required super.serviceName,
-    required super.websiteUri,
-    super.protocol = ServiceProtocol.http,
-    super.auth,
-    required super.identifier,
-    required this.httpNodeUri,
-    required this.solidityProvider,
-  });
+  const TronAPIProvider(
+      {super.auth,
+      required super.identifier,
+      required this.httpNodeUri,
+      required this.solidityProvider})
+      : super(protocol: ServiceProtocol.http);
   final String httpNodeUri;
   final EthereumAPIProvider solidityProvider;
 
@@ -30,25 +26,21 @@ class TronAPIProvider extends APIProvider {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.tronApiServiceProvider);
     return TronAPIProvider(
-        serviceName: cbor.elementAt(0),
-        websiteUri: cbor.elementAt(1),
-        httpNodeUri: cbor.elementAt(2),
-        auth: cbor.getCborTag(3)?.to<ProviderAuth, CborTagValue>(
-            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)),
+        httpNodeUri: cbor.elementAs(0),
         solidityProvider:
-            EthereumAPIProvider.fromCborBytesOrObject(obj: cbor.getCborTag(4)),
-        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(5)));
+            EthereumAPIProvider.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+        auth: cbor.elemetMybeAs<ProviderAuthenticated, CborTagValue>(
+            2, (e) => ProviderAuthenticated.deserialize(obj: e)),
+        identifier: cbor.elementAt(3));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          serviceName,
-          websiteUri,
           httpNodeUri,
-          auth?.toCbor(),
           solidityProvider.toCbor(),
+          auth?.toCbor(),
           identifier
         ]),
         CborTagsConst.tronApiServiceProvider);

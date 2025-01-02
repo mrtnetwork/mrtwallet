@@ -9,7 +9,7 @@ class SelectedMnemonic {
   bool get selected => word != null && index != null;
 
   @override
-  operator ==(other) {
+  bool operator ==(other) {
     if (other is! SelectedMnemonic) {
       return false;
     }

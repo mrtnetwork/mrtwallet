@@ -1,13 +1,15 @@
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ripple/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/address.dart';
+import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/models/networks/ripple/models/account_object_signer_list.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
+import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
 class _RippleApiProviderConst {
@@ -16,7 +18,7 @@ class _RippleApiProviderConst {
 
 class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
   RippleClient({required this.provider, required this.network});
-  final XRPLRpc provider;
+  final XRPProvider provider;
   @override
   final WalletXRPNetwork network;
 
@@ -25,12 +27,14 @@ class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
       provider.rpc as BaseServiceProtocol<RippleAPIProvider>;
 
   @override
-  Future<void> updateBalance(IXRPAddress account) async {
-    final accountInfo = await getAccountInfo(account.address.toAddress);
+  Future<void> updateBalance(
+      IXRPAddress address, APPCHAINACCOUNT<IXRPAddress> chain) async {
+    final accountInfo = await getAccountInfo(address.address.toAddress);
     if (accountInfo == null) return;
-    account.address
-        .updateBalance(BigInt.parse(accountInfo.accountData.balance));
-    await updateTokens(account);
+    chain.updateAddressBalance(
+        address: address,
+        updateBalance: BigintUtils.tryParse(accountInfo.accountData.balance));
+    await updateTokens(address);
   }
 
   Future<void> updateTokens(IXRPAddress address) async {
@@ -39,8 +43,8 @@ class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
           .request(XRPRPCFetchTokens(account: address.address.toAddress));
       for (final i in address.tokens) {
         try {
-          final currentUpdate =
-              accountTokens.firstWhere((element) => element.issuer == i.issuer);
+          final currentUpdate = accountTokens
+              .firstWhere((element) => element.issuer.address == i.issuer);
           i.updateBalance(BigRational.parseDecimal(currentUpdate.balance));
         } on StateError {
           i.updateBalance(BigRational.zero);
@@ -64,7 +68,7 @@ class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
 
   Future<AccountInfo?> getAccountInfo(String address) async {
     try {
-      return await provider.request(RPCAccountInfo(account: address));
+      return await provider.request(XRPRequestAccountInfo(account: address));
     } on RPCError catch (e) {
       if (e.errorCode == _RippleApiProviderConst.accountNotFound) {
         return null;
@@ -86,11 +90,27 @@ class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
     return (account.accountData.regularKey, signerObject);
   }
 
+  Future<List<RippleIssueToken>> accountTokens(IXRPAddress address) async {
+    final tokens = await provider
+        .request(XRPRPCFetchTokens(account: address.address.toAddress));
+    return tokens
+        .map((e) => RippleIssueToken.create(
+            balance: e.balance,
+            token: Token(name: e.symbol, symbol: e.symbol),
+            issuer: e.issuer.address))
+        .toList();
+  }
+
+  Future<ServerInfo> getServerInfo() async {
+    return await provider.request(XRPRequestServerInfo());
+  }
+
   @override
   Future<bool> onInit() async {
     final result = await MethodUtils.call(() async {
-      return await provider.request(RPCServerState());
+      return getServerInfo();
     });
-    return result.hasResult;
+    return result.hasResult &&
+        result.result.info.networkId == network.coinParam.networkId;
   }
 }

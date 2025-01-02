@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/api/api.dart';
@@ -158,13 +159,10 @@ class Web3EthereumAddNewChain extends Web3EthereumRequestParam<String> {
             token: Token(name: name, symbol: symbol, decimal: decimals),
             providers: rpcUrls
                 .map((e) => EthereumAPIProvider(
-                    serviceName: Uri.parse(e).host,
-                    websiteUri: Uri.parse(e).host,
-                    uri: e,
-                    identifier: APIUtils.getProviderIdentifier(null)))
+                    uri: e, identifier: APIUtils.getProviderIdentifier()))
                 .toList(),
             chainId: newChainId,
             supportEIP1559: false,
-            mainnet: false));
+            chainType: ChainType.testnet));
   }
 }

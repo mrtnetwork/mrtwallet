@@ -5,8 +5,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
 class SubstrateTransactionFeeView extends StatelessWidget {
-  const SubstrateTransactionFeeView(this.controller, {Key? key})
-      : super(key: key);
+  const SubstrateTransactionFeeView(this.controller, {super.key});
   final SubstrateTransactionStateController controller;
 
   @override
@@ -20,7 +19,7 @@ class SubstrateTransactionFeeView extends StatelessWidget {
         ContainerWithBorder(
             validateText: controller.feeError?.tr,
             validate: controller.hasFee,
-            onTapWhenOnRemove: false,
+            enableTap: false,
             onTapError: () {
               controller.estimateFee();
             },
@@ -33,8 +32,9 @@ class SubstrateTransactionFeeView extends StatelessWidget {
             child: CoinPriceView(
               balance: controller.fee,
               token: controller.network.token,
-              style: context.textTheme.titleLarge,
+              style: context.onPrimaryTextTheme.titleLarge,
               showTokenImage: true,
+              symbolColor: context.onPrimaryContainer,
             )),
       ],
     );
@@ -42,8 +42,7 @@ class SubstrateTransactionFeeView extends StatelessWidget {
 }
 
 class _FeeInfoWidget extends StatelessWidget {
-  const _FeeInfoWidget({required this.feeInfo, required this.network, Key? key})
-      : super(key: key);
+  const _FeeInfoWidget({required this.feeInfo, required this.network});
   final SubstrateFeeInfos feeInfo;
   final WalletPolkadotNetwork network;
 
@@ -114,7 +113,7 @@ class _FeeInfoWidget extends StatelessWidget {
           ],
         ));
       },
-      child: const Icon(Icons.info),
+      child: Icon(Icons.info, color: context.onPrimaryContainer),
     ));
   }
 }

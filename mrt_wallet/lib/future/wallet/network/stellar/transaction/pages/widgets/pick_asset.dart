@@ -15,8 +15,7 @@ class PickFromAccountAssets extends StatefulWidget {
       {required this.accountInfo,
       required this.chain,
       this.allowNativeAssets = true,
-      Key? key})
-      : super(key: key);
+      super.key});
 
   @override
   State<PickFromAccountAssets> createState() => _PickFromAccountAssetsState();
@@ -56,7 +55,7 @@ class _PickFromAccountAssetsState extends State<PickFromAccountAssets> {
   @override
   void dispose() {
     super.dispose();
-    for (var e in tokens) {
+    for (final e in tokens) {
       e.balance.dispose();
     }
   }
@@ -73,6 +72,7 @@ class _PickFromAccountAssetsState extends State<PickFromAccountAssets> {
                 token: natvieAsset.token,
                 balance: natvieAsset.tokenBalance,
                 color: context.colors.onPrimaryContainer,
+                radius: APPConst.circleRadius25,
               )),
           if (tokens.isNotEmpty) WidgetConstant.divider,
         ],
@@ -87,10 +87,10 @@ class _PickFromAccountAssetsState extends State<PickFromAccountAssets> {
             itemBuilder: (context, index) {
               final asset = tokens[index];
               return TokenDetailsView(
-                token: asset,
-                onSelect: () => onTapAsset(asset),
-                onSelectWidget: WidgetConstant.sizedBox,
-              );
+                  token: asset,
+                  onSelect: () => onTapAsset(asset),
+                  onSelectWidget: WidgetConstant.sizedBox,
+                  radius: APPConst.circleRadius25);
             },
             separatorBuilder: (context, index) => WidgetConstant.divider,
             itemCount: tokens.length)
@@ -101,7 +101,7 @@ class _PickFromAccountAssetsState extends State<PickFromAccountAssets> {
 
 class StellarPickAssetView extends StatefulWidget {
   final StellarChain chain;
-  const StellarPickAssetView({required this.chain, Key? key}) : super(key: key);
+  const StellarPickAssetView({required this.chain, super.key});
 
   @override
   State<StellarPickAssetView> createState() => _StellarPickAssetViewState();
@@ -157,7 +157,7 @@ class _StellarPickAssetViewState extends State<StellarPickAssetView>
   void setup() {
     if (!(formKey.currentState?.validate() ?? false)) return;
     if (!isReady) return;
-    StellarAsset? asset = StellarUtils.tryToAssets(assetType,
+    final StellarAsset? asset = StellarUtils.tryToAssets(assetType,
         code: assetName, issuer: issueAddress?.networkAddress.toPublicKey());
     if (asset == null) return;
     final pickedAsset = StellarPickedIssueAsset(
@@ -206,7 +206,7 @@ class _StellarPickAssetViewState extends State<StellarPickAssetView>
             items: dropDownWidget,
             value: assetType,
             onChanged: onChangeAssetType,
-            label: "asset_type".tr,
+            hint: "asset_type".tr,
           ),
           WidgetConstant.height20,
           APPAnimatedSwitcher<AssetType>(enable: assetType, widgets: {
@@ -218,14 +218,13 @@ class _StellarPickAssetViewState extends State<StellarPickAssetView>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical40,
-                onPressed: isReady
-                    ? () {
-                        setup();
-                      }
-                    : null,
-                child: Text("setup_asset".tr),
-              )
+                  padding: WidgetConstant.paddingVertical40,
+                  onPressed: isReady
+                      ? () {
+                          setup();
+                        }
+                      : null,
+                  child: Text("setup_asset".tr))
             ],
           )
         ],
@@ -236,7 +235,7 @@ class _StellarPickAssetViewState extends State<StellarPickAssetView>
 
 class _PickAssetIssuer extends StatelessWidget {
   final _StellarPickAssetViewState state;
-  const _PickAssetIssuer(this.state, {Key? key}) : super(key: key);
+  const _PickAssetIssuer(this.state);
 
   @override
   Widget build(BuildContext context) {
@@ -252,43 +251,41 @@ class _PickAssetIssuer extends StatelessWidget {
       Text("token_issuer".tr),
       WidgetConstant.height8,
       ContainerWithBorder(
-        validate: state.issueAddress != null,
-        onRemove: () {
-          context
-              .openSliverBottomSheet<ReceiptAddress<StellarAddress>>(
-                  "issuer".tr,
-                  bodyBuilder: (c) =>
-                      SelectRecipientAccountView<StellarAddress>(
-                          account: state.widget.chain, scrollController: c),
-                  maxExtend: 1,
-                  minExtent: 0.8,
-                  initialExtend: 0.9)
-              .then(
-            (value) {
-              state.onSetIssueAddress(value);
-            },
-          );
-        },
-        onRemoveIcon: state.issueAddress == null
-            ? const Icon(Icons.add_box)
-            : const Icon(Icons.edit),
-        child: state.issueAddress == null
-            ? Text(
-                "tap_to_choose_address".tr,
-                style: context.colors.onPrimaryContainer.bodyMedium(context),
-              )
-            : ReceiptAddressDetailsView(
-                address: state.issueAddress!,
-                color: context.colors.onPrimaryContainer,
-              ),
-      ),
+          validate: state.issueAddress != null,
+          onRemove: () {
+            context
+                .openSliverBottomSheet<ReceiptAddress<StellarAddress>>(
+                    "issuer".tr,
+                    bodyBuilder: (c) =>
+                        SelectRecipientAccountView<StellarAddress>(
+                            account: state.widget.chain, scrollController: c),
+                    maxExtend: 1,
+                    minExtent: 0.8,
+                    initialExtend: 0.9)
+                .then(
+              (value) {
+                state.onSetIssueAddress(value);
+              },
+            );
+          },
+          onRemoveIcon: AddOrEditIconWidget(state.issueAddress != null),
+          child: ConditionalWidget(
+              onActive: (context) => ReceiptAddressDetailsView(
+                    address: state.issueAddress!,
+                    color: context.onPrimaryContainer,
+                  ),
+              enable: state.issueAddress != null,
+              onDeactive: (context) => Text(
+                    "tap_to_choose_address".tr,
+                    style: context.onPrimaryTextTheme.bodyMedium,
+                  ))),
     ]);
   }
 }
 
 class _PickAssetPoolId extends StatelessWidget {
   final _StellarPickAssetViewState state;
-  const _PickAssetPoolId(this.state, {Key? key}) : super(key: key);
+  const _PickAssetPoolId(this.state);
 
   @override
   Widget build(BuildContext context) {

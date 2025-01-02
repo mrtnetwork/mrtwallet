@@ -1,6 +1,9 @@
+import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/crypto/requets/messages.dart';
+import 'package:mrt_wallet/future/future.dart';
+import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/models/networks/bch/models/cash_token_bcmr.dart';
 import 'package:mrt_wallet/crypto/utils/bitcoin_cash/bitcoin_cash_utils.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
@@ -14,7 +17,8 @@ enum _MetadataUriTypes {
 }
 
 class BCMRUriValidateView extends StatefulWidget {
-  const BCMRUriValidateView({super.key});
+  final BitcoinChain account;
+  const BCMRUriValidateView({required this.account, super.key});
 
   @override
   State<BCMRUriValidateView> createState() => __MetadataContentState();
@@ -35,7 +39,7 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
   void onSelectMetaDataUri(_MetadataUriTypes? uriMethod) {
     metadataUri = uriMethod ?? metadataUri;
     onPasteUri("");
-    setState(() {});
+    updateState(() {});
   }
 
   String? _validateIpfs(String? v) {
@@ -61,15 +65,33 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
 
   CashTokenBCMR? bcmr;
 
+  Future<CashTokenBCMR> getBCMR(WalletProvider wallet, String uri) async {
+    final MethodResult<String> result = await wallet.httpGet<String>(uri);
+    final Map<String, dynamic>? inJson =
+        MethodUtils.nullOnException(() => StringUtils.toJson(result.result));
+    if (inJson == null) {
+      throw const ApiProviderException(message: "invalid_json_response");
+    }
+    final hash = await wallet.wallet.nonEncryptedRequest(
+      NoneEncryptedRequestHashing.string(
+          type: CryptoRequestHashingType.sha256, data: result.result),
+    );
+    return CashTokenBCMR(
+        hash: BytesUtils.toHexString(hash),
+        uri: BCHUtils.cleanUpBCMRUri(uri),
+        content: inJson);
+  }
+
   void readContent() async {
     if (!(form.currentState?.validate() ?? false)) return;
     progressKey.progressText("fetching_uri_content".tr);
+    final walletProvider = context.watch<WalletProvider>(StateConst.main);
     String uri = _uri;
     if (isIpfs) {
       uri = StrUtils.toIpfsV1Uri(uri);
     }
     final result =
-        await MethodUtils.call(() async => await BCHUtils.getBCMR(uri));
+        await MethodUtils.call(() async => await getBCMR(walletProvider, uri));
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
     } else {
@@ -90,7 +112,7 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
   void onUpdateBCMrUri(String? uri) {
     if (uri == null) return;
     bcmr = bcmr?.copyWith(uri: uri);
-    setState(() {});
+    updateState(() {});
   }
 
   @override
@@ -127,7 +149,10 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
                             )
                             .then(onUpdateBCMrUri);
                       },
-                      child: Text(bcmr!.uri),
+                      child: Text(
+                        bcmr!.uri,
+                        style: context.onPrimaryTextTheme.bodyMedium,
+                      ),
                     ),
                     WidgetConstant.height20,
                     Text("content".tr, style: context.textTheme.titleMedium),
@@ -137,13 +162,21 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
                       child: ConstraintsBoxView(
                           maxHeight: 100,
                           child: SingleChildScrollView(
-                              child: SelectableText(bcmr!.content.toString()))),
+                            child: SelectableText(
+                              bcmr!.content.toString(),
+                              style: context.onPrimaryTextTheme.bodyMedium,
+                            ),
+                          )),
                     ),
                     WidgetConstant.height20,
                     Text("bcmr_hash".tr, style: context.textTheme.titleMedium),
                     Text("bcmr_hash_desc".tr),
                     WidgetConstant.height8,
-                    ContainerWithBorder(child: Text(bcmr!.hash)),
+                    ContainerWithBorder(
+                        child: Text(
+                      bcmr!.hash,
+                      style: context.onPrimaryTextTheme.bodyMedium,
+                    )),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -187,7 +220,7 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
                                 for (final i in _MetadataUriTypes.values)
                                   i: Text(i.value.tr)
                               },
-                              label: "meta_data_uploaded_in".tr),
+                              hint: "meta_data_uploaded_in".tr),
                           WidgetConstant.height20,
                           if (isIpfs) ...[
                             Text("ipfs_cid".tr,
@@ -210,15 +243,14 @@ class __MetadataContentState extends State<BCMRUriValidateView> with SafeState {
                       validator: onValidateUri,
                       suffixIcon: PasteTextIcon(
                           onPaste: onPasteUri, isSensitive: false),
-                      hint: isIpfs
-                          ? BCHUtils.hintIPFSUri
-                          : "https://example.com/.well-known/bitcoin-cash-metadata-registry.json",
+                      hint:
+                          isIpfs ? BCHUtils.hintIPFSUri : BCHUtils.hintWebsite,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         FixedElevatedButton(
-                          padding: WidgetConstant.paddingVertical20,
+                          padding: WidgetConstant.paddingVertical40,
                           onPressed: readContent,
                           child: Text("read_uri_content".tr),
                         )

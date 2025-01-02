@@ -36,4 +36,47 @@ class WorkerCryptoUtils {
     }
     return decrypt;
   }
+
+  static List<List<int>> divideRange(
+      {required int start, required int end, required int numberOfThreads}) {
+    final totalRange = end - start + 1;
+    if (totalRange <= 500) {
+      return [
+        [start, end]
+      ];
+    }
+
+    // Calculate chunk size based on the range and threads.
+    int chunkSize = totalRange ~/ numberOfThreads;
+
+    // Ensure chunk size is at least 500.
+    if (chunkSize < 500) {
+      chunkSize = 500;
+      // Recalculate the number of threads based on 500 per chunk.
+      numberOfThreads = totalRange ~/ 500;
+    }
+    int remainder = totalRange % numberOfThreads;
+    final List<List<int>> ranges = [];
+    int currentStart = start;
+
+    for (int i = 0; i < numberOfThreads; i++) {
+      // For all but the last chunk, subtract 1 to ensure proper chunk size.
+      int currentEnd = currentStart + chunkSize - 1;
+
+      // For the last chunk, make sure the end is equal to `end`.
+      if (i == numberOfThreads - 1) {
+        currentEnd = end;
+      } else if (remainder > 0) {
+        // Adjust the range if there's a remainder.
+        currentEnd++;
+        remainder--;
+      }
+
+      ranges.add([currentStart, currentEnd]);
+
+      // Update the currentStart for the next range to start from the previous end.
+      currentStart = currentEnd;
+    }
+    return ranges;
+  }
 }

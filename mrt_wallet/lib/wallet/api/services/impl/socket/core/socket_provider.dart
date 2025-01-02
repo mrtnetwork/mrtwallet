@@ -1,29 +1,31 @@
 import 'dart:async';
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:mrt_wallet/app/error/exception/exception.dart';
+import 'package:mrt_wallet/app/isolate/types.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/core/base_service.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
 
 abstract class BaseSocketService<T extends APIProvider>
-    implements BaseServiceProtocol<T> {
+    extends BaseServiceProtocol<T> {
   Future<void> connect();
   bool get isConnected;
-  String get url;
+  @override
+  APPIsolate get isolate => APPIsolate.current;
   Future<Map<String, dynamic>> providerCaller(
       Future<Map<String, dynamic>> Function() t,
-      SocketRequestCompeleter param) async {
+      SocketRequestCompleter param) async {
     Map<String, dynamic>? response;
     try {
       response = await _onException(t);
       return response;
     } on ApiProviderException catch (e) {
-      tracker.addRequest(ApiRequest(params: param.params, error: e));
+      tracker.addRequest(ApiRequest(params: null, error: e));
       rethrow;
     } finally {
       if (response != null) {
         tracker.addRequest(
-            ApiRequest(params: param.params, response: response.toString()));
+            ApiRequest(params: null, response: response.toString()));
       }
     }
   }

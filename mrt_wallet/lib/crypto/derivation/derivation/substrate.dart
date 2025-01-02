@@ -1,9 +1,8 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
-import 'package:mrt_wallet/crypto/keys/access/private_key_response.dart';
-import 'package:mrt_wallet/crypto/keys/models/seed.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
 
 class SubstrateAddressIndex extends AddressDerivationIndex {
@@ -103,7 +102,7 @@ class SubstrateAddressIndex extends AddressDerivationIndex {
   String get name => keyName ?? "main_key";
 
   @override
-  PrivateKeyData derive(PrivateKeyData masterKey,
+  CryptoPrivateKeyData derive(CryptoPrivateKeyData masterKey,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
     if (substratePath == null) return masterKey;
     final substrate =

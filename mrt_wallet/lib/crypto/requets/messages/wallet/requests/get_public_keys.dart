@@ -8,7 +8,7 @@ import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 
 class WalletRequestReadPublicKeys
-    implements WalletRequest<List<CryptoPublicKeyData>, MessageArgsOneBytes> {
+    extends WalletRequest<List<CryptoPublicKeyData>, MessageArgsOneBytes> {
   final AccessCryptoPrivateKeysRequest request;
   WalletRequestReadPublicKeys(this.request);
 

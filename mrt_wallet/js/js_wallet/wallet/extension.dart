@@ -42,7 +42,7 @@ class JSExtentionWallet extends JSWalletHandler {
     final decode =
         chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message);
     final message = Web3ChainMessage.deserialize(bytes: decode);
-    final chain = ChainsHandler.deserialize(bytes: message.message);
+    final chain = ChainsHandler.fromWeb3(bytes: message.message);
     final handler = JSExtentionWallet._(
         crypto: ChaCha20Poly1305(message.authenticated.token),
         chain: chain,
@@ -92,7 +92,7 @@ class JSExtentionWallet extends JSWalletHandler {
 
   Future<RuntimePort> _openPort() async {
     return _portLock.synchronized(() async {
-      RuntimePort? port = await _pingPort(_port);
+      final RuntimePort? port = await _pingPort(_port);
       if (port != null) return port;
       _port?.disconnect();
       _port = null;

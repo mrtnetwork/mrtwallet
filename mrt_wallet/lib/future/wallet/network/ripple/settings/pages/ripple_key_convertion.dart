@@ -32,7 +32,7 @@ class RippleKeyConversionView extends StatelessWidget {
 }
 
 class _RippleKeyConversionView extends StatefulWidget {
-  const _RippleKeyConversionView(this.network, {Key? key}) : super(key: key);
+  const _RippleKeyConversionView(this.network);
   final WalletXRPNetwork network;
 
   @override
@@ -116,97 +116,111 @@ class __RippleKeyConversionViewState extends State<_RippleKeyConversionView>
     return PopScope(
       canPop: generatedKey == null,
       onPopInvokedWithResult: onBackButton,
-      child: PageProgress(
-        key: progressKey,
-        backToIdle: APPConst.oneSecoundDuration,
-        child: (c) => ConstraintsBoxView(
-            padding: WidgetConstant.paddingHorizontal20,
-            child: Form(
-              key: formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: SingleChildScrollView(
-                child:
-                    APPAnimatedSwitcher(enable: generatedKey != null, widgets: {
-                  false: (c) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PageTitleSubtitle(
-                              title: "ripple_key_conversion".tr,
-                              body: Column(
+      child: Form(
+        key: formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        child: PageProgress(
+          key: progressKey,
+          backToIdle: APPConst.oneSecoundDuration,
+          child: (context) => CustomScrollView(
+            slivers: [
+              SliverConstraintsBoxView(
+                  padding: WidgetConstant.paddingHorizontal20,
+                  sliver: APPSliverAnimatedSwitcher(
+                      enable: generatedKey != null,
+                      widgets: {
+                        false: (c) => SliverToBoxAdapter(
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("ripple_key_conversion_desc".tr),
+                                  PageTitleSubtitle(
+                                      title: "ripple_key_conversion".tr,
+                                      body: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text("ripple_key_conversion_desc".tr),
+                                          WidgetConstant.height8,
+                                          Text(
+                                              "secret_key_conversion_desc2".tr),
+                                        ],
+                                      )),
+                                  Text("ripple_key_type".tr,
+                                      style: context.textTheme.titleMedium),
+                                  Text("inidicate_type_of_ripple_key".tr),
                                   WidgetConstant.height8,
-                                  Text("secret_key_conversion_desc2".tr),
-                                ],
-                              )),
-                          Text("ripple_key_type".tr,
-                              style: context.textTheme.titleMedium),
-                          Text("inidicate_type_of_ripple_key".tr),
-                          WidgetConstant.height8,
-                          AppDropDownBottom(
-                              items: {
-                                for (final i in _KeyType.values)
-                                  i: Text(i.name.tr)
-                              },
-                              value: keyType,
-                              label: "ripple_key_type".tr,
-                              onChanged: onChangeKeyType),
-                          WidgetConstant.height20,
-                          APPAnimatedSize(
-                              isActive: keyType == _KeyType.entropy,
-                              onActive: (c) => Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text("key_algorithm".tr,
-                                          style: context.textTheme.titleMedium),
-                                      Text("choose_key_algorithm_desc".tr),
-                                      WidgetConstant.height8,
-                                      AppDropDownBottom(
-                                        items: {
-                                          for (final i
-                                              in XRPKeyAlgorithm.values)
-                                            i: Text(i.curveType.name.camelCase)
-                                        },
-                                        value: algorithm,
-                                        label: "key_algorithm".tr,
-                                        onChanged: onChangeKeyAlgorithm,
-                                      ),
-                                      WidgetConstant.height20,
-                                    ],
+                                  AppDropDownBottom(
+                                      items: {
+                                        for (final i in _KeyType.values)
+                                          i: Text(i.name.tr)
+                                      },
+                                      value: keyType,
+                                      hint: "ripple_key_type".tr,
+                                      onChanged: onChangeKeyType),
+                                  WidgetConstant.height20,
+                                  APPAnimatedSize(
+                                      isActive: keyType == _KeyType.entropy,
+                                      onActive: (c) => Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text("key_algorithm".tr,
+                                                  style: context
+                                                      .textTheme.titleMedium),
+                                              Text("choose_key_algorithm_desc"
+                                                  .tr),
+                                              WidgetConstant.height8,
+                                              AppDropDownBottom(
+                                                items: {
+                                                  for (final i
+                                                      in XRPKeyAlgorithm.values)
+                                                    i: Text(i.curveType.name
+                                                        .camelCase)
+                                                },
+                                                value: algorithm,
+                                                hint: "key_algorithm".tr,
+                                                onChanged: onChangeKeyAlgorithm,
+                                              ),
+                                              WidgetConstant.height20,
+                                            ],
+                                          ),
+                                      onDeactive: (c) =>
+                                          WidgetConstant.sizedBox),
+                                  Text("ripple_key".tr,
+                                      style: context.textTheme.titleMedium),
+                                  Text("select_ripple_seed_or_entropy".tr),
+                                  WidgetConstant.height8,
+                                  AppTextField(
+                                    key: keyController,
+                                    label: keyType.name.tr,
+                                    initialValue: key,
+                                    onChanged: onChangeKey,
+                                    validator: validate,
+                                    obscureText: true,
+                                    hint: "example_s"
+                                        .tr
+                                        .replaceOne(keyType.example),
                                   ),
-                              onDeactive: (c) => WidgetConstant.sizedBox),
-                          Text("ripple_key".tr,
-                              style: context.textTheme.titleMedium),
-                          Text("select_ripple_seed_or_entropy".tr),
-                          WidgetConstant.height8,
-                          AppTextField(
-                            key: keyController,
-                            label: keyType.name.tr,
-                            initialValue: key,
-                            onChanged: onChangeKey,
-                            validator: validate,
-                            obscureText: true,
-                            hint: "example_s".tr.replaceOne(keyType.example),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              FixedElevatedButton(
-                                padding: WidgetConstant.paddingVertical40,
-                                onPressed: onSubmit,
-                                child: Text("generate".tr),
-                              )
-                            ],
-                          )
-                        ],
-                      ),
-                  true: (c) =>
-                      ImportCustomKeyToWalletView(keypair: generatedKey!)
-                }),
-              ),
-            )),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      FixedElevatedButton(
+                                        padding:
+                                            WidgetConstant.paddingVertical40,
+                                        onPressed: onSubmit,
+                                        child: Text("generate".tr),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                        true: (c) =>
+                            ImportCustomKeyToWalletView(keypair: generatedKey!)
+                      })),
+            ],
+          ),
+        ),
       ),
     );
   }

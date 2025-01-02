@@ -8,12 +8,11 @@ import 'package:on_chain/ethereum/ethereum.dart';
 
 class Web3EthereumChainAccount extends Web3ChainAccount<ETHAddress> {
   final BigInt chainId;
-  Web3EthereumChainAccount({
-    required super.keyIndex,
-    required super.address,
-    required super.defaultAddress,
-    required this.chainId,
-  });
+  Web3EthereumChainAccount(
+      {required super.keyIndex,
+      required super.address,
+      required super.defaultAddress,
+      required this.chainId});
 
   factory Web3EthereumChainAccount.fromChainAccount(
       {required IEthAddress address,

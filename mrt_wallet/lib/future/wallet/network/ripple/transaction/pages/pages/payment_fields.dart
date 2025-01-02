@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 
@@ -7,6 +8,8 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
+
+import 'choose_token.dart';
 
 class RipplePaymentFieldsView extends StatelessWidget {
   const RipplePaymentFieldsView(
@@ -23,19 +26,37 @@ class RipplePaymentFieldsView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (validator.issueToken != null)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("token_transfer".tr, style: context.textTheme.titleLarge),
-              WidgetConstant.height8,
-              TokenDetailsView(
-                token: validator.issueToken!,
-                onSelectWidget: WidgetConstant.sizedBox,
-              ),
-              WidgetConstant.height20,
-            ],
-          ),
+        Text("token_transfer".tr, style: context.textTheme.titleMedium),
+        WidgetConstant.height8,
+        ContainerWithBorder(
+            onRemove: () {
+              context
+                  .openSliverBottomSheet<XRPPickedAssets>(
+                    "choose_payment_currency".tr,
+                    bodyBuilder: (controller) => RippleSelectTokenView(
+                      account: account,
+                      scrollController: controller,
+                    ),
+                    minExtent: 0.6,
+                    initialExtend: 1,
+                  )
+                  .then(validator.setToken);
+            },
+            onRemoveIcon: Icon(Icons.edit, color: context.onPrimaryContainer),
+            child:
+                ConditionalWidgets(enable: validator.token != null, widgets: {
+              true: (context) => TokenDetailsWidget(
+                  token: validator.token!,
+                  radius: APPConst.circleRadius25,
+                  color: context.onPrimaryContainer,
+                  liveBalance: validator.issueToken?.accountToken?.balance),
+              false: (context) => TokenDetailsWidget(
+                  token: account.network.token,
+                  radius: APPConst.circleRadius25,
+                  color: context.onPrimaryContainer,
+                  liveBalance: address.address.balance),
+            })),
+        WidgetConstant.height20,
         ReceiptAddressView(
           address: validator.destination.value,
           onTap: () {
@@ -63,6 +84,7 @@ class RipplePaymentFieldsView extends StatelessWidget {
               context
                   .openSliverBottomSheet<BigInt>(
                 "setup_output_amount".tr,
+                initialExtend: 1,
                 child: SetupNetworkAmount(
                   token: account.network.coinParam.token,
                   max: address.address.currencyBalance,
@@ -87,15 +109,14 @@ class RipplePaymentFieldsView extends StatelessWidget {
               context
                   .openSliverBottomSheet<BigRational>(
                 "setup_output_amount".tr,
+                initialExtend: 1,
                 child: SetupDecimalTokenAmountView(
-                  token: validator.token,
-                  max: validator.issueToken!.balance.value.balance,
+                  token: validator.token!,
+                  max: validator.issueToken?.accountToken?.currencyBalance,
                   min: BigRational.zero,
                   subtitle: validator.destination.hasValue
                       ? ReceiptAddressView(
-                          address: validator.destination.value,
-                          onTap: null,
-                        )
+                          address: validator.destination.value, onTap: null)
                       : const SizedBox(),
                 ),
               )
@@ -105,7 +126,7 @@ class RipplePaymentFieldsView extends StatelessWidget {
               });
             }
           },
-          token: validator.token,
+          token: validator.token ?? account.network.token,
         ),
         WidgetConstant.height20,
         Text("invoiceid".tr, style: context.textTheme.titleMedium),
@@ -136,11 +157,9 @@ class RipplePaymentFieldsView extends StatelessWidget {
                   (value) => validator.setValue(validator.invoiceId, value),
                 );
           },
-          onRemoveIcon: validator.invoiceId.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(validator.invoiceId.hasValue),
           child: Text(validator.invoiceId.value ?? "tap_to_input_value".tr,
-              maxLines: 3),
+              maxLines: 3, style: context.onPrimaryTextTheme.bodyMedium),
         ),
         WidgetConstant.height20,
         Text("payment_flags".tr, style: context.textTheme.titleMedium),
@@ -148,20 +167,20 @@ class RipplePaymentFieldsView extends StatelessWidget {
         WidgetConstant.height8,
         AppDropDownBottom(
           items: <PaymentFlag, Widget>{
-            for (var i in PaymentFlag.values) i: Text(i.name)
+            for (final i in PaymentFlag.values) i: Text(i.name)
           },
-          label: "payment_flags".tr,
           value: validator.flag.value,
           key: ValueKey(validator.flag.value),
+          hint: "none".tr,
           onChanged: (v) {
             validator.setValue(validator.flag, v);
           },
-          suffixIcon: validator.flag.hasValue
-              ? IconButton(
-                  onPressed: () {
+          icon: validator.flag.hasValue
+              ? InkWell(
+                  onTap: () {
                     validator.setValue(validator.flag, null);
                   },
-                  icon: const Icon(Icons.remove_circle))
+                  child: const Icon(Icons.remove_circle))
               : null,
         )
       ],

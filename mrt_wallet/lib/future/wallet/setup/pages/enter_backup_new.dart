@@ -120,6 +120,7 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
       });
       if (restoreWalletResult.hasError) {
         progressKey.errorText(restoreWalletResult.error!.tr);
+        WalletLogging.log("error ${result.error} ${result.trace}");
       } else {
         restoredBackup = restoreWalletResult.result;
         page = _BackupPage.verify;
@@ -145,7 +146,7 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
 }
 
 class _BackupVerifyReview extends StatelessWidget {
-  const _BackupVerifyReview(this.state, {Key? key}) : super(key: key);
+  const _BackupVerifyReview(this.state);
   final _EnterMnemonicBackupViewState state;
   WalletRestoreV2 get backup => state.restoredBackup!;
   @override
@@ -161,7 +162,7 @@ class _BackupVerifyReview extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
           onRemove: () {},
-          onTapWhenOnRemove: false,
+          enableTap: false,
           onRemoveWidget: _BackupStatusIcon(backup.verifiedChecksum),
           child: _BackupStatusText(backup.verifiedChecksum),
         ),
@@ -171,7 +172,7 @@ class _BackupVerifyReview extends StatelessWidget {
           WidgetConstant.height8,
           ContainerWithBorder(
             child: Text(backup.totalAccounts.toString(),
-                style: context.textTheme.bodyLarge),
+                style: context.onPrimaryTextTheme.bodyMedium),
           ),
           if (backup.hasFailedAccount) ...[
             WidgetConstant.height20,
@@ -183,10 +184,10 @@ class _BackupVerifyReview extends StatelessWidget {
                 children: List.generate(
                     backup.invalidAddresses.length,
                     (i) => ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
+                        backgroundColor: context.onPrimaryContainer,
                         child: AddressDetailsView(
                           address: backup.invalidAddresses[i],
-                          color: context.colors.primaryContainer,
+                          color: context.primaryContainer,
                           showBalance: false,
                         ))),
               ),
@@ -209,7 +210,7 @@ class _BackupVerifyReview extends StatelessWidget {
 }
 
 class _BackupStatusIcon extends StatelessWidget {
-  const _BackupStatusIcon(this.verify, {Key? key}) : super(key: key);
+  const _BackupStatusIcon(this.verify);
   final bool? verify;
   @override
   Widget build(BuildContext context) {
@@ -225,23 +226,24 @@ class _BackupStatusIcon extends StatelessWidget {
 }
 
 class _BackupStatusText extends StatelessWidget {
-  const _BackupStatusText(this.verify, {Key? key}) : super(key: key);
+  const _BackupStatusText(this.verify);
   final bool? verify;
   @override
   Widget build(BuildContext context) {
+    final style = context.onPrimaryTextTheme.bodyMedium;
     switch (verify) {
       case true:
-        return Text("backup_verification_success_desc".tr);
+        return Text("backup_verification_success_desc".tr, style: style);
       case false:
-        return Text("backup_verification_failed_desc".tr);
+        return Text("backup_verification_failed_desc".tr, style: style);
       default:
-        return Text("unsuported_legacy_backup".tr);
+        return Text("unsuported_legacy_backup".tr, style: style);
     }
   }
 }
 
 class _BackupFieldsWidget extends StatelessWidget {
-  const _BackupFieldsWidget(this.state, {Key? key}) : super(key: key);
+  const _BackupFieldsWidget(this.state);
   final _EnterMnemonicBackupViewState state;
 
   @override

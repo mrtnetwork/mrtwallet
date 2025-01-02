@@ -1,4 +1,5 @@
 import 'package:mrt_wallet/future/wallet/network/solana/transaction/controller/imp/memo_impl.dart';
+import 'package:mrt_wallet/future/widgets/widgets/progress_bar/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/solana.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/transaction/controller/imp/fee_impl.dart';
@@ -23,6 +24,17 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
   bool _trReady = false;
   bool get transactionIsReady => _trReady;
 
+  Future<void> _init() async {
+    await walletProvider.wallet.updateAccountBalance(account, address: address);
+    if (validator.validator.mode == SolanaTransactionType.spl) {
+      final tokenTransferFiled = validator.validator as SolanaTransferForm;
+      _remindTokenAmount =
+          IntegerBalance.zero(tokenTransferFiled.token.decimal!);
+    }
+    _trReady = _checkTransaction();
+    progressKey.backToIdle();
+  }
+
   bool _checkTransaction() {
     _error = validator.validator.validateError();
     _remindAmount
@@ -36,7 +48,7 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
       final tokenTransferFiled = validator.validator as SolanaTransferForm;
       final remindTokenAmounts =
           tokenTransferFiled.splToken!.balance.value.balance -
-              (tokenTransferFiled.amount.value?.balance ?? BigInt.zero);
+              (tokenTransferFiled.transferValue);
       _remindTokenAmount!.updateBalance(remindTokenAmounts);
       if (_remindAmount.isNegative ||
           validator.validator.mode != SolanaTransactionType.spl) {
@@ -48,41 +60,43 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
 
     return _error == null &&
         !_remindAmount.isNegative &&
-        !(_remindTokenAmount?.isNegative ?? false) &&
-        hasFee;
+        !(_remindTokenAmount?.isNegative ?? false);
+  }
+
+  @override
+  void checkTransaction() {
+    _trReady = _checkTransaction();
+    notify();
   }
 
   void sendTransaction() async {
-    final bool ready = _checkTransaction();
-    if (!ready) {
-      notify();
+    checkTransaction();
+    if (!_trReady) {
       return;
     }
     await buildAndSignTransaction();
   }
 
   @override
-  void onChange() {
-    _trReady = _checkTransaction();
-    if (_error == null) {
+  Future<void> onTapMemo(OnSetMemo onTapMemo) async {
+    final m = memoStr;
+    await super.onTapMemo(onTapMemo);
+    if (m != memoStr) {
       calculateFees();
     }
-    notify();
   }
 
-  void _init() {
-    if (validator.validator.mode == SolanaTransactionType.spl) {
-      final tokenTransferFiled = validator.validator as SolanaTransferForm;
-      _remindTokenAmount =
-          IntegerBalance.zero(tokenTransferFiled.token.decimal!);
+  void onChange() {
+    checkTransaction();
+    if (_trReady || (error == null && feeError != null)) {
+      calculateFees();
     }
-    _trReady = _checkTransaction();
   }
 
   @override
   void ready() {
     validator.addListener(onChange);
-    validator.validator.setProvider(apiProvider);
+    validator.validator.initForm(account: account, address: address);
     super.ready();
   }
 
@@ -95,7 +109,7 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
   @override
   void close() {
     validator.removeListener(onChange);
-    validator.validator.setProvider(null);
+    validator.validator.dispose();
     super.close();
   }
 }

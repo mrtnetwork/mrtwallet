@@ -97,7 +97,7 @@ class TonWeb3State
     return other.state != state;
   }
 
-  bool get isConnect => chain?.provider() != null;
+  bool get isConnect => chain?.clientNullable != null;
   TonAccountsChanged get accountsChange => TonAccountsChanged(
       accounts: permissionAccounts, defaultAddress: defaultAddress?.address);
 
@@ -246,14 +246,14 @@ class JSTonHandler extends JSNetworkHandler<TonAddress, TheOpenNetworkChain,
 
   @override
   void onRequestDone(PageMessageRequest message) {
-    final method = Web3TonRequestMethods.fromName(message.method);
+    // final method = Web3TonRequestMethods.fromName(message.method);
 
-    switch (method) {
-      case Web3TonRequestMethods.requestAccounts:
-        _accountChanged(state);
-        break;
-      default:
-    }
+    // switch (method) {
+    //   case Web3TonRequestMethods.requestAccounts:
+    //     _accountChanged(state);
+    //     break;
+    //   default:
+    // }
   }
 
   @override

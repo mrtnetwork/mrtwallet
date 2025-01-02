@@ -12,7 +12,7 @@ class RippleAccountPageView extends StatelessWidget {
   final RippleChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    return TabBarView(children: [
+    return TabBarView(physics: WidgetConstant.noScrollPhysics, children: [
       _RippleServicesView(chainAccount: chainAccount),
       _RippleTokensView(account: chainAccount),
     ]);
@@ -163,6 +163,15 @@ class _RippleServicesView extends StatelessWidget {
                       argruments: validator);
                 },
               ),
+              WidgetConstant.divider,
+              AppListTile(
+                leading: const Icon(Icons.password),
+                title: Text("ripple_key_conversion".tr),
+                subtitle: Text("ripple_key_conversion_desc".tr),
+                onTap: () {
+                  context.to(PageRouter.rippleKeyConversion);
+                },
+              ),
             ],
           ),
         )
@@ -219,11 +228,10 @@ class _RippleTokensView extends StatelessWidget {
                 context.openDialogPage<TokenAction>(
                   "token_info".tr,
                   child: (ctx) => TokenDetailsModalView(
-                    token: token,
-                    address: address,
-                    account: account,
-                    transferPath: PageRouter.rippleTransfer,
-                  ),
+                      token: token,
+                      address: address,
+                      account: account,
+                      transferPath: PageRouter.rippleTransfer),
                 );
               },
               onRemoveWidget: WidgetConstant.sizedBox,

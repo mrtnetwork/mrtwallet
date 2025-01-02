@@ -11,8 +11,7 @@ class CreateAccountOperationView extends StatefulWidget {
   final StellarTransactionStateController controller;
   final StellarCreateAccountOperation? operation;
   const CreateAccountOperationView(
-      {required this.controller, this.operation, Key? key})
-      : super(key: key);
+      {required this.controller, this.operation, super.key});
 
   @override
   State<CreateAccountOperationView> createState() =>
@@ -23,6 +22,7 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
     with SafeState, StellarOperationDestinationTracker {
   StellarTransactionStateController get controller => widget.controller;
   StellarChain get chain => controller.account;
+  @override
   late final StellarPickedIssueAsset asset = StellarPickedIssueAsset(
       asset: StellarAssetNative(), network: chain.network, issueToken: null);
   late final IntegerBalance remindAmount =
@@ -32,7 +32,7 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
   bool showLimit = false;
 
   @override
-  late final StellarClient client = chain.provider()!;
+  StellarClient get client => chain.client;
   BigInt maximumAmount = BigInt.zero;
   String? balanceError;
 
@@ -103,7 +103,7 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
       if (operation == null) return;
       receiver = operation.destination;
       trackActivity(receiver!);
-      amount = operation.startingBalance;
+      amount = operation.startingBalance.clone();
     } finally {
       calculateMaximumAmount();
       calculateRemindAmount();
@@ -135,7 +135,7 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
               ],
             )),
         ReceiptAddressView(
-          onTapWhenOnRemove: receiver == null,
+          enableTap: receiver == null,
           address: receiver?.address,
           onEditWidget: receiver == null
               ? null
@@ -147,17 +147,18 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
                               .openSliverBottomSheet<
                                       ReceiptAddress<StellarAddress>>(
                                   "receiver_address".tr,
-                                  bodyBuilder: (c) =>
+                                  bodyBuilder: (controller) =>
                                       SelectRecipientAccountView<
                                               StellarAddress>(
-                                          account: chain, scrollController: c),
+                                          account: chain,
+                                          scrollController: controller),
                                   maxExtend: 1,
                                   minExtent: 0.8,
                                   initialExtend: 0.9)
                               .then(setReceiver);
                         },
                         icon: Icon(Icons.edit,
-                            color: context.colors.onPrimaryContainer)),
+                            color: context.onPrimaryContainer)),
                     IconButton(
                         tooltip: receiver!.status.message?.tr,
                         onPressed: () {
@@ -168,9 +169,9 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
                           size: APPConst.iconSize,
                           onSuccessIcon: receiver!.status.isInactive
                               ? Icon(Icons.no_accounts_rounded,
-                                  color: context.colors.onPrimaryContainer)
+                                  color: context.onPrimaryContainer)
                               : Icon(Icons.account_circle,
-                                  color: context.colors.onPrimaryContainer),
+                                  color: context.onPrimaryContainer),
                         ))
                   ],
                 ),
@@ -178,9 +179,9 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
             context
                 .openSliverBottomSheet<ReceiptAddress<StellarAddress>>(
                     "receiver_address".tr,
-                    bodyBuilder: (c) =>
+                    bodyBuilder: (controller) =>
                         SelectRecipientAccountView<StellarAddress>(
-                            account: chain, scrollController: c),
+                            account: chain, scrollController: controller),
                     maxExtend: 1,
                     minExtent: 0.8,
                     initialExtend: 0.9)
@@ -197,6 +198,7 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
             context
                 .openSliverBottomSheet<BigInt>(
                   "setup_output_amount".tr,
+                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: asset.token,
@@ -219,10 +221,9 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
           },
         ),
         InsufficientBalanceErrorView(
-          verticalMargin: WidgetConstant.paddingVertical10,
-          balance: remindAmount,
-          token: asset.token,
-        ),
+            verticalMargin: WidgetConstant.paddingVertical10,
+            balance: remindAmount,
+            token: asset.token),
         ErrorTextContainer(
             error: balanceError ?? destinationInactiveError,
             verticalMargin: WidgetConstant.paddingVertical10),

@@ -54,16 +54,17 @@ class RippleMemoAndFeeView<T extends RippleTransactionImpl>
                 controller.setFee(value?.$1, customFee: value?.$2);
               });
             },
-            onRemoveIcon: const Icon(Icons.edit),
+            onRemoveIcon: Icon(Icons.edit, color: context.onPrimaryContainer),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(controller.feeType?.name.camelCase ?? "custom_fee".tr,
-                    style: context.textTheme.labelLarge),
+                    style: context.onPrimaryTextTheme.labelLarge),
                 CoinPriceView(
                     token: controller.network.coinParam.token,
                     balance: controller.fee,
-                    style: context.textTheme.titleLarge),
+                    style: context.onPrimaryTextTheme.titleMedium,
+                    symbolColor: context.onPrimaryContainer),
               ],
             )),
       ],

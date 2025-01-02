@@ -8,17 +8,17 @@ mixin SolanaMemoImpl on SolanaTransactionImpl {
   String? _memoStr;
   String? get memoStr => _memoStr;
   bool get hasMemo => _memoStr != null;
+
   @override
   MemoProgram? get memo =>
       hasMemo ? MemoProgram(layout: MemoLayout(memo: _memoStr!)) : null;
 
-  void onTapMemo(OnSetMemo onTapMemo) async {
+  Future<void> onTapMemo(OnSetMemo onTapMemo) async {
     final txt = await onTapMemo(memoStr);
     if (txt == null) {
       _memoStr = null;
     } else {
       _memoStr = txt;
     }
-    onChange();
   }
 }

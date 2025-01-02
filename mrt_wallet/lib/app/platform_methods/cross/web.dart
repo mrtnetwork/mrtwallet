@@ -3,7 +3,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
-import 'package:mrt_wallet/app/error/exception/generic_exception.dart';
 
 Future<String> writeTOFile(String data, String fileName,
     {bool validate = true}) async {

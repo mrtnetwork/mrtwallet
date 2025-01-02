@@ -102,7 +102,7 @@ class Web3EthereumTransactionRequestController
       }
       final fee = currentEIP1559Fee?.clone();
       if (fee == null || !trIsReady) return;
-      ETHTransaction transaction = ETHTransaction(
+      final ETHTransaction transaction = ETHTransaction(
           type: request.params.transactionType ??
               (fee.isEIP1559
                   ? ETHTransactionType.eip1559

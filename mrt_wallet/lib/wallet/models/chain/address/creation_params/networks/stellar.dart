@@ -1,7 +1,9 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/coins/coins.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/stellar/stellar.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/core/core.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -36,10 +38,14 @@ class StellarNewAddressParams implements NewAccountParams<StellarAddress> {
     );
   }
   @override
-  IStellarAddress toAccount(WalletNetwork network, List<int> publicKey) {
+  IStellarAddress toAccount(
+      WalletNetwork network, CryptoPublicKeyData? publicKey) {
+    if (publicKey == null) {
+      throw WalletExceptionConst.pubkeyRequired;
+    }
     return IStellarAddress.newAccount(
         accountParams: this,
-        publicKey: publicKey,
+        publicKey: publicKey.keyBytes(),
         network: network as WalletStellarNetwork);
   }
 
@@ -96,9 +102,9 @@ class StellarMultiSigNewAddressParams implements StellarNewAddressParams {
 
   @override
   IStellarMultisigAddress toAccount(
-      WalletNetwork network, List<int> publicKey) {
+      WalletNetwork network, CryptoPublicKeyData? publicKey) {
     return IStellarMultisigAddress.newAccount(
-        accountParams: this, network: network as WalletStellarNetwork);
+        accountParams: this, network: network.toNetwork());
   }
 
   @override

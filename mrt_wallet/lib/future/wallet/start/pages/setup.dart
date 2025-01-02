@@ -11,7 +11,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'about.dart';
 
 class WalletSetupPageWidget extends StatelessWidget {
-  const WalletSetupPageWidget({Key? key}) : super(key: key);
+  const WalletSetupPageWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class WalletSetupPageWidget extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              CircleAssetsImgaeView(APPConst.logo),
+                              CircleAssetsImageView(APPConst.logo),
                               WidgetConstant.height8,
                               AppListTile(
                                 title: Text("use_mnemonic".tr),

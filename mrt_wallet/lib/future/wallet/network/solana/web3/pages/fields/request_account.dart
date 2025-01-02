@@ -4,8 +4,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class SolanaWeb3RequestAccountsView extends StatelessWidget {
   const SolanaWeb3RequestAccountsView(
-      {required this.field, required this.controller, Key? key})
-      : super(key: key);
+      {required this.field, required this.controller, super.key});
   final SolanaRequestAccountForm field;
   final Web3SolanaGlobalRequestController controller;
   @override
@@ -56,7 +55,7 @@ class SolanaWeb3RequestAccountsView extends StatelessWidget {
                         final addr = field.chain.addresses[index];
                         final permission = field.accountPermission(addr);
                         return ContainerWithBorder(
-                          onTapWhenOnRemove: false,
+                          enableTap: false,
                           onRemove: () {
                             field.addAccount(addr);
                           },

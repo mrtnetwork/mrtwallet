@@ -49,6 +49,10 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
   String? _permissionError;
 
   String? get permissionError => _permissionError;
+
+  @override
+  bool get showTxInfo => _selectedPermission == null;
+
   void _onChangeForm() {
     onChanged?.call(_selectedPermission == null);
     if (_selectedPermission == null) {
@@ -67,7 +71,7 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
         .map((e) => e.id)
         .toList()
         .cast();
-    int nextId = StrUtils.findFirstMissingNumber(ids, start: 2);
+    final nextId = StrUtils.findFirstMissingNumber(ids, start: 2);
     return AccountPermission(
         keys: [],
         threshold: BigInt.one,

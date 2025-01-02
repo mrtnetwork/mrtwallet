@@ -1,3 +1,4 @@
+import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../../models/models.dart';
 import 'dart:js_interop';
 
@@ -19,6 +20,15 @@ extension WalletPromise<T extends JSAny?> on Future<T> {
   }
 }
 
-extension QuickJS on JSAny {
-  external bool hasOwnProperty(String prop);
+extension QuickJS<T extends JSAny> on T {
+  Proxy<T> get toProxy {
+    final handler = ProxyMethodHandler(this);
+    return Proxy<T>(handler.object, createJSInteropWrapper(handler));
+  }
+
+  T get freez => MRTJsObject.freeze(this);
+}
+
+extension QuickListOfString on JSArray<JSString> {
+  List<String> get inDart => toDart.map((e) => e.toDart).toList();
 }

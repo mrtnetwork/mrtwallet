@@ -88,7 +88,7 @@ class _BuildRippleCurrencyAmountViewState
         isReady = (!xrpAmount.isZero && !xrpAmount.isNegative);
       }
     } else {
-      bool currencyFiled = currency != null &&
+      final currencyFiled = currency != null &&
           issuer != null &&
           value != null &&
           !value!.isNegative;
@@ -180,6 +180,7 @@ class _BuildRippleCurrencyAmountViewState
                                     context
                                         .openSliverBottomSheet<BigInt>(
                                           "xrp_amount".tr,
+                                          initialExtend: 1,
                                           child: SetupNetworkAmount(
                                             min: BigInt.zero,
                                             token: widget.account.network
@@ -261,6 +262,7 @@ class _BuildRippleCurrencyAmountViewState
                                         child: StringWriterView(
                                           defaultValue: currency,
                                           regExp: RippleConst.currencyCodeRegex,
+                                          minLines: 1,
                                           title: PageTitleSubtitle(
                                               title: "currency".tr,
                                               body: Column(
@@ -345,8 +347,8 @@ class _BuildRippleCurrencyAmountViewState
 }
 
 class ReadOnlyTabbar extends StatelessWidget implements PreferredSizeWidget {
-  const ReadOnlyTabbar({required this.child, required this.isEnabled, Key? key})
-      : super(key: key);
+  const ReadOnlyTabbar(
+      {required this.child, required this.isEnabled, super.key});
   final bool isEnabled;
   final PreferredSizeWidget child;
   @override

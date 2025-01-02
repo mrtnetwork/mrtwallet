@@ -7,8 +7,8 @@ import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/app/utils/string/utils.dart';
 import 'package:mrt_wallet/wallet/api/provider/models/bitcoin_explorer_provider_type.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
-import 'package:mrt_wallet/wallet/api/utils/utils.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:mrt_wallet/app/http/models/auth.dart';
 import 'provider.dart';
 
 class _BitcoinExplorerAPIProviderUtils {
@@ -49,77 +49,60 @@ class _BitcoinExplorerAPIProviderUtils {
 
 class BitcoinExplorerAPIProviderConst {
   static const mempool = BitcoinExplorerAPIProvider._(
-      serviceName: "Mempool",
-      websiteUri: "https://mempool.space/",
-      explorerType: BitcoinExplorerProviderType.mempool,
-      identifier: "mempool");
+      explorerType: BitcoinExplorerProviderType.mempool, identifier: "mempool");
   static const blockCypher = BitcoinExplorerAPIProvider._(
-      serviceName: "BlockCypher",
-      websiteUri: "https://www.blockcypher.com/",
       explorerType: BitcoinExplorerProviderType.blockcypher,
       identifier: "blockCypher");
 }
 
 class BitcoinExplorerAPIProvider extends BaseBitcoinAPIProvider {
   const BitcoinExplorerAPIProvider._({
-    required super.serviceName,
-    required super.websiteUri,
-    super.protocol = ServiceProtocol.http,
     super.auth,
     required super.identifier,
-    this.uri,
     required this.explorerType,
-  });
+  }) : super(protocol: ServiceProtocol.http);
   factory BitcoinExplorerAPIProvider(
       {required String serviceName,
       required String websiteUri,
       required String uri,
       required BitcoinExplorerProviderType type,
-      ProviderAuth? auth,
+      ProviderAuthenticated? auth,
       required String identifier}) {
     return BitcoinExplorerAPIProvider._(
-        serviceName: serviceName,
-        websiteUri: websiteUri,
-        uri: uri,
-        auth: auth,
-        explorerType: type,
-        identifier: identifier);
+        auth: auth, explorerType: type, identifier: identifier);
   }
-  final String? uri;
+
   final BitcoinExplorerProviderType explorerType;
 
   APIConfig config(BasedUtxoNetwork network) =>
       _BitcoinExplorerAPIProviderUtils.createConfig(
-          network: network, type: explorerType.type, url: uri);
+          network: network, type: explorerType.type);
 
   @override
-  String get callUrl => throw UnimplementedError();
+  String get callUrl => explorerType.url;
 
   factory BitcoinExplorerAPIProvider.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
+    final CborListValue values = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.bitcoinExplorerApiProvider);
     return BitcoinExplorerAPIProvider._(
-        serviceName: cbor.elementAt(0),
-        websiteUri: cbor.elementAt(1),
-        uri: cbor.elementAt(2),
-        auth: cbor.getCborTag(3)?.to<ProviderAuth, CborTagValue>(
-            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)),
-        explorerType: BitcoinExplorerProviderType.fromName(cbor.elementAt(4)),
-        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(5)),
-        protocol: ServiceProtocol.http);
+      explorerType: BitcoinExplorerProviderType.fromName(values.elementAs(0)),
+      auth: values.elemetMybeAs<ProviderAuthenticated, CborTagValue>(
+          1, (e) => ProviderAuthenticated.deserialize(obj: e)),
+      identifier: values.elementAs(2),
+    );
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength(
-            [serviceName, websiteUri, uri, auth?.toCbor(), explorerType.name]),
+            [explorerType.name, auth?.toCbor(), identifier]),
         CborTagsConst.bitcoinExplorerApiProvider);
   }
 
   @override
-  List get variabels => [serviceName, websiteUri, uri, protocol];
+  List get variabels => [protocol, explorerType];
 
   @override
   BitcoinAPIProviderType get type => BitcoinAPIProviderType.explorer;

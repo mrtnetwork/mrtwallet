@@ -135,7 +135,7 @@ class SetupWalletController extends StateController {
       generateMnemonicKey.process();
       final wNum = Bip39WordsNum.values
           .firstWhere((element) => element.value == _mnemoicWord);
-      _mnemonic = await walletProvider.wallet.crypto.cryptoRequest(
+      _mnemonic = await walletProvider.wallet.crypto.cryptoIsolateRequest(
           CryptoRequestGenerateBip39Mnemonic(
               language: language, wordNums: wNum));
       generateMnemonicKey.success();
@@ -183,22 +183,6 @@ class SetupWalletController extends StateController {
     _page = SetupWalletPage.setting;
     notify();
   }
-
-  // Future<WalletRestoreV2> restoreWalletBackup(List<int> walletBackupBytes,
-  //     {String? passphrase}) async {
-  //   if (passphrase?.isEmpty ?? false) {
-  //     throw WalletExceptionConst.invalidMnemonicPassphrase;
-  //   }
-  //   if (!StrUtils.isStrongPassword(_password)) {
-  //     throw WalletExceptionConst.incorrectPassword;
-  //   }
-  //   _backup = await walletProvider.wallet.restoreWalletBackup(
-  //       backupBytes: walletBackupBytes,
-  //       passhphrase: passphrase,
-  //       password: _password);
-  //   _wallet = _backup!.wallet;
-  //   return _backup!;
-  // }
 
   Future<WalletRestoreV2> restoreWalletBackupV3(MRTBackup backup,
       {String? passphrase}) async {

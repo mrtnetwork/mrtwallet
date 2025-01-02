@@ -3,38 +3,45 @@ import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/substrate.dart';
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
+import 'package:mrt_wallet/wallet/models/networks/substrate/substrate.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:blockchain_utils/bip/bip.dart';
 
 class SubstrateNetworkParams extends NetworkCoinParams<SubstrateAPIProvider> {
   final int ss58Format;
-  final int specVersion;
+  final String gnesis;
+  final SubstrateExtrinsicType extrinsicType;
 
   factory SubstrateNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
-        bytes, obj, CborTagsConst.substrateNetworkParams);
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes,
+        object: obj,
+        tags: CborTagsConst.substrateNetworkParams);
 
     return SubstrateNetworkParams(
-        transactionExplorer: cbor.elementAt(0),
-        addressExplorer: cbor.elementAt(1),
-        token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        providers: (cbor.elementAt(3) as List)
+        transactionExplorer: values.elementAs(0),
+        addressExplorer: values.elementAs(1),
+        token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
+        providers: values
+            .elementAsListOf<CborTagValue>(3)
             .map((e) => SubstrateAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        mainnet: cbor.elementAt(4),
-        ss58Format: cbor.elementAt(5),
-        specVersion: cbor.elementAt(6));
+        chainType: ChainType.fromValue(values.elementAs(4)),
+        ss58Format: values.elementAs(5),
+        gnesis: values.elementAs(6),
+        extrinsicType: SubstrateExtrinsicType.fromName(values.elementAs(7)));
   }
-  SubstrateNetworkParams({
-    required super.transactionExplorer,
-    required super.addressExplorer,
-    required super.token,
-    required super.providers,
-    required super.mainnet,
-    required this.ss58Format,
-    required this.specVersion,
-  });
+  SubstrateNetworkParams(
+      {required super.transactionExplorer,
+      required super.addressExplorer,
+      required super.token,
+      required super.providers,
+      required super.chainType,
+      required this.ss58Format,
+      required this.gnesis,
+      required this.extrinsicType});
 
   @override
   CborTagValue toCbor() {
@@ -44,9 +51,10 @@ class SubstrateNetworkParams extends NetworkCoinParams<SubstrateAPIProvider> {
           addressExplorer,
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          mainnet,
+          chainType.name,
           ss58Format,
-          specVersion
+          gnesis,
+          extrinsicType.name
         ]),
         CborTagsConst.substrateNetworkParams);
   }
@@ -59,8 +67,12 @@ class SubstrateNetworkParams extends NetworkCoinParams<SubstrateAPIProvider> {
         addressExplorer: addressExplorer,
         token: token,
         providers: updateProviders.cast<SubstrateAPIProvider>(),
-        mainnet: mainnet,
+        chainType: chainType,
         ss58Format: ss58Format,
-        specVersion: specVersion);
+        gnesis: gnesis,
+        extrinsicType: extrinsicType);
   }
+
+  @override
+  String get identifier => gnesis;
 }

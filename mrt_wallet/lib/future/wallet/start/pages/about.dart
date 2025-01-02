@@ -16,7 +16,7 @@ class AbountWalletView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircleAssetsImgaeView(APPConst.logo),
+            CircleAssetsImageView(APPConst.logo),
           ],
         ),
         WidgetConstant.height20,
@@ -156,7 +156,7 @@ class AbountWalletView extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                     color: context.colors.onSurface, shape: BoxShape.circle),
-                child: CircleAssetsImgaeView(
+                child: CircleAssetsImageView(
                   APPConst.telegramLogo,
                   radius: 15,
                 ),
@@ -171,7 +171,7 @@ class AbountWalletView extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                     color: context.colors.onSurface, shape: BoxShape.circle),
-                child: CircleAssetsImgaeView(
+                child: CircleAssetsImageView(
                   APPConst.githubLogo,
                   radius: 15,
                 ),

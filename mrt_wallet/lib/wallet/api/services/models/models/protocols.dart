@@ -42,9 +42,17 @@ enum ServiceProtocol {
     } else if (lower.startsWith("ws")) {
       return ServiceProtocol.websocket;
     } else {
-      throw WalletException(
+      throw const WalletException(
           "Invalid URL. The ServiceProtocol.fromURI function is designed to work exclusively with http and websocket URIs.");
     }
+  }
+
+  static List<ServiceProtocol> get electurmProtocols {
+    return [
+      ServiceProtocol.ssl,
+      ServiceProtocol.tcp,
+      ServiceProtocol.websocket
+    ];
   }
 
   @override

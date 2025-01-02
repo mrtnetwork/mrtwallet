@@ -10,7 +10,7 @@ abstract class SubstrateTransactionForm implements TransactionForm {
   DynamicVoid? onReadyField;
   abstract final WalletPolkadotNetwork network;
 
-  List<Map<String, dynamic>> toMessage();
+  List<Map<String, dynamic>> toMessage({bool forceBatch = false});
   void calculateNativeValue();
 
   int get methodsLength;

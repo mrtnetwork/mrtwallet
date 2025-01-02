@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_native_support/models/models.dart';
@@ -10,6 +12,8 @@ import 'package:mrt_wallet/future/wallet/webview/view/native_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/repository/models/models/webview_repository.dart';
 import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
+
+import 'controller.dart';
 
 class _WebViewStateControllerConst {
   static const int viewIdLength = 12;
@@ -24,6 +28,17 @@ enum WebViewTabPage {
   tabs,
   history,
   bookmarks;
+}
+
+class WebviewLastPageEvent {
+  final WebViewEvent evnet;
+  WebviewLastPageEvent(this.evnet);
+  MRTScriptWalletStatus _web3Status = MRTScriptWalletStatus.progress;
+  MRTScriptWalletStatus get web3Status => _web3Status;
+  void updateStatus(MRTScriptWalletStatus status) {
+    if (_web3Status != MRTScriptWalletStatus.progress) return;
+    _web3Status = status;
+  }
 }
 
 mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
@@ -59,8 +74,8 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
 
   int get tabsLength => tabsAuthenticated.length;
   List<WebViewController> get controllers => tabsAuthenticated.values.toList();
-  WebViewEvent? get lastEvent => _event;
-  WebViewEvent? _event;
+  Live<WebviewLastPageEvent?> get lastEvent => _event;
+  final Live<WebviewLastPageEvent?> _event = Live(null);
   final Live<double?> _progress = Live<double?>(null);
   final Live<bool> liveNotifier = Live<bool>(false);
   Live<double?> get progress => _progress;
@@ -72,6 +87,15 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   bool get inBrowser => _page == WebViewTabPage.browser;
   bool _inBokmark = false;
   bool get inBokmark => _inBokmark;
+
+  void updatePageScriptStatus(
+      {required MRTScriptWalletStatus status, required String clientId}) {
+    final event = _event.value;
+    if (event?.evnet.viewId == clientId) {
+      event!.updateStatus(status);
+      _event.notify();
+    }
+  }
 
   void removeHistory(WebViewTab tab) async {
     _tabLocker.synchronized(() async {
@@ -162,8 +186,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   Future<WebViewTab> _eventToTab(WebViewEvent event) async {
     APPImage image = APPImage.faviIcon(event.url!);
     if (event.favicon != null) {
-      final data = await crypto.generateUUID(dataHex: event.favicon);
-      image = APPImage.network(event.favicon!, data);
+      image = APPImage.network(event.favicon!);
     }
     return WebViewTab(
         url: event.url!,
@@ -241,7 +264,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
     await _storage.removeTab(auth.tab.value);
     final remove = tabsAuthenticated.remove(auth.viewType);
     final last = _storage.lastTab;
-    WebViewController? authenticated =
+    final WebViewController? authenticated =
         tabsAuthenticated.values.firstWhereOrNull((e) => e.tabId == last?.id);
     if (authenticated != null) {
       await _initializeController(authenticated);
@@ -287,7 +310,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
 
   void onSubmitTextField() {
     String v = (textField.currentState?.getValue() ?? "").trim();
-    if (v.isEmpty || _event?.url == v) {
+    if (v.isEmpty || _event.value?.evnet.url == v) {
       return;
     }
     if (StrUtils.isValidIPv4WithPort(v)) {
@@ -331,9 +354,9 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   @override
   void onPageStart(WebViewEvent event) {
     final String? url = event.url;
-    final lastUrl = lastEvent?.url;
+    final lastUrl = lastEvent.value?.evnet.url;
 
-    _event = event;
+    _event.value = WebviewLastPageEvent(event);
     if (url == null) return;
     textField.currentState?.updateText(url);
     _tabLocker.synchronized(() async {
@@ -370,6 +393,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   }
 
   void _dipose() async {
+    _event.dispose();
     liveNotifier.dispose();
     _progress.dispose();
     for (final i in tabsAuthenticated.values) {

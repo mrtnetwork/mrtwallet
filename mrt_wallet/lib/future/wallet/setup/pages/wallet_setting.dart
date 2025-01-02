@@ -9,7 +9,7 @@ import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class CreateWalletSettingsView extends StatefulWidget {
-  const CreateWalletSettingsView(this.wallet, {Key? key}) : super(key: key);
+  const CreateWalletSettingsView(this.wallet, {super.key});
   final HDWallet wallet;
 
   @override
@@ -70,14 +70,13 @@ class _CreateWalletSettingsViewState extends State<CreateWalletSettingsView>
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
       child: (c) => UpdateWalletInfosWidget(
-        name: name,
-        locktime: locktime,
-        requrmentPassword: reqPassword,
-        exitsIds: walletIds,
-        asDefaultWallet: defaultWallet,
-        onUpdate: (update) => setup(update),
-        protectWallet: protectWallet,
-      ),
+          name: name,
+          locktime: locktime,
+          requrmentPassword: reqPassword,
+          exitsIds: walletIds,
+          asDefaultWallet: defaultWallet,
+          onUpdate: (update) => setup(update),
+          protectWallet: protectWallet),
     );
   }
 }

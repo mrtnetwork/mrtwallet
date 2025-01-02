@@ -13,7 +13,7 @@ class WalletTimeoutListener {
 
   void init() {
     _lock.synchronized(() {
-      int? locktime = _onLockTime();
+      final int? locktime = _onLockTime();
       if (locktime == null) {
         return null;
       }

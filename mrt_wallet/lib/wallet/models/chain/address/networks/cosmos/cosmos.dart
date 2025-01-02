@@ -11,22 +11,20 @@ import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_addre
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 
-class ICosmosAddress extends ChainAccount<CosmosBaseAddress, TokenCore, NFTCore>
+class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
     with Equatable {
-  ICosmosAddress._(
-      {required this.keyIndex,
-      required this.coin,
-      required List<int> publicKey,
-      required this.address,
-      required this.network,
-      required this.networkAddress,
-      required List<TokenCore<BigInt>> tokens,
-      required List<NFTCore> nfts,
-      String? accountName,
-      required this.hrp})
-      : publicKey = List.unmodifiable(publicKey),
-        _tokens = List.unmodifiable(tokens),
-        _nfts = List.unmodifiable(nfts),
+  ICosmosAddress._({
+    required this.keyIndex,
+    required this.coin,
+    required this.publicKey,
+    required this.address,
+    required this.network,
+    required this.networkAddress,
+    required List<CW20Token> tokens,
+    required List<NFTCore> nfts,
+    String? accountName,
+  })  : _tokens = tokens.immutable,
+        _nfts = nfts.immutable,
         _accountName = accountName;
 
   factory ICosmosAddress.newAccount(
@@ -39,15 +37,15 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, TokenCore, NFTCore>
         address: cosmosAddr.address,
         balance: IntegerBalance.zero(network.coinParam.decimal));
     return ICosmosAddress._(
-        coin: accountParams.coin,
-        publicKey: publicKey,
-        address: addressDetauls,
-        keyIndex: accountParams.deriveIndex,
-        networkAddress: cosmosAddr,
-        network: network.value,
-        tokens: const [],
-        nfts: const [],
-        hrp: network.coinParam.hrp);
+      coin: accountParams.coin,
+      publicKey: accountParams.toPublicKey(publicKey),
+      address: addressDetauls,
+      keyIndex: accountParams.deriveIndex,
+      networkAddress: cosmosAddr,
+      network: network.value,
+      tokens: const [],
+      nfts: const [],
+    );
   }
   factory ICosmosAddress.fromCbsorHex(String hex, WalletNetwork network) {
     return ICosmosAddress.fromCborBytesOrObject(network,
@@ -57,37 +55,45 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, TokenCore, NFTCore>
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
 
-    final CborListValue cbor = CborSerializable.decodeCborTags(
+    final CborListValue values = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.cosmosAccount);
-    final CoinProposal proposal = CoinProposal.fromName(cbor.elementAt(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
+    final CoinProposal proposal = CoinProposal.fromName(values.elementAs(0));
+    final CryptoCoins coin =
+        CryptoCoins.getCoin(values.elementAs(1), proposal)!;
     final keyIndex =
-        AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final List<int> publicKey = cbor.elementAt(3);
-    final networkId = cbor.elementAt(6);
+        AddressDerivationIndex.fromCborBytesOrObject(obj: values.getCborTag(2));
+    final List<int> publicKey = values.elementAs(3);
+    final int networkId = values.elementAs(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
     final AccountBalance address = AccountBalance.fromCborBytesOrObject(
         network.coinParam.decimal,
-        obj: cbor.getCborTag(4));
-    final String hrp = cbor.elementAt(10);
-    final CosmosBaseAddress cosmosAddr =
-        CosmosBaseAddress(cbor.elementAt(5), forceHrp: hrp);
-
-    final String? accountName = cbor.elementAt(9);
+        obj: values.getCborTag(4));
+    final CosmosBaseAddress cosmosAddr = CosmosBaseAddress(values.elementAs(5),
+        forceHrp: network.toNetwork<WalletCosmosNetwork>().coinParam.hrp);
+    final String? accountName = values.elementAs(9);
+    final tokens = values
+        .elementAsListOf<CborTagValue>(7)
+        .map((e) => CW20Token.fromCborBytesOrObject(obj: e))
+        .toList();
+    final algorithm = values.elemetMybeAs<CosmosKeysAlgs, String>(10, (p0) {
+      return CosmosKeysAlgs.fromName(p0);
+    });
 
     return ICosmosAddress._(
-        coin: coin,
-        publicKey: publicKey,
-        address: address,
-        keyIndex: keyIndex,
-        networkAddress: cosmosAddr,
-        network: networkId,
-        tokens: [],
-        nfts: [],
-        accountName: accountName,
-        hrp: hrp);
+      coin: coin,
+      publicKey: CosmosPublicKey.fromBytes(
+          keyBytes: publicKey,
+          algorithm: algorithm ?? CosmosKeysAlgs.secp256k1),
+      address: address,
+      keyIndex: keyIndex,
+      networkAddress: cosmosAddr,
+      network: networkId,
+      tokens: tokens,
+      nfts: [],
+      accountName: accountName,
+    );
   }
 
   @override
@@ -107,9 +113,9 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, TokenCore, NFTCore>
   @override
   final int network;
 
-  final List<int> publicKey;
+  final CosmosPublicKey publicKey;
 
-  final String hrp;
+  // final String hrp;
 
   @override
   CborTagValue toCbor() {
@@ -118,14 +124,15 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, TokenCore, NFTCore>
           coin.proposal.specName,
           coin.coinName,
           keyIndex.toCbor(),
-          publicKey,
+          publicKey.toBytes(),
           address.toCbor(),
           networkAddress.address,
           network,
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
-          accountName ?? const CborNullValue(),
-          CborStringValue(hrp)
+          accountName,
+          publicKey.algorithm.name
+          // CborStringValue(hrp)
         ]),
         CborTagsConst.cosmosAccount);
   }
@@ -141,31 +148,47 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, TokenCore, NFTCore>
   @override
   String? type;
 
-  List<TokenCore<BigInt>> _tokens;
+  List<CW20Token> _tokens;
   @override
-  List<TokenCore<BigInt>> get tokens => _tokens;
+  List<CW20Token> get tokens => _tokens;
 
   List<NFTCore> _nfts;
   @override
   List<NFTCore> get nfts => _nfts;
 
   @override
-  void addToken(TokenCore newToken) {}
+  void addToken(CW20Token newToken) {
+    if (_tokens.contains(newToken)) {
+      throw WalletExceptionConst.tokenAlreadyExist;
+    }
+    _tokens = [newToken, ..._tokens].immutable;
+  }
 
   @override
-  void removeToken(TokenCore token) {}
+  void updateToken(CW20Token token, Token updatedToken) {
+    if (!tokens.contains(token)) return;
+    List<CW20Token> existTokens = _tokens.clone();
+    existTokens.removeWhere((element) => element == token);
+    existTokens = [token.updateToken(updatedToken), ...existTokens];
+    _tokens = existTokens.immutable;
+  }
+
+  @override
+  void removeToken(CW20Token token) {
+    if (!tokens.contains(token)) return;
+    final existTokens = _tokens.clone();
+    existTokens.removeWhere((element) => element == token);
+    _tokens = existTokens.imutable;
+  }
 
   @override
   void addNFT(NFTCore newNft) {}
 
   @override
   void removeNFT(NFTCore nft) {}
-  @override
-  void updateToken(TokenCore token, Token updatedToken) {}
+
   SignerInfo get signerInfo => SignerInfo(
-      publicKey: coin.conf.type == EllipticCurveTypes.nist256p1
-          ? CosmosSecp256R1PublicKey.fromBytes(publicKey)
-          : CosmosSecp256K1PublicKey.fromBytes(publicKey),
+      publicKey: publicKey,
       modeInfo: const ModeInfo(ModeInfoSignle(SignMode.signModeDirect)),
       sequence: BigInt.zero);
 
@@ -187,12 +210,12 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, TokenCore, NFTCore>
   @override
   bool isEqual(ChainAccount other) {
     if (other is! ICosmosAddress) return false;
-    return other.networkAddress.address == networkAddress.address &&
-        hrp == other.hrp;
+    return other.networkAddress == networkAddress;
   }
 
   @override
   CosmosNewAddressParams toAccountParams() {
-    return CosmosNewAddressParams(deriveIndex: keyIndex, coin: coin);
+    return CosmosNewAddressParams(
+        deriveIndex: keyIndex, coin: coin, algorithm: publicKey.algorithm);
   }
 }

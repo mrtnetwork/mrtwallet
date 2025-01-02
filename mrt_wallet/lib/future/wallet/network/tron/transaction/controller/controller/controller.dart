@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/controller/impl/fee_impl.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/controller/impl/memo_impl.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/controller/impl/network_impl.dart';
@@ -23,6 +25,7 @@ class TronTransactionStateController extends TronTransactionImpl
   String? get error => _error;
   bool _trIsReady = false;
   bool get trIsReady => _trIsReady;
+  bool get showTxInfo => validator.validator.showTxInfo;
 
   IntegerBalance? _remindTokenAmount;
   late final IntegerBalance _remindAmount =
@@ -59,7 +62,8 @@ class TronTransactionStateController extends TronTransactionImpl
   Future<void> onTapMemo(OnAddTronMemo onAddMemo) async {
     final currentMemo = memo;
     await super.onTapMemo(onAddMemo);
-    if (currentMemo != memo) {
+    _checkTransaction();
+    if (currentMemo != memo && _error == null) {
       calculateFee();
     }
   }

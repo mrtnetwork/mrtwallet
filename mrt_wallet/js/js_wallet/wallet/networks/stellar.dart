@@ -252,14 +252,14 @@ class JSStellarHandler extends JSNetworkHandler<StellarAddress, StellarChain,
 
   @override
   void onRequestDone(PageMessageRequest message) {
-    final method = Web3StellarRequestMethods.fromName(message.method);
+    // final method = Web3StellarRequestMethods.fromName(message.method);
 
-    switch (method) {
-      case Web3StellarRequestMethods.requestAccounts:
-        _connect(state);
-        break;
-      default:
-    }
+    // switch (method) {
+    //   case Web3StellarRequestMethods.requestAccounts:
+    //     _connect(state);
+    //     break;
+    //   default:
+    // }
   }
 
   @override

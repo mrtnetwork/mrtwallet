@@ -1,4 +1,4 @@
-library mrt_native_web;
+library;
 
 export 'api/api.dart';
 export 'wallet/event.dart';

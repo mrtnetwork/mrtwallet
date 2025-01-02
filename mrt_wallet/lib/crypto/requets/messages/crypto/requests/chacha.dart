@@ -5,7 +5,7 @@ import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/chacha.dart';
 
 class CryptoRequestEncryptChacha
-    implements CryptoRequest<CryptoEncryptChachaResponse, MessageArgsTwoBytes> {
+    extends CryptoRequest<CryptoEncryptChachaResponse, MessageArgsTwoBytes> {
   final List<int> message;
   final List<int> key;
   final int nonceLength;
@@ -15,9 +15,9 @@ class CryptoRequestEncryptChacha
     required List<int> key,
     List<int>? nonce,
     this.nonceLength = 12,
-  })  : message = BytesUtils.toBytes(message, unmodifiable: true),
-        key = BytesUtils.toBytes(key, unmodifiable: true),
-        nonce = BytesUtils.tryToBytes(nonce, unmodifiable: true);
+  })  : message = message.asImmutableBytes,
+        key = key.asImmutableBytes,
+        nonce = nonce?.asImmutableBytes;
 
   factory CryptoRequestEncryptChacha.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -82,7 +82,7 @@ class CryptoRequestEncryptChacha
 }
 
 class CryptoRequestDecryptChacha
-    implements CryptoRequest<CryptoDecryptChachaResponse, MessageArgsOneBytes> {
+    extends CryptoRequest<CryptoDecryptChachaResponse, MessageArgsOneBytes> {
   final List<int> message;
   final List<int> key;
   final List<int> nonce;
@@ -90,19 +90,16 @@ class CryptoRequestDecryptChacha
     required List<int> message,
     required List<int> key,
     required List<int> nonce,
-  })  : message = BytesUtils.toBytes(message, unmodifiable: true),
-        key = BytesUtils.toBytes(key, unmodifiable: true),
-        nonce = BytesUtils.toBytes(nonce, unmodifiable: true);
+  })  : message = message.asImmutableBytes,
+        key = key.asImmutableBytes,
+        nonce = nonce.asImmutableBytes;
   CryptoRequestDecryptChacha.fromHex({
     required String message,
     required String key,
     required String nonce,
-  })  : message = BytesUtils.toBytes(BytesUtils.fromHexString(message),
-            unmodifiable: true),
-        key = BytesUtils.toBytes(BytesUtils.fromHexString(key),
-            unmodifiable: true),
-        nonce = BytesUtils.toBytes(BytesUtils.fromHexString(nonce),
-            unmodifiable: true);
+  })  : message = BytesUtils.fromHexString(message).immutable,
+        key = BytesUtils.fromHexString(key).immutable,
+        nonce = BytesUtils.fromHexString(nonce).immutable;
 
   factory CryptoRequestDecryptChacha.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {

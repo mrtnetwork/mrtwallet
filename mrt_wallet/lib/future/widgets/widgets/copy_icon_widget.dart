@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/global/app.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
@@ -47,7 +49,7 @@ mixin _CopyTextState<T extends StatefulWidget> on SafeState<T> {
       final data = await PlatformUtils.readClipboard();
       if (data != txt) return;
       PlatformUtils.writeClipboard('');
-    }, milliseconds: APPConst.tenSecoundDuration);
+    }, duration: APPConst.tenSecoundDuration);
   }
 }
 
@@ -60,6 +62,7 @@ class CopyTextIcon extends StatefulWidget {
       this.messaage,
       this.color,
       this.isSensitive = false});
+
   final String dataToCopy;
   final double? size;
   final String? messaage;
@@ -199,11 +202,90 @@ class CopyTextWithBarcodeState extends State<CopyTextWithBarcode>
                           barcodeData: widget.dataToCopy),
                       widget.barcodeTitle);
                 },
-                icon: const Icon(Icons.qr_code)),
+                icon: Icon(
+                  Icons.qr_code,
+                  color: widget.color,
+                )),
             icon,
           ],
         )
       ],
+    );
+  }
+}
+
+///
+class CopyableTextWidget extends StatefulWidget {
+  const CopyableTextWidget(
+      {super.key,
+      required this.text,
+      this.maxLines = 1,
+      this.size,
+      this.messaage,
+      this.color,
+      this.widget,
+      this.isSensitive = false});
+
+  final String text;
+  final double? size;
+  final String? messaage;
+  final Color? color;
+  final Widget? widget;
+  final bool isSensitive;
+  final int? maxLines;
+
+  @override
+  State<CopyableTextWidget> createState() => CopyableTextWidgetState();
+}
+
+class CopyableTextWidgetState extends State<CopyableTextWidget>
+    with SafeState, _CopyTextState {
+  @override
+  String get dataToCopy => widget.text;
+
+  @override
+  bool get isSensitive => widget.isSensitive;
+
+  @override
+  String? get message => widget.messaage;
+
+  @override
+  Widget build(BuildContext context) {
+    final icon = IconButton(
+      onPressed: () => onTap(context),
+      icon: APPAnimatedSwitcher(enable: status, widgets: {
+        _CopyTextStatus.idlle: (context) =>
+            Icon(Icons.copy, size: widget.size, color: widget.color),
+        _CopyTextStatus.pending: (context) => SizedBox(
+            width: widget.size ?? APPConst.iconSize,
+            height: widget.size ?? APPConst.iconSize,
+            child: CircularProgressIndicator(color: widget.color)),
+        _CopyTextStatus.success: (context) =>
+            Icon(Icons.check_circle, size: widget.size, color: widget.color),
+        _CopyTextStatus.error: (context) =>
+            Icon(Icons.error, size: widget.size, color: context.colors.error)
+      }),
+    );
+    return InkWell(
+      onTap: () => onTap(context),
+      customBorder: RoundedRectangleBorder(
+        borderRadius: WidgetConstant.border8,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+              child: widget.widget ??
+                  Text(
+                    widget.text,
+                    style: context.textTheme.bodyMedium
+                        ?.copyWith(color: widget.color),
+                    maxLines: widget.maxLines,
+                    overflow: TextOverflow.ellipsis,
+                  )),
+          WidgetConstant.width8,
+          icon
+        ],
+      ),
     );
   }
 }

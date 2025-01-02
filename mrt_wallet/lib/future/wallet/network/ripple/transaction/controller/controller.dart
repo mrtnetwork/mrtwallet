@@ -8,7 +8,6 @@ import 'package:mrt_wallet/future/wallet/network/ripple/transaction/controller/i
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
@@ -19,9 +18,6 @@ class RippleTransactionStateController extends RippleTransactionImpl
   RippleTransactionStateController(
       {required super.walletProvider,
       required super.account,
-      required super.network,
-      required super.apiProvider,
-      required super.address,
       required this.validator});
 
   final GlobalKey<StreamWidgetState> buttonKey = GlobalKey<StreamWidgetState>();
@@ -71,7 +67,7 @@ class RippleTransactionStateController extends RippleTransactionImpl
         progressKey.errorText("disable_master_key_addr".tr, backToIdle: false);
       }
     } else {
-      _checkTransaction();
+      _onChangeForm();
       progressKey.success();
     }
   }
@@ -89,19 +85,30 @@ class RippleTransactionStateController extends RippleTransactionImpl
     if (_isPayment?.issueToken == null) {
       remindAmount = (_remindAmount, network.coinParam.token);
     } else {
-      final remindTokenAmounts = _isPayment!.issueToken!.balance.value.balance -
-          (_isPayment.amount.value?.balance ?? BigRational.zero);
+      BigRational remindTokenAmounts = BigRational.zero;
+      if (_isPayment!.issueToken!.isAccountToken) {
+        remindTokenAmounts =
+            _isPayment.issueToken!.accountToken!.currencyBalance -
+                (_isPayment.amount.value?.balance ?? BigRational.zero);
+      }
       _remindTokenAmount.updateBalance(remindTokenAmounts);
       if (_remindAmount.isNegative) {
         remindAmount = (_remindAmount, network.coinParam.token);
       } else {
-        remindAmount = (_remindTokenAmount, _isPayment.token);
+        remindAmount = (_remindTokenAmount, _isPayment.token!);
       }
     }
   }
 
   String? _fieldError;
   String? get fieldsError => _fieldError;
+
+  bool _trIsReady = false;
+  bool get trIsReady => _trIsReady;
+
+  bool _isReady() {
+    return _fieldError == null && !remindAmount.$1.isNegative;
+  }
 
   void sendTr() async {
     _fieldError = null;
@@ -129,7 +136,7 @@ class RippleTransactionStateController extends RippleTransactionImpl
             network: network,
             sign: (generateSignature) async {
               if (!needMultiSig) {
-                final keyIndex = address.keyIndex as Bip32AddressIndex;
+                final keyIndex = address.keyIndex.cast();
                 final algorithm = XRPKeyAlgorithm.values.firstWhere((element) =>
                     element.curveType == keyIndex.currencyCoin.conf.type);
                 final pubkey = XRPPublicKey.fromBytes(address.publicKey,
@@ -139,7 +146,7 @@ class RippleTransactionStateController extends RippleTransactionImpl
                 transaction.setSignature(XRPLSignature.signer(pubkey));
                 final signRequest = GlobalSignRequest.ripple(
                     digest: BytesUtils.fromHexString(transaction.toBlob()),
-                    index: keyIndex);
+                    index: keyIndex.cast());
                 final sss = await generateSignature(signRequest);
 
                 transaction.setSignature(XRPLSignature.sign(
@@ -200,6 +207,8 @@ class RippleTransactionStateController extends RippleTransactionImpl
 
   void _onChangeForm() {
     _checkTransaction();
+    _fieldError = validator.validator.validateError(account: address);
+    _trIsReady = _isReady();
     notify();
   }
 

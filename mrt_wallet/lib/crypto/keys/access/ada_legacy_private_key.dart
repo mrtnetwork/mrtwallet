@@ -3,19 +3,20 @@ import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'package:mrt_wallet/crypto/keys/access/ada_legacy_public_key.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/crypto/utils/global/utils.dart';
 // import 'package:mrt_wallet/wroker/utils/global/utils.dart';
 
-class ADALegacyPrivateKeyData implements CryptoPrivateKeyData {
+class ADALegacyPrivateKeyData extends CryptoPrivateKeyData {
   @override
   final CryptoCoins coin;
   @override
   final String privateKey;
   @override
   final String extendedKey;
+  @override
   final String? wif;
   @override
   final String keyName;
@@ -78,7 +79,7 @@ class ADALegacyPrivateKeyData implements CryptoPrivateKeyData {
           keyName,
           publicKey.toCbor()
         ]),
-        CryptoKeyConst.accessAdaLegacyPrivateKeyResponse);
+        type.tag);
   }
 
   @override
@@ -91,4 +92,7 @@ class ADALegacyPrivateKeyData implements CryptoPrivateKeyData {
   List<int> privateKeyBytes() {
     return BytesUtils.fromHexString(privateKey);
   }
+
+  @override
+  CryptoPrivateKeyDataType get type => CryptoPrivateKeyDataType.ada;
 }

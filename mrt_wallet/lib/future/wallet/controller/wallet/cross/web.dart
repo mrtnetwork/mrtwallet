@@ -25,7 +25,7 @@ UIWallet uiWallet(GlobalKey<NavigatorState> navigatorKey) {
 
 class ExtentionWallet extends UIWallet
     with CryptoWokerImpl, Web3RequestControllerImpl, ExtentionWalletHandler {
-  ExtentionWallet(GlobalKey<NavigatorState> navigatorKey) : super(navigatorKey);
+  ExtentionWallet(super.navigatorKey);
   final _lock = SynchronizedLock();
 
   @override
@@ -44,10 +44,10 @@ class ExtentionWallet extends UIWallet
   Future<MethodResult<List<CryptoKeyData>>> accsess(
       WalletAccsessType accsessType, String password,
       {ChainAccount<dynamic, TokenCore, NFTCore>? account,
-      String? accountId}) async {
+      String? keyId}) async {
     final bool isReadOnly = this.isReadOnly || isLock;
     final result = await super
-        .accsess(accsessType, password, account: account, accountId: accountId);
+        .accsess(accsessType, password, account: account, keyId: keyId);
     if (isReadOnly && isUnlock) {
       await _lock.synchronized(() async {
         await saveLoginHistory(password);

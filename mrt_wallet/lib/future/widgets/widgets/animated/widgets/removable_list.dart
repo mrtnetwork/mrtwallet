@@ -5,12 +5,13 @@ class APPAnimatedRemovableList extends StatefulWidget {
       {required this.itemBuilder,
       required this.length,
       required this.shrinkWrap,
-      Key? key})
-      : super(key: key);
+      this.physics,
+      super.key});
   final int length;
   final bool shrinkWrap;
   final Widget Function(BuildContext, int index, Animation<double>,
       [bool? inRemove]) itemBuilder;
+  final ScrollPhysics? physics;
   @override
   State<APPAnimatedRemovableList> createState() => APPRemovableListState();
 }
@@ -18,7 +19,7 @@ class APPAnimatedRemovableList extends StatefulWidget {
 class APPRemovableListState extends State<APPAnimatedRemovableList> {
   final GlobalKey<AnimatedListState> key = GlobalKey();
   void removeIndex(int index) {
-    builder(context, animation) {
+    Widget builder(context, animation) {
       // A method to build the Card widget.
       return widget.itemBuilder(context, index, animation, true);
     }
@@ -29,9 +30,11 @@ class APPRemovableListState extends State<APPAnimatedRemovableList> {
   @override
   Widget build(BuildContext context) {
     return AnimatedList(
-        key: key,
-        itemBuilder: widget.itemBuilder,
-        initialItemCount: widget.length,
-        shrinkWrap: widget.shrinkWrap);
+      key: key,
+      itemBuilder: widget.itemBuilder,
+      initialItemCount: widget.length,
+      shrinkWrap: widget.shrinkWrap,
+      physics: widget.physics,
+    );
   }
 }

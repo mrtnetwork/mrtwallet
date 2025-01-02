@@ -40,9 +40,11 @@ class EthereumTransactionFieldsView extends StatelessWidget {
                               style: context.textTheme.titleLarge),
                           WidgetConstant.height8,
                           ContainerWithBorder(
-                            onRemoveIcon: const Icon(Icons.edit),
+                            onRemoveIcon: Icon(Icons.edit,
+                                color: context.onPrimaryContainer),
                             child: AddressDetailsView(
                                 address: controller.address,
+                                color: context.onPrimaryContainer,
                                 key:
                                     ValueKey<IEthAddress?>(controller.address)),
                             onRemove: () {
@@ -69,9 +71,9 @@ class EthereumTransactionFieldsView extends StatelessWidget {
                               style: context.textTheme.titleMedium),
                           WidgetConstant.height8,
                           ContainerWithBorder(
-                              onRemoveIcon: controller.hasMemo
-                                  ? const Icon(Icons.remove_circle)
-                                  : const Icon(Icons.add_box),
+                              onRemoveIcon: AddOrEditIconWidget(
+                                controller.hasMemo,
+                              ),
                               onRemove: () {
                                 controller.onTapMemo((s) async {
                                   final result = await context
@@ -101,10 +103,12 @@ class EthereumTransactionFieldsView extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: controller.hasMemo
-                                        ? Text(controller.memo ?? "")
+                                        ? Text(controller.memo ?? "",
+                                            style: context
+                                                .onPrimaryTextTheme.bodyMedium)
                                         : Text("tap_to_add_memo".tr,
-                                            style:
-                                                context.textTheme.labelLarge),
+                                            style: context
+                                                .onPrimaryTextTheme.bodyMedium),
                                   ),
                                 ],
                               )),
@@ -213,6 +217,7 @@ class _ETHTransactionTransferFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
               "setup_output_amount".tr,
+              initialExtend: 1,
               child: SetupNetworkAmount(
                 token: field.token,
                 max: field.erc20Token?.balance.value.balance ??

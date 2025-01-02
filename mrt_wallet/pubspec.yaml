@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 5.8.0+15
+version: 5.8.2+16
 
 homepage: "https://github.com/mrtnetwork/mrtwallet"
 repository: "https://github.com/mrtnetwork/mrtwallet"
@@ -33,7 +33,7 @@ topics:
 
 
 environment:
-  sdk: '>=3.4.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -50,35 +50,39 @@ dependencies:
   mrt_native_support:
     path: ../mrt_native_support
   http: ^1.1.0
-  blockchain_utils: ^3.4.0
+  blockchain_utils: ^4.0.0
   # blockchain_utils:
-  #   path: ../../../bitcoin/blockchain_utils
+  #   path: ../../blockchain_utils
 
-  bitcoin_base: ^4.8.0
+  bitcoin_base: ^5.0.0
   # bitcoin_base:
-  #   path: ../../../bitcoin/bitcoin_base
+  #   path: ../../bitcoin_base
 
 
-  xrpl_dart: ^4.7.0
+  xrpl_dart: ^5.0.0
   # xrpl_dart:
-  #   path: ../../../xrpl_dart
+  #   path: ../../xrpl_dart
 
-  on_chain: ^4.3.0
-
+  on_chain: ^5.0.0
   # on_chain:
-  #   path: ../../../bitcoin/on_chain
+  #   path: ../../on_chain
 
 
-  cosmos_sdk: ^1.4.1
+  cosmos_sdk: ^2.0.0
   # cosmos_sdk:
-  #   path: ../../../cosmos_sdk
-  ton_dart: ^0.1.2
+  #   path: ../../cosmos_sdk
+  ton_dart: ^1.0.0
   # ton_dart:
-  #   path: ../../../projects/ton_dart
-  polkadot_dart: ^1.2.0
+  #   path: ../../ton_dart
+  polkadot_dart: ^2.0.0
   # polkadot_dart:
-  #   path: ../../../projects/polkadot_dart
-  stellar_dart: ^0.1.0
+  #   path: ../../polkadot_dart
+  stellar_dart: ^1.0.0
+  # stellar_dart:
+  #   path: ../../stellar_dart
+  monero_dart: ^0.3.0
+  # monero_dart:
+  #   path: ../../monero_dart
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
@@ -92,7 +96,8 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^5.0.0
+  lints: ^5.1.1
   msix: ^3.16.7
   test: ^1.25.2
 
@@ -166,6 +171,6 @@ msix_config:
     display_name: MRT Wallet
     publisher_display_name: MRT NETWORK
     identity_name: com.mrtnetwork.wallet
-    msix_version: 5.7.0.0
-    logo_path: C:\in_work\bitcoin\mrt_wallet\mrt_wallet\assets\image\mrt_wallet.png
-    publish_folder_path: C:\in_work\bitcoin\mrt_wallet\mrt_wallet\build\msix\
+    msix_version: 6.0.0.0
+    logo_path: D:\mrt_wallet\mrt_wallet\assets\image\mrt_wallet.png
+    publish_folder_path: D:\mrt_wallet\mrt_wallet\build\msix\

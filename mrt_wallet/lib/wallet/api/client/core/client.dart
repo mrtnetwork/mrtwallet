@@ -5,6 +5,7 @@ import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/repository/repository.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
+import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 
 enum NodeClientStatus {
@@ -18,10 +19,11 @@ enum NodeClientStatus {
 }
 
 /// with BaseRepository
-abstract class NetworkClient<T, P extends APIProvider> with BaseRepository {
+abstract class NetworkClient<T extends ChainAccount, P extends APIProvider>
+    with BaseRepository {
   NetworkClient();
-  abstract final WalletNetwork network;
-  Future<void> updateBalance(T account);
+  abstract final WalletNetwork? network;
+  Future<void> updateBalance(T address, APPCHAINACCOUNT<T> chain);
   abstract final BaseServiceProtocol<P> service;
   @override
   String get repositoryStorageId =>
@@ -59,6 +61,6 @@ abstract class NetworkClient<T, P extends APIProvider> with BaseRepository {
 
   @override
   String toString() {
-    return "Client: ${network.token.name}";
+    return "Client: ${network?.token.name}";
   }
 }

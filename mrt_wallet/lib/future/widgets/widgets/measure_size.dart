@@ -12,7 +12,7 @@ class _MeasureSizeRenderObject extends RenderProxyBox {
   void performLayout() {
     super.performLayout();
 
-    Size newSize = child!.size;
+    final Size newSize = child!.size;
     if (oldSize == newSize) return;
 
     oldSize = newSize;
@@ -26,10 +26,10 @@ class MeasureSize extends SingleChildRenderObjectWidget {
   final FuncVoidSize onChange;
 
   const MeasureSize({
-    Key? key,
+    super.key,
     required this.onChange,
-    required Widget child,
-  }) : super(key: key, child: child);
+    required Widget super.child,
+  });
 
   @override
   RenderObject createRenderObject(BuildContext context) {

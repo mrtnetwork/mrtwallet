@@ -25,7 +25,6 @@ class Web3EthereumTransactionRequestInfos {
       required this.value,
       this.initFee});
   factory Web3EthereumTransactionRequestInfos({
-    required bool isContract,
     required Web3EthreumSendTransaction transaction,
     required ReceiptAddress<ETHAddress>? destination,
     required EthereumTransactionDataInfo? contractInfo,

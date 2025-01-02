@@ -21,7 +21,7 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
   bool get isXAddress => addressTyoe == XrpAddressType.xAddress;
   int tag = 0;
   void onChangeTag(int newTag) {
-    if (newTag < 0 || newTag > mask32 - 1) return;
+    if (newTag < 0 || newTag > RippleConst.maxRippleTag - 1) return;
     tag = newTag;
   }
 
@@ -36,7 +36,7 @@ class _SetupRippleAddressViewState extends State<SetupRippleAddressView>
 
   void onSelectAddressType() {
     addressTyoe = isXAddress ? XrpAddressType.classic : XrpAddressType.xAddress;
-    setState(() {});
+    updateState();
   }
 
   void generateAddress() async {

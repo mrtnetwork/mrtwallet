@@ -3,8 +3,8 @@ import 'package:mrt_wallet/app/core.dart' show UriUtils;
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class LaunchBrowserIcon extends StatelessWidget {
-  const LaunchBrowserIcon({required this.url, this.color, Key? key, this.size})
-      : super(key: key);
+  const LaunchBrowserIcon(
+      {required this.url, this.color, super.key, this.size});
   final String? url;
   final Color? color;
   final double? size;
@@ -18,6 +18,6 @@ class LaunchBrowserIcon extends StatelessWidget {
           }
           UriUtils.lunch(url);
         },
-        icon: Icon(Icons.launch, size: size));
+        icon: Icon(Icons.launch, size: size, color: color));
   }
 }

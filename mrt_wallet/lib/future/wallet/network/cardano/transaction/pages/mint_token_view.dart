@@ -1,4 +1,3 @@
-import 'package:blockchain_utils/bip/address/ada/ada_addres_type.dart';
 import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
@@ -29,20 +28,23 @@ class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
     fieldsIsReady = !totalSupply.isZero &&
         owmnerReceiptView != null &&
         (assetName.trim().isNotEmpty);
-    setState(() {});
+    updateState();
   }
 
-  bool validateShellyAddress(ADAAddress addr) {
-    if (addr.addressType == ADAAddressType.byron) {
-      context.showAlert("byron_does_not_support_minting_token".tr);
-      return false;
+  String? validateShellyAddress(ICardanoAddress addr) {
+    if (addr.networkAddress.isByron || addr.networkAddress.isRewardAddress) {
+      return "byron_reward_does_not_support_minting_token".tr;
     }
-    return true;
+    return null;
   }
 
   void setPolicyId(ICardanoAddress? addr) {
     if (addr == null) return;
-    if (!validateShellyAddress(addr.networkAddress)) return;
+    final err = validateShellyAddress(addr);
+    if (err != null) {
+      context.showAlert(err);
+      return;
+    }
     ownerAccount = addr;
     owmnerReceiptView = ReceiptAddress(
         view: addr.networkAddress.address,
@@ -54,13 +56,17 @@ class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
 
   String assetName = "";
   BigRational totalSupply = BigRational.zero;
+  String totalSupplyStr = "";
 
   void setSupply(BigRational? supply) {
     if (supply == null ||
         supply.isNegative ||
         supply.isZero ||
-        supply > BlockchainConst.maxSupply) return;
+        supply > BlockchainConst.maxSupply) {
+      return;
+    }
     totalSupply = supply;
+    totalSupplyStr = totalSupply.toDecimal();
     checkFildsReady();
   }
 
@@ -120,9 +126,10 @@ class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
               context
                   .openSliverBottomSheet<ICardanoAddress>(
                     "select_account".tr,
-                    child: SwitchOrSelectAccountView(
+                    child: SwitchOrSelectAccountView<ICardanoAddress>(
                       account: widget.account,
                       showMultiSig: true,
+                      filter: validateShellyAddress,
                     ),
                     minExtent: 0.5,
                     maxExtend: 0.9,
@@ -138,28 +145,28 @@ class _CardanoMintTokenViewState extends State<CardanoMintTokenView>
           Text("name_of_token".tr),
           WidgetConstant.height8,
           AppTextField(
-            label: "asset_name".tr,
-            initialValue: assetName,
-            validator: validator,
-            suffixIcon: PasteTextIcon(
-              onPaste: onPaste,
-              isSensitive: false,
-            ),
-            onChanged: onChangeAssetsName,
-            key: textFieldKey,
-          ),
+              label: "asset_name".tr,
+              initialValue: assetName,
+              validator: validator,
+              suffixIcon: PasteTextIcon(
+                onPaste: onPaste,
+                isSensitive: false,
+              ),
+              onChanged: onChangeAssetsName,
+              key: textFieldKey),
           WidgetConstant.height20,
           Text("total_supply".tr, style: context.textTheme.titleMedium),
           Text("total_supply_desc".tr),
           WidgetConstant.height8,
           ContainerWithBorder(
-            onRemoveIcon: totalSupply.isZero
-                ? const Icon(Icons.add)
-                : const Icon(Icons.edit),
+            onRemoveIcon: AddOrEditIconWidget(totalSupply.isZero),
             validate: !totalSupply.isZero,
-            child: Text(totalSupply.isZero
-                ? "tap_to_input_total_supply".tr
-                : totalSupply.toDecimal()),
+            child: Text(
+              totalSupply.isZero
+                  ? "tap_to_input_total_supply".tr
+                  : totalSupplyStr,
+              style: context.onPrimaryTextTheme.bodyMedium,
+            ),
             onRemove: () {
               context
                   .openSliverBottomSheet<BigRational>(

@@ -9,11 +9,10 @@ class APPAnimatedSize extends StatelessWidget {
       required this.onDeactive,
       this.duration = APPConst.animationDuraion,
       this.alignment = Alignment.topCenter,
-      Key? key})
-      : super(key: key);
+      super.key});
   final bool isActive;
-  final WidgetContext onActive;
-  final WidgetContext onDeactive;
+  final WidgetContextNullable onActive;
+  final WidgetContextNullable onDeactive;
   final Duration duration;
   final Alignment alignment;
   @override

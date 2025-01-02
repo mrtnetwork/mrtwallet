@@ -36,9 +36,7 @@ class _AppSettingViewState extends State<AppSettingView> {
     final wallet = context.watch<WalletProvider>(StateConst.main);
     final setting = PageRouter.networkSettings(wallet.wallet.network);
     return ScaffolPageView(
-      appBar: AppBar(
-        title: Text("wallet_preferences".tr),
-      ),
+      appBar: AppBar(title: Text("wallet_preferences".tr)),
       child: SingleChildScrollView(
         child: ConstraintsBoxView(
           padding: WidgetConstant.paddingHorizontal20,
@@ -71,7 +69,7 @@ class _AppSettingViewState extends State<AppSettingView> {
               ),
               AppListTile(
                 leading: const Icon(Icons.security),
-                title: Text("security".tr),
+                title: Text("seed_phrase".tr),
                 subtitle: Text("export_security_phrase".tr),
                 onTap: () {
                   context.to(PageRouter.exportSeed);
@@ -79,15 +77,15 @@ class _AppSettingViewState extends State<AppSettingView> {
               ),
               AppListTile(
                 leading: const Icon(Icons.key),
-                title: Text("private_key".tr),
+                title: Text("external_keys".tr),
                 subtitle: Text("import_private_key".tr),
                 onTap: () {
                   context.to(PageRouter.importAccount);
                 },
               ),
               AppListTile(
-                leading: const Icon(Icons.key),
-                title: Text("imported_key".tr),
+                leading: const Icon(Icons.remove_red_eye),
+                title: Text("external_keys".tr),
                 subtitle: Text("manage_imported_key".tr),
                 onTap: () {
                   context.to(PageRouter.manageImportedKey,

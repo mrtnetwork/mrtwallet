@@ -47,6 +47,7 @@ class ADAAccountUTXOs {
 
   late final UtxoMultiAsset multiAsset = UtxoMultiAsset.fromUtxo(this);
   bool get hasAsset => multiAsset.hasAsset;
+  bool get canSpend => sumOflovelace > BigInt.zero;
 
   late final int totalAssets = multiAsset.assets.values.fold(
       0, (previousValue, element) => previousValue + element.assets.length);

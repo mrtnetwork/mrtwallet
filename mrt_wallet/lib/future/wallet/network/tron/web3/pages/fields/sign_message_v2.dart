@@ -5,8 +5,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 
 class TronWeb3SignMessageV2RequestView extends StatelessWidget {
-  const TronWeb3SignMessageV2RequestView({required this.request, Key? key})
-      : super(key: key);
+  const TronWeb3SignMessageV2RequestView({required this.request, super.key});
   final TronWeb3Form<Web3TronSignMessageV2> request;
   Web3TronSignMessageV2 get param => request.request.params;
   @override
@@ -25,7 +24,7 @@ class TronWeb3SignMessageV2RequestView extends StatelessWidget {
               onRemove: () {},
               onRemoveWidget:
                   CopyTextIcon(dataToCopy: param.challeng, isSensitive: false),
-              onTapWhenOnRemove: false,
+              enableTap: false,
               child: Text(param.challeng,
                   style:
                       context.colors.onPrimaryContainer.bodyMedium(context))),
@@ -36,7 +35,7 @@ class TronWeb3SignMessageV2RequestView extends StatelessWidget {
                 onRemove: () {},
                 onRemoveWidget: CopyTextIcon(
                     dataToCopy: param.content ?? "", isSensitive: false),
-                onTapWhenOnRemove: false,
+                enableTap: false,
                 child: SelectableText(
                   param.content ?? "",
                   style: context.colors.onPrimaryContainer.bodyMedium(context),

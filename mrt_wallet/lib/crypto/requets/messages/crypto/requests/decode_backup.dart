@@ -4,7 +4,7 @@ import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 
 class CryptoRequestDecodeBackup
-    implements CryptoRequest<List<int>, MessageArgsOneBytes> {
+    extends CryptoRequest<List<int>, MessageArgsOneBytes> {
   final String password;
   final String backup;
   final SecretWalletEncoding encoding;

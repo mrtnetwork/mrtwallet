@@ -3,7 +3,7 @@ import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
-
+import 'package:blockchain_utils/bip/bip.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
@@ -11,9 +11,6 @@ import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
   final BasedUtxoNetwork transacationNetwork;
   final String genesis;
-
-  @override
-  bool get mainnet => transacationNetwork.isMainnet;
 
   factory BitcoinParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
@@ -37,7 +34,10 @@ class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
     required super.token,
     required this.transacationNetwork,
     required this.genesis,
-  }) : super(mainnet: transacationNetwork.isMainnet);
+  }) : super(
+            chainType: transacationNetwork.isMainnet
+                ? ChainType.mainnet
+                : ChainType.testnet);
 
   BitcoinParams copyWith(
       {List<BaseBitcoinAPIProvider>? providers,
@@ -79,4 +79,7 @@ class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
         token: token,
         genesis: genesis);
   }
+
+  @override
+  String get identifier => genesis;
 }

@@ -1,5 +1,5 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:blockchain_utils/utils/utils.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 
@@ -14,7 +14,7 @@ class Web3EncryptedMessage with CborSerializable {
   Web3EncryptedMessage({
     required this.message,
     required List<int> nonce,
-  }) : nonce = BytesUtils.toBytes(nonce, unmodifiable: true);
+  }) : nonce = nonce.asImmutableBytes;
 
   factory Web3EncryptedMessage.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {

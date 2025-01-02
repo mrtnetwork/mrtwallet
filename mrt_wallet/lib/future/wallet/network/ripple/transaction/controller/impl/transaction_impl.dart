@@ -7,18 +7,15 @@ import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 abstract class RippleTransactionImpl extends StateController {
-  RippleTransactionImpl(
-      {required this.walletProvider,
-      required this.account,
-      required this.network,
-      required this.address,
-      required this.apiProvider});
+  RippleTransactionImpl({
+    required this.walletProvider,
+    required this.account,
+  });
   final WalletProvider walletProvider;
   final RippleChain account;
-  final WalletXRPNetwork network;
-  final RippleClient apiProvider;
-  final IXRPAddress address;
-  IXRPAddress get owner => address;
+  WalletXRPNetwork get network => account.network;
+  RippleClient get apiProvider => account.client;
+  IXRPAddress get address => account.address;
   void setFee(String? feeType, {BigInt? customFee});
   List<XRPLMemo> get memos;
   Future<void> onSetupMemo(XRPLMemo? memo, OnSetupMemo onSetupMemo);

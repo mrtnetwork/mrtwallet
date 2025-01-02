@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/future/state_managment/extension/app_extensions/context.dart';
 import 'package:mrt_wallet/future/state_managment/typdef/typedef.dart';
 
 class ToolTipView extends StatelessWidget {
@@ -76,7 +77,7 @@ class ToolTipView extends StatelessWidget {
                     style: textStyle ??
                         theme.textTheme.bodyMedium?.copyWith(
                             color: theme.colorScheme.onTertiaryContainer
-                                .withOpacity(0.8)),
+                                .wOpacity(0.8)),
                   ))),
       margin: margin,
       padding: padding,

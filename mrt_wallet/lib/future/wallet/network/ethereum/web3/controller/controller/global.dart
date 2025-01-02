@@ -14,7 +14,7 @@ class Web3EthereumGlobalRequestController<RESPONSE,
     notify();
   }
 
-  void onCompeleteForm(Object? response) async {
+  void onCompleteForm(Object? response) async {
     progressKey.process(text: "processing_request".tr);
     Object? result = response;
     switch (request.params.method) {
@@ -28,7 +28,7 @@ class Web3EthereumGlobalRequestController<RESPONSE,
                 message: request.params
                     .cast<Web3EthreumPersonalSign>()
                     .chalengBytes(),
-                index: address.keyIndex as Bip32AddressIndex));
+                index: address.keyIndex.cast()));
         if (sign.hasError) {
           progressKey.error(text: sign.error!.tr);
           return;
@@ -39,7 +39,7 @@ class Web3EthereumGlobalRequestController<RESPONSE,
         final sign = await walletProvider.wallet
             .walletRequest(WalletRequestEthereumTypedDataSign(
           message: request.params.cast<Web3EthreumTypdedData>().typedData,
-          index: address.keyIndex as Bip32AddressIndex,
+          index: address.keyIndex.cast(),
         ));
         if (sign.hasError) {
           progressKey.error(text: sign.error!.tr);
@@ -56,7 +56,7 @@ class Web3EthereumGlobalRequestController<RESPONSE,
   void _init() {
     MethodUtils.after(() async {
       liveRequest.addListener(onChangeForm);
-      form.onCompeleteForm = onCompeleteForm;
+      form.onCompleteForm = onCompleteForm;
       progressKey.idle();
     });
   }
@@ -71,6 +71,6 @@ class Web3EthereumGlobalRequestController<RESPONSE,
   void close() {
     super.close();
     liveRequest.removeListener(onChangeForm);
-    form.onCompeleteForm = null;
+    form.onCompleteForm = null;
   }
 }

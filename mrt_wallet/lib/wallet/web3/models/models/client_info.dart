@@ -22,7 +22,7 @@ class Web3ClientInfo with Equatable {
       required APPImage faviIcon}) {
     final applicationId = Web3APPAuthentication.toApplicationId(url);
     if (applicationId == null) return null;
-    Uri uri = Uri.parse(applicationId);
+    final Uri uri = Uri.parse(applicationId);
     return Web3ClientInfo._(
         image: faviIcon,
         url: url!,

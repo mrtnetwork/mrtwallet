@@ -14,9 +14,10 @@ class ImportERC20TokenView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NetworkAccountControllerView<EthereumChain>(
+        clientRequired: true,
         childBulder: (walletProvider, account, switchRippleAccount) {
           return _ImportErc20TokenView(
-              account: account, apiProvider: account.provider()!);
+              account: account, apiProvider: account.client);
         },
         title: "import_token".tr);
   }
@@ -81,7 +82,7 @@ class __ImportErc20TokenViewState extends State<_ImportErc20TokenView> {
   Widget build(BuildContext context) {
     return PageProgress(
       key: progressKey,
-      backToIdle: APPConst.oneSecoundDuration,
+      backToIdle: APPConst.twoSecoundDuration,
       child: (c) => ConstraintsBoxView(
           padding: WidgetConstant.padding20,
           alignment: Alignment.center,

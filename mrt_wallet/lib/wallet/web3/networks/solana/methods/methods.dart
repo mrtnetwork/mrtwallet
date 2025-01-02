@@ -32,11 +32,6 @@ class Web3SolanaRequestMethods extends Web3RequestMethods {
       Web3SolanaRequestMethods._(
           id: Web3SolanaConst.sendTransactionTag,
           name: Web3SolanaConst.sendTransaction);
-
-  static const Web3SolanaRequestMethods sendAllTransactions =
-      Web3SolanaRequestMethods._(
-          id: Web3SolanaConst.sendAllTransactionsTag,
-          name: Web3SolanaConst.sendAllTransactions);
   @override
   final bool needWalletOwnerAction = true;
   @override
@@ -47,7 +42,6 @@ class Web3SolanaRequestMethods extends Web3RequestMethods {
     signTransaction,
     signAllTransactions,
     sendTransaction,
-    sendAllTransactions,
     signMessage
   ];
 

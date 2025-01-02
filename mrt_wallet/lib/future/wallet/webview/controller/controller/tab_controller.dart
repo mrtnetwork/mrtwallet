@@ -15,9 +15,6 @@ class WebViewController {
       required WebViewTab tab})
       : viewTypeBytes = BytesUtils.fromHexString(viewType),
         _tab = Live<WebViewTab>(tab);
-
-  // bool _inited = false;
-  // bool get inited => _inited;
   Live<WebViewTab> get tab => _tab;
 
   String get url => tab.value.url;

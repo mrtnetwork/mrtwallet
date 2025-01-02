@@ -25,7 +25,7 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
       controller: () => Web3SolanaTransactionRequestController(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
-        List<SolanaWeb3TransactionInfo> transaction =
+        final List<SolanaWeb3TransactionInfo> transaction =
             controller.form.transaction;
         return [
           if (controller.isMultipleTransaction) ...[
@@ -33,7 +33,7 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("transactions".tr, style: context.textTheme.titleLarge),
+                  Text("transactions".tr, style: context.textTheme.titleMedium),
                   Text("multiple_transaction_desc".tr),
                   WidgetConstant.height20,
                 ],
@@ -49,9 +49,7 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
               itemBuilder: (context, index) {
                 final message = transaction[index];
                 return _SolanaWeb3MessageView(
-                  message: message,
-                  controller: controller,
-                );
+                    message: message, controller: controller);
               },
               itemCount: transaction.length,
             ),
@@ -65,23 +63,24 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
                     style: context.textTheme.titleMedium),
                 WidgetConstant.height8,
                 ContainerWithBorder(
-                    onTapWhenOnRemove: false,
+                    enableTap: false,
                     child: CoinPriceView(
                       token: controller.network.coinParam.token,
                       balance: controller.form.fee,
-                      style: context.textTheme.titleLarge,
+                      style: context.onPrimaryTextTheme.titleMedium,
+                      symbolColor: context.onPrimaryContainer,
                     )),
                 WidgetConstant.height20,
                 Text("total_transaction_const".tr,
                     style: context.textTheme.titleMedium),
                 WidgetConstant.height8,
                 ContainerWithBorder(
-                  onTapWhenOnRemove: false,
+                  enableTap: false,
                   onRemove: () {},
                   onRemoveWidget: controller.isReady
                       ? Icon(
                           Icons.check_circle,
-                          color: context.colors.onPrimaryContainer,
+                          color: context.onPrimaryContainer,
                         )
                       : TappedTooltipView(
                           tooltipWidget: ToolTipView(
@@ -92,18 +91,18 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
                   child: CoinPriceView(
                       token: controller.network.coinParam.token,
                       balance: controller.total,
-                      style: context.textTheme.titleLarge),
+                      style: context.onPrimaryTextTheme.titleMedium,
+                      symbolColor: context.onPrimaryContainer),
                 ),
                 if (controller.isSend) ...[
                   WidgetConstant.height20,
                   AppSwitchListTile(
-                    value: controller.replaceBlockHash,
-                    title: Text("replace_recent_block_hash".tr,
-                        style: context.textTheme.titleMedium),
-                    subtitle: Text("replace_block_hash_desc".tr),
-                    contentPadding: EdgeInsets.zero,
-                    onChanged: controller.toggleReplaceBlockHash,
-                  )
+                      value: controller.replaceBlockHash,
+                      title: Text("replace_recent_block_hash".tr,
+                          style: context.textTheme.titleMedium),
+                      subtitle: Text("replace_block_hash_desc".tr),
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: controller.toggleReplaceBlockHash)
                 ],
               ],
             ),
@@ -136,8 +135,7 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
 
 class _SolanaWeb3MessageView extends StatelessWidget {
   const _SolanaWeb3MessageView(
-      {required this.message, required this.controller, Key? key})
-      : super(key: key);
+      {required this.message, required this.controller});
   final SolanaWeb3TransactionInfo message;
   final Web3SolanaTransactionRequestController controller;
 
@@ -151,156 +149,108 @@ class _SolanaWeb3MessageView extends StatelessWidget {
         Text("account".tr, style: context.textTheme.titleMedium),
         Text("web3_request_account_desc".tr),
         WidgetConstant.height8,
-        ContainerWithBorder(child: AddressDetailsView(address: message.signer)),
+        ContainerWithBorder(
+            child: AddressDetailsView(
+                address: message.signer, color: context.onPrimaryContainer)),
         WidgetConstant.height20,
         Text("instructions".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
-            child: Theme(
-                data: context.theme
-                    .copyWith(dividerColor: context.colors.transparent),
-                child: ExpansionTile(
-                  title: Text("instructions".tr,
-                      style: context.colors.onPrimaryContainer
-                          .titleMedium(context)),
-                  children: List.generate(message.instructions.length, (index) {
-                    final instruction = message.instructions[index];
-                    bool isLastIndex = index == message.instructions.length - 1;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            child: APPExpansionListTile(
+          tilePadding: EdgeInsets.zero,
+          title: Text("instructions".tr,
+              style: context.onPrimaryTextTheme.bodyMedium),
+          children: List.generate(message.instructions.length, (index) {
+            final instruction = message.instructions[index];
+            final isLastIndex = index == message.instructions.length - 1;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("program_id".tr,
+                    style: context.onPrimaryTextTheme.titleMedium),
+                Text(instruction.layout.instruction.name,
+                    style: context.onPrimaryTextTheme.bodyMedium),
+                WidgetConstant.height8,
+                ContainerWithBorder(
+                    backgroundColor: context.onPrimaryContainer,
+                    child: CopyTextIcon(
+                      dataToCopy: instruction.programAddress.address,
+                      color: context.primaryContainer,
+                      widget: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            instruction.layout.instruction.programName,
+                            style: context.primaryTextTheme.labelLarge,
+                          ),
+                          OneLineTextWidget(instruction.programAddress.address,
+                              style: context.primaryTextTheme.bodyMedium)
+                        ],
+                      ),
+                    )),
+                if (instruction.content != null) ...[
+                  WidgetConstant.height20,
+                  APPExpansionListTile(
+                      tilePadding: EdgeInsets.zero,
+                      title: Text("content".tr,
+                          style: context.onPrimaryTextTheme.titleMedium),
                       children: [
-                        Text("program_id".tr,
-                            style: context.colors.onPrimaryContainer
-                                .lableLarge(context)),
-                        Text(instruction.layout.instruction.name,
-                            style: context.colors.onPrimaryContainer
-                                .bodyMedium(context)),
-                        WidgetConstant.height8,
-                        ContainerWithBorder(
-                            backgroundColor: context.colors.onPrimaryContainer,
-                            child: CopyTextIcon(
-                              dataToCopy: instruction.programAddress.address,
-                              color: context.colors.primaryContainer,
-                              widget: Column(
+                        ListView.separated(
+                            shrinkWrap: true,
+                            physics: WidgetConstant.noScrollPhysics,
+                            itemBuilder: (context, index) {
+                              final key =
+                                  instruction.content!.keys.elementAt(index);
+                              final value = instruction.content![key];
+                              if (value == null) {
+                                return WidgetConstant.sizedBox;
+                              }
+                              return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    instruction.layout.instruction.programName,
-                                    style: context.colors.primaryContainer
-                                        .lableLarge(context),
-                                  ),
-                                  Text(
-                                    instruction.programAddress.address,
-                                    style: context.colors.primaryContainer
-                                        .bodyMedium(context),
-                                    maxLines: 1,
-                                  )
-                                ],
-                              ),
-                            )),
-                        WidgetConstant.height20,
-                        Text("accounts".tr,
-                            style: context.colors.onPrimaryContainer
-                                .lableLarge(context)),
-                        WidgetConstant.height8,
-                        ContainerWithBorder(
-                            backgroundColor: context.colors.onPrimaryContainer,
-                            child: Column(
-                              children: List.generate(
-                                  instruction.accounts.length, (index) {
-                                final account =
-                                    instruction.accounts[index].account;
-                                final String status = instruction
-                                    .accounts[index].status
-                                    .map((e) => e.tr)
-                                    .join(", ");
-                                return ContainerWithBorder(
-                                    child: CopyTextIcon(
-                                  dataToCopy: account.publicKey.address,
-                                  widget: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        account.publicKey.address,
-                                        style: context.colors.onPrimaryContainer
-                                            .bodyMedium(context),
-                                      ),
-                                      Text(status,
-                                          style: context
-                                              .colors.onPrimaryContainer
-                                              .bodySmall(context))
-                                    ],
-                                  ),
-                                ));
-                              }),
-                            )),
-                        if (instruction.content != null) ...[
-                          WidgetConstant.height20,
-                          ExpansionTile(
-                              tilePadding: EdgeInsets.zero,
-                              backgroundColor: context.colors.primaryContainer,
-                              collapsedBackgroundColor:
-                                  context.colors.primaryContainer,
-                              title: Text("content".tr,
-                                  style: context.colors.onPrimaryContainer
-                                      .lableLarge(context)),
-                              children: List.generate(
-                                  instruction.content!.length, (index) {
-                                final key =
-                                    instruction.content!.keys.elementAt(index);
-                                final value = instruction.content![key];
-                                if (value == null) {
-                                  return WidgetConstant.sizedBox;
-                                }
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    ContainerWithBorder(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            key.camelCase,
+                                  ContainerWithBorder(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(key.camelCase,
                                             style: context
-                                                .colors.onPrimaryContainer
-                                                .lableLarge(context),
-                                          ),
-                                          ContainerWithBorder(
-                                            backgroundColor: context
-                                                .colors.onPrimaryContainer,
-                                            constraints: null,
-                                            child: CopyTextIcon(
-                                              dataToCopy: value.toString(),
-                                              isSensitive: false,
-                                              color: context
-                                                  .colors.primaryContainer,
-                                              widget: SelectableText(
+                                                .onPrimaryTextTheme.labelLarge),
+                                        ContainerWithBorder(
+                                          backgroundColor:
+                                              context.colors.onPrimaryContainer,
+                                          constraints: null,
+                                          child: CopyTextIcon(
+                                            dataToCopy: value.toString(),
+                                            isSensitive: false,
+                                            color: context.primaryContainer,
+                                            widget: SelectableText(
                                                 value.toString(),
-                                                style: context
-                                                    .colors.primaryContainer
-                                                    .bodyMedium(context),
+                                                style: context.primaryTextTheme
+                                                    .bodyMedium,
                                                 maxLines: 4,
-                                                minLines: 1,
-                                              ),
-                                            ),
+                                                minLines: 1),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                );
-                              })),
-                        ],
-                        if (!isLastIndex) ...[
-                          Divider(color: context.colors.onPrimaryContainer),
-                          WidgetConstant.height8,
-                        ]
-                      ],
-                    );
-                  }),
-                ))),
+                                  ),
+                                ],
+                              );
+                            },
+                            separatorBuilder: (context, index) =>
+                                Divider(color: context.onPrimaryContainer),
+                            itemCount: instruction.content!.length)
+                      ]),
+                ],
+                if (!isLastIndex) ...[
+                  Divider(color: context.colors.onPrimaryContainer),
+                  WidgetConstant.height8,
+                ]
+              ],
+            );
+          }),
+        )),
         WidgetConstant.height20,
         Text("simulate_transaction".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
@@ -318,19 +268,19 @@ class _SolanaWeb3MessageView extends StatelessWidget {
                   child: CircularProgressIndicator(
                       color: context.colors.onPrimaryContainer),
                 ),
-              SolanaWeb3SimulationStatus.success => Icon(Icons.check_circle,
-                  color: context.colors.onPrimaryContainer),
+              SolanaWeb3SimulationStatus.success =>
+                Icon(Icons.check_circle, color: context.onPrimaryContainer),
               SolanaWeb3SimulationStatus.error =>
                 Icon(Icons.error, color: context.colors.error),
               SolanaWeb3SimulationStatus.simulateError =>
                 Icon(Icons.error, color: context.colors.error),
               SolanaWeb3SimulationStatus.idle => Icon(
                   Icons.refresh,
-                  color: context.colors.onPrimaryContainer,
+                  color: context.onPrimaryContainer,
                 )
             },
           ),
-          onTapWhenOnRemove: status.canRetry,
+          enableTap: status.canRetry,
           onRemove: () {
             if (status.canRetry) {
               controller.form.simulate(message);
@@ -353,15 +303,15 @@ class _SolanaWeb3MessageView extends StatelessWidget {
                   width: APPConst.double20,
                   height: APPConst.double20,
                   child: CircularProgressIndicator(
-                      color: context.colors.onPrimaryContainer),
+                      color: context.onPrimaryContainer),
                 ),
-              SolanaWeb3FeeStatus.success => Icon(Icons.check_circle,
-                  color: context.colors.onPrimaryContainer),
+              SolanaWeb3FeeStatus.success =>
+                Icon(Icons.check_circle, color: context.onPrimaryContainer),
               SolanaWeb3FeeStatus.error =>
                 Icon(Icons.error, color: context.colors.error),
               SolanaWeb3FeeStatus.idle => Icon(
                   Icons.refresh,
-                  color: context.colors.onPrimaryContainer,
+                  color: context.onPrimaryContainer,
                 )
             },
           ),
@@ -379,7 +329,7 @@ class _SolanaWeb3MessageView extends StatelessWidget {
           WidgetConstant.height8,
           ContainerWithBorder(
             onRemove: controller.isMultipleWithSameOwner ? () {} : null,
-            onTapWhenOnRemove: false,
+            enableTap: false,
             onRemoveWidget: TappedTooltipView(
                 tooltipWidget: ToolTipView(
                     message: "solana_change_balance_desc2".tr,
@@ -388,7 +338,8 @@ class _SolanaWeb3MessageView extends StatelessWidget {
             child: CoinPriceView(
                 token: controller.network.coinParam.token,
                 balance: message.accountChange,
-                style: context.textTheme.titleLarge),
+                style: context.onPrimaryTextTheme.titleMedium,
+                symbolColor: context.onPrimaryContainer),
           ),
         ]
       ],
@@ -397,7 +348,7 @@ class _SolanaWeb3MessageView extends StatelessWidget {
 }
 
 class _SimulateInfo extends StatelessWidget {
-  const _SimulateInfo(this.message, {Key? key}) : super(key: key);
+  const _SimulateInfo(this.message);
   final SolanaWeb3TransactionInfo message;
   SimulateTranasctionResponse get simulate => message.simulateInfo;
   @override
@@ -406,12 +357,10 @@ class _SimulateInfo extends StatelessWidget {
     return Theme(
       data: context.theme.copyWith(dividerColor: context.colors.transparent),
       child: APPAnimatedSwitcher(enable: status, widgets: {
-        SolanaWeb3SimulationStatus.success: (context) => ExpansionTile(
-              title: Text(
-                "transaction_simulation_success".tr,
-                style: context.colors.onPrimaryContainer.titleMedium(context),
-              ),
-              childrenPadding: WidgetConstant.padding20,
+        SolanaWeb3SimulationStatus.success: (context) => APPExpansionListTile(
+              title: Text("transaction_simulation_success".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium),
+              tilePadding: EdgeInsets.zero,
               children: [
                 Row(
                   children: [
@@ -423,27 +372,22 @@ class _SimulateInfo extends StatelessWidget {
                               (index) {
                             final log = simulate.logs![index];
                             return Text(log,
-                                style: context.colors.onPrimaryContainer
-                                    .bodyMedium(context));
+                                style: context.onPrimaryTextTheme.bodyMedium);
                           })),
                     ),
                   ],
                 )
               ],
             ),
-        SolanaWeb3SimulationStatus.simulateError: (context) => ExpansionTile(
-              title: Text(
-                "transaction_simulation_failed".tr,
-                style: context.colors.onPrimaryContainer.titleMedium(context),
-              ),
+        SolanaWeb3SimulationStatus.simulateError: (context) =>
+            APPExpansionListTile(
+              title: Text("transaction_simulation_failed".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium),
+              tilePadding: EdgeInsets.zero,
               subtitle: ToolTipView(
-                message: simulate.err?.toString() ?? "",
-                child: Text(
-                  simulate.err?.toString() ?? "",
-                  style: context.colors.onPrimaryContainer.bodyMedium(context),
-                ),
-              ),
-              childrenPadding: WidgetConstant.padding20,
+                  message: simulate.err?.toString() ?? "",
+                  child: Text(simulate.err?.toString() ?? "",
+                      style: context.onPrimaryTextTheme.bodyMedium)),
               children: [
                 Row(
                   children: [
@@ -455,8 +399,7 @@ class _SimulateInfo extends StatelessWidget {
                               (index) {
                             final log = simulate.logs![index];
                             return Text(log,
-                                style: context.colors.onPrimaryContainer
-                                    .bodyMedium(context));
+                                style: context.onPrimaryTextTheme.bodyMedium);
                           })),
                     ),
                   ],
@@ -464,21 +407,18 @@ class _SimulateInfo extends StatelessWidget {
               ],
             ),
         SolanaWeb3SimulationStatus.pending: (context) => Text(
-              "transaction_simulate_please_wait".tr,
-              style: context.colors.onPrimaryContainer.bodyMedium(context),
-            ),
+            "transaction_simulate_please_wait".tr,
+            style: context.onPrimaryTextTheme.bodyMedium),
         SolanaWeb3SimulationStatus.error: (context) => Text(
-              "transaction_simulation_failed_retry".tr,
-              style: context.colors.onPrimaryContainer.bodyMedium(context),
-            ),
+            "transaction_simulation_failed_retry".tr,
+            style: context.onPrimaryTextTheme.bodyMedium),
       }),
     );
   }
 }
 
 class _FeeInfo extends StatelessWidget {
-  const _FeeInfo({required this.message, required this.network, Key? key})
-      : super(key: key);
+  const _FeeInfo({required this.message, required this.network});
   final SolanaWeb3TransactionInfo message;
   final WalletNetwork network;
   @override
@@ -491,18 +431,18 @@ class _FeeInfo extends StatelessWidget {
           enable: status,
           widgets: {
             SolanaWeb3FeeStatus.success: (context) => CoinPriceView(
-                  token: network.token,
-                  balance: message.fee,
-                  style: context.textTheme.titleLarge,
-                  showTokenImage: true,
-                ),
+                token: network.token,
+                balance: message.fee,
+                style: context.onPrimaryTextTheme.titleMedium,
+                showTokenImage: true,
+                symbolColor: context.onPrimaryContainer),
             SolanaWeb3FeeStatus.pending: (context) => Text(
                   "estimating_fee_please_wait".tr,
-                  style: context.colors.onPrimaryContainer.bodyMedium(context),
+                  style: context.onPrimaryTextTheme.bodyMedium,
                 ),
             SolanaWeb3FeeStatus.error: (context) => Text(
                 "fee_estimate_failed".tr,
-                style: context.colors.onPrimaryContainer.bodyMedium(context)),
+                style: context.onPrimaryTextTheme.bodyMedium),
           }),
     );
   }

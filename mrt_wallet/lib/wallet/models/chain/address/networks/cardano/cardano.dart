@@ -79,7 +79,7 @@ class ICardanoAddress extends ChainAccount<ADAAddress, TokenCore, NFTCore>
         CardanoAddrDetails.fromCborBytesOrObject(obj: cbor.getCborTag(7));
     if (addrDetails.toAddress(coin, !network.coinParam.mainnet).address !=
         adaAddress.address) {
-      throw WalletException("Incorrect ADA addresss.");
+      throw const WalletException("Incorrect ADA addresss.");
     }
 
     final String? accountName = cbor.elementAt(10);
@@ -157,7 +157,8 @@ class ICardanoAddress extends ChainAccount<ADAAddress, TokenCore, NFTCore>
   Bip32AddressIndex? get rewardKeyIndex => _rewardKeyIndex;
 
   bool get isBaseAddress => networkAddress.addressType == ADAAddressType.base;
-
+  bool get isRewardAddress =>
+      networkAddress.addressType == ADAAddressType.reward;
   @override
   String? get type => networkAddress.addressType.name;
 
@@ -202,18 +203,18 @@ class ICardanoAddress extends ChainAccount<ADAAddress, TokenCore, NFTCore>
       [keyIndex, if (rewardKeyIndex != null) rewardKeyIndex!];
 
   @override
-  List<Bip32AddressIndex> accessKeysIndexes() {
-    return [
-      keyIndex as Bip32AddressIndex,
-      if (_rewardKeyIndex != null) _rewardKeyIndex
-    ];
+  List<AddressDerivationIndex> signerKeyIndexes() {
+    if (multiSigAccount) {
+      throw WalletExceptionConst.featureUnavailableForMultiSignature;
+    }
+    return [keyIndex, if (_rewardKeyIndex != null) _rewardKeyIndex];
   }
 
   @override
   bool isEqual(ChainAccount other) {
     if (other is! ICardanoAddress) return false;
-    return networkAddress.address == other.networkAddress.address &&
-        rewardAddress?.address == other.rewardAddress?.address;
+    return networkAddress == other.networkAddress &&
+        rewardAddress == other.rewardAddress;
   }
 
   @override

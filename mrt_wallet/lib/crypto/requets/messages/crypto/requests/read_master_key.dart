@@ -6,7 +6,7 @@ import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/utils/crypto/utils.dart';
 
 class CryptoRequestReadMasterKey
-    implements CryptoRequest<WalletMasterKeys, MessageArgsOneBytes> {
+    extends CryptoRequest<WalletMasterKeys, MessageArgsOneBytes> {
   final int version;
   final List<int> nonce;
   final List<int> walletData;
@@ -16,9 +16,9 @@ class CryptoRequestReadMasterKey
     required List<int> walletData,
     required List<int> key,
     required List<int> nonce,
-  })  : walletData = BytesUtils.toBytes(walletData, unmodifiable: true),
-        key = BytesUtils.toBytes(key, unmodifiable: true),
-        nonce = BytesUtils.toBytes(nonce, unmodifiable: true);
+  })  : walletData = walletData.asImmutableBytes,
+        key = key.asImmutableBytes,
+        nonce = nonce.asImmutableBytes;
   factory CryptoRequestReadMasterKey.fromStorage({
     required List<int> encryptedMasterKey,
     required List<int> key,

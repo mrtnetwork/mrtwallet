@@ -10,19 +10,21 @@ class ErrorTextContainer extends StatelessWidget {
   const ErrorTextContainer(
       {super.key,
       required this.error,
-      this.errorIcon = const Icon(Icons.error),
+      this.errorIcon,
       this.padding = WidgetConstant.padding10,
       this.margin = WidgetConstant.padding5,
       this.verticalMargin = EdgeInsets.zero,
       this.showErrorIcon = true,
-      this.oTapError});
+      this.oTapError,
+      this.enableTap = true});
   final EdgeInsets margin;
   final EdgeInsets padding;
   final String? error;
   final EdgeInsets verticalMargin;
   final bool showErrorIcon;
   final DynamicVoid? oTapError;
-  final Icon errorIcon;
+  final IconData? errorIcon;
+  final bool enableTap;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +35,8 @@ class ErrorTextContainer extends StatelessWidget {
           : Padding(
               padding: verticalMargin,
               child: ContainerWithBorder(
+                constraints: null,
+                enableTap: enableTap,
                 onRemove: showErrorIcon
                     ? () {
                         oTapError?.call();
@@ -40,7 +44,8 @@ class ErrorTextContainer extends StatelessWidget {
                     : null,
                 margin: margin,
                 padding: padding,
-                onRemoveIcon: errorIcon,
+                onRemoveIcon: Icon(errorIcon ?? Icons.error,
+                    color: context.colors.onErrorContainer),
                 backgroundColor: context.colors.errorContainer,
                 child: Text(
                   error ?? "",

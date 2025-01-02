@@ -76,7 +76,7 @@ mixin RippleFeeImpl on RippleTransactionImpl {
   }
 
   Future<void> fetchFee() async {
-    _xrpLedger ??= await apiProvider.provider.request(RPCFee());
+    _xrpLedger ??= await apiProvider.provider.request(XRPRequestFee());
     _multiSigners = _checkSignerLength();
     fee.updateBalance(RippleUtils.calculateFee(
         _xrpLedger!.getFeeType(type: _feeType!), transactionType,

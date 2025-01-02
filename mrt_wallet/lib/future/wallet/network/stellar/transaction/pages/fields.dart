@@ -26,7 +26,7 @@ class StellarTransactionFieldsView extends StatelessWidget {
               walletProvider: wallet,
               account: chain,
               network: chain.network,
-              apiProvider: chain.provider()!,
+              apiProvider: chain.client,
               address: chain.address),
           builder: (controller) {
             return PageProgress(
@@ -44,7 +44,7 @@ class StellarTransactionFieldsView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text("account".tr,
-                              style: context.textTheme.titleLarge),
+                              style: context.textTheme.titleMedium),
                           WidgetConstant.height8,
                           ContainerWithBorder(
                             onRemoveIcon: Icon(Icons.edit,
@@ -52,7 +52,8 @@ class StellarTransactionFieldsView extends StatelessWidget {
                             child: AddressDetailsView(
                                 address: controller.address,
                                 key: ValueKey<IStellarAddress?>(
-                                    controller.address)),
+                                    controller.address),
+                                color: context.onPrimaryContainer),
                             onRemove: () {
                               context
                                   .openSliverBottomSheet<IStellarAddress>(
@@ -79,11 +80,10 @@ class StellarTransactionFieldsView extends StatelessWidget {
                                     hoverColor: context.colors.transparent,
                                     splashColor: context.colors.transparent),
                                 child: ContainerWithBorder(
-                                    onTapWhenOnRemove: false,
+                                    enableTap: false,
                                     iconAlginment: CrossAxisAlignment.start,
                                     onRemoveIcon: Icon(Icons.edit,
-                                        color:
-                                            context.colors.onPrimaryContainer),
+                                        color: context.onPrimaryContainer),
                                     onRemove: () {
                                       controller.removeOperation(
                                         operation: operation,
@@ -100,11 +100,11 @@ class StellarTransactionFieldsView extends StatelessWidget {
                                         },
                                       );
                                     },
-                                    child: ExpansionTile(
+                                    child: APPExpansionListTile(
                                       tilePadding: EdgeInsets.zero,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: WidgetConstant.border8),
-                                      title: Text(operation.type.translate.tr),
+                                      title: Text(operation.type.translate.tr,
+                                          style: context
+                                              .onPrimaryTextTheme.bodyMedium),
                                       children: [
                                         Container(
                                             padding: WidgetConstant.padding10,
@@ -134,13 +134,16 @@ class StellarTransactionFieldsView extends StatelessWidget {
                                       initialExtend: 1,
                                       child:
                                           StellarCreateTransactionOperationsView(
-                                        controller: controller,
-                                      ),
+                                              controller: controller),
                                       "setup_operation".tr)
                                   .then(controller.addOperation);
                             },
-                            onRemoveIcon: const Icon(Icons.add_box),
-                            child: Text("tap_to_add_new_operation".tr),
+                            onRemoveIcon: Icon(
+                              Icons.add_box,
+                              color: context.onPrimaryContainer,
+                            ),
+                            child: Text("tap_to_add_new_operation".tr,
+                                style: context.onPrimaryTextTheme.bodyMedium),
                           ),
                           WidgetConstant.height20,
                           StellarMemosView(
@@ -170,29 +173,29 @@ class StellarTransactionFieldsView extends StatelessWidget {
                                     .then(controller.setTimeBound);
                               },
                               onRemoveIcon: Icon(Icons.edit,
-                                  color: context.colors.onPrimaryContainer),
+                                  color: context.onPrimaryContainer),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(controller.timebound.type.name.tr,
-                                      style: context.colors.onPrimaryContainer
-                                          .lableLarge(context)),
+                                      style: context
+                                          .onPrimaryTextTheme.labelLarge),
                                   switch (controller.timebound.type) {
                                     TransactiomTimeBoundType.auto => Text(
                                         "stellar_time_bound_auto_desc".tr,
-                                        style: context.colors.onPrimaryContainer
-                                            .bodyMedium(context),
+                                        style: context
+                                            .onPrimaryTextTheme.bodyMedium,
                                       ),
                                     TransactiomTimeBoundType.none => Text(
                                         "stellar_time_bound_none_desc".tr,
-                                        style: context.colors.onPrimaryContainer
-                                            .bodyMedium(context),
+                                        style: context
+                                            .onPrimaryTextTheme.bodyMedium,
                                       ),
                                     _ => Text(
                                         controller.timebound.time!
                                             .toDateAndTimeWithSecound(),
-                                        style: context.colors.onPrimaryContainer
-                                            .bodyMedium(context),
+                                        style: context
+                                            .onPrimaryTextTheme.bodyMedium,
                                       )
                                   },
                                 ],
@@ -237,8 +240,7 @@ class StellarTransactionFieldsView extends StatelessWidget {
 
 class StellarTransactionOperationView extends StatelessWidget {
   final StellarTransactionOperation operation;
-  const StellarTransactionOperationView({required this.operation, Key? key})
-      : super(key: key);
+  const StellarTransactionOperationView({required this.operation, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -268,7 +270,7 @@ class StellarTransactionOperationView extends StatelessWidget {
 
 class _ChangeTrustOperationView extends StatelessWidget {
   final StellarChangeTrustOperation operation;
-  const _ChangeTrustOperationView(this.operation, {Key? key}) : super(key: key);
+  const _ChangeTrustOperationView(this.operation);
 
   @override
   Widget build(BuildContext context) {
@@ -280,7 +282,10 @@ class _ChangeTrustOperationView extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
             child: TokenDetailsWidget(
-                token: operation.asset.token, radius: APPConst.iconSize)),
+          token: operation.asset.token,
+          radius: APPConst.circleRadius25,
+          color: context.onPrimaryContainer,
+        )),
         WidgetConstant.height20,
         Text("limit".tr, style: context.textTheme.titleMedium),
         Text("change_trust_limit".tr),
@@ -288,7 +293,11 @@ class _ChangeTrustOperationView extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
             child: CoinPriceView(
-                token: operation.asset.token, balance: operation.limit))
+          token: operation.asset.token,
+          balance: operation.limit,
+          style: context.onPrimaryTextTheme.titleMedium,
+          symbolColor: context.onPrimaryContainer,
+        ))
       ],
     );
   }
@@ -296,8 +305,7 @@ class _ChangeTrustOperationView extends StatelessWidget {
 
 class _PaymentOperationView extends StatelessWidget {
   final StellarPaymentOperation operation;
-  const _PaymentOperationView({required this.operation, Key? key})
-      : super(key: key);
+  const _PaymentOperationView({required this.operation});
 
   @override
   Widget build(BuildContext context) {
@@ -310,6 +318,8 @@ class _PaymentOperationView extends StatelessWidget {
             child: TokenDetailsWidget(
           token: operation.asset.token,
           balance: operation.asset.tokenBalance,
+          color: context.onPrimaryContainer,
+          radius: APPConst.circleRadius25,
         )),
         WidgetConstant.height20,
         ReceiptAddressView(address: operation.destination.address),
@@ -323,9 +333,7 @@ class _PaymentOperationView extends StatelessWidget {
 
 class _PathPaymentStrictReceiveOperationView extends StatelessWidget {
   final StellarPathPaymentStrictReceiveOperation operation;
-  const _PathPaymentStrictReceiveOperationView(
-      {required this.operation, Key? key})
-      : super(key: key);
+  const _PathPaymentStrictReceiveOperationView({required this.operation});
 
   @override
   Widget build(BuildContext context) {
@@ -338,6 +346,8 @@ class _PathPaymentStrictReceiveOperationView extends StatelessWidget {
             child: TokenDetailsWidget(
           token: operation.asset.token,
           balance: operation.asset.tokenBalance,
+          color: context.onPrimaryContainer,
+          radius: APPConst.circleRadius25,
         )),
         WidgetConstant.height20,
         TransactionAmountView(
@@ -351,25 +361,11 @@ class _PathPaymentStrictReceiveOperationView extends StatelessWidget {
         Text("destination_asset".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(operation.destAsset.asset.type.name,
-                  style: context.colors.onPrimaryContainer.lableLarge(context)),
-              if (operation.destAsset.issuer != null)
-                OneLineTextWidget(operation.destAsset.issuer ?? '',
-                    style:
-                        context.colors.onPrimaryContainer.bodyMedium(context)),
-              ContainerWithBorder(
-                backgroundColor: context.colors.onPrimaryContainer,
-                onTapWhenOnRemove: false,
-                child: TokenDetailsWidget(
-                  token: operation.destAsset.token,
-                  radius: APPConst.iconSize,
-                  color: context.colors.primaryContainer,
-                ),
-              ),
-            ],
+          child: TokenDetailsWidget(
+            token: operation.destAsset.token,
+            radius: APPConst.circleRadius25,
+            color: context.colors.onPrimaryContainer,
+            tokenAddress: operation.destAsset.issuer,
           ),
         ),
         WidgetConstant.height20,
@@ -385,28 +381,11 @@ class _PathPaymentStrictReceiveOperationView extends StatelessWidget {
           ...List.generate(operation.paths.length, (index) {
             final asset = operation.paths.elementAt(index);
             return ContainerWithBorder(
-              onRemoveIcon: Icon(Icons.remove_circle,
-                  color: context.colors.onPrimaryContainer),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(asset.asset.type.name,
-                      style: context.colors.onPrimaryContainer
-                          .lableLarge(context)),
-                  if (asset.issuer != null)
-                    OneLineTextWidget(asset.issuer ?? '',
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context)),
-                  ContainerWithBorder(
-                    backgroundColor: context.colors.onPrimaryContainer,
-                    onTapWhenOnRemove: false,
-                    child: TokenDetailsWidget(
-                      token: asset.token,
-                      radius: APPConst.iconSize,
-                      color: context.colors.primaryContainer,
-                    ),
-                  ),
-                ],
+              child: TokenDetailsWidget(
+                token: asset.token,
+                radius: APPConst.circleRadius25,
+                color: context.colors.onPrimaryContainer,
+                tokenAddress: asset.issuer,
               ),
             );
           }),
@@ -418,8 +397,7 @@ class _PathPaymentStrictReceiveOperationView extends StatelessWidget {
 
 class _PathPaymentStrictSendOperationView extends StatelessWidget {
   final StellarPathPaymentStrictSendOperation operation;
-  const _PathPaymentStrictSendOperationView({required this.operation, Key? key})
-      : super(key: key);
+  const _PathPaymentStrictSendOperationView({required this.operation});
 
   @override
   Widget build(BuildContext context) {
@@ -432,6 +410,8 @@ class _PathPaymentStrictSendOperationView extends StatelessWidget {
             child: TokenDetailsWidget(
           token: operation.asset.token,
           balance: operation.asset.tokenBalance,
+          color: context.onPrimaryContainer,
+          radius: APPConst.circleRadius25,
         )),
         WidgetConstant.height20,
         TransactionAmountView(
@@ -445,25 +425,12 @@ class _PathPaymentStrictSendOperationView extends StatelessWidget {
         Text("destination_asset".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(operation.destAsset.asset.type.name,
-                  style: context.colors.onPrimaryContainer.lableLarge(context)),
-              if (operation.destAsset.issuer != null)
-                OneLineTextWidget(operation.destAsset.issuer ?? '',
-                    style:
-                        context.colors.onPrimaryContainer.bodyMedium(context)),
-              ContainerWithBorder(
-                backgroundColor: context.colors.onPrimaryContainer,
-                onTapWhenOnRemove: false,
-                child: TokenDetailsWidget(
-                  token: operation.destAsset.token,
-                  radius: APPConst.iconSize,
-                  color: context.colors.primaryContainer,
-                ),
-              ),
-            ],
+          enableTap: false,
+          child: TokenDetailsWidget(
+            token: operation.destAsset.token,
+            radius: APPConst.circleRadius25,
+            tokenAddress: operation.destAsset.issuer,
+            color: context.colors.onPrimaryContainer,
           ),
         ),
         WidgetConstant.height20,
@@ -479,29 +446,11 @@ class _PathPaymentStrictSendOperationView extends StatelessWidget {
           ...List.generate(operation.paths.length, (index) {
             final asset = operation.paths.elementAt(index);
             return ContainerWithBorder(
-              onRemoveIcon: Icon(Icons.remove_circle,
-                  color: context.colors.onPrimaryContainer),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(asset.asset.type.name,
-                      style: context.colors.onPrimaryContainer
-                          .lableLarge(context)),
-                  if (asset.issuer != null)
-                    OneLineTextWidget(asset.issuer ?? '',
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context)),
-                  ContainerWithBorder(
-                    backgroundColor: context.colors.onPrimaryContainer,
-                    onTapWhenOnRemove: false,
-                    child: TokenDetailsWidget(
-                      token: asset.token,
-                      radius: APPConst.iconSize,
-                      color: context.colors.primaryContainer,
-                    ),
-                  ),
-                ],
-              ),
+              child: TokenDetailsWidget(
+                  token: asset.token,
+                  radius: APPConst.circleRadius25,
+                  color: context.colors.onPrimaryContainer,
+                  tokenAddress: asset.issuer),
             );
           }),
         ],
@@ -512,8 +461,7 @@ class _PathPaymentStrictSendOperationView extends StatelessWidget {
 
 class _CreateAccountOperationView extends StatelessWidget {
   final StellarCreateAccountOperation operation;
-  const _CreateAccountOperationView({required this.operation, Key? key})
-      : super(key: key);
+  const _CreateAccountOperationView({required this.operation});
 
   @override
   Widget build(BuildContext context) {
@@ -526,6 +474,8 @@ class _CreateAccountOperationView extends StatelessWidget {
             child: TokenDetailsWidget(
           token: operation.asset.token,
           balance: operation.asset.tokenBalance,
+          color: context.colors.onPrimaryContainer,
+          radius: APPConst.circleRadius25,
         )),
         WidgetConstant.height20,
         ReceiptAddressView(address: operation.destination.address),
@@ -541,8 +491,7 @@ class _CreateAccountOperationView extends StatelessWidget {
 
 class _ManageSellOfferOperationView extends StatelessWidget {
   final StellarManageSellOfferOperation operation;
-  const _ManageSellOfferOperationView({required this.operation, Key? key})
-      : super(key: key);
+  const _ManageSellOfferOperationView({required this.operation});
 
   @override
   Widget build(BuildContext context) {
@@ -555,6 +504,7 @@ class _ManageSellOfferOperationView extends StatelessWidget {
             child: TokenDetailsWidget(
           token: operation.asset.token,
           balance: operation.asset.tokenBalance,
+          radius: APPConst.circleRadius25,
         )),
         WidgetConstant.height20,
         TransactionAmountView(
@@ -565,25 +515,11 @@ class _ManageSellOfferOperationView extends StatelessWidget {
         Text("buying".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(operation.buying.asset.type.name,
-                  style: context.colors.onPrimaryContainer.lableLarge(context)),
-              if (operation.buying.issuer != null)
-                OneLineTextWidget(operation.buying.issuer ?? '',
-                    style:
-                        context.colors.onPrimaryContainer.bodyMedium(context)),
-              ContainerWithBorder(
-                backgroundColor: context.colors.onPrimaryContainer,
-                onTapWhenOnRemove: false,
-                child: TokenDetailsWidget(
-                  token: operation.buying.token,
-                  radius: APPConst.iconSize,
-                  color: context.colors.primaryContainer,
-                ),
-              ),
-            ],
+          child: TokenDetailsWidget(
+            token: operation.buying.token,
+            radius: APPConst.circleRadius25,
+            color: context.onPrimaryContainer,
+            tokenAddress: operation.buying.issuer,
           ),
         ),
         WidgetConstant.height20,
@@ -594,113 +530,34 @@ class _ManageSellOfferOperationView extends StatelessWidget {
               Stack(
                 alignment: Alignment.centerLeft,
                 children: [
-                  CircleTokenImageView(operation.asset.token,
-                      radius: APPConst.iconSize),
+                  CircleTokenImageView(
+                    operation.asset.token,
+                    radius: APPConst.circleRadius25,
+                  ),
                   Container(
                     padding: const EdgeInsets.only(left: 20),
-                    child: CircleTokenImageView(operation.buying.token,
-                        radius: APPConst.iconSize),
+                    child: CircleTokenImageView(
+                      operation.buying.token,
+                      radius: APPConst.circleRadius25,
+                    ),
                   ),
                 ],
               ),
               WidgetConstant.width8,
-              Expanded(child: Text(operation.priceView)),
+              Expanded(
+                  child: Text(operation.priceView,
+                      style: context.onPrimaryTextTheme.bodyMedium)),
             ],
           ),
         ),
         WidgetConstant.height20,
         Text("offer_id".tr, style: context.textTheme.titleMedium),
         ContainerWithBorder(
-          onRemoveIcon:
-              Icon(Icons.edit, color: context.colors.onPrimaryContainer),
-          child: Text(operation.offerId.toString()),
+          onRemoveIcon: Icon(Icons.edit, color: context.onPrimaryContainer),
+          child: Text(operation.offerId.toString(),
+              style: context.onPrimaryTextTheme.bodyMedium),
         ),
       ],
     );
   }
 }
-
-// class _ManageBuyOfferOperationView extends StatelessWidget {
-//   final StellarManageBuyOfferOperation operation;
-//   final StellarTransactionStateController controller;
-//   const _ManageBuyOfferOperationView(
-//       {required this.operation, required this.controller, Key? key})
-//       : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text("selling".tr, style: context.textTheme.titleMedium),
-//         WidgetConstant.height8,
-//         ContainerWithBorder(
-//             child: TokenDetailsWidget(
-//           token: operation.asset.token,
-//           liveBalance: operation.isNative
-//               ? controller.address.address.balance
-//               : operation.token?.balance,
-//         )),
-//         WidgetConstant.height20,
-//         TransactionAmountView(
-//             amount: operation.amount,
-//             token: operation.asset.token,
-//             title: "buy_amount".tr),
-//         WidgetConstant.height20,
-//         Text("buying".tr, style: context.textTheme.titleMedium),
-//         WidgetConstant.height8,
-//         ContainerWithBorder(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text(operation.buying.asset.type.name,
-//                   style: context.colors.onPrimaryContainer.lableLarge(context)),
-//               if (operation.buying.issuer != null)
-//                 OneLineTextWidget(operation.buying.issuer ?? '',
-//                     style:
-//                         context.colors.onPrimaryContainer.bodyMedium(context)),
-//               ContainerWithBorder(
-//                 backgroundColor: context.colors.onPrimaryContainer,
-//                 onTapWhenOnRemove: false,
-//                 child: TokenDetailsWidget(
-//                   token: operation.buying.token,
-//                   radius: APPConst.iconSize,
-//                   color: context.colors.primaryContainer,
-//                 ),
-//               ),
-//             ],
-//           ),
-//         ),
-//         WidgetConstant.height20,
-//         Text("price".tr, style: context.textTheme.titleMedium),
-//         ContainerWithBorder(
-//           child: Row(
-//             children: [
-//               Stack(
-//                 alignment: Alignment.centerLeft,
-//                 children: [
-//                   CircleTokenImageView(operation.asset.token,
-//                       radius: APPConst.iconSize),
-//                   Container(
-//                     padding: const EdgeInsets.only(left: 20),
-//                     child: CircleTokenImageView(operation.buying.token,
-//                         radius: APPConst.iconSize),
-//                   ),
-//                 ],
-//               ),
-//               WidgetConstant.width8,
-//               Expanded(child: Text(operation.priceView)),
-//             ],
-//           ),
-//         ),
-//         WidgetConstant.height20,
-//         Text("offer_id".tr, style: context.textTheme.titleMedium),
-//         ContainerWithBorder(
-//           onRemoveIcon:
-//               Icon(Icons.edit, color: context.colors.onPrimaryContainer),
-//           child: Text(operation.offerId.toString()),
-//         ),
-//       ],
-//     );
-//   }
-// }

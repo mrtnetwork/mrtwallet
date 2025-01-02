@@ -16,7 +16,7 @@ class Web3TonGlobalRequestController<RESPONSE,
     notify();
   }
 
-  void onCompeleteForm(Object? obj) async {
+  void onCompleteForm(Object? obj) async {
     progressKey.process(text: "processing_request".tr);
     Object? result = obj;
     switch (request.params.method) {
@@ -38,7 +38,7 @@ class Web3TonGlobalRequestController<RESPONSE,
             sign: (generateSignature) async {
               final signRequest = GlobalSignRequest.ton(
                   digest: signingParams.chalengBytes(),
-                  index: address.keyIndex as Bip32AddressIndex);
+                  index: address.keyIndex.cast());
               final response = await generateSignature(signRequest);
               return response.signature;
             },
@@ -61,7 +61,7 @@ class Web3TonGlobalRequestController<RESPONSE,
   void _init() {
     MethodUtils.after(() async {
       liveRequest.addListener(onChangeForm);
-      form.onCompeleteForm = onCompeleteForm;
+      form.onCompleteForm = onCompleteForm;
       progressKey.idle();
     });
   }
@@ -76,6 +76,6 @@ class Web3TonGlobalRequestController<RESPONSE,
   void close() {
     super.close();
     liveRequest.removeListener(onChangeForm);
-    form.onCompeleteForm = null;
+    form.onCompleteForm = null;
   }
 }

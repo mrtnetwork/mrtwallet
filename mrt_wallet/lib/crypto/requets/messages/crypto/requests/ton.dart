@@ -9,7 +9,7 @@ import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/utils/ton/ton.dart';
 
 class TonMnemonicToPrivateKeyMessage
-    implements CryptoRequest<ImportCustomKeys, MessageArgsOneBytes> {
+    extends CryptoRequest<ImportCustomKeys, MessageArgsOneBytes> {
   final String mnemonic;
   final String? password;
   final bool validateTonMnemonic;
@@ -61,14 +61,6 @@ class TonMnemonicToPrivateKeyMessage
 
   @override
   MessageArgsOneBytes getResult() {
-    // final key = TonUtils.generateTonPrivateKeyFromSeed(
-    //     mnemonic: mnemonic,
-    //     password: password,
-    //     validateTonMnemonic: validateTonMnemonic);
-    // final importedKey = ImportCustomKeys(
-    //     privateKey: key.toHex(),
-    //     publicKey: key.toPublicKey().toHex(),
-    //     coin: coin);
     final importedKey = tonMnemonicToPrivateKey(
         coin: coin,
         mnemonic: mnemonic,
@@ -96,7 +88,7 @@ class TonMnemonicToPrivateKeyMessage
 }
 
 class TonMenmonicGenerateMessage
-    implements CryptoRequest<String, MessageArgsOneBytes> {
+    extends CryptoRequest<String, MessageArgsOneBytes> {
   final String? password;
   final int wordsNum;
   const TonMenmonicGenerateMessage(

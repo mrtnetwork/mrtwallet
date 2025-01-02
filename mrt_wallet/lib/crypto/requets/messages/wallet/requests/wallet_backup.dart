@@ -6,7 +6,7 @@ import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 
 class WalletRequestBackupWallet
-    implements WalletRequest<String, MessageArgsOneBytes> {
+    extends WalletRequest<String, MessageArgsOneBytes> {
   final String key;
   const WalletRequestBackupWallet(this.key);
   factory WalletRequestBackupWallet.deserialize(

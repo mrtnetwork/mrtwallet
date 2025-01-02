@@ -1,12 +1,10 @@
-import 'package:blockchain_utils/bip/coin_conf/coins_name.dart';
-import 'package:blockchain_utils/bip/slip/slip44/slip44.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 
 class CustomCurrencyConf {
   static BipCoinConfig byronLegacy = BipCoinConfig(
     coinNames: const CoinNames("Byron legacy", "ADA"),
     coinIdx: 0,
-    isTestnet: false,
+    chainType: ChainType.mainnet,
     defPath: "0/0",
     keyNetVer: Bip32Const.kholawKeyNetVersions,
     wifNetVer: null,
@@ -17,7 +15,7 @@ class CustomCurrencyConf {
   static BipCoinConfig byronLegacyTestnet = BipCoinConfig(
     coinNames: const CoinNames("Byron legacy testnet", "ADA"),
     coinIdx: Slip44.testnet,
-    isTestnet: true,
+    chainType: ChainType.testnet,
     defPath: "",
     keyNetVer: Bip32Const.kholawKeyNetVersions,
     wifNetVer: null,

@@ -48,4 +48,8 @@ extension StellarAssetBalanceResponseUtils on StellarAssetBalanceResponse {
           name: assetCode, symbol: assetCode, decimal: StellarConst.decimal),
     );
   }
+
+  BigInt limitAsBigint() {
+    return StellarHelper.toStroop(limit);
+  }
 }

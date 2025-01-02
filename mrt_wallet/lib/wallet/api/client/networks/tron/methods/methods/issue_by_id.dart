@@ -5,7 +5,7 @@ import 'package:on_chain/tron/src/provider/methods/request_methods.dart';
 /// Query the list of all the TRC10 tokens.
 /// [developers.tron.network](https://developers.tron.network/reference/getassetissuelist).
 class TronRequestIssueById
-    extends TVMRequestParam<TronIssueTRC10Token?, Map<String, dynamic>> {
+    extends TronRequest<TronIssueTRC10Token?, Map<String, dynamic>> {
   TronRequestIssueById(this.id);
   final String id;
 

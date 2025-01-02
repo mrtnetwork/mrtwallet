@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AccountTabbarScrollWidget extends StatelessWidget {
-  const AccountTabbarScrollWidget({required this.slivers, Key? key})
-      : super(key: key);
+  const AccountTabbarScrollWidget({required this.slivers, super.key});
   final List<Widget> slivers;
   @override
   Widget build(BuildContext context) {

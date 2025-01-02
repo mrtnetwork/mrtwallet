@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'key_data.dart';
 
 class CryptoPrivateKeysResponse with CborSerializable {

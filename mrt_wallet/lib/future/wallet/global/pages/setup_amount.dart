@@ -116,6 +116,12 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    MethodUtils.after(() async => textFieldKey.ensureKeyVisible());
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Form(
       key: form,
@@ -224,7 +230,7 @@ class _SetupNetworkAmountState extends State<SetupNetworkAmount>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
-                  padding: WidgetConstant.paddingVertical20,
+                  padding: WidgetConstant.paddingVertical40,
                   onPressed: onSetup,
                   child: Text(widget.buttonText ?? "setup_output_amount".tr))
             ],
@@ -260,6 +266,8 @@ class _SetupDecimalTokenAmountViewState
     extends State<SetupDecimalTokenAmountView> with SafeState {
   final GlobalKey<FormState> form =
       GlobalKey<FormState>(debugLabel: "SetupNetworkAmount");
+  final GlobalKey<AppTextFieldState> textFieldKey = GlobalKey();
+
   late final String? maxString = widget.max?.toDecimal();
   late final String? minString = widget.min?.toDecimal();
   String? validator(String? v) {
@@ -290,6 +298,14 @@ class _SetupDecimalTokenAmountViewState
     if (mounted) {
       context.pop(rational);
     }
+  }
+
+  @override
+  void onInitOnce() {
+    super.onInitOnce();
+    MethodUtils.after(() async {
+      textFieldKey.ensureKeyVisible();
+    });
   }
 
   @override
@@ -326,6 +342,7 @@ class _SetupDecimalTokenAmountViewState
               alignment: Alignment.center,
               child: ConstraintsBoxView(
                 maxWidth: 350,
+                key: textFieldKey,
                 child: AppTextField(
                   style: context.textTheme.titleLarge
                       ?.copyWith(fontWeight: FontWeight.bold),
@@ -342,17 +359,18 @@ class _SetupDecimalTokenAmountViewState
                   validator: validator,
                   initialValue: price,
                   onChanged: onChaanged,
+                  prefixIcon: const SizedBox(width: 40),
                   suffixIcon: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Padding(
-                        padding: WidgetConstant.padding20,
-                        child: Text(
-                          widget.token.symbol,
+                      SizedBox(
+                        width: 50,
+                        child: OneLineTextWidget(
+                          widget.token.symbolView,
                           style: context.textTheme.labelLarge?.copyWith(
                               color: context.colors.primary,
-                              fontWeight: FontWeight.w900),
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -365,7 +383,7 @@ class _SetupDecimalTokenAmountViewState
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
-                  padding: WidgetConstant.paddingVertical20,
+                  padding: WidgetConstant.paddingVertical40,
                   onPressed: onSetup,
                   child: Text(widget.buttonText ?? "setup_output_amount".tr))
             ],

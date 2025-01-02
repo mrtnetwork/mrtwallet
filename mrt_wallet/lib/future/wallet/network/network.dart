@@ -10,3 +10,4 @@ export 'tron/tron.dart';
 export 'forms/forms.dart';
 export 'substrate/substrate.dart';
 export 'stellar/stellar.dart';
+export 'monero/monero.dart';

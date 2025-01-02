@@ -8,8 +8,7 @@ import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 class TonWeb3PermissionView extends StatefulWidget {
-  const TonWeb3PermissionView({required this.permission, Key? key})
-      : super(key: key);
+  const TonWeb3PermissionView({required this.permission, super.key});
   final Web3TonChain? permission;
 
   @override
@@ -39,13 +38,9 @@ class _TonWeb3PermissionViewState extends State<TonWeb3PermissionView>
     return Web3TonChain.create(workChain: chain.network.coinParam.workchain);
   }
 
-  bool _initialized = false;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_initialized) return;
-    _initialized = true;
+  void onInitOnce() {
+    super.onInitOnce();
     permission = widget.permission ?? Web3TonChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains =

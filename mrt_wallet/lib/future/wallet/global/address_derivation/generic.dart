@@ -1,6 +1,8 @@
 import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
+import 'package:mrt_wallet/future/wallet/network/cosmos/address/setup_address.dart';
+import 'package:mrt_wallet/future/wallet/network/monero/address/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/address/pages/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/stellar.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/address/setup_address.dart';
@@ -21,10 +23,14 @@ class SetupGenericAddressView extends StatelessWidget {
     switch (controller.network.type) {
       case NetworkType.xrpl:
         return SetupRippleAddressView(controller: controller);
+      case NetworkType.cosmos:
+        return SetupCosmosAddressView(controller: controller);
       case NetworkType.stellar:
         return SetupStellarAddressView(controller: controller);
       case NetworkType.ton:
         return SetupTonAddressView(controller: controller);
+      case NetworkType.monero:
+        return SetupMoneroAddressView(controller: controller);
       case NetworkType.polkadot:
       case NetworkType.kusama:
         return SetupSubstrateAddressView(controller: controller);
@@ -44,8 +50,6 @@ class _GenericNetworkAddressGenerationView extends StatelessWidget {
         return EthereumNewAddressParams(deriveIndex: keyIndex, coin: coin);
       case NetworkType.solana:
         return SolanaNewAddressParams(deriveIndex: keyIndex, coin: coin);
-      case NetworkType.cosmos:
-        return CosmosNewAddressParams(deriveIndex: keyIndex, coin: coin);
       case NetworkType.tron:
         return TronNewAddressParams(deriveIndex: keyIndex, coin: coin);
       default:
@@ -59,7 +63,7 @@ class _GenericNetworkAddressGenerationView extends StatelessWidget {
         context: context, seedGeneration: SeedTypes.bip39);
     if (keyIndex == null || !keyIndex.isBip32) return;
     final newAccountParam = getnerateAccoutParams(
-        keyIndex as Bip32AddressIndex, controller.network, controller.coin);
+        keyIndex.cast(), controller.network, controller.coin);
     controller.generateAddress(newAccountParam);
   }
 

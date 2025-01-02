@@ -12,12 +12,11 @@ class APPAnimatedSwitcher<T> extends StatelessWidget {
       this.width,
       this.transitionBuilder,
       this.duration = APPConst.animationDuraion,
-      Key? key})
-      : super(key: key);
+      super.key});
   final double? height;
   final double? width;
   final T? enable;
-  final Map<T?, WidgetContext> widgets;
+  final Map<T?, WidgetContextNullable> widgets;
   final Duration duration;
   final Widget Function(Widget, Animation<double>)? transitionBuilder;
 
@@ -41,9 +40,10 @@ class APPSliverAnimatedSwitcher<T> extends StatelessWidget {
   const APPSliverAnimatedSwitcher(
       {required this.enable,
       required this.widgets,
+      this.defaultWidget,
       this.duration = APPConst.animationDuraion,
-      Key? key})
-      : super(key: key);
+      super.key});
+  final WidgetContext? defaultWidget;
   final T? enable;
   final Map<T?, WidgetContext> widgets;
   final Duration duration;
@@ -53,15 +53,16 @@ class APPSliverAnimatedSwitcher<T> extends StatelessWidget {
     return SliverAnimatedSwitcher(
       duration: duration,
       child: _WrapSliver(
-          widgets[enable]?.call(context) ?? const SliverToBoxAdapter(),
+          widgets[enable]?.call(context) ??
+              defaultWidget?.call(context) ??
+              const SliverToBoxAdapter(),
           key: ValueKey<T?>(enable)),
     );
   }
 }
 
 class _Wrap extends StatelessWidget {
-  const _Wrap(this.widget, {this.height, this.width, Key? key})
-      : super(key: key);
+  const _Wrap(this.widget, {this.height, this.width, super.key});
   final Widget widget;
   final double? height;
   final double? width;
@@ -73,7 +74,7 @@ class _Wrap extends StatelessWidget {
 }
 
 class _WrapSliver extends StatelessWidget {
-  const _WrapSliver(this.sliver, {Key? key}) : super(key: key);
+  const _WrapSliver(this.sliver, {super.key});
   final Widget sliver;
 
   @override

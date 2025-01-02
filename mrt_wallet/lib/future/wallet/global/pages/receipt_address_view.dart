@@ -16,7 +16,7 @@ class ReceiptAddressView extends StatelessWidget {
       this.validate,
       this.onEditIcon,
       this.onEditWidget,
-      this.onTapWhenOnRemove = true});
+      this.enableTap = true});
   final ReceiptAddress? address;
   final DynamicVoid? onTap;
   final String? title;
@@ -25,7 +25,7 @@ class ReceiptAddressView extends StatelessWidget {
   final Icon? onEditIcon;
   final Widget? onEditWidget;
   final String? errorText;
-  final bool onTapWhenOnRemove;
+  final bool enableTap;
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -40,27 +40,30 @@ class ReceiptAddressView extends StatelessWidget {
         ContainerWithBorder(
             validate: validate ?? (address != null),
             onRemove: onTap,
-            onTapWhenOnRemove: onTapWhenOnRemove,
+            enableTap: enableTap,
             onRemoveWidget: onEditWidget,
             onRemoveIcon: address == null
-                ? Icon(Icons.add, color: context.colors.onPrimaryContainer)
+                ? Icon(Icons.add, color: context.onPrimaryContainer)
                 : onEditIcon ??
-                    Icon(Icons.edit, color: context.colors.onPrimaryContainer),
+                    Icon(Icons.edit, color: context.onPrimaryContainer),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 address == null
-                    ? Text("tap_to_choose_address".tr,
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context))
+                    ? Text(
+                        "tap_to_choose_address".tr,
+                        style: context.onPrimaryTextTheme.bodyMedium,
+                      )
                     : Row(
                         children: [
                           Expanded(
                               child: ReceiptAddressDetailsView(
-                                  address: address!,
-                                  color: context.colors.onPrimaryContainer)),
+                            address: address!,
+                            color: context.onPrimaryContainer,
+                          )),
                           CopyTextIcon(
                               dataToCopy: address?.view ?? "",
+                              color: context.onPrimaryContainer,
                               isSensitive: false)
                         ],
                       ),

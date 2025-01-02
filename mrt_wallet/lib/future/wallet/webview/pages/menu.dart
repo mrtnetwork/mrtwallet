@@ -4,7 +4,7 @@ import 'package:mrt_wallet/future/wallet/webview/controller/controller/controlle
 import 'package:mrt_wallet/future/widgets/widgets/list_tile.dart';
 
 class WebViewPopupMenu extends StatelessWidget {
-  const WebViewPopupMenu(this.controller, {Key? key}) : super(key: key);
+  const WebViewPopupMenu(this.controller, {super.key});
   final WebViewStateController controller;
   @override
   Widget build(BuildContext context) {

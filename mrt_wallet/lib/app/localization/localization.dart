@@ -6,13 +6,13 @@ class Localization {
           "use_mnemonic": "Use Existing Mnemonic",
           "generate_mnemonic": "Generate New Mnemonic",
           "enter_mne": "Enter mnemonic",
-          "enter_mnemonic": "Safely Enter Your BIP39 Mnemonic",
+          "enter_mnemonic": "Safely Enter Your Mnemonic",
           "enter_mnemonic_desc":
               "Securely enter your BIP39 mnemonic to access and manage your cryptocurrency funds. Utilize the BIP39 standard to conveniently restore wallets across multiple platforms. Keep your mnemonic phrase confidential and ensure a smooth and reliable experience for managing your digital assets.",
           "enter_mnemonic_desc2":
-              "Please enter your 12, 15, 18, 21, or 24-word BIP39 mnemonic phrase below.",
+              "Please enter your 12, 15, 18, 21, or 24-word mnemonic phrase below.",
           "enter_mnemonic_validator":
-              "Please enter a valid 12, 15, 18, 21, or 24-word BIP39 mnemonic phrase with space.",
+              "Please enter a valid 12, 15, 18, 21, or 24-word mnemonic phrase with space.",
           "e_mnemonic":
               "Enter your 12-24 word recovery phrase (mnemonic) to import your wallet",
           "enter_passphrase_desc":
@@ -106,6 +106,7 @@ class Localization {
           "setup_network_address_desc":
               "You have not set up any ___1__ account. To begin setup, please click on the 'Setup Address' button.",
           "setup_address": "Setup Address",
+          "setup_addresses": "Setup Addresses",
           "choose_bitcoin_address_type": "Choose Address Type",
           "choose_bitcoin_address_type_desc":
               "Please select the address type to create an address.",
@@ -437,7 +438,7 @@ class Localization {
           "delete_wallet_confirmation": "Wallet Deletion Confirmation",
           "deleting_wallet": "Deleting wallet. Please wait.",
           "wallet_deleted_success": "Wallet Deleted Successfully",
-          "export_security_phrase": "Export and backup Security Phrase",
+          "export_security_phrase": "Export and backup Seed Phrase",
           "wallet_preferences": "Wallet Preferences",
           "clear_wallet_data": "Clear Wallet Data",
           "never": "Never",
@@ -484,9 +485,6 @@ class Localization {
           "reached_limit_error":
               "You have reached the limit for free requests. Please wait.",
           "service_provider": "Service provider",
-          "what_is_api_provider":
-              "A Blockchain API provider service, offers developers a comprehensive interface for interacting with the blockchain. It facilitates functions such as reading UTXOs, checking balances, and sending transactions, providing seamless integration for applications requiring real-time access to blockchain network data and transaction management.",
-          // "what_is_service_provider": "What is a blockchain service provider?",
           "select_provider": "Select provider",
           "choose_provider": "Choose a provider.",
           "select_provider_desc": "Select a provider from the options below",
@@ -1090,7 +1088,7 @@ class Localization {
           "network_name_desc": "Give your custom network a descriptive name.",
           "symbol": "Symbol",
           "symbol_desc": "Add a symbol for easy identification.",
-          "chain_id_validator": "Please enter a valid chain ID as a number.",
+          "chain_id_validator": "Please enter a valid chain ID.",
           "rpc_url_validator":
               "Please enter a valid RPC URL starting with 'http' or 'https'.",
           "network_name_validator":
@@ -1115,8 +1113,7 @@ class Localization {
               "Error 500: Internal Server Error. The server encountered an unexpected condition that prevented it from fulfilling the reques",
           "http_error_503":
               "Error 503: Service Unavailable. The server is currently unable to handle the request due to temporary overloading or maintenance of the server",
-          "network_chain_id_already_exist":
-              "The network with the provided chain ID already exists.",
+          "network_chain_id_already_exist": "The network already exists.",
           "invalid_chain_id":
               "The Chain ID does not match the Network ID associated with the provided RPC link.",
           "network_imported_to_your_wallet":
@@ -1150,7 +1147,7 @@ class Localization {
           "rbf_desc":
               "Allows users to adjust transaction fees after initiation for priority or confirmation speed changes.",
           "memo_desc2":
-              "Additional message or information attached to a ___1__ transaction.",
+              "Additional message or information attached to a transaction.",
           "custom_derivation": "Custom derivation",
           "key_already_exists": "Private key already exists",
           "wallet_deletation_desc":
@@ -1304,11 +1301,12 @@ class Localization {
               "Enter the ___1__ URL or IPv4 address without any prefix, including the port, like example.com:50002.",
           "network_title_websocket_url":
               "Please supply the WebSocket address, including the WS or WSS prefix, and if necessary, specify the port. For example, wss://example.com.",
+          "network_title_http_url":
+              "Please provide the HTTP or HTTPS address, including the http:// or https:// prefix. If applicable, include the port number. For example, https://example.com:8080",
           "network_tcp_address_validator":
               "Invalid TCP or IPv4 address. Please refer to the example address for proper formatting.",
           "network_websocket_address_validator":
               "Invalid Websocket address. Please refer to the example address for proper formatting.",
-          "network_electrum_server_url": "Electrum Server URL",
           "network_waiting_for_response": "Awaiting a reply. please wait.",
           "network_verify_server_status": "Verify server status.",
           "network_server_banner": "Server banner",
@@ -1332,13 +1330,13 @@ class Localization {
               "Prioritize the use of the 'Update Network Provider' option before making any changes.",
           "network_no_provider_detected":
               "No node provider detected. Please add a provider for the network.",
-          "network_add_provider": "Add provider.",
+          "network_add_provider": "Tap to add new service provider.",
           "network_explorer_address_link": "Explore Address Link",
           "network_explorer_transaction_link": "Explore Transaction Link",
           "network_evm_explorer_address_desc":
-              "To retrieve the current link in the explorer, please use #address as a placeholder for the actual address in the link, such as https://etherscan.io/address/#address.",
+              "To retrieve the current link in the explorer, please use #address as a placeholder for the actual address in the link, such as https://example.com/address/#address.",
           "network_evm_explorer_transaction_desc":
-              "To retrieve the current link in the explorer, please use #txid as a placeholder for the actual transaction in the link, such as https://etherscan.io/tx/#txid.",
+              "To retrieve the current link in the explorer, please use #txid as a placeholder for the actual transaction in the link, such as https://example.com/tx/#txid.",
           "validate_link_desc":
               "Please enter a valid URL starting with 'http' or 'https'.",
           "default_providers": "Default providers.",
@@ -1356,6 +1354,9 @@ class Localization {
           "network_security_issue": "Security issue",
           "network_electrum_incorrect_genesis_hash":
               "The Genesis Hash is not compatible with the current network. You may encounter inaccurate information, or the server may belong to another network. Are you certain about this?",
+          "network_incorrect_chain_id":
+              "The Chain ID is not compatible with the current network. You may encounter inaccurate information, or the server may belong to another network. Are you certain about this?",
+
           "network_provider_log_details": "Provider Log Details",
           "network_total_request": "Total requests",
           "network_total_success_request": "Total Success Requests",
@@ -1381,7 +1382,7 @@ class Localization {
           "executable": "Executable",
           "import_spl_tokens": "Import SPL Tokens",
           "unable_to_locate_token":
-              "Unable to locate any SPL tokens in your account",
+              "Unable to locate any tokens in your account",
           "unable_to_locate_jetton":
               "Unable to locate any Jetton tokens in your account",
           "cardano_networks": "ADA",
@@ -1420,9 +1421,9 @@ class Localization {
               "Remaining asset amount of UTXO and receiver address.",
           "assets": "Assets",
           "tap_to_add_assets_for_recipient": "Tap to add assets for recipient",
-          "choose_asset_you_want_to_transfer":
-              "Choose the assets you wish to transfer",
-          "setup_output_asset_amount": "Setup output assets",
+          "set_amount_for_each_assets_or_zero":
+              "Set the amount for each asset you wish to transfer; otherwise, leave it as zero.",
+          "setup_recipient_assets": "Setup recipient assets",
           "a_minimum_a_ada_required": "A minimum of 1 ADA output is required.",
           "unsuported_feature": "Unsuported feature",
           "cosmos_networks": "Cosmos and forked",
@@ -1496,6 +1497,8 @@ class Localization {
           "update_token_desc": "Update the name and symbol of the token",
           "token_symbol_validator":
               "The token symbol must be at least 2 characters long",
+          "token_denom_validator":
+              "The token denom must be at least 2 characters long",
           "token_name_validator":
               "The token name must be at least 3 characters long",
           "create_new_provider": "Create New Provider",
@@ -1516,8 +1519,8 @@ class Localization {
           "owner_of_token": "The owner of token",
           "tap_to_select_owner": "Tap to select accout",
           "setup_mint": "Setup mint",
-          "byron_does_not_support_minting_token":
-              "The Byron address does not support the initialization of minting tokens.",
+          "byron_reward_does_not_support_minting_token":
+              "The Byron and Reward address does not support the initialization of minting tokens.",
           "certificates": "Certificates",
           "add_certificate_to_transaction":
               "Add certificates to the transaction",
@@ -1609,9 +1612,10 @@ class Localization {
               "Generate a private key from your TON mnemonic.",
           "network_settings": "Network settings",
           "ton_mnemonic_desc":
-              "The TON network uses its algorithm to generate private keys from BIP-39 mnemonics. You can create or import a TON mnemonic, convert it to a private key, and import it into your wallet.",
-          "ton_mnemonic_desc2":
-              "We don't store your TON mnemonic or mnemonic password in the wallet. Instead, we generate a private key for you to import into the wallet if desired",
+              "The TON network uses its algorithm to generate private keys from mnemonics. You can create or import a TON mnemonic, convert it to a private key, and import it into your wallet.",
+
+          "external_mnemonic_desc2":
+              "We don't store your mnemonic or mnemonic password in the wallet. Instead, we generate a private key for you to import into the wallet if desired",
           "mnemonic_password": "Mnemonic password.",
           "mnemonic_password_desc":
               "If your mnemonic has a password or you want to generate a mnemonic with a password, enable it.",
@@ -2372,6 +2376,334 @@ class Localization {
               "Invalid Solana keypair. The key must be at least an 88-character Base58 string.",
           "solana_base58_secret_key_desc2":
               "Please enter a valid Solana Base58 keypair.",
+          "sub_address": "SubAddress",
+          "xmr_sub_address_desc":
+              "A Monero subaddress is a unique, privacy-enhancing address derived from a main wallet address, allowing users to segregate funds without revealing their main address.",
+          "major_index": "Major index",
+          "minor_index": "Minor index",
+          "sync_options": "Sync options",
+          "monero_sync_options": "Monero account synchronization options.",
+          "monero_sync_options_desc":
+              "Options for synchronizing Monero accounts by fetching unspent transaction outputs (UTXOs).",
+          "monero_wallet_rpc_sync_desc":
+              "Monero Wallet RPC synchronization option.",
+          "monero_wallet_rpc_sync_desc1":
+              "sends a request to your wallet and retrieves all incoming and outgoing transfers to synchronize with the current state.",
+          "wallet_rpc_url": "Wallet RPC endpoint URL",
+          "wallet_rpc_url_desc":
+              "Enter your Wallet RPC endpoint URL, including the port if applicable.",
+          "endpoint_url": "Endpoint URL",
+          "sync_now": "Sync now",
+          "monero_wallet_transaction_sync_desc":
+              "Transaction synchronization option.",
+          "monero_wallet_transaction_sync_desc2":
+              "Synchronize your wallet's current state with its transaction history by providing your transaction IDs. We will retrieve and validate your unspent transactions.",
+          "enter_transaction_ids_desc":
+              "Enter your transaction IDs, Each transaction ID must be 64 hexadecimal characters and separated by spaces.",
+          "transaction_ids": "Transaction IDs",
+          "enter_transaction_ids_validator":
+              "Please enter at least one transaction ID to begin synchronization.",
+          "enter_transaction_ids_validator2":
+              "Some of the provided transaction IDs are not valid 32-byte hexadecimal strings",
+          "some_transaction_missing":
+              "Certain transactions appear to be missing. Please ensure they are valid and accessible.",
+          "page_required_address":
+              "At least one active address is required to access the requested page.",
+          "duplicate_transaction_ids_detected":
+              "Duplicate transaction IDs detected.",
+          "invalid_daemon_repsone": "Invalid daemon response",
+          "monero_empty_outputs_desc":
+              "We did not find any outputs for your accounts in these transactions.",
+          "failed_to_parse_tx": "Failed to parse the transaction.",
+          "output_has_already_spent": "The output has already been spent.",
+          "output_is_ready_to_spent": "The output is ready to be spent.",
+          "payment_information": "Payment informations.",
+          "monero_payment_synced_desc":
+              "The following payments are already synced with your accounts.",
+          "sync_more": "Sync more",
+          "monero_select_utxo_desc":
+              "You can select UTXOs from both the primary address and subaddresses.",
+          "monero_tx_integrated_address_alert":
+              "Integrated addresses cannot be used in a transaction with multiple recipients.",
+          "failed_to_unlock_output": "Failed to unlock the output.",
+          "output_is_not_ready_for_spending":
+              "The output is not yet ready for spending.",
+          "show_proofs": "Show proofs",
+          "transaction_proofs": "Transaction proofs.",
+          "monero_tx_proof_desc":
+              "These proofs are for each recipient of the current transaction, serving as evidence that you sent the specified amount.",
+          "monero_tx_proof_desc1": "Each proof's message has been set to None.",
+          "proof": "Proof",
+          "invalid_daemon_distribution_response":
+              "Invalid daemon output Distribution response.",
+          "generate_rct_faild":
+              "Failed to generate Ring Confidential Transaction (RCT)",
+          "monero_utxo_lake_of_confirmatins_desc":
+              "Lack of confirmations. UTXOs must have at least 10 confirmations before they can be spent.",
+          "account_tx_detected_desc":
+              "Account transaction detected. Tap to proceed.",
+          "monero_block_height_sync_desc":
+              "Synchronizing transactions from a specified block height.",
+          "monero_block_height_sync_desc2":
+              "Synchronize your wallet's current state by specifying a start and end block height. We will retrieve and validate all transactions within the range, ensuring your unspent outputs are accurately updated.",
+          "monero_block_height_sync_desc3":
+              "This process may take significant time, especially for ranges spanning millions of blocks, potentially a day or longer. Ensure you accurately set the start and end block heights to include all relevant transactions.",
+          "start_at_block": "Start at block",
+          "end_at_block": "End at block",
+          "monero_rct_block_validator":
+              "Wallet supports RCT Transactions only from block ___1__ onward.",
+          "monero_sync_block_validator":
+              "End block must be greater than start block.",
+          "submiting_sync_process": "Submitting synchronization process.",
+          "select_accounts_for_syncing":
+              "Select the accounts you want to sync.",
+          "primary_account": "Primary account.",
+          "addresses": "Addresses",
+          "at_least_one_account_required": "At least one account is required.",
+          "only_on_request_can_be_processed":
+              "Only one request can be processed at a time.",
+          "monero_invalid_end_block_height_validator":
+              "The end block is greater than the current block height.",
+          "tap_to_add_account": "Tap to add a new account.",
+          "wallet_rpc": "Wallet RPC",
+          "block": "Block",
+          "invalid_url": "Invalid url.",
+          "key_derivation_disabled_desc":
+              "Derivation disabled for this key type",
+          "monero_fetching_Wallet_available_transfers":
+              "Fetching wallet available transfers. Please wait.",
+          "monero_wallet_rpc_sync_desc2":
+              "The default Monero Wallet RPC URL ends with 'json_rpc'. Please ensure you have entered the correct URL.",
+          "monero_wallet_rpc_sync_no_tx_found_desc":
+              "No incoming transactions were found for your current account or subaccounts",
+          "wallet_rpc_different_account_response_desc":
+              "Monero wallet returned an account that does not match any of your wallet accounts.",
+          "monero_fetching_Wallet_addresses":
+              "Fetching wallet addresses. Please wait.",
+          "monero_wallet_rpc_safty_interacting_desc":
+              "For safety when interacting with Wallet RPC, ensure that you enable the '--restricted-rpc' option when running the Wallet RPC.",
+          "sync_information": "Sync Information",
+          "view_account_block_sync": "View account block sync information",
+          "related_accounts": "Related account.",
+          "current_block_height": "Current block height",
+          "fetched_blocks": "Fetched blocks",
+          "setup_fee_manually":
+              "Unable to determine the network fee. Please enter it manually.",
+          "create_token": "Create token",
+          "compressed_public_key": "Compressed public key",
+          "generatare_from_compressed_public_key":
+              "Generate from the compressed public key.",
+          "public_key_required_derive_address":
+              "Public key needed to derive the address",
+          "add_to_address": "Add to addresses",
+          "review_addresses": "Review addresses",
+          "some_addresses_exist": "Some addresses already exist.",
+          "account_tokens": "Account tokens",
+          "choose_payment_currency": "Choose Payment Currency",
+          "xrp_create_token_desc":
+              "Ensure the token does not already exist. If you attempt to create a token that already exists in your account with the same issuer and currency, the existing token will be selected instead.",
+          "ripple_provider_network_id_validator":
+              "The Network id is incompatible with the current network.",
+          "api_url": "API URL",
+          "ton_unable_to_retrieve_workchain":
+              "Unable to retrieve the network workchain ID",
+          "spl_token_invalid_associated_account_address":
+              "The destination address does not have an associated token account for the specified SPL token.",
+          "solana_destination_address_invalid_public_key":
+              "The destination address is not a valid Solana public key.",
+          "system_program": "System program",
+          "spl_token": "SPL-Token",
+          "spl_token2022": "SPL-Token2022",
+          "solana_spl_token_required_public_key":
+              "Sending tokens to an inactive account requires a valid public key instead of a PDA address.",
+          "invalid_address": "The provided address is invalid",
+          "cardano_enter_pool_id_desc":
+              "Enter the unique ID of your stake pool for delegation.",
+          "setup_pool_id": "Setup pool ID",
+          "cardano_pool_id_validator": "Please enter a valid Cardano pool ID.",
+          "signer_account_does_not_exists":
+              "The Signer account has not been found.",
+          "reward_address": "Reward address",
+          "cardano_network_magic_validator":
+              "The network magic is incompatible with the current network.",
+          "assets_balance_not_supported_desc":
+              "The current version of the wallet does not support or validate asset metadata, and the balance only accepts whole numbers (no decimals).",
+          "pick_token": "Pick token",
+          "cosmos_pick_token_transfer_desc":
+              "Select the token you want to transfer, or close the page to switch to the native chain token.",
+          "cosmos_transfer_import_token_desc":
+              "If your token isn't listed here, you can import it on the account page.",
+          "insufficient_token_balance": "Insufficient token balance",
+          "requested_chain_differs":
+              "The requested chain differs from your wallet's chain.",
+          "page_required_provider":
+              "The page requires at least one active service provider.",
+          "mainnet": "Mainnet",
+          "invalid_chain_type": "Invalid chain type.",
+          "chain_type": "Chain type",
+          "select_cosmos_chain_type_desc":
+              "Please select the chain type to retrieve all related chains.",
+          "retrieving_chains": "Retrieving chains. Please wait.",
+          "import_manually": "Import manually",
+          "chain_not_found_import_manually_desc":
+              "We couldn't find the chain with the provided name. Please import it manually.",
+          "select_network_to_import_desc":
+              "Select the network you want to import.",
+          "unsuported_network": "Network not supported",
+          "fee_token": "Fee token",
+          "denom": "Denom",
+          "token_demination_desc": "Please enter the token denomination",
+          "key_alg": "Key algorithm",
+          "cosmos_key_alg_desc":
+              "Algorithm used for key generation and transaction signing",
+          "cosmos_key_alg_desc2":
+              "Ensure your network supports this key algorithm; otherwise, you may risk losing funds.",
+          "native_token": "Native token",
+          "enter_tendermint_rpc_desc":
+              "Enter the Tendermint RPC URL of the chain for interaction.",
+          "unsupported_network_key_alg":
+              "The network's key algorithm is not supported.",
+          "unable_to_find_network_token_denom":
+              "Unable to find the native token denomination for the network.",
+          "import_network_experimental_feature_desc":
+              "This feature is experimental. Please carefully verify all information about the chain before importing it into your wallet.",
+          "cosmis_fee_limit_desc":
+              "Specify the maximum gas units for this transaction on the Cosmos blockchain.",
+          "automatically_setup_fee": "Automatically set up fee?",
+          "switch_to_automatic_fee_desc":
+              "Do you want to switch to the automatic fee?",
+          "invalid_token_exponent": "Invalid token exponent.",
+          "tap_to_setup_native_token": "Tap to set up the native token.",
+          "fee_tokens": "Fee tokens",
+          "tap_to_add_new_fee_token": "Tap to add a new fee token",
+          "token_name": "Token name",
+          "token_decimal_max18_validator":
+              "Token decimals must be between 0 and 18.",
+          "setup_token": "Setup token",
+          "remove_token_from_fee_token_list_desc":
+              "Remove token from the fee tokens list?",
+          "at_least_one_fee_token_required":
+              "At least one fee token is required.",
+          "network_token_required": "The network's native token is required.",
+          "cosmos_update_token_desc":
+              "Ensure the token denomination and decimals are entered correctly; otherwise, the import operation will fail.",
+          "cosmos_fee_token_desc":
+              "The token is used for paying fees. In most networks, this is the native token.",
+          "select_key_algorithm_desc": "Please select a key algorithm.",
+          "min_gas_price": "Min gas price",
+          "avarage_gas_price": "Avarage gas price",
+          "high_gas_price": "High gas price",
+          "comsos_gas_price_desc":
+              "This field is multiplied by the transaction gas limit to calculate the transaction fee.",
+          "gas_price_validator":
+              "Please enter a valid gas price as a double value.",
+          "stellar_asset_trust_path_limit_exceeded":
+              "Asset trust path limit exceeded.",
+          "stellar_destination_lacks_trust_path":
+              "The destination lacks a trust path for this token.",
+          "tx_submit_response_failed_desc":
+              "Failed to submit the transaction response. Please check the block explorer for details.",
+          "seed_phrase": "Seed Phrase",
+          "external_keys": "External keys",
+          "activity": "Activity",
+          "transaction": "Transaction",
+          "monero_mnemonic": "Monero Mnemonic",
+          "generate_monero_private_key":
+              "Generate a private key from your Monero mnemonic.",
+          "monero_mnemonic_desc":
+              "The Monero network uses its algorithm to generate private keys from mnemonics. You can create or import a Monero mnemonic, convert it to a private key, and import it into your wallet.",
+          "monero_menonic_validator":
+              "Please enter your mnemonic phrase below, consisting of 12, 13, 24, or 25 words, separated by spaces.",
+          "addresses_and_initial_sync_block":
+              "The addresses and the initial sync block",
+          "default_chain_sync": "Default chain synchronization",
+          "requested_synchronizations": "Requested synchronizations ___1__",
+          "available_synchronizations": "Available synchronizations",
+          "faliled_blocks": "Failed blocks",
+          "deserialization_blocks_failed":
+              "These blocks failed during deserialization",
+          "stream_closed_desc":
+              "Cannot access the stream. it has already been closed",
+          "stream_does_not_exists": "Stream does not exist.",
+          "isolate_terminated_error":
+              "An unexpected error occurred while processing the request. The isolate has terminated.",
+          "canceled": "Canceled",
+          "paused": "Paused",
+          "synced": "Synced",
+          "process": "In Process",
+          "resume": "Resume",
+          "pause": "Pause",
+          "pending": "Pending",
+          "updating_status_pls_wait": "Updating status. please wait.",
+          "unsuported_digest_auth_algorithm":
+              "Unsupported Digest Authentication algorithm. Only 'MD5' and 'MD5-sess' are supported.",
+          "unsuported_digest_auth_qop":
+              "Unsupported Digest Authentication Quality of Protection. Only 'auth' and 'auth-int' are supported.",
+          "invalid_dgiest_auth_headers":
+              "Invalid Digest Authentication headers.",
+          "username": "Username",
+          "authenticated_realm_validator":
+              "Please enter at least one character for the realm.",
+          "realm": "Realm",
+          "maintain_monero_wallet_rpc_connection":
+              "Maintain Wallet RPC Connection",
+          "store_wallet_rpc_connection":
+              "Your Wallet RPC information is stored to assist in syncing accounts, UTXOs, and transactions.",
+          "already_connected_to_monero_wallet_rpc":
+              "You are already connected to the Monero Wallet RPC.",
+          "disconnect_from_wallet_rpc": "Disconnect from the Wallet RPC.",
+          "disconnect_from_monero_wallet_rpc_desc":
+              "The Wallet RPC information will be removed from your account. Are you sure you want to proceed?",
+          "no_acitve_provider": "No provider is currently active.",
+          "spend_public_key": "Spend public key",
+          "view_public_key": "View public key",
+          "spend_private_key": "Spend private key",
+          "view_private_key": "View private key",
+          "transaction_not_found": "Transaction not found.",
+          "generate_transaction_proof": "Generate transaction proof",
+          "choose_account_received_payment":
+              "Choose the account that received the payment.",
+          "monero_tx_proof_message_desc":
+              "The message of the proof, if provided, is essential for verification.",
+          "setup_message": "Setup message",
+          "invalid_transaction_id":
+              "Invalid transaction ID. the transaction ID must be a 32-byte hexadecimal string.",
+          "monero_tx_proof_desc3":
+              "Monero generates a transaction proof to verify payment details using the transaction ID, address, and an optional message.",
+          "transaction_proof": "Transaction Proof",
+          "payment_transaction_id": "The transaction ID of the payment.",
+          "generating_proof_please_wait": "Generating proof. Please wait.",
+          "verify_transaction_proof": "Verify transaction proof",
+          "monero_verify_proof_desc":
+              "Monero verifies a transaction proof using the transaction ID, recipient address, optional message, and the provided proof signature",
+          "signature": "Signature",
+          "monero_proof_validator":
+              "Invalid Monero proof. the proof must start with 'InProofV2' or 'OutProofV2'",
+          "message_of_the_proof": "The message of the proof",
+          "verify": "Verify",
+          "verification_failed_no_amount_received":
+              "Verification failed. No amount received in this transaction.",
+          "create_sign_monero_tx_desc":
+              "Creating and signing ___1__ transaction, this may take up to 6 minutes.",
+          "spent_in_pool": "Spent in pool",
+          "data_casting_failed": "Data conversion unsuccessful",
+          "cosmos_enter_hrp_desc":
+              "Enter the network address prefix (HRP), or leave blank to determine it from the RPC.",
+          "enter_network_hrp_validator": "Please enter a valid network HRP.",
+          "address_prefix_hrp": "Address prefix (HRP)",
+          "unable_to_retrieve_hrp":
+              "Unable to retrieve HRP from RPC. Please provide it.",
+          "different_network_hrp":
+              "Invalid HRP. The network returned a different HRP.",
+          "add_new_network": "Add new ___1__ network",
+          "http_api_url": "HTTP API URL",
+          "json_rpc_solidity_url": "JSON RPC URL(EVM)",
+          "network_title_http_wss_url":
+              "Please provide the HTTP or Websocket address, including the http or ws prefix. If applicable, include the port number. For example, https://example.com:8080",
+          "create_sign_transaction":
+              "Creating and signing transaction. Kindly await completion.",
+          "monero_slow_chain_tracking_alert":
+              "Currently, account chain tracking is very slow. We recommend using the sync option to update your account state efficiently."
         }
       };
 }

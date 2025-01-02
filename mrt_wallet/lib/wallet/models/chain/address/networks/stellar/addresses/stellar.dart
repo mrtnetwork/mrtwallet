@@ -244,11 +244,8 @@ class IStellarMultisigAddress extends IStellarAddress
       required super.id,
       required super.tokens,
       required this.multiSignatureAccount,
-      String? accountName})
-      : super._(
-            keyIndex: const MultiSigAddressIndex(),
-            publicKey: const [],
-            accountName: accountName);
+      super.accountName})
+      : super._(keyIndex: const MultiSigAddressIndex(), publicKey: const []);
   @override
   StellarMultiSigNewAddressParams toAccountParams() {
     return StellarMultiSigNewAddressParams(
@@ -299,9 +296,9 @@ class IStellarMultisigAddress extends IStellarAddress
 
     final StellarAddress stellarAddress =
         StellarAddress.fromBase32Addr(values.elementAt(5));
-    BigInt? id = values.elementAt(6);
+    final BigInt? id = values.elementAt(6);
 
-    StellarMultiSignatureAddress multiSigAccount =
+    final StellarMultiSignatureAddress multiSigAccount =
         StellarMultiSignatureAddress.fromCborBytesOrObject(
             obj: values.getCborTag(11));
     final String? accountName = values.elementAt(12);

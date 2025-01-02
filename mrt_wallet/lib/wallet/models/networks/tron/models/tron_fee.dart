@@ -101,7 +101,7 @@ class TronFee {
       energy = BigInt.zero;
     }
 
-    BigInt consumedBandwidth = bandWidth;
+    final BigInt consumedBandwidth = bandWidth;
     if (resource.howManyBandwIth > bandWidth && signature == 1) {
       bandWidth = BigInt.zero;
     }

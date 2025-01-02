@@ -4,8 +4,7 @@ import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class EthereumWeb3SwitchEthereumChainView extends StatelessWidget {
-  const EthereumWeb3SwitchEthereumChainView({required this.request, Key? key})
-      : super(key: key);
+  const EthereumWeb3SwitchEthereumChainView({required this.request, super.key});
   final Web3EthereumSwitchEthereumChain request;
   @override
   Widget build(BuildContext context) {
@@ -21,25 +20,17 @@ class EthereumWeb3SwitchEthereumChainView extends StatelessWidget {
           ContainerWithBorder(
             child: Row(
               children: [
-                CircleTokenImageView(
-                  request.request.chain.network.token,
-                  radius: 40,
-                ),
+                CircleTokenImageView(request.request.chain.network.token,
+                    radius: APPConst.circleRadius25),
                 WidgetConstant.width8,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        request.request.chain.network.networkName,
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context),
-                      ),
-                      Text(
-                        request.request.chain.chainId.toRadix16,
-                        style: context.colors.onPrimaryContainer
-                            .bodySmall(context),
-                      )
+                      Text(request.request.chain.network.networkName,
+                          style: context.onPrimaryTextTheme.bodyMedium),
+                      Text(request.request.chain.chainId.toRadix16,
+                          style: context.onPrimaryTextTheme.bodySmall)
                     ],
                   ),
                 ),
@@ -52,25 +43,17 @@ class EthereumWeb3SwitchEthereumChainView extends StatelessWidget {
           ContainerWithBorder(
             child: Row(
               children: [
-                CircleTokenImageView(
-                  request.newChain.network.token,
-                  radius: 40,
-                ),
+                CircleTokenImageView(request.newChain.network.token,
+                    radius: APPConst.circleRadius25),
                 WidgetConstant.width8,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        request.newChain.network.networkName,
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context),
-                      ),
-                      Text(
-                        request.newChain.chainId.toRadix16,
-                        style: context.colors.onPrimaryContainer
-                            .bodySmall(context),
-                      )
+                      Text(request.newChain.network.networkName,
+                          style: context.onPrimaryTextTheme.bodyMedium),
+                      Text(request.newChain.chainId.toRadix16,
+                          style: context.onPrimaryTextTheme.bodySmall)
                     ],
                   ),
                 ),

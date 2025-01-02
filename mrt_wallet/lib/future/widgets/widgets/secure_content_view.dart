@@ -14,8 +14,7 @@ class SecureContentView extends StatelessWidget {
       this.widgetContent,
       this.showButtonTitle,
       this.contentName,
-      Key? key})
-      : super(key: key);
+      super.key});
   final String? content;
   final Widget? widgetContent;
   final bool show;

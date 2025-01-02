@@ -11,13 +11,11 @@ import 'package:mrt_wallet/wallet/api/services/models/models/request_completer.d
 import 'package:mrt_wallet/wallet/api/services/models/models/socket_status.dart';
 
 class SSLService<T extends APIProvider> extends BaseSocketService<T> {
-  SSLService({required this.url, required this.provider});
+  SSLService({required this.provider});
   @override
   final T provider;
   @override
   final APIServiceTracker tracker = APIServiceTracker();
-  @override
-  final String url;
 
   final _lock = SynchronizedLock();
   SecureSocket? _socket;
@@ -25,12 +23,11 @@ class SSLService<T extends APIProvider> extends BaseSocketService<T> {
   StreamSubscription<List<int>>? _subscription;
   @override
   bool get isConnected => _status == SocketStatus.connect;
-  List<int> _toRequest(String params) {
-    final req = "$params\n";
-    return StringUtils.encode(req);
+  List<int> _toRequest(List<int> params) {
+    return params + "\n".codeUnits;
   }
 
-  final Map<int, SocketRequestCompeleter> _requests = {};
+  final Map<int, SocketRequestCompleter> _requests = {};
   void _add(List<int> message) {
     _socket?.add(message);
   }
@@ -61,7 +58,7 @@ class SSLService<T extends APIProvider> extends BaseSocketService<T> {
     await _lock.synchronized(() async {
       if (_status != SocketStatus.disconnect) return;
       final result = await MethodUtils.call(() async {
-        final result = url.split(":");
+        final result = provider.callUrl.split(":");
         final socket = await SecureSocket.connect(
             result.first, int.parse(result[1]),
             onBadCertificate: (certificate) => true,
@@ -79,7 +76,7 @@ class SSLService<T extends APIProvider> extends BaseSocketService<T> {
   }
 
   Future<Map<String, dynamic>> post(
-      SocketRequestCompeleter message, Duration timeout) async {
+      SocketRequestCompleter message, Duration timeout) async {
     try {
       return providerCaller(() async {
         _requests[message.id] = message;

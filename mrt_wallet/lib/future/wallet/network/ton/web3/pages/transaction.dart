@@ -90,8 +90,7 @@ class TonWeb3TransactionFieldsView extends StatelessWidget {
 
 class _TonWeb3TransactionMessageView extends StatelessWidget {
   const _TonWeb3TransactionMessageView(
-      {required this.message, required this.controller, Key? key})
-      : super(key: key);
+      {required this.message, required this.controller});
   final TonWeb3TransactionMessageInfo message;
   final Web3TonTransactionRequestController controller;
 
@@ -124,8 +123,7 @@ class _TonWeb3TransactionMessageView extends StatelessWidget {
 }
 
 class _JettonInitializeStateView extends StatelessWidget {
-  const _JettonInitializeStateView({required this.initState, Key? key})
-      : super(key: key);
+  const _JettonInitializeStateView({required this.initState});
   final String initState;
 
   @override
@@ -140,15 +138,16 @@ class _JettonInitializeStateView extends StatelessWidget {
         ContainerWithBorder(
             child: CopyTextIcon(
                 dataToCopy: initState,
-                widget: Text(initState,
-                    maxLines: 3, overflow: TextOverflow.ellipsis))),
+                color: context.onPrimaryContainer,
+                widget: OneLineTextWidget(initState,
+                    maxLine: 3, style: context.onPrimaryTextTheme.bodyMedium))),
       ],
     );
   }
 }
 
 class _JettonPayloadView extends StatelessWidget {
-  const _JettonPayloadView(this.payload, {Key? key}) : super(key: key);
+  const _JettonPayloadView(this.payload);
   final JettonContractTonTransactionPayload payload;
 
   @override
@@ -165,7 +164,7 @@ class _JettonPayloadView extends StatelessWidget {
           radius: APPConst.circleRadius25,
           showBalance: isAccountJetton,
           onSelect: isAccountJetton ? null : () {},
-          onTapWhenOnRemove: false,
+          enableTap: false,
           onSelectWidget: TappedTooltipView(
               tooltipWidget: ToolTipView(
             message: "unknow_jetton_owner".tr,
@@ -187,8 +186,7 @@ class _JettonPayloadView extends StatelessWidget {
 }
 
 class _PayloadContentView extends StatelessWidget {
-  const _PayloadContentView({required this.payload, Key? key})
-      : super(key: key);
+  const _PayloadContentView({required this.payload});
   final TonWeb3TransactionPayload payload;
   Map<String, dynamic> get content => payload.contentJson;
   bool get isUnknowPayload => payload.type.isUnknown;
@@ -201,7 +199,7 @@ class _PayloadContentView extends StatelessWidget {
         Text("content".tr, style: context.textTheme.labelLarge),
         Text("content_of_payload".tr),
         WidgetConstant.height8,
-        APPExpansionListTime(
+        APPExpansionListTile(
             trailing: isUnknowPayload
                 ? TappedTooltipView(
                     tooltipWidget: ToolTipView(
@@ -210,10 +208,10 @@ class _PayloadContentView extends StatelessWidget {
                   ))
                 : null,
             title: Text(payload.type.name.camelCase,
-                style: context.colors.onPrimaryContainer.bodyMedium(context)),
+                style: context.onPrimaryTextTheme.bodyMedium),
             subtitle: isUnknowPayload
                 ? Text("payload_deserialize_failed".tr,
-                    style: context.colors.onPrimaryContainer.bodySmall(context))
+                    style: context.onPrimaryTextTheme.bodySmall)
                 : null,
             children: List.generate(content.length, (index) {
               final key = content.keys.elementAt(index);
@@ -229,18 +227,17 @@ class _PayloadContentView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(key.camelCase,
-                            style: context.colors.onPrimaryContainer
-                                .lableLarge(context)),
+                            style: context.onPrimaryTextTheme.titleMedium),
+                        WidgetConstant.height8,
                         ContainerWithBorder(
-                          backgroundColor: context.colors.onPrimaryContainer,
+                          backgroundColor: context.onPrimaryContainer,
                           constraints: null,
                           child: CopyTextIcon(
                             dataToCopy: value.toString(),
                             isSensitive: false,
-                            color: context.colors.primaryContainer,
+                            color: context.primaryContainer,
                             widget: SelectableText(value.toString(),
-                                style: context.colors.primaryContainer
-                                    .bodyMedium(context),
+                                style: context.primaryTextTheme.bodyMedium,
                                 maxLines: 4,
                                 minLines: 1),
                           ),

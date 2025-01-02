@@ -13,6 +13,7 @@ class Web3EthereumConst {
   /// method name
   static const String sendTransaction = "eth_sendTransaction";
   static const String personalSign = "personal_sign";
+  static const String ethSign = "eth_sign";
   static const String typedData = "eth_signTypedData";
   static const String typedDataV3 = "eth_signTypedData_v3";
   static const String typedDataV4 = "eth_signTypedData_v4";

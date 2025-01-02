@@ -4,7 +4,7 @@ class EthereumPageController extends PageNetworkController {
   int _requestId = 0;
   ProxyMethodHandler<EIP1193>? _ethereum;
 
-  EthereumPageController();
+  EthereumPageController(super.postMessage);
 
   ProxyMethodHandler<EIP1193> _setupEIP() {
     final eip = EIP1193.setup(
@@ -71,7 +71,7 @@ class EthereumPageController extends PageNetworkController {
     if (jsObject == null || !_listeners.containsKey(type)) return;
     final listeners = <JSFunction>[..._listeners[type]!];
     for (final i in listeners) {
-      i.callAsFunction(i, jsObject);
+      i.callAsFunction(null, jsObject);
     }
   }
 

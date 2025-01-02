@@ -28,11 +28,11 @@ import 'rendering/sliver_cross_axis_constrained.dart';
 /// [alignment] specifies how to align the child where -1 is left +1 is right.
 class SliverCrossAxisConstrained extends SingleChildRenderObjectWidget {
   const SliverCrossAxisConstrained({
-    Key? key,
+    super.key,
     required this.maxCrossAxisExtent,
-    required Widget child,
+    required Widget super.child,
     this.alignment = 0,
-  }) : super(key: key, child: child);
+  });
 
   /// Max allowed limit of the cross axis
   final double maxCrossAxisExtent;

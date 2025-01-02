@@ -32,7 +32,7 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
             for (final i in TronUtils.tronFrozenReosurce)
               i: Text(i.name.toLowerCase().camelCase)
           },
-          label: "resource".tr,
+          hint: "resource".tr,
           value: validator.resource.value,
           onChanged: (p0) {
             validator.setValue(validator.resource, p0);
@@ -53,7 +53,10 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                     ContainerWithBorder(
                         child: CoinPriceView(
                             token: account.network.coinParam.token,
-                            balance: validator.maxResourceBalance.amoumt)),
+                            balance: validator.maxResourceBalance.amoumt,
+                            showTokenImage: true,
+                            symbolColor: context.onPrimaryContainer,
+                            style: context.onPrimaryTextTheme.titleMedium)),
                     WidgetConstant.height20,
                     ReceiptAddressView(
                       address: validator.destination.value,
@@ -90,6 +93,7 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "delegated_resource".tr,
+                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: account.network.coinParam.token,
                             max: validator.maxResourceBalance.amoumt.balance,
@@ -133,7 +137,8 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                             Text("tron_delegate_lock_time_desc".tr),
                             WidgetConstant.height8,
                             ContainerWithBorder(
-                                onRemoveIcon: const Icon(Icons.edit),
+                                onRemoveIcon: Icon(Icons.edit,
+                                    color: context.onPrimaryContainer),
                                 onRemove: () {
                                   context
                                       .openSliverBottomSheet<BigRational>(
@@ -168,7 +173,8 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                                         child: RichText(
                                             text: TextSpan(
                                                 style: context
-                                                    .textTheme.bodyMedium,
+                                                    .onPrimaryTextTheme
+                                                    .bodyMedium,
                                                 children: [
                                           if (validator.lockPeriod.value ==
                                               null)
@@ -180,8 +186,9 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                                                     ?.toString()
                                                     .to3Digits),
                                             TextSpan(
-                                                style:
-                                                    context.textTheme.bodySmall,
+                                                style: context
+                                                    .onPrimaryTextTheme
+                                                    .bodySmall,
                                                 text:
                                                     " (${TronUtils.delegatedLockPeriodToDateTime(validator.lockPeriod.value!.toBigInt()).toDateAndTime()})")
                                           ],
@@ -190,7 +197,10 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                                       message:
                                           "tron_delegate_lock_time_desc2".tr,
                                       waitDuration: null,
-                                      child: const Icon(Icons.help),
+                                      child: Icon(
+                                        Icons.help,
+                                        color: context.onPrimaryContainer,
+                                      ),
                                     )
                                   ],
                                 ))

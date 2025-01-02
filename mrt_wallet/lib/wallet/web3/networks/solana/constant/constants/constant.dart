@@ -1,6 +1,5 @@
 class Web3SolanaConst {
   static const String sendTransaction = "solana_sendTransaction";
-  static const String sendAllTransactions = "solana_sendAllTransactions";
   static const String signAllTransactions = "solana_signAllTransactions";
   static const String signMessage = "solana_signMessage";
   static const String signTransaction = "solana_signTransaction";

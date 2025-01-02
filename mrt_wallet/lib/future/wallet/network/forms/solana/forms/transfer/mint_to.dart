@@ -67,8 +67,8 @@ class SolanaMintToForm extends SolanaTransactionForm {
   List<TransactionFormField> get fields =>
       [mint, destination, authority, programId, amount];
 
-  SolanaAccountInfo? _destinationAccount;
-  SolanaAccountInfo? get destinationAccount => _destinationAccount;
+  SolanaTransferDestinationInfo? _destinationAccount;
+  SolanaTransferDestinationInfo? get destinationAccount => _destinationAccount;
 
   final Cancelable _cancelable = Cancelable();
   final GlobalKey<StreamWidgetState> accountProgressKey =
@@ -92,17 +92,18 @@ class SolanaMintToForm extends SolanaTransactionForm {
       return;
     }
     accountProgressKey.process();
+    final address = destination.value!.networkAddress;
     final result = await MethodUtils.call(() async {
-      final pda = AssociatedTokenAccountProgramUtils.associatedTokenAccount(
-          mint: mint.value!.networkAddress,
-          owner: destination.value!.networkAddress);
-      final info = await provider!.getAccountInfo(pda.address);
-      if (info == null) return info;
+      final info = await provider!.getAccountInfo(address);
+      return info;
     }, cancelable: _cancelable);
     if (result.hasError) {
       _fetchingAccountError = result.error!.tr;
     } else {
-      _destinationAccount = result.result;
+      if (result.result != null) {
+        _destinationAccount = SolanaTransferDestinationInfo(
+            account: result.result!, address: address);
+      }
     }
     accountProgressKey.idle();
     onChanged?.call();
@@ -118,14 +119,19 @@ class SolanaMintToForm extends SolanaTransactionForm {
         mint: mint.value!.networkAddress,
         destination: pda.address,
         authority: authority.value!.networkAddress);
+    final info = await provider!.getAccountInfo(pda.address);
+    AssociatedTokenAccountProgram? associatedTokenAccountProgram;
+    if (info == null) {
+      associatedTokenAccountProgram =
+          AssociatedTokenAccountProgram.associatedTokenAccount(
+              payer: owner,
+              associatedToken: pda.address,
+              owner: destination.value!.networkAddress,
+              mint: mint.value!.networkAddress,
+              tokenProgramId: programId.value!.networkAddress);
+    }
     final List<TransactionInstruction> instructions = [
-      if (_destinationAccount == null)
-        AssociatedTokenAccountProgram.associatedTokenAccount(
-            payer: owner,
-            associatedToken: pda.address,
-            owner: destination.value!.networkAddress,
-            mint: mint.value!.networkAddress,
-            tokenProgramId: programId.value!.networkAddress),
+      if (associatedTokenAccountProgram != null) associatedTokenAccountProgram,
       mintTo,
     ];
     return instructions;

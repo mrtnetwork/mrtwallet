@@ -42,11 +42,9 @@ class TronCreateWitnessFieldsView extends StatelessWidget {
               },
             );
           },
-          onRemoveIcon: validator.url.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(validator.url.hasValue),
           child: Text(validator.url.value?.orEmpty ?? "tap_to_input_value".tr,
-              maxLines: 3),
+              maxLines: 3, style: context.onPrimaryTextTheme.bodyMedium),
         ),
       ],
     );

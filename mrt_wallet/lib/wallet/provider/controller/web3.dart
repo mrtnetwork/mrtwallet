@@ -79,13 +79,15 @@ mixin Web3Impl
     final auth = await _getOrCreateAppAuthenticated(info);
     final sha256 = await crypto.generateHash(
         type: CryptoRequestHashingType.sha256,
-        dataBytes: StringUtils.encode(info.clientId));
+        dataBytes: StringUtils.encode(info.clientId),
+        isolate: false);
     final message = Web3ChainMessage(
         authenticated: auth,
-        message: _appChains.toCbor().encode(),
+        message: _appChains.toCbor(onlyWeb3Chains: true).encode(),
         type: Web3MessageTypes.chains);
-    final encryptedKey = await crypto.cryptoRequest(CryptoRequestEncryptChacha(
-        message: message.toCbor().encode(), key: sha256));
+    final encryptedKey = await crypto.cryptoMainRequest(
+        CryptoRequestEncryptChacha(
+            message: message.toCbor().encode(), key: sha256));
     return Web3EncryptedMessage(
         message: encryptedKey.encrypted, nonce: encryptedKey.nonce);
   }
@@ -94,10 +96,11 @@ mixin Web3Impl
     final auth = await _getOrCreateAppAuthenticated(info);
     final message = Web3ChainMessage(
         authenticated: auth,
-        message: _appChains.toCbor().encode(),
+        message: _appChains.toCbor(onlyWeb3Chains: true).encode(),
         type: Web3MessageTypes.chains);
-    final encryptedKey = await crypto.cryptoRequest(CryptoRequestEncryptChacha(
-        message: message.toCbor().encode(), key: auth.token));
+    final encryptedKey = await crypto.cryptoMainRequest(
+        CryptoRequestEncryptChacha(
+            message: message.toCbor().encode(), key: auth.token));
     return Web3EncryptedMessage(
         message: encryptedKey.encrypted, nonce: encryptedKey.nonce);
   }
@@ -116,13 +119,15 @@ mixin Web3Impl
       final token = await crypto.generateRandomBytes();
       final applicationKey = await crypto.generateHashString(
           type: CryptoRequestHashingType.md4,
-          dataBytes: info.applicationId.codeUnits);
+          dataBytes: info.applicationId.codeUnits,
+          isolate: false);
       final permission = Web3APPAuthentication(
-          name: info.name,
-          applicationKey: applicationKey,
-          applicationId: info.applicationId,
-          icon: info.image,
-          token: token);
+        name: info.name,
+        applicationKey: applicationKey,
+        applicationId: info.applicationId,
+        icon: info.image,
+        token: token,
+      );
       await _core._savePermission(permission: permission, wallet: _wallet);
       return permission;
     }
@@ -177,7 +182,7 @@ mixin Web3Impl
     final request = requestParams.toRequest(
         request: walletRequest, chain: chain, authenticated: authenticated);
     request.verifyPermissioon();
-    Object? result = await _getWeb3Result(request: request);
+    final Object? result = await _getWeb3Result(request: request);
     request.authenticated
         .addActivity(param: request.params, url: request.info.info.url);
     await _core._savePermission(wallet: _wallet, permission: authenticated);
@@ -187,7 +192,7 @@ mixin Web3Impl
         authenticated: authenticated,
         network: chain.network.type,
         chain: request.params.isPermissionRequest
-            ? _appChains.toCbor().encode()
+            ? _appChains.toCbor(onlyWeb3Chains: true).encode()
             : null);
   }
 
@@ -198,10 +203,10 @@ mixin Web3Impl
     if (!authenticated.active) {
       throw Web3RequestExceptionConst.bannedHost;
     }
-    Web3EncryptedMessage encryotedMessage =
+    final Web3EncryptedMessage encryotedMessage =
         Web3EncryptedMessage.deserialize(bytes: walletRequest.request.data);
     final CryptoDecryptChachaResponse decrypt = await crypto
-        .cryptoRequest(CryptoRequestDecryptChacha(
+        .cryptoMainRequest(CryptoRequestDecryptChacha(
             key: authenticated.token,
             nonce: encryotedMessage.nonce,
             message: encryotedMessage.message))
@@ -240,7 +245,7 @@ mixin Web3Impl
           requestId: walletRequest.request.requestId);
     }
     final CryptoEncryptChachaResponse encryptResponse =
-        await crypto.cryptoRequest(CryptoRequestEncryptChacha(
+        await crypto.cryptoMainRequest(CryptoRequestEncryptChacha(
             key: authenticated.token, message: response.toCbor().encode()));
     return Web3EncryptedMessage(
         message: encryptResponse.encrypted, nonce: encryptResponse.nonce);
@@ -252,9 +257,9 @@ mixin Web3Impl
     final message = Web3ChainMessage(
         type: Web3MessageTypes.chains,
         authenticated: application,
-        message: _appChains.toCbor().encode());
+        message: _appChains.toCbor(onlyWeb3Chains: true).encode());
     final CryptoEncryptChachaResponse encryptResponse =
-        await crypto.cryptoRequest(CryptoRequestEncryptChacha(
+        await crypto.cryptoMainRequest(CryptoRequestEncryptChacha(
             key: application.token, message: message.toCbor().encode()));
     return Web3EncryptedMessage(
         message: encryptResponse.encrypted, nonce: encryptResponse.nonce);

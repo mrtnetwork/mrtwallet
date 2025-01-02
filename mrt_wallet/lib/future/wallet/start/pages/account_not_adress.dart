@@ -7,8 +7,7 @@ import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 
 class NoAccountFoundInChainWidget extends StatelessWidget {
   const NoAccountFoundInChainWidget(this.chainAccount,
-      {this.onClosePage, Key? key})
-      : super(key: key);
+      {this.onClosePage, super.key});
   final Chain chainAccount;
   final DynamicVoid? onClosePage;
 

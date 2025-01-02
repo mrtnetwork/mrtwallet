@@ -45,47 +45,50 @@ class _BackupWalletState extends State<_BackupWallet> with SafeState {
     return PageProgress(
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
-      child: (c) => ConstraintsBoxView(
-        padding: WidgetConstant.padding20,
-        alignment: Alignment.center,
-        child: AnimatedSwitcher(
-          duration: APPConst.animationDuraion,
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                PageTitleSubtitle(
-                    title: "backup_wallet".tr,
-                    body: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("backup_wallet_desc".tr),
-                        WidgetConstant.height8,
-                        Text("backup_wallet_desc1".tr)
-                      ],
-                    )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      child: (c) => Center(
+        child: CustomScrollView(
+          shrinkWrap: true,
+          slivers: [
+            SliverConstraintsBoxView(
+              padding: WidgetConstant.padding20,
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: WidgetConstant.paddingVertical20,
-                      child: FilledButton.icon(
-                          label: Text("create_backup".tr),
-                          onPressed: () {
-                            context.openSliverDialog(
-                                (ctx) => GenerateBackupView(
-                                    data: "",
-                                    password: widget.password,
-                                    type: MrtBackupTypes.wallet),
-                                "backup_wallet".tr);
-                          },
-                          icon: const Icon(Icons.backup)),
+                    PageTitleSubtitle(
+                        title: "backup_wallet".tr,
+                        body: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("backup_wallet_desc".tr),
+                            WidgetConstant.height8,
+                            Text("backup_wallet_desc1".tr)
+                          ],
+                        )),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Padding(
+                          padding: WidgetConstant.paddingVertical20,
+                          child: FilledButton.icon(
+                              label: Text("create_backup".tr),
+                              onPressed: () {
+                                context.openSliverDialog(
+                                    (ctx) => GenerateBackupView(
+                                        data: "",
+                                        password: widget.password,
+                                        type: MrtBackupTypes.wallet),
+                                    "backup_wallet".tr);
+                              },
+                              icon: const Icon(Icons.backup)),
+                        )
+                      ],
                     )
                   ],
-                )
-              ],
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

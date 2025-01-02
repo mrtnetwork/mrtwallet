@@ -5,8 +5,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TonTransactionSelectTokenList extends StatefulWidget {
-  const TonTransactionSelectTokenList({required this.account, Key? key})
-      : super(key: key);
+  const TonTransactionSelectTokenList({required this.account, super.key});
   final ITonAddress account;
 
   @override

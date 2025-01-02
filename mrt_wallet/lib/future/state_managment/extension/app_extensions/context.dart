@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/theme/theme.dart';
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 extension CustomColorsSchame on ColorScheme {
-  Color get disable => onSurface.withOpacity(0.38);
+  Color get disable => onSurface.wOpacity(0.38);
   Color get orange => Colors.orange;
   Color get green => Colors.green;
   Color get transparent => Colors.transparent;
 }
 
 extension QuickColor on Color {
+  Color wOpacity(double opacity) {
+    assert(opacity >= 0.0 && opacity <= 1.0);
+    return withAlpha((255.0 * opacity).round());
+  }
+
   TextStyle? titleLarge(BuildContext context) {
     return context.textTheme.titleLarge?.copyWith(color: this);
   }
@@ -33,11 +39,11 @@ extension QuickColor on Color {
   }
 
   Color get opacity5 {
-    return withOpacity(0.5);
+    return wOpacity(0.5);
   }
 
   Color get opacity1 {
-    return withOpacity(0.1);
+    return wOpacity(0.1);
   }
 }
 
@@ -54,7 +60,10 @@ extension QuickContextAccsess on BuildContext {
   ThemeData get theme => Theme.of(this);
   TextTheme get textTheme => theme.textTheme;
   ColorScheme get colors => theme.colorScheme;
-
+  Color get onPrimaryContainer => colors.onPrimaryContainer;
+  Color get primaryContainer => colors.primaryContainer;
+  TextTheme get onPrimaryTextTheme => ThemeController.onPrimary;
+  TextTheme get primaryTextTheme => ThemeController.primary;
   MediaQueryData get mediaQuery => MediaQuery.of(this);
   bool get hasFocus => FocusScope.of(this).hasFocus;
   bool get hasParentFocus => FocusScope.of(this).parent?.hasFocus ?? false;
@@ -71,6 +80,23 @@ extension QuickContextAccsess on BuildContext {
   Future<T?> to<T>(String path, {dynamic argruments}) async {
     if (mounted) {
       final push = await Navigator.pushNamed(this, path, arguments: argruments);
+      return (push as T?);
+    }
+    return null;
+  }
+
+  Future<T?> mybeTo<T>(String? path, {dynamic argruments}) async {
+    if (path != null && mounted) {
+      final push = await Navigator.pushNamed(this, path, arguments: argruments);
+      return (push as T?);
+    }
+    return null;
+  }
+
+  Future<T?> toPage<T>(Widget page, {dynamic argruments}) async {
+    if (mounted) {
+      final push = await Navigator.push(
+          this, MaterialPageRoute(builder: (context) => page));
       return (push as T?);
     }
     return null;
@@ -115,6 +141,9 @@ extension QuickContextAccsess on BuildContext {
       List<Widget> Function(BuildContext context)? appbarActions,
       List<Widget> slivers = const [],
       bool centerContent = true}) async {
+    if (minExtent > maxExtend) {
+      minExtent = maxExtend;
+    }
     if (!mounted) return null;
     return await showModalBottomSheet<T>(
       context: this,

@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mrt_wallet/app/core.dart' show APPConst, PlatformUtils;
 import 'package:mrt_wallet/app/models/models/typedef.dart' show StringVoid;
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
@@ -52,7 +53,7 @@ class PasteTextIconState extends State<PasteTextIcon> with SafeState {
       final data = await PlatformUtils.readClipboard();
       if (data != txt) return;
       PlatformUtils.writeClipboard('');
-    }, milliseconds: APPConst.tenSecoundDuration);
+    }, duration: APPConst.tenSecoundDuration);
   }
 
   @override

@@ -61,8 +61,7 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
             titleStyle: context.textTheme.titleMedium,
             body: Text("memo_data_desc".tr)),
         ContainerWithBorder(
-          onRemoveIcon:
-              memoData == null ? const Icon(Icons.add) : const Icon(Icons.edit),
+          onRemoveIcon: AddOrEditIconWidget(memoData != null),
           onRemove: () {
             context
                 .openSliverBottomSheet<String>(
@@ -85,7 +84,10 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
                 )
                 .then(onSetupData);
           },
-          child: Text(memoData ?? "tap_to_input_value".tr),
+          child: Text(
+            memoData ?? "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         WidgetConstant.height20,
         PageTitleSubtitle(
@@ -93,9 +95,7 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
             title: "memo_format".tr,
             body: Text("memo_format_desc".tr)),
         ContainerWithBorder(
-          onRemoveIcon: memoFormat == null
-              ? const Icon(Icons.add)
-              : const Icon(Icons.edit),
+          onRemoveIcon: AddOrEditIconWidget(memoFormat != null),
           onRemove: () {
             context
                 .openSliverBottomSheet<String>(
@@ -118,7 +118,10 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
                 )
                 .then(onSetupFormat);
           },
-          child: Text(memoFormat ?? "tap_to_input_value".tr),
+          child: Text(
+            memoFormat ?? "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         WidgetConstant.height20,
         PageTitleSubtitle(
@@ -126,8 +129,7 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
             title: "memo_type".tr,
             body: Text("memo_type_desc".tr)),
         ContainerWithBorder(
-          onRemoveIcon:
-              memoType == null ? const Icon(Icons.add) : const Icon(Icons.edit),
+          onRemoveIcon: AddOrEditIconWidget(memoType != null),
           onRemove: () {
             context
                 .openSliverBottomSheet<String>(
@@ -150,7 +152,10 @@ class _CreateRippleMemoViewState extends State<CreateRippleMemoView> {
                 )
                 .then(onSetupType);
           },
-          child: Text(memoType ?? "tap_to_input_value".tr),
+          child: Text(
+            memoType ?? "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -27,7 +27,7 @@ class LiveElement extends StatelessElement with StatelessObserver {
 }
 
 abstract class LiveStatelessWidget extends StatelessWidget {
-  const LiveStatelessWidget({Key? key}) : super(key: key);
+  const LiveStatelessWidget({super.key});
   @override
   StatelessElement createElement() => LiveElement(this);
 }

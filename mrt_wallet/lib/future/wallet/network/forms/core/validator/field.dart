@@ -67,7 +67,7 @@ class TransactionListFormField<T> {
     return true;
   }
 
-  bool removeValue(T v) {
+  bool removeValue(T? v) {
     return _value.remove(v);
   }
 }

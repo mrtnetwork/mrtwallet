@@ -5,8 +5,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/crypto/keys/import/import_keys.dart';
 
 class ImportCustomKeyToWalletView extends StatefulWidget {
-  const ImportCustomKeyToWalletView({required this.keypair, Key? key})
-      : super(key: key);
+  const ImportCustomKeyToWalletView({required this.keypair, super.key});
   final ImportCustomKeys keypair;
 
   @override
@@ -25,20 +24,16 @@ class ImportCustomKeyToWalletViewState
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitleSubtitle(
               title: "import_private_key".tr,
-              body: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("import_private_key_desc".tr),
-                  WidgetConstant.height8,
-                  Text("export_private_key_desc".tr)
-                ],
-              )),
+              body: LargeTextView([
+                "import_private_key_desc".tr,
+                "export_private_key_desc".tr,
+              ])),
           Text("private_key".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           Stack(
@@ -53,18 +48,24 @@ class ImportCustomKeyToWalletViewState
                 child: ContainerWithBorder(
                     child: CopyTextWithBarcode(
                   secureBarcode: true,
+                  color: context.onPrimaryContainer,
                   barcodeWidget: ContainerWithBorder(
                       child: CopyTextIcon(
                           isSensitive: true,
+                          color: context.onPrimaryContainer,
                           dataToCopy: widget.keypair.privateKey,
                           widget: ObscureTextView(widget.keypair.privateKey,
-                              maxLine: 3))),
+                              maxLine: 3,
+                              style: context.onPrimaryTextTheme.bodyMedium))),
                   underBarcodeWidget: ErrorTextContainer(
                       margin: WidgetConstant.paddingVertical10,
                       error: "image_store_alert_keys".tr),
                   dataToCopy: widget.keypair.privateKey,
                   barcodeTitle: "private_key".tr,
-                  widget: SelectableText(widget.keypair.privateKey),
+                  widget: Text(
+                    widget.keypair.privateKey,
+                    style: context.onPrimaryTextTheme.bodyMedium,
+                  ),
                 )),
               ),
               Positioned.fill(
@@ -84,14 +85,20 @@ class ImportCustomKeyToWalletViewState
           ContainerWithBorder(
               child: CopyTextWithBarcode(
             secureBarcode: false,
+            color: context.onPrimaryContainer,
             barcodeWidget: ContainerWithBorder(
                 child: CopyTextIcon(
                     isSensitive: false,
                     dataToCopy: widget.keypair.publicKey,
-                    widget: Text(widget.keypair.publicKey))),
+                    color: context.onPrimaryContainer,
+                    widget: Text(
+                      widget.keypair.publicKey,
+                      style: context.onPrimaryTextTheme.bodyMedium,
+                    ))),
             dataToCopy: widget.keypair.publicKey,
             barcodeTitle: "publick_key".tr,
-            widget: SelectableText(widget.keypair.publicKey),
+            widget: SelectableText(widget.keypair.publicKey,
+                style: context.onPrimaryTextTheme.bodyMedium),
           )),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

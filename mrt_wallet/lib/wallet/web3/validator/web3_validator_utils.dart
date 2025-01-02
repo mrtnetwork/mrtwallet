@@ -104,7 +104,7 @@ class Web3ValidatorUtils {
     if (null is T && value == null) {
       return null as T;
     }
-    List<int>? toBytes = (value ?? "").isEmpty
+    final List<int>? toBytes = (value ?? "").isEmpty
         ? <int>[]
         : StringUtils.tryEncode(value, type: StringEncoding.base64) ??
             StringUtils.tryEncode(value, type: StringEncoding.base64UrlSafe);
@@ -130,7 +130,8 @@ class Web3ValidatorUtils {
     if (null is T && value == null) {
       return null as T;
     }
-    Cell? cell = MethodUtils.nullOnException(() => Cell.fromBase64(value!));
+    final Cell? cell =
+        MethodUtils.nullOnException(() => Cell.fromBase64(value!));
     if (cell != null) {
       return cell as T;
     }

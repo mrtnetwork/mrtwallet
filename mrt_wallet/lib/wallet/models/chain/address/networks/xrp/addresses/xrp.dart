@@ -268,12 +268,11 @@ class IXRPMultisigAddress extends IXRPAddress
       required super.tag,
       required super.tokens,
       required this.multiSignatureAccount,
-      String? accountName})
+      super.accountName})
       : super._(
             keyIndex: const MultiSigAddressIndex(),
             curveType: EllipticCurveTypes.secp256k1,
-            publicKey: const [],
-            accountName: accountName);
+            publicKey: const []);
   @override
   RippleMultiSigNewAddressParams toAccountParams() {
     return RippleMultiSigNewAddressParams(
@@ -322,7 +321,7 @@ class IXRPMultisigAddress extends IXRPAddress
         obj: values.getCborTag(4));
 
     final XRPAddress rippleAddress = XRPAddress(values.elementAt(5));
-    int? tag = values.elementAt(6);
+    final int? tag = values.elementAt(6);
 
     final List<RippleIssueToken> issueTokens = values
         .elementAt<List<dynamic>>(8)
@@ -332,7 +331,7 @@ class IXRPMultisigAddress extends IXRPAddress
         .elementAt<List<dynamic>>(9)
         .map((e) => RippleNFToken.fromCborBytesOrObject(obj: e))
         .toList();
-    RippleMultiSignatureAddress multiSigAccount =
+    final RippleMultiSignatureAddress multiSigAccount =
         RippleMultiSignatureAddress.fromCborBytesOrObject(
             obj: values.getCborTag(11));
     final String? accountName = values.elementAt(12);

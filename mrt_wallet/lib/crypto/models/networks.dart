@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 
 class NetworkType {
   final String name;
@@ -32,6 +32,8 @@ class NetworkType {
       NetworkType._(name: "Kusama", tag: CryptoKeyConst.kusamaNetwork);
   static const NetworkType stellar =
       NetworkType._(name: "Stellar", tag: CryptoKeyConst.stellar);
+  static const NetworkType monero =
+      NetworkType._(name: "Monero", tag: CryptoKeyConst.monero);
 
   static const List<NetworkType> values = [
     bitcoinAndForked,
@@ -45,7 +47,8 @@ class NetworkType {
     cosmos,
     polkadot,
     kusama,
-    stellar
+    stellar,
+    monero
   ];
 
   static NetworkType fromTag(List<int>? tag) {

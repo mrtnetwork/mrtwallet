@@ -14,7 +14,7 @@ class BigRangeTextInputFormatter extends TextInputFormatter {
     String newString = newValue.text;
 
     if (newString.isNotEmpty) {
-      BigInt? enteredNumber = BigInt.tryParse(newString);
+      final BigInt? enteredNumber = BigInt.tryParse(newString);
       if (enteredNumber != null) {
         if (enteredNumber < min) {
           return BigRetionalRangeTextInputFormatter._buildOldValue(oldValue);
@@ -48,7 +48,7 @@ class RangeTextInputFormatter extends TextInputFormatter {
     String newString = newValue.text;
 
     if (newString.isNotEmpty) {
-      int? enteredNumber = int.tryParse(newString);
+      final int? enteredNumber = int.tryParse(newString);
       if (enteredNumber != null) {
         if (enteredNumber < min) {
           return BigRetionalRangeTextInputFormatter._buildOldValue(oldValue);
@@ -79,13 +79,14 @@ class BigRetionalRangeTextInputFormatter extends TextInputFormatter {
 
   BigRetionalRangeTextInputFormatter(
       {required this.min,
-      required this.max,
+      this.max,
       this.maxScale,
       this.allowSign = true,
       this.allowDecimal = true});
 
   static TextEditingValue _buildOldValue(TextEditingValue oldValue) {
-    BigRational? enteredNumber = BigRational.tryParseDecimaal(oldValue.text);
+    final BigRational? enteredNumber =
+        BigRational.tryParseDecimaal(oldValue.text);
     if (enteredNumber == null) {
       return const TextEditingValue(
         text: "",
@@ -98,9 +99,10 @@ class BigRetionalRangeTextInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    String newString = newValue.text;
+    final String newString = newValue.text;
     if (newString.isNotEmpty) {
-      BigRational? enteredNumber = BigRational.tryParseDecimaal(newString);
+      final BigRational? enteredNumber =
+          BigRational.tryParseDecimaal(newString);
       if (enteredNumber != null) {
         if (min != null && enteredNumber < min!) {
           return _buildOldValue(oldValue);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
@@ -14,9 +15,10 @@ class SolanaImportSPLTokensView extends StatelessWidget {
   Widget build(BuildContext context) {
     return NetworkAccountControllerView<SolanaChain>(
       title: "import_spl_tokens".tr,
+      clientRequired: true,
       childBulder: (wallet, account, onAccountChanged) {
         return _SolanaImportSPLTokensView(
-          apiProvider: account.provider()!,
+          apiProvider: account.client,
           account: account,
           wallet: wallet,
         );
@@ -125,78 +127,31 @@ class __SolanaImportSPLTokensViewState
               itemBuilder: () => SliverToBoxAdapter(
                 child: ConstraintsBoxView(
                   padding: WidgetConstant.padding20,
-                  child: ListView.builder(
+                  child: ListView.separated(
                     physics: WidgetConstant.noScrollPhysics,
+                    separatorBuilder: (context, index) =>
+                        WidgetConstant.divider,
                     itemBuilder: (context, index) {
                       final token = tokens.elementAt(index);
                       final bool exist = address.tokens.contains(token);
-                      return Column(
-                        children: [
-                          ContainerWithBorder(
-                            onRemove: () {
-                              context.openSliverDialog(
-                                  (ctx) => DialogTextView(
-                                      buttonWidget: AsyncDialogDoubleButtonView(
-                                        firstButtonPressed: () =>
-                                            onTap(token, exist),
-                                      ),
-                                      text: exist
-                                          ? "remove_token_from_account".tr
-                                          : "add_token_to_your_account".tr),
-                                  exist ? "remove_token".tr : "add_token".tr);
-                            },
-                            onRemoveIcon: Checkbox(
+                      return TokenDetailsView(
+                          onSelect: () {
+                            context.openSliverDialog(
+                                (ctx) => DialogTextView(
+                                    buttonWidget: AsyncDialogDoubleButtonView(
+                                      firstButtonPressed: () =>
+                                          onTap(token, exist),
+                                    ),
+                                    text: exist
+                                        ? "remove_token_from_account".tr
+                                        : "add_token_to_your_account".tr),
+                                exist ? "remove_token".tr : "add_token".tr);
+                          },
+                          onSelectIcon: APPCheckBox(
                               value: exist,
-                              onChanged: (value) {
-                                context.openSliverDialog(
-                                    (ctx) => DialogTextView(
-                                        buttonWidget:
-                                            AsyncDialogDoubleButtonView(
-                                          firstButtonPressed: () =>
-                                              onTap(token, exist),
-                                        ),
-                                        text: exist
-                                            ? "remove_token_from_account".tr
-                                            : "add_token_to_your_account".tr),
-                                    exist ? "remove_token".tr : "add_token".tr);
-                              },
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    CircleTokenImageView(token.token,
-                                        radius: 40),
-                                    WidgetConstant.width8,
-                                    Expanded(
-                                        child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(token.token.name,
-                                            style:
-                                                context.textTheme.labelLarge),
-                                        Text(
-                                          token.mint.address,
-                                          style: context.textTheme.bodySmall,
-                                          maxLines: 1,
-                                        ),
-                                        CoinPriceView(
-                                            liveBalance: token.balance,
-                                            token: token.token,
-                                            style:
-                                                context.textTheme.titleLarge),
-                                      ],
-                                    ))
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const Divider(),
-                        ],
-                      );
+                              ignoring: true,
+                              onChanged: (value) {}),
+                          token: token);
                     },
                     shrinkWrap: true,
                     addAutomaticKeepAlives: false,

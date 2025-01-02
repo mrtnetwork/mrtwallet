@@ -10,7 +10,7 @@ abstract class PageProgressBaseState<T extends StatefulWidget> extends State<T>
   abstract PageProgressStatus _status;
   abstract Widget? _statusWidget;
   abstract final FuncWidgetContext child;
-  get statusWidget => _statusWidget;
+  Widget? get statusWidget => _statusWidget;
   Duration? get backToIdle;
 
   PageProgressStatus get status => _status;
@@ -20,7 +20,9 @@ abstract class PageProgressBaseState<T extends StatefulWidget> extends State<T>
     if (backToIdle == null) return;
     if (status == PageProgressStatus.progress ||
         status == PageProgressStatus.idle ||
-        status == PageProgressStatus.hide) return;
+        status == PageProgressStatus.hide) {
+      return;
+    }
     await Future.delayed(backToIdle ?? Duration.zero);
     updateStream(PageProgressStatus.idle, progressWidget: null);
   }
@@ -114,8 +116,7 @@ class PageProgressState extends PageProgressBaseState<PageProgress> {
 }
 
 class PageProgressChildWidget extends StatelessWidget {
-  const PageProgressChildWidget(this.statusWidget, {Key? key})
-      : super(key: key);
+  const PageProgressChildWidget(this.statusWidget, {super.key});
   final Widget statusWidget;
   @override
   Widget build(BuildContext context) {

@@ -97,7 +97,7 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
                             decoration: BoxDecoration(
                                 borderRadius: WidgetConstant.border8,
                                 color: context.colors.secondaryContainer
-                                    .withOpacity(0.98)),
+                                    .wOpacity(0.98)),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -122,10 +122,9 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
             StreamWidget(
               backToIdle: APPConst.animationDuraion,
               key: buttonState,
-              buttonWidget: FilledButton.icon(
+              buttonWidget: IconButton.filled(
                 onPressed: share,
                 icon: const Icon(Icons.share),
-                label: Text("share_barcode".tr),
               ),
             )
           ],

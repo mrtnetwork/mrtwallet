@@ -14,9 +14,15 @@ typedef OnNetworkAccountChange = void Function(ChainAccount? address);
 
 class NetworkAccountControllerView<T extends APPCHAIN> extends StatefulWidget {
   const NetworkAccountControllerView(
-      {super.key, required this.childBulder, required this.title});
+      {super.key,
+      required this.childBulder,
+      this.title,
+      this.allowEmptyAccount = true,
+      this.clientRequired = true});
   final PageChainBuilder<T> childBulder;
-  final String title;
+  final String? title;
+  final bool allowEmptyAccount;
+  final bool clientRequired;
 
   @override
   State<NetworkAccountControllerView> createState() =>
@@ -29,7 +35,8 @@ class _NetworkAccountControllerViewState<T extends APPCHAIN>
   late Chain account;
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>();
-
+  StreamWidgetStatus status = StreamWidgetStatus.idle;
+  String error = "page_required_address".tr;
   void switchAccount(ChainAccount? updateAddress) async {
     if (updateAddress == null) return;
     if (updateAddress == account.address) return;
@@ -46,6 +53,16 @@ class _NetworkAccountControllerViewState<T extends APPCHAIN>
 
   void _checkAccounts() {
     account = wallet.wallet.chain;
+    if (!widget.allowEmptyAccount && !account.haveAddress) {
+      status = StreamWidgetStatus.error;
+      error = "page_required_address".tr;
+    } else if (account is! T) {
+      status = StreamWidgetStatus.error;
+      error = "requested_chain_differs".tr;
+    } else if (widget.clientRequired && account.clientNullable == null) {
+      status = StreamWidgetStatus.error;
+      error = "page_required_provider".tr;
+    }
   }
 
   @override
@@ -55,14 +72,22 @@ class _NetworkAccountControllerViewState<T extends APPCHAIN>
     _checkAccounts();
   }
 
+  PreferredSizeWidget? appBar() {
+    if (widget.title == null) return null;
+    return AppBar(title: Text(widget.title ?? ''));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      appBar: appBar(),
       body: PageProgress(
+          initialStatus: status,
           backToIdle: APPConst.animationDuraion,
+          initialWidget: ProgressWithTextView(
+            text: error,
+            icon: WidgetConstant.errorIconLarge,
+          ),
           key: progressKey,
           child: (c) =>
               widget.childBulder(wallet, account.cast<T>(), switchAccount)),

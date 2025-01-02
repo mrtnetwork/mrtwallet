@@ -82,8 +82,10 @@ class Web3PageRequestControllerView<T extends Web3RequestControllerState>
                                         ContainerWithBorder(
                                             child: AddressDetailsView(
                                                 address: controller
-                                                    .permissionAccount!)),
-                                        WidgetConstant.height20,
+                                                    .permissionAccount!,
+                                                color: context
+                                                    .onPrimaryContainer)),
+                                        WidgetConstant.height20
                                       ],
                                     ],
                                   ),

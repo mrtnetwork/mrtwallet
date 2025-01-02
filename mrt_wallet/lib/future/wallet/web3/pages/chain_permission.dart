@@ -25,8 +25,7 @@ class UpdateChainPermissionWidget<
       required this.addAccount,
       required this.onChangeChain,
       required this.onChangeDefaultAccount,
-      Key? key})
-      : super(key: key);
+      super.key});
   final CHAIN chain;
   final List<CHAIN> chains;
   final DynamicVoid onUpdateState;
@@ -46,9 +45,8 @@ class UpdateChainPermissionWidget<
         actions: [
           TappedTooltipView(
             tooltipWidget: ToolTipView(
-              message: "switch_permission_chain_desc".tr,
-              child: const Icon(Icons.help),
-            ),
+                message: "switch_permission_chain_desc".tr,
+                child: const Icon(Icons.help)),
           ),
           WidgetConstant.width8,
         ],
@@ -65,10 +63,8 @@ class UpdateChainPermissionWidget<
                     CircleAPPImageView(i.network.token.assetLogo, radius: 15),
                     WidgetConstant.width8,
                     Flexible(
-                      child: OneLineTextWidget(
-                        i.network.token.name,
-                        style: context.textTheme.labelLarge,
-                      ),
+                      child: OneLineTextWidget(i.network.token.name,
+                          style: context.textTheme.labelLarge),
                     )
                   ],
                 )
@@ -79,68 +75,52 @@ class UpdateChainPermissionWidget<
       ),
       SliverPadding(
         padding: WidgetConstant.paddingHorizontal10,
-        sliver: SliverToBoxAdapter(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              WidgetConstant.height8,
-              if (!chain.haveAddress)
-                NoAccountFoundInChainWidget(chain, onClosePage: onUpdateState),
-              APPAnimatedSwitcher(enable: chain, widgets: {
-                chain: (c) => Column(
-                      children: [
-                        ListView.builder(
-                            addAutomaticKeepAlives: false,
-                            shrinkWrap: true,
-                            physics: WidgetConstant.noScrollPhysics,
-                            itemBuilder: (c, index) {
-                              final addr = chain.addresses[index];
-                              final permission = hasPermission(addr as ADDRESS);
-                              return ContainerWithBorder(
-                                onTapWhenOnRemove: false,
-                                onRemove: () {
-                                  addAccount(addr);
-                                },
-                                onRemoveWidget: Column(
-                                  children: [
-                                    IconButton(
-                                      onPressed: () => addAccount(addr),
-                                      icon: IgnorePointer(
-                                        child: Checkbox(
-                                            value: permission != null,
-                                            onChanged: (e) {}),
-                                      ),
-                                    ),
-                                    APPAnimatedSize(
-                                        isActive: permission != null,
-                                        onActive: (context) => IconButton(
-                                            tooltip: "default_address".tr,
-                                            onPressed: () =>
-                                                onChangeDefaultAccount(
-                                                    permission),
-                                            icon: IgnorePointer(
-                                              child: Radio<bool>(
-                                                  toggleable: true,
-                                                  value: permission!
-                                                      .defaultAddress,
-                                                  groupValue: true,
-                                                  onChanged: (e) {}),
-                                            )),
-                                        onDeactive: (context) =>
-                                            WidgetConstant.sizedBox)
-                                  ],
-                                ),
-                                child: AddressDetailsView(address: addr),
-                              );
-                            },
-                            itemCount: chain.addresses.length),
-                        WidgetConstant.height40,
-                      ],
-                    ),
-              }),
-            ],
-          ),
-        ),
+        sliver: APPSliverAnimatedSwitcher(enable: chain.haveAddress, widgets: {
+          true: (context) => SliverList.builder(
+              addAutomaticKeepAlives: false,
+              itemBuilder: (c, index) {
+                final addr = chain.addresses[index];
+                final permission = hasPermission(addr as ADDRESS);
+                return ContainerWithBorder(
+                  enableTap: false,
+                  onRemove: () {
+                    addAccount(addr);
+                  },
+                  onRemoveWidget: Column(
+                    children: [
+                      IconButton(
+                        onPressed: () => addAccount(addr),
+                        icon: IgnorePointer(
+                          child: Checkbox(
+                              value: permission != null, onChanged: (e) {}),
+                        ),
+                      ),
+                      APPAnimatedSize(
+                          isActive: permission != null,
+                          onActive: (context) => IconButton(
+                              tooltip: "default_address".tr,
+                              onPressed: () =>
+                                  onChangeDefaultAccount(permission),
+                              icon: IgnorePointer(
+                                child: Radio<bool>(
+                                    toggleable: true,
+                                    value: permission!.defaultAddress,
+                                    groupValue: true,
+                                    onChanged: (e) {}),
+                              )),
+                          onDeactive: (context) => WidgetConstant.sizedBox)
+                    ],
+                  ),
+                  child: AddressDetailsView(
+                      address: addr, color: context.onPrimaryContainer),
+                );
+              },
+              itemCount: chain.addresses.length),
+          false: (context) => SliverFillRemaining(
+              hasScrollBody: false,
+              child: NoAccountFoundInChainWidget(chain,
+                  onClosePage: onUpdateState))
+        }),
       )
     ]);
   }

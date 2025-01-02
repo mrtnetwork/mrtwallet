@@ -3,7 +3,7 @@ import 'package:mrt_wallet/crypto/utils/solidity/solidity.dart';
 import 'package:on_chain/on_chain.dart';
 import 'package:on_chain/solidity/address/core.dart';
 
-class RPCERC20TokenBalance extends ETHRPCRequest<BigInt> {
+class RPCERC20TokenBalance extends EthereumRequest<BigInt, String> {
   RPCERC20TokenBalance(
     this.contractAddress,
     this.accountAddress, {
@@ -11,7 +11,7 @@ class RPCERC20TokenBalance extends ETHRPCRequest<BigInt> {
   }) : super(blockNumber: blockNumber ?? BlockTagOrNumber.latest);
 
   @override
-  EthereumMethods get method => EthereumMethods.call;
+  String get method => EthereumMethods.call.value;
 
   final String contractAddress;
   final SolidityAddress accountAddress;
@@ -20,7 +20,7 @@ class RPCERC20TokenBalance extends ETHRPCRequest<BigInt> {
 
   @override
   BigInt onResonse(result) {
-    return ETHRPCRequest.onBigintResponse(result);
+    return EthereumRequest.onBigintResponse(result);
   }
 
   @override

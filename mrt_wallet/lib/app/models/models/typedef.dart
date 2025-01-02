@@ -2,7 +2,7 @@ typedef DynamicVoid = void Function();
 
 typedef ObjectVoid = void Function(Object?);
 typedef StringVoid = void Function(String);
-
+typedef StringFunc = String Function();
 typedef NullStringString = String? Function(String?);
 typedef NullStringT<T> = String? Function(T?);
 typedef NullBoolVoid = void Function(bool?);

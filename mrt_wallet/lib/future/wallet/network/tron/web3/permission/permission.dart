@@ -8,8 +8,7 @@ import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:on_chain/tron/src/address/tron_address.dart';
 
 class TronWeb3PermissionView extends StatefulWidget {
-  const TronWeb3PermissionView({required this.permission, Key? key})
-      : super(key: key);
+  const TronWeb3PermissionView({required this.permission, super.key});
   final Web3TronChain? permission;
 
   @override
@@ -34,13 +33,9 @@ class _TronWeb3PermissionViewState extends State<TronWeb3PermissionView>
     return Web3TronChain.create(chain: chain.network.tronNetworkType);
   }
 
-  bool _initialized = false;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_initialized) return;
-    _initialized = true;
+  void onInitOnce() {
+    super.onInitOnce();
     permission = widget.permission ?? Web3TronChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<TronChain>().toList();

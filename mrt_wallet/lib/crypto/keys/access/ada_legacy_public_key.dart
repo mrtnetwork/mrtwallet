@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 
 class AdaLegacyPublicKeyData extends CryptoPublicKeyData {
@@ -60,7 +60,7 @@ class AdaLegacyPublicKeyData extends CryptoPublicKeyData {
           hdPathKey,
           chainCode
         ]),
-        CryptoKeyConst.accessAdaPubliKeyResponse);
+        type.tag);
   }
 
   List<int> hdPathKeyBytes() {
@@ -71,4 +71,7 @@ class AdaLegacyPublicKeyData extends CryptoPublicKeyData {
   List<int> chainCodeBytes() {
     return BytesUtils.fromHexString(chainCode);
   }
+
+  @override
+  CryptoPublicKeyDataType get type => CryptoPublicKeyDataType.ada;
 }

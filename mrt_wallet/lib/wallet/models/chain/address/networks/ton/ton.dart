@@ -36,7 +36,7 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
       required List<int> publicKey,
       required WalletTonNetwork network}) {
     final tonAddress = accountParams.toAddress(
-        publicKey: publicKey, chain: network.coinParam.chainType);
+        publicKey: publicKey, chain: network.coinParam.chain);
     final addressDetauls = AccountBalance(
         address: tonAddress.toFriendlyAddress(
             bounceable: accountParams.context.bouncable),
@@ -76,14 +76,14 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
       throw WalletExceptionConst.incorrectNetwork;
     }
     TonAccountContext context;
-    final String? version = cbor.elemetAs(7);
-    final int? subWalletId = cbor.elemetAs(8);
+    final String? version = cbor.elementAs(7);
+    final int? subWalletId = cbor.elementAs(8);
     final List<TonJettonToken> tokens = (cbor.elementAt<List<dynamic>>(9))
         .map((e) => TonJettonToken.fromCborBytesOrObject(obj: e))
         .toList();
     final String? accountName = cbor.elementAt(11);
-    final bool? bouncable = cbor.elemetAs(12);
-    final CborTagValue? contextObject = cbor.elemetAs(13);
+    final bool? bouncable = cbor.elementAs(12);
+    final CborTagValue? contextObject = cbor.elementAs(13);
     if (contextObject != null) {
       context = TonAccountContext.deserialize(object: contextObject);
     } else if (version != null && bouncable != null) {

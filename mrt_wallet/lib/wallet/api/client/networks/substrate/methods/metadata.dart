@@ -5,12 +5,12 @@ import 'package:polkadot_dart/polkadot_dart.dart';
 /// Returns the metadata at a given version
 /// https://polkadot.js.org/docs/substrate/runtime/#metadata
 class SubstrateGetApiAt
-    extends SubstrateRPCRequest<String, (MetadataApi, String)?> {
+    extends SubstrateRequest<String, (MetadataApi, String)?> {
   const SubstrateGetApiAt(this.version);
   final int version;
 
   @override
-  String get rpcMethod => SubstrateRPCMethods.stateCall.value;
+  String get rpcMethod => SubstrateRequestMethods.stateCall.value;
 
   @override
   List<dynamic> toJson() {
@@ -35,13 +35,13 @@ class SubstrateGetApiAt
 }
 
 class SubstrateGetStateApi
-    extends SubstrateRPCRequest<String, (MetadataApi, String)?> {
+    extends SubstrateRequest<String, (MetadataApi, String)?> {
   const SubstrateGetStateApi({this.atBlockHash});
 
   final String? atBlockHash;
 
   @override
-  String get rpcMethod => SubstrateRPCMethods.getMetadata.value;
+  String get rpcMethod => SubstrateRequestMethods.getMetadata.value;
 
   @override
   List<dynamic> toJson() {

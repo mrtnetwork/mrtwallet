@@ -19,7 +19,7 @@ class TronRequestAccountForm extends TronWeb3Form {
 
   void onChangeDefaultPermission(Web3TronChainAccount? account) {
     if (account == null || account.defaultAddress) return;
-    for (var e in chainPermission) {
+    for (final e in chainPermission) {
       e.changeDefault(false);
     }
     account.changeDefault(true);
@@ -34,7 +34,8 @@ class TronRequestAccountForm extends TronWeb3Form {
       : chains = chains.imutable;
   factory TronRequestAccountForm(
       {required Web3TronRequest request, required List<TronChain> chains}) {
-    Map<TronChain, TransactionListFormField<Web3TronChainAccount>> fields = {};
+    final Map<TronChain, TransactionListFormField<Web3TronChainAccount>>
+        fields = {};
     for (final i in chains) {
       fields[i] = TransactionListFormField(
           name: "accounts",
@@ -80,15 +81,15 @@ class TronRequestAccountForm extends TronWeb3Form {
   }
 
   void complete() {
-    assert(onCompeleteForm != null, "Must not be null");
-    List<Web3TronChainAccount> accounts = [];
+    assert(onCompleteForm != null, "Must not be null");
+    final List<Web3TronChainAccount> accounts = [];
     for (final i in permissions.entries) {
       if (i.value.isEmpty) continue;
       final defaultAddresses = i.value.value.where((e) => e.defaultAddress);
       if (defaultAddresses.isEmpty) {
         i.value.value.first.changeDefault(true);
       } else if (defaultAddresses.length > 1) {
-        for (var e in i.value.value) {
+        for (final e in i.value.value) {
           e.changeDefault(false);
         }
         i.value.value.first.changeDefault(true);
@@ -97,7 +98,7 @@ class TronRequestAccountForm extends TronWeb3Form {
     }
     newPermission.updateChainAccount(accounts);
     newPermission.setActiveChain(chain);
-    onCompeleteForm?.call(newPermission);
+    onCompleteForm?.call(newPermission);
   }
 
   @override

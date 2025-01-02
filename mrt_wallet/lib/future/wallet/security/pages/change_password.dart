@@ -92,63 +92,64 @@ class _ChangePasswordViewState extends State<_ChangePasswordView>
       key: progressKey,
       backToIdle: APPConst.oneSecoundDuration,
       child: (c) => UnfocusableChild(
-        child: ConstraintsBoxView(
-          alignment: Alignment.center,
-          padding: WidgetConstant.paddingHorizontal20,
-          child: AnimatedSwitcher(
-            duration: APPConst.animationDuraion,
-            child: SingleChildScrollView(
-              child: Form(
-                key: form,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      WidgetConstant.height20,
-                      PageTitleSubtitle(
-                          title: "wallet_password_desc".tr,
-                          body: LargeTextView(
-                            [
-                              "p_note1".tr,
-                              "p_note2".tr,
-                              "p_note3".tr,
-                              "p_note4".tr,
-                              "change_password_desc".tr
-                            ],
-                          )),
-                      AppTextField(
-                        obscureText: _obscureText,
-                        onChanged: onChangePassword,
-                        keyboardType: TextInputType.visiblePassword,
-                        textInputAction: TextInputAction.go,
-                        disableContextMenu: true,
-                        nextFocus: nextFocus,
-                        validator: validator,
-                        label: "enter_new_password".tr,
-                        helperText: "password_desc".tr,
-                      ),
-                      AppTextField(
-                        obscureText: _obscureText,
-                        keyboardType: TextInputType.visiblePassword,
-                        textInputAction: TextInputAction.done,
-                        focusNode: nextFocus,
-                        disableContextMenu: true,
-                        validator: confirmForm,
-                        label: "c_password".tr,
-                      ),
-                      WidgetConstant.height20,
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          FixedElevatedButton(
-                              padding: WidgetConstant.paddingVertical20,
-                              onPressed: setupPassword,
-                              child: Text("change_password".tr)),
-                        ],
-                      )
-                    ]),
+        child: CustomScrollView(
+          shrinkWrap: true,
+          slivers: [
+            SliverConstraintsBoxView(
+              padding: WidgetConstant.paddingHorizontal20,
+              sliver: SliverToBoxAdapter(
+                child: Form(
+                  key: form,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        WidgetConstant.height20,
+                        PageTitleSubtitle(
+                            title: "wallet_password_desc".tr,
+                            body: LargeTextView(
+                              [
+                                "p_note1".tr,
+                                "p_note2".tr,
+                                "p_note3".tr,
+                                "p_note4".tr,
+                                "change_password_desc".tr
+                              ],
+                            )),
+                        AppTextField(
+                          obscureText: _obscureText,
+                          onChanged: onChangePassword,
+                          keyboardType: TextInputType.visiblePassword,
+                          textInputAction: TextInputAction.go,
+                          disableContextMenu: true,
+                          nextFocus: nextFocus,
+                          validator: validator,
+                          label: "enter_new_password".tr,
+                          helperText: "password_desc".tr,
+                        ),
+                        AppTextField(
+                          obscureText: _obscureText,
+                          keyboardType: TextInputType.visiblePassword,
+                          textInputAction: TextInputAction.done,
+                          focusNode: nextFocus,
+                          disableContextMenu: true,
+                          validator: confirmForm,
+                          label: "c_password".tr,
+                        ),
+                        WidgetConstant.height20,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            FixedElevatedButton(
+                                padding: WidgetConstant.paddingVertical40,
+                                onPressed: setupPassword,
+                                child: Text("change_password".tr)),
+                          ],
+                        )
+                      ]),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -4,19 +4,15 @@ import 'package:blockchain_utils/cbor/types/list.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
-import 'package:mrt_wallet/wallet/api/utils/utils.dart';
-
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:mrt_wallet/app/http/models/auth.dart';
 
 class SolanaAPIProvider extends APIProvider {
   const SolanaAPIProvider({
-    required super.serviceName,
-    required super.websiteUri,
-    super.protocol = ServiceProtocol.http,
     super.auth,
     required super.identifier,
     required this.httpNodeUri,
-  });
+  }) : super(protocol: ServiceProtocol.http);
   final String httpNodeUri;
 
   @override
@@ -24,22 +20,19 @@ class SolanaAPIProvider extends APIProvider {
 
   factory SolanaAPIProvider.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
+    final CborListValue values = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.solApiServiceProvider);
     return SolanaAPIProvider(
-        serviceName: cbor.elementAt(0),
-        websiteUri: cbor.elementAt(1),
-        httpNodeUri: cbor.elementAt(2),
-        auth: cbor.getCborTag(3)?.to<ProviderAuth, CborTagValue>(
-            (e) => ProviderAuth.fromCborBytesOrObject(obj: e)),
-        identifier: APIUtils.getProviderIdentifier(cbor.elementAt(4)));
+        httpNodeUri: values.elementAs(0),
+        auth: values.elemetMybeAs<ProviderAuthenticated, CborTagValue>(
+            1, (e) => ProviderAuthenticated.deserialize(obj: e)),
+        identifier: values.elementAs(2));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength(
-            [serviceName, websiteUri, httpNodeUri, auth?.toCbor(), identifier]),
+        CborListValue.fixedLength([httpNodeUri, auth?.toCbor(), identifier]),
         CborTagsConst.solApiServiceProvider);
   }
 }

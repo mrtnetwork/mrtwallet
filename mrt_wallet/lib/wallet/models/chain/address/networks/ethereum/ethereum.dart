@@ -197,7 +197,8 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
 
   @override
   bool isEqual(ChainAccount other) {
-    return other.networkAddress.address == networkAddress.address;
+    if (other is! IEthAddress) return false;
+    return other.networkAddress == networkAddress;
   }
 
   @override

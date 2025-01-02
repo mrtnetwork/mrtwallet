@@ -10,16 +10,13 @@ abstract class CosmosTransactiomImpl extends StateController {
   CosmosTransactiomImpl(
       {required this.walletProvider,
       required this.account,
-      required this.network,
-      required this.address,
-      required this.apiProvider,
       required this.validator});
 
   final WalletProvider walletProvider;
   final CosmosChain account;
-  final WalletCosmosNetwork network;
-  final CosmosClient apiProvider;
-  final ICosmosAddress address;
+  WalletCosmosNetwork get network => account.network;
+  late final CosmosClient apiProvider = account.client;
+  ICosmosAddress get address => account.address;
   final LiveTransactionForm<CosmosTransactionForm> validator;
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>(debugLabel: "CosmosTransactiomImpl");
@@ -28,12 +25,15 @@ abstract class CosmosTransactiomImpl extends StateController {
 
   BaseAccount get ownerAccount;
   GetLatestBlockResponse get latestBlock;
-  ThorNodeNetworkConstants get thorNodeNetworkConstants;
-  Fee? get fee;
+  CosmosTransactionFeeInfo? get fee;
   String? get memo;
   bool get isThorChain =>
       network.coinParam.networkType == CosmosNetworkTypes.thorAndForked;
+  Token get feeToken;
+  List<CW20Token> get feeTokens;
+  bool get useNativeTokenAsFee => network.coinParam.useNativeTokenAsFee;
 
   void onCalculateAmount();
+
   // 8050
 }

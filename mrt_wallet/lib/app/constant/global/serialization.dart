@@ -5,4 +5,6 @@ class APPSerializationConst {
   static const List<int> webviewStorageTab = [50, 3];
   static const List<int> webviewStorageHistory = [50, 4];
   static const List<int> webviewStorageBookmark = [50, 5];
+  static const List<int> basicProviderAuth = [50, 6];
+  static const List<int> digestProviderAuth = [50, 7];
 }

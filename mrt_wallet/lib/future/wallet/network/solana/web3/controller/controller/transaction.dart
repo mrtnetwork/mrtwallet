@@ -18,7 +18,7 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
   Web3SolanaSendTransactionForm get form =>
       liveRequest.validator as Web3SolanaSendTransactionForm;
   bool get isMultipleTransaction => request.params.isBatchRequest;
-  Web3SolanaSendTransactionOptions? _sendOption;
+  // Web3SolanaSendTransactionOptions? _sendOption;
   bool get isSend => request.params.isSend;
   bool _hasSimulateError = false;
   bool _isReady = false;
@@ -44,9 +44,9 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
 
   Future<void> _init() async {
     progressKey.process(text: "transaction_retrieval_requirment".tr);
-    try {
+    final r = await MethodUtils.call(() async {
       final params = request.params.messages;
-      List<SolanaWeb3TransactionInfo> messagess = [];
+      final List<SolanaWeb3TransactionInfo> messagess = [];
       for (final i in params) {
         final permission = request.authenticated
             .getChainFromNetworkType<Web3SolanaChain>(NetworkType.solana)
@@ -57,13 +57,15 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
         }
         final message = SolanaTransaction.deserialize(i.messageBytes);
         final simulate = SolanaWeb3TransactionInfo(
-            transaction: message, signer: permission, id: i.id);
+            transaction: message,
+            signer: permission,
+            id: i.id,
+            sendTransactionOptions: i.sendConfig);
         messagess.add(simulate);
         apiProvider
-            .updateBalance(permission, updateTokens: false)
+            .updateBalance(permission, account, updateTokens: false)
             .then((e) => _checkTransaction);
       }
-      _sendOption = request.params.sendConfig;
       form.init(transactions: messagess, client: apiProvider);
       final hasSameOwner =
           form.transaction.map((e) => e.signer.networkAddress).toSet().length !=
@@ -71,12 +73,13 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
       _isMultipleWithSameOwner = isMultipleTransaction && hasSameOwner;
       _canReplaceBlockHash =
           isSend && form.transaction.any((e) => e.canUpdateBlockHash);
-      progressKey.idle();
-    } on Web3RequestException catch (e) {
-      progressKey.error(
-          text: "web3_permission_error_desc".tr, backToIdle: null);
-      request.error(e);
+    });
+    if (r.hasError) {
+      progressKey.error(text: r.error!.tr, backToIdle: null);
+      request.error(Web3RequestExceptionConst.fromException(r.exception!));
+      return;
     }
+    progressKey.idle();
   }
 
   void _checkTransaction() {
@@ -113,7 +116,7 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
         for (final i in form.transaction) {
           final digest =
               List<int>.unmodifiable(i.transaction.serializeMessage());
-          final signer = i.signer.keyIndex as Bip32AddressIndex;
+          final Bip32AddressIndex signer = i.signer.keyIndex.cast();
           final signRequest =
               GlobalSignRequest.solana(digest: digest, index: signer);
           final signingResponse = await generateSignature(signRequest);
@@ -136,33 +139,35 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
     if (isSend) {
       progressKey.process(
           text: "create_send_transaction".tr.replaceOne(network.token.name));
-      for (final i in result) {
-        final signer = i.info.signer.networkAddress;
-        final result = await MethodUtils.call(
+      for (int i = 0; i < result.length; i++) {
+        final info = result[i];
+        final sendConfig = info.info.sendTransactionOptions;
+        final signer = info.info.signer.networkAddress;
+        final txResult = await MethodUtils.call(
             () async => await apiProvider.sendTransaction(
-                  i.info.transaction,
-                  skipPreflight: _sendOption?.skipPreflight ?? false,
-                  maxRetries: _sendOption?.maxRetries ?? 5,
-                  minContextSlot: _sendOption?.minContextSlot,
-                  commitment: Commitment.fromName(_sendOption?.commitment ?? "",
+                  info.info.transaction,
+                  skipPreflight: sendConfig?.skipPreflight ?? false,
+                  maxRetries: sendConfig?.maxRetries ?? 5,
+                  minContextSlot: sendConfig?.minContextSlot,
+                  commitment: Commitment.fromName(sendConfig?.commitment ?? "",
                       defaultValue: Commitment.processed),
                 ));
-        if (result.hasResult) {
+        if (txResult.hasResult) {
           response.add(SolanaWeb3TransactionSendResponse(
-              id: i.info.id,
-              txHash: result.result,
+              id: info.info.id,
+              txHash: txResult.result,
               signer: signer.address,
               signerAddressBytes: signer.toBytes()));
         } else {
           if (!isMultipleTransaction) {
             request.error(
-                Web3RequestExceptionConst.fromException(result.exception!));
-            progressKey.error(text: result.error!.tr, backToIdle: null);
+                Web3RequestExceptionConst.fromException(txResult.exception!));
+            progressKey.error(text: txResult.error!.tr, backToIdle: null);
             return;
           }
           response.add(SolanaWeb3TransactionErrorResponse(
-              id: i.info.id,
-              message: result.error!.tr,
+              id: info.info.id,
+              message: txResult.error!.tr,
               signer: signer.address,
               signerAddressBytes: signer.toBytes()));
         }
@@ -174,7 +179,8 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
             id: e.info.id,
             signature: e.signature,
             signer: signer.address,
-            signerAddressBytes: signer.toBytes());
+            signerAddressBytes: signer.toBytes(),
+            serializedTx: e.info.transaction.serialize());
       }));
     }
 

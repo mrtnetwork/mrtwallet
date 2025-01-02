@@ -7,7 +7,7 @@ mixin WalletStorageWriter {
     if (useMemoryStorage) {
       return _memoryStorage[key];
     }
-    return await BaseNativeMEthod.platform.readSecure(key);
+    return await AppNativeMethods.platform.readSecure(key);
   }
 
   Future<void> _write({required String key, required String value}) async {
@@ -15,7 +15,7 @@ mixin WalletStorageWriter {
       _memoryStorage[key] = value;
       return;
     }
-    await BaseNativeMEthod.platform.writeSecure(key, value);
+    await AppNativeMethods.platform.writeSecure(key, value);
   }
 
   Future<void> _remove({required String key}) async {
@@ -23,7 +23,7 @@ mixin WalletStorageWriter {
       _memoryStorage.remove(key);
       return;
     }
-    await BaseNativeMEthod.platform.removeSecure(key);
+    await AppNativeMethods.platform.removeSecure(key);
   }
 
   Future<Map<String, String>> _readAll({String? prefix}) async {
@@ -34,7 +34,7 @@ mixin WalletStorageWriter {
       }
       return Map<String, String>.from(_memoryStorage);
     }
-    return await BaseNativeMEthod.platform.readAllSecure(prefix: prefix);
+    return await AppNativeMethods.platform.readAllSecure(prefix: prefix);
   }
 
   Future<bool> _deleteMultiple({required List<String> keys}) async {
@@ -44,6 +44,6 @@ mixin WalletStorageWriter {
       }
       return true;
     }
-    return await BaseNativeMEthod.platform.removeMultipleSecure(keys);
+    return await AppNativeMethods.platform.removeMultipleSecure(keys);
   }
 }

@@ -23,11 +23,11 @@ class BchCashTokenBuilderView extends StatefulWidget {
     super.key,
     this.scrollController,
     required this.utxos,
-    required this.network,
+    required this.account,
   });
   final ScrollController? scrollController;
   final List<BitcoinUtxoWithBalance> utxos;
-  final WalletBitcoinNetwork network;
+  final BitcoinChain account;
 
   @override
   State<BchCashTokenBuilderView> createState() =>
@@ -44,13 +44,13 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
   bool get isFt => _type == BitconCashTokensType.fungibleTokens;
   void onChangeToken(BitconCashTokensType? newType) {
     _type = newType ?? _type;
-    setState(() {});
+    updateState();
   }
 
   CashTokenCapability capability = CashTokenCapability.minting;
   void onChangeCapability(CashTokenCapability? newCapability) {
     capability = newCapability ?? capability;
-    setState(() {});
+    updateState();
   }
 
   BigRational? totalSupply;
@@ -61,7 +61,7 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
     isReady = categoryId != null &&
         (totalSupply != null || !isFt) &&
         (!appendAuth || (appendAuth && bcmrs.isNotEmpty));
-    setState(() {});
+    updateState();
   }
 
   final GlobalKey<FormState> form = GlobalKey();
@@ -147,7 +147,7 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
     final exists = widget.utxos.any((element) => element.utxo.txHash == v);
     if (!exists) return;
     categoryId = v;
-    setState(() {});
+    updateState();
   }
 
   @override
@@ -161,17 +161,15 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("create_token".tr),
-      ),
-      body: ConstraintsBoxView(
-        padding: WidgetConstant.paddingHorizontal20,
-        child: SingleChildScrollView(
-          controller: widget.scrollController,
+      appBar: AppBar(title: Text("create_token".tr)),
+      body: SingleChildScrollView(
+        controller: widget.scrollController,
+        child: ConstraintsBoxView(
+          padding: WidgetConstant.paddingHorizontal20,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("token_id".tr),
+              Text("token_id".tr, style: context.textTheme.titleMedium),
               Text("token_id_choose_desc".tr),
               WidgetConstant.height8,
               AppDropDownBottom(
@@ -182,20 +180,9 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                 },
                 itemBuilder: {
                   for (final i in widget.utxos)
-                    i.utxo.txHash: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(i.address.address.toAddress(
-                            widget.network.coinParam.transacationNetwork)),
-                        CoinPriceView(
-                            token: widget.network.coinParam.token,
-                            balance: i.balance),
-                        OneLineTextWidget(i.utxo.txHash,
-                            style: context.textTheme.bodySmall),
-                      ],
-                    )
+                    i.utxo.txHash: OneLineTextWidget(i.utxo.txHash)
                 },
-                label: "token_id".tr,
+                hint: "token_id".tr,
                 value: categoryId,
                 onChanged: onChangeTokenId,
                 validator: onValidateTokenId,
@@ -214,9 +201,8 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                     for (final i in BitconCashTokensType.values)
                       i: Text(i.value.tr)
                   },
-                  label: "select_token_type".tr),
+                  hint: "select_token_type".tr),
               WidgetConstant.height20,
-              //
               if (!isFt) ...[
                 Text("capability".tr, style: context.textTheme.titleMedium),
                 Text("capability_desc".tr),
@@ -229,7 +215,7 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                       for (final i in CashTokenCapability.values)
                         i: Text(i.name.tr)
                     },
-                    label: "select_token_type".tr),
+                    hint: "select_token_type".tr),
                 WidgetConstant.height20,
                 Text("commitment".tr, style: context.textTheme.titleMedium),
                 Text("commitment_desc".tr),
@@ -259,23 +245,19 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                         )
                         .then(onChangeCcommitment);
                   },
-                  onRemoveIcon: commitment != null
-                      ? const Icon(Icons.edit)
-                      : const Icon(Icons.add),
+                  onRemoveIcon: AddOrEditIconWidget(commitment != null),
                   child: Text(commitment?.orEmpty ?? "tap_to_input_value".tr,
-                      maxLines: 3),
+                      maxLines: 3,
+                      style: context.onPrimaryTextTheme.bodyMedium),
                 ),
                 WidgetConstant.height20
               ],
-
               Text("total_supply".tr, style: context.textTheme.titleMedium),
               Text("input_total_supply".tr),
               WidgetConstant.height8,
               ContainerWithBorder(
                 validate: !isFt || totalSupply != null,
-                onRemoveIcon: totalSupply != null
-                    ? const Icon(Icons.edit)
-                    : const Icon(Icons.add),
+                onRemoveIcon: AddOrEditIconWidget(totalSupply != null),
                 onRemove: () {
                   context
                       .openSliverBottomSheet<BigRational>(
@@ -296,8 +278,10 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                       )
                       .then(setTotalSupply);
                 },
-                child: Text(totalSupply?.toString().to3Digits ??
-                    "tap_to_input_value".tr),
+                child: Text(
+                    totalSupply?.toString().to3Digits ??
+                        "tap_to_input_value".tr,
+                    style: context.onPrimaryTextTheme.bodyMedium),
               ),
               WidgetConstant.height20,
               Text("token_meta_data".tr, style: context.textTheme.titleMedium),
@@ -343,15 +327,18 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                             );
                           }),
                           ContainerWithBorder(
-                            onRemoveWidget: const Icon(Icons.add_box),
+                            onRemoveWidget: Icon(Icons.add_box,
+                                color: context.onPrimaryContainer),
                             onRemove: () {
                               context
                                   .openSliverBottomSheet<CashTokenBCMR>(
                                       "token_meta_data".tr,
-                                      child: const BCMRUriValidateView())
+                                      child: BCMRUriValidateView(
+                                          account: widget.account))
                                   .then(onAddBCMR);
                             },
-                            child: Text("tap_to_add_bcmr".tr),
+                            child: Text("tap_to_add_bcmr".tr,
+                                style: context.onPrimaryTextTheme.bodyMedium),
                           )
                         ],
                       )
@@ -364,7 +351,7 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   FixedElevatedButton(
-                      padding: WidgetConstant.paddingVertical20,
+                      padding: WidgetConstant.paddingVertical40,
                       onPressed: isReady ? onSetup : null,
                       child: Text("continue".tr)),
                 ],

@@ -13,11 +13,15 @@ class AppDropDownBottom<T> extends StatelessWidget {
       this.validator,
       this.icon,
       this.error,
-      this.suffixIcon,
+      this.contentPadding,
       this.isExpanded = false,
       this.focusColor,
       this.fillColor,
-      this.helperText});
+      this.helperText,
+      this.labelStyle,
+      this.border,
+      this.iconEnabledColor,
+      this.hint});
   final Map<T, Widget> items;
   final Map<T, Widget>? itemBuilder;
   final FuncVoidNullT<T?>? onChanged;
@@ -26,11 +30,15 @@ class AppDropDownBottom<T> extends StatelessWidget {
   final Widget? icon;
   final String? error;
   final T? value;
-  final Widget? suffixIcon;
   final bool isExpanded;
   final Color? focusColor;
   final Color? fillColor;
   final String? helperText;
+  final TextStyle? labelStyle;
+  final InputBorder? border;
+  final Color? iconEnabledColor;
+  final String? hint;
+  final EdgeInsetsGeometry? contentPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +63,9 @@ class AppDropDownBottom<T> extends StatelessWidget {
       value: value,
       focusColor: focusColor,
 
+      iconEnabledColor: iconEnabledColor,
+
+      hint: hint == null ? null : Text(hint!),
       // focusColor: context.colors.transparent,
       decoration: InputDecoration(
           focusColor: focusColor,
@@ -62,8 +73,10 @@ class AppDropDownBottom<T> extends StatelessWidget {
           errorText: error,
           fillColor: fillColor,
           errorMaxLines: 3,
-          suffixIcon: suffixIcon,
           helperText: helperText,
+          contentPadding: contentPadding,
+          alignLabelWithHint: true,
+          border: InputBorder.none,
           helperMaxLines: 3),
     );
   }

@@ -30,9 +30,7 @@ class TronWeb3GlobalFieldsView<RESPONSE,
 }
 
 class _GlobalFieldsView extends StatelessWidget {
-  const _GlobalFieldsView(
-      {required this.form, required this.controller, Key? key})
-      : super(key: key);
+  const _GlobalFieldsView({required this.form, required this.controller});
   final TronWeb3Form form;
   final Web3TronGlobalRequestController controller;
   @override

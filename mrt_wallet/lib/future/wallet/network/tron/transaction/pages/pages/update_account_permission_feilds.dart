@@ -28,7 +28,7 @@ class TronAccountUpdatePermissionFieldsView extends StatelessWidget {
         WidgetConstant.height8,
         AppDropDownBottom(
           value: validator.permissionId,
-          key: UniqueKey(),
+          key: ValueKey(validator.permissionId),
           items: {
             for (final i in validator.permissions)
               i.id ?? 0: RichText(
@@ -41,15 +41,17 @@ class TronAccountUpdatePermissionFieldsView extends StatelessWidget {
                           text: " (${i.permissionName}) ",
                           style: context.textTheme.bodySmall)
                   ])),
-            -1: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            -1: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                WidgetConstant.divider,
-                Text("new_active_permission".tr)
+                Icon(Icons.add),
+                WidgetConstant.width8,
+                Text("new_active_permission".tr,
+                    style: context.textTheme.bodySmall)
               ],
             )
           },
-          label: "permissions".tr,
+          // label: "permissions".tr,
           onChanged: (p0) {
             validator.setPermission(
               p0,
@@ -58,17 +60,18 @@ class TronAccountUpdatePermissionFieldsView extends StatelessWidget {
               },
             );
           },
+          hint: "permissions".tr,
         ),
-        AnimatedSize(
+        APPAnimatedSize(
           duration: APPConst.animationDuraion,
-          child: validator.selectedPermission == null
-              ? WidgetConstant.sizedBox
-              : _EditPermissionView(
-                  permission: validator.selectedPermission!,
-                  validator: validator,
-                  key: ValueKey(validator.selectedPermission),
-                  account: account,
-                ),
+          isActive: validator.selectedPermission != null,
+          onActive: (context) => _EditPermissionView(
+            permission: validator.selectedPermission!,
+            validator: validator,
+            key: ValueKey(validator.selectedPermission),
+            account: account,
+          ),
+          onDeactive: (context) => WidgetConstant.sizedBox,
         )
       ],
     );
@@ -92,7 +95,9 @@ class _EditPermissionView extends StatelessWidget {
         WidgetConstant.height20,
         Text("permission_type".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
-        ContainerWithBorder(child: Text(permission.type.name.camelCase)),
+        ContainerWithBorder(
+            child: Text(permission.type.name.camelCase,
+                style: context.onPrimaryTextTheme.bodyMedium)),
         WidgetConstant.height20,
         Text("permission_name".tr, style: context.textTheme.titleMedium),
         Text("input_the_permission_name".tr),
@@ -112,11 +117,12 @@ class _EditPermissionView extends StatelessWidget {
                     label: "permission_name".tr,
                   ),
                 )
-                .then(
-                  validator.updatePermissionName,
-                );
+                .then(validator.updatePermissionName);
           },
-          child: Text(permission.permissionName ?? "tap_to_input_value".tr),
+          child: Text(
+            permission.permissionName ?? "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         WidgetConstant.height20,
         Text("threshold".tr, style: context.textTheme.titleMedium),
@@ -144,44 +150,52 @@ class _EditPermissionView extends StatelessWidget {
             ),
           ],
           ContainerWithBorder(
-              child: validator.operations == null
-                  ? Text("all_operations".tr)
-                  : Wrap(
-                      alignment: WrapAlignment.spaceBetween,
-                      runSpacing: 2.5,
-                      spacing: 2.5,
-                      children: List.generate(
-                          TransactionContractType.values.length,
-                          (index) => Chip(
-                              deleteIcon: IgnorePointer(
-                                child: Checkbox(
-                                  value: validator.operations!.contains(
-                                      TransactionContractType.values[index]),
-                                  onChanged: (value) {},
+            child: ConditionalWidgets(
+                enable: validator.operations != null,
+                widgets: {
+                  false: (context) => Text(
+                        "all_operations".tr,
+                        style: context.onPrimaryTextTheme.bodyMedium,
+                      ),
+                  true: (context) => Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        runSpacing: 2.5,
+                        spacing: 2.5,
+                        children: List.generate(
+                            TransactionContractType.values.length,
+                            (index) => Chip(
+                                deleteIcon: IgnorePointer(
+                                  child: Checkbox(
+                                    value: validator.operations!.contains(
+                                        TransactionContractType.values[index]),
+                                    onChanged: (value) {},
+                                  ),
                                 ),
-                              ),
-                              onDeleted: () {
-                                validator.addOrRemoveOperation(
-                                  TransactionContractType.values[index],
-                                  () {
-                                    context.showAlert("operation_disabled".tr);
-                                  },
-                                );
-                              },
-                              label: SizedBox(
-                                width: 80,
-                                child: ToolTipView(
-                                  waitDuration:
-                                      const Duration(milliseconds: 300),
-                                  message: TransactionContractType
-                                      .values[index].name,
-                                  child: OneLineTextWidget(
-                                      TransactionContractType
-                                          .values[index].name,
-                                      style: context.textTheme.bodySmall),
-                                ),
-                              ))),
-                    )),
+                                onDeleted: () {
+                                  validator.addOrRemoveOperation(
+                                    TransactionContractType.values[index],
+                                    () {
+                                      context
+                                          .showAlert("operation_disabled".tr);
+                                    },
+                                  );
+                                },
+                                label: SizedBox(
+                                  width: 80,
+                                  child: ToolTipView(
+                                    waitDuration: APPConst.animationDuraion,
+                                    message: TransactionContractType
+                                        .values[index].name,
+                                    child: OneLineTextWidget(
+                                        TransactionContractType
+                                            .values[index].name,
+                                        style: context
+                                            .onPrimaryTextTheme.bodySmall),
+                                  ),
+                                ))),
+                      )
+                }),
+          ),
         ],
         WidgetConstant.height20,
         Text("tron_permission_key".tr, style: context.textTheme.titleMedium),
@@ -189,23 +203,26 @@ class _EditPermissionView extends StatelessWidget {
         WidgetConstant.height8,
         ...List.generate(validator.selectedPermission!.keys.length, (index) {
           return ContainerWithBorder(
-              onTapWhenOnRemove: false,
+              iconAlginment: CrossAxisAlignment.start,
+              enableTap: false,
               onRemove: () {
                 validator
                     .removeSigner(validator.selectedPermission!.keys[index]);
               },
-              onRemoveIcon: const Icon(Icons.remove_circle),
+              onRemoveIcon:
+                  Icon(Icons.remove_circle, color: context.onPrimaryContainer),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("address".tr, style: context.textTheme.labelLarge),
-                  OneLineTextWidget(validator
-                      .selectedPermission!.keys[index].address
-                      .toAddress()),
-                  Divider(
-                    color: context.colors.onPrimaryContainer,
-                  ),
-                  Text("weight".tr, style: context.textTheme.labelLarge),
+                  Text("address".tr,
+                      style: context.onPrimaryTextTheme.labelLarge),
+                  OneLineTextWidget(
+                      validator.selectedPermission!.keys[index].address
+                          .toAddress(),
+                      style: context.onPrimaryTextTheme.bodyMedium),
+                  Divider(color: context.onPrimaryContainer),
+                  Text("weight".tr,
+                      style: context.onPrimaryTextTheme.labelLarge),
                   NumberTextField(
                       label: "weight".tr,
                       onChange: (p0) {
@@ -222,8 +239,10 @@ class _EditPermissionView extends StatelessWidget {
         }),
         if (validator.selectedPermission!.keys.length < 5)
           ContainerWithBorder(
-            onRemoveIcon: const Icon(Icons.add_box),
-            child: Text("tap_to_input_new_signer".tr),
+            onRemoveIcon:
+                Icon(Icons.add_box, color: context.onPrimaryContainer),
+            child: Text("tap_to_input_new_signer".tr,
+                style: context.onPrimaryTextTheme.bodyMedium),
             onRemove: () {
               context
                   .openSliverBottomSheet<ReceiptAddress<TronAddress>>(

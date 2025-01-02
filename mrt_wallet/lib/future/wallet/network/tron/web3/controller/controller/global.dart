@@ -1,5 +1,4 @@
-import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/crypto/requets/messages/wallet/requests/personal_sign.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
@@ -18,7 +17,7 @@ class Web3TronGlobalRequestController<RESPONSE,
     notify();
   }
 
-  void onCompeleteForm(Object? obj) async {
+  void onCompleteForm(Object? obj) async {
     progressKey.process(text: "processing_request".tr);
     Object? result = obj;
     switch (request.params.method) {
@@ -31,7 +30,7 @@ class Web3TronGlobalRequestController<RESPONSE,
             WalletRequestSignMessage(
                 message:
                     request.params.cast<Web3TronSignMessageV2>().chalengBytes(),
-                index: address.keyIndex as Bip32AddressIndex,
+                index: address.keyIndex.cast(),
                 network: NetworkType.tron));
         if (sign.hasError) {
           progressKey.error(text: sign.error!.tr);
@@ -49,7 +48,7 @@ class Web3TronGlobalRequestController<RESPONSE,
   void _init() {
     MethodUtils.after(() async {
       liveRequest.addListener(onChangeForm);
-      form.onCompeleteForm = onCompeleteForm;
+      form.onCompleteForm = onCompleteForm;
       progressKey.idle();
     });
   }
@@ -64,6 +63,6 @@ class Web3TronGlobalRequestController<RESPONSE,
   void close() {
     super.close();
     liveRequest.removeListener(onChangeForm);
-    form.onCompeleteForm = null;
+    form.onCompleteForm = null;
   }
 }

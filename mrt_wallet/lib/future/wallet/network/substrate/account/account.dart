@@ -8,7 +8,7 @@ class SubstrateAccountPageView extends StatelessWidget {
   final SubstrateChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    return const TabBarView(children: [
+    return const TabBarView(physics: WidgetConstant.noScrollPhysics, children: [
       _SubstrateServices(),
     ]);
   }

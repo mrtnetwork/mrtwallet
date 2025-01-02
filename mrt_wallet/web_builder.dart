@@ -10,11 +10,12 @@ void _copyDirectory(Directory source, Directory destination) {
   source.listSync(recursive: false).forEach((var entity) {
     if (entity is Directory) {
       final uri = Uri.parse(entity.path);
-      var newDirectory =
+      final newDirectory =
           Directory('${destination.path}/${uri.pathSegments.last}');
       _copyDirectory(entity, newDirectory);
     } else if (entity is File) {
-      var newFile = File('${destination.path}/${entity.uri.pathSegments.last}');
+      final newFile =
+          File('${destination.path}/${entity.uri.pathSegments.last}');
       newFile.writeAsBytesSync(entity.readAsBytesSync());
     }
   });
@@ -29,6 +30,7 @@ Future<void> buildCrypto() async {
     '-o',
     'assets/wasm/crypto.wasm',
     'web_crypto/crypto.dart',
+    "--verbose"
   ];
   await _doProcess(command, args);
 }
@@ -155,7 +157,7 @@ Future<void> _build(
     bool minify = false,
     String? baseHref}) async {
   const String command = 'flutter';
-  List<String> args = [
+  final List<String> args = [
     'build',
     'web',
     if (wasm) '--wasm',
@@ -225,9 +227,11 @@ Future<void> _buildWeb(
 }
 
 void main(List<String> args) async {
+  // await buildWebView();
+  // return;
   final fixedArgs = List<String>.from(args);
-  bool minify = fixedArgs.contains("--release");
-  bool clean = fixedArgs.contains("--clean");
+  final bool minify = fixedArgs.contains("--release");
+  final bool clean = fixedArgs.contains("--clean");
 
   if (fixedArgs.contains("-extension")) {
     final bool mozila = fixedArgs.contains("--mozila");

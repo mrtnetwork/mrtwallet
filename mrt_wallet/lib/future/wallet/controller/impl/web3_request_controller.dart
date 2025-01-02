@@ -23,8 +23,7 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
     if (url == null || clientId == null) return null;
     APPImage image = APPImage.faviIcon(url);
     if (faviIcon != null) {
-      final data = await walletCore.crypto.generateUUID(dataHex: faviIcon);
-      image = APPImage.network(faviIcon, data);
+      image = APPImage.network(faviIcon);
     }
     return Web3ClientInfo.info(
         clientId: clientId, url: url, faviIcon: image, name: title);
@@ -38,7 +37,9 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
   }
 
   Future<WalletEvent> getPageAuthenticated(
-      {required String clientId, Web3ClientInfo? info}) async {
+      {required String clientId,
+      Web3ClientInfo? info,
+      String? additional}) async {
     Web3ExceptionMessage? onException;
     try {
       if (info == null) {
@@ -49,7 +50,9 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
           data: walletEvent.result.toCbor().encode(),
           id: clientId,
           type: WalletEventTypes.activation,
-          additional: PlatformInterface.appPlatform.name);
+          platform: PlatformInterface.appPlatform.name,
+          additional: additional,
+          requestId: '');
       return message;
     } on Web3RequestException catch (e) {
       onException = e.toResponseMessage();
@@ -68,18 +71,21 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
     await _doRequest(request);
   }
 
-  WalletEvent toResponseEvent(
-      {required String id,
-      required WalletEventTypes type,
-      List<int> data = const [],
-      String? requestId,
-      String? additional}) {
+  WalletEvent toResponseEvent({
+    required String id,
+    required WalletEventTypes type,
+    List<int> data = const [],
+    String? requestId,
+    String? additional,
+    String? platform,
+  }) {
     return WalletEvent(
         clientId: id,
         data: data,
         requestId: requestId ?? UUID.generateUUIDv4(),
         type: type,
-        additional: additional);
+        additional: additional,
+        platform: platform);
   }
 
   void onCloseClinet(String? applicationId) {

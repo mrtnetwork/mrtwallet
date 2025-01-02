@@ -113,6 +113,9 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 
 - **Features:** Seamless support for Polkadot transactions.
 
+### Monero
+
+- **Features:** Seamless support for Monero transactions, Generate and verify proof.
 
 ## Web3
 

@@ -32,12 +32,12 @@ class CardanoAddrDetails with Equatable, CborSerializable {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.cardanoAccountDetails);
     return CardanoAddrDetails._(
-        publicKey: cbor.elementAt(0),
-        addressType: ADAAddressType.fromHeader(cbor.elementAt(1)),
-        stakePubkey: cbor.elementAt(2),
-        chainCode: cbor.elementAt(3),
-        hdPathKey: cbor.elementAt(4),
-        hdPath: cbor.elementAt(5));
+        publicKey: cbor.elementAs(0),
+        addressType: ADAAddressType.fromHeader(cbor.elementAs(1)),
+        stakePubkey: cbor.elementAs(2),
+        chainCode: cbor.elementAs(3),
+        hdPathKey: cbor.elementAs(4),
+        hdPath: cbor.elementAs(5));
   }
   CardanoAddrDetails._({
     required List<int> publicKey,
@@ -46,10 +46,10 @@ class CardanoAddrDetails with Equatable, CborSerializable {
     List<int>? chainCode,
     List<int>? hdPathKey,
     this.hdPath,
-  })  : publicKey = BytesUtils.toBytes(publicKey, unmodifiable: true),
-        stakePubkey = BytesUtils.tryToBytes(stakePubkey, unmodifiable: true),
-        chainCode = BytesUtils.tryToBytes(chainCode, unmodifiable: true),
-        hdPathKey = BytesUtils.tryToBytes(hdPathKey, unmodifiable: true);
+  })  : publicKey = publicKey.asImmutableBytes,
+        stakePubkey = stakePubkey?.asImmutableBytes,
+        chainCode = chainCode?.asImmutableBytes,
+        hdPathKey = hdPathKey?.asImmutableBytes;
   factory CardanoAddrDetails.shelley({
     required List<int> publicKey,
     required ADAAddressType addressType,
@@ -58,13 +58,14 @@ class CardanoAddrDetails with Equatable, CborSerializable {
   }) {
     if (addressType == ADAAddressType.byron ||
         addressType == ADAAddressType.pointer) {
-      throw WalletException("Unsupported address type.");
+      throw const WalletException("Unsupported address type.");
     }
     if (addressType == ADAAddressType.base && stakePubkey == null) {
-      throw WalletException("Stake public key is required for base address.");
+      throw const WalletException(
+          "Stake public key is required for base address.");
     }
     if (addressType != ADAAddressType.base && stakePubkey != null) {
-      throw WalletException(
+      throw const WalletException(
           "Stake public key must be provided for base address type, please set it to null.");
     }
     return CardanoAddrDetails._(
@@ -80,7 +81,8 @@ class CardanoAddrDetails with Equatable, CborSerializable {
       String? hdPath}) {
     if (hdPath != null && hdPathKey == null ||
         hdPath == null && hdPathKey != null) {
-      throw WalletException("hdPath and hdPathKey should be used together.");
+      throw const WalletException(
+          "hdPath and hdPathKey should be used together.");
     }
     return CardanoAddrDetails._(
         publicKey: publicKey,
@@ -112,7 +114,7 @@ class CardanoAddrDetails with Equatable, CborSerializable {
             hdPathKey: hdPathKey,
             network: adaNetwork);
       default:
-        throw WalletException("Invalid address type.");
+        throw const WalletException("Invalid address type.");
     }
   }
 

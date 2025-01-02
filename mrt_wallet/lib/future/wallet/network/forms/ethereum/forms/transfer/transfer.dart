@@ -107,7 +107,7 @@ class EthereumTransferForm extends EthereumTransactionForm {
       required WalletEthereumNetwork network,
       required EthereumFee fee,
       String? memo}) {
-    ETHTransaction tr = ETHTransaction(
+    final ETHTransaction tr = ETHTransaction(
       type: fee.isEIP1559
           ? ETHTransactionType.eip1559
           : ETHTransactionType.legacy,

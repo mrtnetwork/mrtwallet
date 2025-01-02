@@ -33,6 +33,7 @@ class TronTRC10Token with Equatable implements TokenCore<BigInt>, TronToken {
       throw WalletExceptionConst.invalidTokenInformation;
     }
   }
+  @override
   TronTRC10Token updateToken(Token updateToken) {
     return TronTRC10Token._(balance, updateToken, tokenID, _updated);
   }
@@ -74,8 +75,11 @@ class TronTRC10Token with Equatable implements TokenCore<BigInt>, TronToken {
   final Token token;
 
   @override
-  String? get issuer => tokenID;
+  String get issuer => tokenID;
 
   @override
-  late final String? type = "trc10";
+  late final String? type = tronTokenType.name;
+
+  @override
+  TronTokenTypes get tronTokenType => TronTokenTypes.trc10;
 }

@@ -1,8 +1,10 @@
 import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/coins/coins.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/tron/addresses/multisig.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/tron/addresses/tron.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/core/core.dart';
@@ -33,10 +35,14 @@ class TronNewAddressParams implements NewAccountParams<TronAddress> {
     );
   }
   @override
-  ITronAddress toAccount(WalletNetwork network, List<int> publicKey) {
+  ITronAddress toAccount(
+      WalletNetwork network, CryptoPublicKeyData? publicKey) {
+    if (publicKey == null) {
+      throw WalletExceptionConst.pubkeyRequired;
+    }
     return ITronAddress.newAccount(
         accountParams: this,
-        publicKey: publicKey,
+        publicKey: publicKey.keyBytes(),
         network: network as WalletTronNetwork);
   }
 
@@ -96,9 +102,10 @@ class TronMultisigNewAddressParams implements TronNewAddressParams {
   }
 
   @override
-  ITronMultisigAddress toAccount(WalletNetwork network, List<int> publicKey) {
+  ITronMultisigAddress toAccount(
+      WalletNetwork network, CryptoPublicKeyData? publicKey) {
     return ITronMultisigAddress.newAccount(
-        accountParams: this, network: network as WalletTronNetwork);
+        accountParams: this, network: network.toNetwork());
   }
 
   @override

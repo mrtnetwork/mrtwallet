@@ -34,7 +34,10 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
                 onRemove: () {
                   validator.removeIndex(validator.signerEntries, index);
                 },
-                onRemoveIcon: const Icon(Icons.remove_circle),
+                onRemoveIcon: Icon(
+                  Icons.remove_circle,
+                  color: context.onPrimaryContainer,
+                ),
                 child: _SignerEntryView(signer: signer));
           }),
           ReceiptAddressView(
@@ -45,9 +48,7 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
               context
                   .openSliverBottomSheet<XRPSignerEntries>(
                     validator.validatorName.tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
+                    initialExtend: 1,
                     child: _SetupRippleSignerEntries(account: account),
                   )
                   .then((value) =>
@@ -61,9 +62,7 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
           WidgetConstant.height8,
           ContainerWithBorder(
             validate: validator.signerQuorum.isCompleted,
-            onRemoveIcon: validator.signerQuorum.hasValue
-                ? const Icon(Icons.edit)
-                : const Icon(Icons.add),
+            onRemoveIcon: AddOrEditIconWidget(validator.signerQuorum.hasValue),
             onRemove: () {
               context
                   .openSliverBottomSheet<BigRational>(
@@ -93,8 +92,10 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
                         validator.setValue(validator.signerQuorum, value),
                   );
             },
-            child: Text(validator.signerQuorum.value?.toString().to3Digits ??
-                "tap_to_input_value".tr),
+            child: Text(
+                validator.signerQuorum.value?.toString().to3Digits ??
+                    "tap_to_input_value".tr,
+                style: context.onPrimaryTextTheme.bodyMedium),
           ),
         ],
       ),
@@ -111,11 +112,14 @@ class _SignerEntryView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("account".tr, style: context.textTheme.titleMedium),
-        OneLineTextWidget(signer.address.view),
+        Text("account".tr, style: context.onPrimaryTextTheme.labelLarge),
+        OneLineTextWidget(signer.address.view,
+            style: context.onPrimaryTextTheme.bodyMedium),
         WidgetConstant.height8,
-        Text("ripple_signer_weight".tr, style: context.textTheme.titleMedium),
-        Text(signer.weight.toString())
+        Text("ripple_signer_weight".tr,
+            style: context.onPrimaryTextTheme.labelLarge),
+        Text(signer.weight.toString(),
+            style: context.onPrimaryTextTheme.bodyMedium)
       ],
     );
   }
@@ -227,9 +231,7 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: signerWegith != null,
-          onRemoveIcon: signerWegith != null
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(signerWegith != null),
           onRemove: () {
             context
                 .openSliverBottomSheet<BigRational>(
@@ -255,7 +257,9 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
                 .then(onSelectWeight);
           },
           child: Text(
-              signerWegith?.toString().to3Digits ?? "tap_to_input_value".tr),
+            signerWegith?.toString().to3Digits ?? "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         WidgetConstant.height20,
         Text("ripple_wallet_locator".tr, style: context.textTheme.titleMedium),
@@ -284,10 +288,12 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
                 )
                 .then(onSetLocator);
           },
-          onRemoveIcon: walletLocator != null
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
-          child: Text(walletLocator ?? "tap_to_input_value".tr, maxLines: 3),
+          onRemoveIcon: AddOrEditIconWidget(walletLocator != null),
+          child: Text(
+            walletLocator ?? "tap_to_input_value".tr,
+            maxLines: 3,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -296,7 +302,7 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 FixedElevatedButton(
-                  padding: WidgetConstant.paddingVertical20,
+                  padding: WidgetConstant.paddingVertical40,
                   onPressed: isReady ? onSetup : null,
                   child: Text("setup_signer".tr),
                 ),

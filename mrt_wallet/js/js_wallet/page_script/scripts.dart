@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
+import '../constant/constant.dart';
 import '../models/models.dart';
 import '../utils/utils.dart';
 import 'dart:async';

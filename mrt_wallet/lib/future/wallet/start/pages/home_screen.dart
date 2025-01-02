@@ -37,7 +37,7 @@ class HomeScreen extends StatelessWidget {
                 SliverFillRemaining(
                   child: PageProgress(
                     key: wallet.wallet.pageStatusHandler,
-                    backToIdle: APPConst.oneSecoundDuration,
+                    backToIdle: APPConst.animationDuraion,
                     initialStatus: StreamWidgetStatus.progress,
                     initialWidget:
                         ProgressWithTextView(text: "launch_the_wallet".tr),
@@ -70,8 +70,8 @@ class _AccountAppBar extends StatelessWidget {
   final WalletProvider wallet;
   @override
   Widget build(BuildContext context) {
-    bool isReady = wallet.wallet.homePageStatus.isReady;
-    bool isLock = wallet.wallet.isLock;
+    final bool isReady = wallet.wallet.homePageStatus.isReady;
+    final bool isLock = wallet.wallet.isLock;
     return SliverAppBar(
       centerTitle: false,
       toolbarHeight: isReady ? kToolbarHeight : 0,
@@ -94,7 +94,12 @@ class _AccountAppBar extends StatelessWidget {
                 context.to(PageRouter.setting);
               },
               icon: const Icon(Icons.settings)),
-        WidgetConstant.width8,
+        // WidgetConstant.width8,
+        // TextButton(
+        //     onPressed: () {
+        //       context.toPage(TestPage());
+        //     },
+        //     child: Text("test"))
       ],
       leading: IconButton(
           onPressed: () {
@@ -121,8 +126,7 @@ class _AccountAppBar extends StatelessWidget {
 
 class SwitchWalletView extends StatelessWidget {
   const SwitchWalletView(
-      {required this.wallets, required this.selectedWallet, Key? key})
-      : super(key: key);
+      {required this.wallets, required this.selectedWallet, super.key});
   final List<HDWallet> wallets;
   final HDWallet selectedWallet;
 
@@ -136,7 +140,7 @@ class SwitchWalletView extends StatelessWidget {
           onRemove: () {
             context.pop(wallet);
           },
-          onTapWhenOnRemove: selected ? false : true,
+          enableTap: selected ? false : true,
           onRemoveWidget: selected
               ? const Icon(Icons.check_circle)
               : WidgetConstant.sizedBox,

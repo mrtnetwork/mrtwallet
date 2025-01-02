@@ -13,7 +13,7 @@ abstract class TonTransactionForm implements TransactionForm {
 
   @override
   String? validateError({ITonAddress? account});
-  StringVoid? onReadyField;
+  // StringVoid? onReadyField;
   List<ton_dart.MessageRelaxed> toMessages(ton_dart.TonAddress account);
 
   @override
@@ -29,12 +29,12 @@ abstract class TonWeb3Form<PARAMS extends Web3TonRequestParam>
 
   DynamicVoid? onStimateChanged;
   @override
-  ObjectVoid? onCompeleteForm;
+  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;
 
   void confirmRequest({Object? response}) {
-    onCompeleteForm?.call(response);
+    onCompleteForm?.call(response);
   }
 }

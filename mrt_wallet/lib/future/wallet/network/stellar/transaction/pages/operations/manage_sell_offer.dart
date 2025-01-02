@@ -13,8 +13,7 @@ class ManageSellOfferOperationView extends StatefulWidget {
   final StellarTransactionStateController controller;
   final StellarManageSellOfferOperation? operation;
   const ManageSellOfferOperationView(
-      {required this.controller, this.operation, Key? key})
-      : super(key: key);
+      {required this.controller, this.operation, super.key});
 
   @override
   State<ManageSellOfferOperationView> createState() =>
@@ -184,54 +183,20 @@ class _ManageSellOfferOperationViewState
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: asset != null,
-          iconAlginment: asset == null
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
-          onRemoveIcon: asset == null
-              ? Icon(
-                  Icons.add_box,
-                  color: context.colors.onPrimaryContainer,
-                )
-              : Icon(
-                  Icons.edit,
-                  color: context.colors.onPrimaryContainer,
-                ),
+          onRemoveIcon: AddOrEditIconWidget(asset != null),
           child: asset == null
-              ? Text("tap_to_select_or_create_asset".tr)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (asset!.asset.type.isNative) ...[
-                      Text(asset!.asset.type.name,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      WidgetConstant.height8,
-                      ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
-                        child: TokenDetailsWidget(
-                          token: asset!.token,
-                          liveBalance: chain.address.address.balance,
-                          color: context.colors.primaryContainer,
-                        ),
-                      )
-                    ] else ...[
-                      Text(asset!.asset.type.name,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      OneLineTextWidget(asset!.issuer ?? '',
-                          style: context.colors.onPrimaryContainer
-                              .bodyMedium(context)),
-                      ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
-                        onTapWhenOnRemove: false,
-                        child: TokenDetailsWidget(
-                          token: asset!.currentToken,
-                          balance: asset?.tokenBalance,
-                          color: context.colors.primaryContainer,
-                        ),
-                      ),
-                    ]
-                  ],
+              ? Text("tap_to_select_or_create_asset".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium)
+              : TokenDetailsWidget(
+                  token: asset!.asset.type.isNative
+                      ? asset!.token
+                      : asset!.currentToken,
+                  balance: asset!.asset.type.isNative
+                      ? chain.address.address.balance.value
+                      : asset?.tokenBalance,
+                  color: context.onPrimaryContainer,
+                  radius: APPConst.circleRadius25,
+                  tokenAddress: asset!.issuer,
                 ),
           onRemove: () {
             context
@@ -274,7 +239,7 @@ class _ManageSellOfferOperationViewState
 
 class _Amount extends StatelessWidget {
   final _ManageSellOfferOperationViewState state;
-  const _Amount(this.state, {Key? key}) : super(key: key);
+  const _Amount(this.state);
 
   @override
   Widget build(BuildContext context) {
@@ -290,6 +255,7 @@ class _Amount extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "amount".tr,
+                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: state.asset!.token,
@@ -310,30 +276,15 @@ class _Amount extends StatelessWidget {
           iconAlginment: state.buying == null
               ? CrossAxisAlignment.center
               : CrossAxisAlignment.start,
-          onRemoveIcon: state.buying == null
-              ? const Icon(Icons.add_box)
-              : const Icon(Icons.edit),
+          onRemoveIcon: AddOrEditIconWidget(state.buying != null),
           child: state.buying == null
-              ? Text("tap_to_select_or_create_asset".tr)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(state.buying!.asset.type.name,
-                        style: context.colors.onPrimaryContainer
-                            .lableLarge(context)),
-                    OneLineTextWidget(state.buying!.issuer ?? '',
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context)),
-                    ContainerWithBorder(
-                      backgroundColor: context.colors.onPrimaryContainer,
-                      onTapWhenOnRemove: false,
-                      child: TokenDetailsWidget(
-                        token: state.buying!.token,
-                        radius: APPConst.iconSize,
-                        color: context.colors.primaryContainer,
-                      ),
-                    ),
-                  ],
+              ? Text("tap_to_select_or_create_asset".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium)
+              : TokenDetailsWidget(
+                  token: state.buying!.token,
+                  radius: APPConst.iconSize,
+                  tokenAddress: state.buying!.issuer,
+                  color: context.colors.onPrimaryContainer,
                 ),
           onRemove: () {
             context
@@ -374,19 +325,23 @@ class _Amount extends StatelessWidget {
                       onRemoveIcon: Icon(Icons.edit,
                           color: context.colors.onPrimaryContainer),
                       child: state.price == null
-                          ? Text("tap_to_setup_price".tr)
+                          ? Text("tap_to_setup_price".tr,
+                              style: context.onPrimaryTextTheme.bodyMedium)
                           : Row(
                               children: [
                                 Stack(
                                   alignment: Alignment.centerLeft,
                                   children: [
-                                    CircleTokenImageView(state.asset!.token,
-                                        radius: APPConst.iconSize),
+                                    CircleTokenImageView(
+                                      state.asset!.token,
+                                      radius: APPConst.circleRadius25,
+                                    ),
                                     Container(
                                       padding: const EdgeInsets.only(left: 20),
                                       child: CircleTokenImageView(
-                                          state.buying!.token,
-                                          radius: APPConst.iconSize),
+                                        state.buying!.token,
+                                        radius: APPConst.circleRadius25,
+                                      ),
                                     ),
                                   ],
                                 ),

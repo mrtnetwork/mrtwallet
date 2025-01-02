@@ -4,8 +4,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 class EthereumWeb3RequestAccountsView extends StatelessWidget {
   const EthereumWeb3RequestAccountsView(
-      {required this.field, required this.controller, Key? key})
-      : super(key: key);
+      {required this.field, required this.controller, super.key});
   final EthereumRequestAccountForm field;
   final Web3EthereumGlobalRequestController controller;
   @override
@@ -58,7 +57,7 @@ class EthereumWeb3RequestAccountsView extends StatelessWidget {
                         final addr = field.chain.addresses[index];
                         final permission = field.accountPermission(addr);
                         return ContainerWithBorder(
-                          onTapWhenOnRemove: false,
+                          enableTap: false,
                           onRemove: () {
                             field.addAccount(addr);
                           },

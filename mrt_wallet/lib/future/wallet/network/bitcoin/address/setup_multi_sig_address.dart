@@ -7,7 +7,6 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/crypto/utils/bitcoin/bitcoin.dart';
 
@@ -21,6 +20,19 @@ class SetupBitcoinMultiSigAddressView extends StatefulWidget {
 
 class _SetupBitcoinMultiSigAddressViewState
     extends State<SetupBitcoinMultiSigAddressView> with SafeState {
+  bool inReview = false;
+  Map<BitcoinAddressType, String> supportedMultisigTypes = {};
+  late final BitcoinChain chainAccount;
+  BitcoinAddressType multiSigAddressTye = P2shAddressType.p2pkhInP2sh;
+  BitcoinMultiSignatureAddress? _multiSigAddress;
+  MultiSignatureAddress get multiSigAddress => _multiSigAddress!;
+  final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
+      debugLabel: "SetupBitcoinMultiSigAddressView");
+  final GlobalKey<StreamWidgetState> buttonState = GlobalKey();
+  String? _shareError;
+  bool _init = false;
+  late String? _multiSigViewAddress;
+  bool showOnVisible = false;
   final Map<String, BitcoinMultiSigSignerDetais> _signers = {};
   List<BitcoinMultiSigSignerDetais> get signers => _signers.values.toList();
   final GlobalKey visibleReview = GlobalKey();
@@ -38,13 +50,13 @@ class _SetupBitcoinMultiSigAddressViewState
       return;
     }
     final newAcc = BitcoinMultiSigSignerDetais(
-        publicKey: acc.publicKey, keyIndex: acc.keyIndex as Bip32AddressIndex);
+        publicKey: acc.publicKey, keyIndex: acc.keyIndex.cast());
     if (_signers.containsKey(newAcc.publicKey)) {
       context.showAlert("public_key_already_exist".tr);
       return;
     }
     _signers.addAll({newAcc.publicKey: newAcc});
-    setState(() {});
+    updateState();
   }
 
   void onRemoveAcc(BitcoinMultiSigSignerDetais acc) {
@@ -64,7 +76,6 @@ class _SetupBitcoinMultiSigAddressViewState
     _validate();
   }
 
-  bool showOnVisible = false;
   void _validate() {
     isValidThreshHold = isValid();
 
@@ -74,7 +85,7 @@ class _SetupBitcoinMultiSigAddressViewState
     if (isValidThreshHold && signersReady && !isReady) {
       _errorText = "threshhold_desc3".tr;
     }
-    setState(() {});
+    updateState();
     if (isReady && !showOnVisible) {
       visibleReview.ensureKeyVisible(
         onScroll: () {
@@ -105,34 +116,27 @@ class _SetupBitcoinMultiSigAddressViewState
   }
 
   bool isValid() => _thresHold != null && _thresHold! >= 2 && _thresHold! <= 16;
-  bool inReview = false;
-  final Map<BitcoinAddressType, String> supportedMultisigTypes = {};
-  late final BitcoinChain chainAccount;
-  BitcoinAddressType multiSigAddressTye = P2shAddressType.p2pkhInP2sh;
-  BitcoinMultiSignatureAddress? _multiSigAddress;
-  MultiSignatureAddress get multiSigAddress => _multiSigAddress!;
+
   BitcoinBaseAddress get bitcoinAddress {
     switch (multiSigAddressTye) {
-      case SegwitAddresType.p2wsh:
+      case SegwitAddressType.p2wsh:
         return multiSigAddress.toP2wshAddress(
             network: network.coinParam.transacationNetwork);
       case P2shAddressType.p2pkhInP2sh:
       case P2shAddressType.p2pkhInP2sh32:
       case P2shAddressType.p2pkhInP2shwt:
       case P2shAddressType.p2pkhInP2sh32wt:
-        return multiSigAddress
-            .toP2shAddress(multiSigAddressTye as P2shAddressType);
+        return multiSigAddress.toP2shAddress(multiSigAddressTye.cast());
       default:
         return multiSigAddress.toP2wshInP2shAddress(
             network: network.coinParam.transacationNetwork);
     }
   }
 
-  late String? _multiSigViewAddress;
   void _toMultiSigAddress() {
     _multiSigViewAddress =
         bitcoinAddress.toAddress(network.coinParam.transacationNetwork);
-    setState(() {});
+    updateState();
   }
 
   void onReview() {
@@ -141,6 +145,7 @@ class _SetupBitcoinMultiSigAddressViewState
         threshold: _thresHold!,
         signers: signers,
         addressType: multiSigAddressTye);
+    buildMultisigTypes();
     inReview = true;
     _toMultiSigAddress();
   }
@@ -152,8 +157,9 @@ class _SetupBitcoinMultiSigAddressViewState
       inReview = false;
       _multiSigAddress = null;
       _multiSigViewAddress = null;
+      multiSigAddressTye = P2shAddressType.p2pkhInP2sh;
     } finally {
-      setState(() {});
+      updateState();
     }
   }
 
@@ -173,7 +179,7 @@ class _SetupBitcoinMultiSigAddressViewState
 
     for (final i in signers) {
       backup +=
-          "Public key: ${i.publicKey}\nWeight:${i.weight}\nHd Wallet path: ${i.path}\n";
+          "Public key: ${i.publicKey}\nWeight:${i.weight}\nHD Wallet path: ${i.path}\n";
       backup += "=====================================\n";
     }
     backup += "Script details:\n";
@@ -189,9 +195,6 @@ class _SetupBitcoinMultiSigAddressViewState
 
     return backup;
   }
-
-  final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
-      debugLabel: "SetupBitcoinMultiSigAddressView");
 
   void onSetupAddress(bool? accept) async {
     if (accept != true) return;
@@ -236,11 +239,9 @@ class _SetupBitcoinMultiSigAddressViewState
             ));
       }
     }
-    setState(() {});
+    updateState();
   }
 
-  final GlobalKey<StreamWidgetState> buttonState = GlobalKey();
-  String? _shareError;
   void share() async {
     if (_shareError != null) {
       _shareError = null;
@@ -264,18 +265,20 @@ class _SetupBitcoinMultiSigAddressViewState
     } else {
       buttonState.success();
     }
-    setState(() {});
+    updateState();
   }
 
-  bool _init = false;
   void init() {
     if (_init) return;
     _init = true;
     chainAccount = context.getArgruments();
+    progressKey.backToIdle();
+  }
 
+  void buildMultisigTypes() {
     final List<BitcoinAddressType> supportTyes =
         network.coinParam.transacationNetwork.supportedAddress;
-
+    final Map<BitcoinAddressType, String> supportedMultisigTypes = {};
     supportedMultisigTypes[P2shAddressType.p2pkhInP2sh] = "P2SH";
     if (supportTyes.contains(P2shAddressType.p2pkhInP2sh32)) {
       supportedMultisigTypes[P2shAddressType.p2pkhInP2shwt] =
@@ -285,18 +288,20 @@ class _SetupBitcoinMultiSigAddressViewState
       supportedMultisigTypes[P2shAddressType.p2pkhInP2sh32wt] =
           P2shAddressType.p2pkhInP2sh32wt.value;
     }
-    if (supportTyes.contains(SegwitAddresType.p2wpkh)) {
+    if (supportTyes.contains(SegwitAddressType.p2wpkh) &&
+        multiSigAddress.canSelectSegwit) {
       supportedMultisigTypes[P2shAddressType.p2wshInP2sh] =
           P2shAddressType.p2wshInP2sh.value;
-      supportedMultisigTypes[SegwitAddresType.p2wsh] =
-          SegwitAddresType.p2wsh.value;
+      supportedMultisigTypes[SegwitAddressType.p2wsh] =
+          SegwitAddressType.p2wsh.value;
     }
+    this.supportedMultisigTypes = supportedMultisigTypes;
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    init();
+    MethodUtils.after(() async => init());
   }
 
   @override
@@ -309,439 +314,448 @@ class _SetupBitcoinMultiSigAddressViewState
         }
       },
       child: ScaffolPageView(
-          appBar: AppBar(title: Text("multi_sig_addr".tr)),
-          child: UnfocusableChild(
-            child: PageProgress(
-              key: progressKey,
-              backToIdle: APPConst.oneSecoundDuration,
-              child: (c) => Center(
-                child: CustomScrollView(
-                  shrinkWrap: true,
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: ConstraintsBoxView(
-                        padding: WidgetConstant.padding20,
-                        child: AnimatedSwitcher(
-                          duration: APPConst.animationDuraion,
-                          child: inReview
-                              ? Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  key: const ValueKey<bool>(true),
-                                  children: [
-                                    PageTitleSubtitle(
-                                        title: "review_address".tr,
-                                        body: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text("review_address_desc".tr),
-                                          ],
-                                        )),
-                                    Text("type_of_address".tr,
-                                        style: context.textTheme.titleMedium),
-                                    WidgetConstant.height8,
-                                    ...List.generate(
-                                        supportedMultisigTypes.length, (index) {
-                                      final supportTypes =
-                                          supportedMultisigTypes.keys.toList();
-                                      return RadioListTile(
-                                          title:
-                                              Text(supportTypes[index].value),
-                                          subtitle: Text(
-                                              BTCUtils.getAddressDetails(
-                                                  supportTypes[index])),
-                                          value: supportTypes[index],
-                                          groupValue: multiSigAddressTye,
-                                          onChanged: onChangeAddressType);
-                                    }),
-                                    AnimatedSwitcher(
-                                      duration: APPConst.animationDuraion,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        key: ValueKey<BitcoinAddressType>(
-                                            multiSigAddressTye),
-                                        children: [
-                                          WidgetConstant.height20,
-                                          Text("address".tr,
-                                              style: context
-                                                  .textTheme.titleMedium),
-                                          WidgetConstant.height8,
-                                          ContainerWithBorder(
-                                              child: CopyTextIcon(
-                                            isSensitive: false,
-                                            widget: SelectableText(
-                                                _multiSigViewAddress!),
-                                            dataToCopy: _multiSigViewAddress!,
-                                          )),
-                                          WidgetConstant.height20,
-                                          Text(
-                                              "public_keys_and_weight_of_each"
-                                                  .tr,
-                                              style: context
-                                                  .textTheme.titleMedium),
-                                          WidgetConstant.height8,
-                                          Column(
-                                            children: List.generate(
-                                                signers.length, (index) {
-                                              return ContainerWithBorder(
-                                                  child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text("publick_key".tr,
-                                                      style: context.textTheme
-                                                          .labelLarge),
-                                                  OneLineTextWidget(
-                                                      signers[index].publicKey),
-                                                  WidgetConstant.height8,
-                                                  Text("weight".tr,
-                                                      style: context.textTheme
-                                                          .labelLarge),
-                                                  Text(signers[index]
-                                                      .weight
-                                                      .toString()),
-                                                ],
-                                              ));
-                                            }),
-                                          ),
-                                          WidgetConstant.height20,
-                                          Text("threshold".tr,
-                                              style: context
-                                                  .textTheme.titleMedium),
-                                          WidgetConstant.height8,
-                                          ContainerWithBorder(
-                                              child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(_thresHold!.toString()),
-                                            ],
-                                          )),
-                                          WidgetConstant.height20,
-                                          Text("multi_sig_script".tr,
-                                              style: context
-                                                  .textTheme.titleMedium),
-                                          WidgetConstant.height8,
-                                          ContainerWithBorder(
-                                              child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(multiSigAddress
-                                                  .multiSigScript.script
-                                                  .join(" ")),
-                                            ],
-                                          )),
-                                          WidgetConstant.height20,
-                                          Text("address_script".tr,
-                                              style: context
-                                                  .textTheme.titleMedium),
-                                          WidgetConstant.height8,
-                                          ContainerWithBorder(
-                                              child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(bitcoinAddress
-                                                  .toScriptPubKey()
-                                                  .script
-                                                  .join(" ")),
-                                            ],
-                                          )),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              FixedElevatedButton(
-                                                padding: WidgetConstant
-                                                    .paddingVertical20,
-                                                onPressed: () {
-                                                  context
-                                                      .openSliverDialog<bool>(
-                                                          (p0) =>
-                                                              DialogTextView(
-                                                                text:
-                                                                    "backup_multi_sig_address_desc"
-                                                                        .tr,
-                                                                buttonWidget:
-                                                                    const DialogDoubleButtonView(),
-                                                              ),
-                                                          "backup".tr)
-                                                      .then(onSetupAddress);
-                                                },
-                                                child: Text("setup_address".tr),
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.end,
-                                            children: [
-                                              FilledButton.icon(
-                                                icon: const Icon(Icons.backup),
-                                                label:
-                                                    Text("backup_as_text".tr),
-                                                onPressed: () {
-                                                  context.openSliverDialog(
-                                                      (ctx) => Column(
-                                                            children: [
-                                                              PageTitleSubtitle(
-                                                                  title:
-                                                                      "address_details2"
-                                                                          .tr,
-                                                                  body: Text(
-                                                                      "address_backup_desc1"
-                                                                          .tr)),
-                                                              WidgetConstant
-                                                                  .height8,
-                                                              ContainerWithBorder(
-                                                                  child:
-                                                                      ConstraintsBoxView(
-                                                                maxHeight: 200,
-                                                                child:
-                                                                    SingleChildScrollView(
-                                                                  scrollDirection:
-                                                                      Axis.vertical,
-                                                                  child:
-                                                                      SelectableText(
-                                                                          toText),
-                                                                ),
-                                                              )),
-                                                              WidgetConstant
-                                                                  .height20,
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .spaceEvenly,
-                                                                children: [
-                                                                  StreamWidget(
-                                                                    buttonWidget: FilledButton.icon(
-                                                                        onPressed:
-                                                                            share,
-                                                                        icon: const Icon(Icons
-                                                                            .share),
-                                                                        label: Text(
-                                                                            "share_as_file".tr)),
-                                                                    backToIdle:
-                                                                        APPConst
-                                                                            .oneSecoundDuration,
-                                                                    key:
-                                                                        buttonState,
-                                                                  ),
-                                                                  WidgetConstant
-                                                                      .width8,
-                                                                  CopyTextIcon(
-                                                                      isSensitive:
-                                                                          false,
-                                                                      dataToCopy:
-                                                                          toText,
-                                                                      size: APPConst
-                                                                          .double40),
-                                                                ],
-                                                              ),
-                                                              ErrorTextContainer(
-                                                                  error:
-                                                                      _shareError,
-                                                                  margin: WidgetConstant
-                                                                      .paddingVertical10)
-                                                            ],
-                                                          ),
-                                                      "address_details".tr);
-                                                },
-                                              )
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    )
-                                  ],
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    PageTitleSubtitle(
-                                        title: "establishing_multi_sig_addr".tr,
-                                        body: LargeTextView([
-                                          "multi_sig_desc".tr,
-                                          "mutli_sig_desc2".tr,
-                                          "multi_sig_desc3".tr,
-                                          "multi_sig_desc4".tr
-                                        ])),
-                                    Text("list_of_public_keys".tr,
-                                        style: context.textTheme.titleMedium),
-                                    Text("multi_sig_desc5".tr),
-                                    WidgetConstant.height8,
-                                    ContainerWithBorder(
-                                        validate: _signers.isNotEmpty,
-                                        onRemoveIcon: const Icon(Icons.add),
-                                        onRemove: () {
-                                          context
-                                              .openSliverBottomSheet<
-                                                  IBitcoinAddress>(
-                                                "select_account".tr,
-                                                minExtent: 0.5,
-                                                child:
-                                                    SwitchOrSelectAccountView(
-                                                  account: chainAccount,
-                                                  showMultiSig: false,
-                                                ),
-                                                maxExtend: 0.9,
-                                                initialExtend: 0.7,
-                                                centerContent: false,
-                                              )
-                                              .then(onAddSigner);
-                                        },
-                                        child: Text("tap_to_select".tr)),
-                                    AnimatedSize(
-                                      duration: APPConst.animationDuraion,
-                                      child: Column(
-                                        key: ValueKey<int>(signers.length),
+        appBar: AppBar(title: Text("generate_address".tr)),
+        child: PageProgress(
+          key: progressKey,
+          initialStatus: StreamWidgetStatus.progress,
+          backToIdle: APPConst.oneSecoundDuration,
+          child: (c) => Center(
+            child: CustomScrollView(
+              shrinkWrap: true,
+              slivers: [
+                SliverToBoxAdapter(
+                  child: ConstraintsBoxView(
+                      padding: WidgetConstant.padding20,
+                      child: APPAnimatedSwitcher(enable: inReview, widgets: {
+                        true: (context) => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                PageTitleSubtitle(
+                                    title: "review_address".tr,
+                                    body: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("review_address_desc".tr)
+                                      ],
+                                    )),
+                                Text("type_of_address".tr,
+                                    style: context.textTheme.titleMedium),
+                                WidgetConstant.height8,
+                                ...List.generate(supportedMultisigTypes.length,
+                                    (index) {
+                                  final supportTypes =
+                                      supportedMultisigTypes.keys.toList();
+                                  return RadioListTile(
+                                      title: Text(supportTypes[index].value),
+                                      subtitle: Text(BTCUtils.getAddressDetails(
+                                          supportTypes[index])),
+                                      value: supportTypes[index],
+                                      groupValue: multiSigAddressTye,
+                                      onChanged: onChangeAddressType);
+                                }),
+                                AnimatedSwitcher(
+                                  duration: APPConst.animationDuraion,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    key: ValueKey<BitcoinAddressType>(
+                                        multiSigAddressTye),
+                                    children: [
+                                      WidgetConstant.height20,
+                                      Text("address".tr,
+                                          style: context.textTheme.titleMedium),
+                                      WidgetConstant.height8,
+                                      ContainerWithBorder(
+                                          child: CopyTextIcon(
+                                              isSensitive: false,
+                                              widget: SelectableText(
+                                                  _multiSigViewAddress!),
+                                              dataToCopy:
+                                                  _multiSigViewAddress!)),
+                                      WidgetConstant.height20,
+                                      Text("public_keys_and_weight_of_each".tr,
+                                          style: context.textTheme.titleMedium),
+                                      WidgetConstant.height8,
+                                      Column(
                                         children: List.generate(signers.length,
                                             (index) {
                                           return ContainerWithBorder(
-                                              onRemove: () {
-                                                onRemoveAcc(signers[index]);
-                                              },
                                               child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(signers[index].path,
-                                                      style: context.textTheme
-                                                          .labelLarge),
-                                                  OneLineTextWidget(
-                                                      signers[index].publicKey)
-                                                ],
-                                              ));
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text("publick_key".tr,
+                                                  style: context
+                                                      .colors.onPrimaryContainer
+                                                      .lableLarge(context)),
+                                              OneLineTextWidget(
+                                                signers[index].publicKey,
+                                                style: context
+                                                    .colors.onPrimaryContainer
+                                                    .bodyMedium(context),
+                                              ),
+                                              WidgetConstant.height8,
+                                              Text("weight".tr,
+                                                  style: context
+                                                      .colors.onPrimaryContainer
+                                                      .lableLarge(context)),
+                                              Text(
+                                                  signers[index]
+                                                      .weight
+                                                      .toString(),
+                                                  style: context
+                                                      .colors.onPrimaryContainer
+                                                      .bodyMedium(context)),
+                                            ],
+                                          ));
                                         }),
                                       ),
-                                    ),
-                                    WidgetConstant.height20,
-                                    Text("threshold_configuration".tr,
-                                        style: context.textTheme.titleMedium),
-                                    Text("threshhold_desc".tr),
-                                    WidgetConstant.height8,
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Flexible(
-                                          child: NumberTextField(
-                                            label: "threshold".tr,
-                                            disableWriting: true,
-                                            onChange: onChangeThreshHold,
-                                            max: 16,
-                                            min: 2,
-                                            defaultValue: 2,
+                                      WidgetConstant.height20,
+                                      Text("threshold".tr,
+                                          style: context.textTheme.titleMedium),
+                                      WidgetConstant.height8,
+                                      ContainerWithBorder(
+                                          child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(_thresHold!.toString(),
+                                              style: context
+                                                  .colors.onPrimaryContainer
+                                                  .bodyMedium(context)),
+                                        ],
+                                      )),
+                                      WidgetConstant.height20,
+                                      Text("multi_sig_script".tr,
+                                          style: context.textTheme.titleMedium),
+                                      WidgetConstant.height8,
+                                      ContainerWithBorder(
+                                          child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                              multiSigAddress
+                                                  .multiSigScript.script
+                                                  .join(" "),
+                                              style: context
+                                                  .colors.onPrimaryContainer
+                                                  .bodyMedium(context)),
+                                        ],
+                                      )),
+                                      WidgetConstant.height20,
+                                      Text("address_script".tr,
+                                          style: context.textTheme.titleMedium),
+                                      WidgetConstant.height8,
+                                      ContainerWithBorder(
+                                          child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            bitcoinAddress
+                                                .toScriptPubKey()
+                                                .script
+                                                .join(" "),
+                                            style: context
+                                                .colors.onPrimaryContainer
+                                                .bodyMedium(context),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      )),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          FixedElevatedButton(
+                                            padding: WidgetConstant
+                                                .paddingVertical40,
+                                            onPressed: () {
+                                              context
+                                                  .openSliverDialog<bool>(
+                                                      (p0) => DialogTextView(
+                                                            text:
+                                                                "backup_multi_sig_address_desc"
+                                                                    .tr,
+                                                            buttonWidget:
+                                                                const DialogDoubleButtonView(),
+                                                          ),
+                                                      "backup".tr)
+                                                  .then(onSetupAddress);
+                                            },
+                                            child: Text("setup_address".tr),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          FilledButton.icon(
+                                            icon: const Icon(Icons.backup),
+                                            label: Text("backup_as_text".tr),
+                                            onPressed: () {
+                                              context.openSliverDialog(
+                                                  (ctx) => Column(
+                                                        children: [
+                                                          PageTitleSubtitle(
+                                                              title:
+                                                                  "address_details2"
+                                                                      .tr,
+                                                              body: Text(
+                                                                  "address_backup_desc1"
+                                                                      .tr)),
+                                                          WidgetConstant
+                                                              .height8,
+                                                          ContainerWithBorder(
+                                                              child:
+                                                                  ConstraintsBoxView(
+                                                            maxHeight: 200,
+                                                            child:
+                                                                SingleChildScrollView(
+                                                              scrollDirection:
+                                                                  Axis.vertical,
+                                                              child:
+                                                                  SelectableText(
+                                                                toText,
+                                                                style: context
+                                                                    .colors
+                                                                    .onPrimaryContainer
+                                                                    .bodyMedium(
+                                                                        context),
+                                                              ),
+                                                            ),
+                                                          )),
+                                                          WidgetConstant
+                                                              .height20,
+                                                          Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .spaceEvenly,
+                                                            children: [
+                                                              StreamWidget(
+                                                                buttonWidget: FilledButton.icon(
+                                                                    onPressed:
+                                                                        share,
+                                                                    icon: const Icon(
+                                                                        Icons
+                                                                            .share),
+                                                                    label: Text(
+                                                                        "share_as_file"
+                                                                            .tr)),
+                                                                backToIdle: APPConst
+                                                                    .oneSecoundDuration,
+                                                                key:
+                                                                    buttonState,
+                                                              ),
+                                                              WidgetConstant
+                                                                  .width8,
+                                                              CopyTextIcon(
+                                                                  isSensitive:
+                                                                      false,
+                                                                  dataToCopy:
+                                                                      toText,
+                                                                  size: APPConst
+                                                                      .double40),
+                                                            ],
+                                                          ),
+                                                          ErrorTextContainer(
+                                                              error:
+                                                                  _shareError,
+                                                              margin: WidgetConstant
+                                                                  .paddingVertical10)
+                                                        ],
+                                                      ),
+                                                  "address_details".tr);
+                                            },
+                                          )
+                                        ],
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                        false: (context) => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                PageTitleSubtitle(
+                                    title: "establishing_multi_sig_addr".tr,
+                                    body: LargeTextView([
+                                      "multi_sig_desc".tr,
+                                      "mutli_sig_desc2".tr,
+                                      "multi_sig_desc3".tr,
+                                      "multi_sig_desc4".tr
+                                    ])),
+                                Text("list_of_public_keys".tr,
+                                    style: context.textTheme.titleMedium),
+                                Text("multi_sig_desc5".tr),
+                                WidgetConstant.height8,
+                                ContainerWithBorder(
+                                    validate: _signers.isNotEmpty,
+                                    onRemoveIcon: Icon(
+                                      Icons.add,
+                                      color: context.colors.onPrimaryContainer,
                                     ),
-                                    AnimatedSize(
-                                      duration: APPConst.animationDuraion,
-                                      child:
-                                          isValidThreshHold &&
-                                                  signers.isNotEmpty
-                                              ? Column(
+                                    onRemove: () {
+                                      context
+                                          .openSliverBottomSheet<
+                                              IBitcoinAddress>(
+                                            "select_account".tr,
+                                            minExtent: 0.5,
+                                            child: SwitchOrSelectAccountView(
+                                              account: chainAccount,
+                                              showMultiSig: false,
+                                            ),
+                                            maxExtend: 0.9,
+                                            initialExtend: 0.7,
+                                            centerContent: false,
+                                          )
+                                          .then(onAddSigner);
+                                    },
+                                    child: Text("tap_to_select".tr,
+                                        style: context.colors.onPrimaryContainer
+                                            .bodyMedium(context))),
+                                AnimatedSize(
+                                  duration: APPConst.animationDuraion,
+                                  child: Column(
+                                    key: ValueKey<int>(signers.length),
+                                    children:
+                                        List.generate(signers.length, (index) {
+                                      return ContainerWithBorder(
+                                          onRemove: () {
+                                            onRemoveAcc(signers[index]);
+                                          },
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              OneLineTextWidget(
+                                                  signers[index].publicKey,
+                                                  style: context
+                                                      .colors.onPrimaryContainer
+                                                      .bodyMedium(context)),
+                                              Text(signers[index].path,
+                                                  style: context
+                                                      .colors.onPrimaryContainer
+                                                      .bodySmall(context)),
+                                              Text(signers[index].keyType.name,
+                                                  style: context
+                                                      .colors.onPrimaryContainer
+                                                      .bodySmall(context)),
+                                            ],
+                                          ));
+                                    }),
+                                  ),
+                                ),
+                                WidgetConstant.height20,
+                                Text("threshold_configuration".tr,
+                                    style: context.textTheme.titleMedium),
+                                Text("threshhold_desc".tr),
+                                WidgetConstant.height8,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                      child: NumberTextField(
+                                        label: "threshold".tr,
+                                        disableWriting: true,
+                                        onChange: onChangeThreshHold,
+                                        max: 16,
+                                        min: 2,
+                                        defaultValue: 2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                APPAnimatedSize(
+                                  isActive:
+                                      isValidThreshHold && signers.isNotEmpty,
+                                  onActive: (context) => Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      WidgetConstant.height20,
+                                      Text("signers_weight_configuration".tr,
+                                          style: context.textTheme.titleMedium),
+                                      LargeTextView(["signer_wight_desc1".tr]),
+                                      WidgetConstant.height8,
+                                      Column(
+                                        children: List.generate(
+                                            signers.length,
+                                            (index) => ContainerWithBorder(
+                                                validate:
+                                                    signers[index].weight >=
+                                                            1 &&
+                                                        signers[index].weight <=
+                                                            _thresHold!,
+                                                validateText:
+                                                    "threshhold_desc2".tr,
+                                                child: Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    WidgetConstant.height20,
-                                                    Text(
-                                                        "signers_weight_configuration"
-                                                            .tr,
-                                                        style: context.textTheme
-                                                            .titleMedium),
-                                                    LargeTextView([
-                                                      "signer_wight_desc1".tr
-                                                    ]),
+                                                    OneLineTextWidget(
+                                                      signers[index].publicKey,
+                                                      style: context.colors
+                                                          .onPrimaryContainer
+                                                          .bodyMedium(context),
+                                                    ),
+                                                    Text(signers[index].path,
+                                                        style: context.colors
+                                                            .onPrimaryContainer
+                                                            .bodySmall(
+                                                                context)),
                                                     WidgetConstant.height8,
-                                                    Column(
-                                                      children: List.generate(
-                                                          signers.length,
-                                                          (index) =>
-                                                              ContainerWithBorder(
-                                                                  validate: signers[index]
-                                                                              .weight >=
-                                                                          1 &&
-                                                                      signers[index]
-                                                                              .weight <=
-                                                                          _thresHold!,
-                                                                  validateText:
-                                                                      "threshhold_desc2"
-                                                                          .tr,
-                                                                  child: Column(
-                                                                    crossAxisAlignment:
-                                                                        CrossAxisAlignment
-                                                                            .start,
-                                                                    children: [
-                                                                      Text(
-                                                                          signers[index]
-                                                                              .path,
-                                                                          style: context
-                                                                              .textTheme
-                                                                              .labelLarge),
-                                                                      OneLineTextWidget(
-                                                                          signers[index]
-                                                                              .publicKey),
-                                                                      WidgetConstant
-                                                                          .height8,
-                                                                      NumberTextField(
-                                                                          label: "weight"
-                                                                              .tr,
-                                                                          disableWriting:
-                                                                              true,
-                                                                          onChange:
-                                                                              (p0) {
-                                                                            onChangeSignerWeight(signers[index],
-                                                                                p0);
-                                                                          },
-                                                                          max: _thresHold ??
-                                                                              0,
-                                                                          min:
-                                                                              1)
-                                                                    ],
-                                                                  ))),
-                                                    )
+                                                    NumberTextField(
+                                                        label: "weight".tr,
+                                                        disableWriting: true,
+                                                        onChange: (p0) {
+                                                          onChangeSignerWeight(
+                                                              signers[index],
+                                                              p0);
+                                                        },
+                                                        max: _thresHold ?? 0,
+                                                        min: 1)
                                                   ],
-                                                )
-                                              : const SizedBox(),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Flexible(
-                                          child: AnimatedSize(
-                                            duration: APPConst.animationDuraion,
-                                            child: isReady
-                                                ? FixedElevatedButton(
-                                                    padding: WidgetConstant
-                                                        .paddingVertical20,
-                                                    onPressed: isReady
-                                                        ? onReview
-                                                        : null,
-                                                    key: visibleReview,
-                                                    child: Text(
-                                                        "review_address".tr),
-                                                  )
-                                                : ErrorTextContainer(
-                                                    error: _errorText),
-                                          ),
-                                        )
-                                      ],
-                                    )
-                                  ],
+                                                ))),
+                                      )
+                                    ],
+                                  ),
+                                  onDeactive: (context) =>
+                                      WidgetConstant.sizedBox,
                                 ),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Flexible(
+                                        child: APPAnimatedSize(
+                                      isActive: isReady,
+                                      onActive: (context) =>
+                                          FixedElevatedButton(
+                                        padding:
+                                            WidgetConstant.paddingVertical40,
+                                        onPressed: isReady ? onReview : null,
+                                        key: visibleReview,
+                                        child: Text("review_address".tr),
+                                      ),
+                                      onDeactive: (context) =>
+                                          ErrorTextContainer(
+                                              error: _errorText,
+                                              showErrorIcon: false),
+                                    )),
+                                  ],
+                                )
+                              ],
+                            )
+                      })),
+                )
+              ],
             ),
-          )),
+          ),
+        ),
+      ),
     );
   }
 }

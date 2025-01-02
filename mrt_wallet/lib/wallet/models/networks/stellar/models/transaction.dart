@@ -8,9 +8,10 @@ enum StellarFeeMode {
   slow("slow"),
   normal("normal"),
   high("high"),
-  costom("custom_fee");
+  custom("custom_fee");
 
   const StellarFeeMode(this.translate);
+  bool get isCustom => this == custom;
 
   final String translate;
   static StellarFeeMode? fromName(String? name) {
@@ -43,6 +44,7 @@ class StellarPickedIssueAsset {
         final assetCode4 = asset.cast<StellarAssetCreditAlphanum4>();
         return StellarPickedIssueAsset._(
             asset: asset,
+            issueToken: issueToken,
             token: Token(
                 name: assetCode4.code,
                 symbol: assetCode4.code,
@@ -102,6 +104,8 @@ class StellarReceiptWithActivityStatus {
   StellarReceiptWithActivityStatus(this.address);
   AccountReceivementStatus _status = AccountReceivementStatus.idle;
   AccountReceivementStatus get status => _status;
+  StellarAccountResponse? get accountInfo => _accountInfo;
+  StellarAccountResponse? _accountInfo;
   String? _error;
   String? get error => _error;
   bool get hasError => _error != null;
@@ -110,8 +114,14 @@ class StellarReceiptWithActivityStatus {
     _error = err;
   }
 
-  void setStatus(AccountReceivementStatus status) {
+  void setStatus(AccountReceivementStatus status,
+      {StellarAccountResponse? accountInfo}) {
     if (!this.status.canUpdateStatus) return;
+    assert(
+        (!status.isActive && accountInfo == null) ||
+            (status.isActive && accountInfo != null),
+        "Update status must be contain a valid account info.");
+    _accountInfo = accountInfo;
     _status = status;
   }
 

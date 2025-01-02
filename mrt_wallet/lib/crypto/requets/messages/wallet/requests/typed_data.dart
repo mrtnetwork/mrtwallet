@@ -7,7 +7,7 @@ import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:on_chain/solidity/abi/abi.dart';
 
 class WalletRequestEthereumTypedDataSign
-    implements WalletRequest<String, MessageArgsOneBytes> {
+    extends WalletRequest<String, MessageArgsOneBytes> {
   final EIP712Base message;
   final Bip32AddressIndex index;
   WalletRequestEthereumTypedDataSign(

@@ -12,6 +12,10 @@ import 'package:on_chain/solana/src/models/transaction/instruction.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class SolanaCreateAccountForm extends SolanaTransactionForm {
+  BigInt _transferValue = BigInt.zero;
+  @override
+  BigInt get transferValue => _transferValue;
+
   bool _manuallyLamports = false;
   final GlobalKey<StreamWidgetState> rentProgress =
       GlobalKey<StreamWidgetState>(
@@ -35,7 +39,7 @@ class SolanaCreateAccountForm extends SolanaTransactionForm {
           name: "owner",
           optional: false,
           value: ReceiptAddress<SolAddress>(
-              view: SystemProgramConst.programId.address,
+              view: SPLTokenProgramConst.tokenProgramId.address,
               type: null,
               networkAddress: SPLTokenProgramConst.tokenProgramId),
           onChangeForm: (p0) {
@@ -58,26 +62,33 @@ class SolanaCreateAccountForm extends SolanaTransactionForm {
   void changeAssetOutputAddress(ISolanaAddress? changeAddr) {
     if (changeAddr == null ||
         changeAddr.address.toAddress ==
-            newAccountAddress.value?.networkAddress.address) return;
+            newAccountAddress.value?.networkAddress.address) {
+      return;
+    }
 
     setValue(
         newAccountAddress,
         ReceiptAddress<SolAddress>(
             view: changeAddr.address.toAddress,
             type: changeAddr.type,
-            networkAddress: changeAddr.networkAddress));
+            networkAddress: changeAddr.networkAddress,
+            account: changeAddr));
   }
 
   Future<void> _getLamportsForRent() async {
     if (_manuallyLamports) return;
     _cancelable.cancel();
     rentProgress.process();
-    final lamp = await MethodUtils.call(() async {
+    final rent = await MethodUtils.call(() async {
       return await provider!.getRent(space.value!.toBigInt().toInt());
     });
-    if (lamp.hasResult) {
-      setValue(lamports, IntegerBalance(lamp.result, SolanaConst.decimal));
+    if (rent.isCancel) return;
+    if (!_manuallyLamports) {
+      setValue(lamports, IntegerBalance(rent.result, SolanaConst.decimal));
+      _transferValue = lamports.value!.balance;
+      onChanged?.call();
     }
+
     rentProgress.idle();
   }
 
@@ -122,10 +133,9 @@ class SolanaCreateAccountForm extends SolanaTransactionForm {
     }
     setValue(lamports, IntegerBalance(val, SolanaConst.decimal));
     _manuallyLamports = true;
+    _transferValue = val;
+    onChanged?.call();
   }
-
-  @override
-  BigInt get transferValue => lamports.value?.balance ?? BigInt.zero;
 
   @override
   String? validateError({ISolanaAddress? account}) {

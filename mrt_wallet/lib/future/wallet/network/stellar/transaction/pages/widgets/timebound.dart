@@ -6,10 +6,8 @@ import 'package:mrt_wallet/wallet/models/networks/stellar/models/transaction.dar
 
 class StellarTransactionSetupTimeBoundView extends StatefulWidget {
   final TransactionTimeBound currentTimeBound;
-  // final DateTime? timeBound;
   const StellarTransactionSetupTimeBoundView(
-      {required this.currentTimeBound, Key? key})
-      : super(key: key);
+      {required this.currentTimeBound, super.key});
 
   @override
   State<StellarTransactionSetupTimeBoundView> createState() =>
@@ -108,11 +106,10 @@ class _StellarTransactionSetupTimeBoundViewState
         WidgetConstant.height8,
         AppDropDownBottom<TransactiomTimeBoundType>(
           items: timeboundItems,
-          label: "time_bound".tr,
+          hint: "time_bound".tr,
           value: timeBoundType,
           onChanged: onChangeTimeBound,
           helperText: timeBoundType.helperText.tr,
-          // helperText: ,
         ),
         APPAnimatedSwitcher<TransactiomTimeBoundType>(
             enable: timeBoundType,
@@ -164,9 +161,6 @@ extension TransactiomTimeBoundTypeHelperText on TransactiomTimeBoundType {
         return "stellar_time_bound_none_desc".tr;
       case TransactiomTimeBoundType.manual:
         return "expiration_time".tr;
-
-      default:
-        throw UnimplementedError();
     }
   }
 }

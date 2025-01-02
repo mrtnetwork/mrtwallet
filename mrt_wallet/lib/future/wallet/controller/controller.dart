@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart'
     show APPSetting, RepositoryConst, StateConst;
+import 'package:mrt_wallet/app/http/http.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/app/models/models/currencies.dart';
 import 'package:mrt_wallet/marketcap/prices/live_currency.dart';
 import 'package:mrt_wallet/repository/repository.dart';
 import 'wallet/ui_wallet.dart';
-
 import 'wallet/cross/cross.dart'
     if (dart.library.js_interop) 'wallet/cross/web.dart'
     if (dart.library.io) 'wallet/cross/io.dart';
 
 class WalletProvider extends StateController
-    with BaseRepository, APPRepository, LiveCurrencies {
+    with BaseRepository, APPRepository, HttpImpl, LiveCurrencies {
   WalletProvider(GlobalKey<NavigatorState> navigatorKey, this._appSetting)
       : wallet = uiWallet(navigatorKey);
 

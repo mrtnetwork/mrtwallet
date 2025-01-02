@@ -4,7 +4,7 @@ import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 
 class CryptoRequestEncodeBackup
-    implements CryptoRequest<String, MessageArgsOneBytes> {
+    extends CryptoRequest<String, MessageArgsOneBytes> {
   final String password;
   final List<int> backup;
   final SecretWalletEncoding encoding;
@@ -12,7 +12,7 @@ class CryptoRequestEncodeBackup
       {required this.password,
       required List<int> backup,
       required this.encoding})
-      : backup = BytesUtils.toBytes(backup, unmodifiable: true);
+      : backup = backup.asImmutableBytes;
   factory CryptoRequestEncodeBackup.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborListValue values = CborSerializable.cborTagValue(

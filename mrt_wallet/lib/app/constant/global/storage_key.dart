@@ -3,7 +3,7 @@ class StorageConst {
   static const String appSetting = "setting";
   static const String setting = "ST_app_setting";
   static const String walletStorageKey = "hdWallets_";
-  static const String walletChecksum = "hdWallets_checksum";
+  static const String chainSorageKey = "WCS_";
   static const String walletNetworkKey = "network";
   static const String coingeckoCoins = "coingeckoCoins";
   static const String external = "external";

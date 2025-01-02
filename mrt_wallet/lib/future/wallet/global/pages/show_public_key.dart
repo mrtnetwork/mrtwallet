@@ -37,19 +37,23 @@ class _BipAccountPublicKey extends StatefulWidget {
 }
 
 class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
-  final List<CryptoPublicKeyData> pubKeys = [];
+  final List<PublicKeysView> pubKeys = [];
   bool get hasMultipleKey => pubKeys.length > 1;
-  late CryptoPublicKeyData publicKey;
+  late PublicKeysView publicKey;
   String? keyInNetwork;
-  String? get extendedKey => publicKey.extendedKey;
-  String? get uncomprossed => publicKey.uncomprossed;
-  String get comprossed => keyInNetwork ?? publicKey.comprossed;
+  // String? get extendedKey => publicKey.extendedKey;
+  // String? get uncomprossed => publicKey.uncomprossed;
+  // String get comprossed => keyInNetwork ?? publicKey.comprossed;
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
   bool inited = false;
-  void checkNetworkFormat() {
-    if (widget.network.type == NetworkType.xrpl) {
-      keyInNetwork = MethodUtils.nullOnException(
-          () => RippleUtils.toRipplePublicKey(comprossed));
+  String comperessedToNetworkFormat(String key) {
+    switch (widget.network.type) {
+      case NetworkType.xrpl:
+        return MethodUtils.nullOnException(
+                () => RippleUtils.toRipplePublicKey(key)) ??
+            key;
+      default:
+        return key;
     }
   }
 
@@ -60,10 +64,10 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
     final wallet = context.watch<WalletProvider>(StateConst.main).wallet;
     final result = await wallet.getAccountPubKys(account: widget.account);
     if (result.hasResult) {
-      pubKeys.addAll(result.result);
+      pubKeys.addAll(result.result.map((e) => e.toViewKey
+          .copyWith(comprossed: comperessedToNetworkFormat(e.comprossed))));
       progressKey.success();
       publicKey = pubKeys.first;
-      checkNetworkFormat();
     } else {
       if (widget.account.multiSigAccount) {
         progressKey.errorText("unavailable_multi_sig_public_key".tr,
@@ -86,10 +90,9 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
     return null;
   }
 
-  void onChangeKey(CryptoPublicKeyData? changeKey) {
+  void onChangeKey(PublicKeysView? changeKey) {
     if (publicKey == changeKey || changeKey == null) return;
     publicKey = changeKey;
-    checkNetworkFormat();
     setState(() {});
   }
 
@@ -116,12 +119,6 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  PageTitleSubtitle(
-                      title: "export_public_key".tr,
-                      body: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [Text("export_public_key_desc1".tr)],
-                      )),
                   if (hasMultipleKey) ...[
                     Text("public_keys".tr,
                         style: context.textTheme.titleMedium),
@@ -133,7 +130,7 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
                       label: "key_name".tr,
                       value: publicKey,
                     ),
-                    WidgetConstant.height20,
+                    WidgetConstant.height20
                   ],
                   if (!hasMultipleKey) ...[
                     Text("address_details".tr,
@@ -141,60 +138,28 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
                     WidgetConstant.height8,
                     ContainerWithBorder(
                       child: CopyTextWithBarcode(
-                          dataToCopy: widget.account.address.toAddress,
-                          widget: AddressDetailsView(address: widget.account),
-                          barcodeTitle: "address_sharing".tr),
+                        dataToCopy: widget.account.address.toAddress,
+                        widget: AddressDetailsView(
+                          address: widget.account,
+                          color: context.onPrimaryContainer,
+                        ),
+                        barcodeTitle: "address_sharing".tr,
+                        color: context.onPrimaryContainer,
+                      ),
                     ),
                     WidgetConstant.height20
                   ],
                   _HDPathDetails(byronLegacy: adaLegacyAddress),
                   AnimatedSwitcher(
                     duration: APPConst.animationDuraion,
-                    child: Column(
-                      key: UniqueKey(),
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (extendedKey != null) ...[
-                          Text("extended_public_key".tr,
-                              style: context.textTheme.titleMedium),
-                          WidgetConstant.height8,
-                          ContainerWithBorder(
-                              child: CopyTextWithBarcode(
-                            dataToCopy: extendedKey!,
-                            barcodeTitle: "extended_public_key".tr,
-                            widget: SelectableText(extendedKey!),
-                          )),
-                          WidgetConstant.height20,
-                        ],
-                        Text("comperessed_public_key".tr,
-                            style: context.textTheme.titleMedium),
-                        WidgetConstant.height8,
-                        ContainerWithBorder(
-                            child: CopyTextWithBarcode(
-                          barcodeTitle: "comperessed_public_key".tr,
-                          dataToCopy: comprossed,
-                          widget: SelectableText(comprossed),
-                        )),
-                        if (uncomprossed != null) ...[
-                          WidgetConstant.height20,
-                          Text("uncomperessed_public_key".tr,
-                              style: context.textTheme.titleMedium),
-                          WidgetConstant.height8,
-                          ContainerWithBorder(
-                              child: CopyTextWithBarcode(
-                            dataToCopy: uncomprossed!,
-                            barcodeTitle: "uncomperessed_public_key".tr,
-                            widget: SelectableText(uncomprossed!),
-                          )),
-                        ],
-                      ],
-                    ),
+                    child:
+                        _KeysView(key: ValueKey(publicKey), pubKey: publicKey),
                   )
                 ],
               ),
             ),
           ),
-          WidgetConstant.sliverPaddingVertial20,
+          WidgetConstant.sliverPaddingVertial40,
         ],
       ),
     );
@@ -218,6 +183,7 @@ class _HDPathDetails extends StatelessWidget {
           onRemoveIcon: CopyTextIcon(
             isSensitive: false,
             dataToCopy: byronLegacy!.addressDetails.hdPath!,
+            color: context.onPrimaryContainer,
           ),
           child:
               Text(byronLegacy!.addressDetails.hdPath!.or("non_derivation".tr)),
@@ -230,9 +196,97 @@ class _HDPathDetails extends StatelessWidget {
           onRemoveIcon: CopyTextIcon(
               isSensitive: false,
               dataToCopy: byronLegacy!.addressDetails.hdPathKeyHex!),
-          child: Text(byronLegacy!.addressDetails.hdPathKeyHex!),
+          child: Text(
+            byronLegacy!.addressDetails.hdPathKeyHex!,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         WidgetConstant.height20
+      ],
+    );
+  }
+}
+
+class _KeysView extends StatelessWidget {
+  final PublicKeysView pubKey;
+  const _KeysView({super.key, required this.pubKey});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (pubKey.extendKey != null) ...[
+          Text("extended_public_key".tr, style: context.textTheme.titleMedium),
+          WidgetConstant.height8,
+          ContainerWithBorder(
+              child: CopyTextWithBarcode(
+            dataToCopy: pubKey.extendKey!,
+            barcodeTitle: "extended_public_key".tr,
+            widget: SelectableText(pubKey.extendKey!,
+                style: context.onPrimaryTextTheme.bodyMedium),
+          )),
+          WidgetConstant.height20,
+        ],
+        Text("comperessed_public_key".tr, style: context.textTheme.titleMedium),
+        WidgetConstant.height8,
+        ContainerWithBorder(
+            child: CopyTextWithBarcode(
+          barcodeTitle: "comperessed_public_key".tr,
+          dataToCopy: pubKey.comprossed,
+          widget: SelectableText(pubKey.comprossed,
+              style: context.onPrimaryTextTheme.bodyMedium),
+        )),
+        if (pubKey.uncomprossed != null) ...[
+          WidgetConstant.height20,
+          Text("uncomperessed_public_key".tr,
+              style: context.textTheme.titleMedium),
+          WidgetConstant.height8,
+          ContainerWithBorder(
+              child: CopyTextWithBarcode(
+            dataToCopy: pubKey.uncomprossed!,
+            barcodeTitle: "uncomperessed_public_key".tr,
+            widget: SelectableText(pubKey.uncomprossed!,
+                style: context.onPrimaryTextTheme.bodyMedium),
+          )),
+        ],
+        ConditionalWidget(
+            onActive: (context) => _MoneroKeysView(pubKey: pubKey.cast()),
+            enable: pubKey.keyType == CryptoPublicKeyDataType.monero)
+      ],
+    );
+  }
+}
+
+class _MoneroKeysView extends StatelessWidget {
+  final MoneroPublicKeysView pubKey;
+  const _MoneroKeysView({required this.pubKey});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        WidgetConstant.height20,
+        Text("spend_public_key".tr, style: context.textTheme.titleMedium),
+        WidgetConstant.height8,
+        ContainerWithBorder(
+            child: CopyTextWithBarcode(
+          dataToCopy: pubKey.spendPublicKey,
+          barcodeTitle: "spend_public_key".tr,
+          widget: SelectableText(pubKey.spendPublicKey,
+              style: context.onPrimaryTextTheme.bodyMedium),
+        )),
+        WidgetConstant.height20,
+        Text("view_public_key".tr, style: context.textTheme.titleMedium),
+        WidgetConstant.height8,
+        ContainerWithBorder(
+            child: CopyTextWithBarcode(
+          barcodeTitle: "view_public_key".tr,
+          dataToCopy: pubKey.viewPublicKey,
+          widget: SelectableText(pubKey.viewPublicKey,
+              style: context.onPrimaryTextTheme.bodyMedium),
+        )),
       ],
     );
   }

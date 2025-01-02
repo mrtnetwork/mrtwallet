@@ -26,6 +26,7 @@ class WebViewPlatformView(
 
     init {
         webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
         webView.webViewClient = CustomWebViewClient(channel, id)
         webView.webChromeClient = CustomWebChromeClient(channel, id)
 

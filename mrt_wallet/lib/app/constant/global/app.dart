@@ -5,6 +5,7 @@ class APPConst {
   static const String assetErc721Abi = "assets/solidity/erc721.json";
   static const String assetErc1155Abi = "assets/solidity/erc1155.json";
   static const String assetWebviewScript = "assets/webview/script.js";
+  static const String assetWebviewPageScript = "assets/webview/script_page.js";
   static const String assetsTronWeb = "assets/webview/tron_web.js";
   static const String bnJs = "assets/webview/bn.js";
   static final APPImage logo = APPImage.local("assets/image/mrt_wallet.png");
@@ -26,6 +27,10 @@ class APPConst {
   static final APPImage ada = APPImage.local("assets/image/ada.png");
   static final APPImage atom = APPImage.local("assets/image/atom.png");
   static final APPImage cacao = APPImage.local("assets/image/cacao.png");
+  static final APPImage avalance = APPImage.local("assets/image/avax.png");
+  static final APPImage arbitrum = APPImage.local("assets/image/arb.png");
+  static final APPImage base = APPImage.local("assets/image/base.png");
+  static final APPImage optimistic = APPImage.local("assets/image/op.png");
 
   static final APPImage thor = APPImage.local("assets/image/thor.png");
   static final APPImage kujira = APPImage.local("assets/image/kujira.png");
@@ -34,6 +39,7 @@ class APPConst {
   static final APPImage polkadot = APPImage.local("assets/image/polkadot.png");
   static final APPImage kusama = APPImage.local("assets/image/ksm.png");
   static final APPImage stellar = APPImage.local("assets/image/xlm.png");
+  static final APPImage monero = APPImage.local("assets/image/monero.png");
 
   static const String name = "MRT WALLET";
   static const Duration animationDuraion = Duration(milliseconds: 400);
@@ -56,7 +62,10 @@ class APPConst {
   static final RegExp accountNameRegExp = RegExp(r'^[^\n]{0,20}$');
   static final RegExp keyNameRegex = RegExp(r'^[^\n]{0,20}$');
   static final RegExp hex32Bytes = RegExp(r'^(0x)?[0-9a-fA-F]{64}$');
+  static final hrpRegex = RegExp(r'^[a-z][a-z0-9]*$');
   static const double circleRadius25 = 25;
+  static const double circleRadius12 = 12.5;
+  static const double elevation = 2;
   static const double desktopAppWidth = 1200;
   static const double desktopAppHeight = 768;
   static const double naviationRailWidth = 80;
@@ -66,10 +75,13 @@ class APPConst {
 
   static const String exampleAuthenticatedHeader = "Authorization";
   static const String exampleAuthenticatedQuery = "api_key";
+  static const String exampleDouble = "0.0025";
 
   static const String exampleAuthenticatedHeaderValue =
       "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==";
   static const String exampleAuthenticatedQueryValue = "api_key";
+
+  static const String exampleAuthenticatedDigestAuthRealm = "monero-rpc";
 
   static const int defaultDecimalPlaces = 8;
 

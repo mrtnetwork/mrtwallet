@@ -1,18 +1,16 @@
 import 'dart:ui' show Color;
 
 extension HexColor on Color {
-  /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
   static Color fromHex(String hexString) {
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
+    final parts = hexString.split('_');
+    final a = double.parse(parts[0]);
+    final r = double.parse(parts[1]);
+    final g = double.parse(parts[2]);
+    final b = double.parse(parts[3]);
+    return Color.from(alpha: a, red: r, green: g, blue: b);
   }
 
-  /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
-  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
-      '${alpha.toRadixString(16).padLeft(2, '0')}'
-      '${red.toRadixString(16).padLeft(2, '0')}'
-      '${green.toRadixString(16).padLeft(2, '0')}'
-      '${blue.toRadixString(16).padLeft(2, '0')}';
+  String toHex() {
+    return "${a}_${r}_${g}_$b";
+  }
 }

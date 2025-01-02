@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/app/utils/utils.dart';
@@ -12,19 +13,26 @@ import 'package:on_chain/solana/solana.dart';
 class Web3SolanaSignMessageResponse {
   final SolAddress address;
   final List<int> signature;
+  final List<int> signedMessage;
   Web3SolanaSignMessageResponse(
-      {required this.address, required List<int> signature})
-      : signature = BytesUtils.toBytes(signature, unmodifiable: true);
+      {required this.address,
+      required List<int> signature,
+      required List<int> signedMessage})
+      : signature = signature.asImmutableBytes,
+        signedMessage = signedMessage.asImmutableBytes;
   factory Web3SolanaSignMessageResponse.fromJson(Map<String, dynamic> json) {
     return Web3SolanaSignMessageResponse(
-        address: SolAddress(json["signer"]),
-        signature: (json["signature"] as List).cast());
+      address: SolAddress(json["signer"]),
+      signature: (json["signature"] as List).cast(),
+      signedMessage: (json["signedMessage"] as List).cast(),
+    );
   }
   Map<String, dynamic> toJson() {
     return {
       "signer": address.address,
       "signerAddressBytes": address.toBytes(),
       "signature": signature,
+      "signedMessage": signedMessage
     };
   }
 }
@@ -100,7 +108,7 @@ class Web3SolanaSignMessage
   }
 
   List<int> chalengBytes() {
-    return BytesUtils.fromHexString(challeng);
+    return BytesUtils.fromHexString(challeng).asImmutableBytes;
   }
 
   @override

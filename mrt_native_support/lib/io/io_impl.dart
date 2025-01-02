@@ -74,7 +74,7 @@ class IoPlatformInterface extends MrtPlatformInterface {
     if (prefix != null) {
       values = values..removeWhere((k, v) => !k.startsWith(prefix));
     }
-    return Map<String, String>.from(data!);
+    return Map<String, String>.from(values);
   }
 
   /// ios

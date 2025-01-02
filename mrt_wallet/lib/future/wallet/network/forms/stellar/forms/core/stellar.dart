@@ -17,7 +17,7 @@ abstract class StellarTransactionForm implements TransactionForm {
 
   void init(StellarChain chain, int baseReserveStroop) {
     network = chain.network;
-    client = chain.provider()!;
+    client = chain.client;
   }
 }
 
@@ -30,12 +30,12 @@ abstract class StellarWeb3Form<PARAMS extends Web3StellarRequestParam>
 
   DynamicVoid? onStimateChanged;
   @override
-  ObjectVoid? onCompeleteForm;
+  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;
 
   void confirmRequest({Object? response}) {
-    onCompeleteForm?.call(response);
+    onCompleteForm?.call(response);
   }
 }

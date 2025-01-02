@@ -1,6 +1,7 @@
+import 'package:monero_dart/monero_dart.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/isolate/types.dart';
 import 'package:mrt_wallet/wallet/api/client/client.dart';
-import 'package:mrt_wallet/wallet/api/constant/constant.dart';
 import 'package:mrt_wallet/wallet/api/provider/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
@@ -15,178 +16,272 @@ import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 
 class APIUtils {
-  static BitcoinExplorerApiProvider _buildBlockCypherOrMempolProvider(
-      WalletBitcoinNetwork network, BitcoinExplorerAPIProvider provider) {
+  static BitcoinExplorerApiProvider _buildBlockCypherOrMempolProvider({
+    required WalletBitcoinNetwork network,
+    required BitcoinExplorerAPIProvider provider,
+    APPIsolate isolate = APPIsolate.separate,
+  }) {
     final btcNetwork = network.coinParam.transacationNetwork;
     final api = ApiProvider(
         api: provider.config(btcNetwork),
-        service: BitcoinHTTPService(provider));
+        service: BitcoinHTTPService(provider: provider, isolate: isolate));
     return BitcoinExplorerApiProvider(provider: api, network: network);
   }
 
-  static String getProviderIdentifier(String? identifier) {
-    identifier ??= BlockchainUtils.generateRandomString(8);
-    return identifier;
+  static String getProviderIdentifier() {
+    return BlockchainUtils.generateRandomString(8);
   }
 
-  static BitcoinElectrumClient _buildBitcoinElectrumProvider(
-      ElectrumAPIProvider provider, WalletBitcoinNetwork network) {
+  static BitcoinElectrumClient buildBitcoinElectrumProvider({
+    required ElectrumAPIProvider provider,
+    required WalletBitcoinNetwork network,
+    APPIsolate isolate = APPIsolate.separate,
+  }) {
     return BitcoinElectrumClient(
-        provider: ElectrumApiProvider(ElectrumService.fromProvider(
-            provider: provider, service: provider)),
+        provider: ElectrumProvider(ElectrumService.fromProvider(provider)),
         network: network);
   }
 
-  static EVMRPC _buildEthereumRPC(EthereumAPIProvider provider,
-      {Duration? requestTimeout}) {
+  static EthereumProvider _buildEthereumRPC({
+    required EthereumAPIProvider provider,
+    APPIsolate isolate = APPIsolate.separate,
+    Duration? requestTimeout,
+  }) {
     if (provider.protocol == ServiceProtocol.websocket) {
-      return EVMRPC(
-          EthereumWebsocketService(provider: provider, url: provider.uri));
+      return EthereumProvider(EthereumWebsocketService(provider: provider));
     }
-    return EVMRPC(EthereumHTTPService(provider.uri, provider,
-        requestTimeout: requestTimeout));
+    return EthereumProvider(EthereumHTTPService(
+        provider: provider, isolate: isolate, requestTimeout: requestTimeout));
   }
 
-  static RpcService _buildRippleProvider(RippleAPIProvider provider) {
+  static XRPServiceProvider _buildRippleProvider({
+    required RippleAPIProvider provider,
+    APPIsolate isolate = APPIsolate.separate,
+  }) {
     if (provider.protocol == ServiceProtocol.websocket) {
-      return RippleWebsocketService(url: provider.callUrl, provider: provider);
+      return RippleWebsocketService(provider: provider);
     }
-    return RippleHTTPService(provider.callUrl, provider);
+    return RippleHTTPService(provider: provider, isolate: isolate);
   }
 
-  static BitcoinClient buildBitcoinApiPorivder(
-      APIProvider provider, WalletBitcoinNetwork network) {
+  static BitcoinClient buildBitcoinApiPorivder({
+    required APIProvider provider,
+    required WalletBitcoinNetwork network,
+    APPIsolate isolate = APPIsolate.separate,
+  }) {
     if (provider is ElectrumAPIProvider) {
-      return _buildBitcoinElectrumProvider(provider, network);
+      return buildBitcoinElectrumProvider(
+          provider: provider, network: network, isolate: isolate);
     }
     return _buildBlockCypherOrMempolProvider(
-        network, provider as BitcoinExplorerAPIProvider);
+        network: network,
+        provider: provider as BitcoinExplorerAPIProvider,
+        isolate: isolate);
   }
 
   static EthereumClient buildEthereumProvider(
-      EthereumAPIProvider provider, WalletNetwork network,
-      {Duration? requestTimeout}) {
+      {required EthereumAPIProvider provider,
+      required WalletNetwork network,
+      APPIsolate isolate = APPIsolate.separate,
+      Duration? requestTimeout}) {
     return EthereumClient(
-        provider: _buildEthereumRPC(provider, requestTimeout: requestTimeout),
+        provider: _buildEthereumRPC(
+            provider: provider,
+            isolate: isolate,
+            requestTimeout: requestTimeout),
         network: network);
   }
 
-  static RippleClient buildRippleProvider(
-      RippleAPIProvider provider, WalletXRPNetwork network) {
+  static RippleClient buildRippleProvider({
+    required RippleAPIProvider provider,
+    required WalletXRPNetwork network,
+    APPIsolate isolate = APPIsolate.separate,
+  }) {
     return RippleClient(
-        provider: XRPLRpc(_buildRippleProvider(provider)), network: network);
-  }
-
-  static CardanoClient buildCardanoProvider(
-      CardanoAPIProvider provider, WalletCardanoNetwork network) {
-    return CardanoClient(
-        provider: BlockforestProvider(CardanoHTTPService(provider: provider)),
+        provider: XRPProvider(
+            _buildRippleProvider(provider: provider, isolate: isolate)),
         network: network);
   }
 
-  static CosmosClient buildTendermintProvider(
-      CosmosAPIProvider provider, WalletCosmosNetwork network) {
+  static CardanoClient buildCardanoProvider({
+    required CardanoAPIProvider provider,
+    required WalletCardanoNetwork network,
+    APPIsolate isolate = APPIsolate.separate,
+  }) {
+    return CardanoClient(
+        provider: BlockFrostProvider(
+            CardanoHTTPService(provider: provider, isolate: isolate)),
+        network: network);
+  }
+
+  static CosmosClient buildTendermintProvider({
+    required CosmosAPIProvider provider,
+    required WalletCosmosNetwork network,
+    APPIsolate isolate = APPIsolate.separate,
+  }) {
     return CosmosClient(
         provider: TendermintProvider(
-            TendermintHTTPService(provider: provider, url: provider.uri)),
-        network: network,
-        nodeProvider: provider.nodeUri == null
-            ? null
-            : ThorNodeProvider(ThorNodeHTTPService(
-                provider: provider, url: provider.nodeUri!)));
+            TendermintHTTPService(provider: provider, isolate: isolate)),
+        network: network);
   }
 
-  static TonClient buildTonApiProvider(
-      TonAPIProvider provider, WalletTonNetwork network) {
+  static TonClient buildTonApiProvider({
+    required TonAPIProvider provider,
+    required WalletTonNetwork network,
+    APPIsolate isolate = APPIsolate.separate,
+  }) {
     return TonClient(
-      provider: TonProvider(TonHTTPService(provider: provider)),
+        provider:
+            TonProvider(TonHTTPService(provider: provider, isolate: isolate)),
+        network: network);
+  }
+
+  static SubstrateClient buildsubstrateClient(
+      {required SubstrateAPIProvider provider,
+      required WalletPolkadotNetwork network,
+      APPIsolate isolate = APPIsolate.separate}) {
+    if (provider.protocol == ServiceProtocol.websocket) {
+      return SubstrateClient(
+          provider:
+              SubstrateProvider(SubstrateWebsocketService(provider: provider)),
+          network: network);
+    }
+    return SubstrateClient(
+        provider: SubstrateProvider(
+            SubstrateHTTPService(provider: provider, isolate: isolate)),
+        network: network);
+  }
+
+  static MoneroClient buildMoneroClient(
+      {required MoneroAPIProvider provider,
+      required WalletMoneroNetwork? network,
+      APPIsolate isolate = APPIsolate.separate}) {
+    return MoneroClient(
+      provider: MoneroProvider(MoneroHTTPService(provider, isolate: isolate)),
       network: network,
     );
   }
 
-  static SubstrateClient builSibstrateClient(
-      SubstrateAPIProvider provider, WalletPolkadotNetwork network) {
-    return SubstrateClient(
-        provider: SubstrateRPC(SubstrateHttpService(provider)),
-        network: network);
-  }
-
   static SolanaClient buildSoalanaProvider(
-      SolanaAPIProvider provider, WalletSolanaNetwork network) {
+      {required SolanaAPIProvider provider,
+      required WalletSolanaNetwork network,
+      APPIsolate isolate = APPIsolate.separate}) {
     return SolanaClient(
-        provider: SolanaRPC(SolanaHTTPService(provider.httpNodeUri, provider)),
+        provider: SolanaProvider(
+            SolanaHTTPService(provider: provider, isolate: isolate)),
         network: network);
   }
 
   static StellarClient buildStellarClient(
-      StellarAPIProvider provider, WalletStellarNetwork network) {
+      {required StellarAPIProvider provider,
+      required WalletStellarNetwork network,
+      APPIsolate isolate = APPIsolate.separate}) {
     return StellarClient(
-        provider: HorizonProvider(StellarHTTPService(provider)),
+        provider: StellarProvider(
+            StellarHTTPService(provider: provider, isolate: isolate)),
         network: network);
   }
 
   static TronClient buildTronProvider(
-      TronAPIProvider httpProviderService, WalletTronNetwork network) {
+      {required TronAPIProvider httpProviderService,
+      required WalletTronNetwork network,
+      APPIsolate isolate = APPIsolate.separate}) {
     final httpNode = TronProvider(
-        TronHTTPService(httpProviderService.httpNodeUri, httpProviderService));
+        TronHTTPService(provider: httpProviderService, isolate: isolate));
     return TronClient(
         provider: httpNode,
         solidityProvider: buildEthereumProvider(
-            httpProviderService.solidityProvider, network),
+            provider: httpProviderService.solidityProvider,
+            network: network,
+            isolate: isolate),
         network: network);
   }
 
   static T? createApiClient<T extends NetworkClient>(WalletNetwork network,
-      {APIProvider? service,
+      {String? identifier,
       Duration? requestTimeut,
-      bool allowInWeb3 = false}) {
-    APIProvider? serviceProvider =
-        network.getProvider(selectProvider: service, allowInWeb3: allowInWeb3);
-    serviceProvider ??=
-        ProvidersConst.getDefaultService(network, service: service);
+      bool allowInWeb3 = false,
+      APPIsolate isolate = APPIsolate.separate}) {
+    List<APIProvider> providers = network.getAllProviders();
+    if (allowInWeb3) {
+      providers = providers.where((e) => e.allowInWeb3).toList();
+    }
+    APIProvider? serviceProvider;
+    if (providers.isNotEmpty) {
+      serviceProvider = providers.firstWhere((e) => e.identifier == identifier,
+          orElse: () => providers.first);
+    }
     if (serviceProvider == null) return null;
     NetworkClient? client;
     switch (network.type) {
       case NetworkType.bitcoinAndForked:
       case NetworkType.bitcoinCash:
-        client = buildBitcoinApiPorivder(serviceProvider, network.toNetwork());
+        client = buildBitcoinApiPorivder(
+            provider: serviceProvider,
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       case NetworkType.cardano:
         client = buildCardanoProvider(
-            serviceProvider.toProvider(), network.toNetwork());
+            provider: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       case NetworkType.cosmos:
         client = buildTendermintProvider(
-            serviceProvider.toProvider(), network.toNetwork());
+            provider: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       case NetworkType.ethereum:
-        client = buildEthereumProvider(serviceProvider.toProvider(), network,
-            requestTimeout: requestTimeut);
+        client = buildEthereumProvider(
+            provider: serviceProvider.toProvider(),
+            network: network,
+            requestTimeout: requestTimeut,
+            isolate: isolate);
         break;
       case NetworkType.xrpl:
         client = buildRippleProvider(
-            serviceProvider.toProvider(), network.toNetwork());
+            provider: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       case NetworkType.solana:
         client = buildSoalanaProvider(
-            serviceProvider.toProvider(), network.toNetwork());
+            provider: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       case NetworkType.stellar:
         client = buildStellarClient(
-            serviceProvider.toProvider(), network.toNetwork());
+            provider: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       case NetworkType.tron:
         client = buildTronProvider(
-            serviceProvider.toProvider(), network.toNetwork());
+            httpProviderService: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       case NetworkType.ton:
         client = buildTonApiProvider(
-            serviceProvider.toProvider(), network.toNetwork());
+            provider: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
+        break;
+      case NetworkType.monero:
+        client = buildMoneroClient(
+            provider: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       case NetworkType.polkadot:
       case NetworkType.kusama:
-        client = builSibstrateClient(
-            serviceProvider.toProvider(), network.toNetwork());
+        client = buildsubstrateClient(
+            provider: serviceProvider.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
         break;
       default:
         throw WalletExceptionConst.incorrectNetwork;

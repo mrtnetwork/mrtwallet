@@ -3,6 +3,7 @@ import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/core/core.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/bitcoin/addresses/bitcoin.dart';
+import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 
 class BitcoinExplorerApiProvider extends BitcoinClient<IBitcoinAddress> {
@@ -17,11 +18,12 @@ class BitcoinExplorerApiProvider extends BitcoinClient<IBitcoinAddress> {
   final ApiProvider provider;
 
   @override
-  Future<void> updateBalance(IBitcoinAddress account) async {
+  Future<void> updateBalance(
+      IBitcoinAddress address, APPCHAINACCOUNT<IBitcoinAddress> chain) async {
     final utxos = await provider
-        .getAccountUtxo(UtxoAddressDetails.watchOnly(account.networkAddress));
+        .getAccountUtxo(UtxoAddressDetails.watchOnly(address.networkAddress));
     final balance = utxos.sumOfUtxosValue();
-    account.address.updateBalance(balance);
+    chain.updateAddressBalance(address: address, updateBalance: balance);
   }
 
   @override

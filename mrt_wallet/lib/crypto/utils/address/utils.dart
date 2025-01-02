@@ -1,8 +1,8 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:monero_dart/monero_dart.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:on_chain/on_chain.dart';
@@ -16,7 +16,7 @@ class BlockchainAddressUtils {
     try {
       if (XRPAddressUtils.isXAddress(address)) {
         return XRPAddress.fromXAddress(address,
-            isTestnet: network.coins.first.conf.isTestnet);
+            isTestnet: !network.coins.first.conf.chainType.isMainnet);
       }
       return XRPAddress(address);
     } catch (e) {
@@ -60,12 +60,15 @@ class BlockchainAddressUtils {
   }
 
   static BitcoinBaseAddress publicKeyToBitcoinAddress(
-      List<int> publicKey, CryptoCoins coin, BitcoinAddressType addressType) {
+      {required List<int> publicKey,
+      required CryptoCoins coin,
+      required BitcoinAddressType addressType,
+      required PubKeyModes keyType}) {
     final bitcoinPublicKey = ECPublic.fromBytes(publicKey);
     BitcoinBaseAddress address;
     switch (coin.proposal) {
       case BipProposal.bip44:
-        address = bitcoinPublicKey.toAddress();
+        address = bitcoinPublicKey.toAddress(mode: keyType);
         if (addressType == P2pkhAddressType.p2pkhwt) {
           address = P2pkhAddress.fromHash160(
               addrHash: address.addressProgram, type: P2pkhAddressType.p2pkhwt);
@@ -85,12 +88,12 @@ class BlockchainAddressUtils {
           case P2shAddressType.p2pkhInP2sh32wt:
             address = bitcoinPublicKey.toP2pkhInP2sh(
                 useBCHP2sh32: addressType == P2shAddressType.p2pkhInP2sh32 ||
-                    addressType == P2shAddressType.p2pkhInP2sh32wt);
+                    addressType == P2shAddressType.p2pkhInP2sh32wt,
+                mode: keyType);
             if (addressType == P2shAddressType.p2pkhInP2shwt ||
                 addressType == P2shAddressType.p2pkhInP2sh32wt) {
               address = P2shAddress.fromHash160(
-                  addrHash: address.addressProgram,
-                  type: addressType as P2shAddressType);
+                  addrHash: address.addressProgram, type: addressType.cast());
             }
             break;
           case P2shAddressType.p2pkInP2sh:
@@ -99,12 +102,12 @@ class BlockchainAddressUtils {
           case P2shAddressType.p2pkInP2sh32wt:
             address = bitcoinPublicKey.toP2pkInP2sh(
                 useBCHP2sh32: addressType == P2shAddressType.p2pkInP2sh32 ||
-                    addressType == P2shAddressType.p2pkInP2sh32wt);
+                    addressType == P2shAddressType.p2pkInP2sh32wt,
+                mode: keyType);
             if (addressType == P2shAddressType.p2pkInP2shwt ||
                 addressType == P2shAddressType.p2pkInP2sh32wt) {
               address = P2shAddress.fromHash160(
-                  addrHash: address.addressProgram,
-                  type: addressType as P2shAddressType);
+                  addrHash: address.addressProgram, type: addressType.cast());
             }
             break;
           default:
@@ -112,7 +115,7 @@ class BlockchainAddressUtils {
         }
         break;
       case BipProposal.bip84:
-        if (addressType == SegwitAddresType.p2wsh) {
+        if (addressType == SegwitAddressType.p2wsh) {
           address = bitcoinPublicKey.toP2wshAddress();
         } else {
           address = bitcoinPublicKey.toSegwitAddress();
@@ -141,7 +144,7 @@ class BlockchainAddressUtils {
       return P2shAddress.fromAddress(
           address: bitcoinAddress,
           network: bitcoinNetwork,
-          type: addressType as P2shAddressType);
+          type: addressType.cast());
     }
     switch (addressType) {
       case P2pkhAddressType.p2pkh:
@@ -152,15 +155,15 @@ class BlockchainAddressUtils {
       case PubKeyAddressType.p2pk:
         final bitcoinPublicKey = ECPublic.fromHex(bitcoinAddress);
         address = P2pkAddress(publicKey: bitcoinPublicKey.toHex());
-      case SegwitAddresType.p2wpkh:
+      case SegwitAddressType.p2wpkh:
         address = P2wpkhAddress.fromAddress(
             address: bitcoinAddress, network: bitcoinNetwork);
         break;
-      case SegwitAddresType.p2tr:
+      case SegwitAddressType.p2tr:
         address = P2trAddress.fromAddress(
             address: bitcoinAddress, network: bitcoinNetwork);
         break;
-      case SegwitAddresType.p2wsh:
+      case SegwitAddressType.p2wsh:
         address = P2wshAddress.fromAddress(
             address: bitcoinAddress, network: bitcoinNetwork);
         break;
@@ -173,6 +176,17 @@ class BlockchainAddressUtils {
   static ETHAddress? validatorEthereumAccount(String address) {
     return MethodUtils.nullOnException(() {
       return ETHAddress(address);
+    });
+  }
+
+  static MoneroAddress? validateMoneroAddress(
+      String address, WalletMoneroNetwork network) {
+    return MethodUtils.nullOnException(() {
+      try {
+        return MoneroAddress(address, network: network.coinParam.network);
+      } catch (_) {
+        return null;
+      }
     });
   }
 
@@ -276,6 +290,8 @@ class BlockchainAddressUtils {
         return validateTonAddress(address, network.toNetwork());
       case NetworkType.stellar:
         return validateStallerAddress(address, network.toNetwork());
+      case NetworkType.monero:
+        return validateMoneroAddress(address, network.toNetwork());
       case NetworkType.polkadot:
       case NetworkType.kusama:
         return validateSubstrateAddress(address, network.toNetwork());

@@ -3,7 +3,6 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/controller/impl/transaction.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/crypto/utils/tron/tron.dart';
 import 'package:on_chain/on_chain.dart';
@@ -74,8 +73,7 @@ mixin TronSignerImpl on TronTransactionImpl {
             return signerSignatures;
           }
           final signRequest = GlobalSignRequest.tron(
-              digest: transactionDigest,
-              index: address.keyIndex as Bip32AddressIndex);
+              digest: transactionDigest, index: address.keyIndex.cast());
           final sss = await generateSignature(signRequest);
           return [sss.signature];
         },
@@ -90,14 +88,16 @@ mixin TronSignerImpl on TronTransactionImpl {
       return result;
     });
     if (result.hasError) {
-      progressKey.errorText(result.error!.tr);
+      progressKey.errorText(result.error!.tr,
+          backToIdle: false, showBackButton: true);
     } else if (!result.result.isSuccess) {
-      progressKey.errorText(result.result.error!);
+      progressKey.errorText(result.result.error!,
+          backToIdle: false, showBackButton: true);
     } else {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
             network: network,
-            txId: [result.result.txId!],
+            txIds: [result.result.txId!],
           ),
           backToIdle: false);
     }

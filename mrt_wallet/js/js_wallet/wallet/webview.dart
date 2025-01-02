@@ -4,6 +4,7 @@ enum JSWebviewTraget {
   android,
   macos;
 
+  bool get isMacos => this == macos;
   static JSWebviewTraget? fromName(String? name) {
     return values.firstWhereOrNull((e) => e.name == name);
   }
@@ -15,13 +16,45 @@ class JSWebviewWallet extends JSWalletHandler {
   @override
   ChainsHandler _chain;
   final JSWebviewTraget target;
+  final bool isWorker;
+
+  Web3APPAuthentication? _initializeAuthenticated;
+
+  void initClients() {
+    final auth = _initializeAuthenticated;
+    if (auth == null) return;
+    _initializeAuthenticated = null;
+    _updateAuthenticated(auth, network: null);
+  }
+
+  void _inWorkerResponse(MessageEvent jsRequest) {
+    final event = jsRequest.data as JSWorkerEvent;
+    switch (event.eventType) {
+      case JSWorkerType.wallet:
+        _onResponse(event.data as JSWalletEvent);
+        break;
+      case JSWorkerType.client:
+        handleClientMessage(event.data as PageMessage);
+        break;
+      default:
+        break;
+    }
+  }
+
+  @override
+  void _listenOnClients({bool isWorker = false}) {
+    if (!isWorker) return super._listenOnClients();
+  }
 
   JSWebviewWallet._({
     required ChaCha20Poly1305 crypto,
     required ChainsHandler chain,
     required this.clientId,
     required this.target,
+    required this.isWorker,
+    Web3APPAuthentication? initializeAuthenticated,
   })  : _chain = chain,
+        _initializeAuthenticated = initializeAuthenticated,
         super._(crypto);
   factory JSWebviewWallet.initialize(
       {required WalletEvent request,
@@ -36,30 +69,46 @@ class JSWebviewWallet extends JSWalletHandler {
     final message = Web3ChainMessage.deserialize(bytes: decode);
     final handler = JSWebviewWallet._(
         crypto: ChaCha20Poly1305(message.authenticated.token),
-        chain: ChainsHandler.deserialize(bytes: message.message),
+        chain: ChainsHandler.fromWeb3(bytes: message.message),
         clientId: clientId,
-        target: target);
-    JSPageController.setup(clientId);
-    mrt.onMrtMessage = handler._onResponse.toJS;
-    handler._listenOnClients();
-    handler._updateAuthenticated(message.authenticated, network: null);
+        target: target,
+        isWorker: true,
+        initializeAuthenticated: message.authenticated);
+    onMessage = handler._inWorkerResponse.toJS;
+    handler._listenOnClients(isWorker: true);
     return handler;
+  }
+
+  @override
+  void _sendMessageToClient(WalletMessage response) {
+    if (!isWorker) return super._sendMessageToClient(response);
+    final event = JSWorkerEvent(type: JSWorkerType.client, data: response);
+    postMessage(event);
   }
 
   @override
   Future<void> _sendMessageToWallet(
       {required Web3MessageCore message, required String requestId}) async {
-    final encryptedMessage = _encryptMessage(message);
+    final encryptedMessage = _encryptMessage(message).toCbor().toCborHex();
+    if (isWorker) {
+      final event = JSWorkerWalletData(
+          clientId: clientId,
+          requestId: requestId,
+          data: encryptedMessage,
+          type: WalletEventTypes.message.name);
+      postMessage(JSWorkerEvent(data: event, type: JSWorkerType.wallet));
+      return;
+    }
     if (target == JSWebviewTraget.macos) {
       jsWindow.webkit.messageHandlers.mrt.postMessage({
         "id": clientId,
         "requestId": requestId,
-        "data": encryptedMessage.toCbor().toCborHex(),
+        "data": encryptedMessage,
         "type": WalletEventTypes.message.name
       }.jsify());
       return;
     }
-    mrt.onMrtJsRequest(clientId, encryptedMessage.toCbor().toCborHex(),
-        requestId, WalletEventTypes.message.name);
+    mrt.onMrtJsRequest(
+        clientId, encryptedMessage, requestId, WalletEventTypes.message.name);
   }
 }

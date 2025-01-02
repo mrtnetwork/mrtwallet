@@ -13,8 +13,7 @@ class ManageBuyOfferOperationView extends StatefulWidget {
   final StellarTransactionStateController controller;
   final StellarManageBuyOfferOperation? operation;
   const ManageBuyOfferOperationView(
-      {required this.controller, this.operation, Key? key})
-      : super(key: key);
+      {required this.controller, this.operation, super.key});
 
   @override
   State<ManageBuyOfferOperationView> createState() =>
@@ -200,55 +199,58 @@ class _ManageBuyOfferOperationViewState
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: asset != null,
-          iconAlginment: asset == null
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
-          onRemoveIcon: asset == null
-              ? Icon(
-                  Icons.add_box,
-                  color: context.colors.onPrimaryContainer,
-                )
-              : Icon(
-                  Icons.edit,
-                  color: context.colors.onPrimaryContainer,
-                ),
+          onRemoveIcon: AddOrEditIconWidget(asset != null),
           child: asset == null
-              ? Text("tap_to_select_or_create_asset".tr)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (asset!.asset.type.isNative) ...[
-                      Text(asset!.asset.type.name,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      WidgetConstant.height8,
-                      ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
-                        child: TokenDetailsWidget(
-                          token: asset!.token,
-                          liveBalance: chain.address.address.balance,
-                          color: context.colors.primaryContainer,
-                        ),
-                      )
-                    ] else ...[
-                      Text(asset!.asset.type.name,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      OneLineTextWidget(asset!.issuer ?? '',
-                          style: context.colors.onPrimaryContainer
-                              .bodyMedium(context)),
-                      ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
-                        onTapWhenOnRemove: false,
-                        child: TokenDetailsWidget(
-                          token: asset!.currentToken,
-                          balance: asset?.tokenBalance,
-                          color: context.colors.primaryContainer,
-                        ),
-                      ),
-                    ]
-                  ],
+              ? Text("tap_to_select_or_create_asset".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium)
+              : TokenDetailsWidget(
+                  token: asset!.asset.type.isNative
+                      ? asset!.token
+                      : asset!.currentToken,
+                  balance: asset!.asset.type.isNative
+                      ? chain.address.address.balance.value
+                      : asset?.tokenBalance,
+                  color: context.onPrimaryContainer,
+                  radius: APPConst.circleRadius25,
+                  tokenAddress: asset!.issuer,
                 ),
+          // child: asset == null
+          //     ? Text("tap_to_select_or_create_asset".tr)
+          //     : Column(
+          //         crossAxisAlignment: CrossAxisAlignment.start,
+          //         children: [
+          //           if (asset!.asset.type.isNative) ...[
+          //             Text(asset!.asset.type.name,
+          //                 style: context.colors.onPrimaryContainer
+          //                     .lableLarge(context)),
+          //             WidgetConstant.height8,
+          //             ContainerWithBorder(
+          //               backgroundColor: context.colors.onPrimaryContainer,
+          //               child: TokenDetailsWidget(
+          //                 token: asset!.token,
+          //                 liveBalance: chain.address.address.balance,
+          //                 color: context.colors.primaryContainer,
+          //               ),
+          //             )
+          //           ] else ...[
+          //             Text(asset!.asset.type.name,
+          //                 style: context.colors.onPrimaryContainer
+          //                     .lableLarge(context)),
+          //             OneLineTextWidget(asset!.issuer ?? '',
+          //                 style: context.colors.onPrimaryContainer
+          //                     .bodyMedium(context)),
+          //             ContainerWithBorder(
+          //               backgroundColor: context.colors.onPrimaryContainer,
+          //               enableTap: false,
+          //               child: TokenDetailsWidget(
+          //                 token: asset!.currentToken,
+          //                 balance: asset?.tokenBalance,
+          //                 color: context.colors.primaryContainer,
+          //               ),
+          //             ),
+          //           ]
+          //         ],
+          //       ),
           onRemove: () {
             context
                 .openSliverDialog<StellarPickedIssueAsset>(
@@ -280,32 +282,15 @@ class _ManageBuyOfferOperationViewState
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: buying != null,
-          iconAlginment: buying == null
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
-          onRemoveIcon: buying == null
-              ? Icon(Icons.add_box, color: context.colors.onPrimaryContainer)
-              : Icon(Icons.edit, color: context.colors.onPrimaryContainer),
+          onRemoveIcon: AddOrEditIconWidget(buying != null),
           child: buying == null
-              ? Text("tap_to_select_or_create_asset".tr)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(buying!.asset.type.name,
-                        style: context.colors.onPrimaryContainer
-                            .lableLarge(context)),
-                    OneLineTextWidget(buying!.issuer ?? '',
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context)),
-                    ContainerWithBorder(
-                      backgroundColor: context.colors.onPrimaryContainer,
-                      child: TokenDetailsWidget(
-                        token: buying!.token,
-                        radius: APPConst.iconSize,
-                        color: context.colors.primaryContainer,
-                      ),
-                    ),
-                  ],
+              ? Text("tap_to_select_or_create_asset".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium)
+              : TokenDetailsWidget(
+                  token: buying!.token,
+                  radius: APPConst.circleRadius25,
+                  color: context.colors.onPrimaryContainer,
+                  tokenAddress: buying!.issuer,
                 ),
           onRemove: () {
             context
@@ -347,7 +332,7 @@ class _ManageBuyOfferOperationViewState
 
 class _Amount extends StatelessWidget {
   final _ManageBuyOfferOperationViewState state;
-  const _Amount(this.state, {Key? key}) : super(key: key);
+  const _Amount(this.state);
 
   @override
   Widget build(BuildContext context) {
@@ -364,6 +349,7 @@ class _Amount extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "amount".tr,
+                  initialExtend: 1,
                   child: SetupNetworkAmount(
                       buttonText: "setup_amount".tr,
                       token: state.buying!.token,
@@ -382,22 +368,28 @@ class _Amount extends StatelessWidget {
                   Text("stellar_manage_buy_offer_price".tr),
                   WidgetConstant.height8,
                   ContainerWithBorder(
-                      onRemoveIcon: Icon(Icons.edit,
-                          color: context.colors.onPrimaryContainer),
+                      onRemoveIcon:
+                          Icon(Icons.edit, color: context.onPrimaryContainer),
                       child: state.price == null
-                          ? Text("tap_to_setup_price".tr)
+                          ? Text(
+                              "tap_to_setup_price".tr,
+                              style: context.onPrimaryTextTheme.bodyMedium,
+                            )
                           : Row(
                               children: [
                                 Stack(
                                   alignment: Alignment.centerLeft,
                                   children: [
-                                    CircleTokenImageView(state.asset!.token,
-                                        radius: APPConst.iconSize),
+                                    CircleTokenImageView(
+                                      state.asset!.token,
+                                      radius: APPConst.circleRadius25,
+                                    ),
                                     Container(
                                       padding: const EdgeInsets.only(left: 20),
                                       child: CircleTokenImageView(
-                                          state.buying!.token,
-                                          radius: APPConst.iconSize),
+                                        state.buying!.token,
+                                        radius: APPConst.circleRadius25,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -407,13 +399,11 @@ class _Amount extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(state.price!.toDecimal(),
-                                        style: context.colors.onPrimaryContainer
-                                            .lableLarge(context)),
-                                    Text(
-                                      state.priceHelper ?? '',
-                                      style: context.colors.onPrimaryContainer
-                                          .bodyMedium(context),
-                                    ),
+                                        style: context
+                                            .onPrimaryTextTheme.labelLarge),
+                                    Text(state.priceHelper ?? '',
+                                        style: context
+                                            .onPrimaryTextTheme.bodyMedium),
                                   ],
                                 )),
                               ],
@@ -442,12 +432,11 @@ class _Amount extends StatelessWidget {
                   LargeTextView(["stellar_manage_sell_offer_offer_id".tr]),
                   WidgetConstant.height8,
                   ContainerWithBorder(
-                      onRemoveIcon: Icon(Icons.edit,
-                          color: context.colors.onPrimaryContainer),
+                      onRemoveIcon:
+                          Icon(Icons.edit, color: context.onPrimaryContainer),
                       child: Text(
                         state.offerId.toString(),
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context),
+                        style: context.onPrimaryTextTheme.bodyMedium,
                       ),
                       onRemove: () {
                         context

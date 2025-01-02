@@ -6,14 +6,19 @@ import 'package:mrt_wallet/future/constant/constant.dart';
 
 class TextAndLinkView extends StatelessWidget {
   const TextAndLinkView(
-      {required this.text, required this.url, super.key, this.linkDesc});
+      {required this.text,
+      required this.url,
+      super.key,
+      this.linkDesc,
+      this.style});
   final String text;
   final String url;
   final String? linkDesc;
+  final TextStyle? style;
   @override
   Widget build(BuildContext context) {
     return RichText(
-        text: TextSpan(style: context.textTheme.bodyMedium, children: [
+        text: TextSpan(style: style ?? context.textTheme.bodyMedium, children: [
       TextSpan(text: text),
       const TextSpan(text: " "),
       TextSpan(

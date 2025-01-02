@@ -49,7 +49,7 @@ class UtxoAssets {
   }
 
   @override
-  operator ==(other) {
+  bool operator ==(other) {
     if (other is! UtxoAssets) return false;
     if (other.assets.length != assets.length) return false;
     for (final i in other.assets.entries) {

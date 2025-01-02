@@ -3,10 +3,9 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/image/memory_image.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart' show Token;
-import 'widget_constant.dart';
 
-class CircleAssetsImgaeView extends StatelessWidget {
-  const CircleAssetsImgaeView(this.assetPath,
+class CircleAssetsImageView extends StatelessWidget {
+  const CircleAssetsImageView(this.assetPath,
       {this.radius = 120,
       this.backgroundColor = Colors.transparent,
       super.key});
@@ -32,7 +31,7 @@ class CircleAPPImageView extends StatelessWidget {
       super.key,
       this.onNull = "U",
       this.imageColor});
-  final APPImage? image;
+  final APPImageInfo? image;
   final double radius;
   final String onNull;
   final FuncWidgetContext? onProgress;
@@ -42,7 +41,8 @@ class CircleAPPImageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (image == null) {
-      return _CircleAPPImageView(radius: radius, onNull: onNull, child: null);
+      return _CircleAPPImageView(
+          radius: radius, onNull: onNull, child: onError?.call(context));
     }
     return Image(
         color: imageColor,
@@ -51,12 +51,18 @@ class CircleAPPImageView extends StatelessWidget {
           if (loadingProgress != null && onProgress != null) {
             return onProgress!.call(context);
           }
+          if (loadingProgress == null) {
+            return _CircleAPPImageView(
+                radius: radius, onNull: onNull, child: child);
+          }
           return _CircleAPPImageView(
-              radius: radius, onNull: onNull, child: child);
+              radius: radius, onNull: onNull, child: null);
         },
         image: CacheMemoryImageProvider(image!),
-        errorBuilder: (context, error, stackTrace) => _CircleAPPImageView(
-            radius: radius, onNull: onNull, child: onError?.call(context)));
+        errorBuilder: (context, error, stackTrace) {
+          return _CircleAPPImageView(
+              radius: radius, onNull: onNull, child: onError?.call(context));
+        });
   }
 }
 
@@ -69,19 +75,25 @@ class _CircleAPPImageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CircleAvatar(
-      backgroundColor: child != null
-          ? context.colors.transparent
-          : context.colors.primaryContainer,
-      radius: radius,
-      child: child ??
-          Text(
-            onNull,
-            style: TextStyle(
+    final size = radius * 2;
+    return Container(
+      decoration: BoxDecoration(
+          color: child != null
+              ? context.colors.transparent
+              : context.colors.primaryContainer,
+          shape: BoxShape.circle),
+      width: size,
+      height: size,
+      child: Center(
+        child: child ??
+            Text(
+              onNull,
+              style: TextStyle(
                 fontWeight: FontWeight.w900,
                 fontSize: radius,
-                color: context.colors.onPrimaryContainer),
-          ),
+              ),
+            ),
+      ),
     );
   }
 }
@@ -95,43 +107,6 @@ class CircleTokenImageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final String symbol =
         (token.name.isEmpty ? "" : token.name[0]).toUpperCase();
-    return Container(
-      decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow:
-              token.assetLogo != null ? [] : [WidgetConstant.circleShadow]),
-      child: CircleAvatar(
-        backgroundImage: token.assetLogo != null
-            ? CacheMemoryImageProvider(token.assetLogo!)
-            : null,
-        radius: radius,
-        backgroundColor: token.assetLogo != null
-            ? context.colors.surface
-            : context.colors.primaryContainer,
-        child: token.assetLogo != null
-            ? null
-            : Text(
-                symbol,
-                style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: radius,
-                    color: context.colors.onPrimaryContainer),
-              ),
-      ),
-    );
-  }
-}
-
-class APPImageProvider extends StatelessWidget {
-  final APPImage image;
-  final String? onNull;
-  const APPImageProvider(this.image, {this.onNull, super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Image(
-      image: CacheMemoryImageProvider(image),
-      errorBuilder: (context, error, stackTrace) =>
-          const Icon(Icons.broken_image),
-    );
+    return CircleAPPImageView(token.assetLogo, onNull: symbol, radius: radius);
   }
 }

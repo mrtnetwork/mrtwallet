@@ -4,8 +4,7 @@ import 'package:mrt_wallet/future/wallet/network/substrate/transaction/controlle
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 class SubstrateTransactionMemoView extends StatelessWidget {
-  const SubstrateTransactionMemoView(this.controller, {Key? key})
-      : super(key: key);
+  const SubstrateTransactionMemoView(this.controller, {super.key});
   final SubstrateTransactionStateController controller;
 
   @override
@@ -18,11 +17,15 @@ class SubstrateTransactionMemoView extends StatelessWidget {
         Column(
           children: List.generate(controller.memos.length, (index) {
             return ContainerWithBorder(
-              onRemoveIcon: const Icon(Icons.remove_circle),
+              onRemoveIcon: Icon(
+                Icons.remove_circle,
+                color: context.onPrimaryContainer,
+              ),
               onRemove: () {
                 controller.removeMemo(index);
               },
-              child: Text(controller.memos[index], maxLines: 2),
+              child: Text(controller.memos[index],
+                  maxLines: 2, style: context.onPrimaryTextTheme.bodyMedium),
             );
           }),
         ),
@@ -51,7 +54,7 @@ class SubstrateTransactionMemoView extends StatelessWidget {
               });
             },
             child: Text("tap_to_add_memo".tr,
-                style: context.textTheme.labelLarge)),
+                style: context.onPrimaryTextTheme.bodyMedium)),
       ],
     );
   }

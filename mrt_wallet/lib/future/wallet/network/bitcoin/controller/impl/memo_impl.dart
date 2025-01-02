@@ -1,5 +1,5 @@
-import 'package:mrt_wallet/wallet/models/networks/bitcoin/models/memo.dart';
 import 'package:mrt_wallet/app/models/models/typedef.dart';
+import 'package:mrt_wallet/wallet/models/networks/bitcoin/models/models.dart';
 
 mixin BitcoinTransactionMemoImpl {
   List<BitcoinMemo> _memoScripts = [];

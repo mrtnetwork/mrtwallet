@@ -2,8 +2,8 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
-import 'package:mrt_wallet/crypto/keys/access/private_key_response.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
+import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/crypto/keys/models/seed.dart';
 import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
 
@@ -183,22 +183,22 @@ class Bip32AddressIndex extends AddressDerivationIndex {
   }
 
   @override
-  PrivateKeyData derive(PrivateKeyData masterKey,
+  CryptoPrivateKeyData derive(CryptoPrivateKeyData masterKey,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
     if (maxLevel == Bip44Levels.master || indexes.isEmpty) {
       return masterKey;
     }
     final key = masterKey.toBipKey();
-    List<Bip32KeyIndex> bip32KeyIndexes = List.unmodifiable(indexes);
+    List<Bip32KeyIndex> bip32KeyIndexes = indexes.immutable;
     final maxIndex = maxLevel.value;
     if (bip32KeyIndexes.length > maxIndex) {
-      bip32KeyIndexes = List.unmodifiable(bip32KeyIndexes.sublist(0, maxIndex));
+      bip32KeyIndexes = bip32KeyIndexes.sublist(0, maxIndex).immutable;
     }
     Bip32Base deriveToIndex = key;
     for (final i in bip32KeyIndexes) {
       deriveToIndex = deriveToIndex.childKey(i);
     }
-    return PrivateKeyData.fromBip32(
+    return CryptoPrivateKeyData.fromBip32(
         account: deriveToIndex,
         coin: masterKey.coin,
         keyName: masterKey.keyName);

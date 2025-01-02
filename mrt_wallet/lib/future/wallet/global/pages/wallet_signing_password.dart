@@ -82,12 +82,12 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
   void onPassword() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
     keyState.process();
-    setState(() {});
+    updateState();
     final result = await MethodUtils.call(() async {
       return await widget.onPasswordForm(_password);
     });
     _updaateProgress(result);
-    setState(() {});
+    updateState();
   }
 
   late bool showAllPrivateKeys = widget.keys.length == 1;
@@ -95,12 +95,12 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
 
   void toggleShowAllPrivateKey() {
     showAllPrivateKeys = !showAllPrivateKeys;
-    setState(() {});
+    updateState();
   }
 
   void toggleShowAllAddresses() {
     showAllAddresses = !showAllAddresses;
-    setState(() {});
+    updateState();
   }
 
   @override
@@ -150,8 +150,14 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                                   ? CrossAxisAlignment.start
                                   : CrossAxisAlignment.center,
                               onRemoveIcon: showAllAddresses
-                                  ? const Icon(Icons.arrow_drop_up_sharp)
-                                  : const Icon(Icons.arrow_drop_down_sharp),
+                                  ? Icon(
+                                      Icons.arrow_drop_up_sharp,
+                                      color: context.onPrimaryContainer,
+                                    )
+                                  : Icon(
+                                      Icons.arrow_drop_down_sharp,
+                                      color: context.onPrimaryContainer,
+                                    ),
                               key: ValueKey(showAllAddresses),
                               child: showAllAddresses
                                   ? Column(
@@ -168,7 +174,9 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                                               CrossAxisAlignment.start,
                                           children: [
                                             AddressDetailsView(
-                                                address: address),
+                                                address: address,
+                                                color:
+                                                    context.onPrimaryContainer),
                                             if (!isLastIndex)
                                               Divider(
                                                   color: context.colors
@@ -181,7 +189,9 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                                       "transaction_generated_with_number_accounts"
                                           .tr
                                           .replaceOne(widget.addresses.length
-                                              .toString()))),
+                                              .toString()),
+                                      style: context
+                                          .onPrimaryTextTheme.bodyMedium)),
                         )),
                     WidgetConstant.height20,
                     Text("private_keys".tr,
@@ -201,8 +211,10 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                                 ? CrossAxisAlignment.start
                                 : CrossAxisAlignment.center,
                             onRemoveIcon: showAllPrivateKeys
-                                ? const Icon(Icons.arrow_drop_up_sharp)
-                                : const Icon(Icons.arrow_drop_down_sharp),
+                                ? Icon(Icons.arrow_drop_up_sharp,
+                                    color: context.onPrimaryContainer)
+                                : Icon(Icons.arrow_drop_down_sharp,
+                                    color: context.onPrimaryContainer),
                             key: ValueKey(showAllPrivateKeys),
                             child: showAllPrivateKeys
                                 ? Column(
@@ -278,8 +290,8 @@ class _HDWalletDerivationDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("hd_wallet".tr, style: context.textTheme.labelLarge),
-        AddressDrivationInfo(keyIndex),
+        Text("hd_wallet".tr, style: context.onPrimaryTextTheme.labelLarge),
+        AddressDrivationInfo(keyIndex, color: context.onPrimaryContainer),
       ],
     );
   }

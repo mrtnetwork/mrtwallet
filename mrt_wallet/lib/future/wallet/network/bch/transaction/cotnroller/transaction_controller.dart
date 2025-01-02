@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/future/wallet/network/bch/transaction/cotnroller/bitcoin_operation.dart';
 import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/impl/fee_impl.dart';
@@ -94,7 +96,7 @@ class BitcoinCashStateController extends BitcoinTransactionImpl
 
   void onUpdateOperations(BitcoinCashTransactionTokenOperation operation,
       OnTapBitcoinCashOperation onUpdate) async {
-    int index = _tokenOperation.indexOf(operation);
+    final int index = _tokenOperation.indexOf(operation);
     if (index < 0) return;
     final update = await onUpdate(operation);
     if (update == null) return;
@@ -114,7 +116,7 @@ class BitcoinCashStateController extends BitcoinTransactionImpl
         (previousValue, element) => previousValue + element.balance.balance);
     sumOfSelectedUtxo.updateBalance(sum);
     if (sum <= BigInt.zero) return;
-    List<(CashToken, String)> cashTokens = selectedUtxo
+    final List<(CashToken, String)> cashTokens = selectedUtxo
         .where((element) => element.utxo.token != null)
         .map((e) => (e.utxo.token, e.utxo.txHash))
         .toList()
@@ -125,7 +127,7 @@ class BitcoinCashStateController extends BitcoinTransactionImpl
           .map((e) => BitcoinCashTransactionTokenOperation(
               cashToken: e.$1, utxoHash: e.$2))
           .toList();
-      List<CashToken> tokens = cashTokens
+      final List<CashToken> tokens = cashTokens
           .map((e) => e.$1)
           .where((element) => !element.hasNFT)
           .toList();

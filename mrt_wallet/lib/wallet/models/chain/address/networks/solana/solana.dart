@@ -197,7 +197,8 @@ class ISolanaAddress extends ChainAccount<SolAddress, SolanaSPLToken, NFTCore>
 
   @override
   bool isEqual(ChainAccount other) {
-    return other.networkAddress.address == networkAddress.address;
+    if (other is! ISolanaAddress) return false;
+    return other.networkAddress == networkAddress;
   }
 
   @override

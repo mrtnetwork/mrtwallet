@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/future.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/setup/setup.dart';
 import 'package:blockchain_utils/utils/compare/compare.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/worker.dart';
-import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 enum _MnemonicOption { import, generate }
 
@@ -27,6 +27,7 @@ class GenerateTonMnemonicView extends StatelessWidget {
   Widget build(BuildContext context) {
     return NetworkAccountControllerView<TheOpenNetworkChain>(
       title: "ton_mnemonic".tr,
+      clientRequired: true,
       childBulder: (wallet, chain, switchAccount) {
         return _GenerateTonMnemonicView(
             network: chain.network.toNetwork(), wallet: wallet);
@@ -37,10 +38,9 @@ class GenerateTonMnemonicView extends StatelessWidget {
 
 class _GenerateTonMnemonicView extends StatefulWidget {
   const _GenerateTonMnemonicView({
-    Key? key,
     required this.network,
     required this.wallet,
-  }) : super(key: key);
+  });
   final WalletTonNetwork network;
   final WalletProvider wallet;
 
@@ -49,7 +49,8 @@ class _GenerateTonMnemonicView extends StatefulWidget {
       __GenerateTonMnemonicViewState();
 }
 
-class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
+class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView>
+    with SafeState<_GenerateTonMnemonicView> {
   bool hasPassword = false;
   bool validateTonMnemonic = true;
   bool showKeys = false;
@@ -73,7 +74,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
 
   void onChangeOption(_MnemonicOption? op) {
     option = op ?? option;
-    setState(() {});
+    updateState();
   }
 
   void onChangePassword(bool? v) {
@@ -82,7 +83,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
       passwordKey.currentState?.clear();
       password = null;
     }
-    setState(() {});
+    updateState();
   }
 
   String? validator(String? v) {
@@ -99,7 +100,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
         if (password!.isEmpty) return;
       }
       page = _MnemonicPage.fromOption(option);
-      setState(() {});
+      updateState();
     }
   }
 
@@ -114,17 +115,17 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
 
   void onCheckValidateTonMnemonic(bool? _) {
     validateTonMnemonic = !validateTonMnemonic;
-    setState(() {});
+    updateState();
   }
 
   void onChangeShowKeys() {
     showKeys = !showKeys;
-    setState(() {});
+    updateState();
   }
 
   void onChangeShowMnemonic() {
     showMnemonic = !showMnemonic;
-    setState(() {});
+    updateState();
   }
 
   String? onValidateMnemonic(String? v) {
@@ -139,7 +140,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
 
   void tapOnVerifyMnemonic() {
     page = _MnemonicPage.verifyMnemonic;
-    setState(() {});
+    updateState();
   }
 
   void verifyMnemonic(List<String> mnemonic) {
@@ -154,7 +155,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
     if (wordsNum == null) return;
     progressKey.progressText("generating_mnemonic".tr);
     final result = await MethodUtils.call(() async => widget.wallet.wallet
-        .cryptoRequest(TonMenmonicGenerateMessage(
+        .cryptoIsolateRequest(TonMenmonicGenerateMessage(
             password: password, wordsNum: wordsNum)));
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
@@ -184,7 +185,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
         progressKey.progressText("generating_private_key".tr);
         final key = await MethodUtils.call<ImportCustomKeys>(
           () async {
-            return await widget.wallet.wallet.cryptoRequest(
+            return await widget.wallet.wallet.cryptoIsolateRequest(
                 TonMnemonicToPrivateKeyMessage(
                     mnemonic: mnemonicList.join(" "),
                     password: password,
@@ -193,7 +194,7 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
           },
         );
         if (key.hasError) {
-          progressKey.errorText(result.error?.tr ?? "");
+          progressKey.errorText(key.error?.tr ?? "");
         } else {
           keyPair = key.result;
           page = _MnemonicPage.importKey;
@@ -236,42 +237,49 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView> {
           onBackButton();
         }
       },
-      child: PageProgress(
-        key: progressKey,
-        backToIdle: APPConst.oneSecoundDuration,
-        child: (c) => ConstraintsBoxView(
-            padding: WidgetConstant.paddingHorizontal20,
-            child: Form(
-              key: formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: APPAnimatedSwitcher(
-                enable: page,
-                widgets: {
-                  null: (context) => _TonMnemonicChooseOptionPage(state: this),
-                  _MnemonicPage.import: (context) =>
-                      _TonMnemonicImportMnemonic(state: this),
-                  _MnemonicPage.importKey: (context) =>
-                      ImportCustomKeyToWalletView(keypair: keyPair!),
-                  _MnemonicPage.generate: (context) =>
-                      _TonMnemonicGeneratePage(state: this),
-                  _MnemonicPage.viewMnemonic: (context) =>
-                      _GenerateMnemonicView(state: this),
-                  _MnemonicPage.verifyMnemonic: (context) =>
-                      _VerifyMnemonicView(state: this)
-                },
-              ),
-            )),
+      child: Form(
+        key: formKey,
+        child: PageProgress(
+          key: progressKey,
+          backToIdle: APPConst.oneSecoundDuration,
+          child: (context) {
+            return CustomScrollView(
+              slivers: [
+                SliverConstraintsBoxView(
+                  padding: WidgetConstant.paddingHorizontal20,
+                  sliver: APPSliverAnimatedSwitcher(
+                    enable: page,
+                    widgets: {
+                      null: (context) =>
+                          _TonMnemonicChooseOptionPage(state: this),
+                      _MnemonicPage.import: (context) =>
+                          _TonMnemonicImportMnemonic(state: this),
+                      _MnemonicPage.importKey: (context) =>
+                          ImportCustomKeyToWalletView(keypair: keyPair!),
+                      _MnemonicPage.generate: (context) =>
+                          _TonMnemonicGeneratePage(state: this),
+                      _MnemonicPage.viewMnemonic: (context) =>
+                          _GenerateMnemonicView(state: this),
+                      _MnemonicPage.verifyMnemonic: (context) =>
+                          _VerifyMnemonicView(state: this)
+                    },
+                  ),
+                )
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 }
 
 class _VerifyMnemonicView extends StatelessWidget {
-  const _VerifyMnemonicView({required this.state, Key? key}) : super(key: key);
+  const _VerifyMnemonicView({required this.state});
   final __GenerateTonMnemonicViewState state;
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -287,13 +295,13 @@ class _VerifyMnemonicView extends StatelessWidget {
 }
 
 class _GenerateMnemonicView extends StatelessWidget {
-  const _GenerateMnemonicView({required this.state, Key? key})
-      : super(key: key);
+  const _GenerateMnemonicView({required this.state});
   final __GenerateTonMnemonicViewState state;
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SliverToBoxAdapter(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitleSubtitle(
               title: "show_mnemonic".tr,
@@ -340,19 +348,19 @@ class _GenerateMnemonicView extends StatelessWidget {
 }
 
 class _TonMnemonicGeneratePage extends StatelessWidget {
-  const _TonMnemonicGeneratePage({required this.state, Key? key})
-      : super(key: key);
+  const _TonMnemonicGeneratePage({required this.state});
   final __GenerateTonMnemonicViewState state;
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SliverToBoxAdapter(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitleSubtitle(
             title: "generate_ton_mnemonic".tr,
             body: LargeTextView(
               [
-                "ton_mnemonic_desc2".tr,
+                "external_mnemonic_desc2".tr,
                 "ton_mnemonic_words_desc".tr,
                 "p_note3".tr,
                 "p_note4".tr,
@@ -371,7 +379,7 @@ class _TonMnemonicGeneratePage extends StatelessWidget {
           ),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             FixedElevatedButton(
-              padding: WidgetConstant.paddingVertical20,
+              padding: WidgetConstant.paddingVertical40,
               onPressed: state.generateMnemonic,
               child: Text("generate_mnemonic".tr),
             )
@@ -383,24 +391,19 @@ class _TonMnemonicGeneratePage extends StatelessWidget {
 }
 
 class _TonMnemonicChooseOptionPage extends StatelessWidget {
-  const _TonMnemonicChooseOptionPage({required this.state, Key? key})
-      : super(key: key);
+  const _TonMnemonicChooseOptionPage({required this.state});
   final __GenerateTonMnemonicViewState state;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitleSubtitle(
               title: "ton_mnemonic".tr,
-              body: Column(
-                children: [
-                  Text("ton_mnemonic_desc".tr),
-                  WidgetConstant.height8,
-                  Text("ton_mnemonic_desc2".tr),
-                ],
+              body: LargeTextView(
+                ["ton_mnemonic_desc".tr, "external_mnemonic_desc2".tr],
               )),
           AppSwitchListTile(
             value: state.hasPassword,
@@ -448,7 +451,7 @@ class _TonMnemonicChooseOptionPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical20,
+                padding: WidgetConstant.paddingVertical40,
                 onPressed: state.onTapContinue,
                 child: Text("continue".tr),
               ),
@@ -461,12 +464,11 @@ class _TonMnemonicChooseOptionPage extends StatelessWidget {
 }
 
 class _TonMnemonicImportMnemonic extends StatelessWidget {
-  const _TonMnemonicImportMnemonic({required this.state, Key? key})
-      : super(key: key);
+  const _TonMnemonicImportMnemonic({required this.state});
   final __GenerateTonMnemonicViewState state;
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SliverToBoxAdapter(
       child: Column(
         children: [
           PageTitleSubtitle(
@@ -508,85 +510,3 @@ class _TonMnemonicImportMnemonic extends StatelessWidget {
     );
   }
 }
-
-// class _ImportToWalletKey extends StatelessWidget {
-//   const _ImportToWalletKey({required this.state, Key? key}) : super(key: key);
-//   final __GenerateTonMnemonicViewState state;
-//   @override
-//   Widget build(BuildContext context) {
-//     return SingleChildScrollView(
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           PageTitleSubtitle(
-//               title: "import_private_key".tr,
-//               body: Text("import_private_key_desc".tr)),
-//           Text("private_key".tr, style: context.textTheme.titleMedium),
-//           WidgetConstant.height8,
-//           Stack(
-//             children: [
-//               Container(
-//                 foregroundDecoration: state.showKeys
-//                     ? null
-//                     : BoxDecoration(
-//                         color: context.colors.secondary,
-//                         borderRadius: WidgetConstant.border8,
-//                       ),
-//                 child: ContainerWithBorder(
-//                     child: CopyTextWithBarcode(
-//                   secureBarcode: true,
-//                   barcodeWidget: ContainerWithBorder(
-//                       child: CopyTextIcon(
-//                           dataToCopy: state.privateKey!,
-//                           widget:
-//                               ObscureTextView(state.privateKey!, maxLine: 3))),
-//                   underBarcodeWidget: ErrorTextContainer(
-//                       margin: WidgetConstant.paddingVertical10,
-//                       error: "image_store_alert_keys".tr),
-//                   dataToCopy: state.privateKey!,
-//                   barcodeTitle: "private_key".tr,
-//                   widget: SelectableText(state.privateKey!),
-//                 )),
-//               ),
-//               Positioned.fill(
-//                 child: APPAnimatedSwitcher(enable: state.showKeys, widgets: {
-//                   true: (context) => WidgetConstant.sizedBox,
-//                   false: (context) => FilledButton.icon(
-//                       onPressed: state.onChangeShowKeys,
-//                       icon: const Icon(Icons.remove_red_eye),
-//                       label: Text("show_private_key".tr))
-//                 }),
-//               )
-//             ],
-//           ),
-//           WidgetConstant.height20,
-//           Text("publick_key".tr, style: context.textTheme.titleMedium),
-//           WidgetConstant.height8,
-//           ContainerWithBorder(
-//               child: CopyTextWithBarcode(
-//             secureBarcode: false,
-//             barcodeWidget: ContainerWithBorder(
-//                 child: CopyTextIcon(
-//                     dataToCopy: state.publicKey!,
-//                     widget: Text(state.publicKey!))),
-//             dataToCopy: state.publicKey!,
-//             barcodeTitle: "publick_key".tr,
-//             widget: SelectableText(state.publicKey!),
-//           )),
-//           WidgetConstant.height20,
-//           Row(
-//             mainAxisAlignment: MainAxisAlignment.center,
-//             children: [
-//               FixedElevatedButton(
-//                 onPressed: () {
-//                   context.to(PageRouter.importAccount, argruments: key);
-//                 },
-//                 child: Text("import_to_wallet".tr),
-//               ),
-//             ],
-//           )
-//         ],
-//       ),
-//     );
-//   }
-// }

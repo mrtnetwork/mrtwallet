@@ -21,6 +21,8 @@ abstract class TronTransactionForm implements TransactionForm {
       required TronChain account});
 
   TronBaseContract toContract({required ITronAddress owner});
+
+  bool get showTxInfo => true;
 }
 
 abstract class TronWeb3Form<PARAMS extends Web3TronRequestParam>
@@ -32,12 +34,12 @@ abstract class TronWeb3Form<PARAMS extends Web3TronRequestParam>
 
   DynamicVoid? onStimateChanged;
   @override
-  ObjectVoid? onCompeleteForm;
+  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;
 
   void confirmRequest({Object? response}) {
-    onCompeleteForm?.call(response);
+    onCompleteForm?.call(response);
   }
 }

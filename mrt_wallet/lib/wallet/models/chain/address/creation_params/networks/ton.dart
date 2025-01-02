@@ -1,8 +1,10 @@
 import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/crypto/coins/coins.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -32,7 +34,7 @@ class TonNewAddressParams implements NewAccountParams<TonAddress> {
       deriveIndex: AddressDerivationIndex.fromCborBytesOrObject(
           obj: values.getCborTag(0)),
       context: TonAccountContext.deserialize(
-          object: values.elemetAs<CborTagValue>(1)),
+          object: values.elementAs<CborTagValue>(1)),
       coin: CustomCoins.getSerializationCoin(values.elementAt(2)),
     );
   }
@@ -44,11 +46,14 @@ class TonNewAddressParams implements NewAccountParams<TonAddress> {
   }
 
   @override
-  ITonAddress toAccount(WalletNetwork network, List<int> publicKey) {
+  ITonAddress toAccount(WalletNetwork network, CryptoPublicKeyData? publicKey) {
+    if (publicKey == null) {
+      throw WalletExceptionConst.pubkeyRequired;
+    }
     return ITonAddress.newAccount(
         accountParams: this,
-        publicKey: publicKey,
-        network: network as WalletTonNetwork);
+        publicKey: publicKey.keyBytes(),
+        network: network.toNetwork());
   }
 
   @override

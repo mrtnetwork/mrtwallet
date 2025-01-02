@@ -8,15 +8,19 @@ class EthereumChain extends Chain<
     NFTCore,
     IEthAddress,
     WalletEthereumNetwork,
-    EthereumClient> {
+    EthereumClient,
+    ChainStorageKey,
+    DefaultChainConfig,
+    WalletTransaction<ETHAddress>> {
   EthereumChain._({
     required super.network,
     required super.totalBalance,
     required super.addressIndex,
     required super.id,
-    super.contacts,
-    super.addresses,
-    super.client,
+    required super.config,
+    required super.contacts,
+    required super.addresses,
+    required super.client,
   }) : super._();
   @override
   EthereumChain copyWith(
@@ -26,16 +30,17 @@ class EthereumChain extends Chain<
       List<ContactCore<ETHAddress>>? contacts,
       int? addressIndex,
       EthereumClient? client,
-      String? id}) {
+      String? id,
+      DefaultChainConfig? config}) {
     return EthereumChain._(
-      network: network ?? this.network,
-      totalBalance: totalBalance ?? this.totalBalance,
-      addressIndex: addressIndex ?? _addressIndex,
-      addresses: addresses ?? _addresses,
-      contacts: contacts ?? _contacts,
-      client: client ?? _client,
-      id: id ?? this.id,
-    );
+        network: network ?? this.network,
+        totalBalance: totalBalance ?? this.totalBalance,
+        addressIndex: addressIndex ?? _addressIndex,
+        addresses: addresses ?? _addresses,
+        contacts: contacts ?? _contacts,
+        client: client ?? _client,
+        id: id ?? this.id,
+        config: config ?? this.config);
   }
 
   factory EthereumChain.setup(
@@ -48,20 +53,22 @@ class EthereumChain extends Chain<
         addressIndex: 0,
         totalBalance:
             Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
-        client: client);
+        client: client,
+        addresses: [],
+        config: DefaultChainConfig.none,
+        contacts: []);
   }
 
   factory EthereumChain.deserialize(
       {required WalletEthereumNetwork network,
       required CborListValue cbor,
-      required String id,
       EthereumClient? client}) {
     final int networkId = cbor.elementAt(0);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
     final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
-    List<IEthAddress> toAccounts = [];
+    final List<IEthAddress> toAccounts = [];
     for (final i in accounts) {
       final acc = MethodUtils.nullOnException(() {
         return CryptoAddress.fromCbor(network, i).cast<IEthAddress>();
@@ -84,35 +91,16 @@ class EthereumChain extends Chain<
     }
     final BigInt? totalBalance = cbor.elementAt(4);
     return EthereumChain._(
-      network: network,
-      addresses: toAccounts,
-      addressIndex: addressIndex < 0 ? 0 : addressIndex,
-      contacts: contacts,
-      totalBalance: Live(IntegerBalance(
-          totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
-      client: client,
-      id: cbor.elementAt<String?>(8) ?? id,
-    );
+        network: network,
+        addresses: toAccounts,
+        addressIndex: addressIndex < 0 ? 0 : addressIndex,
+        contacts: contacts,
+        totalBalance: Live(IntegerBalance(
+            totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
+        client: client,
+        id: cbor.elementAt<String>(8),
+        config: DefaultChainConfig.none);
   }
 
   BigInt get chainId => network.coinParam.chainId;
-
-  // @override
-  // Web3Request<Web3EthereumRequestParam> getOrCreatePermission(
-  //     {required Web3RequestInfo<Web3EthereumRequestParam> params,
-  //     required String url,
-  //     String? title,
-  //     APPImage? faviIcon}) {
-  //   final permission = getPermission(
-  //       params: params, url: url, faviIcon: faviIcon, title: title);
-  //   return params.params.toRequest(
-  //       permission: permission ??
-  //           Web3EthereumPermission(
-  //               ,
-  //               url: url,
-  //               activities: const [],
-  //               chainId: network.coinParam.chainId),
-  //       url: url,
-  //       image: faviIcon);
-  // }
 }

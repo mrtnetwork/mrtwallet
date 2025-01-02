@@ -6,6 +6,7 @@ enum ContentType {
   hex(2),
   base64(3),
   network(4),
+  lazy(4),
   favIcon(5);
 
   final int value;

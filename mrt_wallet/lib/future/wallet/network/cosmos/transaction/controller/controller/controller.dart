@@ -13,9 +13,6 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
   CosomosTransactionStateController(
       {required super.walletProvider,
       required super.account,
-      required super.network,
-      required super.address,
-      required super.apiProvider,
       required super.validator});
 
   bool _trIsReady = false;
@@ -23,8 +20,6 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
 
   String? _error;
   String? get error => _error;
-
-  String? _lastestUpdateHashCode;
 
   @override
   Future<void> onTapMemo(OnAddCosmosMemo onAddMemo) async {
@@ -39,12 +34,6 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
     buildTransaction();
   }
 
-  void _onReadyForm(String hashCode) {
-    if (_lastestUpdateHashCode == hashCode && hasFee) return;
-    _lastestUpdateHashCode = hashCode;
-    simulateTr();
-  }
-
   bool _isReady() {
     _error = validator.validator.validateError();
     return !remindAmount.isNegative && hasFee && _error == null;
@@ -53,8 +42,8 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
   @override
   void onCalculateAmount() {
     final totalAmounts = validator.validator.callValue;
-    final remind =
-        address.address.currencyBalance - totalAmounts - feeAmount.balance;
+    final BigInt remind =
+        address.address.currencyBalance - totalAmounts - fee.nativeFee;
     remindAmount.updateBalance(remind);
     _trIsReady = _isReady();
     notify();
@@ -62,27 +51,20 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
 
   void _onChangeForm() {
     onCalculateAmount();
-  }
-
-  void _init() {
-    validator.validator.onReadyField = _onReadyForm;
-    validator.addListener(_onChangeForm);
-  }
-
-  void _close() {
-    validator.validator.onReadyField = null;
-    validator.removeListener(_onChangeForm);
+    if (!remindAmount.isNegative && _error == null) {
+      simulateTr();
+    }
   }
 
   @override
   void ready() {
     super.ready();
-    _init();
+    validator.addListener(_onChangeForm);
   }
 
   @override
   void close() {
     super.close();
-    _close();
+    validator.removeListener(_onChangeForm);
   }
 }

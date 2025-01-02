@@ -8,34 +8,40 @@ class ADAChain extends Chain<
     NFTCore,
     ICardanoAddress,
     WalletCardanoNetwork,
-    CardanoClient> {
+    CardanoClient,
+    ChainStorageKey,
+    DefaultChainConfig,
+    WalletTransaction<ADAAddress>> {
   ADAChain._({
     required super.network,
     required super.totalBalance,
     required super.addressIndex,
     required super.id,
-    super.client,
-    super.contacts,
-    super.addresses,
+    required super.config,
+    required super.client,
+    required super.contacts,
+    required super.addresses,
   }) : super._();
   @override
-  ADAChain copyWith(
-      {WalletCardanoNetwork? network,
-      Live<IntegerBalance>? totalBalance,
-      List<ICardanoAddress>? addresses,
-      List<ContactCore<ADAAddress>>? contacts,
-      int? addressIndex,
-      CardanoClient? client,
-      String? id}) {
+  ADAChain copyWith({
+    WalletCardanoNetwork? network,
+    Live<IntegerBalance>? totalBalance,
+    List<ICardanoAddress>? addresses,
+    List<ContactCore<ADAAddress>>? contacts,
+    int? addressIndex,
+    CardanoClient? client,
+    String? id,
+    DefaultChainConfig? config,
+  }) {
     return ADAChain._(
-      network: network ?? this.network,
-      totalBalance: totalBalance ?? this.totalBalance,
-      addressIndex: addressIndex ?? _addressIndex,
-      addresses: addresses ?? _addresses,
-      contacts: contacts ?? _contacts,
-      client: client ?? _client,
-      id: id ?? this.id,
-    );
+        network: network ?? this.network,
+        totalBalance: totalBalance ?? this.totalBalance,
+        addressIndex: addressIndex ?? _addressIndex,
+        addresses: addresses ?? _addresses,
+        contacts: contacts ?? _contacts,
+        client: client ?? _client,
+        id: id ?? this.id,
+        config: config ?? this.config);
   }
 
   factory ADAChain.setup({
@@ -49,20 +55,22 @@ class ADAChain extends Chain<
         id: id,
         totalBalance:
             Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
-        client: client);
+        client: client,
+        addresses: [],
+        config: DefaultChainConfig.none,
+        contacts: []);
   }
 
   factory ADAChain.deserialize(
       {required WalletCardanoNetwork network,
       required CborListValue cbor,
-      required String id,
       CardanoClient? client}) {
     final int networkId = cbor.elementAt(0);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
     final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
-    List<ICardanoAddress> toAccounts = [];
+    final List<ICardanoAddress> toAccounts = [];
     for (final i in accounts) {
       final acc = MethodUtils.nullOnException(
           () => CryptoAddress.fromCbor(network, i).cast<ICardanoAddress>());
@@ -85,14 +93,14 @@ class ADAChain extends Chain<
     final BigInt? totalBalance = cbor.elementAt(4);
 
     return ADAChain._(
-      network: network,
-      addresses: toAccounts,
-      addressIndex: addressIndex < 0 ? 0 : addressIndex,
-      contacts: contacts,
-      totalBalance: Live(IntegerBalance(
-          totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
-      client: client,
-      id: cbor.elementAt<String?>(8) ?? id,
-    );
+        network: network,
+        addresses: toAccounts,
+        addressIndex: addressIndex < 0 ? 0 : addressIndex,
+        contacts: contacts,
+        totalBalance: Live(IntegerBalance(
+            totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
+        client: client,
+        id: cbor.elementAt<String>(8),
+        config: DefaultChainConfig.none);
   }
 }

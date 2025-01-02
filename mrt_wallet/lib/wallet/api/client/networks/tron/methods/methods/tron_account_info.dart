@@ -4,7 +4,7 @@ import 'package:on_chain/tron/tron.dart';
 /// Query information about an account, including TRX balance, TRC-10 balances, stake information and vote information and permissions etc.
 /// [developers.tron.network](https://developers.tron.network/reference/account-getaccount).
 class TronRequestGetAccountInfo
-    extends TVMRequestParam<TronAccountInfo?, Map<String, dynamic>> {
+    extends TronRequest<TronAccountInfo?, Map<String, dynamic>> {
   TronRequestGetAccountInfo({required this.address, this.visible = true});
 
   /// address

@@ -18,5 +18,10 @@ class ReceiptAddress<NETWORKADDRESS> with Equatable {
   bool get isAccount => account != null;
 
   @override
-  List get variabels => [contact, account, networkAddress];
+  List get variabels => [view];
+
+  @override
+  String toString() {
+    return view;
+  }
 }

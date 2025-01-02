@@ -13,7 +13,7 @@ import 'package:stellar_dart/stellar_dart.dart';
 
 class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
   StellarClient({required this.provider, required this.network});
-  final HorizonProvider provider;
+  final StellarProvider provider;
   @override
   final WalletStellarNetwork network;
   @override
@@ -21,27 +21,30 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
       provider.rpc as BaseServiceProtocol<StellarAPIProvider>;
 
   @override
-  Future<void> updateBalance(IStellarAddress account,
+  Future<void> updateBalance(
+      IStellarAddress address, APPCHAINACCOUNT<IStellarAddress> chain,
       {bool updateTokens = true}) async {
-    await getAccountFromIStellarAddress(account);
+    await getAccountFromIStellarAddress(address, chain);
   }
 
   Future<StellarAccountResponse?> getAccount(StellarAddress address) async {
     try {
       return await provider.request(HorizonRequestAccount(address.baseAddress));
-    } on HorizonAPIError catch (e) {
-      if (e.isNotFound) return null;
+    } on ApiProviderException catch (e) {
+      if (e.statusCode == ServiceConst.notFoundStatusCode) return null;
       rethrow;
     }
   }
 
-  void _updateAccountTokensBalances(
-      {required IStellarAddress account,
-      required StellarAccountResponse accountInfo}) {
+  void _updateAccountTokensBalances({
+    required IStellarAddress account,
+    required StellarAccountResponse accountInfo,
+    required APPCHAINACCOUNT<IStellarAddress> chain,
+  }) {
     final balance = accountInfo.balances
         .whereType<StellarNativeBalanceResponse>()
         .fold(BigInt.zero, (p, c) => p + c.unlockedBalance);
-    account.address.updateBalance(balance);
+    chain.updateAddressBalance(address: account, updateBalance: balance);
     for (final i in account.tokens) {
       final balance = accountInfo.getAssetByIssueAsset(i);
       if (balance == null) {
@@ -71,9 +74,6 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
     }
     final assetBalances = signerAccountInfo.getAsset(asset);
     if (assetBalances != null) {
-      WalletLogging.log(
-          "find amount ${assetBalances.unlockedBalance} ${asset.type} ${asset.toJson()}");
-      WalletLogging.log("${signerAccountInfo.toJson()}");
       return IntegerBalance(assetBalances.unlockedBalance, network.coinDecimal);
     }
     return null;
@@ -117,12 +117,9 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
       final bool isSigner = signer.networkAddress.baseAddress ==
           (sourceAccount?.address.networkAddress.baseAddress ??
               source.baseAddress);
-      WalletLogging.log("is signer $isSigner");
       switch (body.operationType) {
         case OperationType.changeTrust:
           final operation = body.cast<ChangeTrustOperation>();
-
-          /// issueToken:isSigner?signerAccountInfo.getAsset(asset)
           final info = StellarChangeTrustOperation(
               asset: StellarPickedIssueAsset(
                 asset: operation.asset,
@@ -274,20 +271,29 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
   }
 
   Future<StellarAccountResponse?> getAccountFromIStellarAddress(
-      IStellarAddress account) async {
+    IStellarAddress account,
+    APPCHAINACCOUNT<IStellarAddress> chain,
+  ) async {
     try {
       final result = await provider
           .request(HorizonRequestAccount(account.networkAddress.baseAddress));
-      _updateAccountTokensBalances(account: account, accountInfo: result);
+      _updateAccountTokensBalances(
+          account: account, accountInfo: result, chain: chain);
       return result;
-    } on HorizonAPIError catch (e) {
-      if (e.isNotFound) return null;
+    } on ApiProviderException catch (e) {
+      if (e.statusCode == ServiceConst.notFoundStatusCode) return null;
       rethrow;
     }
   }
 
-  Future<StellarAllTransactionResponse> submitTx(String envelopeXdr) async {
-    return await provider.request(HorizonRequestSubmitTransaction(envelopeXdr));
+  Future<StellarAllTransactionResponse?> submitTx(String envelopeXdr) async {
+    final r = await provider
+        .requestDynamic(HorizonRequestSubmitTransaction(envelopeXdr));
+    try {
+      return StellarAllTransactionResponse.fromJson(r);
+    } catch (e) {
+      return null;
+    }
   }
 
   Future<int> getBaseReserve() async {

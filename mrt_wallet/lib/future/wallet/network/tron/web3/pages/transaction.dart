@@ -41,9 +41,7 @@ class TronWeb3TransactionFieldsView extends StatelessWidget {
 }
 
 class _TransactionFieldsView extends StatelessWidget {
-  const _TransactionFieldsView(
-      {required this.form, required this.controller, Key? key})
-      : super(key: key);
+  const _TransactionFieldsView({required this.form, required this.controller});
   final Web3TronTransactionRequestController controller;
   final Web3TronReadOnlyForm form;
   Web3TronTransactionInfo get info => controller.info;
@@ -63,7 +61,7 @@ class _TransactionFieldsView extends StatelessWidget {
           WidgetConstant.height8,
           ContainerWithBorder(
             child: Text(controller.type.name,
-                style: context.colors.onPrimaryContainer.bodyMedium(context)),
+                style: context.onPrimaryTextTheme.bodyMedium),
           ),
           WidgetConstant.height20,
           if (info.destination != null) ...[
@@ -75,16 +73,12 @@ class _TransactionFieldsView extends StatelessWidget {
           ],
           if (info.totalTrxAmount != null) ...[
             TransactionAmountView(
-              amount: info.totalTrxAmount,
-              subtitle: "tron_total_spent_desc".tr,
-              token: controller.network.token,
-            ),
+                amount: info.totalTrxAmount,
+                subtitle: "tron_total_spent_desc".tr,
+                token: controller.network.token),
             WidgetConstant.height20,
           ],
-          _TransactionTypeWidgets(
-            info: info,
-            network: controller.network,
-          ),
+          _TransactionTypeWidgets(info: info, network: controller.network),
           WidgetConstant.height20,
           Text("transaction_fee".tr, style: context.textTheme.titleMedium),
           Text("total_burn".tr),
@@ -95,11 +89,10 @@ class _TransactionFieldsView extends StatelessWidget {
           WidgetConstant.height20,
           if (controller.feeLimit != null) ...[
             TransactionAmountView(
-              amount: controller.feeLimit,
-              token: controller.network.token,
-              title: "fee_limit".tr,
-              subtitle: "tron_fee_limit_desc".tr,
-            ),
+                amount: controller.feeLimit,
+                token: controller.network.token,
+                title: "fee_limit".tr,
+                subtitle: "tron_fee_limit_desc".tr),
             WidgetConstant.height20
           ],
           if (controller.memo != null) ...[
@@ -110,8 +103,7 @@ class _TransactionFieldsView extends StatelessWidget {
                     dataToCopy: controller.memo!,
                     color: context.colors.onPrimaryContainer,
                     widget: SelectableText(controller.memo!,
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context),
+                        style: context.onPrimaryTextTheme.bodyMedium,
                         maxLines: 3,
                         minLines: 1))),
             WidgetConstant.height20
@@ -119,27 +111,23 @@ class _TransactionFieldsView extends StatelessWidget {
           Text("transaction_id".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           ContainerWithBorder(
-              child: Text(
-            controller.transaction.rawData.txID,
-            style: context.colors.onPrimaryContainer.bodyMedium(context),
-          )),
+              child: Text(controller.transaction.rawData.txID,
+                  style: context.onPrimaryTextTheme.bodyMedium)),
           InsufficientBalanceErrorView(
-            verticalMargin: WidgetConstant.paddingVertical10,
-            balance: controller.remindAmount.$1,
-            token: controller.remindAmount.$2,
-          ),
+              verticalMargin: WidgetConstant.paddingVertical10,
+              balance: controller.remindAmount.$1,
+              token: controller.remindAmount.$2),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical40,
-                onPressed: controller.trIsReady
-                    ? () {
-                        controller.confirmTransaction();
-                      }
-                    : null,
-                child: Text("send_transaction".tr),
-              )
+                  padding: WidgetConstant.paddingVertical40,
+                  onPressed: controller.trIsReady
+                      ? () {
+                          controller.confirmTransaction();
+                        }
+                      : null,
+                  child: Text("sign_transaction".tr))
             ],
           )
         ],
@@ -151,9 +139,7 @@ class _TransactionFieldsView extends StatelessWidget {
 class _TransactionTypeWidgets extends StatelessWidget {
   final Web3TronTransactionInfo info;
   final WalletNetwork network;
-  const _TransactionTypeWidgets(
-      {required this.network, required this.info, Key? key})
-      : super(key: key);
+  const _TransactionTypeWidgets({required this.network, required this.info});
 
   @override
   Widget build(BuildContext context) {
@@ -175,13 +161,11 @@ class _TransactionTypeWidgets extends StatelessWidget {
 }
 
 class _TransferAssetView extends StatelessWidget {
-  const _TransferAssetView({
-    required this.info,
-    this.tokenTitle,
-    this.tokenSubtitle,
-    this.valueSubtitle,
-    Key? key,
-  }) : super(key: key);
+  const _TransferAssetView(
+      {required this.info,
+      this.tokenTitle,
+      this.tokenSubtitle,
+      this.valueSubtitle});
   final Web3TronTransferAssetInfo info;
   final String? tokenTitle;
   final String? tokenSubtitle;
@@ -196,23 +180,21 @@ class _TransferAssetView extends StatelessWidget {
         if (tokenSubtitle != null) Text(tokenSubtitle!.tr),
         WidgetConstant.height8,
         TokenDetailsView(
-          token: info.token,
-          onSelectWidget: WidgetConstant.sizedBox,
-          radius: APPConst.circleRadius25,
-        ),
+            token: info.token,
+            onSelectWidget: WidgetConstant.sizedBox,
+            radius: APPConst.circleRadius25),
         WidgetConstant.height20,
         TransactionAmountView(
-          amount: info.amount,
-          token: info.token.token,
-          subtitle: valueSubtitle,
-        ),
+            amount: info.amount,
+            token: info.token.token,
+            subtitle: valueSubtitle)
       ],
     );
   }
 }
 
 class _FreezeBalanceView extends StatelessWidget {
-  const _FreezeBalanceView({required this.info, Key? key}) : super(key: key);
+  const _FreezeBalanceView({required this.info});
   final Web3TronFreezeBalanceInfo info;
 
   @override
@@ -223,14 +205,14 @@ class _FreezeBalanceView extends StatelessWidget {
       WidgetConstant.height8,
       ContainerWithBorder(
         child: Text(info.resource.name.camelCase,
-            style: context.colors.onPrimaryContainer.bodyMedium(context)),
+            style: context.onPrimaryTextTheme.bodyMedium),
       ),
     ]);
   }
 }
 
 class _CreateContractInfo extends StatelessWidget {
-  const _CreateContractInfo({required this.info, Key? key}) : super(key: key);
+  const _CreateContractInfo({required this.info});
   final Web3TronCreateContractInfo info;
   @override
   Widget build(BuildContext context) {
@@ -244,17 +226,15 @@ class _CreateContractInfo extends StatelessWidget {
         Text("contract_address".tr, style: context.textTheme.titleMedium),
         WidgetConstant.height8,
         ContainerWithBorder(
-            child: Text(
-          info.contractAddress.toAddress(),
-          style: context.colors.onPrimaryContainer.bodyMedium(context),
-        ))
+            child: Text(info.contractAddress.toAddress(),
+                style: context.onPrimaryTextTheme.bodyMedium))
       ],
     );
   }
 }
 
 class _UnknownContractInfo extends StatelessWidget {
-  const _UnknownContractInfo({required this.info, Key? key}) : super(key: key);
+  const _UnknownContractInfo({required this.info});
   final Web3TronUnknowContractInfo info;
   Map<String, dynamic> get data => info.contractFields;
   @override
@@ -267,56 +247,41 @@ class _UnknownContractInfo extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
           padding: EdgeInsets.zero,
-          child: Theme(
-            data: context.theme.copyWith(
-                dividerColor: context.colors.transparent,
-                hoverColor: context.colors.transparent),
-            child: ExpansionTile(
-              title: Text("information".tr),
-              shape:
-                  RoundedRectangleBorder(borderRadius: WidgetConstant.border8),
-              enabled: true,
-              initiallyExpanded: false,
-              backgroundColor: context.colors.primaryContainer,
-              children: List.generate(data.length, (index) {
-                final key = data.keys.elementAt(index);
-                final value = data[key];
-                if (value == null) return WidgetConstant.sizedBox;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ContainerWithBorder(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            key.camelCase,
-                            style: context.colors.onPrimaryContainer
-                                .lableLarge(context),
-                          ),
-                          ContainerWithBorder(
-                            backgroundColor: context.colors.onPrimaryContainer,
-                            constraints: null,
-                            child: CopyTextIcon(
-                              dataToCopy: value.toString(),
-                              isSensitive: false,
-                              color: context.colors.primaryContainer,
-                              widget: SelectableText(
-                                value.toString(),
-                                style: context.colors.primaryContainer
-                                    .bodyMedium(context),
+          child: APPExpansionListTile(
+            title: Text("information".tr,
+                style: context.onPrimaryTextTheme.bodyMedium),
+            children: List.generate(data.length, (index) {
+              final key = data.keys.elementAt(index);
+              final value = data[key];
+              if (value == null) return WidgetConstant.sizedBox;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ContainerWithBorder(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(key.camelCase,
+                            style: context.onPrimaryTextTheme.labelLarge),
+                        ContainerWithBorder(
+                          backgroundColor: context.onPrimaryContainer,
+                          constraints: null,
+                          child: CopyTextIcon(
+                            dataToCopy: value.toString(),
+                            isSensitive: false,
+                            color: context.colors.primaryContainer,
+                            widget: SelectableText(value.toString(),
+                                style: context.primaryTextTheme.bodyMedium,
                                 maxLines: 4,
-                                minLines: 1,
-                              ),
-                            ),
+                                minLines: 1),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                );
-              }),
-            ),
+                  ),
+                ],
+              );
+            }),
           ),
         ),
       ],
@@ -329,9 +294,7 @@ class _TriggerSmartContractInfo extends StatelessWidget {
   final WalletNetwork network;
 
   EthereumTransactionDataInfo get data => info.dataInfo;
-  const _TriggerSmartContractInfo(
-      {required this.info, required this.network, Key? key})
-      : super(key: key);
+  const _TriggerSmartContractInfo({required this.info, required this.network});
 
   @override
   Widget build(BuildContext context) {
@@ -340,11 +303,10 @@ class _TriggerSmartContractInfo extends StatelessWidget {
       children: [
         if (info.callValue != null) ...[
           _TransferAssetView(
-            info: info.callValue!,
-            tokenTitle: "tron_call_token".tr,
-            tokenSubtitle: "tron_call_token_desc".tr,
-            valueSubtitle: "tron_call_token_value_desc".tr,
-          ),
+              info: info.callValue!,
+              tokenTitle: "tron_call_token".tr,
+              tokenSubtitle: "tron_call_token_desc".tr,
+              valueSubtitle: "tron_call_token_value_desc".tr),
           WidgetConstant.height20,
         ],
         Text("transaction_type".tr, style: context.textTheme.titleMedium),
@@ -354,17 +316,13 @@ class _TriggerSmartContractInfo extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(data.localizationName.tr,
-                style: context.colors.onPrimaryContainer.bodyMedium(context)),
+                style: context.onPrimaryTextTheme.bodyMedium),
             if (data.selector != null)
-              Text(data.selector!,
-                  style: context.colors.onPrimaryContainer.bodyMedium(context))
+              Text(data.selector!, style: context.onPrimaryTextTheme.bodyMedium)
           ],
         )),
         WidgetConstant.height20,
-        EthereumTransactionDataWidget(
-          data: data,
-          network: network,
-        ),
+        EthereumTransactionDataWidget(data: data, network: network),
       ],
     );
   }

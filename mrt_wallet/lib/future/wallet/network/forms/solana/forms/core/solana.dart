@@ -16,16 +16,28 @@ enum SolanaTransactionType {
 abstract class SolanaTransactionForm implements TransactionForm {
   BigInt get transferValue;
   SolanaTransactionType get mode;
-  @override
-  String? validateError({ISolanaAddress? account});
+  SolanaChain? _account;
+  ISolanaAddress? _address;
   DynamicVoid? onStimateChanged;
   SolanaClient? _apiProvider;
   SolanaClient? get provider => _apiProvider;
-  void setProvider(SolanaClient? rpc) {
-    _apiProvider = rpc;
+  SolanaChain get account => _account!;
+  ISolanaAddress get address => _address!;
+  @override
+  String? validateError({ISolanaAddress? account});
+
+  void initForm({SolanaChain? account, ISolanaAddress? address}) {
+    _account = account;
+    _address = address;
+    _apiProvider = account?.clientNullable;
   }
 
   Future<List<TransactionInstruction>> instructions(SolAddress owner);
+  void dispose() {
+    _account = null;
+    _address = null;
+    _apiProvider = null;
+  }
 }
 
 abstract class SolanaWeb3Form<PARAMS extends Web3SolanaRequestParam>
@@ -37,12 +49,12 @@ abstract class SolanaWeb3Form<PARAMS extends Web3SolanaRequestParam>
 
   DynamicVoid? onStimateChanged;
   @override
-  ObjectVoid? onCompeleteForm;
+  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;
 
   void confirmRequest({Object? response}) {
-    onCompeleteForm?.call(response);
+    onCompleteForm?.call(response);
   }
 }

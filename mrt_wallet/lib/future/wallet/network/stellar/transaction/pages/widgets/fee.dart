@@ -5,13 +5,15 @@ import 'package:mrt_wallet/future/wallet/network/stellar/transaction/controller/
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 class StellarTransactionFeeView extends StatelessWidget {
-  const StellarTransactionFeeView(this.controller, {Key? key})
-      : super(key: key);
+  const StellarTransactionFeeView(this.controller, {super.key});
   final StellarTransactionStateController controller;
 
   @override
   Widget build(BuildContext context) {
     return ContainerWithBorder(
+        iconAlginment: controller.feeMode.isCustom
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
         onRemove: () {
           context
               .openSliverBottomSheet<(String?, BigInt?)>(
@@ -28,24 +30,25 @@ class StellarTransactionFeeView extends StatelessWidget {
             controller.setFee(value?.$1, customFee: value?.$2);
           });
         },
-        onRemoveIcon: const Icon(Icons.edit),
+        onRemoveIcon: Icon(Icons.edit, color: context.onPrimaryContainer),
         child: APPAnimatedSwitcher(
             width: context.mediaQuery.size.width,
             enable: controller.hasFee,
             widgets: {
               false: (c) => Text("estimating_fee_please_wait".tr,
-                  style: context.colors.onPrimaryContainer.bodyMedium(context)),
+                  style: context.onPrimaryTextTheme.bodyMedium),
               true: (c) => Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(controller.feeMode.name.camelCase,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
+                          style: context.onPrimaryTextTheme.labelLarge),
                       CoinPriceView(
-                          token: controller.network.coinParam.token,
-                          balance: controller.fee,
-                          style: context.colors.onPrimaryContainer
-                              .titleLarge(context)),
+                        token: controller.network.coinParam.token,
+                        balance: controller.fee,
+                        style: context.onPrimaryTextTheme.titleMedium,
+                        symbolColor: context.onPrimaryContainer,
+                        showTokenImage: true,
+                      ),
                       ErrorTextContainer(
                         verticalMargin: WidgetConstant.paddingVertical10,
                         error: controller.feeError,

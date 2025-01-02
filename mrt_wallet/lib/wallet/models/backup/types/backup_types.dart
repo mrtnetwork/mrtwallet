@@ -3,6 +3,7 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 enum MrtBackupTypes {
   wallet(CborTagsConst.mrtBackupWallet, "wallets"),
+  walletV2(CborTagsConst.mrtBackupWalletV2, "walletsV2"),
   mnemonic(CborTagsConst.mrtBackupMnemonic, "mnemonic"),
   privatekey(CborTagsConst.mrtBackupPrivateKey, "private_key"),
   wif(CborTagsConst.mrtBackupWif, "wif"),
@@ -36,6 +37,7 @@ enum MrtBackupTypes {
       case MrtBackupTypes.keystore:
       case MrtBackupTypes.privatekey:
       case MrtBackupTypes.wallet:
+      case MrtBackupTypes.walletV2:
         return BytesUtils.fromHexString(data);
       default:
         return Base58Decoder.checkDecode(data);
@@ -48,6 +50,7 @@ enum MrtBackupTypes {
         return StringUtils.decode(decryptedKeyBytes);
       case MrtBackupTypes.privatekey:
       case MrtBackupTypes.wallet:
+      case MrtBackupTypes.walletV2:
       case MrtBackupTypes.keystore:
         return BytesUtils.toHexString(decryptedKeyBytes);
 

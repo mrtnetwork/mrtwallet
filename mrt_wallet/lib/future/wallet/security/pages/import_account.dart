@@ -22,8 +22,6 @@ enum _PrivateKeyTypes {
         return MrtBackupTypes.privatekey;
       case _PrivateKeyTypes.wif:
         return MrtBackupTypes.wif;
-      default:
-        throw UnimplementedError();
     }
   }
 
@@ -106,7 +104,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   }
 
   Map<_PrivateKeyTypes, Widget> _buildKeyTypes() {
-    Map<_PrivateKeyTypes, Widget> types = {};
+    final Map<_PrivateKeyTypes, Widget> types = {};
     for (final i in _PrivateKeyTypes.values) {
       if (i == _PrivateKeyTypes.wif && coin!.conf.hasWif) {
         types[i] = OneLineTextWidget(i.value);
@@ -203,8 +201,6 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
         case _PrivateKeyTypes.wif:
           return BlockchainUtils.wifToStorage(
               keyName: keyName, coin: coin!, wifKey: _key);
-        default:
-          throw WalletExceptionConst.dataVerificationFailed;
       }
     });
     if (createKey.hasError) {
@@ -236,56 +232,63 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
       initialStatus: StreamWidgetStatus.progress,
       initialWidget: ProgressWithTextView(text: "retrieving_resources".tr),
       child: (c) => UnfocusableChild(
-        child: ConstraintsBoxView(
-          alignment: Alignment.center,
-          padding: WidgetConstant.paddingHorizontal20,
-          child: Form(
-            key: form,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  PageTitleSubtitle(
-                      title: "import_account".tr,
-                      body: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("import_account_desc2".tr),
+        child: CustomScrollView(
+          // shrinkWrap: true,
+          slivers: [
+            SliverConstraintsBoxView(
+              padding: WidgetConstant.paddingHorizontal20,
+              sliver: SliverToBoxAdapter(
+                child: Form(
+                  key: form,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        PageTitleSubtitle(
+                            title: "import_account".tr,
+                            body: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("import_account_desc2".tr),
+                                WidgetConstant.height8,
+                                Text("import_account_desc1".tr)
+                              ],
+                            )),
+                        if (needSelectCoins) ...[
+                          Text("coin_type".tr,
+                              style: context.textTheme.titleMedium),
+                          Text("choose_key_coin_desc".tr),
                           WidgetConstant.height8,
-                          Text("import_account_desc1".tr),
+                          AppDropDownBottom(
+                              items: {
+                                for (final i in coins)
+                                  i: RichText(
+                                      text: TextSpan(
+                                          style: context.textTheme.bodyMedium,
+                                          children: [
+                                        TextSpan(text: i.coinName.camelCase),
+                                        TextSpan(
+                                            text:
+                                                " (${i.proposal.specName.camelCase}) ",
+                                            style: context.textTheme.labelSmall)
+                                      ]))
+                              },
+                              value: coin,
+                              label: "coin_type".tr,
+                              onChanged: onChangeKeyAlogrithm),
+                          WidgetConstant.height20,
                         ],
-                      )),
-                  if (needSelectCoins) ...[
-                    Text("coin_type".tr, style: context.textTheme.titleMedium),
-                    Text("choose_key_coin_desc".tr),
-                    WidgetConstant.height8,
-                    AppDropDownBottom(
-                        items: {
-                          for (final i in coins)
-                            i: RichText(
-                                text: TextSpan(
-                                    style: context.textTheme.bodyMedium,
-                                    children: [
-                                  TextSpan(text: i.coinName.camelCase),
-                                  TextSpan(
-                                      text:
-                                          " (${i.proposal.specName.camelCase}) ",
-                                      style: context.textTheme.labelSmall)
-                                ]))
-                        },
-                        value: coin,
-                        label: "coin_type".tr,
-                        onChanged: onChangeKeyAlogrithm),
-                    WidgetConstant.height20,
-                  ],
-                  APPAnimatedSize(
-                      isActive: coin != null,
-                      onActive: (c) => _ImportAccountStateKeyType(this),
-                      onDeactive: (c) => WidgetConstant.sizedBox)
-                ],
+                        APPAnimatedSize(
+                            isActive: coin != null,
+                            onActive: (c) => _ImportAccountStateKeyType(this),
+                            onDeactive: (c) => WidgetConstant.sizedBox)
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -293,7 +296,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
 }
 
 class _ImportAccountStateKeyType extends StatelessWidget {
-  const _ImportAccountStateKeyType(this.state, {Key? key}) : super(key: key);
+  const _ImportAccountStateKeyType(this.state);
   final _ImportAccountState state;
 
   @override
@@ -305,7 +308,7 @@ class _ImportAccountStateKeyType extends StatelessWidget {
       AppDropDownBottom(
           items: state.keyTypes,
           value: state.selected,
-          label: "key_type".tr,
+          hint: "key_type".tr,
           onChanged: state.onSelectKeyType),
       WidgetConstant.height20,
       _ImportAccountStateKey(state: state)
@@ -314,8 +317,7 @@ class _ImportAccountStateKeyType extends StatelessWidget {
 }
 
 class _ImportAccountStateKey extends StatelessWidget {
-  const _ImportAccountStateKey({required this.state, Key? key})
-      : super(key: key);
+  const _ImportAccountStateKey({required this.state});
   final _ImportAccountState state;
 
   @override
@@ -377,20 +379,17 @@ class _ImportAccountStateKey extends StatelessWidget {
                 )
                 .then(state.setKeyName);
           },
-          onRemoveIcon: state.keyName == null
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(state.keyName != null),
           child: Text(state.keyName?.orEmpty ?? "tap_to_input_value".tr,
-              maxLines: 3),
+              maxLines: 3, style: context.onPrimaryTextTheme.bodyMedium),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
-              padding: WidgetConstant.paddingVertical40,
-              onPressed: state.onSetup,
-              child: Text("import_account".tr),
-            ),
+                padding: WidgetConstant.paddingVertical40,
+                onPressed: state.onSetup,
+                child: Text("import_account".tr)),
           ],
         )
       ],

@@ -1,17 +1,19 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:blockchain_utils/signer/cosmos/cosmos_nist256r1_signer.dart';
-import 'package:blockchain_utils/signer/cosmos/cosmos_signer.dart';
+import 'package:cosmos_sdk/cosmos_sdk.dart';
+import 'package:monero_dart/monero_dart.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_request.dart';
+import 'package:mrt_wallet/crypto/keys/access/monero_private_key.dart';
 import 'package:mrt_wallet/crypto/keys/models/master_key.dart';
 import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing_response.dart';
+import 'package:mrt_wallet/wallet/models/networks/monero/monero.dart';
 
 class WalletRequestSign
-    implements WalletRequest<GlobalSignResponse, MessageArgsOneBytes> {
+    extends WalletRequest<GlobalSignResponse, MessageArgsOneBytes> {
   final SignRequest request;
   WalletRequestSign(this.request);
 
@@ -34,17 +36,76 @@ class WalletRequestSign
 
   @override
   WalletRequestMethod get method => WalletRequestMethod.sign;
+  static GlobalSignResponse cosmosSigning(
+      {required CryptoPrivateKeyData key,
+      required CosmosSigningRequest request}) {
+    final signer = CosmosPrivateKey.fromBytes(
+        algorithm: request.alg, keyBytes: key.privateKeyBytes());
+    final signature = signer.sign(request.digest);
+    return GlobalSignResponse(
+        signature: signature,
+        index: request.index,
+        signerPubKey: key.publicKey);
+  }
 
-  static GlobalSignResponse sign(
-      {required CryptoPrivateKeyData key, required SignRequest request}) {
+  static GlobalSignResponse moneroSigning(
+      {required CryptoPrivateKeyData key,
+      required MoneroSigningRequest request}) {
+    final MoneroPrivateKeyData moneroKey = key.cast();
+    final indexes = request.getAccountsIndexes();
+    final moneroKeys = MoneroAccountKeys(
+        account: moneroKey.toMoneroAccount(),
+        network: MoneroNetwork.stagenet,
+        indexes: indexes);
+    final spendablePayment = request.utxos.map((e) {
+      final unlockedPayment = MoneroTransactionHelper.toUnlockPayment(
+          account: moneroKeys, lockedOut: e.payment);
+      if (unlockedPayment == null) {
+        throw const WalletException("failed_to_unlock_output");
+      }
+      return e.updatePayment(unlockedPayment);
+    }).toList();
+    final tx = MoneroRctTxBuilder(
+        account: moneroKeys,
+        destinations: request.destinations,
+        sources: spendablePayment,
+        fee: request.fee,
+        change: request.change);
+    final ser = tx.serialize();
+    final decode = MoneroRctTxBuilder.deserialize(ser);
+    assert(tx.serializeHex() == decode.serializeHex(), "failed deserialize tx");
+    final List<MoneroTxDestination> currentDestinations = [
+      ...tx.destinations,
+    ];
+    final signingResponse = MoneroSigningTxResponse(
+        txData: MoneroSignedTxData(
+            txID: tx.txId,
+            txKeys: tx.destinationKeys.allTxKeys,
+            indexes: indexes),
+        proofs: currentDestinations.map((e) {
+          return MoneroTxDestinationWithProof(
+              address: e.address,
+              amount: e.amount,
+              proof: tx
+                  .generateProof(receiverAddress: e.address, message: null)
+                  .toBase58());
+        }).toList(),
+        txHex: tx.transaction.serializeHex());
+    return GlobalSignResponse(
+        signature: signingResponse.toCbor().encode(),
+        index: request.index,
+        signerPubKey: moneroKey.publicKey);
+  }
+
+  static GlobalSignResponse globalSigning(
+      {required CryptoPrivateKeyData key, required GlobalSignRequest request}) {
     final keyBytes = key.privateKeyBytes();
     List<int> signature;
     final List<int> digest = request.digest;
     final index = request.index;
     switch (request.network) {
       case SigningRequestNetwork.bitcoin:
-        final BitcoinSigning bitcoinRequest = request as BitcoinSigning;
-        // List<int> signature;
+        final BitcoinSigning bitcoinRequest = request.cast();
         final btcSigner = BitcoinSigner.fromKeyBytes(key.privateKeyBytes());
         if (bitcoinRequest.useTaproot) {
           List<int> sig = btcSigner.signSchnorrTransaction(digest,
@@ -53,9 +114,10 @@ class WalletRequestSign
             sig = <int>[...sig, bitcoinRequest.sighash];
           }
           signature = sig;
+        } else {
+          final sig = btcSigner.signBcHTransaction(digest);
+          signature = [...sig, bitcoinRequest.sighash];
         }
-        final sig = btcSigner.signTransaction(digest);
-        signature = [...sig, bitcoinRequest.sighash];
         return GlobalSignResponse(
             signature: signature, index: index, signerPubKey: key.publicKey);
       case SigningRequestNetwork.tron:
@@ -69,16 +131,7 @@ class WalletRequestSign
         signature = signer.sign(digest);
 
         break;
-      case SigningRequestNetwork.cosmos:
-        if (request.index.currencyCoin.conf.type ==
-            EllipticCurveTypes.nist256p1) {
-          final signer = CosmosNist256p1Signer.fromKeyBytes(keyBytes);
-          signature = signer.sign(digest);
-          break;
-        }
-        final signer = CosmosSigner.fromKeyBytes(keyBytes);
-        signature = signer.sign(digest);
-        break;
+
       case SigningRequestNetwork.eth:
         final ethsigner = ETHSigner.fromKeyBytes(keyBytes);
         signature = ethsigner.sign(digest).toBytes();
@@ -120,8 +173,14 @@ class WalletRequestSign
   @override
   GlobalSignResponse result(
       {required WalletMasterKeys wallet, required List<int> key}) {
-    final key =
-        wallet.readKeys([AccessCryptoPrivateKeyRequest(index: request.index)]);
-    return sign(key: key.first, request: request);
+    final key = wallet
+        .readKeys([AccessCryptoPrivateKeyRequest(index: request.index)]).first;
+    return switch (request.network) {
+      SigningRequestNetwork.monero =>
+        moneroSigning(key: key, request: request.cast()),
+      SigningRequestNetwork.cosmos =>
+        cosmosSigning(key: key, request: request.cast()),
+      _ => globalSigning(key: key, request: request.cast())
+    };
   }
 }

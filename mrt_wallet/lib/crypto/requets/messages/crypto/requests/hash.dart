@@ -21,12 +21,12 @@ enum CryptoRequestHashingType {
 }
 
 class CryptoRequestHashing
-    implements CryptoRequest<List<int>, MessageArgsOneBytes> {
-  final CryptoRequestHashingType type;
+    extends CryptoRequest<List<int>, MessageArgsOneBytes> {
+  final CryptoRequestHashingType hashingType;
   final String? dataHex;
   final List<int>? dataBytes;
   CryptoRequestHashing._(
-      {required this.type, this.dataHex, List<int>? dataBytes})
+      {required this.hashingType, this.dataHex, List<int>? dataBytes})
       : dataBytes = BytesUtils.tryToBytes(dataBytes, unmodifiable: true);
   factory CryptoRequestHashing(
       {required CryptoRequestHashingType type,
@@ -40,7 +40,7 @@ class CryptoRequestHashing
       throw WalletExceptionConst.dataVerificationFailed;
     }
     return CryptoRequestHashing._(
-        type: type, dataBytes: dataBytes, dataHex: dataHex);
+        hashingType: type, dataBytes: dataBytes, dataHex: dataHex);
   }
   factory CryptoRequestHashing.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -50,7 +50,7 @@ class CryptoRequestHashing
         hex: hex,
         tags: CryptoRequestMethod.hashing.tag);
     return CryptoRequestHashing._(
-        type: CryptoRequestHashingType.fromName(values.elementAt(0)),
+        hashingType: CryptoRequestHashingType.fromName(values.elementAt(0)),
         dataBytes: values.elementAt(1),
         dataHex: values.elementAt(2));
   }
@@ -59,7 +59,7 @@ class CryptoRequestHashing
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          type.name,
+          hashingType.name,
           dataBytes == null ? null : CborBytesValue(dataBytes!),
           dataHex
         ]),
@@ -112,8 +112,8 @@ class CryptoRequestHashing
   @override
   MessageArgsOneBytes getResult() {
     return MessageArgsOneBytes(
-        keyOne:
-            generateHash(type: type, dataBytes: dataBytes, dataHex: dataHex));
+        keyOne: generateHash(
+            type: hashingType, dataBytes: dataBytes, dataHex: dataHex));
   }
 
   @override
@@ -123,6 +123,7 @@ class CryptoRequestHashing
 
   @override
   List<int> result() {
-    return generateHash(type: type, dataBytes: dataBytes, dataHex: dataHex);
+    return generateHash(
+        type: hashingType, dataBytes: dataBytes, dataHex: dataHex);
   }
 }

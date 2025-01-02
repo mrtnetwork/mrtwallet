@@ -33,6 +33,8 @@ class WidgetConstant {
       EdgeInsets.symmetric(vertical: 10);
   static const SliverPadding sliverPaddingVertial20 =
       SliverPadding(padding: paddingVertical20);
+  static const SliverPadding sliverPaddingVertial40 =
+      SliverPadding(padding: paddingVertical40);
   static const EdgeInsets paddingVertical8 = EdgeInsets.symmetric(vertical: 8);
   static final BorderRadius border8 = BorderRadius.circular(8);
   static final BorderRadius border25 = BorderRadius.circular(25);

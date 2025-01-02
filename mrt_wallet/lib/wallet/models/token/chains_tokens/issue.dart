@@ -38,6 +38,8 @@ class RippleIssueToken with Equatable implements TokenCore<BigRational> {
   @override
   final Live<DecimalBalance> balance;
 
+  BigRational get currencyBalance => balance.value.balance;
+
   DateTime _updated;
 
   @override

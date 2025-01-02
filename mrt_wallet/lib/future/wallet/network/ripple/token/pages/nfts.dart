@@ -14,9 +14,10 @@ class MonitorRippleNFTsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return NetworkAccountControllerView<RippleChain>(
       title: "manage_nfts".tr,
+      clientRequired: true,
       childBulder: (wallet, account, switchRippleAccount) {
         return _MonitorRippleNFTsView(
-            account: account, wallet: wallet, provider: account.provider()!);
+            account: account, wallet: wallet, provider: account.client);
       },
     );
   }
@@ -108,19 +109,15 @@ class ___MonitorRippleNFTsViewState extends State<_MonitorRippleNFTsView>
           isEmpty: nfts.isEmpty,
           itemBuilder: () => ConstraintsBoxView(
             padding: WidgetConstant.padding20,
-            child: ListView.builder(
+            child: ListView.separated(
               controller: controller,
               itemBuilder: (context, index) {
                 final nft = nfts.elementAt(index);
-                return Column(
-                  children: [
-                    ContainerWithBorder(
-                      child: RippleNFTokenView(nft: nft),
-                    ),
-                    const Divider(),
-                  ],
-                );
+                return ContainerWithBorder(
+                    child: RippleNFTokenView(
+                        nft: nft, color: context.onPrimaryContainer));
               },
+              separatorBuilder: (context, index) => WidgetConstant.divider,
               shrinkWrap: true,
               addAutomaticKeepAlives: false,
               addRepaintBoundaries: false,

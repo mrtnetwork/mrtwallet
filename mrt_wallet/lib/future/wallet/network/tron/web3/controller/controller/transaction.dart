@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
@@ -40,7 +41,7 @@ class Web3TronTransactionRequestController
   String? _memo;
   String? get memo => _memo;
 
-  Transaction get transaction => request.params.transaction;
+  late final Transaction transaction;
   TransactionContractType get type => transaction.rawData.type;
   bool _trIsReady = false;
   bool get trIsReady => _trIsReady;
@@ -83,8 +84,7 @@ class Web3TronTransactionRequestController
     return !remindAmount.$1.isNegative;
   }
 
-  Future<TronAccountResourceInfo> _initNetworkCondition(
-      TransactionContractType type) async {
+  Future<TronAccountResourceInfo> _initNetworkCondition() async {
     final result = await MethodUtils.call(() async {
       final account =
           await apiProvider.getAccount(transaction.rawData.ownerAddress);
@@ -129,13 +129,18 @@ class Web3TronTransactionRequestController
         ownerAddress: contract.ownerAddress,
         contractAddress: contract.contractAddress,
         data: BytesUtils.toHexString(contract.data ?? []),
+        callTokenValue: contract.callTokenValue,
+        tokenID: contract.tokenId,
+        callValue: contract.callValue,
       );
     }
     if (transactionInfo.isCreateContract) {
       final contract = transaction.rawData.getContract<CreateSmartContract>();
       energy = await apiProvider.estimateCreateContractEnergy(
           ownerAddress: contract.ownerAddress,
-          byteCode: BytesUtils.toHexString(contract.newContract.bytecode));
+          byteCode: BytesUtils.toHexString(contract.newContract.bytecode),
+          callTokenValue: contract.callTokenValue,
+          tokenID: contract.tokenId);
     }
     return TronFee.calculate(
         raw: transaction.rawData,
@@ -149,7 +154,25 @@ class Web3TronTransactionRequestController
 
   Future<void> _initializeTransaction() async {
     progressKey.process(text: "transaction_retrieval_requirment".tr);
-    final resource = await _initNetworkCondition(transaction.rawData.type);
+    final tx = await MethodUtils.call(() async {
+      final transaction = MethodUtils.nullOnException(
+          () => Transaction.fromJson(request.params.transaction));
+      if (transaction == null) {
+        throw Web3TronExceptionConstant.invalidTransactionParams;
+      }
+      if (request.params.txId != null &&
+          request.params.txId != transaction.rawData.txID) {
+        throw Web3TronExceptionConstant.invalidTransactionTxId;
+      }
+      return transaction;
+    });
+    if (tx.hasError) {
+      progressKey.error(text: tx.error!.tr, backToIdle: null);
+      request.error(Web3RequestExceptionConst.fromException(tx.exception!));
+      return;
+    }
+    transaction = tx.result;
+    final resource = await _initNetworkCondition();
     final contractOwner = transaction.rawData.ownerAddress;
     owner = account.getReceiptAddress(contractOwner.toAddress()) ??
         ReceiptAddress<TronAddress>(
@@ -164,19 +187,22 @@ class Web3TronTransactionRequestController
         progressKey.error(
             text: "tron_account_permission_not_access_desc".tr,
             backToIdle: null);
+        request.error(Web3RequestExceptionConst.missingPermission);
         return;
       }
     }
 
     if (transactionInfo.hasError) {
       progressKey.error(text: transactionInfo.error!.tr, backToIdle: null);
+      request.error(Web3RequestExceptionConst.internalError);
     } else {
       final fee = await MethodUtils.call(() => _calcuateFee(
           transactionInfo: transactionInfo.result,
-          transaction: request.params.transaction,
+          transaction: transaction,
           resource: resource));
       if (fee.hasError) {
         progressKey.error(text: fee.error!.tr, backToIdle: null);
+        request.error(Web3RequestExceptionConst.fromException(fee.exception!));
         return;
       }
       info = transactionInfo.result;
@@ -198,10 +224,7 @@ class Web3TronTransactionRequestController
   }
 
   Future<void> confirmTransaction() async {
-    progressKey.process(
-        text: "create_send_transaction"
-            .tr
-            .replaceOne(network.coinParam.token.name));
+    progressKey.process(text: "create_sign_transaction".tr);
     final result = await MethodUtils.call(() async {
       final WalletSigningRequest<List<List<int>>> request =
           WalletSigningRequest<List<List<int>>>(
@@ -235,8 +258,7 @@ class Web3TronTransactionRequestController
             return signerSignatures;
           }
           final signRequest = GlobalSignRequest.tron(
-              digest: transactionDigest,
-              index: address.keyIndex as Bip32AddressIndex);
+              digest: transactionDigest, index: address.keyIndex.cast());
           final response = await generateSignature(signRequest);
           return [response.signature];
         },
@@ -247,20 +269,17 @@ class Web3TronTransactionRequestController
       if (signature.hasError) {
         throw signature.exception!;
       }
-      final tr = Transaction(
-          rawData: transaction.rawData, signature: signature.result);
-      return await apiProvider.sendTransaction(tr.toHex);
+      return signature.result.map((e) => BytesUtils.toHexString(e)).toList();
     });
+
     if (result.hasError) {
       progressKey.error(text: result.error!.tr);
-    } else if (result.result.isSuccess) {
-      progressKey.responseTx(hash: result.result.txId!, network: network);
-      request.completeResponse(result.result.respose);
     } else {
-      progressKey.error(text: result.result.error, backToIdle: null);
-      request.error(Web3RequestExceptionConst.failedRequest(
-          result.result.error!,
-          dataJson: result.result.respose));
+      final json = Map<String, dynamic>.from(request.params.transaction);
+      final signatures = List<String>.from(json["signature"] ?? []);
+      json["signature"] = <String>[...signatures, ...result.result];
+      request.completeResponse(json);
+      progressKey.response(text: "transaction_signed".tr);
     }
   }
 

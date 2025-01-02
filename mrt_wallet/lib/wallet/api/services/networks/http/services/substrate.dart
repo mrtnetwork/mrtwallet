@@ -1,26 +1,29 @@
+import 'package:blockchain_utils/service/models/params.dart';
+import 'package:mrt_wallet/app/isolate/types.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/substrate.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/http/http.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
-class SubstrateHttpService extends HTTPService<SubstrateAPIProvider>
-    with SubstrateRPCService {
+class SubstrateHTTPService extends HTTPService<SubstrateAPIProvider>
+    with SubstrateServiceProvider {
+  SubstrateHTTPService(
+      {required this.provider,
+      required this.isolate,
+      this.defaultTimeOut = const Duration(seconds: 30)});
+  @override
+  final APPIsolate isolate;
   @override
   final SubstrateAPIProvider provider;
 
   @override
   final Duration defaultTimeOut;
 
-  SubstrateHttpService(this.provider,
-      {this.defaultTimeOut = const Duration(seconds: 30)});
-
   @override
-  String get url => provider.callUrl;
-  @override
-  Future<Map<String, dynamic>> call(SubstrateRequestDetails params,
-      [Duration? timeout]) async {
-    final response =
-        await providerPOST<Map<String, dynamic>>(url, params.toRequestBody());
-
-    return response;
+  Future<BaseServiceResponse<T>> doRequest<T>(SubstrateRequestDetails params,
+      {Duration? timeout}) async {
+    return await serviceRequest<T>(params,
+        uri: params.toUri(provider.callUrl),
+        allowStatus: [200],
+        timeout: timeout);
   }
 }

@@ -3,8 +3,8 @@ import 'package:on_chain/tron/tron.dart';
 
 /// In Stake2.0, query the detail of resource share delegated from fromAddress to toAddress
 /// [developers.tron.network](https://developers.tron.network/reference/getdelegatedresourcev2).
-class TronRequestGetDelegatedResourceV2Details extends TVMRequestParam<
-    DelegatedAccountResourceInfo, Map<String, dynamic>> {
+class TronRequestGetDelegatedResourceV2Details
+    extends TronRequest<DelegatedAccountResourceInfo, Map<String, dynamic>> {
   TronRequestGetDelegatedResourceV2Details(
       {required this.fromAddress,
       required this.toAddress,

@@ -12,14 +12,14 @@ class MrtViewBuilder<T extends StateController> extends StatefulWidget {
   final String repositoryId;
 
   const MrtViewBuilder({
-    Key? key,
+    super.key,
     required this.controller,
     required this.builder,
     required this.repositoryId,
     this.onRemoveIds = const [],
     this.stateId,
     this.removable = true,
-  }) : super(key: key);
+  });
 
   @override
   MrtViewBuilderState<T> createState() => MrtViewBuilderState<T>();

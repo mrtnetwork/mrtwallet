@@ -17,8 +17,7 @@ class StellarCreateTransactionOperationsView extends StatefulWidget {
   final StellarTransactionOperation? updateOperation;
 
   const StellarCreateTransactionOperationsView(
-      {required this.controller, this.updateOperation, Key? key})
-      : super(key: key);
+      {required this.controller, this.updateOperation, super.key});
 
   @override
   State<StellarCreateTransactionOperationsView> createState() =>
@@ -102,7 +101,7 @@ class _StellarCreateTransactionOperationsViewState
 
 class _SelectOperationView extends StatelessWidget {
   final _StellarCreateTransactionOperationsViewState state;
-  const _SelectOperationView(this.state, {Key? key}) : super(key: key);
+  const _SelectOperationView(this.state);
 
   @override
   @override

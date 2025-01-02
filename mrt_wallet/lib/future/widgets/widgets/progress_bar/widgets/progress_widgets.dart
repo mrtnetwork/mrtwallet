@@ -8,17 +8,26 @@ Widget get initializeProgressWidget =>
     ProgressWithTextView(text: "initializing_requirements".tr);
 
 class ProgressWithTextView extends StatelessWidget {
-  const ProgressWithTextView({super.key, required this.text, this.icon});
+  const ProgressWithTextView(
+      {super.key,
+      required this.text,
+      this.icon,
+      this.style,
+      this.bottomWidget});
   final String text;
   final Widget? icon;
+  final TextStyle? style;
+  final Widget? bottomWidget;
 
   @override
   Widget build(BuildContext context) {
     return _ProgressWithTextView(
-      text: LargeTextView(
-        [text],
-        maxLine: 3,
-        textAligen: TextAlign.center,
+      text: Column(
+        children: [
+          LargeTextView([text],
+              maxLine: 3, textAligen: TextAlign.center, style: style),
+          if (bottomWidget != null) bottomWidget!
+        ],
       ),
       icon: icon,
     );
@@ -175,54 +184,64 @@ class _ProgressWithTextView extends StatelessWidget {
       children: [
         icon ?? const CircularProgressIndicator(),
         WidgetConstant.height8,
-        text
+        text,
       ],
     );
   }
 }
 
 class SuccessTransactionTextView extends StatelessWidget {
-  const SuccessTransactionTextView({
-    super.key,
-    required this.txId,
-    required this.network,
-  });
-  final List<String> txId;
+  const SuccessTransactionTextView(
+      {super.key,
+      required this.txIds,
+      required this.network,
+      this.additionalWidget,
+      this.error});
+  final List<String> txIds;
   final WalletNetwork network;
+  final WidgetContext? additionalWidget;
+  final String? error;
 
   @override
   Widget build(BuildContext context) {
+    final bool openTxPage = network.coinParam.hasTransactionExplorer;
     final Widget successTrText = Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         CircleTokenImageView(network.coinParam.token,
             radius: APPConst.double80),
-        WidgetConstant.height20,
-        WidgetConstant.checkCircle,
         Text(network.coinParam.token.name, style: context.textTheme.labelLarge),
         WidgetConstant.height20,
         ListView.separated(
             shrinkWrap: true,
             itemBuilder: (context, index) {
+              final id = txIds[index];
               return ContainerWithBorder(
-                  child: CopyTextIcon(
-                      isSensitive: false,
-                      dataToCopy: txId[index],
-                      widget: OneLineTextWidget(txId[index])));
+                  child: Row(
+                children: [
+                  Expanded(
+                    child: CopyableTextWidget(
+                        isSensitive: false,
+                        text: txIds[index],
+                        color: context.onPrimaryContainer),
+                  ),
+                  if (openTxPage)
+                    IconButton(
+                        onPressed: () {
+                          final addr =
+                              network.coinParam.getTransactionExplorer(id);
+                          UriUtils.lunch(addr);
+                        },
+                        icon: Icon(Icons.open_in_new,
+                            color: context.colors.onPrimaryContainer))
+                ],
+              ));
             },
             separatorBuilder: (context, index) => WidgetConstant.divider,
-            itemCount: txId.length),
+            itemCount: txIds.length),
         WidgetConstant.height20,
-        if (network.coinParam.hasTransactionExplorer)
-          FilledButton.icon(
-              onPressed: () {
-                for (final i in txId) {
-                  final addr = network.coinParam.getTransactionExplorer(i);
-                  UriUtils.lunch(addr);
-                }
-              },
-              icon: const Icon(Icons.open_in_browser),
-              label: Text("view_on_explorer".tr)),
+        if (additionalWidget != null) additionalWidget!(context),
+        ErrorTextContainer(error: error),
       ],
     );
 
@@ -283,7 +302,7 @@ class ProgressMultipleTextView extends StatelessWidget {
             itemBuilder: (context, index) {
               final txt = texts[index];
               return ContainerWithBorder(
-                  onTapWhenOnRemove: false,
+                  enableTap: false,
                   onRemove: () {},
                   onRemoveIcon: txt.isSuccess
                       ? IconButton(

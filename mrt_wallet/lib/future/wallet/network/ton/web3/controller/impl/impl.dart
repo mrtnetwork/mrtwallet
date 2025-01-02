@@ -18,7 +18,7 @@ abstract class Web3TonImpl<RESPONSE, T extends Web3TonRequestParam<RESPONSE>>
   final WalletProvider walletProvider;
   final TheOpenNetworkChain account;
   WalletTonNetwork get network => account.network;
-  TonClient get apiProvider => account.provider()!;
+  TonClient get apiProvider => account.client;
   ITonAddress get address => request.accountPermission()!;
 
   final Web3TonRequest<RESPONSE, T> request;

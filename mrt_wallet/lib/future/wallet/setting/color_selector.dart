@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 typedef OnSelectColor = void Function(Color?);
 
 class ColorSelectorIconView extends StatelessWidget {
-  const ColorSelectorIconView(this.onSelectColor, {Key? key}) : super(key: key);
+  const ColorSelectorIconView(this.onSelectColor, {super.key});
   final OnSelectColor onSelectColor;
 
   @override
@@ -25,8 +25,7 @@ class ColorSelectorIconView extends StatelessWidget {
 
 class BrightnessToggleIcon extends StatelessWidget {
   const BrightnessToggleIcon(
-      {required this.onToggleBrightness, required this.brightness, Key? key})
-      : super(key: key);
+      {required this.onToggleBrightness, required this.brightness, super.key});
   final DynamicVoid onToggleBrightness;
   final Brightness brightness;
 
@@ -41,7 +40,7 @@ class BrightnessToggleIcon extends StatelessWidget {
 }
 
 class ColorSelectorModal extends StatelessWidget {
-  const ColorSelectorModal({Key? key}) : super(key: key);
+  const ColorSelectorModal({super.key});
   static const List<Color> defaultColors = [
     Colors.red,
     Colors.pink,

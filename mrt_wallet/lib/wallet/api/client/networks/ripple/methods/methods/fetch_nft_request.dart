@@ -1,7 +1,8 @@
 import 'package:mrt_wallet/wallet/models/networks/ripple/models/nft.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 
-class XRPRPCAccountNFTs extends XRPLedgerRequest<List<XRPNFToken>> {
+class XRPRPCAccountNFTs
+    extends XRPLedgerRequest<List<XRPNFToken>, Map<String, dynamic>> {
   XRPRPCAccountNFTs({
     required this.account,
     this.limit,

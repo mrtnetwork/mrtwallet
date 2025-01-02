@@ -5,8 +5,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 
 class Web3ClientInfoView extends StatelessWidget {
-  const Web3ClientInfoView({required this.permission, this.info, Key? key})
-      : super(key: key);
+  const Web3ClientInfoView({required this.permission, this.info, super.key});
   final Web3APPAuthentication permission;
   final Web3RequestApplicationInformation? info;
 
@@ -23,7 +22,7 @@ class Web3ClientInfoView extends StatelessWidget {
             children: [
               CircleAPPImageView(
                 info?.info.image ?? permission.icon,
-                radius: 35,
+                radius: APPConst.circleRadius25,
                 onError: (c) =>
                     const Icon(Icons.broken_image, size: APPConst.double40),
               ),
@@ -33,10 +32,10 @@ class Web3ClientInfoView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(permission.applicationId,
-                      style: context.textTheme.labelLarge),
+                      style: context.onPrimaryTextTheme.labelLarge),
                   OneLineTextWidget(
                     info?.info.name ?? permission.name,
-                    style: context.textTheme.bodySmall,
+                    style: context.onPrimaryTextTheme.bodySmall,
                   ),
                 ],
               )),

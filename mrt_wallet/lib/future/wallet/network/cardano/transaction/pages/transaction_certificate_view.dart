@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/utils/utils.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -16,18 +17,26 @@ class CardanoTransactionCertificateView extends StatefulWidget {
 
 class _CardanoTransactionCertificateViewState
     extends State<CardanoTransactionCertificateView> with SafeState {
+  ReceiptAddress<ADAAddress>? reward;
+  ICardanoAddress? address;
+  String? poolId;
   ADATransactionCertificateType type =
       ADATransactionCertificateType.registraction;
 
-  bool get isReady => reward != null && address != null;
+  bool isReady = false;
+
+  void checkIsReady() {
+    isReady = reward != null && address != null;
+    if (type == ADATransactionCertificateType.delegation) {
+      isReady &= poolId != null;
+    }
+    updateState();
+  }
 
   void onChageCertificate(ADATransactionCertificateType? newCertificate) {
     type = newCertificate ?? type;
-    setState(() {});
+    checkIsReady();
   }
-
-  ReceiptAddress<ADARewardAddress>? reward;
-  ICardanoAddress? address;
 
   bool _validateRewardAccount(ICardanoAddress addr) {
     if (addr.rewardAddress == null) {
@@ -41,28 +50,53 @@ class _CardanoTransactionCertificateViewState
     if (addr == null) return;
     if (_validateRewardAccount(addr)) {
       address = addr;
-      reward = ReceiptAddress<ADARewardAddress>(
+      reward = ReceiptAddress<ADAAddress>(
           view: addr.rewardAddress!.address,
           type: addr.rewardAddress!.addressType.name,
           networkAddress: addr.rewardAddress!,
-          account: addr as NETWORKCHAINACCOUNT<ADARewardAddress>);
-      setState(() {});
+          account: addr);
+      checkIsReady();
     }
   }
 
+  void onSetupPoolId(String? poolId) {
+    if (poolId?.trim().length != CardanoConst.poolIDbech32Length) {
+      this.poolId = null;
+    } else {
+      this.poolId = poolId;
+    }
+    checkIsReady();
+  }
+
+  String? validatePoolId(String? v) {
+    if (v?.trim().length != CardanoConst.poolIDbech32Length) {
+      return "cardano_pool_id_validator".tr;
+    }
+    final poolid =
+        MethodUtils.nullOnException(() => Ed25519PoolKeyHash.fromBech32(v!));
+    if (poolid == null) return "cardano_pool_id_validator".tr;
+    return null;
+  }
+
   ADACertificateBuilder toCertificateBuilder() {
+    final credential =
+        reward!.networkAddress.cast<ADARewardAddress>().paymentCredential;
     switch (type) {
       case ADATransactionCertificateType.deregistration:
         return ADACertificateBuilder(
-            certificate:
-                StakeDeregistration(reward!.networkAddress.paymentCredential),
+            certificate: StakeDeregistration(credential),
             signer: reward!.networkAddress);
       case ADATransactionCertificateType.registraction:
         return ADACertificateBuilder(
-            certificate:
-                StakeRegistration(reward!.networkAddress.paymentCredential));
+            certificate: StakeRegistration(credential));
       default:
-        throw UnimplementedError();
+        final poolid = Ed25519PoolKeyHash.fromBech32(poolId!);
+        return ADACertificateBuilder(
+            signer: reward!.networkAddress,
+            certificate: StakeDelegation(
+              stakeCredential: credential,
+              poolKeyHash: poolid,
+            ));
     }
   }
 
@@ -85,8 +119,9 @@ class _CardanoTransactionCertificateViewState
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("certificate_type".tr),
+        Text("certificate_type".tr, style: context.textTheme.titleMedium),
         Text("add_certificate_to_transaction_desc".tr),
         WidgetConstant.height8,
         AppDropDownBottom(
@@ -94,8 +129,9 @@ class _CardanoTransactionCertificateViewState
             for (final i in ADATransactionCertificateType.values)
               i: Text(i.viewName.tr)
           },
-          label: "certificate_type".tr,
+          hint: "certificate_type".tr,
           onChanged: onChageCertificate,
+          value: type,
         ),
         WidgetConstant.height20,
         ReceiptAddressView(
@@ -104,7 +140,7 @@ class _CardanoTransactionCertificateViewState
             context
                 .openSliverBottomSheet<ICardanoAddress>(
                   "select_account".tr,
-                  child: SwitchOrSelectAccountView(
+                  child: SwitchOrSelectAccountView<ICardanoAddress>(
                     account: widget.account,
                     showMultiSig: true,
                   ),
@@ -117,6 +153,51 @@ class _CardanoTransactionCertificateViewState
           },
           address: reward,
         ),
+        APPAnimatedSwitcher(enable: type, widgets: {
+          ADATransactionCertificateType.delegation: (context) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WidgetConstant.height20,
+                Text("pool_id".tr, style: context.textTheme.titleMedium),
+                Text("cardano_enter_pool_id_desc".tr),
+                WidgetConstant.height8,
+                ContainerWithBorder(
+                    onRemoveIcon: Icon(
+                      Icons.add_box,
+                      color: context.onPrimaryContainer,
+                    ),
+                    validate: poolId != null,
+                    onRemove: () {
+                      context
+                          .openSliverBottomSheet<String>(
+                            "pool_id".tr,
+                            child: StringWriterView(
+                              customForm: validatePoolId,
+                              title: PageTitleSubtitle(
+                                  title: "pool_id".tr,
+                                  body: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text("cardano_enter_pool_id_desc".tr),
+                                    ],
+                                  )),
+                              buttonText: "setup_pool_id".tr,
+                              label: "pool_id".tr,
+                            ),
+                          )
+                          .then(onSetupPoolId);
+                    },
+                    child: Text(
+                      poolId ?? "tap_to_input_value".tr,
+                      style:
+                          context.colors.onPrimaryContainer.bodyMedium(context),
+                    )),
+              ],
+            );
+          }
+        }),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

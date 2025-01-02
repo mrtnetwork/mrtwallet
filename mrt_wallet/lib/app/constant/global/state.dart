@@ -13,4 +13,5 @@ class StateConst {
   static const String setup = "setup";
   static const String stellar = "stellar";
   static const String webview = "webview";
+  static const String monero = "monero";
 }

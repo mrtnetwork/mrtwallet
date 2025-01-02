@@ -34,7 +34,7 @@ class RippleRegularKeyForm implements RippleTransactionForm {
   XRPTransaction toTransaction(XRPAddress account,
       {List<XRPLMemo> memos = const [], XRPLSignature? signer, BigInt? fee}) {
     return SetRegularKey(
-      regularKey: regularKey.value!.networkAddress.address,
+      regularKey: regularKey.value?.networkAddress.address,
       account: account.toAddress(),
       sourceTag: account.tag,
       memos: RippleUtils.toXrplMemos(memos),

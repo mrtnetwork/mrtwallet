@@ -9,7 +9,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 enum _Pages { restore, content }
 
 class RestoreBackupView extends StatefulWidget {
-  const RestoreBackupView({Key? key, this.accepted}) : super(key: key);
+  const RestoreBackupView({super.key, this.accepted});
   final MrtBackupTypes? accepted;
 
   @override
@@ -119,7 +119,7 @@ class _RestoreBackupViewState extends State<RestoreBackupView> with SafeState {
 }
 
 class _RestoreBackupContentPage extends StatelessWidget {
-  const _RestoreBackupContentPage(this.state, {Key? key}) : super(key: key);
+  const _RestoreBackupContentPage(this.state);
   final _RestoreBackupViewState state;
 
   @override
@@ -156,7 +156,7 @@ class _RestoreBackupContentPage extends StatelessWidget {
 }
 
 class _RestoreBackupRestorePage extends StatelessWidget {
-  const _RestoreBackupRestorePage(this.state, {Key? key}) : super(key: key);
+  const _RestoreBackupRestorePage(this.state);
   final _RestoreBackupViewState state;
   @override
   Widget build(BuildContext context) {

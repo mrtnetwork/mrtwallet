@@ -14,7 +14,7 @@ class BTCUtils {
     if (opReturn.script.isEmpty) return null;
     if (opReturn.script.length == 1) return opReturn.script.first;
     final opData = opReturn.script.sublist(1);
-    List<String> decodedData = [];
+    final List<String> decodedData = [];
     for (final i in opData) {
       final toBytes = BytesUtils.fromHexString(i);
       try {
@@ -32,11 +32,11 @@ class BTCUtils {
     switch (addressType) {
       case P2pkhAddressType.p2pkh:
         return "Pay to Public Key Hash (P2PKH)";
-      case SegwitAddresType.p2wpkh:
+      case SegwitAddressType.p2wpkh:
         return "Pay to Witness Public Key Hash (P2WPKH)";
-      case SegwitAddresType.p2tr:
+      case SegwitAddressType.p2tr:
         return "Pay to Taproot (P2TR)";
-      case SegwitAddresType.p2wsh:
+      case SegwitAddressType.p2wsh:
         return "Pay to Witness Script Hash (P2WSH)";
       case P2shAddressType.p2wshInP2sh:
         return "Pay to Witness Script Hash in Pay to Script Hash (P2WSH-in-P2SH)";

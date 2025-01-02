@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/wallet/global/pages/token_details.dart';
+import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
@@ -12,7 +12,7 @@ class SolanaAccountPageView extends StatelessWidget {
   final SolanaChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    return TabBarView(children: [
+    return TabBarView(physics: WidgetConstant.noScrollPhysics, children: [
       const _SolanaServices(),
       _SolanaTokenView(account: chainAccount),
     ]);
@@ -63,38 +63,21 @@ class _SolanaTokenView extends StatelessWidget {
                 WidgetConstant.divider
               ],
             )),
-      SliverList.builder(
+      SliverList.separated(
+        separatorBuilder: (context, index) => WidgetConstant.divider,
         itemBuilder: (context, index) {
           final SolanaSPLToken token = address.tokens[index];
-          return ContainerWithBorder(
-            onRemove: () {
+          return TokenDetailsView(
+            onSelectWidget: WidgetConstant.sizedBox,
+            onSelect: () {
               context.openDialogPage<TokenAction>("token_info".tr,
                   child: (ctx) => TokenDetailsModalView(
-                        token: token,
-                        address: address,
-                        account: account,
-                        transferPath: PageRouter.solanaTransfer,
-                      ));
+                      token: token,
+                      address: address,
+                      account: account,
+                      transferPath: PageRouter.solanaTransfer));
             },
-            onRemoveWidget: WidgetConstant.sizedBox,
-            child: Row(
-              children: [
-                CircleTokenImageView(token.token, radius: 40),
-                WidgetConstant.width8,
-                Expanded(
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(token.token.name, style: context.textTheme.labelLarge),
-                    Text(token.issuer!, style: context.textTheme.bodySmall),
-                    CoinPriceView(
-                        liveBalance: token.balance,
-                        token: token.token,
-                        style: context.textTheme.titleLarge),
-                  ],
-                )),
-              ],
-            ),
+            token: token,
           );
         },
         itemCount: address.tokens.length,
@@ -149,6 +132,14 @@ class _SolanaServices extends StatelessWidget {
                 final validator = LiveTransactionForm<SolanaMintToForm>(
                     validator: SolanaMintToForm());
                 context.to(PageRouter.solanaTransaction, argruments: validator);
+              },
+            ),
+            AppListTile(
+              leading: const Icon(Icons.password),
+              title: Text("solana_key_conversion".tr),
+              subtitle: Text("solana_key_conversion_desc".tr),
+              onTap: () {
+                context.to(PageRouter.solanaKeyConversion);
               },
             ),
           ],

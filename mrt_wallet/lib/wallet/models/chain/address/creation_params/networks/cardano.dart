@@ -1,7 +1,9 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/coins/coins.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/cardano/cardano.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
@@ -77,11 +79,15 @@ class CardanoNewAddressParams implements NewAccountParams<ADAAddress> {
   }
 
   @override
-  ICardanoAddress toAccount(WalletNetwork network, List<int> publicKey) {
+  ICardanoAddress toAccount(
+      WalletNetwork network, CryptoPublicKeyData? publicKey) {
+    if (publicKey == null) {
+      throw WalletExceptionConst.pubkeyRequired;
+    }
     return ICardanoAddress.newAccount(
         accountParams: this,
-        publicKey: publicKey,
-        network: network as WalletCardanoNetwork);
+        publicKey: addressDetails!.publicKey,
+        network: network.toNetwork());
   }
 
   @override

@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/exception/rpc_error.dart';
+import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/string/string.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/core/exception/exception.dart';
@@ -14,6 +14,7 @@ class Web3RequestExceptionConst {
   static Web3RequestException get invalidSignMessageData => invalidParameters(
       "Invalid message bytes. message must be a valid bytes like Uint8Array");
   static Web3RequestException fromException(Object exception) {
+    if (exception is Web3RequestException) return exception;
     if (exception is RPCError) {
       return Web3RequestException(
           message: exception.message,
@@ -22,10 +23,12 @@ class Web3RequestExceptionConst {
           data: StringUtils.tryFromJson(exception.details));
     } else if (exception is ApiProviderException) {
       return Web3RequestException(
-          message: "The Provider is disconnected.",
+          message: exception.message ?? "The Provider is disconnected.",
           code: 4901,
           walletCode: "WALLET-001",
-          data: exception.isTimeout ? requestTimeoutMessage : null);
+          data: exception.isTimeout
+              ? requestTimeoutMessage
+              : exception.toString());
     }
     return internalError;
   }

@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/bip/substrate/conf/substrate_coins.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
@@ -44,7 +44,7 @@ class BipDerivationUtils {
       throw WalletException("Invalid_coin_default_path");
     }
 
-    List<int?> indexKeyes = List.from([
+    final List<int?> indexKeyes = List.from([
       def.elems.elementAtOrNull(0)!.index,
       def.elems.elementAtOrNull(1)?.index,
       def.elems.elementAtOrNull(2)?.index,

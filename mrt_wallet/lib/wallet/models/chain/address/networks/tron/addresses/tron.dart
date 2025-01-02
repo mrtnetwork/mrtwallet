@@ -24,15 +24,13 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
       required this.address,
       required this.network,
       required this.networkAddress,
-      required List<TronTRC20Token> trc20Token,
-      required List<TronTRC10Token> trc10Token,
+      required List<TronToken> tokens,
       required List<NFTCore> nfts,
       String? accountName,
       TronAccountInfo? accountInfo,
       TronAccountResourceInfo? resource})
       : publicKey = List.unmodifiable(publicKey),
-        _trc10Tokens = List<TronTRC10Token>.unmodifiable(trc10Token),
-        _trc20Token = List<TronTRC20Token>.unmodifiable(trc20Token),
+        _tokens = tokens.immutable,
         _nfts = List.unmodifiable(nfts),
         _accountName = accountName,
         _account = Live(accountInfo),
@@ -53,8 +51,8 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
       keyIndex: accountParams.deriveIndex,
       networkAddress: tronAddress,
       network: network.value,
-      trc10Token: const [],
-      trc20Token: const [],
+      tokens: const [],
+      // trc20Token: const [],
       nfts: const [],
     );
   }
@@ -88,16 +86,16 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
 
     final TronAddress ethAddress = TronAddress(cbor.elementAt(5));
 
-    final List<TronTRC20Token> trc20Tokens = (cbor.elementAt(7) as List?)
-            ?.map((e) => TronTRC20Token.fromCborBytesOrObject(obj: e))
-            .toList() ??
-        <TronTRC20Token>[];
-
-    final List<TronTRC10Token> trc10Tokens = (cbor.elementAt(8) as List?)
-            ?.map((e) => TronTRC10Token.fromCborBytesOrObject(obj: e))
-            .toList() ??
-        <TronTRC10Token>[];
-
+    final List<TronToken> tokens = [
+      ...cbor
+          .elementAsListOf<CborTagValue>(7)
+          .map((e) => TronToken.deserialize(object: e)),
+      ...cbor
+              .elementAs<CborListValue?>(8)
+              ?.value
+              .map((e) => TronToken.deserialize(object: e)) ??
+          []
+    ];
     final String? accountName = cbor.elementAt(10);
     final account = cbor.getCborTag(11);
     final resource = cbor.getCborTag(12);
@@ -108,8 +106,7 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
         keyIndex: keyIndex,
         networkAddress: ethAddress,
         network: networkId,
-        trc20Token: trc20Tokens,
-        trc10Token: trc10Tokens,
+        tokens: tokens,
         nfts: [],
         accountName: accountName,
         accountInfo: account == null
@@ -150,10 +147,8 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
           address.toCbor(),
           networkAddress.toAddress(),
           network,
-          CborListValue.fixedLength(
-              _trc20Token.map((e) => e.toCbor()).toList()),
-          CborListValue.fixedLength(
-              _trc10Tokens.map((e) => e.toCbor()).toList()),
+          CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
+          CborNullValue(),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
           accountName ?? const CborNullValue(),
           _account.value?.toCbor(),
@@ -173,59 +168,34 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
   @override
   String? get type => null;
 
-  List<TronTRC20Token> _trc20Token;
+  List<TronToken> _tokens;
   @override
-  List<TronTRC20Token> get tokens => _trc20Token;
-  List<TronTRC10Token> _trc10Tokens;
-  List<TronTRC10Token> get trc10Tokens => _trc10Tokens;
+  List<TronToken> get tokens => _tokens;
   List<NFTCore> _nfts;
   @override
   List<NFTCore> get nfts => _nfts;
 
   @override
   void addToken(TronToken newToken) {
-    if (_trc20Token.contains(newToken)) {
+    if (_tokens.contains(newToken)) {
       throw WalletExceptionConst.tokenAlreadyExist;
     }
-    if (_trc10Tokens.contains(newToken)) {
-      throw WalletExceptionConst.tokenAlreadyExist;
-    }
-    if (newToken is TronTRC20Token) {
-      _trc20Token = List.unmodifiable([newToken, ..._trc20Token]);
-    } else {
-      _trc10Tokens = List.unmodifiable([newToken, ..._trc10Tokens]);
-    }
+    _tokens = [newToken, ..._tokens].imutable;
   }
 
   @override
   void updateToken(TronToken token, Token updatedToken) {
-    if (tokens.contains(token)) {
-      token as TronTRC20Token;
-      List<TronTRC20Token> existTokens = List<TronTRC20Token>.from(_trc20Token);
-      existTokens.removeWhere((element) => element == token);
-      existTokens = [token.updateToken(updatedToken), ...existTokens];
-      _trc20Token = List.unmodifiable(existTokens);
-    } else if (_trc10Tokens.contains(token)) {
-      token as TronTRC10Token;
-      List<TronTRC10Token> existTokens =
-          List<TronTRC10Token>.from(_trc10Tokens);
-      existTokens.removeWhere((element) => element == token);
-      existTokens = [token.updateToken(updatedToken), ...existTokens];
-      _trc10Tokens = List.unmodifiable(existTokens);
-    }
+    List<TronToken> existTokens = List<TronToken>.from(_tokens);
+    existTokens.removeWhere((element) => element == token);
+    existTokens = [token.updateToken(updatedToken), ...existTokens];
+    _tokens = List.unmodifiable(existTokens);
   }
 
   @override
   void removeToken(TronToken token) {
-    if (tokens.contains(token)) {
-      final existTokens = List.from(_trc20Token);
-      existTokens.removeWhere((element) => element == token);
-      _trc20Token = List.unmodifiable(existTokens);
-    } else if (_trc10Tokens.contains(token)) {
-      final existTokens = List.from(_trc10Tokens);
-      existTokens.removeWhere((element) => element == token);
-      _trc10Tokens = List.unmodifiable(existTokens);
-    }
+    final existTokens = List.from(_tokens);
+    existTokens.removeWhere((element) => element == token);
+    _tokens = List.unmodifiable(existTokens);
   }
 
   @override
@@ -261,8 +231,8 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
     _account.value = tronAcc;
     if (tronAcc != null) {
       for (final i in tronAcc.assetV2) {
-        final token = MethodUtils.nullOnException(() =>
-            _trc10Tokens.firstWhere((element) => element.tokenID == i.key));
+        final token = MethodUtils.nullOnException(
+            () => _tokens.firstWhere((element) => element.issuer == i.key));
         token?.updateBalance(i.value);
       }
     }
@@ -291,16 +261,12 @@ class ITronMultisigAddress extends ITronAddress
       required super.coin,
       required super.networkAddress,
       required super.nfts,
-      required super.trc10Token,
-      required super.trc20Token,
+      required super.tokens,
       required super.accountInfo,
       required super.resource,
       required this.multiSignatureAccount,
-      String? accountName})
-      : super._(
-            keyIndex: const MultiSigAddressIndex(),
-            publicKey: const [],
-            accountName: accountName);
+      super.accountName})
+      : super._(keyIndex: const MultiSigAddressIndex(), publicKey: const []);
 
   factory ITronMultisigAddress.newAccount(
       {required TronMultisigNewAddressParams accountParams,
@@ -315,8 +281,7 @@ class ITronMultisigAddress extends ITronAddress
         address: addressDetauls,
         networkAddress: accountParams.masterAddress,
         network: network.value,
-        trc10Token: const [],
-        trc20Token: const [],
+        tokens: const [],
         accountInfo: null,
         resource: null,
         accountName: null,
@@ -345,15 +310,16 @@ class ITronMultisigAddress extends ITronAddress
 
     final TronAddress ethAddress = TronAddress(cbor.elementAt(5));
 
-    final List<TronTRC20Token> trc20Tokens = (cbor.elementAt(7) as List?)
-            ?.map((e) => TronTRC20Token.fromCborBytesOrObject(obj: e))
-            .toList() ??
-        <TronTRC20Token>[];
-
-    final List<TronTRC10Token> trc10Tokens = (cbor.elementAt(8) as List?)
-            ?.map((e) => TronTRC10Token.fromCborBytesOrObject(obj: e))
-            .toList() ??
-        <TronTRC10Token>[];
+    final List<TronToken> tokens = [
+      ...cbor
+          .elementAsListOf<CborTagValue>(7)
+          .map((e) => TronToken.deserialize(object: e)),
+      ...cbor
+              .elementAs<CborListValue?>(8)
+              ?.value
+              .map((e) => TronToken.deserialize(object: e)) ??
+          []
+    ];
 
     final String? accountName = cbor.elementAt(10);
     final account = cbor.getCborTag(11);
@@ -364,8 +330,7 @@ class ITronMultisigAddress extends ITronAddress
         address: address,
         networkAddress: ethAddress,
         network: networkId,
-        trc20Token: trc20Tokens,
-        trc10Token: trc10Tokens,
+        tokens: tokens,
         nfts: [],
         accountName: accountName,
         accountInfo: account == null
@@ -395,10 +360,8 @@ class ITronMultisigAddress extends ITronAddress
           address.toCbor(),
           networkAddress.toAddress(),
           network,
-          CborListValue.fixedLength(
-              _trc20Token.map((e) => e.toCbor()).toList()),
-          CborListValue.fixedLength(
-              _trc10Tokens.map((e) => e.toCbor()).toList()),
+          CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
+          CborNullValue(),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
           accountName ?? const CborNullValue(),
           _account.value?.toCbor(),

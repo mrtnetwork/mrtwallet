@@ -1,7 +1,7 @@
 part of '../scripts.dart';
 
 class StellarPageController extends PageNetworkController {
-  StellarPageController();
+  StellarPageController(super.postMessage);
   ProxyMethodHandler<StellarWalletAdapter>? _stellar;
   ProxyMethodHandler<StellarWalletAdapter> _createAdapter() {
     final adapter = StellarWalletAdapter(JSObject());
@@ -69,7 +69,7 @@ class StellarPageController extends PageNetworkController {
     if (!_listeners.containsKey(type)) return;
     final listeners = <JSFunction>[..._listeners[type]!];
     for (final i in listeners) {
-      i.callAsFunction(i, jsObject);
+      i.callAsFunction(null, jsObject);
     }
   }
 

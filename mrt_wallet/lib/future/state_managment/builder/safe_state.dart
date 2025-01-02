@@ -6,6 +6,11 @@ mixin SafeState<T extends StatefulWidget> on State<T> {
   bool get closed => _closed;
   @override
   bool get mounted => !_closed && _builded && super.mounted;
+
+  void onInitOnce() {}
+
+  void safeDispose() {}
+
   @override
   void setState(VoidCallback fn) {
     if (!mounted) return;
@@ -15,6 +20,9 @@ mixin SafeState<T extends StatefulWidget> on State<T> {
   @override
   void dispose() {
     _closed = true;
+    try {
+      safeDispose();
+    } catch (_) {}
     super.dispose();
   }
 
@@ -23,6 +31,7 @@ mixin SafeState<T extends StatefulWidget> on State<T> {
   @override
   void didChangeDependencies() {
     navigatorKey ??= context.navigatorKey;
+    if (!_builded) onInitOnce();
     _builded = true;
     super.didChangeDependencies();
   }
@@ -30,4 +39,8 @@ mixin SafeState<T extends StatefulWidget> on State<T> {
   void updateState([VoidCallback? fn]) {
     setState(fn ?? () {});
   }
+}
+
+mixin ProgressMixin<T extends StatefulWidget> on State<T> {
+  final GlobalKey<PageProgressState> progressKey = GlobalKey();
 }

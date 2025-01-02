@@ -6,12 +6,13 @@ import 'package:mrt_wallet/future/wallet/network/bitcoin/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/cardano/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/cosmos/cosmos.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/account/pages/account.dart';
+import 'package:mrt_wallet/future/wallet/network/monero/monero.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/substrate.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/account/account.dart';
-import 'package:mrt_wallet/future/wallet/network/tron/transaction/account/account.dart';
+import 'package:mrt_wallet/future/wallet/network/tron/account/account.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
@@ -29,11 +30,13 @@ class NetworkAccountPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final chainAccount = wallet.wallet.chain;
+
     return Scaffold(
       bottomNavigationBar: _BottomAppBar(wallet),
       body: LiveWidget(() {
-        final status = chainAccount.provider()?.status.value;
-        final bool isConnect = !(status?.isConnect ?? false);
+        final chainStatus =
+            NetworkClientConnectionSliverHeaderDelegate.detectStatus(
+                chainAccount);
         return DefaultTabController(
           length: chainAccount.services.length,
           child: NestedScrollView(
@@ -54,7 +57,7 @@ class NetworkAccountPageView extends StatelessWidget {
               return NoAccountFoundInChainWidget(chainAccount);
             }
             return IgnorePointer(
-              ignoring: isConnect,
+              ignoring: chainStatus == AccountPageAppbarStatus.provider,
               child: _AccountPageView(chainAccount),
             );
           })),
@@ -80,6 +83,8 @@ class _AccountPageView extends StatelessWidget {
         return RippleAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.solana:
         return SolanaAccountPageView(chainAccount: chainAccount.cast());
+      case NetworkType.monero:
+        return MoneroAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.stellar:
         return StellarAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.ethereum:
@@ -96,7 +101,8 @@ class _AccountPageView extends StatelessWidget {
       case NetworkType.cosmos:
         return CosmosAccountPageView(chainAccount: chainAccount.cast());
       default:
-        return const TabBarView(children: []);
+        return const TabBarView(
+            physics: WidgetConstant.noScrollPhysics, children: []);
     }
   }
 }
@@ -173,8 +179,8 @@ class _BottomAppBar extends StatelessWidget {
                 IconButton(
                     tooltip: "switch_network".tr,
                     onPressed: () async {
-                      context
-                          .openDialogPage<int>(
+                      await context
+                          .openDialogPage(
                         "switch_network".tr,
                         fullWidget: SwitchNetworkView(
                           selectedNetwork: wallet.wallet.network,
@@ -183,10 +189,10 @@ class _BottomAppBar extends StatelessWidget {
                           .then(
                         (value) {
                           if (value == null) return;
-                          if (value.isNegative) {
-                            context.to(PageRouter.importEthereumNetwork);
-                          } else {
+                          if (value is int) {
                             wallet.wallet.switchNetwork(value);
+                          } else {
+                            context.mybeTo(PageRouter.importNetwork(value));
                           }
                         },
                       );

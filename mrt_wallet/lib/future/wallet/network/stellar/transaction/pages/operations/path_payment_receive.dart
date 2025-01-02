@@ -13,8 +13,7 @@ class PathPaymentStrictReceiveOperationView extends StatefulWidget {
   final StellarTransactionStateController controller;
   final StellarPathPaymentStrictReceiveOperation? operation;
   const PathPaymentStrictReceiveOperationView(
-      {required this.controller, this.operation, Key? key})
-      : super(key: key);
+      {required this.controller, this.operation, super.key});
 
   @override
   State<PathPaymentStrictReceiveOperationView> createState() =>
@@ -26,10 +25,11 @@ class _PathPaymentStrictReceiveOperationViewState
     with SafeState, StellarOperationDestinationTracker {
   StellarTransactionStateController get controller => widget.controller;
   StellarChain get chain => controller.account;
+  @override
   StellarPickedIssueAsset? asset;
   StellarPickedIssueAsset? destAssets;
   @override
-  late final StellarClient client = chain.provider()!;
+  StellarClient get client => chain.client;
   bool get isNative => asset?.asset.type.isNative ?? false;
   late IntegerBalance amount = IntegerBalance.zero(chain.network.coinDecimal);
   late IntegerBalance destAmount =
@@ -71,7 +71,7 @@ class _PathPaymentStrictReceiveOperationViewState
     }
     final inAccount = controller.accountInfo.getAsset(asset.asset);
     if (inAccount != null) {
-      StellarIssueToken? token = chain.address.tokens.firstWhere(
+      final StellarIssueToken token = chain.address.tokens.firstWhere(
           (e) =>
               e.issuer == inAccount.assetIssuer &&
               e.token.symbol == inAccount.assetCode,
@@ -198,54 +198,20 @@ class _PathPaymentStrictReceiveOperationViewState
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: asset != null,
-          iconAlginment: asset == null
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
-          onRemoveIcon: asset == null
-              ? Icon(
-                  Icons.add_box,
-                  color: context.colors.onPrimaryContainer,
-                )
-              : Icon(
-                  Icons.edit,
-                  color: context.colors.onPrimaryContainer,
-                ),
+          onRemoveIcon: AddOrEditIconWidget(asset != null),
           child: asset == null
-              ? Text("tap_to_select_or_create_asset".tr)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (asset!.asset.type.isNative) ...[
-                      Text(asset!.asset.type.name,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      WidgetConstant.height8,
-                      ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
-                        child: TokenDetailsWidget(
-                          token: asset!.token,
-                          liveBalance: chain.address.address.balance,
-                          color: context.colors.primaryContainer,
-                        ),
-                      )
-                    ] else ...[
-                      Text(asset!.asset.type.name,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      OneLineTextWidget(asset!.issuer ?? '',
-                          style: context.colors.onPrimaryContainer
-                              .bodyMedium(context)),
-                      ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
-                        onTapWhenOnRemove: false,
-                        child: TokenDetailsWidget(
-                          token: asset!.currentToken,
-                          balance: asset?.tokenBalance,
-                          color: context.colors.primaryContainer,
-                        ),
-                      ),
-                    ]
-                  ],
+              ? Text("tap_to_select_or_create_asset".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium)
+              : TokenDetailsWidget(
+                  token: asset!.asset.type.isNative
+                      ? asset!.token
+                      : asset!.currentToken,
+                  balance: asset!.asset.type.isNative
+                      ? chain.address.address.balance.value
+                      : asset?.tokenBalance,
+                  color: context.onPrimaryContainer,
+                  radius: APPConst.circleRadius25,
+                  tokenAddress: asset!.issuer,
                 ),
           onRemove: () {
             context
@@ -288,7 +254,7 @@ class _PathPaymentStrictReceiveOperationViewState
 
 class _Amount extends StatelessWidget {
   final _PathPaymentStrictReceiveOperationViewState state;
-  const _Amount(this.state, {Key? key}) : super(key: key);
+  const _Amount(this.state);
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +270,7 @@ class _Amount extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "send_max".tr,
+                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: state.asset!.token,
@@ -317,7 +284,7 @@ class _Amount extends StatelessWidget {
         ),
         WidgetConstant.height20,
         ReceiptAddressView(
-          onTapWhenOnRemove: state.receiver == null,
+          enableTap: state.receiver == null,
           title: "destination".tr,
           subtitle: "stellar_path_receive_destination_desc".tr,
           address: state.receiver?.address,
@@ -384,32 +351,15 @@ class _Amount extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: state.destAssets != null,
-          iconAlginment: state.destAssets == null
-              ? CrossAxisAlignment.center
-              : CrossAxisAlignment.start,
-          onRemoveIcon: state.destAssets == null
-              ? Icon(Icons.add_box, color: context.colors.onPrimaryContainer)
-              : Icon(Icons.edit, color: context.colors.onPrimaryContainer),
+          onRemoveIcon: AddOrEditIconWidget(state.destAssets != null),
           child: state.destAssets == null
-              ? Text("tap_to_select_or_create_asset".tr)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(state.destAssets!.asset.type.name,
-                        style: context.colors.onPrimaryContainer
-                            .lableLarge(context)),
-                    OneLineTextWidget(state.destAssets!.issuer ?? '',
-                        style: context.colors.onPrimaryContainer
-                            .bodyMedium(context)),
-                    ContainerWithBorder(
-                      backgroundColor: context.colors.onPrimaryContainer,
-                      child: TokenDetailsWidget(
-                          token: state.destAssets!.token,
-                          radius: APPConst.iconSize,
-                          color: context.colors.primaryContainer),
-                    ),
-                  ],
-                ),
+              ? Text("tap_to_select_or_create_asset".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium)
+              : TokenDetailsWidget(
+                  token: state.destAssets!.token,
+                  radius: APPConst.circleRadius25,
+                  tokenAddress: state.destAssets!.issuer,
+                  color: context.colors.onPrimaryContainer),
           onRemove: () {
             context
                 .openSliverDialog<StellarPickedIssueAsset>(
@@ -451,6 +401,7 @@ class _Amount extends StatelessWidget {
                       context
                           .openSliverBottomSheet<BigInt>(
                             "destination_amount".tr,
+                            initialExtend: 1,
                             child: SetupNetworkAmount(
                               buttonText: "setup_amount".tr,
                               token: state.destAssets!.token,
@@ -473,25 +424,12 @@ class _Amount extends StatelessWidget {
                     return ContainerWithBorder(
                       onRemoveIcon: Icon(Icons.remove_circle,
                           color: context.colors.onPrimaryContainer),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(asset.asset.type.name,
-                              style: context.colors.onPrimaryContainer
-                                  .lableLarge(context)),
-                          if (asset.issuer != null)
-                            OneLineTextWidget(asset.issuer ?? '',
-                                style: context.colors.onPrimaryContainer
-                                    .bodyMedium(context)),
-                          ContainerWithBorder(
-                            backgroundColor: context.colors.onPrimaryContainer,
-                            child: TokenDetailsWidget(
-                                token: asset.token,
-                                radius: APPConst.iconSize,
-                                color: context.colors.primaryContainer),
-                          ),
-                        ],
-                      ),
+                      enableTap: false,
+                      child: TokenDetailsWidget(
+                          token: asset.token,
+                          radius: APPConst.circleRadius25,
+                          tokenAddress: asset.issuer,
+                          color: context.onPrimaryContainer),
                       onRemove: () {
                         state.removeFromPathList(asset);
                       },
@@ -501,8 +439,9 @@ class _Amount extends StatelessWidget {
                       bool>(enable: state.paths.length < 5, widgets: {
                     true: (c) => ContainerWithBorder(
                           onRemoveIcon: Icon(Icons.add_box,
-                              color: context.colors.onPrimaryContainer),
-                          child: Text("tap_to_select_or_create_asset".tr),
+                              color: context.onPrimaryContainer),
+                          child: Text("tap_to_select_or_create_asset".tr,
+                              style: context.onPrimaryTextTheme.bodyMedium),
                           onRemove: () {
                             context
                                 .openSliverDialog<StellarPickedIssueAsset>(

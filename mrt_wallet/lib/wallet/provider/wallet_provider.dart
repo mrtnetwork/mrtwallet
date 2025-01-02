@@ -1,8 +1,11 @@
-library wallet_provier;
+library;
 
 import 'dart:async';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/isolate/types/types.dart';
+import 'package:mrt_wallet/crypto/requets/messages/stream/requests/monero_block_tracking.dart';
+
 import 'package:mrt_wallet/wallet/api/api.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
@@ -20,6 +23,7 @@ part 'controller/networks/ethereum.dart';
 part 'controller/networks/solana.dart';
 part 'controller/networks/ton.dart';
 part 'controller/networks/stellar.dart';
+part 'controller/networks/monero.dart';
 part 'core/core.dart';
 part 'impl/manager.dart';
 part 'impl/storage_impl.dart';

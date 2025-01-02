@@ -8,8 +8,7 @@ import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:stellar_dart/stellar_dart.dart';
 
 class StellarWeb3PermissionView extends StatefulWidget {
-  const StellarWeb3PermissionView({required this.permission, Key? key})
-      : super(key: key);
+  const StellarWeb3PermissionView({required this.permission, super.key});
   final Web3StellarChain? permission;
 
   @override
@@ -41,13 +40,9 @@ class _StellarWeb3PermissionViewState extends State<StellarWeb3PermissionView>
         passphrase: chain.network.coinParam.passphrase);
   }
 
-  bool _initialized = false;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_initialized) return;
-    _initialized = true;
+  void onInitOnce() {
+    super.onInitOnce();
     permission = widget.permission ?? Web3StellarChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<StellarChain>().toList();

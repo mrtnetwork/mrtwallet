@@ -39,7 +39,7 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
   }
 
   void onSetup() async {
-    await MethodUtils.wait(milliseconds: 200);
+    await MethodUtils.wait(duration: Duration(milliseconds: 200));
     if (mounted) {
       // ignore: use_build_context_synchronously
       context.pop((type, feeRate.balance));
@@ -63,26 +63,28 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
                 Text("transaction_fee_desc3".tr)
               ],
             )),
-        ...List.generate(
-          widget.fees.length,
-          (index) {
-            final keys = widget.fees.keys.toList();
-            return AppRadioListTile<String>(
-              value: keys[index],
-              title: Text(keys[index].camelCase),
-              subtitle: CoinPriceView(
-                balance: widget.fees[keys[index]],
-                token: widget.network.coinParam.token,
-                disableTooltip: true,
-                style: context.textTheme.titleLarge,
-              ),
-              groupValue: type,
-              onChanged: (value) {
-                onChange(value);
-              },
-            );
-          },
-        ),
+        ListView.separated(
+            shrinkWrap: true,
+            physics: WidgetConstant.noScrollPhysics,
+            itemBuilder: (context, index) {
+              final keys = widget.fees.keys.toList();
+              return AppRadioListTile<String>(
+                value: keys[index],
+                title: Text(keys[index].camelCase),
+                subtitle: CoinPriceView(
+                  balance: widget.fees[keys[index]],
+                  token: widget.network.coinParam.token,
+                  disableTooltip: true,
+                ),
+                groupValue: type,
+                onChanged: (value) {
+                  onChange(value);
+                },
+              );
+            },
+            separatorBuilder: (context, index) => WidgetConstant.divider,
+            itemCount: widget.fees.length),
+        WidgetConstant.divider,
         Column(children: [
           AppRadioListTile(
             value: null,
@@ -99,6 +101,7 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
             onChanged: (value) {
               context
                   .openSliverBottomSheet<BigInt>("setup_custom_fee".tr,
+                      initialExtend: 1,
                       child: SetupNetworkAmount(
                         token: widget.network.coinParam.token,
                         max: widget.max,
@@ -114,6 +117,7 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
             },
           ),
         ]),
+        WidgetConstant.height40
       ],
     );
   }

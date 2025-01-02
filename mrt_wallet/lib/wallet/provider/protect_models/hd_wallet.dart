@@ -291,6 +291,7 @@ class HDWallet {
 
   List<int> get checkSumBytes => BytesUtils.fromHexString(_checksum);
   String get _networkKey => "${StorageConst.walletStorageKey}${_checksum}_";
+  String get _repositoriesKeys => "${StorageConst.chainSorageKey}${_checksum}_";
   String get _permissionKey =>
       "${StorageConst.walletStorageKey}$_checksum#permission_";
 

@@ -43,7 +43,7 @@ class PageRouter {
   /// cardano
   static const String cardanoTransaction = "/cardano/transaction";
   static const String cosmosTransaction = "/cosmos/transaction";
-
+  static const String importCosmosNetwork = "/cosmos/networks/import";
   static const String setupGenericAddress = "/networks/setup_address";
 
   static const String setupBitcoinMultsig = "/bitcoin/setup_multisig_address";
@@ -73,18 +73,37 @@ class PageRouter {
   static const String updateEthereumProvider = "/networks/ethereum/providers";
 
   static const String updateElectrumProviders = "/networks/bitcoin/providers";
-  static const String editSolanaNetwork = "/networks/solana/providers";
+  static const String updateSolanaProviders = "/networks/solana/providers";
+  static const String updateSubstrateProviders =
+      "/networks/substrate/providers";
+  static const String updateRippleProviders = "/networks/ripple/providers";
+  static const String updateCardanoProviders = "/networks/cardano/providers";
+  static const String updateTonProviders = "/networks/ton/providers";
+  static const String updateCosmosProviders = "/networks/cosmos/providers";
+  static const String updateMoneroProviders = "/networks/monero/providers";
+  static const String updateStellarProviders = "/networks/stellar/providers";
+  static const String updateTronProviders = "/networks/tron/providers";
 
+  /// UpdateStellarProvider
   static const String importERC20Token = "ethereum/import_token";
-  static const String importTRC20Token = "tron/import_token";
-  static const String importTrc10Token = "tron/import_trc10_token";
+  static const String importTronToken = "tron/import_trc10_token";
   static const String importSPLTokens = "solana/import_spl_tokens";
+  static const String importCosmosTokens = "cosmos/import_spl_tokens";
 
   static const String tonSettings = "setting/ton";
   static const String tonMnemonic = "setting/ton/mnemonic";
   static const String importJettons = "ton/import_jettons";
 
   static const String barcodeScanner = "barcode_scanner";
+
+  static const String moneroSettings = "setting/monero";
+  static const String moneroSyncOptions = "setting/monero/sync_options";
+  static const String moneroGenerateProof =
+      "setting/monero/generate_transaction_proof";
+  static const String moneroVerifyProof = "setting/monero/verify_proof";
+  static const String moneroAccountSync = "setting/monero/sync";
+  static const String moneroMnemonic = "setting/monero/mnemonic";
+  static const String moneroTransfer = "/monero/transfer";
 
   /// web3
   static const String web3Ethereum = "web3/ethereum";
@@ -152,10 +171,9 @@ class PageRouter {
         return const SetupRippleMutlisigAddressView();
       case importERC20Token:
         return const ImportERC20TokenView();
-      case importTRC20Token:
-        return const ImportTRC20TokenView();
-      case importTrc10Token:
-        return const MonitorTronTRC10TokenView();
+
+      case importTronToken:
+        return const MonitorTronTokenView();
       case tronMultiSigAddress:
         return const SetupTronMultiSigAddressView();
       case tronTransaction:
@@ -165,8 +183,16 @@ class PageRouter {
 
       case updateElectrumProviders:
         return const ImportElectrumProviderView();
+      case updateCardanoProviders:
+        return const UpdateCardanoProvider();
+      case updateRippleProviders:
+        return const UpdateRippleProviderView();
       case importSPLTokens:
         return const SolanaImportSPLTokensView();
+      case importCosmosTokens:
+        return const CosmosImportTokenView();
+      case importCosmosNetwork:
+        return const CosmosImportNetworkView();
       case importJettons:
         return const TonImportJettonsView();
       case cardanoTransaction:
@@ -175,8 +201,16 @@ class PageRouter {
         return const CosmosTransferTransactionView();
       case solanaTransaction:
         return const SolanaTransactionFieldsView();
-      case editSolanaNetwork:
-        return const ImportSolanaProviderView();
+      case updateSolanaProviders:
+        return const UpdateSolanaProvider();
+      case updateCosmosProviders:
+        return const UpdateCosmosProvider();
+      case updateSubstrateProviders:
+        return const UpdateSubstrateProvider();
+      case updateMoneroProviders:
+        return const UpdateMoneroProvider();
+      case updateStellarProviders:
+        return const UpdateStellarProvider();
       case tonSettings:
         return const TonSettingsView();
       case tonMnemonic:
@@ -213,8 +247,27 @@ class PageRouter {
         return const SolanaWeb3FieldsView();
       case updateEthereumProvider:
         return const UpdateEthereumProvider();
+      case updateTonProviders:
+        return const UpdateTonProvider();
+      case updateTronProviders:
+        return const UpdateTronProvider();
+
       case webview:
         return const WebView();
+      case moneroSettings:
+        return const MoneroSettingsView();
+      case moneroSyncOptions:
+        return const MoneroSyncOptionsView();
+      case moneroGenerateProof:
+        return const MoneroGenerateTxProofView();
+      case moneroVerifyProof:
+        return const MoneroVerifyTxProofView();
+      case moneroAccountSync:
+        return const MoneroAccountSyncView();
+      case moneroTransfer:
+        return const MoneroTransferTransactionView();
+      case moneroMnemonic:
+        return const GenerateMoneroMnemonicView();
       default:
         return const HomeScreen();
     }
@@ -241,9 +294,30 @@ class PageRouter {
       case NetworkType.ethereum:
         return importEthereumNetwork;
       case NetworkType.solana:
-        return editSolanaNetwork;
-      default:
+        return updateSolanaProviders;
+      case NetworkType.ton:
+        return updateTonProviders;
+      case NetworkType.tron:
+        return updateTronProviders;
+      case NetworkType.xrpl:
+        return updateRippleProviders;
+      case NetworkType.cardano:
+        return updateCardanoProviders;
+      case NetworkType.cosmos:
+        return updateCosmosProviders;
+      case NetworkType.monero:
+        return updateMoneroProviders;
+      case NetworkType.stellar:
+        return updateStellarProviders;
+      case NetworkType.polkadot:
+      case NetworkType.kusama:
+        return updateSubstrateProviders;
+      case NetworkType.bitcoinAndForked:
+      case NetworkType.bitcoinCash:
         return updateElectrumProviders;
+
+      default:
+        throw UnsupportedError("edit provider unsuported.");
     }
   }
 
@@ -269,8 +343,12 @@ class PageRouter {
         return substrateTransfer;
       case NetworkType.stellar:
         return stellarTransaction;
-      default:
+      case NetworkType.monero:
+        return moneroTransfer;
+      case NetworkType.xrpl:
         return rippleTransfer;
+      default:
+        throw UnimplementedError();
     }
   }
 
@@ -291,10 +369,23 @@ class PageRouter {
     }
   }
 
+  static String? importNetwork(NetworkType type) {
+    switch (type) {
+      case NetworkType.ethereum:
+        return importEthereumNetwork;
+      case NetworkType.cosmos:
+        return importCosmosNetwork;
+      default:
+        return null;
+    }
+  }
+
   static String? networkSettings(WalletNetwork network) {
     switch (network.type) {
       case NetworkType.ton:
         return tonSettings;
+      case NetworkType.monero:
+        return moneroSettings;
       case NetworkType.xrpl:
         return rippleSettingPage;
       case NetworkType.stellar:

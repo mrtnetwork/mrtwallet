@@ -6,7 +6,7 @@ import 'package:xrpl_dart/xrpl_dart.dart';
 
 class RippleUtils {
   static List<XRPLMemo> toXrplMemos(List<XRPLMemo> memos) {
-    List<XRPLMemo> hexMemoms = [];
+    final List<XRPLMemo> hexMemoms = [];
     for (final i in memos) {
       String? memoData;
       String? memoFormat;
@@ -166,7 +166,7 @@ class RippleUtils {
 
       if (fulfillment != null) {
         /// Calculate the length of the fulfillment in bytes.
-        int fulfillmentBytesLength = fulfillment.codeUnits.length;
+        final fulfillmentBytesLength = fulfillment.codeUnits.length;
 
         /// Adjust the base fee based on the fulfillment length.
         baseFee = (netFee * (33 + (fulfillmentBytesLength / 16)).ceil()).ceil();
@@ -261,9 +261,10 @@ class RippleUtils {
     return keyBytes.toHex();
   }
 
-  static String toRipplePrivateKey(String bip32PrivateKey, CryptoCoins coin) {
+  static String toRipplePrivateKey(
+      String bip32PrivateKey, EllipticCurveTypes keyType) {
     final algorithm =
-        XRPKeyAlgorithm.values.firstWhere((e) => e.curveType == coin.conf.type);
+        XRPKeyAlgorithm.values.firstWhere((e) => e.curveType == keyType);
     final keyBytes =
         XRPPrivateKey.fromHex(bip32PrivateKey, algorithm: algorithm);
     return keyBytes.toHex();

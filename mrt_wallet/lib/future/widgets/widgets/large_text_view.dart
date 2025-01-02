@@ -67,9 +67,7 @@ class _LargeTextWidget extends StatelessWidget {
       this.textAligen,
       required this.onTap,
       required this.showMore,
-      required this.maxLine,
-      Key? key})
-      : super(key: key);
+      required this.maxLine});
   final String text;
   final TextStyle? style;
   final TextAlign? textAligen;
@@ -88,7 +86,7 @@ class _LargeTextWidget extends StatelessWidget {
             textDirection: TextDirection.ltr,
             textAlign: textAligen ?? TextAlign.start);
         tp.layout(maxWidth: constraints.maxWidth);
-        List<ui.LineMetrics> lines = tp.computeLineMetrics();
+        final List<ui.LineMetrics> lines = tp.computeLineMetrics();
         if (lines.length > maxLine && !showMore) {
           return InkWell(
             onTap: onTap,
@@ -99,7 +97,11 @@ class _LargeTextWidget extends StatelessWidget {
               runAlignment: WrapAlignment.end,
               crossAxisAlignment: WrapCrossAlignment.end,
               children: [
-                Text(text, maxLines: maxLine),
+                Text(
+                  text,
+                  maxLines: maxLine,
+                  style: style,
+                ),
                 Text("read_more".tr,
                     style: context.textTheme.bodySmall
                         ?.copyWith(color: context.colors.tertiary))
@@ -109,7 +111,11 @@ class _LargeTextWidget extends StatelessWidget {
         }
         return GestureDetector(
             onTap: lines.length > maxLine ? onTap : null,
-            child: Text(text, textAlign: textAligen));
+            child: Text(
+              text,
+              textAlign: textAligen,
+              style: style,
+            ));
       },
     );
   }

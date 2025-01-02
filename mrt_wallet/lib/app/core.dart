@@ -12,3 +12,5 @@ export 'websocket/websocket.dart';
 export 'models/models.dart';
 export 'serialization/serialization.dart';
 export 'live_listener/live.dart';
+export 'http/http.dart';
+export 'isolate/types.dart';

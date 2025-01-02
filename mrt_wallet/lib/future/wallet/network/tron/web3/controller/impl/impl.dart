@@ -17,7 +17,7 @@ abstract class Web3TronImpl<RESPONSE, T extends Web3TronRequestParam<RESPONSE>>
   final WalletProvider walletProvider;
   final TronChain account;
   WalletTronNetwork get network => account.network;
-  TronClient get apiProvider => account.provider()!;
+  TronClient get apiProvider => account.client;
   ITronAddress get address => request.accountPermission()!;
 
   final Web3TronRequest<RESPONSE, T> request;

@@ -9,3 +9,4 @@ export 'services/ton.dart';
 export 'services/tron.dart';
 export 'services/substrate.dart';
 export 'services/stellar.dart';
+export 'services/monero.dart';

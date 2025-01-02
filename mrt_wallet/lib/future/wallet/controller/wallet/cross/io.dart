@@ -5,5 +5,5 @@ UIWallet uiWallet(GlobalKey<NavigatorState> navigatorKey) =>
     Wallet(navigatorKey);
 
 class Wallet extends UIWallet {
-  Wallet(GlobalKey<NavigatorState> navigatorKey) : super(navigatorKey);
+  Wallet(super.navigatorKey);
 }

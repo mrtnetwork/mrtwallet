@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'key_data.dart';
 
 class AccessMnemonicResponse implements CryptoKeyData {

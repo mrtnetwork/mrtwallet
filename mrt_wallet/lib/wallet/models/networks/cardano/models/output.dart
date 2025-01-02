@@ -43,9 +43,9 @@ class CardanoOutputWithBalance {
   bool get minAdaRequired => _minAdaRequired;
 
   void _checkOutput() {
-    minAdaValue.updateBalance(_minValue);
+    minAdaValue.updateBalance(minValue);
     _minAdaRequired = hasAmount && balance.balance < minAdaValue.balance;
-    _isReady = hasAmount && !isRewardAddress && !minAdaRequired;
+    _isReady = hasAmount && !isRewardAddress; //&& !minAdaRequired;
   }
 
   void updateAssets(UtxoMultiAsset? updateAsset) {
@@ -65,7 +65,7 @@ class CardanoOutputWithBalance {
   }
 
   void initializeBalance() {
-    balance.updateBalance(_minValue);
+    balance.updateBalance(minValue);
     _checkOutput();
   }
 
@@ -82,7 +82,7 @@ class CardanoOutputWithBalance {
             multiAsset: asset.hasAsset ? asset.toMultiAsset() : null));
   }
 
-  BigInt get _minValue {
+  BigInt get minValue {
     final out = toOutput();
     return out
         .copyWith(amount: out.amount.copyWith(coin: maxU64))

@@ -56,9 +56,12 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                   (value) => validator.setValue(field, value),
                 );
           },
-          onRemoveIcon:
-              field.hasValue ? const Icon(Icons.edit) : const Icon(Icons.add),
-          child: Text(field.value ?? "tap_to_input_value".tr, maxLines: 3),
+          onRemoveIcon: AddOrEditIconWidget(field.hasValue),
+          child: Text(
+            field.value ?? "tap_to_input_value".tr,
+            maxLines: 3,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         );
       case "burn_owner":
       case "offer_owner":
@@ -97,8 +100,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
       case "mint_nftokentaxon":
         return ContainerWithBorder(
           validate: field.isCompleted,
-          onRemoveIcon:
-              field.hasValue ? const Icon(Icons.edit) : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(field.hasValue),
           onRemove: () {
             context
                 .openSliverBottomSheet<BigRational>(
@@ -123,7 +125,9 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                 .then((value) => validator.setValue(field, value));
           },
           child: Text(
-              field.value?.toString().to3Digits ?? "tap_to_input_value".tr),
+            field.value?.toString().to3Digits ?? "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         );
       case "mint_transfer_fee":
       case "escrow_create_destination_tag":
@@ -131,8 +135,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
       case "trust_set_quality_in":
       case "trust_set_quality_out":
         return ContainerWithBorder(
-          onRemoveIcon:
-              field.hasValue ? const Icon(Icons.edit) : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(field.hasValue),
           validate: field.isCompleted,
           onRemove: () {
             BigRational? max;
@@ -169,7 +172,9 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                 .then((value) => validator.setValue(field, value));
           },
           child: Text(
-              field.value?.toString().to3Digits ?? "tap_to_input_value".tr),
+            field.value?.toString().to3Digits ?? "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         );
       case "mint_uri":
       case "escrow_create_condition":
@@ -202,16 +207,22 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                   (value) => validator.setValue(field, value),
                 );
           },
-          onRemoveIcon:
-              field.hasValue ? const Icon(Icons.edit) : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(field.hasValue),
           child: validator.transactionType != XRPLTransactionType.escrowCreate
-              ? Text(field.value ?? "tap_to_input_value".tr, maxLines: 3)
+              ? Text(
+                  field.value ?? "tap_to_input_value".tr,
+                  maxLines: 3,
+                  style: context.onPrimaryTextTheme.bodyMedium,
+                )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                       Expanded(
-                          child: Text(field.value ?? "tap_to_input_value".tr,
-                              maxLines: 3)),
+                          child: Text(
+                        field.value ?? "tap_to_input_value".tr,
+                        maxLines: 3,
+                        style: context.onPrimaryTextTheme.bodyMedium,
+                      )),
                       if (!field.hasValue) ...[
                         WidgetConstant.width8,
                         FilledButton(
@@ -232,18 +243,18 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
       case "mint_flag":
         return AppDropDownBottom(
           items: <NFTokenMintFlag, Widget>{
-            for (var i in NFTokenMintFlag.values) i: Text(i.name)
+            for (final i in NFTokenMintFlag.values) i: Text(i.name)
           },
-          label: field.name.tr,
           value: field.value,
           key: ValueKey<String>("set_${field.value}"),
           onChanged: (p0) => validator.setValue(field, p0),
-          suffixIcon: field.hasValue
-              ? IconButton(
-                  onPressed: () {
+          hint: "none".tr,
+          icon: field.hasValue
+              ? InkWell(
+                  onTap: () {
                     validator.setValue(field, null);
                   },
-                  icon: const Icon(Icons.remove_circle))
+                  child: const Icon(Icons.remove_circle))
               : null,
         );
       case "offer_expiration":
@@ -285,10 +296,12 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
               });
             });
           },
-          onRemoveIcon:
-              field.hasValue ? const Icon(Icons.edit) : const Icon(Icons.add),
-          child: Text((field.value as DateTime?)?.toDateAndTime() ??
-              "tap_to_input_value".tr),
+          onRemoveIcon: AddOrEditIconWidget(field.hasValue),
+          child: Text(
+            (field.value as DateTime?)?.toDateAndTime() ??
+                "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         );
 
       case "offer_amount":
@@ -297,67 +310,65 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
         final XRPCurrencyAmount? value = field.value;
         return ContainerWithBorder(
           validate: field.isCompleted,
-          onRemoveIcon:
-              field.hasValue ? const Icon(Icons.edit) : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(field.hasValue),
           onRemove: () {
             context
                 .openSliverBottomSheet<XRPCurrencyAmount>(
-                  "setup_currency_amount".tr,
-                  bodyBuilder: (controller) => BuildRippleCurrencyAmountView(
-                    account: account,
-                    scrollController: controller,
-                    title: validator.validatorName.tr,
-                    acceptZero: true,
-                    supportXRP: field.id != "trust_set_limit_amount",
-                  ),
-                  minExtent: 0.6,
-                  maxExtend: 1,
-                  initialExtend: 0.7,
-                )
+                    "setup_currency_amount".tr,
+                    bodyBuilder: (controller) => BuildRippleCurrencyAmountView(
+                          account: account,
+                          scrollController: controller,
+                          title: validator.validatorName.tr,
+                          acceptZero: true,
+                          supportXRP: field.id != "trust_set_limit_amount",
+                        ),
+                    initialExtend: 1)
                 .then((value) => validator.setValue(field, value));
           },
           child: value == null
-              ? Text("tap_to_input_value".tr)
+              ? Text("tap_to_input_value".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium)
               : CoinPriceView(
                   token: value.token,
                   balance: value.price,
-                  style: context.textTheme.titleLarge,
+                  style: context.onPrimaryTextTheme.titleMedium,
+                  symbolColor: context.onPrimaryContainer,
                 ),
         );
       case "nft_offer_flag":
         return AppDropDownBottom(
           items: <NftTokenCreateOfferFlag, Widget>{
-            for (var i in NftTokenCreateOfferFlag.values) i: Text(i.name)
+            for (final i in NftTokenCreateOfferFlag.values) i: Text(i.name)
           },
-          label: field.name.tr,
           value: field.value,
           key: ValueKey<String>("set_${field.value}"),
           onChanged: (p0) => validator.setValue(field, p0),
-          suffixIcon: field.hasValue
-              ? IconButton(
-                  onPressed: () {
+          hint: "none".tr,
+          icon: field.hasValue
+              ? InkWell(
+                  onTap: () {
                     validator.setValue(field, null);
                   },
-                  icon: const Icon(Icons.remove_circle))
+                  child: const Icon(Icons.remove_circle))
               : null,
         );
       case "trust_set_flags":
         return AppDropDownBottom(
           items: <TrustSetFlag, Widget>{
-            for (var i in TrustSetFlag.values) i: Text(i.name)
+            for (final i in TrustSetFlag.values) i: Text(i.name)
           },
-          label: "trust_set_flags".tr,
           value: field.value,
           key: ValueKey(field.value),
           onChanged: (v) {
             validator.setValue(field, v);
           },
-          suffixIcon: field.hasValue
-              ? IconButton(
-                  onPressed: () {
+          hint: "none".tr,
+          icon: field.hasValue
+              ? InkWell(
+                  onTap: () {
                     validator.setValue(field, null);
                   },
-                  icon: const Icon(Icons.remove_circle))
+                  child: const Icon(Icons.remove_circle))
               : null,
         );
       case "cancel_nft_nft_token_offers":
@@ -377,8 +388,10 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                     validator.removeIndex(
                         field as TransactionFormField<List<String>>, index);
                   },
-                  onRemoveIcon: const Icon(Icons.remove_circle),
-                  child: OneLineTextWidget(v),
+                  onRemoveIcon: Icon(Icons.remove_circle,
+                      color: context.onPrimaryContainer),
+                  child: OneLineTextWidget(v,
+                      style: context.onPrimaryTextTheme.bodyMedium),
                 );
               }),
               ContainerWithBorder(
@@ -406,8 +419,12 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                       .then((value) => validator.setListValue(
                           field as TransactionFormField<List<String>>, value));
                 },
-                onRemoveIcon: const Icon(Icons.add),
-                child: Text("tap_to_input_value".tr, maxLines: 3),
+                onRemoveIcon: Icon(
+                  Icons.add,
+                  color: context.onPrimaryContainer,
+                ),
+                child: Text("tap_to_input_value".tr,
+                    maxLines: 3, style: context.onPrimaryTextTheme.bodyMedium),
               )
             ],
           ),
@@ -419,6 +436,7 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
               context
                   .openSliverBottomSheet<BigInt>(
                 validator.validatorName.tr,
+                initialExtend: 1,
                 child: SetupNetworkAmount(
                   token: account.network.coinParam.token,
                   max: account.address.address.currencyBalance,
@@ -440,14 +458,16 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
                 },
               );
             },
-            onRemoveIcon:
-                field.hasValue ? const Icon(Icons.edit) : const Icon(Icons.add),
+            onRemoveIcon: AddOrEditIconWidget(field.hasValue),
             child: !field.hasValue
-                ? Text("tap_to_enter_amount".tr)
+                ? Text("tap_to_enter_amount".tr,
+                    style: context.onPrimaryTextTheme.bodyMedium)
                 : CoinPriceView(
                     token: account.network.coinParam.token,
                     balance: field.value,
-                    style: context.textTheme.titleLarge));
+                    style: context.onPrimaryTextTheme.titleMedium,
+                    symbolColor: context.onPrimaryContainer,
+                  ));
 
       default:
         return const Text(
@@ -475,7 +495,7 @@ class _GenerateFulFillmentViewState extends State<_GenerateFulFillmentView>
     if (fulFillment != null) {
       fulFillment = null;
       setState(() {});
-      await MethodUtils.wait(milliseconds: 400);
+      await MethodUtils.wait(duration: Duration(milliseconds: 400));
     }
     progressKey.process();
 
@@ -508,33 +528,30 @@ class _GenerateFulFillmentViewState extends State<_GenerateFulFillmentView>
                 Text("fulfillment_desc2".tr)
               ],
             )),
-        AnimatedSize(
+        APPAnimatedSize(
           duration: APPConst.animationDuraion,
-          child: fulFillment == null
-              ? WidgetConstant.sizedBox
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("fulfillment".tr,
-                        style: context.textTheme.titleMedium),
-                    WidgetConstant.height8,
-                    ContainerWithBorder(
-                        child: CopyTextIcon(
-                      dataToCopy: fulFillment!.fulfillment,
+          isActive: fulFillment == null,
+          onActive: (context) => WidgetConstant.sizedBox,
+          onDeactive: (context) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("fulfillment".tr, style: context.textTheme.titleMedium),
+              WidgetConstant.height8,
+              ContainerWithBorder(
+                  child: CopyableTextWidget(
+                      text: fulFillment!.fulfillment,
                       isSensitive: true,
-                      widget: Text(fulFillment!.fulfillment),
-                    )),
-                    WidgetConstant.height20,
-                    Text("condition".tr, style: context.textTheme.titleMedium),
-                    WidgetConstant.height8,
-                    ContainerWithBorder(
-                        child: CopyTextIcon(
-                      dataToCopy: fulFillment!.condition,
+                      color: context.onPrimaryContainer)),
+              WidgetConstant.height20,
+              Text("condition".tr, style: context.textTheme.titleMedium),
+              WidgetConstant.height8,
+              ContainerWithBorder(
+                  child: CopyableTextWidget(
+                      text: fulFillment!.condition,
                       isSensitive: true,
-                      widget: Text(fulFillment!.condition),
-                    ))
-                  ],
-                ),
+                      color: context.onPrimaryContainer))
+            ],
+          ),
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,

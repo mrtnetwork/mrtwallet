@@ -8,93 +8,96 @@ import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class SolanaTransferForm extends SolanaTransactionForm {
   SolanaTransferForm({required this.token, this.splToken});
+  BigInt _transferValue = BigInt.zero;
+  @override
+  BigInt get transferValue => _transferValue;
+
   final Token token;
   final SolanaSPLToken? splToken;
   final GlobalKey<StreamWidgetState> accountKey =
       GlobalKey<StreamWidgetState>();
-  SolanaAccountInfo? _accountInfo;
-  SolanaAccountInfo? get accountInfo => _accountInfo;
-  bool _hasError = false;
-  bool get hasErrpr => _hasError;
+  SolanaTransferDestinationInfo? _accountInfo;
+  SolanaTransferDestinationInfo? get accountInfo => _accountInfo;
+  final bool _isPubKey = false;
+  bool get isPubKey => _isPubKey;
+
+  final bool _hasError = false;
+  bool get hasError => _hasError;
   bool get isTokenTransfer => splToken != null;
 
-  bool get showRequirementAmountAlert =>
-      destination.hasValue &&
-      _accountInfo == null &&
-      (amount.hasValue &&
-          amount.value!.balance < SolanaConst.systemProgramRent);
+  final bool _showRequirementAmountAlert = false;
+  bool get showRequirementAmountAlert => _showRequirementAmountAlert;
 
-  final TransactionFormField<ReceiptAddress<SolAddress>> destination =
-      TransactionFormField(
+  void checkAmount() {
+    _transferValue =
+        destination.value.fold(BigInt.zero, (p, c) => p + c.balance.balance);
+  }
+
+  BigInt max(SolanaOutputWithBalance receiver) {
+    if (isTokenTransfer) {
+      return splToken!.balance.value.balance - receiver.balance.balance;
+    }
+    return (address.address.currencyBalance -
+        _transferValue +
+        receiver.balance.balance);
+  }
+
+  final TransactionListFormField<SolanaOutputWithBalance> destination =
+      TransactionListFormField(
           name: "destination",
           optional: false,
           onChangeForm: (p0) {
             return p0;
           });
-  final TransactionFormField<IntegerBalance> amount = TransactionFormField(
-    name: "amount",
-    optional: false,
-    onChangeForm: (v) {
-      try {
-        if (v!.isZero || v.isNegative) return null;
-        return v;
-      } catch (e) {
-        return null;
-      }
-    },
-  );
 
   @override
   OnChangeForm? onChanged;
 
-  List<TransactionFormField> get fields => [destination, amount];
-
   @override
-  String get name => "transfer_symbol".tr.replaceOne(token.symbol);
-
-  void setValue<T>(TransactionFormField<T>? field, T? value) {
-    if (field == null) return;
-    if (field.setValue(value)) {
-      if (field == destination) {
-        _accountInfo = null;
-        if (field.hasValue) {
-          updateAccountInfo();
-        } else {
-          accountKey.updateStream(StreamWidgetStatus.hide);
-        }
-      }
-      onChanged?.call();
-    }
-  }
-
-  final Cancelable _cancelabel = Cancelable();
-
-  Future<void> updateAccountInfo() async {
-    _cancelabel.cancel();
-    _hasError = false;
-    _accountInfo = null;
-    accountKey.updateStream(StreamWidgetStatus.progress);
-    final result = await MethodUtils.call(() async {
-      final account =
-          await provider!.getAccountInfo(destination.value!.networkAddress);
-      return account;
-    }, cancelable: _cancelabel);
-    _hasError = result.hasError;
-    if (result.hasResult) {
-      _accountInfo = result.result;
-    }
-    accountKey.updateStream(StreamWidgetStatus.idle);
+  String get name => "transfer".tr;
+  void removeReceiver(SolanaOutputWithBalance destination) {
+    this.destination.removeValue(destination);
+    checkAmount();
     onChanged?.call();
   }
 
-  @override
-  BigInt get transferValue => amount.value?.balance ?? BigInt.zero;
+  void setupAccountAmount(SolanaOutputWithBalance destination, BigInt? amount) {
+    if (amount == null) return;
+    destination.updateBalance(amount);
+    checkAmount();
+    onChanged?.call();
+  }
+
+  void onAddRecever(
+      List<ReceiptAddress<SolAddress>>? receiver, StringVoid onExists) {
+    if (receiver == null) return;
+    MethodUtils.after(() async {
+      bool hasExistAccount = false;
+      for (final i in receiver) {
+        final r = SolanaOutputWithBalance(address: i, token: token);
+        if (destination.value.contains(r) ||
+            i.networkAddress == address.networkAddress) {
+          hasExistAccount = true;
+          continue;
+        }
+        destination.addValue(r);
+      }
+      if (hasExistAccount) onExists("some_addresses_exist".tr);
+      onChanged?.call();
+    });
+  }
 
   @override
   String? validateError({ISolanaAddress? account}) {
-    for (final i in fields) {
-      if (!i.optional && !i.hasValue) {
-        return "field_is_req".tr.replaceOne(i.name.tr);
+    if (destination.isEmpty) {
+      return "add_least_one_receipt".tr;
+    }
+    for (final i in destination.value) {
+      if (!i.hasAmount) {
+        return "input_for_each_entery".tr;
+      }
+      if (i.hasError) {
+        return "invalid_address".tr;
       }
     }
     return null;
@@ -106,41 +109,14 @@ class SolanaTransferForm extends SolanaTransactionForm {
     if (error != null) {
       throw WalletException(error);
     }
-    if (isTokenTransfer) {
-      final pda = AssociatedTokenAccountProgramUtils.associatedTokenAccount(
-              mint: splToken!.mint, owner: destination.value!.networkAddress)
-          .address;
-      final exist = await provider!.getAccountInfo(pda);
-      TransactionInstruction? ascAccout;
-      if (exist == null) {
-        ascAccout = AssociatedTokenAccountProgram.associatedTokenAccount(
-            payer: owner,
-            associatedToken: pda,
-            owner: destination.value!.networkAddress,
-            mint: splToken!.mint);
-      }
-      return [
-        if (ascAccout != null) ascAccout,
-        SPLTokenProgram.transferChecked(
-            layout: SPLTokenTransferCheckedLayout(
-                amount: amount.value!.balance,
-                decimals: splToken!.token.decimal!),
-            owner: owner,
-            source: splToken!.tokenAccount,
-            mint: splToken!.mint,
-            destination:
-                AssociatedTokenAccountProgramUtils.associatedTokenAccount(
-                        mint: splToken!.mint,
-                        owner: destination.value!.networkAddress)
-                    .address)
-      ];
+    final List<TransactionInstruction> instructions = [];
+    for (final i in destination.value) {
+      final instruction =
+          await i.instruction(owner: owner, client: provider!, token: splToken);
+      instructions.addAll(instruction);
     }
-    return [
-      SystemProgram.transfer(
-          layout: SystemTransferLayout(lamports: amount.value!.balance),
-          from: owner,
-          to: destination.value!.networkAddress)
-    ];
+
+    return instructions;
   }
 
   @override

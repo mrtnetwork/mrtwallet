@@ -26,10 +26,13 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                 account: chain,
                 network: chain.network,
                 address: chain.address,
-                apiProvider: chain.provider()!,
+                apiProvider: chain.client,
                 validator: validator),
             builder: (controller) {
               return PageProgress(
+                initialStatus: StreamWidgetStatus.progress,
+                initialWidget: ProgressWithTextView(
+                    text: "retrieving_network_condition".tr),
                 backToIdle: APPConst.oneSecoundDuration,
                 key: controller.progressKey,
                 child: (c) {
@@ -42,11 +45,12 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text("account".tr,
-                                    style: context.textTheme.titleLarge),
+                                    style: context.textTheme.titleMedium),
                                 WidgetConstant.height8,
                                 ContainerWithBorder(
                                   onRemoveIcon: const Icon(Icons.edit),
                                   child: AddressDetailsView(
+                                      color: context.onPrimaryContainer,
                                       address: controller.owner,
                                       key: ValueKey<ISolanaAddress?>(
                                           controller.owner)),
@@ -77,12 +81,14 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                     children: [
                                       WidgetConstant.height20,
                                       Text("transaction_fee".tr,
-                                          style: context.textTheme.titleLarge),
+                                          style: context.textTheme.titleMedium),
                                       WidgetConstant.height8,
                                       ContainerWithBorder(
-                                          validate: controller.hasFee,
+                                          validateText: controller.feeError?.tr,
+                                          validate: controller.hasFee &&
+                                              controller.feeError == null,
                                           onRemove: () {},
-                                          onTapWhenOnRemove: false,
+                                          enableTap: false,
                                           onRemoveIcon: StreamWidget(
                                             key: controller.feeProgressKey,
                                             initialStatus:
@@ -95,7 +101,10 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                             token: controller
                                                 .network.coinParam.token,
                                             balance: controller.fee,
-                                            style: context.textTheme.titleLarge,
+                                            style: context
+                                                .onPrimaryTextTheme.titleMedium,
+                                            symbolColor:
+                                                context.onPrimaryContainer,
                                           )),
                                     ],
                                   ),
@@ -105,9 +114,8 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                     style: context.textTheme.titleMedium),
                                 WidgetConstant.height8,
                                 ContainerWithBorder(
-                                    onRemoveIcon: controller.hasMemo
-                                        ? const Icon(Icons.remove_circle)
-                                        : const Icon(Icons.add_box),
+                                    onRemoveIcon:
+                                        AddOrEditIconWidget(controller.hasMemo),
                                     onRemove: () {
                                       controller.onTapMemo((s) async {
                                         final result = await context
@@ -136,20 +144,23 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                       children: [
                                         Expanded(
                                           child: controller.hasMemo
-                                              ? Text(controller.memoStr ?? "")
+                                              ? Text(controller.memoStr ?? "",
+                                                  style: context
+                                                      .onPrimaryTextTheme
+                                                      .bodyMedium)
                                               : Text("tap_to_add_memo".tr,
                                                   style: context
-                                                      .textTheme.labelLarge),
+                                                      .onPrimaryTextTheme
+                                                      .bodyMedium),
                                         ),
                                       ],
                                     )),
                                 WidgetConstant.height20,
                                 InsufficientBalanceErrorView(
-                                  verticalMargin:
-                                      WidgetConstant.paddingVertical10,
-                                  balance: controller.remindAmount.$1,
-                                  token: controller.remindAmount.$2,
-                                ),
+                                    verticalMargin:
+                                        WidgetConstant.paddingVertical10,
+                                    balance: controller.remindAmount.$1,
+                                    token: controller.remindAmount.$2),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -220,119 +231,113 @@ class _SolanaTransferFields extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("token_transfer".tr, style: context.textTheme.titleLarge),
+              Text("token_transfer".tr, style: context.textTheme.titleMedium),
               WidgetConstant.height8,
               TokenDetailsView(
-                token: field.splToken!,
-                onSelectWidget: WidgetConstant.sizedBox,
-              ),
+                  token: field.splToken!,
+                  onSelectWidget: WidgetConstant.sizedBox),
               WidgetConstant.height20,
             ],
           ),
-        ReceiptAddressView(
-          address: field.destination.value,
-          subtitle: "receiver_address_desc".tr,
-          onTap: () {
-            context
-                .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
-                    "recipient".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
-                    bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
-                        account: controller.account, scrollController: sc))
-                .then(
-              (value) {
-                field.setValue(field.destination, value);
-              },
-            );
-          },
-        ),
-        WidgetConstant.height20,
-        Text("destination_info".tr, style: context.textTheme.titleMedium),
-        Text("destination_info_desc".tr),
+        Text("list_of_recipients".tr, style: context.textTheme.titleMedium),
+        Text("amount_for_each_output".tr),
         WidgetConstant.height8,
-        ContainerWithBorder(
-            onRemoveIcon: StreamWidget(
-                buttonWidget:
-                    Icon(Icons.circle, color: context.colors.transparent),
-                key: field.accountKey),
-            onRemove: () {
-              if (!field.hasErrpr) return;
-              field.updateAccountInfo();
-            },
-            child: !field.destination.hasValue
-                ? Text("no_account_chosen".tr)
-                : field.hasErrpr
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          WidgetConstant.errorIcon,
-                          WidgetConstant.width8,
-                          Expanded(
-                            child: Text(
-                              "request_error".tr,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+        Column(
+          children: List.generate(field.destination.length, (index) {
+            final destination = field.destination.value[index];
+            return ContainerWithBorder(
+              iconAlginment: CrossAxisAlignment.start,
+              onRemoveWidget: IconButton(
+                  onPressed: () {
+                    field.removeReceiver(destination);
+                  },
+                  icon: Icon(Icons.remove_circle,
+                      color: context.colors.onPrimaryContainer)),
+              validate: destination.isReady,
+              validateText: destination.hasAmount ? "invalid_address".tr : null,
+              enableTap: false,
+              onRemove: () {},
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ContainerWithBorder(
+                      backgroundColor: context.onPrimaryContainer,
+                      child: ReceiptAddressDetailsView(
+                          address: destination.address,
+                          color: context.primaryContainer)),
+                  ContainerWithBorder(
+                    onRemove: () {
+                      final max =
+                          field.max(destination) - controller.fee.balance;
+                      context
+                          .openSliverBottomSheet<BigInt>(
+                        "setup_output_amount".tr,
+                        initialExtend: 1,
+                        child: SetupNetworkAmount(
+                          token: field.token,
+                          max: max,
+                          subtitle: PageTitleSubtitle(
+                              title: "receiver".tr,
+                              body: ContainerWithBorder(
+                                  child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  OneLineTextWidget(destination.address.view,
+                                      style: context.colors.onPrimaryContainer
+                                          .bodyMedium(context))
+                                ],
+                              ))),
+                        ),
                       )
-                    : field.accountInfo == null
-                        ? Text("account_not_found".tr)
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("owner".tr,
-                                  style: context.textTheme.labelLarge),
-                              Text(field.accountInfo!.owner.address),
-                              Divider(color: context.colors.onPrimaryContainer),
-                              Text("executable".tr,
-                                  style: context.textTheme.labelLarge),
-                              Text(field.accountInfo!.executable.tr),
-                            ],
-                          )),
-        WidgetConstant.height20,
-        TransactionAmountView(
-          amount: field.amount.value,
-          subtitle: "input_the_amout".tr,
-          validate:
-              field.amount.isCompleted && !field.showRequirementAmountAlert,
-          validateError: field.showRequirementAmountAlert
-              ? "amount_must_exceed".tr.replaceOne(PriceUtils.priceWithCoinName(
-                  SolanaConst.systemProgramRentSol,
-                  controller.network.coinParam.token.symbol))
-              : null,
-          onTap: () {
-            context
-                .openSliverBottomSheet<BigInt>(
-              "setup_output_amount".tr,
-              child: SetupNetworkAmount(
-                token: field.token,
-                max: field.isTokenTransfer
-                    ? field.splToken!.balance.value.balance
-                    : controller.address.address.currencyBalance -
-                        controller.fee.balance,
-                min: BigInt.zero,
-                subtitle: field.destination.hasValue
-                    ? ReceiptAddressView(
-                        address: field.destination.value,
-                        onTap: null,
-                      )
-                    : const SizedBox(),
+                          .then((amount) {
+                        field.setupAccountAmount(destination, amount);
+                      });
+                    },
+                    validate: destination.hasAmount,
+                    onRemoveIcon:
+                        Icon(Icons.edit, color: context.primaryContainer),
+                    backgroundColor: context.onPrimaryContainer,
+                    child: CoinPriceView(
+                      balance: destination.balance,
+                      token: field.token,
+                      style: context.primaryTextTheme.titleMedium,
+                      symbolColor: context.primaryContainer,
+                    ),
+                  ),
+                  if (!destination.isPubKey)
+                    ErrorTextContainer(
+                        error:
+                            "solana_destination_address_invalid_public_key".tr,
+                        showErrorIcon: false),
+                ],
               ),
-            )
-                .then((value) {
-              if (value == null) {
-                field.setValue(field.amount, null);
-              } else {
-                field.setValue(
-                    field.amount, IntegerBalance(value, field.token.decimal!));
-              }
-            });
-          },
-          token: field.token,
+            );
+          }),
         ),
+        ContainerWithBorder(
+            validate: field.destination.isNotEmpty,
+            onRemove: () {
+              context
+                  .openSliverBottomSheet<List<ReceiptAddress<SolAddress>>>(
+                      "receiver_address".tr,
+                      bodyBuilder: (c) =>
+                          SelectRecipientAccountView<SolAddress>(
+                              account: controller.account,
+                              scrollController: c,
+                              multipleSelect: true),
+                      maxExtend: 1,
+                      minExtent: 0.8,
+                      initialExtend: 0.9)
+                  .then(
+                (value) {
+                  field.onAddRecever(value, (s) {
+                    context.showAlert(s);
+                  });
+                },
+              );
+            },
+            onRemoveIcon: const Icon(Icons.add_box),
+            child: Text("tap_to_add_new_receipment".tr)),
       ],
     );
   }
@@ -425,11 +430,11 @@ class _CreateAssociatedTokenAccountFields extends StatelessWidget {
             );
           },
         ),
-        AnimatedSize(
-          duration: APPConst.animationDuraion,
-          child: field.assosicatedAddress == null
-              ? WidgetConstant.sizedBox
-              : Column(
+        APPAnimatedSwitcher(
+          enable: field.assosicatedAddress != null,
+          widgets: {
+            false: (context) => WidgetConstant.sizedBox,
+            true: (context) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     WidgetConstant.height20,
@@ -437,10 +442,14 @@ class _CreateAssociatedTokenAccountFields extends StatelessWidget {
                         style: context.textTheme.titleMedium),
                     WidgetConstant.height8,
                     ContainerWithBorder(
-                      child: Text(field.assosicatedAddress?.address ?? ""),
+                      child: CopyableTextWidget(
+                        text: field.assosicatedAddress?.address ?? "",
+                        color: context.onPrimaryContainer,
+                      ),
                     )
                   ],
-                ),
+                )
+          },
         )
       ],
     );
@@ -508,9 +517,7 @@ class _CreateAccountFields extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: field.space.hasValue,
-          onRemoveIcon: field.space.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(field.space.hasValue),
           onRemove: () {
             context
                 .openSliverBottomSheet<BigRational>(
@@ -530,8 +537,10 @@ class _CreateAccountFields extends StatelessWidget {
                 )
                 .then(field.setSpace);
           },
-          child: Text(field.space.value?.toString().to3Digits ??
-              "tap_to_input_value".tr),
+          child: Text(
+              field.space.value?.toString().to3Digits ??
+                  "tap_to_input_value".tr,
+              style: context.onPrimaryTextTheme.bodyMedium),
         ),
         WidgetConstant.height20,
         TransactionAmountView(
@@ -549,6 +558,7 @@ class _CreateAccountFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "lamports".tr,
+                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     token: controller.network.coinParam.token,
                     max: controller.address.address.currencyBalance -
@@ -668,9 +678,7 @@ class _InitializeMintFields extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: field.decimals.hasValue,
-          onRemoveIcon: field.decimals.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(field.decimals.hasValue),
           onRemove: () {
             context
                 .openSliverBottomSheet<BigRational>(
@@ -694,8 +702,11 @@ class _InitializeMintFields extends StatelessWidget {
               },
             );
           },
-          child: Text(field.decimals.value?.toString().to3Digits ??
-              "tap_to_input_value".tr),
+          child: Text(
+            field.decimals.value?.toString().to3Digits ??
+                "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
       ],
     );
@@ -843,20 +854,8 @@ class _MintToFields extends StatelessWidget {
                           ),
                         ],
                       )
-                    : field.destinationAccount == null
-                        ? Text("account_not_found".tr)
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("owner".tr,
-                                  style: context.textTheme.labelLarge),
-                              Text(field.destinationAccount!.owner.address),
-                              Divider(color: context.colors.onPrimaryContainer),
-                              Text("executable".tr,
-                                  style: context.textTheme.labelLarge),
-                              Text(field.destinationAccount!.executable.tr),
-                            ],
-                          )),
+                    : _DestinationAccountInfoView(
+                        accountInfo: field.destinationAccount)),
         WidgetConstant.height20,
         TransactionAmountView(
           amount: field.amount.value,
@@ -867,6 +866,7 @@ class _MintToFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
               "amount".tr,
+              initialExtend: 1,
               child: SetupNetworkAmount(
                 token: field.token,
                 max: maxU64,
@@ -886,6 +886,34 @@ class _MintToFields extends StatelessWidget {
           },
           token: field.token,
         ),
+      ],
+    );
+  }
+}
+
+class _DestinationAccountInfoView extends StatelessWidget {
+  const _DestinationAccountInfoView({this.accountInfo});
+  final SolanaTransferDestinationInfo? accountInfo;
+  @override
+  Widget build(BuildContext context) {
+    if (accountInfo == null) {
+      return Text("account_not_found".tr,
+          style: context.onPrimaryTextTheme.bodyMedium);
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("owner".tr, style: context.onPrimaryTextTheme.labelLarge),
+        OneLineTextWidget(accountInfo!.ownerTag.tr,
+            style: context.onPrimaryTextTheme.bodyMedium),
+        Divider(color: context.colors.onPrimaryContainer),
+        Text("executable".tr, style: context.onPrimaryTextTheme.labelLarge),
+        Text(accountInfo!.executable.tr,
+            style: context.onPrimaryTextTheme.bodyMedium),
+        if (!accountInfo!.isOnCurve)
+          ErrorTextContainer(
+              error: "solana_destination_address_invalid_public_key".tr,
+              showErrorIcon: false),
       ],
     );
   }

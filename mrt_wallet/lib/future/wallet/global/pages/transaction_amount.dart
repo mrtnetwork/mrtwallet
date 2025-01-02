@@ -27,7 +27,7 @@ class TransactionAmountView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool hasAmount = amount != null && !amount!.isZero;
+    final bool hasAmount = amount != null && !amount!.isZero;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -39,18 +39,19 @@ class TransactionAmountView extends StatelessWidget {
             validate: hasAmount && validate,
             onRemove: onTap,
             validateText: validateError,
-            onRemoveIcon: onRemoveIcon ??
-                (hasAmount
-                    ? Icon(Icons.edit, color: context.colors.onPrimaryContainer)
-                    : Icon(Icons.add,
-                        color: context.colors.onPrimaryContainer)),
+            onRemoveIcon: onRemoveIcon ?? (AddOrEditIconWidget(hasAmount)),
             child: hasAmount
                 ? CoinPriceView(
                     token: token,
                     balance: amount,
-                    style: context.textTheme.titleLarge,
-                    showTokenImage: true)
-                : Text("tap_to_enter_amount".tr))
+                    style: context.onPrimaryTextTheme.titleMedium,
+                    showTokenImage: true,
+                    symbolColor: context.onPrimaryContainer,
+                  )
+                : Text(
+                    "tap_to_enter_amount".tr,
+                    style: context.onPrimaryTextTheme.bodyMedium,
+                  ))
       ],
     );
   }

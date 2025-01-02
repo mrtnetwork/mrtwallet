@@ -17,7 +17,7 @@ extension type JSWalletError._(JSAny _) implements JSError {
 
   factory JSWalletError.fromMessage(
       {required Web3ExceptionMessage message, String? stack}) {
-    Map<String, dynamic> json = message.toJson();
+    final Map<String, dynamic> json = message.toJson();
     json["stack"] ??= stack;
     final error = JSWalletError._(json.jsify() ?? JSObject());
     String toString() {
@@ -29,7 +29,7 @@ extension type JSWalletError._(JSAny _) implements JSError {
   }
   factory JSWalletError.fromJson(
       {required Map<String, dynamic> message, String? stack}) {
-    Map<String, dynamic> errorJson = Map<String, dynamic>.from(message);
+    final Map<String, dynamic> errorJson = Map<String, dynamic>.from(message);
     errorJson["stack"] ??= stack;
     errorJson.removeWhere((k, v) => v == null);
     final error = JSWalletError._(errorJson.jsify() ?? JSObject());

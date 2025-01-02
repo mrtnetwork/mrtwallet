@@ -30,52 +30,47 @@ class SendBitcoinTransactionView extends StatelessWidget {
             }
           },
           child: Scaffold(
-            appBar: AppBar(
-              title: Text("build_transacation".tr),
-            ),
+            appBar: AppBar(title: Text("build_transacation".tr)),
+            floatingActionButton:
+                APPAnimatedSwitcher(enable: controller.page, widgets: {
+              BitcoinTransactionPages.send: (context) => null,
+              BitcoinTransactionPages.account: (context) => APPAnimatedSize(
+                  isActive: controller.hasSpender,
+                  onActive: (context) => FloatingActionButton.extended(
+                      onPressed:
+                          controller.hasSpender ? controller.fetchUtxos : null,
+                      label: Text("get_unspent_transaction".tr)),
+                  onDeactive: (context) => WidgetConstant.sizedBox),
+              BitcoinTransactionPages.utxo: (context) => APPAnimatedSize(
+                  isActive: controller.canBuildTransaction,
+                  onActive: (context) => FloatingActionButton.extended(
+                      onPressed: controller.canBuildTransaction
+                          ? controller.onSetupUtxo
+                          : null,
+                      label: Text("setup_recipients".tr)),
+                  onDeactive: (context) => WidgetConstant.sizedBox),
+            }),
             body: PageProgress(
               key: controller.progressKey,
               backToIdle: APPConst.oneSecoundDuration,
-              child: (c) => CustomScrollView(
+              child: (context) => CustomScrollView(
                 slivers: [
-                  SliverToBoxAdapter(
-                    child: ConstraintsBoxView(
-                      padding: WidgetConstant.padding20,
-                      child: AnimatedSwitcher(
-                        duration: APPConst.animationDuraion,
-                        child: SizedBox(
-                          key: ValueKey<int>(controller.receivers.length),
-                          child: controller.inSendPage
-                              ? BitcoinBuildTransactionView(
-                                  controller: controller)
-                              : controller.inUtxoPage
-                                  ? Column(
-                                      children: [
-                                        BitcoinTransactionUtxoView(
-                                            controller: controller),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            FixedElevatedButton(
-                                              padding: WidgetConstant
-                                                  .paddingVertical20,
-                                              onPressed:
-                                                  controller.canBuildTransaction
-                                                      ? controller.onSetupUtxo
-                                                      : null,
-                                              child:
-                                                  Text("setup_recipients".tr),
-                                            )
-                                          ],
-                                        )
-                                      ],
-                                    )
-                                  : SelectAccountUtxo(controller: controller),
-                        ),
-                      ),
-                    ),
-                  )
+                  SliverConstraintsBoxView(
+                    padding: WidgetConstant.paddingHorizontal20,
+                    sliver: APPSliverAnimatedSwitcher(
+                        enable: controller.page,
+                        widgets: {
+                          BitcoinTransactionPages.send: (context) =>
+                              BitcoinBuildTransactionView(
+                                  controller: controller),
+                          BitcoinTransactionPages.account: (context) =>
+                              SelectAccountUtxo(controller: controller),
+                          BitcoinTransactionPages.utxo: (context) =>
+                              BitcoinTransactionUtxoView(
+                                  controller: controller),
+                        }),
+                  ),
+                  WidgetConstant.sliverPaddingVertial40,
                 ],
               ),
             ),
@@ -87,12 +82,11 @@ class SendBitcoinTransactionView extends StatelessWidget {
 }
 
 class SelectAccountUtxo extends StatefulWidget {
-  const SelectAccountUtxo({
-    super.key,
-    required this.controller,
-    this.toggleTokenUtxos,
-    this.includeTokenUtxos,
-  });
+  const SelectAccountUtxo(
+      {super.key,
+      required this.controller,
+      this.toggleTokenUtxos,
+      this.includeTokenUtxos});
   final BitcoinTransactionImpl controller;
   final DynamicVoid? toggleTokenUtxos;
   final bool? includeTokenUtxos;
@@ -101,19 +95,17 @@ class SelectAccountUtxo extends StatefulWidget {
   State<SelectAccountUtxo> createState() => _SelectAccountUtxoState();
 }
 
-class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
+class _SelectAccountUtxoState extends State<SelectAccountUtxo> with SafeState {
   late final List<IBitcoinAddress> addresses =
       List.from(widget.controller.addresses)
-        ..sort(
-          (a, b) => a == widget.controller.chainAccount.address ? 0 : 1,
-        );
+        ..sort((a, b) => a == widget.controller.chainAccount.address ? 0 : 1);
   late final IBitcoinAddress currentAccount = addresses.first;
 
   bool showAll = true;
 
   void toggleShowAll() {
     showAll = !showAll;
-    setState(() {});
+    updateState();
     if (!showAll) {
       bool alert = false;
       for (final i in addresses) {
@@ -132,118 +124,91 @@ class _SelectAccountUtxoState extends State<SelectAccountUtxo> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      key: const ValueKey<BitcoinTransactionPages>(
-          BitcoinTransactionPages.account),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        PageTitleSubtitle(
-            title: "create_and_send_network_transaction"
+    return SliverMainAxisGroup(slivers: [
+      SliverToBoxAdapter(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            PageTitleSubtitle(
+                title: "create_and_send_network_transaction"
+                    .tr
+                    .replaceOne(widget.controller.network.coinParam.token.name),
+                body: Text("spend_multiple_account_desc".tr)),
+            if (widget.controller.isBCHTransaction)
+              if (widget.includeTokenUtxos != null)
+                AppSwitchListTile(
+                  value: widget.includeTokenUtxos!,
+                  onChanged: (p0) => widget.toggleTokenUtxos!(),
+                  title: Text("token_utxos".tr),
+                  subtitle: Text("includ_token_utxos".tr),
+                ),
+            Text("accounts".tr, style: context.textTheme.titleMedium),
+            Text("please_selected_acc_spend"
                 .tr
-                .replaceOne(widget.controller.network.coinParam.token.name),
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("spend_multiple_account_desc".tr),
-                WidgetConstant.height20,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    StreamWidget(
-                        buttonWidget: FilledButton.icon(
-                            onPressed: widget.controller.updateBalances,
-                            icon: const Icon(Icons.update),
-                            label: Text("update_balances".tr)),
-                        backToIdle: APPConst.animationDuraion,
-                        key: widget.controller.updateBalancessKey)
-                  ],
-                )
-              ],
-            )),
-        if (widget.controller.isBCHTransaction)
-          if (widget.includeTokenUtxos != null)
+                .replaceOne(widget.controller.network.coinParam.token.name)),
+            WidgetConstant.height8,
             AppSwitchListTile(
-              value: widget.includeTokenUtxos!,
-              onChanged: (p0) => widget.toggleTokenUtxos!(),
-              title: Text("token_utxos".tr),
-              subtitle: Text("includ_token_utxos".tr),
+              value: showAll,
+              title: Text("display_all_account".tr),
+              subtitle: Text("spending_from_multiple_account".tr),
+              onChanged: (p0) => toggleShowAll(),
             ),
-        Text("accounts".tr, style: context.textTheme.titleMedium),
-        Text("please_selected_acc_spend"
-            .tr
-            .replaceOne(widget.controller.network.coinParam.token.name)),
-        WidgetConstant.height8,
-        AppSwitchListTile(
-          value: showAll,
-          title: Text("display_all_account".tr),
-          subtitle: Text("spending_from_multiple_account".tr),
-          onChanged: (p0) => toggleShowAll(),
-        ),
-        WidgetConstant.height8,
-        ContainerWithBorder(
-            backgroundColor: context.colors.secondary,
-            validateText: "lacks_an_utxos".tr,
-            onRemoveIcon: Checkbox(
-                fillColor: WidgetStatePropertyAll(context.colors.onSecondary),
-                checkColor: context.colors.secondary,
-                activeColor: context.colors.secondary,
-                value: widget.controller.addressSelected(
-                    currentAccount.networkAddress.addressProgram),
-                onChanged: currentAccount.address.currencyBalance > BigInt.zero
-                    ? (v) {
+            WidgetConstant.height8,
+            ContainerWithBorder(
+                backgroundColor: context.colors.secondary,
+                validateText: "lacks_an_utxos".tr,
+                onRemoveIcon: Checkbox(
+                    fillColor:
+                        WidgetStatePropertyAll(context.colors.onSecondary),
+                    checkColor: context.colors.secondary,
+                    activeColor: context.colors.secondary,
+                    value: widget.controller.addressSelected(
+                        currentAccount.networkAddress.addressProgram),
+                    onChanged: currentAccount.address.hasBalance
+                        ? (v) {
+                            widget.controller.addAccount(currentAccount);
+                          }
+                        : null),
+                onRemove: currentAccount.address.hasBalance
+                    ? () {
                         widget.controller.addAccount(currentAccount);
                       }
-                    : null),
-            onRemove: currentAccount.address.currencyBalance > BigInt.zero
-                ? () {
-                    widget.controller.addAccount(currentAccount);
-                  }
-                : null,
-            child: AddressDetailsView(
-              address: currentAccount,
-              color: context.colors.onSecondary,
-            )),
-        AnimatedSize(
-          duration: APPConst.animationDuraion,
-          child: showAll
-              ? Column(
-                  children: List.generate(addresses.length, (index) {
-                    final bool isSelected = currentAccount == addresses[index];
-                    if (isSelected) return WidgetConstant.sizedBox;
-                    final balance = addresses[index].address.currencyBalance;
-                    final bool canSpend = balance > BigInt.zero;
-
-                    return ContainerWithBorder(
-                        validate: canSpend,
-                        validateText: "lacks_an_utxos".tr,
-                        onRemoveIcon: Checkbox(
-                          value: widget.controller.addressSelected(
-                              addresses[index].networkAddress.addressProgram),
-                          onChanged: (value) {
-                            widget.controller.addAccount(addresses[index]);
-                          },
-                        ),
-                        onRemove: () {
-                          widget.controller.addAccount(addresses[index]);
-                        },
-                        child: AddressDetailsView(address: addresses[index]));
-                  }),
-                )
-              : WidgetConstant.sizedBox,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FixedElevatedButton(
-              padding: WidgetConstant.paddingVertical20,
-              onPressed: widget.controller.hasSpender
-                  ? widget.controller.fetchUtxos
-                  : null,
-              child: Text("get_unspent_transaction".tr),
-            ),
+                    : null,
+                child: AddressDetailsView(
+                  address: currentAccount,
+                  color: context.colors.onSecondary,
+                )),
           ],
         ),
-      ],
-    );
+      ),
+      APPSliverAnimatedSwitcher(enable: showAll, widgets: {
+        true: (context) => SliverList.separated(
+              separatorBuilder: (context, index) => WidgetConstant.divider,
+              itemBuilder: (context, index) {
+                final bool isSelected = currentAccount == addresses[index];
+                if (isSelected) return WidgetConstant.sizedBox;
+                final balance = addresses[index].address.currencyBalance;
+                final bool canSpend = balance > BigInt.zero;
+                return ContainerWithBorder(
+                    validate: canSpend,
+                    validateText: "lacks_an_utxos".tr,
+                    onRemoveIcon: Checkbox(
+                      value: widget.controller.addressSelected(
+                          addresses[index].networkAddress.addressProgram),
+                      onChanged: (value) {
+                        widget.controller.addAccount(addresses[index]);
+                      },
+                    ),
+                    onRemove: () {
+                      widget.controller.addAccount(addresses[index]);
+                    },
+                    child: AddressDetailsView(
+                        address: addresses[index],
+                        color: context.colors.onPrimaryContainer));
+              },
+              itemCount: addresses.length,
+            ),
+      }),
+    ]);
   }
 }

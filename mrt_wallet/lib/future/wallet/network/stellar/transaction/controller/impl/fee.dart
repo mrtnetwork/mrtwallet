@@ -63,9 +63,9 @@ mixin StellarFeeImpl on StellarTransactionImpl {
         operations: operations);
     fee[StellarFeeMode.high.name] = _calculateFee(
         feeStats: feeStats, mode: StellarFeeMode.high, operations: operations);
-    final customFee = _fees[StellarFeeMode.costom.name];
+    final customFee = _fees[StellarFeeMode.custom.name];
     if (customFee != null) {
-      fee[StellarFeeMode.costom.name] = customFee;
+      fee[StellarFeeMode.custom.name] = customFee;
     }
     _fees = fee.immutable;
   }
@@ -105,7 +105,7 @@ mixin StellarFeeImpl on StellarTransactionImpl {
   }
 
   void _validateFee() {
-    if (feeMode != StellarFeeMode.costom) {
+    if (feeMode != StellarFeeMode.custom) {
       _feeError = null;
       return;
     }
@@ -124,10 +124,10 @@ mixin StellarFeeImpl on StellarTransactionImpl {
       if (mode == null && customFee != null) {
         if (customFee <= BigInt.zero || customFee > StellarConst.maxFee) return;
         final fee = _fees.clone();
-        fee[StellarFeeMode.costom.name] =
+        fee[StellarFeeMode.custom.name] =
             IntegerBalance(customFee, network.coinDecimal);
         _fees = fee.immutable;
-        _feeMode = StellarFeeMode.costom;
+        _feeMode = StellarFeeMode.custom;
       } else {
         if (mode == null) return;
         _feeMode = mode;

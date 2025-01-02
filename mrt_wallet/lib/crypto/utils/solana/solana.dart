@@ -1,12 +1,10 @@
-import 'package:blockchain_utils/base58/base58_base.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:on_chain/on_chain.dart';
 
 class SolanaCryptoUtils {
-  static SolanaPrivateKey convertSolanaBase58ToPrivateKey(String? secretKey) {
+  static SolanaPrivateKey convertSolanaBase58ToPrivateKey(String? b58Key) {
     try {
-      final bytes = Base58Decoder.decode(secretKey!);
-      return SolanaPrivateKey.fromBytes(bytes);
+      return SolanaPrivateKey.fromBase58(b58Key!);
     } catch (e) {
       throw WalletExceptionConst.invalidPrivateKey;
     }

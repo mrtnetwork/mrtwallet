@@ -12,13 +12,12 @@ import 'package:mrt_wallet/wallet/api/services/models/models/request_completer.d
 import 'package:mrt_wallet/wallet/api/services/models/models/socket_status.dart';
 
 class WebSocketService<T extends APIProvider> extends BaseSocketService<T> {
-  WebSocketService({required this.url, required this.provider});
+  WebSocketService({required this.provider});
   @override
   final T provider;
+  String get url => provider.callUrl;
   @override
   final APIServiceTracker tracker = APIServiceTracker();
-  @override
-  final String url;
 
   final _lock = SynchronizedLock();
   PlatformWebScoket? _socket;
@@ -27,7 +26,7 @@ class WebSocketService<T extends APIProvider> extends BaseSocketService<T> {
   @override
   bool get isConnected => _status == SocketStatus.connect;
 
-  final Map<int, SocketRequestCompeleter> _requests = {};
+  final Map<int, SocketRequestCompleter> _requests = {};
   void _add(List<int> message) {
     _socket?.sink(message);
   }
@@ -61,7 +60,7 @@ class WebSocketService<T extends APIProvider> extends BaseSocketService<T> {
     await _lock.synchronized(() async {
       if (_status != SocketStatus.disconnect) return;
       final result = await MethodUtils.call(() async {
-        final socket = await PlatformWebScoket.connect(url);
+        final socket = await PlatformWebScoket.connect(provider.callUrl);
         return socket;
       });
       if (result.hasResult) {
@@ -78,11 +77,11 @@ class WebSocketService<T extends APIProvider> extends BaseSocketService<T> {
   }
 
   Future<Map<String, dynamic>> addMessage(
-      SocketRequestCompeleter message, Duration timeout) async {
+      SocketRequestCompleter message, Duration timeout) async {
     try {
       return providerCaller(() async {
         _requests[message.id] = message;
-        _add(StringUtils.encode(message.params));
+        _add(message.params);
         final result = await message.completer.future.timeout(timeout);
         return result;
       }, message);

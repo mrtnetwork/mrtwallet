@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/bip/bip.dart';
 import 'package:mrt_wallet/app/models/models/image.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/app/utils/list/extension.dart';
@@ -5,7 +6,7 @@ import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 
-class _NetworkCoinParamsConst {
+class NetworkCoinParamsConst {
   static const String txIdArgs = "#txid";
   static const String addrArgs = "#address";
 }
@@ -17,7 +18,7 @@ abstract class NetworkCoinParams<PROVIDER extends APIProvider>
       required this.addressExplorer,
       required this.token,
       required List<PROVIDER> providers,
-      required this.mainnet,
+      this.chainType = ChainType.mainnet,
       this.bip32CoinType})
       : _providers = List<PROVIDER>.unmodifiable(providers);
   final String? transactionExplorer;
@@ -25,32 +26,33 @@ abstract class NetworkCoinParams<PROVIDER extends APIProvider>
   final Token token;
   List<PROVIDER> _providers;
   List<PROVIDER> get providers => _providers;
-  final bool mainnet;
-  bool get isTestNet => !mainnet;
+  final ChainType chainType;
+  bool get mainnet => chainType == ChainType.mainnet;
+  bool get isTestNet => chainType == ChainType.testnet;
   int get decimal => token.decimal!;
   final int? bip32CoinType;
   APPImage get logo => token.assetLogo!;
-
   bool get hasAccountExplorer => addressExplorer != null;
   bool get hasTransactionExplorer => transactionExplorer != null;
   bool get hasMarketUrl => token.market != null;
 
+  Object get identifier;
+
   String? getAccountExplorer(String address) {
     return addressExplorer?.replaceAll(
-        _NetworkCoinParamsConst.addrArgs, address);
+        NetworkCoinParamsConst.addrArgs, address);
   }
 
   String? getTransactionExplorer(String txId) {
     return transactionExplorer?.replaceAll(
-        _NetworkCoinParamsConst.txIdArgs, txId);
+        NetworkCoinParamsConst.txIdArgs, txId);
   }
 
   String? get marketUri {
     return token.marketUri;
   }
 
-  NetworkCoinParams<PROVIDER> updateProviders(
-      List<APIProvider> updateProviders);
+  NetworkCoinParams<PROVIDER> updateProviders(List<PROVIDER> updateProviders);
 
   void addProvider(PROVIDER provider) {
     _providers = [provider, ..._providers].imutable;

@@ -23,13 +23,18 @@ SnackBar createSnackAlert(
             child: Container(
               padding: WidgetConstant.padding10,
               decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
+                  color: theme.colorScheme.inverseSurface,
                   borderRadius: WidgetConstant.border8),
               child: Stack(
                 children: [
                   Center(
-                    child: OneLineTextWidget(message,
-                        maxLine: 3, align: TextAlign.center),
+                    child: OneLineTextWidget(
+                      message,
+                      maxLine: 3,
+                      align: TextAlign.center,
+                      style: theme.textTheme.bodyMedium
+                          ?.copyWith(color: theme.colorScheme.onInverseSurface),
+                    ),
                   )
                 ],
               ),

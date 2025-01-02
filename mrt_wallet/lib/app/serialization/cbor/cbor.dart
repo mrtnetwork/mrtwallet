@@ -5,6 +5,7 @@ import 'package:on_chain/on_chain.dart';
 
 mixin CborSerializable {
   CborTagValue toCbor();
+
   static CborTagValue toTagValue<T extends CborObject>(List<int> bytes,
       {List<int>? tags}) {
     final cbor = CborObject.fromCbor(bytes);
@@ -38,7 +39,7 @@ mixin CborSerializable {
     if (object == null) {
       cborBytes ??= BytesUtils.tryFromHexString(hex);
       if (cborBytes == null) {
-        throw WalletException(
+        throw const WalletException(
             "decoding cbor required object, bytes or hex. no value provided for decoding.");
       }
       object = CborObject.fromCbor(cborBytes);
@@ -64,7 +65,7 @@ mixin CborSerializable {
       if (object == null) {
         cborBytes ??= BytesUtils.tryFromHexString(hex);
         if (cborBytes == null) {
-          throw WalletException(
+          throw const WalletException(
               "decoding cbor required object, bytes or hex. no value provided for decoding.");
         }
         object = CborObject.fromCbor(cborBytes);
@@ -73,6 +74,8 @@ mixin CborSerializable {
         throw WalletException.invalidArgruments(["$T" "${object.runtimeType}"]);
       }
       return object;
+    } on WalletException {
+      rethrow;
     } catch (e) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
@@ -101,6 +104,14 @@ extension ExtractCborMap on CborMapValue {
 }
 
 extension ExtractCborList on CborListValue {
+  bool isA<T extends CborObject>(int index) {
+    if (index > value.length - 1) {
+      if (null is T) return true;
+      return false;
+    }
+    return value[index] is T;
+  }
+
   T elementAt<T>(int index) {
     if (index > value.length - 1) return null as T;
     final cborValue = value[index];
@@ -120,20 +131,56 @@ extension ExtractCborList on CborListValue {
     return v;
   }
 
-  T elemetAs<T>(int index) {
+  List<T> elementAsListOf<T extends CborObject>(int index) {
+    try {
+      return (value[index] as CborListValue).value.cast<T>();
+    } catch (e) {
+      throw WalletExceptionConst.invalidSerializationData;
+    }
+  }
+
+  Map<K, V> elementAsMap<K extends CborObject, V extends CborObject>(
+      int index) {
+    try {
+      final CborMapValue cborValue = value[index];
+      return cborValue.value.cast<K, V>();
+    } catch (e) {
+      throw WalletExceptionConst.invalidSerializationData;
+    }
+  }
+
+  T elementAs<T>(int index) {
     if (index > value.length - 1) {
       if (null is T) return null as T;
       throw WalletExceptionConst.invalidSerializationData;
     }
     try {
-      CborObject? cborValue = value[index];
+      final CborObject? cborValue = value[index];
       if (null is T && cborValue == const CborNullValue()) {
         return null as T;
       }
-      if (cborValue is T) {
-        return cborValue as T;
+      if (cborValue!.value is T) {
+        return cborValue.value as T;
       }
-      return cborValue!.value as T;
+      return cborValue as T;
+    } catch (e) {
+      throw WalletExceptionConst.invalidSerializationData;
+    }
+  }
+
+  E? elemetMybeAs<E, T>(int index, E Function(T) onValue) {
+    if (index > value.length - 1) {
+      return null;
+    }
+    try {
+      final CborObject cborValue = value[index];
+      if (cborValue == const CborNullValue()) {
+        return null;
+      }
+      if (cborValue is T) {
+        return onValue(cborValue as T);
+      }
+      return onValue(cborValue.value as T);
     } catch (e) {
       throw WalletExceptionConst.invalidSerializationData;
     }
@@ -144,7 +191,7 @@ extension ExtractCborList on CborListValue {
   }
 
   List<T> castValue<T>() {
-    return [for (int i = 0; i < value.length; i++) elemetAs<T>(i)];
+    return [for (int i = 0; i < value.length; i++) elementAs<T>(i)];
   }
 
   CborTagValue? getCborTag(int index) {

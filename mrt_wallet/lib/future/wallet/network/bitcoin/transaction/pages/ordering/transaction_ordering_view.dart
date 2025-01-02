@@ -34,8 +34,8 @@ class _TransactionOrderingViewState extends State<TransactionOrderingView> {
   void ordering() {
     final orderedInputs = inputs.map((e) => e.item).toList();
     final List<BitcoinBaseOutput> orderedOutputs = [
-      ...outputs.map((e) => e.output).toList(),
-      ...widget.outputs.whereType<BitcoinBurnableOutput>().toList()
+      ...outputs.map((e) => e.output),
+      ...widget.outputs.whereType<BitcoinBurnableOutput>()
     ];
     context.pop((orderedInputs, orderedOutputs));
   }
@@ -105,32 +105,28 @@ class _InputOrdering extends StatelessWidget {
           child: ConstraintsBoxView(
             child: ContainerWithBorder(
               onRemove: () {},
-              onTapWhenOnRemove: false,
+              enableTap: false,
               onRemoveIcon: ReorderableDragStartListener(
-                  index: index, child: const Icon(Icons.drag_handle)),
+                  index: index,
+                  child: Icon(Icons.drag_handle,
+                      color: context.onPrimaryContainer)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: Text(
-                            input.item.ownerDetails.address.type.value.tr,
-                            style: context.textTheme.labelLarge),
-                      ),
-                      SelectableView(text: index.toString()),
-                    ],
-                  ),
-                  OneLineTextWidget(input.item.ownerDetails.address
-                      .toAddress(network.coinParam.transacationNetwork)),
-                  Divider(color: context.colors.onPrimaryContainer),
-                  OneLineTextWidget(input.item.utxo.txHash),
-                  Text(input.item.utxo.vout.toString()),
+                  Text(input.item.ownerDetails.address.type.value.tr,
+                      style: context.onPrimaryTextTheme.labelLarge),
+                  OneLineTextWidget(
+                      input.item.ownerDetails.address
+                          .toAddress(network.coinParam.transacationNetwork),
+                      style: context.onPrimaryTextTheme.bodyMedium),
+                  Divider(color: context.onPrimaryContainer),
+                  OneLineTextWidget(input.item.utxo.txHash,
+                      style: context.onPrimaryTextTheme.bodyMedium),
                   CoinPriceView(
                       token: network.coinParam.token,
                       balance: input.inputValue,
-                      style: context.textTheme.titleLarge)
+                      style: context.onPrimaryTextTheme.titleMedium,
+                      symbolColor: context.onPrimaryContainer)
                 ],
               ),
             ),
@@ -165,9 +161,11 @@ class _OutputOrdering extends StatelessWidget {
           key: output.key,
           child: ContainerWithBorder(
             onRemove: () {},
-            onTapWhenOnRemove: false,
+            enableTap: false,
             onRemoveIcon: ReorderableDragStartListener(
-                index: index, child: const Icon(Icons.drag_handle)),
+                index: index,
+                child:
+                    Icon(Icons.drag_handle, color: context.onPrimaryContainer)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -179,28 +177,28 @@ class _OutputOrdering extends StatelessWidget {
                             ? Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                          child: OneLineTextWidget(
-                                              output.addressView!)),
-                                      WidgetConstant.width8,
-                                      SelectableView(text: index.toString())
-                                    ],
-                                  ),
+                                  OneLineTextWidget(output.addressView!,
+                                      style: context
+                                          .onPrimaryTextTheme.bodyMedium),
                                   CoinPriceView(
                                       token: network.coinParam.token,
-                                      balance: output.value),
+                                      balance: output.value,
+                                      style: context
+                                          .onPrimaryTextTheme.titleMedium,
+                                      symbolColor: context.onPrimaryContainer),
                                 ],
                               )
-                            : Text(output.script ?? "")),
+                            : Text(
+                                output.script ?? "",
+                                style: context.onPrimaryTextTheme.bodyMedium,
+                              )),
                   ],
                 ),
                 if (output.token != null) ...[
-                  Divider(
-                    color: context.colors.onPrimaryContainer,
-                  ),
-                  BCHCashTokenDetailsView(token: output.token!),
+                  Divider(color: context.colors.onPrimaryContainer),
+                  BCHCashTokenDetailsView(
+                      token: output.token!,
+                      color: context.colors.onPrimaryContainer),
                 ],
               ],
             ),

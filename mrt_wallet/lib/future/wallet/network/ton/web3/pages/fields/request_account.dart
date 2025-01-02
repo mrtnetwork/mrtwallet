@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ton/forms/web3/forms/requst_account.dart';
@@ -8,8 +9,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 class TonWeb3RequestAccountsView extends StatelessWidget {
   const TonWeb3RequestAccountsView(
-      {required this.field, required this.controller, Key? key})
-      : super(key: key);
+      {required this.field, required this.controller, super.key});
   final TonRequestAccountForm field;
   final Web3TonGlobalRequestController controller;
   @override
@@ -30,13 +30,11 @@ class TonWeb3RequestAccountsView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CircleAPPImageView(i.network.token.assetLogo,
-                              radius: 15),
+                              radius: APPConst.circleRadius12),
                           WidgetConstant.width8,
                           Flexible(
-                            child: OneLineTextWidget(
-                              i.network.token.name,
-                              style: context.textTheme.labelLarge,
-                            ),
+                            child: OneLineTextWidget(i.network.token.name,
+                                style: context.textTheme.labelLarge),
                           )
                         ],
                       )
@@ -60,7 +58,7 @@ class TonWeb3RequestAccountsView extends StatelessWidget {
                         final addr = field.chain.addresses[index];
                         final permission = field.accountPermission(addr);
                         return ContainerWithBorder(
-                          onTapWhenOnRemove: false,
+                          enableTap: false,
                           onRemove: () {
                             field.addAccount(addr);
                           },
@@ -91,7 +89,8 @@ class TonWeb3RequestAccountsView extends StatelessWidget {
                                       WidgetConstant.sizedBox)
                             ],
                           ),
-                          child: AddressDetailsView(address: addr),
+                          child: AddressDetailsView(
+                              address: addr, color: context.onPrimaryContainer),
                         );
                       },
                       itemCount: field.chain.addresses.length),

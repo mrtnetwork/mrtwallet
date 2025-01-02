@@ -50,6 +50,15 @@ class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
                               WidgetConstant.height8,
                               Text(chainAccount.network.coinParam.token.name,
                                   style: context.textTheme.labelLarge),
+                              if (chainAccount.network.coinParam.isTestNet)
+                                ToolTipView(
+                                  message: "testnet_price_desc".tr,
+                                  child: Text(
+                                    "testnet".tr,
+                                    style: context.textTheme.labelSmall
+                                        ?.copyWith(color: context.colors.error),
+                                  ),
+                                ),
                             ],
                           ),
                           Expanded(
@@ -80,26 +89,6 @@ class AccountPageSliverHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ),
                 )
           }),
-          if (chainAccount.network.coinParam.isTestNet)
-            Positioned(
-                top: 0,
-                right: 10,
-                child: ToolTipView(
-                  message: "testnet_price_desc".tr,
-                  child: Card(
-                    color: context.colors.errorContainer,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: WidgetConstant.border4),
-                    child: Padding(
-                      padding: WidgetConstant.padding2,
-                      child: Text(
-                        "testnet".tr,
-                        style: context.textTheme.labelSmall
-                            ?.copyWith(color: context.colors.onErrorContainer),
-                      ),
-                    ),
-                  ),
-                ))
         ],
       ),
     );
@@ -123,7 +112,7 @@ class _AccountButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasProvider = !(chainAccount.provider()?.isConnect ?? false);
+    final hasProvider = !(chainAccount.clientNullable?.isConnect ?? false);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

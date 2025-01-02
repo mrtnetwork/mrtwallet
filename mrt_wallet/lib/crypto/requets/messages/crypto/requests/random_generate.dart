@@ -4,7 +4,7 @@ import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 
 class CryptoRequestRandomGenerator<T>
-    implements CryptoRequest<List<int>, MessageArgsOneBytes> {
+    extends CryptoRequest<List<int>, MessageArgsOneBytes> {
   final int length;
   final List<List<int>> existsKeys;
   CryptoRequestRandomGenerator(

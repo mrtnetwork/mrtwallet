@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:blockchain_utils/utils/binary/utils.dart';
 
 class CryptoEncryptChachaResponse {
@@ -5,8 +6,8 @@ class CryptoEncryptChachaResponse {
   final List<int> nonce;
   CryptoEncryptChachaResponse(
       {required List<int> encrypted, required List<int> nonce})
-      : encrypted = BytesUtils.toBytes(encrypted, unmodifiable: true),
-        nonce = BytesUtils.toBytes(nonce, unmodifiable: true);
+      : encrypted = encrypted.asImmutableBytes,
+        nonce = nonce.asImmutableBytes;
   String get encryptedHex => BytesUtils.toHexString(encrypted);
   String get nonceHex => BytesUtils.toHexString(nonce);
 }
@@ -14,5 +15,5 @@ class CryptoEncryptChachaResponse {
 class CryptoDecryptChachaResponse {
   final List<int> decrypted;
   CryptoDecryptChachaResponse(List<int> decrypted)
-      : decrypted = BytesUtils.toBytes(decrypted, unmodifiable: true);
+      : decrypted = decrypted.asImmutableBytes;
 }

@@ -31,7 +31,7 @@ class AppBottomSheet extends StatefulWidget {
   State<AppBottomSheet> createState() => _AppBottomSheetState();
 }
 
-class _AppBottomSheetState extends State<AppBottomSheet> {
+class _AppBottomSheetState extends State<AppBottomSheet> with SafeState {
   late final double initialExtend =
       (widget.initiaalExtend) ?? widget.minExtent.max(widget.maxExtend - 0.1);
 
@@ -42,10 +42,10 @@ class _AppBottomSheetState extends State<AppBottomSheet> {
     if (v > 0.9) {
       final double extent = 1 - v;
       appBarAnimationRadius = (25 * extent) * 10;
-      if (mounted) setState(() {});
+      if (mounted) updateState();
     } else if (appBarAnimationRadius < 25) {
       appBarAnimationRadius = 25;
-      if (mounted) setState(() {});
+      if (mounted) updateState();
     }
 
     return false;

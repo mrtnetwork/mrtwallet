@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 
+import 'package:blockchain_utils/base58/base58_base.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
@@ -18,7 +19,15 @@ class SolanaWeb3State
   final SolanaChain? chain;
   final SolAddress? defaultAddress;
   final SolanaClient? client;
-
+  late final SolanaNetworkType? network = chain!.network.coinParam.type;
+  List<SolanaWalletAccount> get walletAccounts => permissionAccounts.map((e) {
+        final address = SolAddress.unchecked(e);
+        return SolanaWalletAccount(
+            base58: address.address,
+            bytes: address.toBytes(),
+            chains: network == null ? [] : [network!.walletStandardChainName],
+            features: []);
+      }).toList();
   SolanaWeb3State._(
       {super.permission,
       required super.chains,
@@ -78,12 +87,18 @@ class SolanaWeb3State
   }
 
   SolanaAccountsChanged get accountsChange => SolanaAccountsChanged(
-      accounts: permissionAccounts,
-      defaultAddress: defaultAddress?.address,
-      defaultAddressBytes: defaultAddress?.toBytes(),
+      accounts: walletAccounts,
+      defaultAddress: defaultAddress == null
+          ? null
+          : SolanaWalletAccount(
+              base58: defaultAddress!.address,
+              bytes: defaultAddress!.toBytes(),
+              chains: network == null ? [] : [network!.walletStandardChainName],
+              features: []),
       connectInfo: chainChangedEvent);
-  SolanaProviderConnectInfo get chainChangedEvent =>
-      SolanaProviderConnectInfo(chain!.network.genesisBlock);
+  SolanaProviderConnectInfo get chainChangedEvent => SolanaProviderConnectInfo(
+      genesisBlock: chain!.network.genesisBlock,
+      name: network!.walletStandardChainName);
   bool hasPermission(SolAddress address) {
     return permission?.getPermission(address) != null;
   }
@@ -158,7 +173,6 @@ class JSSolanaHandler extends JSNetworkHandler<
       case Web3SolanaRequestMethods.signTransaction:
       case Web3SolanaRequestMethods.signAllTransactions:
       case Web3SolanaRequestMethods.sendTransaction:
-      case Web3SolanaRequestMethods.sendAllTransactions:
         return _parseTransaction(method: method!, params: params, state: state);
       case Web3SolanaRequestMethods.signMessage:
         final signMessageV2 = _signMessage(params, state);
@@ -173,8 +187,22 @@ class JSSolanaHandler extends JSNetworkHandler<
     if (state.defaultAddress == null) {
       throw Web3RequestExceptionConst.missingPermission;
     }
-    final data = JsUtils.toList<int>(params.getFirstParam,
+    final param = params.getElementAt(0);
+    if (param == null) {
+      throw Web3RequestExceptionConst.invalidSignMessageData;
+    }
+    SolanaWalletAdapterSignMessage? message =
+        SolanaWalletAdapterSignMessage.fromJSAny(param);
+
+    final data = JsUtils.toList<int>(message?.message ?? param,
         error: Web3RequestExceptionConst.invalidSignMessageData);
+    SolAddress address = SolAddress(state.defaultAddress!.address);
+    if (message != null) {
+      address = SolAddress(message.account.address);
+      if (!state.hasPermission(address)) {
+        throw Web3RequestExceptionConst.missingPermission;
+      }
+    }
     try {
       VersionedMessage.fromBuffer(data);
       throw Web3SolanaExceptionConstant.singTransactionInsteadMessage;
@@ -182,27 +210,39 @@ class JSSolanaHandler extends JSNetworkHandler<
       rethrow;
     } catch (_) {}
     return Web3SolanaSignMessage(
-        address: SolAddress(state.defaultAddress!.address),
+        address: address,
         challeng: BytesUtils.toHexString(data),
         content: StringUtils.tryDecode(data));
   }
 
-  Future<Web3SolanaSendTransaction> _parseTransaction({
-    required PageMessageRequest params,
-    required SolanaWeb3State state,
-    required Web3SolanaRequestMethods method,
-  }) async {
+  Future<Web3SolanaSendTransaction> _parseTransaction(
+      {required PageMessageRequest params,
+      required SolanaWeb3State state,
+      required Web3SolanaRequestMethods method}) async {
     try {
-      final transactions = params.getJSParamsAs<JSUint8Array>();
+      final transactions = params.getJSParamsAs<JSSolanaTransaction>();
       if (transactions?.isEmpty ?? true) {
         throw Web3SolanaExceptionConstant.emptyTransactionParameters;
       }
-      List<Web3SolanaSendTransactionData> messages = [];
+      final List<Web3SolanaSendTransactionData> messages = [];
       for (int i = 0; i < transactions!.length; i++) {
-        final messageBytes = transactions[i].toListInt();
-        List<SolAddress> activeAccounts = [];
+        final tx = transactions[i];
+        Web3SolanaSendTransactionOptions? option;
+        if (tx.options != null) {
+          option =
+              Web3SolanaSendTransactionOptions.fromJson(tx.options!.toJson());
+        }
+        final messageBytes = tx.transactionSerialize().toListInt();
+        final List<SolAddress> activeAccounts = [];
         final message = SolanaTransaction.deserialize(messageBytes);
-        final signers = message.signers;
+        List<SolAddress> signers = message.signers;
+        if (tx.type == JSSolanalaTransactionType.walletAdapter) {
+          final SolanaWalletAdapterStandardTransaction walletAdapterTx =
+              tx as SolanaWalletAdapterStandardTransaction;
+          if (walletAdapterTx.account != null) {
+            signers = [SolAddress(walletAdapterTx.account!.address)];
+          }
+        }
         for (final i in signers) {
           if (state.hasPermission(i)) {
             activeAccounts.add(i);
@@ -211,39 +251,30 @@ class JSSolanaHandler extends JSNetworkHandler<
         if (activeAccounts.isEmpty) {
           throw Web3RequestExceptionConst.missingPermission;
         }
+        if (option?.signers ?? false) {
+          throw Web3SolanaExceptionConstant.invalidTransactionOptionsSigner;
+        }
         final account = activeAccounts.firstWhere(
             (e) => e.address == state.defaultAddress?.address,
             orElse: () => activeAccounts.first);
         messages.add(Web3SolanaSendTransactionData(
-            account: account, messageByte: messageBytes, id: i));
+            account: account,
+            messageByte: messageBytes,
+            id: i,
+            sendConfig: option));
       }
-      Web3SolanaSendTransactionOptions? option;
+
       switch (method) {
         case Web3SolanaRequestMethods.signTransaction:
-          if (messages.length > 1) {
-            throw Web3SolanaExceptionConstant.signleRequestInsteadBatchError;
-          }
-          break;
         case Web3SolanaRequestMethods.sendTransaction:
           if (messages.length > 1) {
             throw Web3SolanaExceptionConstant.signleRequestInsteadBatchError;
           }
-          option = Web3SolanaSendTransactionOptions.fromJson(
-              (params.additionalData as JSSolanaTranasctionSendOptions)
-                  .toJson());
-          break;
-        case Web3SolanaRequestMethods.sendAllTransactions:
-          option = Web3SolanaSendTransactionOptions.fromJson(
-              (params.additionalData as JSSolanaTranasctionSendOptions)
-                  .toJson());
           break;
         default:
       }
-      if (option?.signers ?? false) {
-        throw Web3SolanaExceptionConstant.invalidTransactionOptionsSigner;
-      }
-      return Web3SolanaSendTransaction(
-          messages: messages, sendConfig: option, method: method);
+
+      return Web3SolanaSendTransaction(messages: messages, method: method);
     } on Web3RequestException {
       rethrow;
     } catch (_) {}
@@ -287,14 +318,14 @@ class JSSolanaHandler extends JSNetworkHandler<
 
   @override
   void onRequestDone(PageMessageRequest message) {
-    final method = Web3SolanaRequestMethods.fromName(message.method);
+    // final method = Web3SolanaRequestMethods.fromName(message.method);
 
-    switch (method) {
-      case Web3SolanaRequestMethods.requestAccounts:
-        _connect(state);
-        break;
-      default:
-    }
+    // switch (method) {
+    //   case Web3SolanaRequestMethods.requestAccounts:
+    //     _connect(state);
+    //     break;
+    //   default:
+    // }
   }
 
   @override
@@ -309,8 +340,9 @@ class JSSolanaHandler extends JSNetworkHandler<
     switch (method) {
       case Web3SolanaRequestMethods.requestAccounts:
         if (state.permissionAccounts.isNotEmpty) {
-          return WalletMessageResponse.success(
-              state.permissionAccounts.jsify());
+          final cr =
+              state.walletAccounts.map((e) => e.toJson()).toList().jsify();
+          return WalletMessageResponse.success(cr);
         }
         return WalletMessageResponse.fail(Web3RequestExceptionConst
             .rejectedByUser
@@ -319,7 +351,7 @@ class JSSolanaHandler extends JSNetworkHandler<
             .jsify());
       case Web3SolanaRequestMethods.signTransaction:
       case Web3SolanaRequestMethods.signAllTransactions:
-        final transactions = message.getJSParamsAs<JSUint8Array>();
+        final transactions = message.getJSParamsAs<JSSolanaTransaction>();
         final transactionResponse = response
             .resultAsList<Map<String, dynamic>>(length: transactions!.length)
             .map((e) => SolanaWeb3TransactionResponse.fromJson(e));
@@ -335,23 +367,20 @@ class JSSolanaHandler extends JSNetworkHandler<
       case Web3SolanaRequestMethods.sendTransaction:
         final transactionResponse =
             response.resultAsList<Map<String, dynamic>>(length: 1);
+        final transactions = message.getJSParamsAs<JSSolanaTransaction>();
         final txHash =
             SolanaWeb3TransactionResponse.fromJson(transactionResponse[0])
                 .cast<SolanaWeb3TransactionSendResponse>();
-        return WalletMessageResponse.success(txHash.txHash.toJS);
-      case Web3SolanaRequestMethods.sendAllTransactions:
-        final transactions = message.getJSParamsAs<JSUint8Array>();
-        final transactionResponse = response
-            .resultAsList<Map<String, dynamic>>(length: transactions!.length)
-            .map((e) => SolanaWeb3TransactionResponse.fromJson(e));
-        List<String?> txHashes = List.filled(transactions.length, null);
-        for (int i = 0; i < transactionResponse.length; i++) {
-          final item = transactionResponse.elementAt(i);
-          if (item.type != SolanaWeb3TransactionResponseType.send) continue;
-          final sendResponse = item.cast<SolanaWeb3TransactionSendResponse>();
-          txHashes[i] = sendResponse.txHash;
+        if (transactions![0].type == JSSolanalaTransactionType.web3) {
+          return WalletMessageResponse.success(
+              SolanaSignAndSendTransactionOutput(
+                  signature: txHash.txHash.toJS));
         }
-        return WalletMessageResponse.success(txHashes.jsify());
+        return WalletMessageResponse.success([
+          SolanaSignAndSendTransactionOutput(
+              signature:
+                  JSUint8Array.fromList(Base58Decoder.decode(txHash.txHash)))
+        ].toJS);
       case Web3SolanaRequestMethods.signMessage:
         final signer =
             Web3SolanaSignMessageResponse.fromJson(response.resultAsMap());

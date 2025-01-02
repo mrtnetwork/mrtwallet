@@ -70,16 +70,22 @@ mixin StellarTransactionSignerImpl on StellarTransactionImpl {
           backToIdle: false, showBackButton: true);
       return;
     }
-    if (submissionResult.result.successful) {
+    if (submissionResult.result?.successful ?? true) {
+      final String txId = submissionResult.result?.id ??
+          result.result.txId(network.coinParam.passphraseHash());
       progressKey.success(
-          progressWidget: SuccessTransactionTextView(
-            network: network,
-            txId: [submissionResult.result.id],
-          ),
-          backToIdle: false);
+        progressWidget: SuccessTransactionTextView(
+          network: network,
+          txIds: [txId],
+          error: submissionResult.result == null
+              ? "tx_submit_response_failed_desc".tr
+              : null,
+        ),
+        backToIdle: false,
+      );
     } else {
       final result = MethodUtils.nullOnException(
-          () => submissionResult.result.getResult().toJson());
+          () => submissionResult.result!.getResult().toJson());
       if (result == null) {
         progressKey.errorText("submit_transaction_error".tr.replaceOne(''),
             backToIdle: false, showBackButton: true);

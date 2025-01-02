@@ -14,10 +14,14 @@ abstract class MRTBackup {
     final CborTagValue tag =
         CborSerializable.decode(cborBytes: bytes, object: obj, hex: hex);
     final type = MrtBackupTypes.fromValue(tag.tags);
-    if (type == MrtBackupTypes.wallet) {
-      return MRTWalletBackup.fromCborBytesOrObject(obj: tag);
+    switch (type) {
+      case MrtBackupTypes.wallet:
+        return MRTWalletBackupV1.fromCborBytesOrObject(obj: tag);
+      case MrtBackupTypes.walletV2:
+        return MRTWalletBackupV2.fromCborBytesOrObject(obj: tag);
+      default:
+        return MRTKeyBackup.fromCborBytesOrObject(obj: tag);
     }
-    return MRTKeyBackup.fromCborBytesOrObject(obj: tag);
   }
   MRTBackup decrypt(List<int> decryptedKey);
 }

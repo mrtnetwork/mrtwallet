@@ -1,8 +1,7 @@
-import 'package:blockchain_utils/bip/address/ada/ada_addres_type.dart';
+import 'package:blockchain_utils/helper/extensions/extensions.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/models/signing/signing.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:on_chain/ada/ada.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
@@ -11,52 +10,55 @@ import 'transaction.dart';
 
 mixin CardanoSignerImpl on CardanoTransactionImpl {
   Future<ADATransaction> _signTransaction() async {
-    try {
-      final builder = buildTransaction(transactionFee.balance);
-      final signers = getTransactionSignerAccounts();
-      final signerKeyIndexes = getTransactionSignersKeysIndex();
-      final tr = await walletProvider.wallet.signTransaction(
-          request: WalletSigningRequest(
-        addresses: signers,
-        network: network,
-        sign: (generateSignature) {
-          return builder.signAndBuildTransactionAsync(
-            ({required address, required digest}) async {
-              final int addressIndex = signers.indexWhere((element) =>
-                  element.networkAddress == address ||
-                  element.rewardAddress == address);
-              if (addressIndex < 0) {
-                throw WalletException("Signer account does not found.");
-              }
-              final keyIndex = signerKeyIndexes.elementAt(addressIndex);
-              final signRequest = GlobalSignRequest.cardano(
-                  digest: digest, index: keyIndex as Bip32AddressIndex);
-              final sss = await generateSignature(signRequest);
-              final pubkey =
-                  AdaPublicKey.fromBytes(sss.signerPubKey.keyBytes());
-              final ed25519Signature = Ed25519Signature(sss.signature);
-              if (address.addressType == ADAAddressType.byron) {
-                return BootstrapWitness(
-                    vkey: Vkey(pubkey.toBytes(false)),
-                    signature: ed25519Signature,
-                    chainCode: sss.signerPubKey.chainCodeBytes()!,
-                    attributes:
-                        (address as ADAByronAddress).attributeSerialize());
-              }
-              return Vkeywitness(
-                  vKey: pubkey.toVerificationKey(),
-                  signature: ed25519Signature);
-            },
-          );
-        },
-      ));
-      if (tr.hasError) {
-        throw tr.exception!;
+    final builder = buildTransaction(transactionFee.balance);
+    final signersAddresses = builder.signers.immutable;
+    final signers = List.generate(signersAddresses.length, (i) {
+      final signer = signersAddresses[i];
+      return addresses.firstWhere((e) {
+        return e.networkAddress == signer || e.rewardAddress == signer;
+      }, orElse: () => throw WalletExceptionConst.signerAccountNotFound);
+    });
+    final signerKeyIndexes = List.generate(signersAddresses.length, (i) {
+      final address = signers[i];
+      final signeraddress = signersAddresses[i];
+      if (signeraddress.isRewardAddress) {
+        if (!address.isRewardAddress && address.rewardKeyIndex == null) {
+          throw WalletExceptionConst.signerAccountNotFound;
+        }
+        return address.rewardKeyIndex ?? address.keyIndex;
       }
-      return tr.result;
-    } catch (e) {
-      rethrow;
-    }
+      return address.keyIndex;
+    });
+    final tr = await walletProvider.wallet.signTransaction(
+        request: WalletSigningRequest(
+      addresses: signers,
+      network: network,
+      sign: (generateSignature) {
+        int index = 0;
+        return builder.signAndBuildTransactionAsync(
+          ({required address, required digest}) async {
+            final int addressIndex = index++;
+            final keyIndex = signerKeyIndexes.elementAt(addressIndex);
+            final signRequest = GlobalSignRequest.cardano(
+                digest: digest, index: keyIndex.cast());
+            final sig = await generateSignature(signRequest);
+            final pubkey = AdaPublicKey.fromBytes(sig.signerPubKey.keyBytes());
+            final ed25519Signature = Ed25519Signature(sig.signature);
+            if (address.isByron) {
+              return BootstrapWitness(
+                  vkey: Vkey(pubkey.toBytes(false)),
+                  signature: ed25519Signature,
+                  chainCode: sig.signerPubKey.chainCodeBytes()!,
+                  attributes:
+                      address.cast<ADAByronAddress>().attributeSerialize());
+            }
+            return Vkeywitness(
+                vKey: pubkey.toVerificationKey(), signature: ed25519Signature);
+          },
+        );
+      },
+    ));
+    return tr.result;
   }
 
   void buildAndBroadcastTransaction() async {
@@ -76,7 +78,7 @@ mixin CardanoSignerImpl on CardanoTransactionImpl {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
             network: network,
-            txId: [result.result.toString()],
+            txIds: [result.result.toString()],
           ),
           backToIdle: false);
     }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/models/models/typedef.dart';
@@ -58,17 +60,19 @@ abstract class UIWallet extends WalletCore {
   }
 
   Future<MethodResult<T>> signTransaction<T>(
-      {required WalletSigningRequest<T> request}) async {
+      {required WalletSigningRequest<T> request, Duration? timeout}) async {
     return await MethodUtils.call(() async {
       late final Set<ChainAccount> addresses = request.addresses.toSet();
       late final Set<AddressDerivationIndex> keys =
           addresses.map((e) => e.signerKeyIndexes()).expand((e) => e).toSet();
       if (wallet.protectWallet) {
         final password = await _getPassword(addresses: addresses, keys: keys);
-        return (await super.signRequest(request: request, password: password))
+        return (await super.signRequest(
+                request: request, password: password, timeout: timeout))
             .result;
       }
-      return (await super.signRequest(request: request)).result;
+      return (await super.signRequest(request: request, timeout: timeout))
+          .result;
     });
   }
 

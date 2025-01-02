@@ -18,7 +18,7 @@ abstract class Web3SolanaImpl<RESPONSE,
   final WalletProvider walletProvider;
   final SolanaChain account;
   WalletSolanaNetwork get network => account.network;
-  SolanaClient get apiProvider => account.provider()!;
+  SolanaClient get apiProvider => account.client;
   ISolanaAddress get address => request.accountPermission()!;
 
   final Web3SolanaRequest<RESPONSE, T> request;
@@ -36,7 +36,6 @@ abstract class Web3SolanaImpl<RESPONSE,
       case Web3SolanaRequestMethods.signTransaction:
       case Web3SolanaRequestMethods.signAllTransactions:
       case Web3SolanaRequestMethods.sendTransaction:
-      case Web3SolanaRequestMethods.sendAllTransactions:
         return Web3SolanaSendTransactionForm(
             request: request as Web3SolanaRequest<List<Map<String, dynamic>>,
                 Web3SolanaSendTransaction>) as SolanaWeb3Form<T>;

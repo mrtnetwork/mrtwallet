@@ -1,21 +1,18 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/core/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/cardano.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/monero.dart';
 import 'package:mrt_wallet/wallet/models/networks/cardano/models/address_details.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
-import 'package:mrt_wallet/crypto/keys/access/ada_legacy_public_key.dart';
-import 'package:mrt_wallet/crypto/keys/access/key_request.dart';
-import 'package:mrt_wallet/crypto/keys/models/master_key.dart';
 import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/derive_address_response.dart';
+import 'package:mrt_wallet/wallet/models/networks/monero/models/account_related.dart';
 
-class WalletRequestDeriveAddress<NETWORKADDRESS>
-    implements
-        WalletRequest<CryptoDeriveAddressResponse<NETWORKADDRESS>,
-            MessageArgsTwoBytes> {
+class WalletRequestDeriveAddress<NETWORKADDRESS> extends WalletRequest<
+    CryptoDeriveAddressResponse<NETWORKADDRESS>, MessageArgsTwoBytes> {
   final NewAccountParams<NETWORKADDRESS> addressParams;
   WalletRequestDeriveAddress({required this.addressParams});
 
@@ -42,22 +39,42 @@ class WalletRequestDeriveAddress<NETWORKADDRESS>
 
   @override
   WalletRequestMethod get method => WalletRequestMethod.deriveAddress;
+  static CryptoDeriveAddressResponse<NETWORKADDRESS>
+      _deriveMoneroAddress<NETWORKADDRESS>(
+          MoneroNewAddressParams addressParams, WalletMasterKeys wallet) {
+    final keyRequest =
+        AccessCryptoPrivateKeyRequest(index: addressParams.deriveIndex);
+    final pubKey =
+        wallet.readPublicKeys([keyRequest]).first.cast<MoneroPublicKeyData>();
+    final addrDetails = MoneroViewAccountDetails(
+        viewKey: MoneroViewPrimaryAccountDetails(
+            viewPrivateKey: pubKey.viewPrivateKey,
+            spendPublicKey: pubKey.spendPublicKey,
+            network: addressParams.network),
+        major: addressParams.major,
+        minor: addressParams.minor);
+    return CryptoDeriveAddressResponse(
+        accountParams: addressParams.copyWith(addrDetails: addrDetails)
+            as NewAccountParams<NETWORKADDRESS>,
+
+        /// pubKey.spendPublicKey.compressed
+        publicKey: pubKey);
+  }
 
   static CryptoDeriveAddressResponse<NETWORKADDRESS>
       _deriveCardanoAddress<NETWORKADDRESS>(
           CardanoNewAddressParams params, WalletMasterKeys wallet) {
     final bool byronLegacy = params.coin.proposal == CustomProposal.cip0019;
     AccessCryptoPrivateKeyRequest keyRequest = AccessCryptoPrivateKeyRequest(
-        index: params.deriveIndex as Bip32AddressIndex,
+        index: params.deriveIndex.cast(),
         maxLevel: (byronLegacy ? Bip44Levels.master : Bip44Levels.addressIndex)
             .value);
     final bip = wallet.readPublicKeys([keyRequest]).first;
     final CardanoAddrDetails addrDetails;
     switch (params.addressType) {
       case ADAAddressType.base:
-        keyRequest = AccessCryptoPrivateKeyRequest(
-          index: params.rewardKeyIndex!,
-        );
+        keyRequest =
+            AccessCryptoPrivateKeyRequest(index: params.rewardKeyIndex!);
         final stake = wallet.readPublicKeys([keyRequest]).first;
         addrDetails = CardanoAddrDetails.shelley(
             publicKey: bip.keyBytes(),
@@ -95,7 +112,7 @@ class WalletRequestDeriveAddress<NETWORKADDRESS>
     return CryptoDeriveAddressResponse(
         accountParams: params.copyWith(addressDetails: addrDetails)
             as NewAccountParams<NETWORKADDRESS>,
-        publicKey: addrDetails.publicKey);
+        publicKey: bip);
   }
 
   static CryptoDeriveAddressResponse<NETWORKADDRESS>
@@ -106,18 +123,23 @@ class WalletRequestDeriveAddress<NETWORKADDRESS>
         AccessCryptoPrivateKeyRequest(index: addressParams.deriveIndex);
     final pubKey = wallet.readPublicKeys([keyRequest]).first;
     return CryptoDeriveAddressResponse(
-        accountParams: addressParams, publicKey: pubKey.keyBytes());
+        accountParams: addressParams, publicKey: pubKey);
   }
 
   static CryptoDeriveAddressResponse<NETWORKADDRESS>
       deriveAddress<NETWORKADDRESS>(
           NewAccountParams<NETWORKADDRESS> addressParams,
           WalletMasterKeys wallet) {
-    if (addressParams.type == NewAccountParamsType.cardanoNewAddressParams) {
-      return _deriveCardanoAddress(
-          addressParams as CardanoNewAddressParams, wallet);
+    switch (addressParams.type) {
+      case NewAccountParamsType.cardanoNewAddressParams:
+        return _deriveCardanoAddress(
+            addressParams as CardanoNewAddressParams, wallet);
+      case NewAccountParamsType.moneroNewAddressParams:
+        return _deriveMoneroAddress(
+            addressParams as MoneroNewAddressParams, wallet);
+      default:
+        return _deriveAddress(addressParams, wallet);
     }
-    return _deriveAddress(addressParams, wallet);
   }
 
   @override
@@ -126,7 +148,7 @@ class WalletRequestDeriveAddress<NETWORKADDRESS>
     final deriveAddr = deriveAddress(addressParams, wallet);
     return MessageArgsTwoBytes(
         keyOne: deriveAddr.accountParams.toCbor().encode(),
-        keyTwo: deriveAddr.publicKey);
+        keyTwo: deriveAddr.publicKey.toCbor().encode());
   }
 
   @override
@@ -134,7 +156,8 @@ class WalletRequestDeriveAddress<NETWORKADDRESS>
       MessageArgsTwoBytes result) {
     return CryptoDeriveAddressResponse(
         accountParams: NewAccountParams.deserialize(bytes: result.keyOne),
-        publicKey: result.keyTwo);
+        publicKey:
+            CryptoPublicKeyData.fromCborBytesOrObject(bytes: result.keyTwo));
   }
 
   @override

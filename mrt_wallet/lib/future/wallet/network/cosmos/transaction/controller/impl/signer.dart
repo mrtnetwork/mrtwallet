@@ -13,7 +13,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
     final txbody = TXBody(messages: messages, memo: memo);
     final authInfo = AuthInfo(signerInfos: [
       address.signerInfo.copyWith(sequence: ownerAccount.sequence)
-    ], fee: fee!.copyWith(amount: isThorChain ? [] : null));
+    ], fee: fee!.toFee().copyWith(amount: isThorChain ? [] : null));
     final SignDoc signDoc = SignDoc(
         bodyBytes: txbody.toBuffer(),
         authInfoBytes: authInfo.toBuffer(),
@@ -29,7 +29,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
     final signers = account.addresses
         .where((element) => signersAddr.contains(element.address.toAddress))
         .toList();
-    List<AddressDerivationIndex> signerKeyIndexes =
+    final List<AddressDerivationIndex> signerKeyIndexes =
         signers.map((e) => e.keyIndex).toList();
     final digest = List<int>.unmodifiable(signDoc.toBuffer());
     final signRequest = WalletSigningRequest(
@@ -38,9 +38,10 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
       sign: (generateSignature) async {
         final List<List<int>> signatures = [];
         for (int i = 0; i < signerKeyIndexes.length; i++) {
-          final signRequest = GlobalSignRequest.cosmos(
+          final signRequest = CosmosSigningRequest(
               digest: digest,
-              index: signerKeyIndexes.elementAt(i) as Bip32AddressIndex);
+              index: signerKeyIndexes.elementAt(i).cast(),
+              alg: signers[i].publicKey.algorithm);
           final sss = await generateSignature(signRequest);
           signatures.add(sss.signature);
         }
@@ -72,7 +73,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
             network: network,
-            txId: [result.result.toString()],
+            txIds: [result.result.toString()],
           ),
           backToIdle: false);
     }

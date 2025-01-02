@@ -20,7 +20,7 @@ class StellarRequestAccountForm extends StellarWeb3Form {
 
   void onChangeDefaultPermission(Web3StellarChainAccount? account) {
     if (account == null || account.defaultAddress) return;
-    for (var e in chainPermission) {
+    for (final e in chainPermission) {
       e.changeDefault(false);
     }
     account.changeDefault(true);
@@ -36,7 +36,7 @@ class StellarRequestAccountForm extends StellarWeb3Form {
   factory StellarRequestAccountForm(
       {required Web3StellarRequest request,
       required List<StellarChain> chains}) {
-    Map<StellarChain, TransactionListFormField<Web3StellarChainAccount>>
+    final Map<StellarChain, TransactionListFormField<Web3StellarChainAccount>>
         fields = {};
     for (final i in chains) {
       fields[i] = TransactionListFormField(
@@ -85,15 +85,15 @@ class StellarRequestAccountForm extends StellarWeb3Form {
   }
 
   void complete() {
-    assert(onCompeleteForm != null, "Must not be null");
-    List<Web3StellarChainAccount> accounts = [];
+    assert(onCompleteForm != null, "Must not be null");
+    final List<Web3StellarChainAccount> accounts = [];
     for (final i in permissions.entries) {
       if (i.value.isEmpty) continue;
       final defaultAddresses = i.value.value.where((e) => e.defaultAddress);
       if (defaultAddresses.isEmpty) {
         i.value.value.first.changeDefault(true);
       } else if (defaultAddresses.length > 1) {
-        for (var e in i.value.value) {
+        for (final e in i.value.value) {
           e.changeDefault(false);
         }
         i.value.value.first.changeDefault(true);
@@ -102,7 +102,7 @@ class StellarRequestAccountForm extends StellarWeb3Form {
     }
     newPermission.updateChainAccount(accounts);
     newPermission.setActiveChain(chain);
-    onCompeleteForm?.call(newPermission);
+    onCompleteForm?.call(newPermission);
   }
 
   @override

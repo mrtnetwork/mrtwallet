@@ -29,7 +29,7 @@ class TonTransactionFieldsView extends StatelessWidget {
                 account: chain,
                 network: chain.network,
                 address: chain.address,
-                apiProvider: chain.provider()!,
+                apiProvider: chain.client,
                 validator: validator),
             builder: (controller) {
               return PageProgress(
@@ -45,12 +45,16 @@ class TonTransactionFieldsView extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text("account".tr,
-                                    style: context.textTheme.titleLarge),
+                                    style: context.textTheme.titleMedium),
                                 WidgetConstant.height8,
                                 ContainerWithBorder(
-                                  onRemoveIcon: const Icon(Icons.edit),
+                                  onRemoveIcon: Icon(
+                                    Icons.edit,
+                                    color: context.onPrimaryContainer,
+                                  ),
                                   child: AddressDetailsView(
                                       address: controller.address,
+                                      color: context.onPrimaryContainer,
                                       key: ValueKey<ITonAddress?>(
                                           controller.address)),
                                   onRemove: () {
@@ -70,9 +74,8 @@ class TonTransactionFieldsView extends StatelessWidget {
                                 ),
                                 WidgetConstant.height20,
                                 _TonTransactionsFields(
-                                  controller: controller,
-                                  validator: controller.validator,
-                                ),
+                                    controller: controller,
+                                    validator: controller.validator),
                                 WidgetConstant.height20,
                                 Text("transaction_fees".tr,
                                     style: context.textTheme.titleMedium),
@@ -91,7 +94,7 @@ class TonTransactionFieldsView extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     FixedElevatedButton(
-                                      padding: WidgetConstant.paddingVertical20,
+                                      padding: WidgetConstant.paddingVertical40,
                                       onPressed: controller.transactionIsReady
                                           ? controller.sendTransaction
                                           : null,
@@ -138,7 +141,7 @@ class _TonTransactionTransferFields extends StatelessWidget {
   final TonTransferForm field;
   @override
   Widget build(BuildContext context) {
-    final receivers = field.destination.value?.length ?? 0;
+    final receivers = field.destination.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,13 +153,14 @@ class _TonTransactionTransferFields extends StatelessWidget {
         Column(
           children: List.generate(receivers, (index) {
             final TonOutputWithBalance receiver =
-                field.destination.value![index];
+                field.destination.value[index];
             return ContainerWithBorder(
               iconAlginment: CrossAxisAlignment.start,
-              onRemoveIcon: const Icon(Icons.remove_circle),
+              onRemoveIcon:
+                  Icon(Icons.remove_circle, color: context.onPrimaryContainer),
               validate: receiver.isReady,
               onRemove: () {},
-              onTapWhenOnRemove: false,
+              enableTap: false,
               onRemoveWidget: Column(
                 children: [
                   IconButton(
@@ -170,11 +174,11 @@ class _TonTransactionTransferFields extends StatelessWidget {
                                     ),
                                 "remove_recipient".tr)
                             .then((remove) {
-                          field.onRemoveReceiver(
-                              receiver.address.networkAddress, remove);
+                          field.onRemoveReceiver(receiver, remove);
                         });
                       },
-                      icon: const Icon(Icons.remove_circle)),
+                      icon: Icon(Icons.remove_circle,
+                          color: context.onPrimaryContainer)),
                   WidgetConstant.height8,
                   IconButton(
                       onPressed: () {
@@ -189,13 +193,12 @@ class _TonTransactionTransferFields extends StatelessWidget {
                       icon: Icon(Icons.settings,
                           color: receiver.hasSetting
                               ? context.colors.green
-                              : null)),
+                              : context.onPrimaryContainer)),
                   WidgetConstant.height8,
                   IconButton(
                       onPressed: () {
                         if (receiver.hasToken) {
-                          field.setJetton(
-                              receiver.address.networkAddress, null);
+                          field.setJetton(receiver, null);
                           return;
                         }
                         context
@@ -204,13 +207,14 @@ class _TonTransactionTransferFields extends StatelessWidget {
                                     account: controller.address),
                                 "select_token".tr)
                             .then((jetton) {
-                          field.setJetton(
-                              receiver.address.networkAddress, jetton);
+                          field.setJetton(receiver, jetton);
                         });
                       },
                       icon: Icon(
                         Icons.token,
-                        color: receiver.hasToken ? context.colors.green : null,
+                        color: receiver.hasToken
+                            ? context.colors.green
+                            : context.onPrimaryContainer,
                       ))
                 ],
               ),
@@ -218,20 +222,74 @@ class _TonTransactionTransferFields extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ContainerWithBorder(
-                      backgroundColor: context.colors.secondary,
+                      backgroundColor: context.onPrimaryContainer,
                       child: ReceiptAddressDetailsView(
-                          address: receiver.address,
-                          color: context.colors.onSecondary)),
+                        address: receiver.address,
+                        color: context.colors.primaryContainer,
+                      )),
+                  ContainerWithBorder(
+                    onRemove: () {
+                      context
+                          .openSliverBottomSheet<BigInt>(
+                        receiver.hasToken
+                            ? "setup_total_amount".tr
+                            : "setup_output_amount".tr,
+                        initialExtend: 1,
+                        child: SetupNetworkAmount(
+                          token: field.network.token,
+                          max: controller.remindAmount.balance +
+                              receiver.balance.balance,
+                          min: BigInt.zero,
+                          subtitle: PageTitleSubtitle(
+                              title: receiver.hasToken
+                                  ? "total_amount".tr
+                                  : "receiver".tr,
+                              body: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (receiver.hasToken) ...[
+                                    Text("jetton_total_amount_desc".tr),
+                                    WidgetConstant.height8,
+                                    Text("ton_total_amount_desc_2".tr),
+                                    WidgetConstant.height8,
+                                  ],
+                                  ContainerWithBorder(
+                                    onRemove: () {},
+                                    enableTap: false,
+                                    onRemoveIcon: CopyTextIcon(
+                                      dataToCopy: receiver.address.view,
+                                      isSensitive: false,
+                                    ),
+                                    child: OneLineTextWidget(
+                                        receiver.address.view),
+                                  ),
+                                ],
+                              )),
+                        ),
+                      )
+                          .then((amount) {
+                        field.setBalance(receiver, amount);
+                      });
+                    },
+                    validate: receiver.hasAmount,
+                    onRemoveIcon:
+                        Icon(Icons.edit, color: context.primaryContainer),
+                    backgroundColor: context.colors.onPrimaryContainer,
+                    child: CoinPriceView(
+                        balance: receiver.balance,
+                        token: field.network.token,
+                        style: context.primaryTextTheme.titleMedium,
+                        symbolColor: context.colors.primaryContainer,
+                        showTokenImage: true),
+                  ),
                   if (receiver.hasToken) ...[
-                    WidgetConstant.height8,
-                    Text("jetton_amount".tr,
-                        style: context.textTheme.titleMedium),
-                    WidgetConstant.height8,
+                    Divider(color: context.colors.onPrimaryContainer),
                     ContainerWithBorder(
                       onRemove: () {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "setup_jetton_amount".tr,
+                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: receiver.jetton!.token,
                             max: field.getActiveTokenBalance(receiver),
@@ -242,35 +300,30 @@ class _TonTransactionTransferFields extends StatelessWidget {
                           ),
                         )
                             .then((amount) {
-                          field.setJettonBalance(
-                              receiver.address.networkAddress, amount);
+                          field.setJettonBalance(receiver, amount);
                         });
                       },
                       validate: receiver.hasTokenAmount,
                       onRemoveIcon:
-                          Icon(Icons.edit, color: context.colors.onSecondary),
-                      backgroundColor: context.colors.secondary,
+                          Icon(Icons.edit, color: context.primaryContainer),
+                      backgroundColor: context.onPrimaryContainer,
                       child: CoinPriceView(
-                        balance: receiver.tokenBalance,
-                        token: receiver.jetton!.token,
-                        style: context.textTheme.titleLarge
-                            ?.copyWith(color: context.colors.onSecondary),
-                        symbolColor: context.colors.onSecondary,
-                        showTokenImage: true,
-                      ),
+                          balance: receiver.tokenBalance,
+                          token: receiver.jetton!.token,
+                          style: context.primaryTextTheme.titleMedium,
+                          symbolColor: context.primaryContainer,
+                          showTokenImage: true),
                     ),
-                    WidgetConstant.height8,
+                    WidgetConstant.height20,
                     Row(
                       children: [
                         Flexible(
                           child: Text("forward_amount".tr,
-                              style: context.textTheme.titleMedium),
+                              style: context.onPrimaryTextTheme.titleMedium),
                         ),
                         WidgetConstant.width8,
-                        TooltipHelper(
-                          "ton_total_amount_desc_2".tr,
-                          iconColor: context.colors.onPrimaryContainer,
-                        )
+                        TooltipHelper("ton_total_amount_desc_2".tr,
+                            iconColor: context.onPrimaryContainer)
                       ],
                     ),
                     WidgetConstant.height8,
@@ -279,6 +332,7 @@ class _TonTransactionTransferFields extends StatelessWidget {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "setup_forward_amount".tr,
+                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: field.network.token,
                             max: controller.remindAmount.balance +
@@ -293,7 +347,7 @@ class _TonTransactionTransferFields extends StatelessWidget {
                                     WidgetConstant.height8,
                                     ContainerWithBorder(
                                         onRemove: () {},
-                                        onTapWhenOnRemove: false,
+                                        enableTap: false,
                                         onRemoveWidget: CopyTextIcon(
                                             isSensitive: false,
                                             dataToCopy: receiver.address.view),
@@ -310,30 +364,28 @@ class _TonTransactionTransferFields extends StatelessWidget {
                           ),
                         )
                             .then((amount) {
-                          field.setForwardBalance(
-                              receiver.address.networkAddress, amount);
+                          field.setForwardBalance(receiver, amount);
                         });
                       },
                       onRemoveIcon:
-                          Icon(Icons.edit, color: context.colors.onSecondary),
-                      backgroundColor: context.colors.secondary,
+                          Icon(Icons.edit, color: context.primaryContainer),
+                      backgroundColor: context.onPrimaryContainer,
                       child: CoinPriceView(
                         balance: receiver.forwardBalance,
                         token: field.network.token,
-                        style: context.textTheme.titleLarge
-                            ?.copyWith(color: context.colors.onSecondary),
-                        symbolColor: context.colors.onSecondary,
+                        style: context.primaryTextTheme.titleMedium,
+                        symbolColor: context.primaryContainer,
                         showTokenImage: true,
                       ),
                     ),
-                    WidgetConstant.height8,
-                    Text("query_id".tr, style: context.textTheme.titleMedium),
-                    Text("arbitrary_request_number".tr),
+                    WidgetConstant.height20,
+                    Text("query_id".tr,
+                        style: context.onPrimaryTextTheme.titleMedium),
                     WidgetConstant.height8,
                     ContainerWithBorder(
-                      backgroundColor: context.colors.secondary,
-                      onRemoveIcon:
-                          Icon(Icons.edit, color: context.colors.onSecondary),
+                      backgroundColor: context.colors.onPrimaryContainer,
+                      onRemoveIcon: Icon(Icons.edit,
+                          color: context.colors.primaryContainer),
                       onRemove: () {
                         context
                             .openSliverBottomSheet<BigRational>(
@@ -360,87 +412,14 @@ class _TonTransactionTransferFields extends StatelessWidget {
                         )
                             .then(
                           (value) {
-                            field.setQueryId(
-                                receiver.address.networkAddress, value);
+                            field.setQueryId(receiver, value);
                           },
                         );
                       },
                       child: Text(receiver.queryId.toString(),
-                          style: context.textTheme.bodyMedium
-                              ?.copyWith(color: context.colors.onSecondary)),
+                          style: context.primaryTextTheme.bodyMedium),
                     ),
                   ],
-                  WidgetConstant.height8,
-                  Row(
-                    children: [
-                      Flexible(
-                          child: Text("total_amount".tr,
-                              style: context.textTheme.titleMedium)),
-                      if (receiver.hasToken) ...[
-                        WidgetConstant.width8,
-                        TooltipHelper("jetton_total_amount_desc".tr,
-                            iconColor: context.colors.onPrimaryContainer)
-                      ]
-                    ],
-                  ),
-                  WidgetConstant.height8,
-                  ContainerWithBorder(
-                    onRemove: () {
-                      context
-                          .openSliverBottomSheet<BigInt>(
-                        receiver.hasToken
-                            ? "setup_total_amount".tr
-                            : "setup_output_amount".tr,
-                        child: SetupNetworkAmount(
-                          token: field.network.token,
-                          max: controller.remindAmount.balance +
-                              receiver.balance.balance,
-                          min: BigInt.zero,
-                          subtitle: PageTitleSubtitle(
-                              title: receiver.hasToken
-                                  ? "total_amount".tr
-                                  : "receiver".tr,
-                              body: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (receiver.hasToken) ...[
-                                    Text("jetton_total_amount_desc".tr),
-                                    WidgetConstant.height8,
-                                    Text("ton_total_amount_desc_2".tr),
-                                    WidgetConstant.height8,
-                                  ],
-                                  ContainerWithBorder(
-                                    onRemove: () {},
-                                    onTapWhenOnRemove: false,
-                                    onRemoveIcon: CopyTextIcon(
-                                      dataToCopy: receiver.address.view,
-                                      isSensitive: false,
-                                    ),
-                                    child: OneLineTextWidget(
-                                        receiver.address.view),
-                                  ),
-                                ],
-                              )),
-                        ),
-                      )
-                          .then((amount) {
-                        field.setBalance(
-                            receiver.address.networkAddress, amount);
-                      });
-                    },
-                    validate: receiver.hasAmount,
-                    onRemoveIcon:
-                        Icon(Icons.edit, color: context.colors.onSecondary),
-                    backgroundColor: context.colors.secondary,
-                    child: CoinPriceView(
-                      balance: receiver.balance,
-                      token: field.network.token,
-                      style: context.textTheme.titleLarge
-                          ?.copyWith(color: context.colors.onSecondary),
-                      symbolColor: context.colors.onSecondary,
-                      showTokenImage: true,
-                    ),
-                  ),
                 ],
               ),
             );
@@ -451,11 +430,12 @@ class _TonTransactionTransferFields extends StatelessWidget {
             validate: field.destination.hasValue,
             onRemove: () {
               context
-                  .openSliverBottomSheet<ReceiptAddress<TonAddress>>(
+                  .openSliverBottomSheet<List<ReceiptAddress<TonAddress>>>(
                       "receiver_address".tr,
                       bodyBuilder: (c) =>
                           SelectRecipientAccountView<TonAddress>(
                             account: controller.account,
+                            multipleSelect: true,
                             scrollController: c,
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,14 +454,16 @@ class _TonTransactionTransferFields extends StatelessWidget {
                   field.setReceiver(
                     address: value,
                     onExists: () {
-                      context.showAlert("address_already_exist".tr);
+                      context.showAlert("some_addresses_exist".tr);
                     },
                   );
                 },
               );
             },
-            onRemoveIcon: const Icon(Icons.add_box),
-            child: Text("tap_to_add_new_receipment".tr),
+            onRemoveIcon:
+                Icon(Icons.add_box, color: context.onPrimaryContainer),
+            child: Text("tap_to_add_new_receipment".tr,
+                style: context.onPrimaryTextTheme.bodyMedium),
           ),
       ],
     );

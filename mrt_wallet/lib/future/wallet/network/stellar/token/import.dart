@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+// import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/wallet/account/pages/account_controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/wallet/global/pages/token_details_view.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
@@ -35,7 +37,7 @@ class _MonitorStellarTokenView extends StatefulWidget {
 class __MonitorStellarTokenViewState extends State<_MonitorStellarTokenView>
     with SafeState {
   late final address = widget.chain.address;
-  late final StellarClient client = widget.chain.provider()!;
+  StellarClient get client => widget.chain.client;
   final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
       debugLabel: "__MonitorStellarTokenViewState");
   final Set<StellarIssueToken> tokens = {};
@@ -118,83 +120,36 @@ class __MonitorStellarTokenViewState extends State<_MonitorStellarTokenView>
           slivers: [
             EmptyItemSliverWidgetView(
               isEmpty: tokens.isEmpty,
-              itemBuilder: () => SliverToBoxAdapter(
-                child: ConstraintsBoxView(
-                  padding: WidgetConstant.padding20,
-                  child: ListView.builder(
-                    itemBuilder: (context, index) {
-                      final token = tokens.elementAt(index);
-                      final bool exist = address.tokens.contains(token);
-                      return Column(
-                        children: [
-                          ContainerWithBorder(
-                            onRemove: () {
-                              context.openSliverDialog(
-                                  (ctx) => DialogTextView(
-                                      buttonWidget: AsyncDialogDoubleButtonView(
-                                        firstButtonPressed: () =>
-                                            onTap(token, exist),
-                                      ),
-                                      text: exist
-                                          ? "remove_token_from_account".tr
-                                          : "add_token_to_your_account".tr),
-                                  exist ? "remove_token".tr : "add_token".tr);
-                            },
-                            onRemoveIcon: Checkbox(
-                              value: exist,
-                              onChanged: (value) {
-                                context.openSliverDialog(
-                                    (ctx) => DialogTextView(
-                                        buttonWidget:
-                                            AsyncDialogDoubleButtonView(
-                                          firstButtonPressed: () =>
-                                              onTap(token, exist),
-                                        ),
-                                        text: exist
-                                            ? "remove_token_from_account".tr
-                                            : "add_token_to_your_account".tr),
-                                    exist ? "remove_token".tr : "add_token".tr);
-                              },
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    CircleTokenImageView(token.token,
-                                        radius: 40),
-                                    WidgetConstant.width8,
-                                    Expanded(
-                                        child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(token.token.name,
-                                            style:
-                                                context.textTheme.labelLarge),
-                                        Text(token.issuer,
-                                            style: context.textTheme.bodySmall),
-                                        CoinPriceView(
-                                            liveBalance: token.balance,
-                                            token: token.token,
-                                            style:
-                                                context.textTheme.titleLarge),
-                                      ],
-                                    ))
-                                  ],
+              itemBuilder: () => SliverConstraintsBoxView(
+                padding: WidgetConstant.padding20,
+                sliver: SliverList.separated(
+                  separatorBuilder: (context, index) => WidgetConstant.divider,
+                  itemBuilder: (context, index) {
+                    final token = tokens.elementAt(index);
+                    final bool exist = address.tokens.contains(token);
+                    return TokenDetailsView(
+                      token: token,
+                      onSelect: () {
+                        context.openSliverDialog(
+                            (ctx) => DialogTextView(
+                                buttonWidget: AsyncDialogDoubleButtonView(
+                                  firstButtonPressed: () => onTap(token, exist),
                                 ),
-                              ],
-                            ),
-                          ),
-                          const Divider(),
-                        ],
-                      );
-                    },
-                    shrinkWrap: true,
-                    addAutomaticKeepAlives: false,
-                    addRepaintBoundaries: false,
-                    itemCount: tokens.length,
-                  ),
+                                text: exist
+                                    ? "remove_token_from_account".tr
+                                    : "add_token_to_your_account".tr),
+                            exist ? "remove_token".tr : "add_token".tr);
+                      },
+                      onSelectWidget: APPCheckBox(
+                        ignoring: true,
+                        value: exist,
+                        onChanged: (e) {},
+                      ),
+                    );
+                  },
+                  addAutomaticKeepAlives: false,
+                  addRepaintBoundaries: false,
+                  itemCount: tokens.length,
                 ),
               ),
             ),

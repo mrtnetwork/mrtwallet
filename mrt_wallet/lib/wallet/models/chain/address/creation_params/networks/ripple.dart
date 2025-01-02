@@ -1,7 +1,9 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/coins/coins.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/xrp/addresses/multisig.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/xrp/addresses/xrp.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/core/core.dart';
@@ -37,11 +39,14 @@ class RippleNewAddressParams implements NewAccountParams<XRPAddress> {
     );
   }
   @override
-  IXRPAddress toAccount(WalletNetwork network, List<int> publicKey) {
+  IXRPAddress toAccount(WalletNetwork network, CryptoPublicKeyData? publicKey) {
+    if (publicKey == null) {
+      throw WalletExceptionConst.pubkeyRequired;
+    }
     return IXRPAddress.newAccount(
         accountParams: this,
-        publicKey: publicKey,
-        network: network as WalletXRPNetwork);
+        publicKey: publicKey.keyBytes(),
+        network: network.toNetwork());
   }
 
   @override
@@ -96,9 +101,10 @@ class RippleMultiSigNewAddressParams implements RippleNewAddressParams {
   }
 
   @override
-  IXRPMultisigAddress toAccount(WalletNetwork network, List<int> publicKey) {
+  IXRPMultisigAddress toAccount(
+      WalletNetwork network, CryptoPublicKeyData? publicKey) {
     return IXRPMultisigAddress.newAccount(
-        accountParams: this, network: network as WalletXRPNetwork);
+        accountParams: this, network: network.toNetwork());
   }
 
   @override

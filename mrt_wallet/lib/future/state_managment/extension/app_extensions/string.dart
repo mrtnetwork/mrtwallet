@@ -4,7 +4,8 @@ import 'package:mrt_wallet/future/theme/theme.dart';
 import 'package:mrt_wallet/app/localization/localization.dart';
 
 extension Translate on String {
-  static get localization => Localization.languages;
+  static Map<String, Map<String, String>> get localization =>
+      Localization.languages;
   static Locale get language => ThemeController.locale;
   String get tr => localization[language.languageCode]?[this] ?? this;
 

@@ -8,8 +8,7 @@ import 'package:mrt_wallet/wallet/web3/networks/solana/solana.dart';
 import 'package:on_chain/solana/solana.dart';
 
 class SolanaWeb3PermissionView extends StatefulWidget {
-  const SolanaWeb3PermissionView({required this.permission, Key? key})
-      : super(key: key);
+  const SolanaWeb3PermissionView({required this.permission, super.key});
   final Web3SolanaChain? permission;
 
   @override
@@ -35,13 +34,9 @@ class _SolanaWeb3PermissionViewState extends State<SolanaWeb3PermissionView>
     return Web3SolanaChain.create(genesisBlock: chain.network.genesisBlock);
   }
 
-  bool _initialized = false;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_initialized) return;
-    _initialized = true;
+  void onInitOnce() {
+    super.onInitOnce();
     permission = widget.permission ?? Web3SolanaChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<SolanaChain>().toList();

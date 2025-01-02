@@ -69,7 +69,7 @@ class TronMultiSignatureAddress with Equatable, CborSerializable {
         signers.fold(BigInt.zero, (sum, signer) => sum + signer.weight);
 
     if (sumWeight < threshold) {
-      throw WalletException(
+      throw const WalletException(
           'The total weight of the signatories should reach the threshold');
     }
 

@@ -24,7 +24,6 @@ abstract class SolanaTransactionImpl extends StateController {
   ISolanaAddress get owner => address;
   final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
       debugLabel: "progressKey_SolanaTransactionImpl");
-
-  void onChange();
   MemoProgram? get memo;
+  void checkTransaction();
 }

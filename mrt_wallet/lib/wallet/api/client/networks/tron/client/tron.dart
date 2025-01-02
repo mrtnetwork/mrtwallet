@@ -1,7 +1,6 @@
 import 'package:blockchain_utils/bip/address/trx_addr.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/error/exception/exception.dart';
-import 'package:mrt_wallet/app/utils/utils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/worker.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ethereum/client/ethereum.dart';
@@ -33,14 +32,16 @@ class TronClient extends NetworkClient<ITronAddress, TronAPIProvider>
       provider.rpc as BaseServiceProtocol<TronAPIProvider>;
 
   @override
-  Future<void> updateBalance(ITronAddress account) async {
-    final tronAccount = await getAccount(account.networkAddress);
-    account.address.updateBalance(tronAccount?.balance ?? BigInt.zero);
-    account.setTronAccount(tronAccount);
+  Future<void> updateBalance(
+      ITronAddress address, APPCHAINACCOUNT<ITronAddress> chain) async {
+    final tronAccount = await getAccount(address.networkAddress);
+    chain.updateAddressBalance(
+        address: address, updateBalance: tronAccount?.balance ?? BigInt.zero);
+    address.setTronAccount(tronAccount);
     if (tronAccount != null) {
-      await updateAccountResource(account);
+      await updateAccountResource(address);
     }
-    await solidityProvider.updateAccountTokensBalance(account);
+    await solidityProvider.updateAccountTokensBalance(address);
   }
 
   Future<TronAccountInfo?> getAccount(TronAddress account) async {
@@ -105,28 +106,44 @@ class TronClient extends NetworkClient<ITronAddress, TronAPIProvider>
     return result;
   }
 
-  Future<int> estimateContractEnergy(
-      {required TronAddress ownerAddress,
-      required TronAddress contractAddress,
-      AbiFunctionFragment? fragment,
-      required String data}) async {
+  Future<int> estimateContractEnergy({
+    required TronAddress ownerAddress,
+    required TronAddress contractAddress,
+    AbiFunctionFragment? fragment,
+    required String data,
+    BigInt? callValue,
+    BigInt? callTokenValue,
+    BigInt? tokenID,
+  }) async {
     final energyRequired = await provider.request(
         TronRequestTriggerTRC20TransferContract(
             ownerAddress: ownerAddress,
             contractAddress: contractAddress,
             data: data,
-            fragment: fragment));
+            fragment: fragment,
+            callValue: callValue,
+            callTokenValue: callTokenValue,
+            tokenID: tokenID));
     if (!energyRequired.isSuccess) {
       throw ApiProviderException(message: energyRequired.error);
     }
     return energyRequired.energyUsed!;
   }
 
-  Future<int> estimateCreateContractEnergy(
-      {required TronAddress ownerAddress, required String byteCode}) async {
+  Future<int> estimateCreateContractEnergy({
+    required TronAddress ownerAddress,
+    required String byteCode,
+    BigInt? callValue,
+    BigInt? callTokenValue,
+    BigInt? tokenID,
+  }) async {
     final energyRequired = await provider.request(
         TronRequestCreateContractEstimateEnergy(
-            ownerAddress: ownerAddress, data: byteCode));
+            ownerAddress: ownerAddress,
+            data: byteCode,
+            callValue: callValue,
+            callTokenValue: callTokenValue,
+            tokenID: tokenID));
     if (!energyRequired.isSuccess) {
       throw ApiProviderException(message: energyRequired.error);
     }
@@ -176,7 +193,7 @@ class TronClient extends NetworkClient<ITronAddress, TronAPIProvider>
       {required TransferAssetContract contract,
       required TronChain chain}) async {
     final destinationAddress = contract.toAddress.toAddress();
-    TronTRC10Token? token = await getIssueById(contract.assestId);
+    final TronTRC10Token? token = await getIssueById(contract.assestId);
     if (token == null) {
       throw Web3RequestExceptionConst.invalidParameters(
           Web3TronExceptionConstant.trc10TokenNotFound);
@@ -304,12 +321,28 @@ class TronClient extends NetworkClient<ITronAddress, TronAPIProvider>
     }
   }
 
+  Future<bool> checkGenesis() async {
+    final block = await provider.request(TronRequestGetBlockByNum(num: 0));
+    return block["blockID"] == network.coinParam.genesis;
+  }
+
+  Future<bool> checkSolidityChainId() async {
+    final chainId = await solidityProvider.getChainId();
+    return chainId.toInt() == network.tronNetworkType.genesisBlockNumber;
+  }
+
   @override
   Future<bool> onInit() async {
-    final result = await MethodUtils.call<String>(() async {
-      final block = await provider.request(TronRequestGetBlockByNum(num: 0));
-      return block["blockID"];
+    final result = await MethodUtils.call<bool>(() async {
+      return await checkGenesis();
     });
-    return result.hasResult && result.result == network.coinParam.genesis;
+    if (result.hasResult && result.result) {
+      final chainIdResult = await MethodUtils.call<bool>(() async {
+        return await checkSolidityChainId();
+      });
+      return chainIdResult.hasResult && chainIdResult.result;
+    }
+
+    return false;
   }
 }

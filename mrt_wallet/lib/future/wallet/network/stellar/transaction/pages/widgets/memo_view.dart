@@ -19,15 +19,15 @@ class StellarMemosView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("memo".tr, style: context.textTheme.titleMedium),
-        Text("memo_desc2".tr.replaceOne("stellar".tr)),
+        Text("memo_desc2".tr),
         WidgetConstant.height8,
         AnimatedSwitcher(
           duration: APPConst.animationDuraion,
           child: ContainerWithBorder(
             onRemove: onTapMemo,
             onRemoveIcon: memo == null
-                ? Icon(Icons.add_box, color: context.colors.onPrimaryContainer)
-                : Icon(Icons.edit, color: context.colors.onPrimaryContainer),
+                ? Icon(Icons.add_box, color: context.onPrimaryContainer)
+                : Icon(Icons.edit, color: context.onPrimaryContainer),
             child: _StellarMemoView(memo),
           ),
         )
@@ -41,18 +41,18 @@ class _StellarMemoView extends StatelessWidget {
   final StellarMemoDetils? memo;
   @override
   Widget build(BuildContext context) {
-    if (memo == null) return Text("tap_to_create_memo".tr);
+    if (memo == null) {
+      return Text(
+        "tap_to_create_memo".tr,
+        style: context.onPrimaryTextTheme.bodyMedium,
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          memo!.memo.type.name.camelCase,
-          style: context.colors.onPrimaryContainer.lableLarge(context),
-        ),
-        Text(
-          memo?.val ?? '',
-          style: context.colors.onPrimaryContainer.bodyMedium(context),
-        )
+        Text(memo!.memo.type.name.camelCase,
+            style: context.onPrimaryTextTheme.labelLarge),
+        Text(memo?.val ?? '', style: context.onPrimaryTextTheme.bodyMedium)
       ],
     );
   }

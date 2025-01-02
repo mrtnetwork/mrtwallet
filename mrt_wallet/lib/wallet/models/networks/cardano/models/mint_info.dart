@@ -17,7 +17,7 @@ class ADAMintInfo {
       required this.script,
       required this.owner,
       required List<int> pubKeyBytes})
-      : pubKeyBytes = BytesUtils.toBytes(pubKeyBytes, unmodifiable: true);
+      : pubKeyBytes = pubKeyBytes.asImmutableBytes;
 
   late final UtxoAssets toUtxoAssets = _toUtxoAssets();
   late final UtxoMultiAsset toMultiAsset = _toMultiAsset();

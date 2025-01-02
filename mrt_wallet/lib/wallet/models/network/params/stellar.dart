@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/provider.dart';
-
+import 'package:blockchain_utils/bip/bip.dart';
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
@@ -27,7 +27,7 @@ class StellarNetworkParams extends NetworkCoinParams<StellarAPIProvider> {
         providers: (cbor.elementAt(3) as List)
             .map((e) => StellarAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        mainnet: cbor.elementAt(4),
+        chainType: ChainType.fromValue(cbor.elementAt(4)),
         passphrase: cbor.elementAt(5));
   }
   StellarNetworkParams(
@@ -35,18 +35,18 @@ class StellarNetworkParams extends NetworkCoinParams<StellarAPIProvider> {
       required super.addressExplorer,
       required super.token,
       required super.providers,
-      required super.mainnet,
+      required super.chainType,
       required this.passphrase});
 
   StellarNetworkParams copyWith(
-      {bool? mainnet,
+      {ChainType? chainType,
       String? transactionExplorer,
       String? addressExplorer,
       Token? token,
       List<StellarAPIProvider>? providers,
       String? passphrase}) {
     return StellarNetworkParams(
-        mainnet: mainnet ?? this.mainnet,
+        chainType: chainType ?? this.chainType,
         transactionExplorer: transactionExplorer ?? this.transactionExplorer,
         addressExplorer: addressExplorer ?? this.addressExplorer,
         token: token ?? this.token,
@@ -62,7 +62,7 @@ class StellarNetworkParams extends NetworkCoinParams<StellarAPIProvider> {
           addressExplorer,
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          mainnet,
+          chainType.name,
           passphrase
         ]),
         CborTagsConst.stellarNetworkParam);
@@ -76,7 +76,10 @@ class StellarNetworkParams extends NetworkCoinParams<StellarAPIProvider> {
         addressExplorer: addressExplorer,
         token: token,
         providers: updateProviders.cast<StellarAPIProvider>(),
-        mainnet: mainnet,
+        chainType: chainType,
         passphrase: passphrase);
   }
+
+  @override
+  String get identifier => passphrase;
 }

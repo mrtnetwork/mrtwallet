@@ -1,22 +1,30 @@
-import 'package:mrt_wallet/app/utils/price/utils.dart';
-import 'package:mrt_wallet/app/utils/string/utils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/balance/core/balance.dart';
 
 class IntegerBalance implements BalanceCore<BigInt> {
   factory IntegerBalance.zero(int currencyDecimal,
-      {int? decimalPlaces, bool imutable = false}) {
-    return IntegerBalance(BigInt.zero, currencyDecimal, imutable: imutable);
+      {int? decimalPlaces, bool imutable = false, bool allowNegative = true}) {
+    return IntegerBalance(BigInt.zero, currencyDecimal,
+        imutable: imutable, allowNegative: allowNegative);
   }
   factory IntegerBalance(BigInt balance, int currencyDecimal,
-      {int? decimalPlaces, bool imutable = false}) {
+      {int? decimalPlaces, bool imutable = false, bool allowNegative = true}) {
     final showDecimal =
         decimalPlaces ?? (currencyDecimal > 8 ? 8 : currencyDecimal);
-    final currency = IntegerBalance._(currencyDecimal, showDecimal, imutable);
+    final currency =
+        IntegerBalance._(currencyDecimal, showDecimal, imutable, allowNegative);
     currency._updateBalance(balance);
     return currency;
   }
 
-  IntegerBalance._(this.currencyDecimal, this.showDecimal, this.imutable);
+  IntegerBalance._(this.currencyDecimal, this.showDecimal, this.imutable,
+      this.allowNegative);
+
+  IntegerBalance clone() {
+    return IntegerBalance(balance, currencyDecimal);
+  }
+
+  final bool allowNegative;
   BigInt _balance = BigInt.zero;
   @override
   BigInt get balance => _balance;
@@ -28,27 +36,39 @@ class IntegerBalance implements BalanceCore<BigInt> {
   final int currencyDecimal;
   late final int showDecimal;
   void _updateBalance(BigInt updateBalance) {
+    if (!allowNegative && updateBalance.isNegative) {
+      assert(false, "update balance should not be here.");
+      return;
+    }
     _price = PriceUtils.encodePrice(updateBalance, currencyDecimal,
         amoutDecimal: showDecimal);
     _balance = updateBalance;
     _viewPrice = StrUtils.to3Digits(_price, separator: ",");
+    _isZero = _balance == BigInt.zero;
+    _isNegative = _balance.isNegative;
+    _largerThanZero = _balance > BigInt.zero;
   }
 
   @override
-  void updateBalance([BigInt? updateBalance]) {
+  bool updateBalance([BigInt? updateBalance]) {
     assert(!imutable, "Imutable balance");
-    if (updateBalance == null || imutable) return;
+    if (updateBalance == null || imutable) return false;
+    if (updateBalance == _balance) return false;
     _updateBalance(updateBalance);
+    return true;
   }
 
   void zero() {
+    if (imutable) return;
     _updateBalance(BigInt.zero);
   }
 
+  bool _isZero = false;
   @override
-  bool get isZero => _balance == BigInt.zero;
+  bool get isZero => _isZero;
+  bool _isNegative = false;
   @override
-  bool get isNegative => _balance < BigInt.zero;
+  bool get isNegative => _isNegative;
 
   @override
   String toString() {
@@ -61,9 +81,9 @@ class IntegerBalance implements BalanceCore<BigInt> {
   String get viewPrice => _viewPrice;
 
   final bool imutable;
-
+  bool _largerThanZero = false;
   @override
-  bool get largerThanZero => _balance > BigInt.zero;
+  bool get largerThanZero => _largerThanZero;
 
   IntegerBalance operator -(IntegerBalance other) {
     return IntegerBalance(_balance - other.balance, currencyDecimal);

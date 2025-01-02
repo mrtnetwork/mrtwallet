@@ -73,18 +73,18 @@ class UtxoMultiAsset implements Comparable<UtxoMultiAsset> {
   }
 
   BigInt _amount(UtxoMultiAsset ma, PolicyID pid, AssetName aname) {
-    BigInt? amount = ma.assets[pid]?.assets[aname]?.balance;
+    final BigInt? amount = ma.assets[pid]?.assets[aname]?.balance;
     return amount ?? BigInt.zero;
   }
 
   bool _compare(UtxoMultiAsset lhs, UtxoMultiAsset rhs) {
-    for (var entry in lhs.assets.entries) {
-      PolicyID pid = entry.key;
-      UtxoAssets? assets = entry.value;
-      for (var assetEntry in assets.assets.entries) {
-        AssetName aname = assetEntry.key;
-        BigInt amount = assetEntry.value.balance;
-        BigInt rhsAmount = _amount(rhs, pid, aname);
+    for (final entry in lhs.assets.entries) {
+      final PolicyID pid = entry.key;
+      final UtxoAssets assets = entry.value;
+      for (final assetEntry in assets.assets.entries) {
+        final AssetName aname = assetEntry.key;
+        final BigInt amount = assetEntry.value.balance;
+        final BigInt rhsAmount = _amount(rhs, pid, aname);
         if (amount - rhsAmount > BigInt.zero) {
           return false;
         }
@@ -114,7 +114,7 @@ class UtxoMultiAsset implements Comparable<UtxoMultiAsset> {
   }
 
   @override
-  operator ==(other) {
+  bool operator ==(other) {
     if (other is! UtxoMultiAsset) return false;
     if (other.assets.length != assets.length) return false;
     for (final i in other.assets.entries) {

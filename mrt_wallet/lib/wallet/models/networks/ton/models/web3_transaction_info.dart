@@ -290,12 +290,12 @@ class ContractTonTransactionPayload extends TonWeb3TransactionPayload {
       required this.type,
       required this.operation,
       this.jettonAmount,
-      BigInt? tonAmount})
+      super.tonAmount})
       : super(contentJson: {
           _TonWeb3TransactionPayloadConst.payloadKey: payload.toBase64(),
           _TonWeb3TransactionPayloadConst.operationKey: operation,
           ...content
-        }, tonAmount: tonAmount);
+        });
   final BigInt? jettonAmount;
 
   // Map<String, dynamic> content;
@@ -312,7 +312,7 @@ class JettonContractTonTransactionPayload extends TonWeb3TransactionPayload {
       required this.operation,
       required Map<String, dynamic> content,
       required BigInt? transferAmount,
-      required BigInt? tonAmount,
+      required super.tonAmount,
       required this.isAccountJetton})
       : assert(
             type == TonWeb3TransactionPayloadType.jetton ||
@@ -325,7 +325,7 @@ class JettonContractTonTransactionPayload extends TonWeb3TransactionPayload {
           _TonWeb3TransactionPayloadConst.payloadKey: payload.toBase64(),
           _TonWeb3TransactionPayloadConst.operationKey: operation,
           ...content
-        }, tonAmount: tonAmount);
+        });
 
   final IntegerBalance? amount;
   final String operation;

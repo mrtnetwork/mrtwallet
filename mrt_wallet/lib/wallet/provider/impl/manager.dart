@@ -41,7 +41,7 @@ mixin WalletsManager on _WalletCore {
       final controller =
           await WalletController._setup(this as WalletCore, wallet);
       final currentController = _wallet;
-      await currentController?._dispose();
+      currentController?._dispose();
       _wallet = controller;
       _homePageStatus = WalletStatus.ready;
     } else {
@@ -53,7 +53,7 @@ mixin WalletsManager on _WalletCore {
       {required HDWallet hdWallet,
       required String password,
       required WalletUpdateInfosData walletInfos,
-      List<Chain> chains = const []}) async {
+      List<MRTWalletChainBackup> chains = const []}) async {
     if (!StrUtils.isStrongPassword(password)) {
       throw WalletExceptionConst.incorrectPassword;
     }
@@ -67,8 +67,9 @@ mixin WalletsManager on _WalletCore {
         protectWallet: walletInfos.protectWallet);
     _wallets.validateImport(updatedWallet);
     final pw = await _toWalletPassword(password, updatedWallet._checksum);
-    await crypto.cryptoRequest(CryptoRequestGenerateMasterKey.fromStorage(
-        storageData: updatedWallet._data, key: pw));
+    await crypto.cryptoIsolateRequest(
+        CryptoRequestGenerateMasterKey.fromStorage(
+            storageData: updatedWallet._data, key: pw));
     _wallets.setupWallet(updatedWallet, asDefault: walletInfos.asDefaultWallet);
     await _initializeWallet(updatedWallet, chains: chains);
     await _initPage(slectedWallet: updatedWallet);
@@ -76,14 +77,14 @@ mixin WalletsManager on _WalletCore {
   }
 
   Future<void> _initializeWallet(HDWallet wallet,
-      {List<Chain> chains = const []}) async {
+      {List<MRTWalletChainBackup> chains = const []}) async {
     await _removeWalletStorage(wallet);
     await _setupWalletAccounts(chains, wallet);
   }
 
   Future<List<int>> _toWalletPassword(
       String password, String walletCheckSum) async {
-    return await crypto.cryptoRequest(CryptoRequestWalletKey.fromString(
+    return await crypto.cryptoIsolateRequest(CryptoRequestWalletKey.fromString(
         key: password, checksum: walletCheckSum));
   }
 
@@ -96,15 +97,28 @@ mixin WalletsManager on _WalletCore {
   Future<void> _eraseWallet(String password) async {
     final controller = _controller;
     await controller._validatePassword(password);
-    await controller._dispose();
+    controller._dispose();
     _wallets.removeWallet(controller._wallet);
     await _writeHdWallet(_wallets);
     await _removeWalletStorage(controller._wallet);
     await _initPage();
   }
 
-  Future<T> cryptoRequest<T, A extends MessageArgs,
-      E extends MessageArgsCompleter<T, A>>(E request) async {
-    return crypto.cryptoRequest(request);
+  Future<T> cryptoMainRequest<T, A extends CborMessageArgs,
+      E extends CryptoArgsCompleter<T, A>>(E request) async {
+    return crypto.cryptoMainRequest(request);
+  }
+
+  Future<T> cryptoIsolateRequest<T, A extends CborMessageArgs,
+      E extends CryptoArgsCompleter<T, A>>(E request) async {
+    return crypto.cryptoIsolateRequest(request);
+  }
+
+  Future<T> nonEncryptedRequest<T, A extends CborMessageArgs>(
+      NoneEncryptedArgsCompleter<T, A> message,
+      {List<int>? encryptedPart,
+      WorkerMode mode = WorkerMode.main}) async {
+    return crypto.nonEncryptedRequest<T, A>(message,
+        mode: mode, encryptedPart: encryptedPart);
   }
 }

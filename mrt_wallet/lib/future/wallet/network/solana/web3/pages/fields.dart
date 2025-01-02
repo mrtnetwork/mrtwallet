@@ -24,7 +24,6 @@ class SolanaWeb3FieldsView extends StatelessWidget {
       case Web3SolanaRequestMethods.signTransaction:
       case Web3SolanaRequestMethods.signAllTransactions:
       case Web3SolanaRequestMethods.sendTransaction:
-      case Web3SolanaRequestMethods.sendAllTransactions:
         return SolanaWeb3TransactionFieldsView(
             request: request.cast(), wallet: wallet);
       default:

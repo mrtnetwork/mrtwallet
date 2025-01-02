@@ -45,8 +45,6 @@ abstract class WebViewStorage with CborSerializable {
         return WebViewHistoryStorage(tabs);
       case WebViewStorageType.tab:
         return WebViewTabStorage(tabs);
-      default:
-        throw WalletExceptionConst.dataVerificationFailed;
     }
   }
 

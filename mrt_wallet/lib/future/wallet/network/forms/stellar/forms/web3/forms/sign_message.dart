@@ -16,6 +16,6 @@ class Web3StellarSignMessageForm<PARAMS extends Web3StellarRequestParam>
   Future<void> signMessage(FuncFutureNullableBoold confirm) async {
     final accept = await confirm();
     if (accept != true) return;
-    onCompeleteForm?.call(true);
+    onCompleteForm?.call(true);
   }
 }

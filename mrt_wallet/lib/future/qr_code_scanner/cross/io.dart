@@ -35,7 +35,7 @@ class _MacosBarcodeScannerViewState extends State<BarcodeScannerView>
           x: 10,
           y: 20);
       stream =
-          (await BaseNativeMEthod.platform.startBarcodeScanner(param: params))
+          (await AppNativeMethods.platform.startBarcodeScanner(param: params))
               .listen(onBarcodeData);
     }, delay: Duration.zero);
     if (result.hasError) {

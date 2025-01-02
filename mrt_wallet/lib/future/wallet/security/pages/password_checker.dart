@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -9,28 +11,31 @@ import 'package:mrt_wallet/future/constant/constant.dart';
 
 typedef FuncWidgetStringPaagePrgoressKey = Widget Function(
     List<CryptoKeyData> credential, String password, WalletNetwork network);
+typedef ONWALLETACCESSS = FutureOr<Object?> Function(String password);
 
 class PasswordCheckerView extends StatefulWidget {
   const PasswordCheckerView(
       {required this.accsess,
+      this.onWalletAccess,
       super.key,
-      required this.onAccsess,
+      this.onAccsess,
       this.title,
       this.subtitle,
       this.account,
       this.password,
-      this.customKey,
+      this.importedKey,
       this.controller,
       this.appbar});
-  final FuncWidgetStringPaagePrgoressKey onAccsess;
+  final FuncWidgetStringPaagePrgoressKey? onAccsess;
   final WalletAccsessType accsess;
   final String? title;
   final Widget? subtitle;
   final ChainAccount? account;
   final String? password;
-  final EncryptedCustomKey? customKey;
+  final EncryptedCustomKey? importedKey;
   final ScrollController? controller;
   final AppBar? appbar;
+  final ONWALLETACCESSS? onWalletAccess;
 
   @override
   State<PasswordCheckerView> createState() => _PasswordCheckerViewState();
@@ -89,17 +94,31 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     if (password == null || password.isEmpty) return;
     progressKey.process();
 
-    final result = await wallet.wallet.accsess(widget.accsess, password,
-        account: widget.account, accountId: widget.customKey?.id);
-    if (result.hasError) {
-      error = result.error?.tr;
-      progressKey.error();
-    } else {
-      credentials = result.result;
-      _correctPassword = password;
-      progressKey.success();
+    try {
+      final result = await wallet.wallet.accsess(widget.accsess, password,
+          account: widget.account, keyId: widget.importedKey?.id);
+      if (result.hasError) {
+        error = result.error?.tr;
+        progressKey.error();
+      } else {
+        if (widget.onWalletAccess != null) {
+          final r = await MethodUtils.call(() async {
+            return widget.onWalletAccess!.call(password!);
+          });
+          if (r.hasError) {
+            error = result.error?.tr;
+            progressKey.error();
+            return;
+          }
+          context.pop(r.result);
+        }
+        credentials = result.result;
+        _correctPassword = password;
+        progressKey.success();
+      }
+    } finally {
+      updateState();
     }
-    setState(() {});
   }
 
   double? _heightSpace;
@@ -120,7 +139,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
       _entredPassword = "";
       _correctPassword = "";
     } else {
-      if (access.isUnlock) {
+      if (access.isUnlock && widget.onWalletAccess == null) {
         credentials = [FakeKeyData()];
       }
     }
@@ -164,8 +183,8 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
           duration: APPConst.animationDuraion,
           enable: credentials != null,
           widgets: {
-            true: (c) => widget.onAccsess(
-                credentials!, _correctPassword, wallet.wallet.network),
+            true: (c) => widget.onAccsess
+                ?.call(credentials!, _correctPassword, wallet.wallet.network),
             false: (c) => _PasswordWriterView(this)
           },
         ),
@@ -175,7 +194,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
 }
 
 class _PasswordWriterView extends StatelessWidget {
-  const _PasswordWriterView(this.state, {Key? key}) : super(key: key);
+  const _PasswordWriterView(this.state);
   final _PasswordCheckerViewState state;
   @override
   Widget build(BuildContext context) {

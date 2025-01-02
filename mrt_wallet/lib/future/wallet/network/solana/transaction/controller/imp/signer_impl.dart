@@ -9,8 +9,8 @@ import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 mixin SolanaSignerImpl on SolanaTransactionImpl {
   Future<String> _buildAndSigneTransaction() async {
-    final bl =
-        await apiProvider.provider.request(const SolanaRPCGetLatestBlockhash());
+    final bl = await apiProvider.provider
+        .request(const SolanaRequestGetLatestBlockhash());
     final transaction = SolanaTransaction(
         payerKey: owner.networkAddress,
         instructions: [
@@ -38,9 +38,9 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
         final digest = List<int>.unmodifiable(transaction.serializeMessage());
         for (int i = 0; i < signerAccounts.length; i++) {
           final addr = signerAccounts.elementAt(i);
-          final signier = addr.keyIndex as Bip32AddressIndex;
+          final Bip32AddressIndex signer = addr.keyIndex.cast();
           final signRequest =
-              GlobalSignRequest.solana(digest: digest, index: signier);
+              GlobalSignRequest.solana(digest: digest, index: signer);
           final sss = await generateSignature(signRequest);
           transaction.addSignature(addr.networkAddress, sss.signature);
         }
@@ -52,7 +52,7 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
     }
     try {
       final provider = await apiProvider.provider.request(
-          SolanaRPCSendTransaction(
+          SolanaRequestSendTransaction(
               encodedTransaction: signedTr.result.serializeString()));
       return provider;
     } catch (e) {
@@ -72,7 +72,7 @@ mixin SolanaSignerImpl on SolanaTransactionImpl {
     } else {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
-              network: network, txId: [result.result]),
+              network: network, txIds: [result.result]),
           backToIdle: false);
     }
   }

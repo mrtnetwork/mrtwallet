@@ -2,6 +2,7 @@ import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/bch.dart';
@@ -9,6 +10,7 @@ import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/cardano.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/ethereum.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/monero.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/ripple.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/solana.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/stellar.dart';
@@ -37,7 +39,8 @@ enum NewAccountParamsType {
   rippleMultiSigNewAddressParams(CborTagsConst.rippleMultiSigNewAddressParams),
   stellarNewAddressParams(CborTagsConst.stellarNewAddressParams),
   stellarMultiSigNewAddressParams(
-      CborTagsConst.stellarMultiSigNewAddressParams);
+      CborTagsConst.stellarMultiSigNewAddressParams),
+  moneroNewAddressParams(CborTagsConst.moneroNewAddressParams);
 
   final List<int> tag;
   const NewAccountParamsType(this.tag);
@@ -52,9 +55,10 @@ abstract class NewAccountParams<NETWORKADDRESS> with CborSerializable {
   abstract final CryptoCoins coin;
   abstract final AddressDerivationIndex deriveIndex;
   abstract final NewAccountParamsType type;
+
   bool get isMultiSig;
   NETWORKCHAINACCOUNT<NETWORKADDRESS> toAccount(
-      WalletNetwork network, List<int> publicKey);
+      WalletNetwork network, CryptoPublicKeyData? publicKey);
 
   factory NewAccountParams.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -112,8 +116,9 @@ abstract class NewAccountParams<NETWORKADDRESS> with CborSerializable {
       case NewAccountParamsType.stellarMultiSigNewAddressParams:
         params = StellarMultiSigNewAddressParams.deserialize(object: decode);
         break;
-      default:
-        throw UnimplementedError("Network does not exists.");
+      case NewAccountParamsType.moneroNewAddressParams:
+        params = MoneroNewAddressParams.deserialize(object: decode);
+        break;
     }
     if (params is! NewAccountParams<NETWORKADDRESS>) {
       throw WalletExceptionConst.dataVerificationFailed;

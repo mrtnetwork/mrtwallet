@@ -3,14 +3,13 @@
 class WalletLogging {
   static bool get isDebug => true;
 
-  static void log(String text) {
-    print('\x1B[31m$text\x1B[0m');
+  static void log(Object? text) {
+    print('\x1B[33m$text\x1B[0m');
     // print(text);
   }
 
-  static void warning(String text) {
-    // print('\x1B[33m$text\x1B[0m');
-    print(text);
+  static void error(String text) {
+    print('\x1B[31m$text\x1B[0m');
   }
 
   static void webview(String text) {

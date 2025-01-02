@@ -9,9 +9,11 @@ import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class RipplePaymentForm implements RippleTransactionForm {
-  RipplePaymentForm({required this.token, this.issueToken});
-  final Token token;
-  final RippleIssueToken? issueToken;
+  RipplePaymentForm(this._issueToken);
+  Token? get token => issueToken?.token;
+
+  XRPPickedAssets? _issueToken;
+  XRPPickedAssets? get issueToken => _issueToken;
   late final TransactionFormField<BalanceCore> amount = TransactionFormField(
     name: "amount",
     subject: "",
@@ -88,7 +90,7 @@ class RipplePaymentForm implements RippleTransactionForm {
       amount: issueToken != null
           ? CurrencyAmount.issue(IssuedCurrencyAmount(
               currency: issueToken!.token.name,
-              issuer: issueToken!.issuer,
+              issuer: issueToken!.issuer.address,
               value: (amount.value!.balance as BigRational).toDecimal()))
           : CurrencyAmount.xrp(amount.value!.balance as BigInt),
       account: account.toAddress(),
@@ -108,6 +110,12 @@ class RipplePaymentForm implements RippleTransactionForm {
     if (field.setValue(value)) {
       onChanged?.call();
     }
+  }
+
+  void setToken(XRPPickedAssets? asset) {
+    _issueToken = asset;
+    amount.setValue(null);
+    onChanged?.call();
   }
 
   @override

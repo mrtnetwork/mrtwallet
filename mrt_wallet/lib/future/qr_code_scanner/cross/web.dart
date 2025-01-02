@@ -34,7 +34,7 @@ class _WebBarcodeScannerViewState extends State<BarcodeScannerView>
     stream ??= await jsWindow.navigator.mediaDevices
         .getUserMedia_(video: true, audio: false);
     final String id = DateTime.now().microsecondsSinceEpoch.toString();
-    HTMLVideoElement videoElement = jsWindow.document.createVideoElement()
+    final HTMLVideoElement videoElement = jsWindow.document.createVideoElement()
       ..id = id
       ..autoplay = true
       ..srcObject = stream;

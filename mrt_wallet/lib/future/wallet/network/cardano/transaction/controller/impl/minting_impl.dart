@@ -10,6 +10,7 @@ mixin CardanoMintingImpl on CardanoTransactionImpl {
     if (mint == null) return;
     _mints = List<ADAMintInfo>.unmodifiable([mint, ..._mints]);
     setTotalAssets(totalAssets + mint.toMultiAsset);
+    changeAssetOutput.updateAssets(changeAssetOutput.asset + mint.toMultiAsset);
     calculateFee();
   }
 

@@ -34,12 +34,12 @@ abstract class EthereumWeb3Form<PARAMS extends Web3EthereumRequestParam>
 
   DynamicVoid? onStimateChanged;
   @override
-  ObjectVoid? onCompeleteForm;
+  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;
 
   void confirmRequest({Object? response}) {
-    onCompeleteForm?.call(response);
+    onCompleteForm?.call(response);
   }
 }

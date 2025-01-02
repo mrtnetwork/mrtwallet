@@ -4,8 +4,7 @@ import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/crypto/keys/access/ada_legacy_public_key.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_request.dart';
-import 'package:mrt_wallet/crypto/keys/access/private_key_response.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'package:mrt_wallet/crypto/keys/models/key_type.dart';
 import 'package:mrt_wallet/crypto/keys/models/seed.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
@@ -27,13 +26,11 @@ class WalletMasterKeys with CborSerializable {
     required List<int> cardanoLegacyByronSeed,
     required List<int> cardanoIcarusSeed,
     required List<int> checksum,
-  })  : seed = BytesUtils.toBytes(seedBytes, unmodifiable: true),
-        cardanoLegacyByronSeed =
-            BytesUtils.toBytes(cardanoLegacyByronSeed, unmodifiable: true),
-        cardanoIcarusSeed =
-            BytesUtils.toBytes(cardanoIcarusSeed, unmodifiable: true),
-        checksum = BytesUtils.toBytes(checksum, unmodifiable: true),
-        entopySeed = BytesUtils.toBytes(entropySeedBytes, unmodifiable: true);
+  })  : seed = seedBytes.asImmutableBytes,
+        cardanoLegacyByronSeed = cardanoLegacyByronSeed.asImmutableBytes,
+        cardanoIcarusSeed = cardanoIcarusSeed.asImmutableBytes,
+        checksum = checksum.asImmutableBytes,
+        entopySeed = entropySeedBytes.asImmutableBytes;
   List<int> getSeed(SeedTypes type) {
     switch (type) {
       case SeedTypes.bip39:
@@ -174,7 +171,7 @@ class WalletMasterKeys with CborSerializable {
     }
   }
 
-  PrivateKeyData toKey(AddressDerivationIndex key,
+  CryptoPrivateKeyData toKey(AddressDerivationIndex key,
       {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
     if (key.isMultiSig) {
       throw WalletExceptionConst.multiSigDerivationNotSuported;
@@ -187,17 +184,17 @@ class WalletMasterKeys with CborSerializable {
       return customKey.toKey(key, maxLevel: maxLevel);
     }
     final seedBytes = getSeed(key.seedGeneration);
-    final bip32Key = PrivateKeyData.fromSeed(
+    final bip32Key = CryptoPrivateKeyData.fromSeed(
         seedBytes: seedBytes, coin: key.currencyCoin, keyName: key.name);
     return key.derive(bip32Key, maxLevel: maxLevel);
   }
 
-  PrivateKeyData getImportedKey(String keyId) {
+  CryptoPrivateKeyData getImportedKey(String keyId) {
     final importedKey = getKeyById(keyId);
     if (importedKey == null) {
       throw WalletExceptionConst.privateKeyIsNotAvailable;
     }
-    final keyInfo = importedKey.toKey(null);
+    final keyInfo = importedKey.getKey();
     return keyInfo;
   }
 
@@ -217,7 +214,7 @@ class WalletMasterKeys with CborSerializable {
     for (final i in requestKeys) {
       final bool byronLegacy =
           i.index.currencyCoin.proposal == CustomProposal.cip0019;
-      final PrivateKeyData privateKey = toKey(i.index,
+      final CryptoPrivateKeyData privateKey = toKey(i.index,
           maxLevel:
               byronLegacy ? Bip44Levels.master : Bip44Levels.addressIndex);
       if (!byronLegacy) {

@@ -14,7 +14,7 @@ import 'package:on_chain/solidity/address/core.dart';
 
 class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
   EthereumClient({required this.provider, required this.network});
-  final EVMRPC provider;
+  final EthereumProvider provider;
   @override
   final WalletNetwork network;
   @override
@@ -41,21 +41,22 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
     if (service.protocol != ServiceProtocol.websocket) {
       throw WalletExceptionConst.ethSubscribe;
     }
-    final result =
-        await provider.requestDynamic(EthereumMethods.subscribe.value, params);
+    final result = await provider.request(EthereumRequestDynamic<String>(
+        methodName: EthereumMethods.subscribe.value, params: params));
     return result;
   }
 
   @override
-  Future<void> updateBalance(IEthAddress account) async {
+  Future<void> updateBalance(
+      IEthAddress address, APPCHAINACCOUNT<IEthAddress> chain) async {
     final balance = await provider
-        .request(RPCGetBalance(address: account.address.toAddress));
-    account.address.updateBalance(balance);
-    await updateAccountTokensBalance(account);
+        .request(EthereumRequestGetBalance(address: address.address.toAddress));
+    chain.updateAddressBalance(address: address, updateBalance: balance);
+    await updateAccountTokensBalance(address);
   }
 
   Future<FeeHistorical> getHistoricalFee() async {
-    final historical = await provider.request(RPCGetFeeHistory(
+    final historical = await provider.request(EthereumRequestGetFeeHistory(
         blockCount: 10,
         newestBlock: BlockTagOrNumber.latest,
         rewardPercentiles: [30, 60, 99]));
@@ -63,9 +64,9 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
   }
 
   Future<(BigInt, bool)> getNetworkInfo() async {
-    final BigInt chainId = await provider.request(RPCGetChainId());
+    final BigInt chainId = await provider.request(EthereumRequestGetChainId());
     try {
-      final eip = await provider.request(RPCGetFeeHistory(
+      final eip = await provider.request(EthereumRequestGetFeeHistory(
           blockCount: 25,
           newestBlock: BlockTagOrNumber.pending,
           rewardPercentiles: [25, 50, 90]));
@@ -76,30 +77,31 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
   }
 
   Future<BigInt> gasPrice() async {
-    final historical = await provider.request(RPCGetGasPrice());
+    final historical = await provider.request(EthereumRequestGetGasPrice());
     return historical;
   }
 
   Future<BigInt> estimateGasLimit(Map<String, dynamic> estimateDetails) async {
-    final estimate =
-        await provider.request(RPCEstimateGas(transaction: estimateDetails));
+    final estimate = await provider
+        .request(EthereumRequestEstimateGas(transaction: estimateDetails));
     return estimate;
   }
 
   Future<int> getAccountNonce(ETHAddress account) async {
     final nonce = await provider
-        .request(RPCGetTransactionCount(address: account.address));
+        .request(EthereumRequestGetTransactionCount(address: account.address));
     return nonce;
   }
 
   Future<String> sendRawTransaction(String digest) async {
-    final txID =
-        await provider.request(RPCSendRawTransaction(transaction: digest));
+    final txID = await provider
+        .request(EthereumRequestSendRawTransaction(transaction: digest));
     return txID;
   }
 
   Future<bool> isContract(SolidityAddress address) async {
-    final code = await provider.request(RPCGetCode(address: address.toHex()));
+    final code = await provider
+        .request(EthereumRequestGetCode(address: address.toHex()));
     return code != null;
   }
 
@@ -285,13 +287,11 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
             ReceiptAddress<ETHAddress>(
                 view: transaction.to!.address, networkAddress: transaction.to!)
         : null;
-    bool isSmartContract = false;
     EthereumTransactionDataInfo? contractInfos;
     if (transaction.to != null) {
       final bool isSmartContract = await isContract(transaction.to!);
       if (!isSmartContract) {
         return Web3EthereumTransactionRequestInfos(
-            isContract: isSmartContract,
             transaction: transaction,
             destination: destination,
             contractInfo: transaction.data.isEmpty
@@ -311,7 +311,6 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
     }
 
     return Web3EthereumTransactionRequestInfos(
-      isContract: isSmartContract,
       transaction: transaction,
       destination: destination,
       contractInfo: contractInfos,
@@ -319,18 +318,20 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
   }
 
   Future<BigInt> getChainId() async {
-    return await provider.request(RPCGetChainId());
+    return await provider.request(EthereumRequestGetChainId());
   }
 
   Future<dynamic> dynamicCall(String method, dynamic params) async {
-    return await provider.requestDynamic(method, params);
+    return await provider
+        .request(EthereumRequestDynamic(methodName: method, params: params));
   }
 
   @override
   Future<bool> onInit() async {
     if (network.type == NetworkType.ethereum) {
       final result = await MethodUtils.call(() async {
-        final BigInt chainId = await provider.request(RPCGetChainId());
+        final BigInt chainId =
+            await provider.request(EthereumRequestGetChainId());
         return chainId;
       });
       return result.hasResult &&

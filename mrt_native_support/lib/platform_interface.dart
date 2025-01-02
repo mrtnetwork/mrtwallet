@@ -1,4 +1,4 @@
-library mrt_platform_interface;
+library;
 
 import 'package:mrt_native_support/base.dart'
     if (dart.library.js_interop) 'web/mrt_native_web.dart'

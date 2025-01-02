@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/stream_bottun.dart';
 import 'package:mrt_wallet/wallet/api/api.dart';
@@ -40,16 +40,37 @@ extension AccountReceivementStatusExtension on AccountReceivementStatus {
 mixin StellarOperationDestinationTracker<T extends StatefulWidget>
     on SafeState<T> {
   StellarReceiptWithActivityStatus? receiver;
+  StellarPickedIssueAsset? get asset;
   StellarClient get client;
   String? destinationInactiveError;
+  String? pathLimitError;
   void onAccountActivityUpdated() {
     updateState();
+  }
+
+  void checkTrustPathLimit(StellarPickedIssueAsset? asset, BigInt amount) {
+    pathLimitError = _checkTrustPathLimit(asset, amount);
+    updateState();
+  }
+
+  String? _checkTrustPathLimit(StellarPickedIssueAsset? asset, BigInt amount) {
+    if (asset == null ||
+        asset.asset.type.isNative ||
+        receiver?.accountInfo == null) {
+      return null;
+    }
+    final receiverAsset = receiver!.accountInfo!.getAsset(asset.asset);
+    if (receiverAsset == null) return "stellar_destination_lacks_trust_path".tr;
+    final limit = receiverAsset.limitAsBigint() - receiverAsset.unlockedBalance;
+    if (limit < amount) return "stellar_asset_trust_path_limit_exceeded".tr;
+    return null;
   }
 
   Future<void> trackActivity(StellarReceiptWithActivityStatus receiver) async {
     if (!receiver.status.canTry) return;
     receiver.setPending();
     destinationInactiveError = null;
+    pathLimitError = null;
     updateState();
     final result = await MethodUtils.call(() async {
       return await client.getAccount(receiver.address.networkAddress);
@@ -57,7 +78,8 @@ mixin StellarOperationDestinationTracker<T extends StatefulWidget>
     if (result.hasError) {
       receiver.setStatus(AccountReceivementStatus.error);
     } else if (result.result != null) {
-      receiver.setStatus(AccountReceivementStatus.active);
+      receiver.setStatus(AccountReceivementStatus.active,
+          accountInfo: result.result);
     } else {
       receiver.setStatus(AccountReceivementStatus.inactive);
       destinationInactiveError = "stellar_account_inactive_desc".tr;

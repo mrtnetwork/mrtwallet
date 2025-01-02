@@ -1,7 +1,6 @@
 import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
@@ -64,25 +63,25 @@ class AddressDerivationController<NETWORKADDRESS,
   Future<AddressDerivationIndex?> getCoin(
       {required BuildContext context,
       required SeedTypes seedGeneration,
-      List<CryptoCoins>? selectedCoins}) async {
+      CryptoCoins? selectedCoin}) async {
     if (!(form.currentState?.validate() ?? true)) return null;
-    if (selectedCoins != null) {
-      if (selectedCoins.any((e) => !coins.contains(e))) {
+    if (selectedCoin != null) {
+      if (!coins.contains(selectedCoin)) {
         throw WalletExceptionConst.invalidCoin;
       }
     }
-    final c = selectedCoins?.first ?? coin;
-    final customKeys =
-        await wallet.wallet.getCustomKeysForCoin(selectedCoins ?? coins);
+
+    final defaultCoin = selectedCoin ?? coin;
+    final customKeys = await wallet.wallet.getCustomKeysForCoin(defaultCoin);
+    final activeCoins = selectedCoin != null ? [selectedCoin] : coins;
     return await context.openSliverBottomSheet<AddressDerivationIndex>(
         "setup_derivation".tr,
         child: SetupDerivationModeView(
-          coin: c,
-          chainAccout: chain,
-          customKeys: customKeys,
-          networkCoins: selectedCoins ?? coins,
-          seedGenerationType: seedGeneration,
-        ));
+            coin: defaultCoin,
+            chainAccout: chain,
+            customKeys: customKeys,
+            networkCoins: activeCoins,
+            seedGenerationType: seedGeneration));
   }
 
   void generateAddress(NewAccountParams<NETWORKADDRESS> newAccount) async {

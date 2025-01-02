@@ -36,9 +36,7 @@ class EthereumGasFeeView extends StatelessWidget {
                     });
                   }
                 : null,
-            onRemoveIcon: transaction.gasInited
-                ? const Icon(Icons.edit)
-                : const Icon(Icons.circle),
+            onRemoveIcon: AddOrEditIconWidget(transaction.gasInited),
             child: APPAnimatedSwitcher(
               enable: transaction.gasInited,
               widgets: {
@@ -51,11 +49,14 @@ class EthereumGasFeeView extends StatelessWidget {
                             children: [
                               if (transaction.network.coinParam.supportEIP1559)
                                 Text(transaction.feeSpeed.value.tr,
-                                    style: context.textTheme.labelLarge),
+                                    style:
+                                        context.onPrimaryTextTheme.labelLarge),
                               CoinPriceView(
-                                  token: transaction.network.coinParam.token,
-                                  balance: transaction.currentEIP1559Fee!.fee,
-                                  style: context.textTheme.titleLarge)
+                                token: transaction.network.coinParam.token,
+                                balance: transaction.currentEIP1559Fee!.fee,
+                                style: context.onPrimaryTextTheme.titleMedium,
+                                symbolColor: context.onPrimaryContainer,
+                              )
                             ],
                           ),
                         ),
@@ -63,7 +64,12 @@ class EthereumGasFeeView extends StatelessWidget {
                     ),
                 false: (c) => Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [Text("retrieving_network_condition".tr)],
+                      children: [
+                        Text(
+                          "retrieving_network_condition".tr,
+                          style: context.onPrimaryTextTheme.bodyMedium,
+                        )
+                      ],
                     )
               },
             )),

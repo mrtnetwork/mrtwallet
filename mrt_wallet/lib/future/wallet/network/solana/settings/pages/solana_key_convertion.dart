@@ -22,7 +22,7 @@ class SolanaKeyConversionView extends StatelessWidget {
 }
 
 class _SolanaConversionView extends StatefulWidget {
-  const _SolanaConversionView(this.network, {Key? key}) : super(key: key);
+  const _SolanaConversionView(this.network);
   final WalletSolanaNetwork network;
 
   @override
@@ -31,7 +31,7 @@ class _SolanaConversionView extends StatefulWidget {
 }
 
 class __SolanaKeyConversionViewState extends State<_SolanaConversionView>
-    with SafeState {
+    with SafeState<_SolanaConversionView> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final GlobalKey<PageProgressState> progressKey = GlobalKey();
   final GlobalKey<AppTextFieldState> keyController =
@@ -45,7 +45,7 @@ class __SolanaKeyConversionViewState extends State<_SolanaConversionView>
 
   void onChangeKeyAlgorithm(XRPKeyAlgorithm? updateAlgorithm) {
     algorithm = updateAlgorithm ?? algorithm;
-    setState(() {});
+    updateState(() {});
   }
 
   String? validate(String? v) {
@@ -81,7 +81,7 @@ class __SolanaKeyConversionViewState extends State<_SolanaConversionView>
     if (!didPop) {
       generatedKey = null;
       key = "";
-      setState(() {});
+      updateState(() {});
     }
   }
 
@@ -100,11 +100,11 @@ class __SolanaKeyConversionViewState extends State<_SolanaConversionView>
             slivers: [
               SliverConstraintsBoxView(
                   padding: WidgetConstant.paddingHorizontal20,
-                  sliver: SliverToBoxAdapter(
-                    child: APPAnimatedSwitcher(
-                        enable: generatedKey != null,
-                        widgets: {
-                          false: (c) => Column(
+                  sliver: APPSliverAnimatedSwitcher(
+                      enable: generatedKey != null,
+                      widgets: {
+                        false: (c) => SliverToBoxAdapter(
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   PageTitleSubtitle(
@@ -149,10 +149,10 @@ class __SolanaKeyConversionViewState extends State<_SolanaConversionView>
                                   )
                                 ],
                               ),
-                          true: (c) => ImportCustomKeyToWalletView(
-                              keypair: generatedKey!)
-                        }),
-                  )),
+                            ),
+                        true: (c) =>
+                            ImportCustomKeyToWalletView(keypair: generatedKey!)
+                      })),
             ],
           ),
         ),

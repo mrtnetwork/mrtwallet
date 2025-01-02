@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/impl/transaction.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/bch/transaction/cotnroller/transaction_controller.dart';
@@ -29,59 +30,53 @@ class SendBitcoinCashTransactionView extends StatelessWidget {
             }
           },
           child: Scaffold(
-            appBar: AppBar(
-              title: Text("build_transacation".tr),
-            ),
+            appBar: AppBar(title: Text("build_transacation".tr)),
+            floatingActionButton:
+                APPAnimatedSwitcher(enable: controller.page, widgets: {
+              BitcoinTransactionPages.send: (context) => null,
+              BitcoinTransactionPages.account: (context) => APPAnimatedSize(
+                  isActive: controller.hasSpender,
+                  onActive: (context) => FloatingActionButton.extended(
+                      onPressed:
+                          controller.hasSpender ? controller.fetchUtxos : null,
+                      label: Text("get_unspent_transaction".tr)),
+                  onDeactive: (context) => WidgetConstant.sizedBox),
+              BitcoinTransactionPages.utxo: (context) => APPAnimatedSize(
+                  isActive: controller.canBuildTransaction,
+                  onActive: (context) => FloatingActionButton.extended(
+                      onPressed: controller.canBuildTransaction
+                          ? controller.onSetupUtxo
+                          : null,
+                      label: Text("setup_recipients".tr)),
+                  onDeactive: (context) => WidgetConstant.sizedBox),
+            }),
             body: PageProgress(
               key: controller.progressKey,
               backToIdle: APPConst.oneSecoundDuration,
               child: (c) => CustomScrollView(
                 slivers: [
-                  SliverToBoxAdapter(
-                    child: ConstraintsBoxView(
-                      padding: WidgetConstant.padding20,
-                      child: AnimatedSwitcher(
-                        duration: APPConst.animationDuraion,
-                        child: SizedBox(
-                          key: ValueKey<int>(controller.receivers.length),
-                          child: controller.inSendPage
-                              ? BitcoinCashBuildTransactionView(
-                                  controller: controller)
-                              : controller.inUtxoPage
-                                  ? Column(
-                                      children: [
-                                        BitcoinTransactionUtxoView(
-                                            controller: controller),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            FixedElevatedButton(
-                                              padding: WidgetConstant
-                                                  .paddingVertical20,
-                                              onPressed:
-                                                  controller.canBuildTransaction
-                                                      ? controller.onSetupUtxo
-                                                      : null,
-                                              child:
-                                                  Text("setup_recipients".tr),
-                                            )
-                                          ],
-                                        )
-                                      ],
-                                    )
-                                  : SelectAccountUtxo(
-                                      controller: controller,
-                                      toggleTokenUtxos: () {
-                                        controller.toggleTokenUtxos();
-                                      },
-                                      includeTokenUtxos:
-                                          controller.includeTokenUtxos,
-                                    ),
-                        ),
-                      ),
-                    ),
-                  )
+                  SliverConstraintsBoxView(
+                    padding: WidgetConstant.paddingHorizontal20,
+                    sliver: APPSliverAnimatedSwitcher(
+                        enable: controller.page,
+                        widgets: {
+                          BitcoinTransactionPages.send: (context) =>
+                              BitcoinCashBuildTransactionView(
+                                  controller: controller),
+                          BitcoinTransactionPages.account: (context) =>
+                              SelectAccountUtxo(
+                                controller: controller,
+                                includeTokenUtxos: controller.includeTokenUtxos,
+                                toggleTokenUtxos: () {
+                                  controller.toggleTokenUtxos();
+                                },
+                              ),
+                          BitcoinTransactionPages.utxo: (context) =>
+                              BitcoinTransactionUtxoView(
+                                  controller: controller),
+                        }),
+                  ),
+                  WidgetConstant.sliverPaddingVertial40,
                 ],
               ),
             ),

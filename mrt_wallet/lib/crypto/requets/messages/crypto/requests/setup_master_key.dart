@@ -7,13 +7,12 @@ import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/crypto/requests/generate_master_key.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/generate_master_key.dart';
 
-class CryptoRequestSetupMasterKey
-    implements
-        CryptoRequest<CryptoGenerateMasterKeyResponse, MessageArgsThreeBytes> {
+class CryptoRequestSetupMasterKey extends CryptoRequest<
+    CryptoGenerateMasterKeyResponse, MessageArgsThreeBytes> {
   final WalletMasterKeys masterKey;
   final List<int> key;
   CryptoRequestSetupMasterKey({required this.masterKey, required List<int> key})
-      : key = BytesUtils.toBytes(key, unmodifiable: true);
+      : key = key.asImmutableBytes;
 
   factory CryptoRequestSetupMasterKey.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {

@@ -100,7 +100,7 @@ class Web3TonChain
     final currentAccounts = activeAccounts
         .where((e) => e.workChain == chain.network.coinParam.workchain)
         .toList();
-    List<Web3TonChainAccount> existsAccounts = [];
+    final List<Web3TonChainAccount> existsAccounts = [];
     for (final i in chain.addresses) {
       final chainAccount = currentAccounts.firstWhereOrNull(
           (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);

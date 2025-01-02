@@ -19,7 +19,7 @@ class SolanaRequestAccountForm extends SolanaWeb3Form {
 
   void onChangeDefaultPermission(Web3SolanaChainAccount? account) {
     if (account == null || account.defaultAddress) return;
-    for (var e in chainPermission) {
+    for (final e in chainPermission) {
       e.changeDefault(false);
     }
     account.changeDefault(true);
@@ -34,8 +34,8 @@ class SolanaRequestAccountForm extends SolanaWeb3Form {
       : chains = chains.imutable;
   factory SolanaRequestAccountForm(
       {required Web3SolanaRequest request, required List<SolanaChain> chains}) {
-    Map<SolanaChain, TransactionListFormField<Web3SolanaChainAccount>> fields =
-        {};
+    final Map<SolanaChain, TransactionListFormField<Web3SolanaChainAccount>>
+        fields = {};
     for (final i in chains) {
       fields[i] = TransactionListFormField(
           name: "accounts",
@@ -83,15 +83,15 @@ class SolanaRequestAccountForm extends SolanaWeb3Form {
   }
 
   void complete() {
-    assert(onCompeleteForm != null, "Must not be null");
-    List<Web3SolanaChainAccount> accounts = [];
+    assert(onCompleteForm != null, "Must not be null");
+    final List<Web3SolanaChainAccount> accounts = [];
     for (final i in permissions.entries) {
       if (i.value.isEmpty) continue;
       final defaultAddresses = i.value.value.where((e) => e.defaultAddress);
       if (defaultAddresses.isEmpty) {
         i.value.value.first.changeDefault(true);
       } else if (defaultAddresses.length > 1) {
-        for (var e in i.value.value) {
+        for (final e in i.value.value) {
           e.changeDefault(false);
         }
         i.value.value.first.changeDefault(true);
@@ -100,7 +100,7 @@ class SolanaRequestAccountForm extends SolanaWeb3Form {
     }
     newPermission.updateChainAccount(accounts);
     newPermission.setActiveChain(chain);
-    onCompeleteForm?.call(newPermission);
+    onCompleteForm?.call(newPermission);
   }
 
   @override

@@ -4,34 +4,36 @@ import 'package:blockchain_utils/cbor/types/list.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
-
+import 'package:blockchain_utils/bip/bip.dart';
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class RippleNetworkParams extends NetworkCoinParams<RippleAPIProvider> {
-  static const String _xrpSymbol = "XRP";
+  final int networkId;
 
   factory RippleNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.xrpNetworkParam);
-    final token = Token.fromCborBytesOrObject(obj: cbor.getCborTag(2));
     return RippleNetworkParams(
-        transactionExplorer: cbor.elementAt(0),
-        addressExplorer: cbor.elementAt(1),
+        transactionExplorer: cbor.elementAs(0),
+        addressExplorer: cbor.elementAs(1),
         token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        providers: (cbor.elementAt(3) as List)
+        providers: cbor
+            .elementAsListOf<CborTagValue>(3)
             .map((e) => RippleAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        mainnet: cbor.elementAt<bool?>(4) ?? token.symbol == _xrpSymbol);
+        chainType: ChainType.fromValue(cbor.elementAs(4)),
+        networkId: cbor.elementAs(5));
   }
   RippleNetworkParams(
       {required super.transactionExplorer,
       required super.addressExplorer,
       required super.token,
       required super.providers,
-      required super.mainnet});
+      required super.chainType,
+      required this.networkId});
 
   @override
   CborTagValue toCbor() {
@@ -41,7 +43,8 @@ class RippleNetworkParams extends NetworkCoinParams<RippleAPIProvider> {
           addressExplorer,
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          mainnet
+          chainType.name,
+          networkId
         ]),
         CborTagsConst.xrpNetworkParam);
   }
@@ -54,6 +57,10 @@ class RippleNetworkParams extends NetworkCoinParams<RippleAPIProvider> {
         addressExplorer: addressExplorer,
         token: token,
         providers: updateProviders.cast<RippleAPIProvider>(),
-        mainnet: mainnet);
+        chainType: chainType,
+        networkId: networkId);
   }
+
+  @override
+  int get identifier => networkId;
 }

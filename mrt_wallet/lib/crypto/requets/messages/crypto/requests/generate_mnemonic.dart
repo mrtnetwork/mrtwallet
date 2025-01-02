@@ -4,7 +4,7 @@ import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 
 class CryptoRequestGenerateBip39Mnemonic
-    implements CryptoRequest<Mnemonic, MessageArgsOneBytes> {
+    extends CryptoRequest<Mnemonic, MessageArgsOneBytes> {
   final Bip39Languages language;
   final Bip39WordsNum wordNums;
   CryptoRequestGenerateBip39Mnemonic(

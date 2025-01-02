@@ -1,8 +1,8 @@
 import 'dart:async';
 
-class SocketRequestCompeleter {
-  SocketRequestCompeleter(this.params, this.id);
+class SocketRequestCompleter {
+  SocketRequestCompleter(this.params, this.id);
   final Completer completer = Completer();
-  final String params;
+  final List<int> params;
   final int id;
 }

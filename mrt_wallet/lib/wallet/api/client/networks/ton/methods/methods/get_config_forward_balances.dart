@@ -6,12 +6,12 @@ class _TonRquestGetFeeConst {
 }
 
 class TonRquestGetMsgForwardPricesConfig
-    extends TonApiRequestParam<MsgForwardPricesResponse, dynamic> {
+    extends TonApiRequest<MsgForwardPricesResponse, dynamic> {
   final TonApiType api;
   final bool isMasterChan;
   TonRquestGetMsgForwardPricesConfig(this.api, {this.isMasterChan = true});
-  TonApiRequestParam? _request;
-  TonApiRequestParam _getRequest() {
+  TonApiRequest? _request;
+  TonApiRequest _getRequest() {
     if (!api.isTonCenter) {
       return TonApiGetBlockchainConfig();
     }
@@ -22,9 +22,9 @@ class TonRquestGetMsgForwardPricesConfig
   }
 
   @override
-  TonRequestInfo toRequest(int v) {
+  TonRequestDetails buildRequest(int v) {
     _request = _getRequest();
-    return _request!.toRequest(v);
+    return _request!.buildRequest(v);
   }
 
   @override

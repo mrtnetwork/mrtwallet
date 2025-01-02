@@ -1,4 +1,4 @@
-import 'package:blockchain_utils/utils/utils.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:mrt_wallet/crypto/keys/keys.dart';
 
 class CryptoGenerateMasterKeyResponse {
@@ -9,5 +9,5 @@ class CryptoGenerateMasterKeyResponse {
     required this.masterKey,
     required this.storageData,
     required List<int> walletKey,
-  }) : walletKey = BytesUtils.toBytes(walletKey, unmodifiable: true);
+  }) : walletKey = walletKey.asImmutableBytes;
 }

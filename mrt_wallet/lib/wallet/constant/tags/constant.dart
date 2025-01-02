@@ -26,6 +26,9 @@ class CborTagsConst {
   static const List<int> mrtBackupPrivateKey = [mrtBackupVersion, 170, 4];
   static const List<int> mrtBackupExtendedKey = [mrtBackupVersion, 170, 5];
   static const List<int> mrtBackupWif = [mrtBackupVersion, 170, 6];
+  static const List<int> mrtWalletBackupStorageIds = [mrtBackupVersion, 170, 7];
+  static const List<int> mrtWalletBackupChains = [mrtBackupVersion, 170, 8];
+  static const List<int> mrtBackupWalletV2 = [mrtBackupVersion, 170, 9];
 
   static const List<int> mnemonic = [180];
   static const List<int> walletCustomKey = [180, 0];
@@ -74,12 +77,50 @@ class CborTagsConst {
   static const List<int> tonAddressV5SubWallet = [200, 199, 3];
   static const List<int> substrateAccount = [200, 200];
 
-  // xrp
+  // stellar
   static const List<int> stellarAccount = [200, 201];
   static const List<int> stellarMultisigAccount = [200, 201, 1];
   static const List<int> stellarMultiSignaturAddress = [200, 201, 1, 0];
   static const List<int> stellarMultiSigSignerAddress = [200, 201, 1, 0, 0];
 
+  // monero
+  static const List<int> moneroAccount = [200, 202];
+  static const List<int> moneroUtxo = [200, 202, 1];
+  static const List<int> moneroChainTrackerInfo = [200, 202, 2];
+
+  static const List<int> moneroUtxoRequestTxId = [200, 202, 3];
+  static const List<int> moneroUtxoRequestBlock = [200, 202, 4];
+  static const List<int> moneroUtxoRequestTransaction = [200, 202, 5];
+  static const List<int> moneroUtxoPaymentInfo = [200, 202, 6];
+  static const List<int> moneroUtxoDetails = [200, 202, 7];
+  static const List<int> moneroUtxoRequestTxInfo = [200, 202, 8];
+  static const List<int> moneroTxDestinationWithProof = [200, 202, 9];
+  static const List<int> moneroSignedTxData = [200, 202, 10];
+  static const List<int> moneroSigningTxResponse = [200, 202, 11];
+  static const List<int> monerogenerateRingOutput = [200, 202, 12];
+
+  static const List<int> moneroDefaultChainTracker = [200, 202, 13];
+  static const List<int> moneroChainTrackingResponse = [200, 202, 14];
+  static const List<int> moneroChainTrackedOffsets = [200, 202, 15];
+  static const List<int> moneroSyncRequestChainTracker = [200, 202, 16];
+  static const List<int> moneroViewPrimaryAccountDetails = [200, 202, 17];
+  static const List<int> moneroSyncAccountResponse = [200, 202, 18];
+  static const List<int> moneroThreadChainTrackedOffsets = [200, 202, 19];
+  static const List<int> moneroProcessTxIdRequest = [200, 202, 20];
+  static const List<int> moneroProcessTxesResponse = [200, 202, 21];
+  static const List<int> moneroBatchProcessTxesResponse = [200, 202, 22];
+  static const List<int> moneroAccountPendingTxes = [200, 202, 23];
+  static const List<int> moneroSyncAccountInfo = [200, 202, 24];
+  static const List<int> moneroWalletTransactionAmount = [200, 202, 25];
+  static const List<int> moneroWalletTransactionInput = [200, 202, 26];
+  static const List<int> moneroWalletTransactionOutput = [200, 202, 27];
+  static const List<int> moneroWalletTransaction = [200, 202, 28];
+  static const List<int> moneroAccountTransactions = [200, 202, 29];
+  static const List<int> moneroBlockInfoResponse = [200, 202, 30];
+  static const List<int> moneroSyncAccountIndexInfo = [200, 202, 31];
+  static const List<int> moneroSyncBlocksInfoRequest = [200, 202, 32];
+  static const List<int> moneroSyncTrackBlocksRequest = [200, 202, 33];
+  static const List<int> moneroSyncTrackersRequests = [200, 202, 34];
   // contacts
   static const List<int> bitcoinContact = [100, 0];
   static const List<int> rippleContact = [100, 1];
@@ -91,6 +132,7 @@ class CborTagsConst {
   static const List<int> tonContact = [100, 7];
   static const List<int> substrateContact = [100, 8];
   static const List<int> stellarContact = [100, 9];
+  static const List<int> moneroContact = [100, 10];
 
   /// network tokens
   static const List<int> token = [110];
@@ -102,6 +144,7 @@ class CborTagsConst {
   static const List<int> spltoken = [110, 32];
   static const List<int> jettonToken = [110, 33];
   static const List<int> stellarIssueToken = [110, 34];
+  static const List<int> cw20 = [110, 35];
 
   /// network nfts
   static const List<int> nft = [120];
@@ -122,6 +165,7 @@ class CborTagsConst {
   static const List<int> polkadotNetwork = [80, 0, 12];
   static const List<int> kusamaNetwork = [80, 0, 13];
   static const List<int> stellarNetwork = [80, 0, 14];
+  static const List<int> moneroNetwork = [80, 0, 15];
 
   static const List<int> bitconNetworkParam = [80, 1, 1];
   static const List<int> xrpNetworkParam = [80, 1, 2];
@@ -133,6 +177,7 @@ class CborTagsConst {
   static const List<int> tonNetworkParam = [80, 1, 8];
   static const List<int> substrateNetworkParams = [80, 1, 9];
   static const List<int> stellarNetworkParam = [80, 1, 10];
+  static const List<int> moneroNetworkParams = [80, 1, 11];
 
   ///
 
@@ -148,6 +193,7 @@ class CborTagsConst {
   static const List<int> rippleApiServiceProvider = [90, 9];
   static const List<int> substrateApiServiceProvider = [90, 10];
   static const List<int> stellarApiProvider = [90, 11];
+  static const List<int> moneroApiServiceProvider = [90, 12];
 
   /// web3 permission
   static const List<int> appPermission = [150, 1];
@@ -181,4 +227,8 @@ class CborTagsConst {
   static const List<int> rippleMultiSigNewAddressParams = [12, 14];
   static const List<int> stellarNewAddressParams = [12, 15];
   static const List<int> stellarMultiSigNewAddressParams = [12, 16];
+  static const List<int> moneroNewAddressParams = [12, 17];
+
+  static const List<int> defaultChainConfig = [201, 0];
+  static const List<int> moneroChainConfig = [201, 1];
 }

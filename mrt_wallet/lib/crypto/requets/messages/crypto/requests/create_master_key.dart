@@ -5,7 +5,7 @@ import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 
 class CryptoRequestCreateMasterKey
-    implements CryptoRequest<WalletMasterKeys, MessageArgsOneBytes> {
+    extends CryptoRequest<WalletMasterKeys, MessageArgsOneBytes> {
   final String mnemonic;
   final String? passphrase;
   CryptoRequestCreateMasterKey({

@@ -1,51 +1,80 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:mrt_wallet/app/error/exception.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/provider.dart';
 
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:blockchain_utils/bip/bip.dart';
+
+enum SolanaNetworkType {
+  mainnet('solana:mainnet', 0),
+  testnet('solana:testnet', 1),
+  devnet('solana:devnet', 2);
+
+  final String walletStandardChainName;
+  final int value;
+  const SolanaNetworkType(this.walletStandardChainName, this.value);
+  static SolanaNetworkType fromValue(int? value) {
+    return values.firstWhere((e) => e.value == value,
+        orElse: () => throw WalletExceptionConst.invalidData(
+            messsage: 'Solana network type not found.'));
+  }
+}
 
 class SolanaNetworkParams extends NetworkCoinParams<SolanaAPIProvider> {
   final String genesis;
+  final int chainId;
+  final SolanaNetworkType type;
 
   factory SolanaNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
+    final CborListValue values = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.solNetworkParam);
 
     return SolanaNetworkParams(
-        transactionExplorer: cbor.elementAt(0),
-        addressExplorer: cbor.elementAt(1),
-        token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        providers: (cbor.elementAt(3) as List)
+        transactionExplorer: values.elementAs(0),
+        addressExplorer: values.elementAs(1),
+        token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
+        providers: values
+            .elementAsListOf<CborTagValue>(3)
             .map((e) => SolanaAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        mainnet: cbor.elementAt(4),
-        genesis: cbor.elementAt(5));
+        chainType: ChainType.fromValue(values.elementAs(4)),
+        genesis: values.elementAs(5),
+        chainId: values.elementAs(6),
+        type: SolanaNetworkType.fromValue(values.elementAs(7)));
   }
   SolanaNetworkParams(
       {required super.transactionExplorer,
       required super.addressExplorer,
       required super.token,
       required super.providers,
-      required super.mainnet,
-      required this.genesis});
+      required super.chainType,
+      required this.genesis,
+      required this.chainId,
+      required this.type});
 
-  SolanaNetworkParams copyWith(
-      {bool? mainnet,
-      String? transactionExplorer,
-      String? addressExplorer,
-      Token? token,
-      List<SolanaAPIProvider>? providers,
-      String? genesis}) {
+  SolanaNetworkParams copyWith({
+    ChainType? chainType,
+    String? transactionExplorer,
+    String? addressExplorer,
+    Token? token,
+    List<SolanaAPIProvider>? providers,
+    String? genesis,
+    int? chainId,
+    SolanaNetworkType? type,
+  }) {
     return SolanaNetworkParams(
-        mainnet: mainnet ?? this.mainnet,
+        chainType: chainType ?? this.chainType,
         transactionExplorer: transactionExplorer ?? this.transactionExplorer,
         addressExplorer: addressExplorer ?? this.addressExplorer,
         token: token ?? this.token,
         providers: providers ?? this.providers,
-        genesis: genesis ?? this.genesis);
+        genesis: genesis ?? this.genesis,
+        chainId: chainId ?? this.chainId,
+        type: type ?? this.type);
   }
 
   @override
@@ -56,8 +85,10 @@ class SolanaNetworkParams extends NetworkCoinParams<SolanaAPIProvider> {
           addressExplorer,
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          mainnet,
-          genesis
+          chainType.name,
+          genesis,
+          chainId,
+          type.value
         ]),
         CborTagsConst.solNetworkParam);
   }
@@ -70,7 +101,12 @@ class SolanaNetworkParams extends NetworkCoinParams<SolanaAPIProvider> {
         addressExplorer: addressExplorer,
         token: token,
         providers: updateProviders.cast<SolanaAPIProvider>(),
-        mainnet: mainnet,
-        genesis: genesis);
+        chainType: chainType,
+        genesis: genesis,
+        chainId: chainId,
+        type: type);
   }
+
+  @override
+  String get identifier => genesis;
 }

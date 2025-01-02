@@ -24,6 +24,7 @@ class StreamWidget extends StatefulWidget {
     this.hideAfterError = false,
     this.hideAfterSuccsess = false,
     this.fixedSize = true,
+    this.color,
   }) : super(key: key);
   final StreamWidgetStatus initialStatus;
   final EdgeInsets padding;
@@ -32,6 +33,7 @@ class StreamWidget extends StatefulWidget {
   final bool hideAfterError;
   final bool hideAfterSuccsess;
   final bool fixedSize;
+  final Color? color;
 
   @override
   State<StreamWidget> createState() => StreamWidgetState();
@@ -47,7 +49,9 @@ class StreamWidgetState extends State<StreamWidget> with SafeState {
   void _listen(StreamWidgetStatus status) async {
     if (status == StreamWidgetStatus.progress ||
         status == StreamWidgetStatus.idle ||
-        status == StreamWidgetStatus.hide) return;
+        status == StreamWidgetStatus.hide) {
+      return;
+    }
     if (widget.backToIdle == null) return;
     await Future.delayed(widget.backToIdle ?? Duration.zero);
     if (widget.hideAfterError && status == StreamWidgetStatus.error) {
@@ -87,17 +91,19 @@ class StreamWidgetState extends State<StreamWidget> with SafeState {
           onChange: onChangeSize,
           key: ValueKey(_status),
           child: SizedBox.fromSize(
-            size: size,
-            child: _status == StreamWidgetStatus.hide
-                ? WidgetConstant.sizedBox
-                : _status == StreamWidgetStatus.success
-                    ? WidgetConstant.checkCircle
-                    : _status == StreamWidgetStatus.error
-                        ? WidgetConstant.errorIcon
-                        : _status == StreamWidgetStatus.progress
-                            ? const Center(child: CircularProgressIndicator())
-                            : widget.buttonWidget,
-          ),
+              size: size,
+              child: _status == StreamWidgetStatus.hide
+                  ? WidgetConstant.sizedBox
+                  : _status == StreamWidgetStatus.success
+                      ? WidgetConstant.checkCircle
+                      : _status == StreamWidgetStatus.error
+                          ? WidgetConstant.errorIcon
+                          : _status == StreamWidgetStatus.progress
+                              ? Center(
+                                  child: CircularProgressIndicator(
+                                  color: widget.color,
+                                ))
+                              : widget.buttonWidget),
         ),
       ),
     );

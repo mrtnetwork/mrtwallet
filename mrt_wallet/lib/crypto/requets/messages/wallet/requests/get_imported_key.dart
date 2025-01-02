@@ -1,12 +1,11 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/crypto/keys/access/private_key_response.dart';
-import 'package:mrt_wallet/crypto/keys/models/master_key.dart';
+import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 
 class WalletRequestReadImportedKey
-    implements WalletRequest<PrivateKeyData, MessageArgsOneBytes> {
+    extends WalletRequest<CryptoPrivateKeyData, MessageArgsOneBytes> {
   final String keyId;
   WalletRequestReadImportedKey(this.keyId);
 
@@ -41,7 +40,7 @@ class WalletRequestReadImportedKey
   }
 
   @override
-  PrivateKeyData result(
+  CryptoPrivateKeyData result(
       {required WalletMasterKeys wallet, required List<int> key}) {
     return wallet.getImportedKey(keyId);
   }

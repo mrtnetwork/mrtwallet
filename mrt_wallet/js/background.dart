@@ -67,11 +67,11 @@ Future<WalletEvent> sendPopupRuntimeMessage(WalletEvent messageToSend) async {
       }
       extension.runtime.sendMessage_(message: messageToSend).then((e) {
         completer.complete(e);
-        sendResponse.callAsFunction(sendResponse, null);
+        sendResponse.callAsFunction(null, null);
         return e;
       }).catchError((e) {
         completer.completeError(e);
-        sendResponse.callAsFunction(sendResponse, null);
+        sendResponse.callAsFunction(null, null);
         return null;
       });
       return true;
@@ -110,16 +110,23 @@ void main() async {
         return JSWalletConstant.popEvent;
       }
       final info = await extension.windows.getCurrent_(populate: true);
-      final top = info.top! + 50;
-      final left = info.width! - 175;
+      // final top = info.top! + 50;
+      // final left = info.width! - 175;
+      // info.;
+      // Calculate new bounds for the new window
+      final newLeft = IntUtils.max(0, info.left! + 100); // Adjust left position
+      final newTop = IntUtils.max(0, info.top! + 100); // Adjust top position
+      final newWidth = IntUtils.min(info.width!, 400); // Set max width to 800
+      final newHeight =
+          IntUtils.min(info.height!, 600); // Set max height to 600
       await extension.windows.create_(
         url: extension.runtime.getURL("index.html"),
         type: JSWalletConstant.extentionType,
-        width: JSWalletConstant.extentionWidth,
-        height: JSWalletConstant.extentionHeight,
-        top: top,
+        width: newWidth,
+        height: newHeight,
+        top: newTop,
         focused: true,
-        left: left,
+        left: newLeft,
       );
       final result = await sendPopupRuntimeMessage(JSWalletConstant.create);
       return result;
@@ -137,8 +144,7 @@ void main() async {
       }
       APPImage image = APPImage.faviIcon(tab.url!);
       if (tab.favIconUrl != null) {
-        final data = await wallet.crypto.generateUUID(dataHex: tab.favIconUrl);
-        image = APPImage.network(tab.favIconUrl!, data);
+        image = APPImage.network(tab.favIconUrl!);
       }
 
       final Web3ClientInfo? client = Web3ClientInfo.info(
@@ -180,15 +186,14 @@ void main() async {
     switch (event.type) {
       case WalletEventTypes.openExtension:
         openPopup()
-            .then(
-                (e) => sendResponse.callAsFunction(sendResponse, e.toJsEvent()))
+            .then((e) => sendResponse.callAsFunction(null, e.toJsEvent()))
             .catchError((e) {
           return e;
         });
         return true;
       case WalletEventTypes.tabId:
         tabInformation(sender.tab!, event).then((e) {
-          sendResponse.callAsFunction(sendResponse, e.toJsEvent());
+          sendResponse.callAsFunction(null, e.toJsEvent());
         }).catchError((e) {
           return null;
         });

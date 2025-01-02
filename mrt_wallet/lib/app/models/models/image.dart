@@ -4,27 +4,43 @@ import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'content_type.dart';
-// import 'package:mrt_wallet/app/core.dart';
 
-class APPImage with CborSerializable, Equatable {
+// import 'package:mrt_wallet/app/core.dart';
+typedef OnLoadUrl = Future<String> Function();
+typedef OnLoadCacheKey = Future<String> Function();
+
+abstract class APPImageInfo with Equatable {
+  abstract final OnLoadUrl loadUrl;
+  abstract final ContentType type;
+}
+
+class LazyAPPImage with Equatable implements APPImageInfo {
+  final String identifier;
+  @override
+  final ContentType type = ContentType.lazy;
+  const LazyAPPImage({required this.loadUrl, required this.identifier});
+  @override
+  final OnLoadUrl loadUrl;
+
+  @override
+  List get variabels => [identifier];
+}
+
+class APPImage with CborSerializable, Equatable implements APPImageInfo {
+  @override
   final ContentType type;
   final String uri;
-  final String cacheKey;
-  const APPImage._(
-      {required this.type, required this.uri, required this.cacheKey});
-  APPImage.local(this.uri)
-      : type = ContentType.local,
-        cacheKey = "asset_${uri.split("/").last}";
-  factory APPImage.hex({required String hexData, required String cacheKey}) {
-    return APPImage._(type: ContentType.hex, uri: hexData, cacheKey: cacheKey);
+  // final String cacheKey;
+  const APPImage._({required this.type, required this.uri});
+  APPImage.local(this.uri) : type = ContentType.local;
+  factory APPImage.hex({required String hexData}) {
+    return APPImage._(type: ContentType.hex, uri: hexData);
   }
-  factory APPImage.base64({required String hexData, required String cacheKey}) {
-    return APPImage._(
-        type: ContentType.base64, uri: hexData, cacheKey: cacheKey);
+  factory APPImage.base64({required String hexData}) {
+    return APPImage._(type: ContentType.base64, uri: hexData);
   }
-  factory APPImage.network(String imageUrl, String cache) {
-    return APPImage._(
-        type: ContentType.network, uri: cache, cacheKey: "net_$cache");
+  factory APPImage.network(String imageUrl) {
+    return APPImage._(type: ContentType.network, uri: imageUrl);
   }
   factory APPImage.faviIcon(String websiteUrl) {
     final host = Uri.tryParse(websiteUrl);
@@ -32,8 +48,7 @@ class APPImage with CborSerializable, Equatable {
     if (cacheKey.isEmpty) {
       cacheKey = websiteUrl;
     }
-    return APPImage._(
-        type: ContentType.favIcon, uri: websiteUrl, cacheKey: "fav_$cacheKey");
+    return APPImage._(type: ContentType.favIcon, uri: websiteUrl);
   }
 
   factory APPImage.fromCborBytesOrObject({List<int>? bytes, CborObject? obj}) {
@@ -42,9 +57,7 @@ class APPImage with CborSerializable, Equatable {
           bytes, obj, APPSerializationConst.imageTag);
       final String uri = cbor.elementAt(1);
       return APPImage._(
-          type: ContentType.fromValue(cbor.elementAt(0)),
-          uri: uri,
-          cacheKey: cbor.elementAt<String?>(2) ?? uri.split("/").last);
+          type: ContentType.fromValue(cbor.elementAt(0)), uri: uri);
     } catch (e) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
@@ -52,10 +65,13 @@ class APPImage with CborSerializable, Equatable {
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength([type.value, CborStringValue(uri), cacheKey]),
+        CborListValue.fixedLength([type.value, CborStringValue(uri)]),
         APPSerializationConst.imageTag);
   }
 
   @override
   List get variabels => [type, uri];
+
+  @override
+  OnLoadUrl get loadUrl => () async => uri;
 }

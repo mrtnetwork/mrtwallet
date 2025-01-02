@@ -5,7 +5,7 @@ import 'package:on_chain/tron/tron.dart';
 /// and the other is the list of addresses that have delegated resources to the account(fromAddress).
 /// [developers.tron.network](https://developers.tron.network/reference/getdelegatedresourceaccountindexv2-1).
 class TronRequestGetAccountDelegatedResourceAddresses
-    extends TVMRequestParam<List<String>, Map<String, dynamic>> {
+    extends TronRequest<List<String>, Map<String, dynamic>> {
   TronRequestGetAccountDelegatedResourceAddresses(
       {required this.value, this.visible = true});
 

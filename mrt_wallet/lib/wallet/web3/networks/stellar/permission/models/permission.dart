@@ -110,7 +110,7 @@ class Web3StellarChain
     final currentAccounts = activeAccounts
         .where((e) => e.passphrase == chain.network.coinParam.passphrase)
         .toList();
-    List<Web3StellarChainAccount> existsAccounts = [];
+    final List<Web3StellarChainAccount> existsAccounts = [];
     for (final i in chain.addresses) {
       final chainAccount = currentAccounts.firstWhereOrNull(
           (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);

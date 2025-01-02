@@ -12,10 +12,9 @@ class _EthereumWebsocketServiceConst {
 }
 
 class EthereumWebsocketService extends WebSocketService<EthereumAPIProvider>
-    implements JSONRPCService {
+    implements EthereumServiceProvider {
   EthereumWebsocketService(
-      {required super.url,
-      required super.provider,
+      {required super.provider,
       this.defaultTimeOut = const Duration(seconds: 30)});
   final List<ONETHSubsribe> _listeners = [];
 
@@ -51,17 +50,19 @@ class EthereumWebsocketService extends WebSocketService<EthereumAPIProvider>
   }
 
   final Duration defaultTimeOut;
-  @override
-  Future<Map<String, dynamic>> call(ETHRequestDetails params,
-      [Duration? timeout]) async {
-    final SocketRequestCompeleter message =
-        SocketRequestCompeleter(params.params, params.id);
-    return await addMessage(message, timeout ?? defaultTimeOut);
-  }
 
   @override
   void disposeService() {
     super.disposeService();
     _listeners.clear();
+  }
+
+  @override
+  Future<EthereumServiceResponse<T>> doRequest<T>(EthereumRequestDetails params,
+      {Duration? timeout}) async {
+    final SocketRequestCompleter message =
+        SocketRequestCompleter(params.body()!, params.requestID);
+    final r = await addMessage(message, timeout ?? defaultTimeOut);
+    return params.toResponse(r);
   }
 }

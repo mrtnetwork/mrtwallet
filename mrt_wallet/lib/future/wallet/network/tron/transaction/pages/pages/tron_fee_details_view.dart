@@ -46,11 +46,21 @@ class _TronTransactionFeeView extends StatelessWidget {
             ? ContainerWithBorder(
                 child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [Text("retrieving_network_condition".tr)],
+                children: [
+                  Text("retrieving_network_condition".tr,
+                      style: context.onPrimaryTextTheme.bodyMedium)
+                ],
               ))
             : transaction.feeCalculationError != null
                 ? ContainerWithBorder(
                     backgroundColor: context.colors.errorContainer,
+                    onTapError: () {
+                      transaction.calculateFee();
+                    },
+                    onRemoveIcon: Icon(
+                      Icons.refresh,
+                      color: context.colors.onErrorContainer,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -59,11 +69,7 @@ class _TronTransactionFeeView extends StatelessWidget {
                           transaction.feeCalculationError!.tr,
                           style: context.textTheme.bodyMedium?.copyWith(
                               color: context.colors.onErrorContainer),
-                        ),
-                        WidgetConstant.height8,
-                        FilledButton(
-                            onPressed: transaction.calculateFee,
-                            child: Text("take_another_shot".tr))
+                        )
                       ],
                     ),
                   )
@@ -81,13 +87,17 @@ class _TronTransactionFeeView extends StatelessWidget {
                         Text("tron_fee_limit_desc".tr),
                         WidgetConstant.height8,
                         ContainerWithBorder(
-                          onRemoveIcon: const Icon(Icons.edit),
+                          onRemoveIcon: Icon(
+                            Icons.edit,
+                            color: context.onPrimaryContainer,
+                          ),
                           validateText: "low_fee_limit_desc".tr,
                           validate: !transaction.consumedFee!.feeLimitError,
                           onRemove: () {
                             transaction.setCustomFeeLimit(() async {
                               return context.openSliverBottomSheet<BigInt>(
                                 "fee_limit".tr,
+                                initialExtend: 1,
                                 child: SetupNetworkAmount(
                                     token: transaction.network.coinParam.token,
                                     max: transaction
@@ -102,12 +112,15 @@ class _TronTransactionFeeView extends StatelessWidget {
                             children: [
                               Text(
                                 transaction.consumedFee!.feeLimitType.value.tr,
-                                style: context.textTheme.labelLarge,
+                                style: context.onPrimaryTextTheme.labelLarge,
                               ),
                               CoinPriceView(
-                                  token: transaction.network.coinParam.token,
-                                  balance: transaction.consumedFee!.feeLimit,
-                                  style: context.textTheme.titleLarge),
+                                token: transaction.network.coinParam.token,
+                                balance: transaction.consumedFee!.feeLimit,
+                                style: context.onPrimaryTextTheme.titleMedium,
+                                showTokenImage: true,
+                                symbolColor: context.onPrimaryContainer,
+                              ),
                             ],
                           ),
                         )
@@ -122,8 +135,7 @@ class _TronTransactionFeeView extends StatelessWidget {
 
 class TronFeeInfoWidget extends StatelessWidget {
   const TronFeeInfoWidget(
-      {required this.consumedFee, required this.network, Key? key})
-      : super(key: key);
+      {required this.consumedFee, required this.network, super.key});
   final TronFee consumedFee;
   final WalletTronNetwork network;
 
@@ -135,16 +147,20 @@ class TronFeeInfoWidget extends StatelessWidget {
       children: [
         Expanded(
           child: CoinPriceView(
-              token: network.coinParam.token,
-              balance: consumedFee.totalBurn,
-              style: context.textTheme.titleLarge),
+            token: network.coinParam.token,
+            balance: consumedFee.totalBurn,
+            style: context.onPrimaryTextTheme.titleMedium,
+            symbolColor: context.colors.onPrimaryContainer,
+            showTokenImage: true,
+          ),
         ),
         WidgetConstant.width8,
         ToolTipView(
           mode: TooltipTriggerMode.tap,
           waitDuration: null,
           tooltipWidget: (c) => Container(
-            constraints: const BoxConstraints(maxWidth: 280),
+            constraints: const BoxConstraints(
+                maxWidth: APPConst.tooltipConstrainedWidth),
             child: Column(
               children: [
                 Row(
@@ -241,7 +257,7 @@ class TronFeeInfoWidget extends StatelessWidget {
           ),
           child: Icon(
             Icons.help,
-            color: context.colors.onPrimaryContainer,
+            color: context.onPrimaryContainer,
           ),
         )
       ],

@@ -158,7 +158,7 @@ class _CreateStellarMemoViewState extends State<CreateStellarMemoView>
             items: memoTypesView,
             value: type,
             onChanged: onChangeType,
-            label: "memo_type".tr,
+            hint: "memo_type".tr,
           ),
           WidgetConstant.height20,
           APPAnimatedSwitcher<_MemoFieldTypes>(enable: fieldType, widgets: {

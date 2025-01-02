@@ -1,43 +1,32 @@
+import 'package:blockchain_utils/service/service.dart';
+import 'package:mrt_wallet/app/isolate/types.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ton.dart';
 import 'package:ton_dart/ton_dart.dart'
-    show TonServiceProvider, TonRequestInfo, TonApiType;
+    show TonApiType, TonRequestDetails, TonServiceProvider;
 
 class TonHTTPService extends HTTPService<TonAPIProvider>
     implements TonServiceProvider {
   TonHTTPService(
       {required this.provider,
+      required this.isolate,
       this.defaultTimeOut = const Duration(seconds: 30)});
-
+  @override
+  final APPIsolate isolate;
   @override
   final Duration defaultTimeOut;
 
   @override
   final TonAPIProvider provider;
-  ProviderAuth? get auth => provider.auth;
-
   @override
   TonApiType get api => provider.apiType;
 
-  late final String? tonApiUrl = api == TonApiType.tonApi ? provider.uri : null;
-  late final String? tonCenter =
-      api == TonApiType.tonCenter ? provider.uri : null;
-
   @override
-  Future<String> get(TonRequestInfo params, {Duration? timeout}) async {
-    final String uri =
-        params.url(tonApiUrl: tonApiUrl, tonCenterUrl: tonCenter);
-    return await providerGET<String>(uri,
-        timeout: timeout,
-        headers: {"Accept": "application/json", ...params.header});
-  }
-
-  @override
-  Future<String> post(TonRequestInfo params, {Duration? timeout}) async {
-    final String uri =
-        params.url(tonApiUrl: tonApiUrl, tonCenterUrl: tonCenter);
-    return await providerPOST<String>(uri, params.body,
-        headers: {"Accept": "application/json", ...params.header},
+  Future<BaseServiceResponse<T>> doRequest<T>(TonRequestDetails params,
+      {Duration? timeout}) async {
+    return await serviceRequest<T>(params,
+        uri: params.toUri(provider.callUrl),
+        allowStatus: [200],
         timeout: timeout);
   }
 }

@@ -1,4 +1,5 @@
 /// MIT License
+library;
 
 /// Copyright (c) 2016, Alexandre Roux Tekartik.
 
@@ -43,7 +44,7 @@ class SynchronizedLock {
       }
 
       // Run the function and return the result
-      var result = func();
+      final result = func();
       if (result is Future) {
         return await result;
       } else {

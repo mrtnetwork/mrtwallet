@@ -1,87 +1,123 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
+import 'package:mrt_wallet/future/wallet/network/network.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
+enum AccountPageAppbarStatus {
+  provider(true),
+  action(true),
+  none(false);
+
+  final bool hasAction;
+  const AccountPageAppbarStatus(this.hasAction);
+  double get appbarHeight => hasAction ? kToolbarHeight : 0;
+}
+
 class NetworkClientConnectionSliverHeaderDelegate extends StatelessWidget {
   final WalletProvider wallet;
   const NetworkClientConnectionSliverHeaderDelegate(this.wallet, {super.key});
-  Chain get chainAccount => wallet.wallet.chain;
-  WalletNetwork get network => chainAccount.network;
-  NetworkClient? get client => chainAccount.provider();
-  bool get hasProvider => client != null;
-  NodeClientStatus? get status => client?.status.value;
-  bool get isConnect => status?.isConnect ?? false;
-  void onSwitchNetwork(BuildContext context) {
-    context.openSliverDialog(
-        (ctx) => SelectProviderView(
-              network: network,
-              service: client?.service,
-            ), content: (context) {
-      return network.supportCustomNode
-          ? [
-              WidgetConstant.width8,
-              IconButton(
-                  onPressed: () {
-                    context.pop(true);
-                  },
-                  icon: const Icon(Icons.edit))
-            ]
-          : [];
-    }, "service_provider".tr).then(
-      (value) {
-        if (value == null) return;
-        if (value is APIProvider) {
-          wallet.wallet.changeProvider(account: chainAccount, provider: value);
-        } else {
-          context.to(PageRouter.providerDetails(network), argruments: network);
-        }
-      },
-    );
+
+  static AccountPageAppbarStatus detectStatus(Chain chain) {
+    if (chain.clientNullable?.status.value.isConnect ?? false) {
+      if (chain.config.hasAction) {
+        return AccountPageAppbarStatus.action;
+      }
+      return AccountPageAppbarStatus.none;
+    }
+    return AccountPageAppbarStatus.provider;
   }
 
   @override
   Widget build(BuildContext context) {
-    return SliverAppBar(
-      pinned: true,
-      backgroundColor: context.colors.errorContainer,
-      foregroundColor: context.colors.onErrorContainer,
-      centerTitle: false,
-      toolbarHeight: isConnect ? 0 : 70,
-      flexibleSpace: Material(
-        elevation: 25,
-        color: context.colors.transparent,
-        type: MaterialType.button,
-        child: AnimatedContainer(
-          duration: APPConst.animationDuraion,
-          padding: WidgetConstant.padding5,
-          color: (status?.isPending ?? false)
-              ? context.colors.tertiaryContainer
-              : context.colors.errorContainer,
-          child: APPAnimatedSwitcher(enable: status, widgets: {
-            null: (c) => _NoProvider(
-                  () {
-                    onSwitchNetwork(context);
-                  },
-                ),
-            NodeClientStatus.disconnect: (c) => _DisconnectStatus(
-                onTry: () => client?.init(),
-                onEdit: () => onSwitchNetwork(context)),
-            NodeClientStatus.pending: (c) => const _PendingStatus(),
-            NodeClientStatus.connect: (c) => WidgetConstant.sizedBox
-          }),
-        ),
-      ),
+    final appbarStatus = detectStatus(wallet.wallet.chain);
+    return APPSliverAnimatedSwitcher(
+      enable: appbarStatus.hasAction,
+      widgets: {
+        true: (context) => SliverAppBar(
+              pinned: true,
+              centerTitle: false,
+              toolbarHeight: appbarStatus.appbarHeight,
+              flexibleSpace: Material(
+                elevation: 25,
+                color: context.colors.transparent,
+                type: MaterialType.button,
+                child: ConditionalWidgets<AccountPageAppbarStatus>(
+                    enable: appbarStatus,
+                    widgets: {
+                      AccountPageAppbarStatus.provider: (context) =>
+                          _AppbarProviderStatus(wallet: wallet),
+                      AccountPageAppbarStatus.action: (context) =>
+                          _AppbarPageAction(chain: wallet.wallet.chain)
+                    }),
+              ),
+            ),
+      },
     );
   }
 }
 
+class _AppbarProviderStatus extends StatelessWidget {
+  const _AppbarProviderStatus({required this.wallet});
+  Chain get chain => wallet.wallet.chain;
+  final WalletProvider wallet;
+  NetworkClient? get client => chain.clientNullable;
+  WalletNetwork get network => chain.network;
+  void onSwitchNetwork(BuildContext context) {
+    context
+        .openSliverDialog<APIProvider>(
+            (ctx) => SelectProviderView(chain: chain), "service_provider".tr)
+        .then(
+      (value) {
+        if (value == null) return;
+        wallet.wallet.changeProvider(account: chain, provider: value);
+      },
+    );
+  }
+
+  NodeClientStatus? get status => client?.status.value;
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: APPConst.animationDuraion,
+      padding: WidgetConstant.padding5,
+      color: (status?.isPending ?? false)
+          ? context.colors.tertiaryContainer
+          : context.colors.errorContainer,
+      child: APPAnimatedSwitcher(enable: status, widgets: {
+        null: (c) => _NoProvider(
+              () {
+                onSwitchNetwork(context);
+              },
+            ),
+        NodeClientStatus.disconnect: (c) => _DisconnectStatus(
+            onTry: () => client?.init(),
+            onEdit: () => onSwitchNetwork(context)),
+        NodeClientStatus.pending: (c) => const _PendingStatus(),
+        NodeClientStatus.connect: (c) => WidgetConstant.sizedBox
+      }),
+    );
+  }
+}
+
+class _AppbarPageAction extends StatelessWidget {
+  const _AppbarPageAction({required this.chain});
+  final Chain chain;
+  @override
+  Widget build(BuildContext context) {
+    return switch (chain.network.type) {
+      NetworkType.monero => MoneroAppBarActionView(chain.cast()),
+      _ => WidgetConstant.sizedBox
+    };
+  }
+}
+
 class _NoProvider extends StatelessWidget {
-  const _NoProvider(this.onTry, {Key? key}) : super(key: key);
+  const _NoProvider(this.onTry);
   final DynamicVoid onTry;
 
   @override
@@ -93,7 +129,7 @@ class _NoProvider extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              OneLineTextWidget(
                 "network_no_provider_detected".tr,
                 style: context.textTheme.labelLarge
                     ?.copyWith(color: context.colors.onErrorContainer),
@@ -110,8 +146,7 @@ class _NoProvider extends StatelessWidget {
 }
 
 class _DisconnectStatus extends StatelessWidget {
-  const _DisconnectStatus({required this.onEdit, required this.onTry, Key? key})
-      : super(key: key);
+  const _DisconnectStatus({required this.onEdit, required this.onTry});
   final DynamicVoid onTry;
   final DynamicVoid onEdit;
   @override
@@ -125,16 +160,16 @@ class _DisconnectStatus extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                OneLineTextWidget(
                   "connection_attempt_unsuccessful".tr,
                   style: context.textTheme.labelLarge
                       ?.copyWith(color: context.colors.onErrorContainer),
-                  maxLines: 1,
                 ),
-                Text("node_connection_desc".tr,
-                    style: context.textTheme.bodySmall
-                        ?.copyWith(color: context.colors.onErrorContainer),
-                    maxLines: 2)
+                OneLineTextWidget(
+                  "node_connection_desc".tr,
+                  style: context.textTheme.bodySmall
+                      ?.copyWith(color: context.colors.onErrorContainer),
+                )
               ],
             ),
           ),
@@ -148,7 +183,7 @@ class _DisconnectStatus extends StatelessWidget {
 }
 
 class _PendingStatus extends StatelessWidget {
-  const _PendingStatus({Key? key}) : super(key: key);
+  const _PendingStatus();
 
   @override
   Widget build(BuildContext context) {
@@ -167,15 +202,12 @@ class _PendingStatus extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("node_connectiong_please_wait".tr,
+                          OneLineTextWidget("node_connectiong_please_wait".tr,
                               style: context.textTheme.labelLarge?.copyWith(
                                   color: context.colors.onTertiaryContainer)),
-                          Text(
-                            "node_connection_desc".tr,
-                            style: context.textTheme.bodySmall?.copyWith(
-                                color: context.colors.onErrorContainer),
-                            maxLines: 2,
-                          )
+                          OneLineTextWidget("node_connection_desc".tr,
+                              style: context.textTheme.bodySmall?.copyWith(
+                                  color: context.colors.onErrorContainer))
                         ],
                       ),
                     ),

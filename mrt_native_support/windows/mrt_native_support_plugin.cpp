@@ -1576,7 +1576,7 @@ namespace mrt_native_support
 			argsRef.find(flutter::EncodableValue("height")) != argsRef.end())
 		{
 
-			double maxWidth = std::get<double>(argsRef.at(flutter::EncodableValue("height")));
+			double maxWidth = std::get<double>(argsRef.at(flutter::EncodableValue("width")));
 			double maxHeight = std::get<double>(argsRef.at(flutter::EncodableValue("height")));
 
 			maximum_size_.x = static_cast<LONG>(maxWidth);

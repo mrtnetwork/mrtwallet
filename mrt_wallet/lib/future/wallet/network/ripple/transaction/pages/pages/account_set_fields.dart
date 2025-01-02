@@ -64,12 +64,12 @@ class RippleAccountSetFieldsView extends StatelessWidget {
               },
             );
           },
-          onRemoveIcon: validator.domain.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(validator.domain.hasValue),
           child: Text(
-              validator.domain.value?.orEmpty ?? "tap_to_input_value".tr,
-              maxLines: 3),
+            validator.domain.value?.orEmpty ?? "tap_to_input_value".tr,
+            maxLines: 3,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         WidgetConstant.height20,
         Text("email_hash".tr, style: context.textTheme.titleMedium),
@@ -116,11 +116,12 @@ class RippleAccountSetFieldsView extends StatelessWidget {
               },
             );
           },
-          onRemoveIcon: validator.email.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
-          child: Text(validator.email.value?.orEmpty ?? "tap_to_input_value".tr,
-              maxLines: 3),
+          onRemoveIcon: AddOrEditIconWidget(validator.email.hasValue),
+          child: Text(
+            validator.email.value?.orEmpty ?? "tap_to_input_value".tr,
+            maxLines: 3,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         WidgetConstant.height20,
         Text("ripple_message_key".tr, style: context.textTheme.titleMedium),
@@ -157,12 +158,12 @@ class RippleAccountSetFieldsView extends StatelessWidget {
               },
             );
           },
-          onRemoveIcon: validator.messageKey.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(validator.messageKey.hasValue),
           child: Text(
-              validator.messageKey.value?.orEmpty ?? "tap_to_input_value".tr,
-              maxLines: 3),
+            validator.messageKey.value?.orEmpty ?? "tap_to_input_value".tr,
+            maxLines: 3,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         //
         WidgetConstant.height20,
@@ -197,9 +198,7 @@ class RippleAccountSetFieldsView extends StatelessWidget {
         Text("ripple_transfer_rate_desc".tr),
         WidgetConstant.height8,
         ContainerWithBorder(
-          onRemoveIcon: validator.transferRate.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(validator.transferRate.hasValue),
           onRemove: () {
             context
                 .openSliverBottomSheet<BigRational>(
@@ -229,17 +228,18 @@ class RippleAccountSetFieldsView extends StatelessWidget {
               },
             );
           },
-          child: Text(validator.transferRate.value?.toString().to3Digits ??
-              "tap_to_input_value".tr),
+          child: Text(
+            validator.transferRate.value?.toString().to3Digits ??
+                "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
         WidgetConstant.height20,
         Text("ripple_tick_size".tr, style: context.textTheme.titleMedium),
         Text("ripple_tick_size_desc".tr),
         WidgetConstant.height8,
         ContainerWithBorder(
-          onRemoveIcon: validator.tickSize.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(validator.tickSize.hasValue),
           onRemove: () {
             context
                 .openSliverBottomSheet<BigRational>(
@@ -269,8 +269,11 @@ class RippleAccountSetFieldsView extends StatelessWidget {
               },
             );
           },
-          child: Text(validator.tickSize.value?.toString().to3Digits ??
-              "tap_to_input_value".tr),
+          child: Text(
+            validator.tickSize.value?.toString().to3Digits ??
+                "tap_to_input_value".tr,
+            style: context.onPrimaryTextTheme.bodyMedium,
+          ),
         ),
 
         WidgetConstant.height20,
@@ -279,20 +282,20 @@ class RippleAccountSetFieldsView extends StatelessWidget {
         WidgetConstant.height8,
         AppDropDownBottom(
           items: <AccountSetAsfFlag, Widget>{
-            for (var i in AccountSetAsfFlag.values) i: Text(i.name)
+            for (final i in AccountSetAsfFlag.values) i: Text(i.name)
           },
-          label: "account_set_flags".tr,
           value: validator.setFlag.value,
           key: ValueKey<String>("set_${validator.setFlag.value}"),
           onChanged: (value) {
             validator.setValue(validator.setFlag, value);
           },
-          suffixIcon: validator.setFlag.hasValue
-              ? IconButton(
-                  onPressed: () {
+          hint: "none".tr,
+          icon: validator.setFlag.hasValue
+              ? InkWell(
+                  onTap: () {
                     validator.setValue(validator.setFlag, null);
                   },
-                  icon: const Icon(Icons.remove_circle))
+                  child: const Icon(Icons.remove_circle))
               : null,
         ),
         WidgetConstant.height20,
@@ -301,20 +304,23 @@ class RippleAccountSetFieldsView extends StatelessWidget {
         WidgetConstant.height8,
         AppDropDownBottom(
           items: <AccountSetAsfFlag, Widget>{
-            for (var i in AccountSetAsfFlag.values) i: Text(i.name)
+            for (final i in AccountSetAsfFlag.values) i: Text(i.name)
           },
-          label: "account_set_flags".tr,
           value: validator.clearFlag.value,
           key: ValueKey<String>("clear_${validator.clearFlag.value}"),
           onChanged: (value) {
             validator.setValue(validator.clearFlag, value);
           },
-          suffixIcon: validator.clearFlag.hasValue
-              ? IconButton(
-                  onPressed: () {
+          hint: "none".tr,
+          icon: validator.clearFlag.hasValue
+              ? InkWell(
+                  onTap: () {
                     validator.setValue(validator.clearFlag, null);
                   },
-                  icon: const Icon(Icons.remove_circle))
+                  child: Icon(
+                    Icons.remove_circle,
+                    color: context.onPrimaryContainer,
+                  ))
               : null,
         ),
         WidgetConstant.height20,

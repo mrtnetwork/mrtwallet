@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/utils/solidity/solidity.dart';

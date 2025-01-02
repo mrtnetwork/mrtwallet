@@ -9,7 +9,7 @@ import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/personal_sign_response.dart';
 
 class WalletRequestSignMessage
-    implements WalletRequest<CryptoPersonalSignResponse, MessageArgsOneBytes> {
+    extends WalletRequest<CryptoPersonalSignResponse, MessageArgsOneBytes> {
   final List<int> message;
   final Bip32AddressIndex index;
   final int? payloadLength;
@@ -19,7 +19,7 @@ class WalletRequestSignMessage
     required this.index,
     this.network = NetworkType.ethereum,
     this.payloadLength,
-  }) : message = BytesUtils.toBytes(message, unmodifiable: true);
+  }) : message = message.asImmutableBytes;
 
   factory WalletRequestSignMessage.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {

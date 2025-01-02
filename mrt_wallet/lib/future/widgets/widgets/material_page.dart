@@ -10,10 +10,7 @@ class MaterialPageView extends StatelessWidget {
     return Material(
       color: context.colors.primary,
       child: SafeArea(
-          child: Container(
-        color: context.colors.surface,
-        child: child,
-      )),
+          child: Container(color: context.colors.surface, child: child)),
     );
   }
 }

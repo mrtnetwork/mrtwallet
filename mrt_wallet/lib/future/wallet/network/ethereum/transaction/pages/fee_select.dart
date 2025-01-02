@@ -64,7 +64,7 @@ class _ETHEip1559GasViewSelectViewState
 
   void setupFee() async {
     setState(() {});
-    await MethodUtils.wait(milliseconds: 250);
+    await MethodUtils.wait(duration: Duration(milliseconds: 250));
     if (!context.mounted) return;
     // ignore: use_build_context_synchronously
     context.pop((speed, fees[EIP1559FeeSpeed.customFee]));

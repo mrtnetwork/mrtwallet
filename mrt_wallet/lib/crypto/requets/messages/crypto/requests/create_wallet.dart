@@ -14,8 +14,7 @@ class CreateHDWalletConst {
 }
 
 class CryptoRequestCreateHDWallet
-    implements
-        CryptoRequest<CryptoCreateWalletResponse, MessageArgsThreeBytes> {
+    extends CryptoRequest<CryptoCreateWalletResponse, MessageArgsThreeBytes> {
   final String mnemonic;
   final String? passphrase;
   final String password;
@@ -25,7 +24,7 @@ class CryptoRequestCreateHDWallet
     required this.passphrase,
     required this.password,
     required List<int> checksum,
-  }) : checksum = BytesUtils.toBytes(checksum, unmodifiable: true);
+  }) : checksum = checksum.asImmutableBytes;
 
   factory CryptoRequestCreateHDWallet.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {

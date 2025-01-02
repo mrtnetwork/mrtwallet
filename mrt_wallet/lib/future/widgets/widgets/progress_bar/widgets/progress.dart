@@ -44,9 +44,10 @@ extension QuickAccsessPageProgressState on GlobalKey<PageProgressBaseState> {
         progressWidget: progressWidget);
   }
 
-  void progressText(String text, {bool sliver = true}) {
+  void progressText(String text, {Widget? bottomWidget, bool sliver = true}) {
     currentState?.updateStream(StreamWidgetStatus.progress,
-        progressWidget: ProgressWithTextView(text: text));
+        progressWidget:
+            ProgressWithTextView(text: text, bottomWidget: bottomWidget));
   }
 
   void error([Widget? progressWidget]) {

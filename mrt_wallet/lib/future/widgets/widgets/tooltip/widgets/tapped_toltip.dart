@@ -4,8 +4,7 @@ import 'tooltip.dart';
 
 class TappedTooltipView extends StatefulWidget {
   const TappedTooltipView(
-      {required this.tooltipWidget, this.ignore = true, Key? key})
-      : super(key: key);
+      {required this.tooltipWidget, this.ignore = true, super.key});
   final ToolTipView tooltipWidget;
   final bool ignore;
 

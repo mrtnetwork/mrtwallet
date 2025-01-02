@@ -1,5 +1,4 @@
 import 'dart:js_interop';
-
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/app/utils/numbers/numbers.dart';
@@ -82,7 +81,7 @@ class TronWeb3State
     return other.state != state;
   }
 
-  bool get isConnect => chain?.provider() != null;
+  bool get isConnect => chain?.clientNullable != null;
   TronAccountsChanged get accountsChange => TronAccountsChanged(
       accounts: permissionAccounts, defaultAddress: defaultAddress);
   TronChainChanged get chainChangedEvent => TronChainChanged(
@@ -181,41 +180,54 @@ class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
 
   Future<Web3TronSendTransaction> _parseTransaction(
       PageMessageRequest params, TronWeb3State state) async {
-    final Map<String, dynamic> transactionData = JsUtils.toMap(
-        params.getFirstParam,
-        error: Web3TronExceptionConstant.invalidTransactionParams);
-    final transaction = Transaction.fromJson(transactionData);
-    final txId = transactionData["txID"];
-    if (txId != null && txId != transaction.rawData.txID) {
-      throw Web3TronExceptionConstant.invalidTransactionTxId;
-    }
-    final owner = transaction.rawData.ownerAddress;
-    final permissionId = transaction.rawData.permissionId();
-    if (!state.hasPermission(owner)) {
-      final accountInfo = await state.client!.getAccount(owner);
-      if (accountInfo == null) {
-        throw Web3TronExceptionConstant.accountNotFoundOrNotActivated;
+    try {
+      final Map<String, dynamic> transactionData = JsUtils.toMap(
+          params.getFirstParam,
+          error: Web3TronExceptionConstant.invalidTransactionParams);
+      final transaction = Transaction.fromJson(transactionData);
+      String? txId;
+      if (transactionData["txID"] != null) {
+        txId = BytesUtils.toHexString(
+            BytesUtils.fromHexString(transactionData["txID"]));
       }
-      final permission = accountInfo.permissions.firstWhereOrNull(
-          (e) => e.type != PermissionType.witness && e.id == permissionId);
-      if (permission == null) {
-        throw Web3TronExceptionConstant.invalidTransactionPermissionId;
+      if (txId != null && txId != transaction.rawData.txID) {
+        throw Web3TronExceptionConstant.invalidTransactionTxId;
       }
-      List<TronAddress> activeAddressees = [];
-      for (final i in permission.keys) {
-        if (state.hasPermission(i.address)) {
-          activeAddressees.add(i.address);
+      final owner = transaction.rawData.ownerAddress;
+      final permissionId = transaction.rawData.permissionId();
+      if (!state.hasPermission(owner)) {
+        final accountInfo = await state.client!.getAccount(owner);
+        if (accountInfo == null) {
+          throw Web3TronExceptionConstant.accountNotFoundOrNotActivated;
         }
-      }
-      if (activeAddressees.isEmpty) {
-        throw Web3RequestExceptionConst.missingPermission;
+        final permission = accountInfo.permissions.firstWhereOrNull(
+            (e) => e.type != PermissionType.witness && e.id == permissionId);
+        if (permission == null) {
+          throw Web3TronExceptionConstant.invalidTransactionPermissionId;
+        }
+        final List<TronAddress> activeAddressees = [];
+        for (final i in permission.keys) {
+          if (state.hasPermission(i.address)) {
+            activeAddressees.add(i.address);
+          }
+        }
+        if (activeAddressees.isEmpty) {
+          throw Web3RequestExceptionConst.missingPermission;
+        }
+        return Web3TronSendTransaction(
+            transaction: transactionData,
+            txId: txId,
+            account: activeAddressees.first);
       }
       return Web3TronSendTransaction(
-          transaction: transaction,
+          transaction: transactionData,
           txId: txId,
-          account: activeAddressees.first);
+          account: transaction.rawData.ownerAddress);
+    } on Web3RequestException {
+      rethrow;
+    } catch (e) {
+      throw Web3RequestExceptionConst.fromException(e);
     }
-    return Web3TronSendTransaction(transaction: transaction, txId: txId);
   }
 
   void _sendEvent({required JSEventType event, Object? data}) {
@@ -261,14 +273,14 @@ class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
 
   @override
   void onRequestDone(PageMessageRequest message) {
-    final method = Web3TronRequestMethods.fromName(message.method);
+    // final method = Web3TronRequestMethods.fromName(message.method);
 
-    switch (method) {
-      case Web3TronRequestMethods.requestAccounts:
-        _accountChanged(state);
-        break;
-      default:
-    }
+    // switch (method) {
+    //   case Web3TronRequestMethods.requestAccounts:
+    //     _accountChanged(state);
+    //     break;
+    //   default:
+    // }
   }
 
   @override

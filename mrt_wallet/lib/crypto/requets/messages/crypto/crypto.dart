@@ -10,5 +10,5 @@ export 'requests/ton.dart';
 export 'requests/generate_mnemonic.dart';
 export 'requests/wallet_key.dart';
 export 'requests/random_generate.dart';
-export 'requests/hex_to_bytes.dart';
 export 'requests/hash.dart';
+export 'requests/generate_monero_mnemonic.dart';

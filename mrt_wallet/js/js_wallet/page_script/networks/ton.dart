@@ -1,7 +1,7 @@
 part of '../scripts.dart';
 
 class TonPageController extends PageNetworkController {
-  TonPageController();
+  TonPageController(super.postMessage);
   ProxyMethodHandler<TonWalletAdapter>? _ton;
   ProxyMethodHandler<TonWalletAdapter> _createAdapter() {
     final adapter = TonWalletAdapter(JSObject());
@@ -67,7 +67,7 @@ class TonPageController extends PageNetworkController {
     if (!_listeners.containsKey(type)) return;
     final listeners = <JSFunction>[..._listeners[type]!];
     for (final i in listeners) {
-      i.callAsFunction(i, jsObject);
+      i.callAsFunction(null, jsObject);
     }
   }
 

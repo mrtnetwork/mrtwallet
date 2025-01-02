@@ -1,6 +1,7 @@
+import 'dart:async';
+
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/crypto/requets/messages/messages.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ton/ton.dart';
@@ -33,7 +34,7 @@ class Web3TonTransactionRequestController
   Future<void> _init() async {
     progressKey.process(text: "transaction_retrieval_requirment".tr);
     final result = await MethodUtils.call(() async {
-      List<TonWeb3TransactionMessageInfo> messages = [];
+      final List<TonWeb3TransactionMessageInfo> messages = [];
       for (final i in request.params.messages) {
         final msgInfo = await apiProvider.getWeb3TransactionMessageInfo(
             address: address, account: account, message: i);
@@ -69,8 +70,7 @@ class Web3TonTransactionRequestController
         network: network,
         sign: (generateSignature) async {
           final signRequest = GlobalSignRequest.ton(
-              digest: messageBody.hash(),
-              index: address.keyIndex as Bip32AddressIndex);
+              digest: messageBody.hash(), index: address.keyIndex.cast());
           final response = await generateSignature(signRequest);
           return response.signature;
         },
@@ -94,7 +94,7 @@ class Web3TonTransactionRequestController
       request.error(Web3RequestExceptionConst.fromException(result.exception!));
       return;
     }
-    final String txHash = result.result;
+    final String txHash = result.result.$1;
     final response = Web3TonSendTransactionResponse(
         boc: externalMessage.result.toBase64(), txHash: txHash);
     request.completeResponse(response);

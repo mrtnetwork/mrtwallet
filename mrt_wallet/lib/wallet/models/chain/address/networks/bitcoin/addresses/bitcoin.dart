@@ -23,7 +23,10 @@ class IBitcoinAddress
       required List<int> publicKey,
       required WalletNetwork network}) {
     final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
-        publicKey, accountParams.coin, accountParams.bitcoinAddressType);
+        publicKey: publicKey,
+        coin: accountParams.coin,
+        addressType: accountParams.bitcoinAddressType,
+        keyType: accountParams.keyType);
 
     final addressDetauls = AccountBalance(
         address: bitcoinAddress.toAddress(network
@@ -39,7 +42,8 @@ class IBitcoinAddress
         keyIndex: accountParams.deriveIndex,
         networkAddress: bitcoinAddress,
         addressType: accountParams.bitcoinAddressType,
-        network: network.value);
+        network: network.value,
+        keyType: accountParams.keyType);
   }
   factory IBitcoinAddress.fromCbsorHex(WalletNetwork network, String hex) {
     return IBitcoinAddress.fromCborBytesOrObject(network,
@@ -69,14 +73,20 @@ class IBitcoinAddress
         obj: cbor.getCborTag(4));
     final BitcoinAddressType bitcoinAddressType =
         BitcoinAddressType.fromValue(cbor.elementAt(5));
+    final keyType = PubKeyModes.fromValue(cbor.elementAs(8),
+        defaultValue: PubKeyModes.compressed);
     final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
-        publicKey, coin, bitcoinAddressType);
+        publicKey: publicKey,
+        coin: coin,
+        addressType: bitcoinAddressType,
+        keyType: keyType);
     if (bitcoinAddress.toAddress(
             (network as WalletBitcoinNetwork).coinParam.transacationNetwork) !=
         address.toAddress) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
     final String? name = cbor.elementAt(7);
+
     return IBitcoinAddress(
         coin: coin,
         publicKey: publicKey,
@@ -85,7 +95,8 @@ class IBitcoinAddress
         networkAddress: bitcoinAddress,
         addressType: bitcoinAddressType,
         network: network.value,
-        accountName: name);
+        accountName: name,
+        keyType: keyType);
   }
   IBitcoinAddress(
       {required this.keyIndex,
@@ -95,7 +106,8 @@ class IBitcoinAddress
       required this.address,
       required this.addressType,
       required this.network,
-      String? accountName})
+      String? accountName,
+      required this.keyType})
       : publicKey = List.unmodifiable(publicKey),
         _accountName = accountName;
 
@@ -114,7 +126,8 @@ class IBitcoinAddress
           address.toCbor(),
           addressType.value,
           network,
-          accountName ?? const CborNullValue()
+          accountName ?? const CborNullValue(),
+          keyType.value
         ]),
         CborTagsConst.bitcoinAccount);
   }
@@ -122,6 +135,7 @@ class IBitcoinAddress
   @override
   final BitcoinBaseAddress networkAddress;
   final BitcoinAddressType addressType;
+  final PubKeyModes keyType;
 
   @override
   final AccountBalance address;
@@ -190,13 +204,16 @@ class IBitcoinAddress
 
   @override
   bool isEqual(ChainAccount other) {
-    return orginalAddress == other.orginalAddress;
+    return network == other.network && orginalAddress == other.orginalAddress;
   }
 
   @override
   NewAccountParams toAccountParams() {
     return BitcoinNewAddressParams(
-        deriveIndex: keyIndex, bitcoinAddressType: addressType, coin: coin);
+        deriveIndex: keyIndex,
+        bitcoinAddressType: addressType,
+        coin: coin,
+        keyType: keyType);
   }
 }
 
@@ -271,25 +288,23 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
         accountName: name);
   }
   IBitcoinMultiSigAddress._(
-      {required CryptoCoins coin,
+      {required super.coin,
       required BitcoinBaseAddress bitcoinAddress,
-      required AccountBalance address,
-      required BitcoinAddressType addressType,
+      required super.address,
+      required super.addressType,
       required this.multiSignatureAddress,
       required super.network,
       required super.keyIndex,
-      String? accountName})
+      super.accountName})
       : super(
-            coin: coin,
             publicKey: const [],
             networkAddress: bitcoinAddress,
-            address: address,
-            addressType: addressType,
-            accountName: accountName);
+            keyType: PubKeyModes.uncompressed);
 
   @override
   List<int> get publicKey => throw UnimplementedError();
-
+  @override
+  PubKeyModes get keyType => throw UnimplementedError();
   @override
   final BitcoinMultiSignatureAddress multiSignatureAddress;
 

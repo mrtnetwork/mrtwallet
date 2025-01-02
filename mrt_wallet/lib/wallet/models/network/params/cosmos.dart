@@ -1,56 +1,125 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:cosmos_sdk/cosmos_sdk.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
+import 'package:mrt_wallet/wallet/constant/networks/cosmos.dart';
 
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
+import 'package:blockchain_utils/bip/bip.dart';
 
 class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
   final String hrp;
-
-  final List<CosmosNativeCoin> nativeCoins;
-
-  final CosmosNativeCoin mainCoin;
-
+  final String denom;
   final CosmosNetworkTypes networkType;
+  final String chainId;
+  final String? networkConstantUri;
+  final List<CosmosKeysAlgs> keysAlgs;
+  final List<CosmosFeeToken> feeTokens;
+  final bool useNativeTokenAsFee;
+  List<Bip44Coins> coins() {
+    return keysAlgs.map((e) => e.coin(chainType)).toList();
+  }
+
+  CosmosFeeToken? findFeeToken(String denom) {
+    return feeTokens.firstWhereOrNull((e) => e.denom == denom);
+  }
+
+  CosmosNetworkParams._({
+    super.transactionExplorer,
+    super.addressExplorer,
+    required super.token,
+    required super.providers,
+    required super.chainType,
+    required this.hrp,
+    required this.denom,
+    required this.feeTokens,
+    required this.networkType,
+    required this.chainId,
+    required this.keysAlgs,
+    required this.useNativeTokenAsFee,
+    this.networkConstantUri,
+    super.bip32CoinType,
+  });
+  factory CosmosNetworkParams(
+      {String? transactionExplorer,
+      String? addressExplorer,
+      required Token token,
+      required List<CosmosAPIProvider> providers,
+      required ChainType chainType,
+      required String hrp,
+      required String denom,
+      required List<CosmosFeeToken> feeTokens,
+      required CosmosNetworkTypes networkType,
+      required String chainId,
+      required List<CosmosKeysAlgs> keysAlgs,
+      String? networkConstantUri,
+      int? bip32CoinType}) {
+    if (feeTokens.isEmpty) {
+      throw WalletException("at_least_one_fee_token_required");
+    }
+    if (token.decimal == null ||
+        token.decimal!.isNegative ||
+        token.decimal! > CosmosConst.maxTokenExponent) {
+      throw WalletException("invalid_token_exponent");
+    }
+    bool useNativeTokenAsFee = false;
+    if (feeTokens.length == 1) {
+      useNativeTokenAsFee = denom == feeTokens[0].denom;
+    }
+    return CosmosNetworkParams._(
+      token: token,
+      providers: providers,
+      chainType: chainType,
+      hrp: hrp,
+      denom: denom,
+      feeTokens: feeTokens,
+      networkType: networkType,
+      chainId: chainId,
+      keysAlgs: keysAlgs,
+      bip32CoinType: bip32CoinType,
+      useNativeTokenAsFee: useNativeTokenAsFee,
+      addressExplorer: addressExplorer,
+      networkConstantUri: networkConstantUri,
+      transactionExplorer: transactionExplorer,
+    );
+  }
 
   factory CosmosNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
+    final CborListValue values = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.cosmosNetworkParams);
 
     return CosmosNetworkParams(
-        transactionExplorer: cbor.elementAt(0),
-        addressExplorer: cbor.elementAt(1),
-        token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        providers: (cbor.elementAt(3) as List)
-            .map((e) => CosmosAPIProvider.fromCborBytesOrObject(obj: e))
-            .toList(),
-        mainnet: cbor.elementAt(4),
-        hrp: cbor.elementAt(5),
-        coins: (cbor.elementAt(6) as List)
-            .map((e) => CosmosNativeCoin.fromCborBytesOrObject(obj: e))
-            .toList(),
-        mainCoin:
-            CosmosNativeCoin.fromCborBytesOrObject(obj: cbor.getCborTag(7)),
-        networkType: CosmosNetworkTypes.fromValue(cbor.elementAt(8)),
-        bip32CoinType: cbor.elementAt(9));
+      transactionExplorer: values.elementAs(0),
+      addressExplorer: values.elementAs(1),
+      token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
+      providers: values
+          .elementAsListOf<CborTagValue>(3)
+          .map((e) => CosmosAPIProvider.fromCborBytesOrObject(obj: e))
+          .toList(),
+      chainType: ChainType.fromValue(values.elementAs(4)),
+      hrp: values.elementAs(5),
+      denom: values.elementAs(6),
+      feeTokens: values
+          .elementAsListOf<CborTagValue>(7)
+          .map((e) => CosmosFeeToken.fromCborBytesOrObject(obj: e))
+          .toList(),
+      networkType: CosmosNetworkTypes.fromValue(values.elementAs(8)),
+      bip32CoinType: values.elementAs(9),
+      chainId: values.elementAs(10),
+      networkConstantUri: values.elementAs(11),
+      keysAlgs: values
+          .elementAsListOf<CborStringValue>(12)
+          .map((e) => CosmosKeysAlgs.fromName(e.value))
+          .toList(),
+    );
   }
-  CosmosNetworkParams({
-    required super.transactionExplorer,
-    required super.addressExplorer,
-    required super.token,
-    required super.providers,
-    required super.mainnet,
-    required this.hrp,
-    required List<CosmosNativeCoin> coins,
-    required this.mainCoin,
-    required this.networkType,
-    super.bip32CoinType,
-  }) : nativeCoins = List<CosmosNativeCoin>.unmodifiable(coins);
 
   @override
   CborTagValue toCbor() {
@@ -60,14 +129,48 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
           addressExplorer,
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          mainnet,
-          CborStringValue(hrp),
-          nativeCoins.map((e) => e.toCbor()).toList(),
-          mainCoin.toCbor(),
+          chainType.name,
+          hrp,
+          denom,
+          CborListValue.fixedLength(feeTokens.map((e) => e.toCbor()).toList()),
           networkType.value,
-          bip32CoinType
+          bip32CoinType,
+          chainId,
+          networkConstantUri,
+          CborListValue.fixedLength(
+              keysAlgs.map((e) => CborStringValue(e.name)).toList()),
         ]),
         CborTagsConst.cosmosNetworkParams);
+  }
+
+  CosmosNetworkParams copyWith(
+      {List<CosmosAPIProvider>? providers,
+      String? transactionExplorer,
+      String? addressExplorer,
+      Token? token,
+      ChainType? chainType,
+      String? hrp,
+      String? denom,
+      CosmosNetworkTypes? networkType,
+      List<CosmosFeeToken>? feeTokens,
+      String? chainId,
+      int? bip32CoinType,
+      String? networkConstantUri,
+      List<CosmosKeysAlgs>? keysAlgs}) {
+    return CosmosNetworkParams(
+        transactionExplorer: transactionExplorer ?? this.transactionExplorer,
+        addressExplorer: addressExplorer ?? this.addressExplorer,
+        token: token ?? this.token,
+        providers: providers ?? this.providers,
+        chainType: chainType ?? this.chainType,
+        hrp: hrp ?? this.hrp,
+        denom: denom ?? this.denom,
+        networkType: networkType ?? this.networkType,
+        chainId: chainId ?? this.chainId,
+        bip32CoinType: bip32CoinType ?? this.bip32CoinType,
+        networkConstantUri: networkConstantUri ?? this.networkConstantUri,
+        keysAlgs: keysAlgs ?? this.keysAlgs,
+        feeTokens: feeTokens ?? this.feeTokens);
   }
 
   @override
@@ -78,10 +181,17 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
         addressExplorer: addressExplorer,
         token: token,
         providers: updateProviders.cast<CosmosAPIProvider>(),
-        mainnet: mainnet,
+        chainType: chainType,
         hrp: hrp,
-        coins: nativeCoins,
-        mainCoin: mainCoin,
-        networkType: networkType);
+        feeTokens: feeTokens,
+        denom: denom,
+        networkType: networkType,
+        chainId: chainId,
+        bip32CoinType: bip32CoinType,
+        networkConstantUri: networkConstantUri,
+        keysAlgs: keysAlgs);
   }
+
+  @override
+  String get identifier => chainId;
 }

@@ -22,20 +22,22 @@ mixin WalletsStoragesManger on WalletStorageWriter, CryptoWokerImpl {
     final permissionKeys = keys.keys
         .where((element) => element.startsWith(wallet._permissionKey))
         .toList();
-    await _deleteMultiple(keys: [...walletKeys, ...permissionKeys]);
+    final repositoriesKey = keys.keys
+        .where((element) => element.startsWith(wallet._repositoriesKeys))
+        .toList();
+    await _deleteMultiple(
+        keys: [...walletKeys, ...permissionKeys, ...repositoriesKey]);
   }
 
   Future<void> _setupWalletAccounts(
-      List<Chain> accounts, HDWallet wallet) async {
+      List<MRTWalletChainBackup> accounts, HDWallet wallet) async {
     for (final i in accounts) {
-      final toCbor = i.toCbor().toCborHex();
-      await _write(key: i.storageId, value: toCbor);
+      final account = i.chain;
+      final toCbor = account.toCbor().toCborHex();
+      await account.restoreChainRepositories(i.repositories);
+      await _write(key: i.chain.storageId, value: toCbor);
+      assert(account.id == wallet._checksum, "invalid account wallet id.");
     }
-  }
-
-  Future<void> _saveAccount(Chain account) async {
-    final toCbor = account.toCbor().toCborHex();
-    await _write(key: account.storageId, value: toCbor);
   }
 
   Future<void> _removeAccount(Chain account) async {
@@ -53,7 +55,9 @@ mixin WalletsStoragesManger on WalletStorageWriter, CryptoWokerImpl {
   Future<String?> _readWeb3Permission(
       {required HDWallet wallet, required String applicationId}) async {
     final key = await crypto.generateHashString(
-        type: CryptoRequestHashingType.md4, dataBytes: applicationId.codeUnits);
+        type: CryptoRequestHashingType.md4,
+        dataBytes: applicationId.codeUnits,
+        isolate: false);
     return await _read(key: wallet._toPermissionKey(key));
   }
 

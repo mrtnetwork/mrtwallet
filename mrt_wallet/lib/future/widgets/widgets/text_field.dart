@@ -88,7 +88,6 @@ class AppTextFieldState extends State<AppTextField> with SafeState {
 
   void onChange(String value) {
     if (!mounted) return;
-    widget.onChanged?.call(value);
     if (widget.textDirection != null) return;
     if (value.trim().isEmpty) {
       if (direction != null) {

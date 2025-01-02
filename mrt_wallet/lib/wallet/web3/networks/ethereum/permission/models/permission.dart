@@ -106,7 +106,7 @@ class Web3EthereumChain
   List<Web3EthereumChainAccount> chainAccounts(EthereumChain chain) {
     final currentAccounts =
         activeAccounts.where((e) => e.chainId == chain.chainId).toList();
-    List<Web3EthereumChainAccount> existsAccounts = [];
+    final List<Web3EthereumChainAccount> existsAccounts = [];
     for (final i in chain.addresses) {
       final chainAccount = currentAccounts.firstWhereOrNull(
           (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);

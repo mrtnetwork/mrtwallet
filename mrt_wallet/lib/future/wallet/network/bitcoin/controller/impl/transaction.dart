@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -38,26 +40,28 @@ enum BitcoinTransactionPages { account, utxo, send }
 
 abstract class BitcoinTransactionImpl extends StateController
     with BitcoinTransactionMemoImpl {
-  BitcoinTransactionImpl({
-    required this.walletProvider,
-    required this.chainAccount,
-  });
+  BitcoinTransactionImpl(
+      {required this.walletProvider, required this.chainAccount});
   final WalletProvider walletProvider;
   final BitcoinChain chainAccount;
+  final Cancelable _cancelable = Cancelable();
   bool get hasFeeRate;
+  bool get hasSegwit => _hasSegwit;
+  bool _hasSegwit = false;
   late IBitcoinAddress _onChangeAddress = chainAccount.address;
   String get onChangeAddressView => _onChangeAddress.address.toAddress;
   BitcoinBaseAddress get onChangeAddress => _onChangeAddress.networkAddress;
   BigInt get minimumOutput =>
       isBCHTransaction ? BCHUtils.minimumOutput : BigInt.zero;
-  Future<void> estimateFee({
-    required List<BitcoinBaseOutput> outPuts,
-    required List<UtxoWithAddress> inputs,
-    BCMR? bcmr,
-  });
+  String? _txHash;
+  Future<void> estimateFee(
+      {required List<BitcoinBaseOutput> outPuts,
+      required List<UtxoWithAddress> inputs,
+      BCMR? bcmr});
 
   final List<BitcoinUtxoWithBalance> selectedUtxo = [];
   int _utxosCount = 0;
+  int get transactionSize;
   void countUtxos() {
     _utxosCount = 0;
     for (final i in accountsUtxos) {
@@ -80,13 +84,11 @@ abstract class BitcoinTransactionImpl extends StateController
   void buildOutputs([List<BitcoinBaseOutput> extraOutputs = const []]) {
     outputs = List<BitcoinBaseOutput>.unmodifiable([
       ...extraOutputs,
-      ...receivers
-          .map<BitcoinBaseOutput>((e) => BitcoinOutput(
-              address: e.address.networkAddress, value: e.balance.balance))
-          .toList(),
+      ...receivers.map<BitcoinBaseOutput>((e) => BitcoinOutput(
+          address: e.address.networkAddress, value: e.balance.balance)),
       if (remindAmount.balance > BigInt.zero)
         BitcoinOutput(address: onChangeAddress, value: remindAmount.balance),
-      ...memoScripts.map((e) => e.script).toList()
+      ...memoScripts.map((e) => e.script)
     ]);
     if (_ordering == TransactionOrdering.manually) {
       _ordering = TransactionOrdering.bip69;
@@ -153,7 +155,7 @@ abstract class BitcoinTransactionImpl extends StateController
   void onSetupUtxo();
   List<IBitcoinAddress> get addresses => chainAccount.addresses;
   // Bip32NetworkAccount get account => chainAccount.account;
-  late final BitcoinClient apiProvider = chainAccount.provider()!;
+  BitcoinClient get apiProvider => chainAccount.client;
 
   void setFee(String? feeType, {BigInt? customFee}) {
     onCalculateAmount();
@@ -180,21 +182,24 @@ abstract class BitcoinTransactionImpl extends StateController
 
   BitcoinTransactionPages _page = BitcoinTransactionPages.account;
   bool get canPopPage =>
-      progressKey.status == StreamWidgetStatus.success ||
-      _page == BitcoinTransactionPages.account;
+      _txHash != null ||
+      _page == BitcoinTransactionPages.account ||
+      progressKey.hasError;
   BitcoinTransactionPages get page => _page;
   bool get inAccountPage => _page == BitcoinTransactionPages.account;
   bool get inUtxoPage => _page == BitcoinTransactionPages.utxo;
   bool get inSendPage => _page == BitcoinTransactionPages.send;
 
-  bool onBackButton() {
+  void onBackButton() {
     if (progressKey.status == StreamWidgetStatus.success) {
-      return true;
+      return;
     }
+    _cancelable.cancel();
+    progressKey.backToIdle();
     try {
       switch (_page) {
         case BitcoinTransactionPages.account:
-          return true;
+          break;
         case BitcoinTransactionPages.utxo:
           _page = BitcoinTransactionPages.account;
           break;
@@ -202,7 +207,6 @@ abstract class BitcoinTransactionImpl extends StateController
           _page = BitcoinTransactionPages.utxo;
           break;
       }
-      return false;
     } finally {
       notify();
     }
@@ -235,20 +239,22 @@ abstract class BitcoinTransactionImpl extends StateController
               multiSigAddress: multiSignatureAddress)
         });
       } else {
-        _addresses.addAll({
-          address: UtxoAddressDetails(
-              address: account.networkAddress,
-              publicKey: BytesUtils.toHexString(account.publicKey))
-        });
+        final addrInfo = UtxoAddressDetails(
+            address: account.networkAddress,
+            publicKey: BytesUtils.toHexString(account.publicKey));
+        _addresses.addAll({address: addrInfo});
       }
     }
     notify();
   }
 
   void fetchUtxos([bool includeTokenUtxos = false]) async {
+    _page = BitcoinTransactionPages.utxo;
+    notify();
     progressKey.progressText("retrieving_transaction".tr);
     _accountsUtxos.clear();
     selectedUtxo.clear();
+
     bool hasError = false;
     for (final i in _addresses.keys) {
       if (_retrievedUtxos[i]?.hasUtxo ?? false) {
@@ -257,8 +263,9 @@ abstract class BitcoinTransactionImpl extends StateController
       }
       final result = await MethodUtils.call(() async {
         return await apiProvider.readUtxos(_addresses[i]!, includeTokenUtxos);
-      });
+      }, cancelable: _cancelable);
       if (result.hasError) {
+        if (result.isCancel) return;
         hasError = true;
       }
       _retrievedUtxos[i] = BitcoinAccountUtxos(
@@ -269,12 +276,13 @@ abstract class BitcoinTransactionImpl extends StateController
       _accountsUtxos[i] = _retrievedUtxos[i]!;
     }
     countUtxos();
-    _page = BitcoinTransactionPages.utxo;
+
     if (hasError) {
       progressKey.errorText("problem_when_receiving_utxos".tr);
     } else {
       progressKey.successText("transaction_successfully_received".tr);
     }
+    notify();
   }
 
   void updateBalances() async {
@@ -285,15 +293,25 @@ abstract class BitcoinTransactionImpl extends StateController
     notify();
   }
 
-  void onAddRecever(
-      ReceiptAddress<BitcoinBaseAddress>? addr, DynamicVoid onAccountExists) {
-    if (addr == null) return;
+  bool _onAddRecever(ReceiptAddress<BitcoinBaseAddress> addr) {
     if (_receivers.containsKey(addr.networkAddress.addressProgram)) {
-      onAccountExists();
-      return;
+      return false;
     } else {
       _receivers[addr.networkAddress.addressProgram] =
           BitcoinOutputWithBalance(address: addr, network: network);
+      return true;
+    }
+  }
+
+  void onAddRecever(List<ReceiptAddress<BitcoinBaseAddress>>? address,
+      DynamicVoid onAccountExists) {
+    if (address == null) return;
+    bool allAdded = true;
+    for (final i in address) {
+      allAdded &= _onAddRecever(i);
+    }
+    if (!allAdded) {
+      onAccountExists();
     }
     buildOutputs();
     calculateFee();
@@ -308,15 +326,16 @@ abstract class BitcoinTransactionImpl extends StateController
     }
   }
 
-  void setupAccountAmount(String address, BigInt? amount) async {
+  void setupAccountAmount(
+      BitcoinOutputWithBalance address, BigInt? amount) async {
     if (amount == null) return;
-    _receivers[address]?.balance.updateBalance(amount);
-    bool isMax = amount == remindAmount.balance;
+    address.balance.updateBalance(amount);
+    final bool isMax = amount == remindAmount.balance;
     onCalculateAmount();
     if (isMax) {
       await calculateFee();
       final fixedAmount = amount + remindAmount.balance;
-      _receivers[address]?.balance.updateBalance(fixedAmount);
+      address.balance.updateBalance(fixedAmount);
       onCalculateAmount();
     }
     notify();
@@ -342,19 +361,22 @@ abstract class BitcoinTransactionImpl extends StateController
     if (!hasFeeRate || page != BitcoinTransactionPages.send) {
       progressKey.progressText("processing_fee_please_wait".tr);
     }
-
+    _hasSegwit = inputs.any((e) => e.utxo.isSegwit);
+    _page = BitcoinTransactionPages.send;
+    notify();
     final result = await MethodUtils.call(() async {
+      // await Future.delayed(const Duration(seconds: 3));
+
       return estimateFee(outPuts: outputs, inputs: inputs);
-    });
-    onCalculateAmount();
-    if (progressKey.inProgress) {
+    }, cancelable: _cancelable);
+    if (progressKey.inProgress && !result.isCancel) {
       if (result.hasError) {
         progressKey.errorText(result.error!.tr);
       } else {
-        _page = BitcoinTransactionPages.send;
         progressKey.successText("transaction_fee_has_been_modified".tr);
       }
     }
+    onCalculateAmount();
     notify();
   }
 
@@ -419,52 +441,47 @@ abstract class BitcoinTransactionImpl extends StateController
         sign: (generateSignature) async {
           return tr.buildTransactionAsync(
               (trDigest, utxo, publicKey, sighash) async {
-            try {
-              final account =
-                  signers.whereType<IBitcoinAddress>().firstWhere((element) {
-                return element.signers.contains(publicKey);
-              });
-              AddressDerivationIndex keyIndex = account.keyIndex;
-              if (account.multiSigAccount) {
-                final multiSignatureAddress =
-                    (account as BitcoinMultiSigBase).multiSignatureAddress;
-                final correctSigner = multiSignatureAddress.signers
-                    .firstWhere((element) => element.publicKey == publicKey);
-                keyIndex = correctSigner.keyIndex;
-              }
-              final bitcoinSigning = BitcoinSigning(
-                  digest: trDigest,
-                  index: keyIndex as Bip32AddressIndex,
-                  useTaproot: utxo.utxo.isP2tr(),
-                  sighash: sighash);
-              final sss = await generateSignature(bitcoinSigning);
-              return BytesUtils.toHexString(sss.signature);
-            } on StateError {
-              throw WalletExceptionConst.accountDoesNotFound;
-            } catch (e) {
-              rethrow;
+            final account = signers
+                .whereType<IBitcoinAddress>()
+                .firstWhere((element) => element.signers.contains(publicKey));
+            AddressDerivationIndex keyIndex = account.keyIndex;
+            if (account.multiSigAccount) {
+              final multiSignatureAddress =
+                  (account as BitcoinMultiSigBase).multiSignatureAddress;
+              final correctSigner = multiSignatureAddress.signers
+                  .firstWhere((element) => element.publicKey == publicKey);
+              keyIndex = correctSigner.keyIndex;
             }
+            final bitcoinSigning = BitcoinSigning(
+                digest: trDigest,
+                index: keyIndex.cast(),
+                useTaproot: utxo.utxo.isP2tr,
+                sighash: sighash);
+            final sig = await generateSignature(bitcoinSigning);
+            return BytesUtils.toHexString(sig.signature);
           });
         },
       );
       final signedTr =
           await walletProvider.wallet.signTransaction(request: request);
-
       if (signedTr.hasError) {
         throw signedTr.exception!;
       }
+      assert(signedTr.result.getVSize() <= transactionSize,
+          "should be equal or greather few bytes.");
       final ser = signedTr.result.serialize();
-
       return await apiProvider.sendTransacation(ser);
     });
 
     if (result.hasError) {
-      progressKey.errorText(result.error!.tr);
+      progressKey.errorText(result.error!.tr,
+          showBackButton: true, backToIdle: false);
     } else {
+      _txHash = result.result.toString();
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
             network: network,
-            txId: [result.result.toString()],
+            txIds: [result.result.toString()],
           ),
           backToIdle: false);
     }

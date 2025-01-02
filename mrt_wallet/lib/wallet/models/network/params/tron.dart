@@ -1,7 +1,7 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/provider/provider.dart';
-
+import 'package:blockchain_utils/bip/bip.dart';
 import 'package:mrt_wallet/wallet/models/network/core/params/params.dart';
 import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
@@ -9,6 +9,8 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
   final List<EthereumAPIProvider> ethereumProviders;
   final String genesis;
+  @override
+  String get identifier => genesis;
   factory TronNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
@@ -24,7 +26,7 @@ class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
         ethereumProviders: (cbor.elementAt(4) as List)
             .map((e) => EthereumAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        mainnet: cbor.elementAt(5),
+        chainType: ChainType.fromValue(cbor.elementAt(5)),
         genesis: cbor.elementAt(6));
   }
   TronNetworkParams(
@@ -33,7 +35,7 @@ class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
       required super.token,
       required super.providers,
       required this.ethereumProviders,
-      required super.mainnet,
+      required super.chainType,
       required this.genesis});
 
   @override
@@ -46,7 +48,7 @@ class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(
               ethereumProviders.map((e) => e.toCbor()).toList()),
-          mainnet,
+          chainType.name,
           genesis
         ]),
         CborTagsConst.tvmNetworkParam);
@@ -61,7 +63,7 @@ class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
         token: token,
         providers: updateProviders.cast<TronAPIProvider>(),
         ethereumProviders: ethereumProviders,
-        mainnet: mainnet,
+        chainType: chainType,
         genesis: genesis);
   }
 }

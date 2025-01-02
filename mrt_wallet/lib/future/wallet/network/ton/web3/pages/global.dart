@@ -30,9 +30,7 @@ class TonWeb3GlobalFieldsView<RESPONSE, T extends Web3TonRequestParam<RESPONSE>>
 }
 
 class _GlobalFieldsView extends StatelessWidget {
-  const _GlobalFieldsView(
-      {required this.form, required this.controller, Key? key})
-      : super(key: key);
+  const _GlobalFieldsView({required this.form, required this.controller});
   final TonWeb3Form form;
   final Web3TonGlobalRequestController controller;
   @override

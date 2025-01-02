@@ -6,6 +6,7 @@ import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/wallet/api/api.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
+import 'package:mrt_wallet/wallet/constant/chain/const.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/networks/tron/models/chain_type.dart';
@@ -19,17 +20,16 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
   abstract final PARAMS coinParam;
   abstract final NetworkType type;
   bool get isWalletNetwork => value >= 0;
+  bool get isImportedNetwork => value >= ChainConst.importedNetworkStartId;
   bool get supportCustomNode;
   Token get token => coinParam.token;
-
   int get coinDecimal => token.decimal!;
-
   WalletNetwork copyWith({int? value, PARAMS? coinParam});
   String get networkName => token.name;
   String get networkSymbol => token.symbol;
-
   List<CryptoCoins> get coins;
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
+  bool get supportImportNetwork => false;
+  bool get supportWeb3 => false;
 
   T? getProvider<T extends APIProvider>(
       {T? selectProvider, bool allowInWeb3 = false}) {
@@ -46,7 +46,8 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
             .supportOnThisPlatform(PlatformInterface.appPlatform)) {
       return supportedProviders.first;
     }
-    return supportedProviders.firstWhere((element) => element == selectProvider,
+    return supportedProviders.firstWhere(
+        (element) => element.identifier == selectProvider.identifier,
         orElse: () => supportedProviders.first);
   }
 
@@ -84,6 +85,8 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
         return WalletKusamaNetwork.fromCborBytesOrObject(obj: toCborTag);
       case NetworkType.stellar:
         return WalletStellarNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.monero:
+        return WalletMoneroNetwork.fromCborBytesOrObject(obj: toCborTag);
       default:
         throw UnimplementedError("network does not exist.");
     }
@@ -135,8 +138,8 @@ class WalletBitcoinNetwork extends WalletNetwork<BitcoinParams> {
       case PubKeyAddressType.p2pk:
         return coins
             .firstWhere((element) => element.proposal == BipProposal.bip44);
-      case SegwitAddresType.p2wsh:
-      case SegwitAddresType.p2wpkh:
+      case SegwitAddressType.p2wsh:
+      case SegwitAddressType.p2wpkh:
         return coins
             .firstWhere((element) => element.proposal == BipProposal.bip84);
       default:
@@ -227,14 +230,10 @@ class WalletXRPNetwork extends WalletNetwork<RippleNetworkParams> {
   }
 
   @override
-  List<EllipticCurveTypes> get keyTypes =>
-      [EllipticCurveTypes.secp256k1, EllipticCurveTypes.ed25519];
-
-  @override
   List get variabels => [value];
 
   @override
-  bool get supportCustomNode => false;
+  bool get supportCustomNode => true;
 
   @override
   NetworkType get type => NetworkType.xrpl;
@@ -251,7 +250,9 @@ class WalletEthereumNetwork extends WalletNetwork<EthereumNetworkParams> {
   final int value;
   @override
   final EthereumNetworkParams coinParam;
-  // final int? slip44;
+
+  @override
+  bool get supportWeb3 => true;
 
   const WalletEthereumNetwork(this.value, this.coinParam);
   factory WalletEthereumNetwork.fromCborBytesOrObject(
@@ -280,7 +281,8 @@ class WalletEthereumNetwork extends WalletNetwork<EthereumNetworkParams> {
 
   @override
   List get variabels => [value];
-
+  @override
+  bool get supportImportNetwork => true;
   @override
   CborTagValue toCbor() {
     return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
@@ -303,7 +305,7 @@ class WalletEthereumNetwork extends WalletNetwork<EthereumNetworkParams> {
           providers: [],
           chainId: BigInt.zero,
           supportEIP1559: false,
-          mainnet: false),
+          chainType: ChainType.testnet),
     );
   }
 }
@@ -314,7 +316,8 @@ class WalletTronNetwork extends WalletNetwork<TronNetworkParams> {
   @override
   final TronNetworkParams coinParam;
   const WalletTronNetwork(this.value, this.coinParam);
-
+  @override
+  bool get supportWeb3 => true;
   TronChainType get tronNetworkType => TronChainType.fromId(value);
 
   factory WalletTronNetwork.fromCborBytesOrObject(
@@ -343,7 +346,7 @@ class WalletTronNetwork extends WalletNetwork<TronNetworkParams> {
   }
 
   @override
-  bool get supportCustomNode => false;
+  bool get supportCustomNode => true;
 
   @override
   NetworkType get type => NetworkType.tron;
@@ -360,6 +363,8 @@ class WalletSolanaNetwork extends WalletNetwork<SolanaNetworkParams> {
   @override
   final SolanaNetworkParams coinParam;
   String get genesisBlock => coinParam.genesis;
+  @override
+  bool get supportWeb3 => true;
   const WalletSolanaNetwork(this.value, this.coinParam);
   factory WalletSolanaNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
@@ -386,8 +391,6 @@ class WalletSolanaNetwork extends WalletNetwork<SolanaNetworkParams> {
 
   @override
   List get variabels => [value];
-  @override
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.ed25519];
 
   @override
   CborTagValue toCbor() {
@@ -442,8 +445,6 @@ class WalletCardanoNetwork extends WalletNetwork<CardanoNetworkParams> {
 
   @override
   List get variabels => [value];
-  @override
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.ed25519Kholaw];
 
   @override
   CborTagValue toCbor() {
@@ -452,7 +453,7 @@ class WalletCardanoNetwork extends WalletNetwork<CardanoNetworkParams> {
   }
 
   @override
-  bool get supportCustomNode => false;
+  bool get supportCustomNode => true;
 
   @override
   NetworkType get type => NetworkType.cardano;
@@ -482,16 +483,11 @@ class WalletCosmosNetwork extends WalletNetwork<CosmosNetworkParams> {
 
   @override
   List<BipCoins> get coins {
-    if (coinParam.mainnet) {
-      return [Bip44Coins.cosmos];
-    }
-    return [Bip44Coins.cosmosTestnet];
+    return coinParam.coins();
   }
 
   @override
   List get variabels => [value];
-  @override
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.secp256k1];
 
   @override
   CborTagValue toCbor() {
@@ -500,7 +496,9 @@ class WalletCosmosNetwork extends WalletNetwork<CosmosNetworkParams> {
   }
 
   @override
-  bool get supportCustomNode => false;
+  bool get supportCustomNode => true;
+  @override
+  bool get supportImportNetwork => true;
 
   @override
   NetworkType get type => NetworkType.cosmos;
@@ -517,6 +515,8 @@ class WalletTonNetwork extends WalletNetwork<TonNetworkParams> {
   final int value;
   @override
   final TonNetworkParams coinParam;
+  @override
+  bool get supportWeb3 => true;
 
   const WalletTonNetwork(this.value, this.coinParam);
   factory WalletTonNetwork.fromCborBytesOrObject(
@@ -539,8 +539,6 @@ class WalletTonNetwork extends WalletNetwork<TonNetworkParams> {
 
   @override
   List get variabels => [value];
-  @override
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.ed25519];
 
   @override
   CborTagValue toCbor() {
@@ -549,7 +547,7 @@ class WalletTonNetwork extends WalletNetwork<TonNetworkParams> {
   }
 
   @override
-  bool get supportCustomNode => false;
+  bool get supportCustomNode => true;
   @override
   NetworkType get type => NetworkType.ton;
 
@@ -588,12 +586,6 @@ class WalletPolkadotNetwork extends WalletNetwork<SubstrateNetworkParams> {
 
   @override
   List get variabels => [value];
-  @override
-  List<EllipticCurveTypes> get keyTypes => [
-        EllipticCurveTypes.secp256k1,
-        EllipticCurveTypes.ed25519,
-        EllipticCurveTypes.sr25519
-      ];
 
   @override
   CborTagValue toCbor() {
@@ -602,7 +594,7 @@ class WalletPolkadotNetwork extends WalletNetwork<SubstrateNetworkParams> {
   }
 
   @override
-  bool get supportCustomNode => false;
+  bool get supportCustomNode => true;
 
   @override
   NetworkType get type => NetworkType.polkadot;
@@ -661,6 +653,9 @@ class WalletStellarNetwork extends WalletNetwork<StellarNetworkParams> {
   @override
   final StellarNetworkParams coinParam;
 
+  @override
+  bool get supportWeb3 => true;
+
   const WalletStellarNetwork(this.value, this.coinParam);
   factory WalletStellarNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
@@ -682,8 +677,6 @@ class WalletStellarNetwork extends WalletNetwork<StellarNetworkParams> {
 
   @override
   List get variabels => [value];
-  @override
-  List<EllipticCurveTypes> get keyTypes => [EllipticCurveTypes.ed25519];
 
   @override
   CborTagValue toCbor() {
@@ -699,6 +692,52 @@ class WalletStellarNetwork extends WalletNetwork<StellarNetworkParams> {
   @override
   WalletStellarNetwork copyWith({int? value, StellarNetworkParams? coinParam}) {
     return WalletStellarNetwork(
+        value ?? this.value, coinParam ?? this.coinParam);
+  }
+}
+
+class WalletMoneroNetwork extends WalletNetwork<MoneroNetworkParams> {
+  @override
+  final int value;
+  @override
+  final MoneroNetworkParams coinParam;
+
+  const WalletMoneroNetwork(this.value, this.coinParam);
+  factory WalletMoneroNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor = CborSerializable.decodeCborTags(
+        bytes, obj, CborTagsConst.moneroNetwork);
+    return WalletMoneroNetwork(
+      cbor.elementAt(0),
+      MoneroNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
+  }
+
+  @override
+  List<BipCoins> get coins {
+    if (coinParam.mainnet) {
+      return [Bip44Coins.moneroEd25519Slip];
+    }
+    return [Bip44Coins.moneroEd25519Slip];
+  }
+
+  @override
+  List get variabels => [value];
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        CborTagsConst.moneroNetwork);
+  }
+
+  @override
+  bool get supportCustomNode => true;
+  @override
+  NetworkType get type => NetworkType.monero;
+
+  @override
+  WalletMoneroNetwork copyWith({int? value, MoneroNetworkParams? coinParam}) {
+    return WalletMoneroNetwork(
         value ?? this.value, coinParam ?? this.coinParam);
   }
 }

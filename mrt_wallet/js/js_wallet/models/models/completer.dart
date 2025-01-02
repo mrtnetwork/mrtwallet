@@ -34,11 +34,11 @@ class MessageCompleter {
   }
 }
 
-class PageRequestCompeleter {
+class PageRequestCompleter {
   final String id;
-  PageRequestCompeleter._(this.id);
-  factory PageRequestCompeleter.nextRequest() {
-    return PageRequestCompeleter._(UUID.generateUUIDv4());
+  PageRequestCompleter._(this.id);
+  factory PageRequestCompleter.nextRequest() {
+    return PageRequestCompleter._(UUID.generateUUIDv4());
   }
   final Completer<WalletMessageResponse> _completer = Completer();
 

@@ -29,7 +29,7 @@ class TronFreezBalanceV2FieldsView extends StatelessWidget {
             for (final i in TronUtils.tronFrozenReosurce)
               i: Text(i.name.toLowerCase().camelCase)
           },
-          label: "resource".tr,
+          hint: "resource".tr,
           onChanged: (p0) {
             validator.setValue(validator.resource, p0);
           },
@@ -44,6 +44,7 @@ class TronFreezBalanceV2FieldsView extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
               "frozen_balance".tr,
+              initialExtend: 1,
               child: SetupNetworkAmount(
                 token: account.network.coinParam.token,
                 max: account.address.address.currencyBalance,

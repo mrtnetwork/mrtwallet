@@ -1,6 +1,5 @@
 import 'dart:js_interop';
-import 'package:mrt_wallet/app/utils/list/extension.dart';
-import 'package:mrt_wallet/app/utils/numbers/numbers.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../../../constant/constant.dart';
 import '../../models.dart';
@@ -16,7 +15,7 @@ class ProxyMethodHandler<T> {
   }
 
   @JSExport("get")
-  JSAny? get(JSAny object, JSAny prop) {
+  JSAny? get(JSAny object, JSAny? prop) {
     return Reflect.get(object, prop, null);
   }
 }
@@ -32,8 +31,8 @@ extension type Reflect._(JSObject _) implements JSAny {
 }
 
 @JS("Proxy")
-extension type Proxy._(JSObject _) implements JSAny {
-  external factory Proxy(JSAny target, JSObject handler);
+extension type Proxy<T extends JSAny>._(JSObject _) implements JSAny {
+  external factory Proxy(T target, JSObject handler);
 }
 
 extension type EIP1193(JSObject _) implements MRTNetworkAdapter {
@@ -112,11 +111,14 @@ extension type EIP6963ProviderDetail._(JSObject _) implements MRTJsObject {
             cancelable: false,
             detail: MRTJsObject.freeze(EIP6963ProviderDetail(
                 info: EIP6963ProviderInfo.providerInfo, provider: ethereum))));
+    void onRequestProvider(CustomEvent r) {
+      jsWindow.dispatchEvent(event);
+      jsWindow.removeEventListener(
+          "eip6963:requestProvider", onRequestProvider.toJS);
+    }
+
     jsWindow.addEventListener(
-        "eip6963:requestProvider",
-        (CustomEvent r) {
-          jsWindow.dispatchEvent(event);
-        }.toJS);
+        "eip6963:requestProvider", onRequestProvider.toJS);
     jsWindow.dispatchEvent(event);
   }
 }

@@ -4,10 +4,9 @@ import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_wallet/app/constant/global/serialization.dart';
 import 'package:mrt_wallet/app/models/models/currencies.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
-// import 'package:mrt_wallet/app/core.dart';
 
 class APPSetting with CborSerializable {
-  APPSetting._(
+  const APPSetting._(
       {required this.appColor,
       required this.appBrightness,
       required this.currency,
@@ -34,17 +33,17 @@ class APPSetting with CborSerializable {
           BytesUtils.fromHexString(cborHex!),
           null,
           APPSerializationConst.appSettingTag);
-      final String? colorHex = cbor.elementAt(0);
-      final String? brightnessName = cbor.elementAt(1);
+      final String? colorHex = cbor.elementAs(0);
+      final String? brightnessName = cbor.elementAs(1);
       final Currency currency =
-          Currency.fromName(cbor.elementAt(2)) ?? Currency.USD;
+          Currency.fromName(cbor.elementAs(2)) ?? Currency.USD;
 
       return APPSetting._(
           appColor: colorHex,
           appBrightness: brightnessName,
           currency: currency,
           config: config);
-    } catch (e) {
+    } catch (_) {
       return APPSetting._(
           appColor: null,
           appBrightness: null,

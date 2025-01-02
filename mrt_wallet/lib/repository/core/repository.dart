@@ -10,12 +10,12 @@ mixin BaseRepository {
   }
 
   Future<void> write({required String key, required String value}) async {
-    await BaseNativeMEthod.platform
+    await AppNativeMethods.platform
         .writeSecure(_toKey(repositoryStorageId, key), value);
   }
 
   Future<String?> read(String key) async {
-    return await BaseNativeMEthod.platform
+    return await AppNativeMethods.platform
         .readSecure(_toKey(repositoryStorageId, key));
   }
 }

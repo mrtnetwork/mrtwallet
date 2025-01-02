@@ -9,9 +9,9 @@ class BitcoinAccountPageView extends StatelessWidget {
   final BitcoinChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    return TabBarView(children: [
-      _Services(chainAccount),
-    ]);
+    return TabBarView(
+        physics: WidgetConstant.noScrollPhysics,
+        children: [_Services(chainAccount)]);
   }
 }
 

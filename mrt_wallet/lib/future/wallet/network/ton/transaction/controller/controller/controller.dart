@@ -13,10 +13,6 @@ class TonTransactionStateController extends TonTransactionImpl
       required super.apiProvider,
       required super.validator});
 
-  void _onReadyForm(String hashCode) {
-    estimateFee();
-  }
-
   bool get hasMultipleMessage => address.context.version.version > 1;
 
   late final IntegerBalance remindAmount =
@@ -43,14 +39,19 @@ class TonTransactionStateController extends TonTransactionImpl
     notify();
   }
 
+  void onChangeForm() {
+    onChange();
+    if (_error == null) {
+      estimateFee();
+    }
+  }
+
   void _init() {
-    validator.validator.onReadyField = _onReadyForm;
-    validator.addListener(onChange);
+    validator.addListener(onChangeForm);
   }
 
   void _close() {
-    validator.validator.onReadyField = null;
-    validator.removeListener(onChange);
+    validator.removeListener(onChangeForm);
   }
 
   void sendTransaction() {

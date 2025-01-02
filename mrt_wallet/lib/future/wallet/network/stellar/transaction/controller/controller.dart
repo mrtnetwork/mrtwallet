@@ -104,7 +104,8 @@ class StellarTransactionStateController extends StellarTransactionImpl
   Future<void> _init() async {
     final result = await MethodUtils.call(() async {
       final baseReserve = await apiProvider.getBaseReserve();
-      final account = await apiProvider.getAccountFromIStellarAddress(address);
+      final account = await apiProvider.getAccountFromIStellarAddress(
+          address, this.account);
       return (baseReserve, account);
     });
     if (result.hasError) {

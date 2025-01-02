@@ -28,12 +28,7 @@ class RippleTransactionFieldsView extends StatelessWidget {
               RippleTransactionStateController>(
           repositoryId: StateConst.ripple,
           controller: () => RippleTransactionStateController(
-              walletProvider: wallet,
-              account: chain,
-              network: chain.network,
-              apiProvider: chain.provider()!,
-              address: chain.address,
-              validator: validator),
+              walletProvider: wallet, account: chain, validator: validator),
           builder: (controller) {
             return PageProgress(
               key: controller.progressKey,
@@ -51,10 +46,13 @@ class RippleTransactionFieldsView extends StatelessWidget {
                               style: context.textTheme.titleLarge),
                           WidgetConstant.height8,
                           ContainerWithBorder(
-                            onRemoveIcon: const Icon(Icons.edit),
+                            onRemoveIcon: Icon(Icons.edit,
+                                color: context.onPrimaryContainer),
                             child: AddressDetailsView(
-                                address: controller.owner,
-                                key: ValueKey<IXRPAddress?>(controller.owner)),
+                                address: controller.address,
+                                color: context.colors.onPrimaryContainer,
+                                key:
+                                    ValueKey<IXRPAddress?>(controller.address)),
                             onRemove: () {
                               context
                                   .openSliverBottomSheet<IXRPAddress>(
@@ -97,7 +95,8 @@ class RippleTransactionFieldsView extends StatelessWidget {
                                 key: controller.buttonKey,
                                 backToIdle: APPConst.oneSecoundDuration,
                                 buttonWidget: FixedElevatedButton(
-                                  padding: WidgetConstant.paddingVertical20,
+                                  padding: WidgetConstant.paddingVertical40,
+                                  activePress: controller.trIsReady,
                                   onPressed: () {
                                     controller.sendTr();
                                   },

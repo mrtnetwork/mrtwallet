@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/constant/global/app.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/transaction/pages/widgets/pick_asset.dart';
@@ -11,8 +12,7 @@ class ChangeTrustOperationView extends StatefulWidget {
   final StellarTransactionStateController controller;
   final StellarChangeTrustOperation? operation;
   const ChangeTrustOperationView(
-      {required this.controller, this.operation, Key? key})
-      : super(key: key);
+      {required this.controller, this.operation, super.key});
 
   @override
   State<ChangeTrustOperationView> createState() =>
@@ -78,18 +78,15 @@ class _ChangeTrustOperationViewState extends State<ChangeTrustOperationView>
         Text("modify_trust_line_desc".tr),
         WidgetConstant.height8,
         ContainerWithBorder(
-          onRemoveIcon: asset == null
-              ? Icon(
-                  Icons.add_box,
-                  color: context.colors.onPrimaryContainer,
-                )
-              : Icon(
-                  Icons.edit,
-                  color: context.colors.onPrimaryContainer,
-                ),
+          onRemoveIcon: AddOrEditIconWidget(asset != null),
           child: asset == null
-              ? Text("tap_to_select_or_create_asset".tr)
-              : TokenDetailsWidget(token: asset!.token),
+              ? Text("tap_to_select_or_create_asset".tr,
+                  style: context.onPrimaryTextTheme.bodyMedium)
+              : TokenDetailsWidget(
+                  token: asset!.token,
+                  color: context.onPrimaryContainer,
+                  radius: APPConst.circleRadius25,
+                ),
           onRemove: () {
             context
                 .openSliverDialog<StellarPickedIssueAsset>(
@@ -99,13 +96,14 @@ class _ChangeTrustOperationViewState extends State<ChangeTrustOperationView>
                           allowNativeAssets: false,
                         ),
                     "assets".tr,
-                    content: (c) => [
+                    content: (context) => [
                           IconButton(
                             tooltip: "create_assets".tr,
                             icon: const Icon(Icons.add_box),
                             onPressed: () {
-                              c.pop();
-                              context
+                              context.pop();
+                              this
+                                  .context
                                   .openSliverBottomSheet<
                                           StellarPickedIssueAsset>(
                                       "pick_an_asset".tr,
@@ -134,7 +132,7 @@ class _ChangeTrustOperationViewState extends State<ChangeTrustOperationView>
 
 class _ChangeTrustLimit extends StatelessWidget {
   final _ChangeTrustOperationViewState state;
-  const _ChangeTrustLimit(this.state, {Key? key}) : super(key: key);
+  const _ChangeTrustLimit(this.state);
 
   @override
   Widget build(BuildContext context) {
@@ -147,19 +145,19 @@ class _ChangeTrustLimit extends StatelessWidget {
         WidgetConstant.height8,
         ContainerWithBorder(
           validate: !state.limit.isNegative,
-          onRemoveIcon:
-              Icon(Icons.edit, color: context.colors.onPrimaryContainer),
+          onRemoveIcon: Icon(Icons.edit, color: context.onPrimaryContainer),
           child: CoinPriceView(
             token: state.asset!.token,
             balance: state.limit,
-            style: context.colors.onPrimaryContainer.titleLarge(context),
-            symbolColor: context.colors.onPrimaryContainer,
+            style: context.onPrimaryTextTheme.titleMedium,
+            symbolColor: context.onPrimaryContainer,
             showTokenImage: true,
           ),
           onRemove: () {
             context
                 .openSliverBottomSheet<BigInt>(
                   "limit".tr,
+                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: state.asset!.token,

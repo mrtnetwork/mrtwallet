@@ -104,7 +104,7 @@ class Web3TronChain
     final currentAccounts = activeAccounts
         .where((e) => e.chain == chain.network.tronNetworkType)
         .toList();
-    List<Web3TronChainAccount> existsAccounts = [];
+    final List<Web3TronChainAccount> existsAccounts = [];
     for (final i in chain.addresses) {
       final chainAccount = currentAccounts.firstWhereOrNull(
           (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);

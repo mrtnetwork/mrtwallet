@@ -74,6 +74,9 @@ extension type MRTNetworkAdapter(JSObject _) implements MRTJsObject {
   external set providerInfo(EIP6963ProviderInfo f);
   external set disconnect(JSFunction f);
   external set enable(JSFunction? f);
+  external set name(String name);
+  external set version(String version);
+  external set icon(String icon);
   external EIP6963ProviderInfo get providerInfo;
   external bool get isMRT;
 }

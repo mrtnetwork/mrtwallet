@@ -1,47 +1,27 @@
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/constant/networks/solana.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
+import 'package:mrt_wallet/wallet/web3/networks/solana/params/models/transaction.dart';
 import 'package:on_chain/solana/solana.dart';
 import 'package:on_chain/solana/src/borsh_serialization/program_layout.dart';
 
 class SolanaWeb3TransactionInstructionInfo {
   final ProgramLayout layout;
-  final List<SolanaAccountStatus> accounts;
   final SolAddress programAddress;
   final Map<String, dynamic>? content;
 
   SolanaWeb3TransactionInstructionInfo(
       {required this.layout,
       required this.programAddress,
-      required List<SolanaAccountStatus> accounts,
       Map<String, dynamic>? content})
-      : content = content?.imutable,
-        accounts = accounts.imutable;
-}
-
-class SolanaAccountStatus {
-  final AccountMeta account;
-  final List<String> status;
-  SolanaAccountStatus._({required this.account, required List<String> status})
-      : status = status.imutable;
-  factory SolanaAccountStatus(AccountMeta account) {
-    List<String> status = [];
-    if (account.isSigner) {
-      status.add("signer");
-    }
-    if (account.isWritable) {
-      status.add("writable");
-    }
-    if (status.isEmpty) {
-      status.add("read_only");
-    }
-    return SolanaAccountStatus._(account: account, status: status);
-  }
+      : content = content?.imutable;
 }
 
 class SolanaWeb3TransactionInfo {
+  final Web3SolanaSendTransactionOptions? sendTransactionOptions;
   SolanaTransaction _transaction;
   SolanaTransaction get transaction => _transaction;
   final IntegerBalance accountChange;
@@ -88,7 +68,9 @@ class SolanaWeb3TransactionInfo {
 
   void setSimulateSuccess(SimulateTranasctionResponse simulate) {
     if (status == SolanaWeb3SimulationStatus.success ||
-        status == SolanaWeb3SimulationStatus.simulateError) return;
+        status == SolanaWeb3SimulationStatus.simulateError) {
+      return;
+    }
     _simulate = simulate;
     if (_simulate.err != null) {
       _status = SolanaWeb3SimulationStatus.simulateError;
@@ -115,32 +97,25 @@ class SolanaWeb3TransactionInfo {
     required List<SolanaWeb3TransactionInstructionInfo> instructions,
     required this.signer,
     required this.id,
+    this.sendTransactionOptions,
   })  : instructions = instructions.imutable,
         _transaction = transaction;
   factory SolanaWeb3TransactionInfo(
       {required SolanaTransaction transaction,
       required ISolanaAddress signer,
-      required int id}) {
+      required int id,
+      Web3SolanaSendTransactionOptions? sendTransactionOptions}) {
     final accounts = transaction.message.accountKeys;
-    List<SolanaWeb3TransactionInstructionInfo> instructions = [];
+    final List<SolanaWeb3TransactionInstructionInfo> instructions = [];
     for (final i in transaction.message.compiledInstructions) {
       final programId = accounts[i.programIdIndex];
       final layout = ProgramLayout.fromBytes(
           programId: programId, instructionBytes: i.data);
       final content = layout.toJson();
-      final accountKeys = List.generate(i.accounts.length, (e) {
-        final int index = i.accounts[e];
-        final account = transaction.message.accountKeys.elementAt(index);
-        final isWritable = transaction.message.isAccountWritable(index);
-        final isSigner = transaction.message.isAccountSigner(index);
-        return SolanaAccountStatus(AccountMeta(
-            publicKey: account, isSigner: isSigner, isWritable: isWritable));
-      });
       final instructionInfo = SolanaWeb3TransactionInstructionInfo(
           layout: layout,
           programAddress: programId,
-          content: content.isEmpty ? null : content,
-          accounts: accountKeys);
+          content: content.isEmpty ? null : content);
       instructions.add(instructionInfo);
     }
     return SolanaWeb3TransactionInfo._(
@@ -149,7 +124,8 @@ class SolanaWeb3TransactionInfo {
         feePayer: accounts[0],
         instructions: instructions,
         signer: signer,
-        id: id);
+        id: id,
+        sendTransactionOptions: sendTransactionOptions);
   }
 }
 
@@ -158,7 +134,7 @@ class SolanaWeb3SignedTransactionInfo {
   final List<int> signature;
   SolanaWeb3SignedTransactionInfo(
       {required this.info, required List<int> signature})
-      : signature = BytesUtils.toBytes(signature, unmodifiable: true);
+      : signature = signature.asImmutableBytes;
 }
 
 enum SolanaWeb3SimulationStatus {

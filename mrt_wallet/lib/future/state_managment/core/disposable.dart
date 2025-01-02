@@ -28,7 +28,7 @@ mixin ListenableX {
       _listeners[id]?.call();
       return;
     }
-    for (DynamicVoid i in [..._noneIdsListeners]) {
+    for (final DynamicVoid i in [..._noneIdsListeners]) {
       i();
     }
   }

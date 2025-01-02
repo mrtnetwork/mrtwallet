@@ -148,10 +148,10 @@ abstract class WalletCore extends _WalletCore
     return result;
   }
 
-  Future<MethodResult<T>> walletRequest<T, A extends MessageArgs>(
-      WalletMessageArgsCompleter<T, A> message) async {
+  Future<MethodResult<T>> walletRequest<T, A extends CborMessageArgs>(
+      WalletArgsCompleter<T, A> message) async {
     final result = await _callSynchronized(() async {
-      return await _controller._walletRequest(message);
+      return await _controller._walletRequest(message: message);
     }, conditionStatus: isUnlock, refresh: false, update: false);
     return result;
   }
@@ -441,7 +441,7 @@ abstract class WalletCore extends _WalletCore
 
   Future<MethodResult<List<CryptoKeyData>>> accsess(
       WalletAccsessType accsessType, String password,
-      {ChainAccount? account, String? accountId}) async {
+      {ChainAccount? account, String? keyId}) async {
     final result = await _callSynchronized(
       () async {
         if (accsessType.isUnlock && isUnlock) {
@@ -452,7 +452,7 @@ abstract class WalletCore extends _WalletCore
           await _controller._validatePassword(password);
         }
         return await _controller._accsess(accsessType,
-            account: account, accountId: accountId);
+            account: account, keyId: keyId);
       },
       conditionStatus: _homePageStatus.isReady,
       delay: (accsessType.isUnlock && password.isEmpty)
@@ -529,26 +529,29 @@ abstract class WalletCore extends _WalletCore
   }
 
   Future<void> lock() async {
-    await _callSynchronized(
-      () async {
-        _controller._logout();
-      },
-      conditionStatus: isOpen,
-      delay: null,
-      refresh: _wallet?._wallet.requiredPassword ?? false,
-      update: true,
-    );
+    await _callSynchronized(() async {
+      _controller._logout();
+    },
+        conditionStatus: isOpen,
+        delay: null,
+        refresh: _wallet?._wallet.requiredPassword ?? false,
+        update: true);
   }
 
   Future<MethodResult<T>> signRequest<T>(
-      {required WalletSigningRequest<T> request, String? password}) async {
+      {required WalletSigningRequest<T> request,
+      String? password,
+      Duration? timeout}) async {
     final result = await _callSynchronized(
       () async {
         late final Set<ChainAccount> addresses = request.addresses.toSet();
         late final Set<AddressDerivationIndex> keys =
             addresses.map((e) => e.signerKeyIndexes()).expand((e) => e).toSet();
         return await _controller._signTransaction(
-            request: request, password: password, signers: keys);
+            request: request,
+            password: password,
+            signers: keys,
+            timeout: timeout);
       },
       conditionStatus: isUnlock,
       refresh: false,
@@ -576,19 +579,77 @@ abstract class WalletCore extends _WalletCore
     return await _walletAction(() async {
       final chain = _wallet?.chain;
       if (chain != null && chain.haveAddress) {
-        return await _controller._updateAaddressBalance(
+        return await _controller._updateAddressBalance(
             account: chain, address: chain.address);
       }
     });
   }
 
-  Future<void> updateAccountBalance(Chain account) async {
+  // Future<MethodResult<List<MoneroAccountWithUtxo>>> moneroUpdateAccountUtxos(
+  //     {required MoneroChain account, required IMoneroAddress address}) async {
+  //   return await _callSynchronized(() async {
+  //     return await _controller._moneroUpdateAccountUtxos(
+  //         account: account, address: address);
+  //   }, conditionStatus: isOpen);
+  // }
+
+  Future<MethodResult<void>> moneroAddSyncRequest(
+      {required MoneroChain account,
+      required IMoneroAddress address,
+      required MoneroAccountBlocksTracker request}) async {
+    return await _callSynchronized(() async {
+      return await _controller._moneroAddSyncRequest(
+          account: account, address: address, request: request);
+    }, conditionStatus: isUnlock);
+  }
+
+  Future<MethodResult<List<MoneroUnlockedPaymentRequestDetails>>>
+      moneroUpdatePendingTxes(
+          {required MoneroChain account,
+          List<MoneroAccountPendingTxes>? txIds}) async {
+    return await _callSynchronized(() async {
+      return await _controller._moneroUpdatePendingTxes(
+          account: account, txIds: txIds);
+    }, conditionStatus: isUnlock);
+  }
+
+  Future<MethodResult<void>> moneroUpdateTrackerStatus(
+      {required MoneroAccountBlocksTracker tracker,
+      required MoneroChain account,
+      required MoneroAccountBlocksTrackerStatus status}) async {
+    return await _callSynchronized(() async {
+      return await _controller._moneroUpdateTrackerStatus(
+          account: account, tracker: tracker, status: status);
+    }, conditionStatus: isOpen);
+  }
+
+  // Future<MethodResult<void>> saveTransaction<
+  //         NETWORKADDRESS,
+  //         CHAINACCOUNT extends NETWORKCHAINACCOUNT<NETWORKADDRESS>,
+  //         CHAIN extends APPCHAINACCOUNT<CHAINACCOUNT>,
+  //         TRANSACTION extends WALLETNETWORKTRANSACTION<NETWORKADDRESS>>(
+  //     {required CHAINACCOUNT address,
+  //     required CHAIN account,
+  //     required TRANSACTION transaction}) async {
+  //   final result = await _callSynchronized(
+  //       () async => await _controller._saveTransaction(
+  //           address: address, account: account, transaction: transaction),
+  //       conditionStatus: isOpen,
+  //       refresh: false,
+  //       update: true);
+  //   return result;
+  // }
+
+  Future<void> updateAccountBalance<CHAINACCOUNT extends ChainAccount>(
+      APPCHAINACCOUNT<CHAINACCOUNT> account,
+      {CHAINACCOUNT? address}) async {
     if (!isOpen) return;
-    await _walletAction(() => _controller._updateAccountBalance(account));
+    await _walletAction(
+        () => _controller._updateAccountBalance(account, address: address));
   }
 
   Future<List<EncryptedCustomKey>> getCustomKeysForCoin(
-      List<CryptoCoins> coin) async {
+      CryptoCoins coin) async {
     if (!isOpen) return const [];
     final result = await _callSynchronized(() async {
       return _controller._getCustomKeysForCoin(coin);
@@ -604,7 +665,7 @@ abstract class WalletCore extends _WalletCore
       {required String backup,
       required String password,
       required SecretWalletEncoding encoding}) async {
-    return await crypto.cryptoRequest(
+    return await crypto.cryptoIsolateRequest(
       CryptoRequestDecodeBackup(
           password: password, backup: backup, encoding: encoding),
     );
@@ -652,11 +713,12 @@ abstract class WalletCore extends _WalletCore
         length: CreateHDWalletConst.checksumLength,
         existsKeys:
             _wallets._wallets.values.map((e) => e.checkSumBytes).toList());
-    final encrypt = await crypto.cryptoRequest(CryptoRequestCreateHDWallet(
-        mnemonic: mnemonic,
-        passphrase: passphrase,
-        password: password,
-        checksum: checksum));
+    final encrypt = await crypto.cryptoIsolateRequest(
+        CryptoRequestCreateHDWallet(
+            mnemonic: mnemonic,
+            passphrase: passphrase,
+            password: password,
+            checksum: checksum));
     return HDWallet.setup(
         checksum: BytesUtils.toHexString(checksum),
         name: StrUtils.addNumberToMakeUnique(
@@ -669,7 +731,8 @@ abstract class WalletCore extends _WalletCore
       required String? passhphrase,
       required String password}) async {
     try {
-      if (backup.type != MrtBackupTypes.wallet) {
+      if (backup.type != MrtBackupTypes.wallet &&
+          backup.type != MrtBackupTypes.walletV2) {
         throw WalletExceptionConst.invalidBackup;
       }
       if (passhphrase?.isEmpty ?? false) {
@@ -678,7 +741,7 @@ abstract class WalletCore extends _WalletCore
       final WalletMasterKeys backupkey =
           WalletMasterKeys.deserializeBackup(hex: backup.key);
       final String mnemonic = backupkey.mnemonic.toStr();
-      WalletMasterKeys masterKey = await crypto.cryptoRequest(
+      WalletMasterKeys masterKey = await crypto.cryptoIsolateRequest(
           CryptoRequestCreateMasterKey(
               mnemonic: mnemonic, passphrase: passhphrase));
       if (backupkey.customKeys.isNotEmpty) {
@@ -708,7 +771,7 @@ abstract class WalletCore extends _WalletCore
   }
 
   Future<WalletRestoreV2> _validateBackupAccounts(
-      {required List<Chain> chains,
+      {required List<MRTWalletChainBackup> chains,
       required WalletMasterKeys masterKey,
       required String password,
       required bool? verifiedChecksum}) async {
@@ -717,7 +780,7 @@ abstract class WalletCore extends _WalletCore
       existsKeys: _wallets._wallets.values.map((e) => e.checkSumBytes).toList(),
     );
     final key = await _toWalletPassword(password, checksum);
-    final setupKey = await crypto.cryptoRequest(
+    final setupKey = await crypto.cryptoIsolateRequest(
         CryptoRequestSetupMasterKey(masterKey: masterKey, key: key));
     if (verifiedChecksum == false) {
       return WalletRestoreV2._(
@@ -731,18 +794,18 @@ abstract class WalletCore extends _WalletCore
                   _wallets.walletNames, HDWalletsConst.initializeName),
               data: setupKey.storageData));
     }
-    List<Chain> validateChains = [];
-    List<ChainAccount> invalidAddresses = [];
+    final List<MRTWalletChainBackup> validateChains = [];
+    final List<ChainAccount> invalidAddresses = [];
     try {
       for (final c in chains) {
-        List<ChainAccount> addresses = [];
+        final List<ChainAccount> addresses = [];
 
-        for (final address in c.addresses) {
+        for (final address in c.chain.addresses) {
           try {
-            final network = c.network;
+            final network = c.chain.network;
             if (address.multiSigAccount) {
               final multiSigAccount =
-                  address.toAccountParams().toAccount(network, const []);
+                  address.toAccountParams().toAccount(network, null);
               final isValid = multiSigAccount == address &&
                   address.isEqual(multiSigAccount) &&
                   address.address.toAddress ==
@@ -773,9 +836,14 @@ abstract class WalletCore extends _WalletCore
             invalidAddresses.add(address);
           }
         }
-        final chain = c.copyWith(
-            addresses: c.addresses.where((e) => addresses.contains(e)).toList(),
-            id: checksum);
+        final chain = MRTWalletChainBackup(
+            chain: c.chain.copyWith(
+                addresses: c.chain.addresses
+                    .where((e) => addresses.contains(e))
+                    .toList(),
+                id: checksum),
+            repositories: c.repositories);
+
         validateChains.add(chain);
       }
       // ignore: empty_catches

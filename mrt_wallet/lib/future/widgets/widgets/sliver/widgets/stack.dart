@@ -35,12 +35,12 @@ class SliverStack extends MultiChildRenderObjectWidget {
   // flutter pre 3.13 does not allow the constructor to be const
   // ignore: prefer_const_constructors_in_immutables
   SliverStack({
-    Key? key,
-    required List<Widget> children,
+    super.key,
+    required super.children,
     this.textDirection,
     this.positionedAlignment = Alignment.center,
     this.insetOnOverlap = false,
-  }) : super(key: key, children: children);
+  });
 
   /// The alignment to use on any positioned children that are only partially
   /// positioned
@@ -100,17 +100,16 @@ class SliverPositioned extends ParentDataWidget<SliverStackParentData> {
   ///  * [PositionedDirectional], which is similar to [Positioned.directional]
   ///    but adapts to the ambient [Directionality].
   const SliverPositioned({
-    Key? key,
+    super.key,
     this.left,
     this.top,
     this.right,
     this.bottom,
     this.width,
     this.height,
-    required Widget child,
+    required super.child,
   })  : assert(left == null || right == null || width == null),
-        assert(top == null || bottom == null || height == null),
-        super(key: key, child: child);
+        assert(top == null || bottom == null || height == null);
 
   /// Creates a Positioned object with the values from the given [Rect].
   ///
@@ -118,45 +117,42 @@ class SliverPositioned extends ParentDataWidget<SliverStackParentData> {
   /// from the given [Rect]. The [right] and [bottom] properties are
   /// set to null.
   SliverPositioned.fromRect({
-    Key? key,
+    super.key,
     required Rect rect,
-    required Widget child,
+    required super.child,
   })  : left = rect.left,
         top = rect.top,
         width = rect.width,
         height = rect.height,
         right = null,
-        bottom = null,
-        super(key: key, child: child);
+        bottom = null;
 
   /// Creates a Positioned object with the values from the given [RelativeRect].
   ///
   /// This sets the [left], [top], [right], and [bottom] properties from the
   /// given [RelativeRect]. The [height] and [width] properties are set to null.
   SliverPositioned.fromRelativeRect({
-    Key? key,
+    super.key,
     required RelativeRect rect,
-    required Widget child,
+    required super.child,
   })  : left = rect.left,
         top = rect.top,
         right = rect.right,
         bottom = rect.bottom,
         width = null,
-        height = null,
-        super(key: key, child: child);
+        height = null;
 
   /// Creates a Positioned object with [left], [top], [right], and [bottom] set
   /// to 0.0 unless a value for them is passed.
   const SliverPositioned.fill({
-    Key? key,
+    super.key,
     this.left = 0.0,
     this.top = 0.0,
     this.right = 0.0,
     this.bottom = 0.0,
-    required Widget child,
+    required super.child,
   })  : width = null,
-        height = null,
-        super(key: key, child: child);
+        height = null;
 
   /// Creates a widget that controls where a child of a [Stack] is positioned.
   ///

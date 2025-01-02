@@ -173,7 +173,7 @@ class _SetupTonAddressViewState extends State<SetupTonAddressView>
         WidgetConstant.height8,
         AppDropDownBottom(
           items: {for (final i in WalletVersion.values) i: Text(i.name)},
-          label: "wallet_type".tr,
+          hint: "wallet_type".tr,
           onChanged: onChangeVersion,
           value: version,
         ),

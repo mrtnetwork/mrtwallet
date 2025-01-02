@@ -22,17 +22,7 @@ class EmptyItemSliverWidgetView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return isEmpty
-        ? SliverFillRemaining(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon ?? Icons.hourglass_empty, size: APPConst.double80),
-                WidgetConstant.height8,
-                Text("no_items_found".tr),
-              ],
-            ),
-          )
+        ? SliverFillRemaining(child: NoItemFoundWidget())
         : itemBuilder();
   }
 }
@@ -58,20 +48,28 @@ class EmptyItemWidgetView extends StatelessWidget {
           true: (c) => Row(
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(icon ?? Icons.hourglass_empty,
-                            size: APPConst.double80),
-                        WidgetConstant.height8,
-                        Text("no_items_found".tr),
-                      ],
-                    ),
+                    child: NoItemFoundWidget(),
                   ),
                 ],
               ),
           false: (c) => itemBuilder()
         });
+  }
+}
+
+class NoItemFoundWidget extends StatelessWidget {
+  const NoItemFoundWidget({this.icon, super.key});
+  final IconData? icon;
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon ?? Icons.hourglass_empty, size: APPConst.double80),
+        WidgetConstant.height8,
+        Text("no_items_found".tr),
+      ],
+    );
   }
 }

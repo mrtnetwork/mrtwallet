@@ -4,19 +4,23 @@ class CosmosChain extends Chain<
     CosmosAPIProvider,
     CosmosNetworkParams,
     CosmosBaseAddress,
-    TokenCore,
+    CW20Token,
     NFTCore,
     ICosmosAddress,
     WalletCosmosNetwork,
-    CosmosClient> {
+    CosmosClient,
+    ChainStorageKey,
+    DefaultChainConfig,
+    WalletTransaction<CosmosBaseAddress>> {
   CosmosChain._({
     required super.network,
     required super.totalBalance,
     required super.addressIndex,
     required super.id,
-    super.client,
-    super.contacts,
-    super.addresses,
+    required super.config,
+    required super.client,
+    required super.contacts,
+    required super.addresses,
   }) : super._();
   @override
   CosmosChain copyWith(
@@ -26,16 +30,17 @@ class CosmosChain extends Chain<
       List<ContactCore<CosmosBaseAddress>>? contacts,
       int? addressIndex,
       CosmosClient? client,
-      String? id}) {
+      String? id,
+      DefaultChainConfig? config}) {
     return CosmosChain._(
-      network: network ?? this.network,
-      totalBalance: totalBalance ?? this.totalBalance,
-      addressIndex: addressIndex ?? _addressIndex,
-      addresses: addresses ?? _addresses,
-      contacts: contacts ?? _contacts,
-      client: client ?? _client,
-      id: id ?? this.id,
-    );
+        network: network ?? this.network,
+        totalBalance: totalBalance ?? this.totalBalance,
+        addressIndex: addressIndex ?? _addressIndex,
+        addresses: addresses ?? _addresses,
+        contacts: contacts ?? _contacts,
+        client: client ?? _client,
+        id: id ?? this.id,
+        config: config ?? this.config);
   }
 
   factory CosmosChain.setup(
@@ -48,22 +53,25 @@ class CosmosChain extends Chain<
         addressIndex: 0,
         totalBalance:
             Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
-        client: client);
+        client: client,
+        addresses: [],
+        config: DefaultChainConfig.none,
+        contacts: []);
   }
   factory CosmosChain.deserialize(
       {required WalletCosmosNetwork network,
       required CborListValue cbor,
-      required String id,
       CosmosClient? client}) {
     final int networkId = cbor.elementAt(0);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
     final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
-    List<ICosmosAddress> toAccounts = [];
+    final List<ICosmosAddress> toAccounts = [];
     for (final i in accounts) {
-      final acc = MethodUtils.nullOnException(
-          () => CryptoAddress.fromCbor(network, i).cast<ICosmosAddress>());
+      final acc = MethodUtils.nullOnException(() {
+        return CryptoAddress.fromCbor(network, i).cast<ICosmosAddress>();
+      });
       if (acc != null) {
         toAccounts.add(acc);
       }
@@ -84,14 +92,14 @@ class CosmosChain extends Chain<
     final BigInt? totalBalance = cbor.elementAt(4);
 
     return CosmosChain._(
-      network: network,
-      addresses: toAccounts,
-      addressIndex: addressIndex < 0 ? 0 : addressIndex,
-      contacts: contacts,
-      totalBalance: Live(IntegerBalance(
-          totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
-      client: client,
-      id: cbor.elementAt<String?>(8) ?? id,
-    );
+        network: network,
+        addresses: toAccounts,
+        addressIndex: addressIndex < 0 ? 0 : addressIndex,
+        contacts: contacts,
+        totalBalance: Live(IntegerBalance(
+            totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
+        client: client,
+        id: cbor.elementAt<String>(8),
+        config: DefaultChainConfig.none);
   }
 }

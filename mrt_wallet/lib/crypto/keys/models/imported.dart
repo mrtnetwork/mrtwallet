@@ -3,9 +3,11 @@ import 'package:mrt_wallet/app/error/exception.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
+import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
+import 'package:mrt_wallet/crypto/keys/access/monero_private_key.dart';
 import 'package:mrt_wallet/crypto/keys/access/private_key_response.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'package:mrt_wallet/crypto/keys/models/key_type.dart';
 
 class ImportedKeyStorage with CborSerializable, Equatable {
@@ -68,27 +70,51 @@ class ImportedKeyStorage with CborSerializable, Equatable {
   List get variabels =>
       [checksum, extendedPrivateKey, coin.coinName, publicKey];
 
-  PrivateKeyData _toBip32KeyKey(AddressDerivationIndex? key) {
-    final currentCoin = key?.currencyCoin ?? coin;
+  CryptoPrivateKeyData getKey() {
     if (keyType.isPrivateKey) {
       return PrivateKeyData(
           coin: coin,
           keyName: checksum,
-          key: IPrivateKey.fromHex(extendedPrivateKey, currentCoin.conf.type));
+          key: IPrivateKey.fromHex(extendedPrivateKey, coin.conf.type));
     }
     return PrivateKeyData.fromExtendedKey(
-      extendedKey: extendedPrivateKey,
-      coin: currentCoin,
-      keyName: checksum,
-    );
+        extendedKey: extendedPrivateKey, coin: coin, keyName: checksum);
   }
 
-  PrivateKeyData toKey(AddressDerivationIndex? key,
-      {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
-    final masterKey = _toBip32KeyKey(key);
-    if (key == null) {
-      return masterKey;
+  CryptoPrivateKeyData _toBip32Key(AddressDerivationIndex key) {
+    final currentCoin = key.currencyCoin;
+
+    if (!keyType.isPrivateKey) {
+      if (currentCoin == Bip44Coins.moneroEd25519Slip) {
+        return MoneroPrivateKeyData.fromExtendedKey(
+            extendedKey: extendedPrivateKey,
+            coin: currentCoin,
+            keyName: checksum);
+      }
+      return PrivateKeyData.fromExtendedKey(
+          extendedKey: extendedPrivateKey,
+          coin: currentCoin,
+          keyName: checksum);
     }
+    if (currentCoin == Bip44Coins.moneroEd25519Slip) {
+      if (coin != Bip44Coins.moneroEd25519Slip) {
+        throw WalletExceptionConst.invalidCoin;
+      }
+      return MoneroPrivateKeyData(
+          spendPrivateKey: MoneroPrivateKey.fromHex(extendedPrivateKey),
+          coin: currentCoin,
+          keyName: checksum);
+    }
+    return PrivateKeyData(
+        coin: currentCoin,
+        keyName: checksum,
+        key: IPrivateKey.fromHex(extendedPrivateKey, currentCoin.conf.type));
+  }
+
+  CryptoPrivateKeyData toKey(AddressDerivationIndex key,
+      {Bip44Levels maxLevel = Bip44Levels.addressIndex}) {
+    final masterKey = _toBip32Key(key);
+
     return key.derive(masterKey, maxLevel: maxLevel);
   }
 }

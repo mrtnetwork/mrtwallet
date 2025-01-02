@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'mrt_native_support_platform_interface.dart';
 
 /// An implementation of [Mrt_nPlatform] that uses method channels.
+// ignore: camel_case_types
 class MethodChannelMrt_n extends Mrt_nPlatform {
   /// The method channel used to interact with the native platform.
   @visibleForTesting
@@ -11,7 +12,8 @@ class MethodChannelMrt_n extends Mrt_nPlatform {
 
   @override
   Future<String?> getPlatformVersion() async {
-    final version = await methodChannel.invokeMethod<String>('getPlatformVersion');
+    final version =
+        await methodChannel.invokeMethod<String>('getPlatformVersion');
     return version;
   }
 }

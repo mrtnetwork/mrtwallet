@@ -1,5 +1,4 @@
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/crypto/derivation/derivation/bip32.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/web3/controller/impl/impl.dart';
@@ -18,7 +17,7 @@ class Web3SolanaGlobalRequestController<RESPONSE,
     notify();
   }
 
-  void onCompeleteForm(Object? obj) async {
+  void onCompleteForm(Object? obj) async {
     progressKey.process(text: "processing_request".tr);
     Object? result = obj;
     switch (request.params.method) {
@@ -32,6 +31,7 @@ class Web3SolanaGlobalRequestController<RESPONSE,
           return;
         }
         final signingParams = request.params as Web3SolanaSignMessage;
+        final messageBytes = signingParams.chalengBytes();
         final signMessage = await MethodUtils.call(() async {
           final signature = await walletProvider.wallet.signTransaction(
               request: WalletSigningRequest(
@@ -39,8 +39,7 @@ class Web3SolanaGlobalRequestController<RESPONSE,
             network: network,
             sign: (generateSignature) async {
               final signRequest = GlobalSignRequest.solana(
-                  digest: signingParams.chalengBytes(),
-                  index: address.keyIndex as Bip32AddressIndex);
+                  digest: messageBytes, index: address.keyIndex.cast());
               final response = await generateSignature(signRequest);
               return response.signature;
             },
@@ -52,7 +51,9 @@ class Web3SolanaGlobalRequestController<RESPONSE,
           return;
         }
         result = Web3SolanaSignMessageResponse(
-            address: address.networkAddress, signature: signMessage.result);
+            address: address.networkAddress,
+            signature: signMessage.result,
+            signedMessage: messageBytes);
         break;
       default:
         break;
@@ -64,7 +65,7 @@ class Web3SolanaGlobalRequestController<RESPONSE,
   void _init() {
     MethodUtils.after(() async {
       liveRequest.addListener(onChangeForm);
-      form.onCompeleteForm = onCompeleteForm;
+      form.onCompleteForm = onCompleteForm;
       progressKey.idle();
     });
   }
@@ -79,6 +80,6 @@ class Web3SolanaGlobalRequestController<RESPONSE,
   void close() {
     super.close();
     liveRequest.removeListener(onChangeForm);
-    form.onCompeleteForm = null;
+    form.onCompleteForm = null;
   }
 }

@@ -12,7 +12,7 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'menu.dart';
 
 class WebView extends StatelessWidget {
-  const WebView({Key? key}) : super(key: key);
+  const WebView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -69,10 +69,12 @@ class WebView extends StatelessWidget {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         LiveWidget(() {
-                                          final status = model.web3Status.value;
+                                          final status =
+                                              model.lastEvent.value?.web3Status;
                                           return IconButton(
                                               iconSize: 28,
-                                              onPressed: status.inProgress
+                                              onPressed: status?.inProgress ??
+                                                      true
                                                   ? null
                                                   : () {
                                                       context.openDialogPage(
@@ -87,22 +89,26 @@ class WebView extends StatelessWidget {
                                                 enable: status,
                                                 widgets: {
                                                   MRTScriptWalletStatus.active:
-                                                      (c) => Icon(
+                                                      (context) => Icon(
                                                           Icons.security,
                                                           color: context
                                                               .colors.primary),
                                                   MRTScriptWalletStatus.failed:
-                                                      (c) => const Icon(
+                                                      (context) => const Icon(
                                                           Icons.error),
                                                   MRTScriptWalletStatus.block:
-                                                      (c) => const Icon(
+                                                      (context) => const Icon(
                                                           Icons.block),
                                                   MRTScriptWalletStatus
                                                           .progress:
-                                                      (c) => Icon(
+                                                      (context) => Icon(
                                                           Icons.security,
                                                           color: context
                                                               .colors.disable),
+                                                  null: (context) => Icon(
+                                                      Icons.security,
+                                                      color: context
+                                                          .colors.disable)
                                                 },
                                               ));
                                         }),
@@ -254,8 +260,7 @@ class WebView extends StatelessWidget {
 class _BookmarksPage extends StatelessWidget {
   final WebViewStateController model;
   final List<WebViewTab> tabs;
-  const _BookmarksPage({required this.model, required this.tabs, Key? key})
-      : super(key: key);
+  const _BookmarksPage({required this.model, required this.tabs});
 
   @override
   Widget build(BuildContext context) {
@@ -272,7 +277,7 @@ class _BookmarksPage extends StatelessWidget {
               return ContainerWithBorder(
                 padding: WidgetConstant.padding10,
                 onRemove: () {},
-                onTapWhenOnRemove: false,
+                enableTap: false,
                 onRemoveWidget: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -297,9 +302,14 @@ class _BookmarksPage extends StatelessWidget {
                       tab.image,
                       radius: 15,
                       // imageColor: context.colors.primaryContainer,
-                      onError: (c) => const Icon(Icons.travel_explore_rounded),
-                      onProgress: (c) =>
-                          const Icon(Icons.travel_explore_rounded),
+                      onError: (c) => Icon(
+                        Icons.travel_explore_rounded,
+                        color: context.onPrimaryContainer,
+                      ),
+                      onProgress: (c) => Icon(
+                        Icons.travel_explore_rounded,
+                        color: context.onPrimaryContainer,
+                      ),
                     ),
                     WidgetConstant.width8,
                     Expanded(
@@ -308,11 +318,11 @@ class _BookmarksPage extends StatelessWidget {
                             children: [
                           if (haveTitle)
                             OneLineTextWidget(tab.title!,
-                                style: context.textTheme.labelLarge),
+                                style: context.onPrimaryTextTheme.labelLarge),
                           OneLineTextWidget(tab.viewName,
                               style: haveTitle
-                                  ? context.textTheme.bodyMedium
-                                  : context.textTheme.labelLarge),
+                                  ? context.onPrimaryTextTheme.bodyMedium
+                                  : context.onPrimaryTextTheme.labelLarge),
                         ])),
                   ],
                 ),
@@ -331,8 +341,7 @@ class _BookmarksPage extends StatelessWidget {
 class _HistoriesPage extends StatefulWidget {
   final WebViewStateController model;
   final List<WebViewTab> histories;
-  const _HistoriesPage({required this.model, required this.histories, Key? key})
-      : super(key: key);
+  const _HistoriesPage({required this.model, required this.histories});
 
   @override
   State<_HistoriesPage> createState() => _HistoriesPageState();
@@ -342,9 +351,9 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
   late final List<WebViewTab> tabs = List<WebViewTab>.from(widget.histories);
   Map<DateTime, List<WebViewTab>> histories = {};
   Map<DateTime, List<WebViewTab>> groupVisitsByDate(List<WebViewTab> visits) {
-    Map<DateTime, List<WebViewTab>> groupedVisits = {};
-    for (var visit in visits) {
-      DateTime dateKey = visit.lastVisit.toOnlyDate();
+    final Map<DateTime, List<WebViewTab>> groupedVisits = {};
+    for (final visit in visits) {
+      final DateTime dateKey = visit.lastVisit.toOnlyDate();
       groupedVisits[dateKey] ??= [];
       groupedVisits[dateKey]!.add(visit);
     }
@@ -398,7 +407,7 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
                 return WidgetConstant.sizedBox;
               }
               final tab = tabs[pos];
-              DateTime dateKey = tab.lastVisit.toOnlyDate();
+              final DateTime dateKey = tab.lastVisit.toOnlyDate();
               final index = histories[dateKey]?.indexOf(tab) ?? -1;
               final bool haveTitle = tab.title != null;
               return Column(
@@ -417,7 +426,7 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
                     child: ContainerWithBorder(
                       padding: WidgetConstant.padding10,
                       onRemove: () {},
-                      onTapWhenOnRemove: false,
+                      enableTap: false,
                       onRemoveWidget: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -426,13 +435,13 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
                                 widget.model.openTabPage(tab);
                               },
                               icon: Icon(Icons.open_in_browser,
-                                  color: context.colors.onPrimaryContainer)),
+                                  color: context.onPrimaryContainer)),
                           IconButton(
                               onPressed: () {
                                 remove(dateKey, tab, pos);
                               },
                               icon: Icon(Icons.remove_circle,
-                                  color: context.colors.onPrimaryContainer)),
+                                  color: context.onPrimaryContainer)),
                         ],
                       ),
                       child: Row(
@@ -440,10 +449,14 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
                           CircleAPPImageView(
                             tab.image,
                             radius: 15,
-                            onError: (c) =>
-                                const Icon(Icons.travel_explore_rounded),
-                            onProgress: (c) =>
-                                const Icon(Icons.travel_explore_rounded),
+                            onError: (c) => Icon(
+                              Icons.travel_explore_rounded,
+                              color: context.onPrimaryContainer,
+                            ),
+                            onProgress: (c) => Icon(
+                              Icons.travel_explore_rounded,
+                              color: context.onPrimaryContainer,
+                            ),
                           ),
                           WidgetConstant.width8,
                           Expanded(
@@ -455,23 +468,20 @@ class _HistoriesPageState extends State<_HistoriesPage> with SafeState {
                                   children: [
                                     Text(
                                       tab.lastVisit.toTimeOnlyStr(),
-                                      style: context.colors.onPrimaryContainer
-                                          .bodySmall(context),
+                                      style:
+                                          context.onPrimaryTextTheme.bodySmall,
                                     )
                                   ],
                                 ),
                                 if (haveTitle)
-                                  OneLineTextWidget(
-                                    tab.title!,
-                                    style: context.colors.onPrimaryContainer
-                                        .lableLarge(context),
-                                  ),
+                                  OneLineTextWidget(tab.title!,
+                                      style: context
+                                          .onPrimaryTextTheme.labelLarge),
                                 OneLineTextWidget(tab.viewName,
                                     style: haveTitle
-                                        ? context.colors.onPrimaryContainer
-                                            .bodyMedium(context)
-                                        : context.colors.onPrimaryContainer
-                                            .lableLarge(context)),
+                                        ? context.onPrimaryTextTheme.bodyMedium
+                                        : context
+                                            .onPrimaryTextTheme.labelLarge),
                               ])),
                         ],
                       ),
@@ -491,11 +501,7 @@ typedef _OnIconStatus = Future<bool>;
 
 class _BooleanFutureIcon extends StatelessWidget {
   const _BooleanFutureIcon(
-      {required this.callBack,
-      required this.icon,
-      required this.onLoading,
-      Key? key})
-      : super(key: key);
+      {required this.callBack, required this.icon, required this.onLoading});
   final IconData icon;
   final _OnIconStatus onLoading;
   final DynamicVoid callBack;
@@ -504,7 +510,7 @@ class _BooleanFutureIcon extends StatelessWidget {
     return FutureBuilder<bool>(
       future: onLoading,
       builder: (context, snapshot) {
-        bool enable = snapshot.hasData && snapshot.data!;
+        final bool enable = snapshot.hasData && snapshot.data!;
         return IconButton(
             onPressed: enable ? callBack : null, icon: Icon(icon));
       },
@@ -513,7 +519,7 @@ class _BooleanFutureIcon extends StatelessWidget {
 }
 
 class _TabsPage extends StatelessWidget {
-  const _TabsPage(this.controller, {Key? key}) : super(key: key);
+  const _TabsPage(this.controller);
   final WebViewStateController controller;
 
   @override

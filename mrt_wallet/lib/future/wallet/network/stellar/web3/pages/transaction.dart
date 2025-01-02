@@ -32,7 +32,7 @@ class StellarWeb3TransactionFieldsView extends StatelessWidget {
                     WidgetConstant.height8,
                     ContainerWithBorder(
                         onRemove: () {},
-                        onTapWhenOnRemove: false,
+                        enableTap: false,
                         onRemoveWidget: IconButton(
                             onPressed: () {
                               context.openDialogPage(
@@ -61,70 +61,65 @@ class StellarWeb3TransactionFieldsView extends StatelessWidget {
             SliverPadding(
               padding: WidgetConstant.paddingHorizontal10,
               sliver: SliverList.separated(
-                itemBuilder: (context, index) {
-                  final operation = info.operations.elementAt(index);
-                  final String name =
-                      operation.operation.body.operationType.translate.tr;
+                  itemBuilder: (context, index) {
+                    final operation = info.operations.elementAt(index);
+                    final String name =
+                        operation.operation.body.operationType.translate.tr;
 
-                  return Theme(
-                    data: context.theme.copyWith(
-                        dividerColor: context.colors.transparent,
-                        hoverColor: context.colors.transparent,
-                        splashColor: context.colors.transparent),
-                    child: ContainerWithBorder(
-                        iconAlginment: CrossAxisAlignment.start,
-                        child: ExpansionTile(
-                          tilePadding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: WidgetConstant.border8),
-                          title: Row(
+                    return Theme(
+                      data: context.theme.copyWith(
+                          dividerColor: context.colors.transparent,
+                          hoverColor: context.colors.transparent,
+                          splashColor: context.colors.transparent),
+                      child: ContainerWithBorder(
+                          iconAlginment: CrossAxisAlignment.start,
+                          child: APPExpansionListTile(
+                            tilePadding: EdgeInsets.zero,
+                            title: Row(
+                              children: [
+                                Expanded(
+                                    child: Text(name,
+                                        style: context
+                                            .onPrimaryTextTheme.bodyMedium)),
+                                if (operation.level == OperationLevel.high)
+                                  TappedTooltipView(
+                                      tooltipWidget: ToolTipView(
+                                          message:
+                                              "stellar_high_operation_desc2".tr,
+                                          textStyle: context
+                                              .colors.onErrorContainer
+                                              .bodyMedium(context),
+                                          duration: Duration.zero,
+                                          backgroundColor:
+                                              context.colors.errorContainer,
+                                          child: Icon(Icons.warning,
+                                              color: context.colors.error))),
+                                IconButton(
+                                    onPressed: () {
+                                      context.openDialogPage(name,
+                                          child: (context) => APPTextView(
+                                              text:
+                                                  operation.operationContentStr,
+                                              title: name));
+                                    },
+                                    icon: Icon(Icons.data_object,
+                                        color: context.onPrimaryContainer))
+                              ],
+                            ),
                             children: [
-                              Expanded(
-                                child: Text(name),
-                              ),
-                              if (operation.level == OperationLevel.high)
-                                TappedTooltipView(
-                                    tooltipWidget: ToolTipView(
-                                        message:
-                                            "stellar_high_operation_desc2".tr,
-                                        textStyle: context
-                                            .colors.onErrorContainer
-                                            .bodyMedium(context),
-                                        duration: Duration.zero,
-                                        backgroundColor:
-                                            context.colors.errorContainer,
-                                        child: Icon(
-                                          Icons.warning,
-                                          color: context.colors.error,
-                                        ))),
-                              IconButton(
-                                  onPressed: () {
-                                    context.openDialogPage(
-                                      name,
-                                      child: (context) => APPTextView(
-                                          text: operation.operationContentStr,
-                                          title: name),
-                                    );
-                                  },
-                                  icon: Icon(Icons.data_object,
-                                      color: context.colors.onPrimaryContainer))
+                              Container(
+                                  padding: WidgetConstant.padding10,
+                                  decoration: BoxDecoration(
+                                      color: context.colors.surface,
+                                      borderRadius: WidgetConstant.border8),
+                                  child: _StellarGlobalTransactionOperationView(
+                                      operation: operation))
                             ],
-                          ),
-                          children: [
-                            Container(
-                                padding: WidgetConstant.padding10,
-                                decoration: BoxDecoration(
-                                    color: context.colors.surface,
-                                    borderRadius: WidgetConstant.border8),
-                                child: _StellarGlobalTransactionOperationView(
-                                    operation: operation))
-                          ],
-                        )),
-                  );
-                },
-                itemCount: info.operations.length,
-                separatorBuilder: (context, index) => WidgetConstant.divider,
-              ),
+                          )),
+                    );
+                  },
+                  itemCount: info.operations.length,
+                  separatorBuilder: (context, index) => WidgetConstant.divider),
             ),
             SliverToBoxAdapter(
               child: Column(
@@ -132,7 +127,7 @@ class StellarWeb3TransactionFieldsView extends StatelessWidget {
                 children: [
                   WidgetConstant.height20,
                   Text("memo".tr, style: context.textTheme.titleMedium),
-                  Text("memo_desc2".tr.replaceOne("stellar".tr)),
+                  Text("memo_desc2".tr),
                   WidgetConstant.height8,
                   ContainerWithBorder(
                     child: Column(
@@ -159,14 +154,14 @@ class StellarWeb3TransactionFieldsView extends StatelessWidget {
                     WidgetConstant.height8,
                     ContainerWithBorder(
                         iconAlginment: CrossAxisAlignment.start,
-                        child: ExpansionTile(
+                        child: APPExpansionListTile(
                           tilePadding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: WidgetConstant.border8),
                           title: Row(
                             children: [
                               Expanded(
-                                child: Text("content".tr),
+                                child: Text("content".tr,
+                                    style:
+                                        context.onPrimaryTextTheme.bodyMedium),
                               ),
                               IconButton(
                                   onPressed: () {
@@ -201,8 +196,8 @@ class StellarWeb3TransactionFieldsView extends StatelessWidget {
                     child: CoinPriceView(
                         token: controller.network.coinParam.token,
                         balance: info.fee,
-                        style: context.colors.onPrimaryContainer
-                            .titleLarge(context)),
+                        style: context.onPrimaryTextTheme.titleMedium,
+                        symbolColor: context.onPrimaryContainer),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -226,59 +221,41 @@ class StellarWeb3TransactionFieldsView extends StatelessWidget {
 
 class _StellarGlobalTransactionOperationView extends StatelessWidget {
   final StellarTransactionOperationDetails operation;
-  const _StellarGlobalTransactionOperationView(
-      {required this.operation, Key? key})
-      : super(key: key);
+  const _StellarGlobalTransactionOperationView({required this.operation});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text("accessibility".tr, style: context.textTheme.titleMedium),
+        WidgetConstant.height8,
         ContainerWithBorder(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("accessibility".tr,
-                  style: context.colors.onPrimaryContainer.lableLarge(context)),
-              ContainerWithBorder(
-                  backgroundColor: context.colors.onPrimaryContainer,
-                  child: switch (operation.level) {
-                    OperationLevel.high => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "stellar_high_operation_desc".tr,
-                            style: context.colors.primaryContainer
-                                .bodyMedium(context),
-                          ),
-                          ErrorTextContainer(
-                              error: "stellar_high_operation_desc2".tr)
-                        ],
-                      ),
-                    OperationLevel.medium => Text(
-                        "stellar_medium_operation_desc".tr,
-                        style:
-                            context.colors.primaryContainer.bodyMedium(context),
-                      ),
-                    _ => Text(
-                        "stellar_low_operation_desc".tr,
-                        style:
-                            context.colors.primaryContainer.bodyMedium(context),
-                      ),
-                  }),
-            ],
-          ),
+          child: switch (operation.level) {
+            OperationLevel.high => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("stellar_high_operation_desc".tr,
+                      style: context.onPrimaryTextTheme.bodyMedium),
+                  ErrorTextContainer(error: "stellar_high_operation_desc2".tr)
+                ],
+              ),
+            OperationLevel.medium => Text("stellar_medium_operation_desc".tr,
+                style: context.onPrimaryTextTheme.bodyMedium),
+            _ => Text("stellar_low_operation_desc".tr,
+                style: context.onPrimaryTextTheme.bodyMedium),
+          },
         ),
         if (operation.sourceAccount != null) ...[
+          WidgetConstant.height20,
           ReceiptAddressView(
-            title: "source_account".tr,
-            address: operation.sourceAccount!.address,
-          ),
+              title: "source_account".tr,
+              address: operation.sourceAccount!.address),
         ],
-        if (operation.operationInfo != null)
+        if (operation.operationInfo != null) ...[
+          WidgetConstant.height20,
           StellarTransactionOperationView(operation: operation.operationInfo!)
-        else
+        ] else
           ...List.generate(operation.operationContent.length, (index) {
             final key = operation.operationContent.keys.elementAt(index);
             final value = operation.operationContent[key];
@@ -288,30 +265,19 @@ class _StellarGlobalTransactionOperationView extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                WidgetConstant.height20,
+                Text(key.camelCase, style: context.textTheme.titleMedium),
+                WidgetConstant.height8,
                 ContainerWithBorder(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(key.camelCase,
-                          style: context.colors.onPrimaryContainer
-                              .lableLarge(context)),
-                      ContainerWithBorder(
-                        backgroundColor: context.colors.onPrimaryContainer,
-                        constraints: null,
-                        child: CopyTextIcon(
-                          dataToCopy: value.toString(),
-                          isSensitive: false,
-                          color: context.colors.primaryContainer,
-                          widget: SelectableText(
-                            value.toString(),
-                            style: context.colors.primaryContainer
-                                .bodyMedium(context),
-                            maxLines: 4,
-                            minLines: 1,
-                          ),
-                        ),
-                      ),
-                    ],
+                  constraints: null,
+                  child: CopyTextIcon(
+                    dataToCopy: value.toString(),
+                    isSensitive: false,
+                    color: context.colors.onPrimaryContainer,
+                    widget: SelectableText(value.toString(),
+                        style: context.onPrimaryTextTheme.bodyMedium,
+                        maxLines: 4,
+                        minLines: 1),
                   ),
                 ),
               ],
@@ -319,44 +285,28 @@ class _StellarGlobalTransactionOperationView extends StatelessWidget {
           })
       ],
     );
-    // if (operation.operationInfo != null) {
-    //   return StellarTransactionOperationView(
-    //       operation: operation.operationInfo!);
-    // }
-
-    // }));
   }
 }
 
 class _SorobanTransactionData extends StatelessWidget {
   final StellarSorobanTransactionDetais soroban;
   final WalletStellarNetwork network;
-  const _SorobanTransactionData(
-      {required this.soroban, required this.network, Key? key})
-      : super(key: key);
+  const _SorobanTransactionData({required this.soroban, required this.network});
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text("fee_source".tr, style: context.textTheme.titleMedium),
+        WidgetConstant.height8,
         ContainerWithBorder(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("fee_source".tr,
-                  style: context.colors.onPrimaryContainer.lableLarge(context)),
-              ContainerWithBorder(
-                backgroundColor: context.colors.onPrimaryContainer,
-                constraints: null,
-                child: CoinPriceView(
-                  token: network.token,
-                  balance: soroban.feeSource,
-                  style: context.colors.primaryContainer.lableLarge(context),
-                  symbolColor: context.colors.primaryContainer,
-                ),
-              ),
-            ],
-          ),
+          constraints: null,
+          child: CoinPriceView(
+              token: network.token,
+              balance: soroban.feeSource,
+              style: context.onPrimaryTextTheme.titleMedium,
+              symbolColor: context.colors.onPrimaryContainer),
         ),
         Column(
             children: List.generate(soroban.content.length, (index) {
@@ -368,30 +318,19 @@ class _SorobanTransactionData extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              WidgetConstant.height20,
+              Text(key.camelCase, style: context.textTheme.titleMedium),
+              WidgetConstant.height8,
               ContainerWithBorder(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(key.camelCase,
-                        style: context.colors.onPrimaryContainer
-                            .lableLarge(context)),
-                    ContainerWithBorder(
-                      backgroundColor: context.colors.onPrimaryContainer,
-                      constraints: null,
-                      child: CopyTextIcon(
-                        dataToCopy: value.toString(),
-                        isSensitive: false,
-                        color: context.colors.primaryContainer,
-                        widget: SelectableText(
-                          value.toString(),
-                          style: context.colors.primaryContainer
-                              .bodyMedium(context),
-                          maxLines: 4,
-                          minLines: 1,
-                        ),
-                      ),
-                    ),
-                  ],
+                constraints: null,
+                child: CopyTextIcon(
+                  dataToCopy: value.toString(),
+                  isSensitive: false,
+                  color: context.onPrimaryContainer,
+                  widget: SelectableText(value.toString(),
+                      style: context.onPrimaryTextTheme.bodyMedium,
+                      maxLines: 4,
+                      minLines: 1),
                 ),
               ),
             ],

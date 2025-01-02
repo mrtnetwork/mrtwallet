@@ -31,7 +31,7 @@ void main() async {
   }
   jsWindow.dispatchEvent(CustomEvent.create(
       type: JSWalletConstant.activationEventName,
-      eventData: WalletMessage.response(
+      detail: WalletMessage.response(
           requestId: "0", client: JSClientType.global, data: message),
       clone: true));
   wallet?.initClients();

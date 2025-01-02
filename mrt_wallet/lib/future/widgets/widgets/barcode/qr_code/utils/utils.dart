@@ -11,7 +11,7 @@ class QrUtils {
       required material.ColorScheme color}) async {
     try {
       final fileName = "${StrUtils.toFileName(DateTime.now())}.png";
-      ui.Image? image = await QrPainter(
+      final ui.Image image = await QrPainter(
         data: data,
         version: QrVersions.auto,
         eyeStyle: QrEyeStyle(

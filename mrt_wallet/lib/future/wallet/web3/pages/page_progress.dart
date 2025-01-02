@@ -48,7 +48,8 @@ class Web3PageProgress extends StatefulWidget {
   State<Web3PageProgress> createState() => Web3PageProgressState();
 }
 
-class Web3PageProgressState extends State<Web3PageProgress> with SafeState {
+class Web3PageProgressState extends State<Web3PageProgress>
+    with SafeState<Web3PageProgress> {
   late Web3ProgressStatus _status = widget.initialStatus;
 
   Widget? _responseWidget;
@@ -62,12 +63,11 @@ class Web3PageProgressState extends State<Web3PageProgress> with SafeState {
   }
 
   void _updateStream(Web3ProgressStatus status) {
-    if (closed || !mounted) return;
     _status = status;
-    setState(() {});
+    updateState();
   }
 
-  void _update(Web3ProgressStatus status, Widget? widget) {
+  void _update({required Web3ProgressStatus status, Widget? widget}) {
     if (_status.canUpdate) {
       _responseWidget = widget;
       _updateStream(status);
@@ -76,34 +76,31 @@ class Web3PageProgressState extends State<Web3PageProgress> with SafeState {
 
   void response({String? text, Widget? widget}) {
     _update(
-        Web3ProgressStatus.successResponse,
-        widget ??
+        status: Web3ProgressStatus.successResponse,
+        widget: widget ??
             ProgressWithTextView(
-              text: text ?? "",
-              icon: WidgetConstant.checkCircle,
-            ));
+                text: text ?? "", icon: WidgetConstant.checkCircle));
     _successResponse = true;
   }
 
   void processs({String? text, Widget? widget}) {
-    _update(Web3ProgressStatus.progress,
-        widget ?? ProgressWithTextView(text: text ?? ""));
+    _update(
+        status: Web3ProgressStatus.progress,
+        widget: widget ?? ProgressWithTextView(text: text ?? ""));
   }
 
   void error(
-      {String? text,
-      // Widget? widget,
-      Duration? backToIdle = APPConst.twoSecoundDuration}) {
+      {String? text, Duration? backToIdle = APPConst.twoSecoundDuration}) {
+    final correctStatus = backToIdle == null
+        ? Web3ProgressStatus.errorResponse
+        : Web3ProgressStatus.error;
     _update(
-        backToIdle == null
-            ? Web3ProgressStatus.errorResponse
-            : Web3ProgressStatus.error,
-        ProgressWithTextView(
-          text: text ?? "",
-          icon: WidgetConstant.errorIconLarge,
-        ));
+        status: correctStatus,
+        widget: ProgressWithTextView(
+            text: text ?? "", icon: WidgetConstant.errorIconLarge));
     if (backToIdle != null) {
-      Future.delayed(backToIdle, () => _update(Web3ProgressStatus.idle, null));
+      Future.delayed(
+          backToIdle, () => _update(status: Web3ProgressStatus.idle));
     }
   }
 
@@ -118,7 +115,7 @@ class Web3PageProgressState extends State<Web3PageProgress> with SafeState {
   }
 
   void idle() {
-    _update(Web3ProgressStatus.idle, null);
+    _update(status: Web3ProgressStatus.idle);
   }
 
   @override
@@ -204,8 +201,7 @@ class _ProgressSuccessChildWidget extends StatelessWidget {
     required this.successText,
     required this.status,
     required this.successResponse,
-    Key? key,
-  }) : super(key: key);
+  });
   final Widget successText;
   final Web3ProgressStatus status;
   final bool successResponse;
@@ -232,8 +228,7 @@ class _ProgressSuccessChildWidget extends StatelessWidget {
 }
 
 class _CompleteRequestStatusWidget extends StatelessWidget {
-  const _CompleteRequestStatusWidget({required this.status, Key? key})
-      : super(key: key);
+  const _CompleteRequestStatusWidget({required this.status});
   final Web3ProgressStatus status;
   @override
   Widget build(BuildContext context) {
@@ -269,7 +264,7 @@ extension QuickAccsessWeb3PageProgressState
 
   void responseTx({required String hash, required WalletNetwork network}) {
     currentState?.response(
-        widget: SuccessTransactionTextView(txId: [hash], network: network));
+        widget: SuccessTransactionTextView(txIds: [hash], network: network));
   }
 
   void process({String? text}) {

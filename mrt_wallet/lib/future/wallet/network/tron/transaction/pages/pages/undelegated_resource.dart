@@ -30,55 +30,57 @@ class TronUnDelegatedResourceFieldsView extends StatelessWidget {
             for (final i in validator.resourceAddresses)
               i: Text(i.networkAddress.toString())
           },
-          label: "resource_receiver_address".tr,
+          hint: "resource_receiver_address".tr,
           value: validator.destination.value,
           onChanged: (p0) {
             validator.onChangeResource(p0);
           },
         ),
-        AnimatedSize(
+        APPAnimatedSize(
           duration: APPConst.animationDuraion,
-          child: validator.isLoadingResource
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    WidgetConstant.height20,
-                    ContainerWithBorder(
-                        child: ProgressWithTextView(
-                            text: "retrieving_resources".tr)),
-                  ],
-                )
-              : validator.inLoadingError != null
-                  ? Column(
+          isActive: validator.isLoadingResource,
+          onActive: (context) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              WidgetConstant.height20,
+              ContainerWithBorder(
+                  child: ProgressWithTextView(
+                      text: "retrieving_resources".tr,
+                      style: context.onPrimaryTextTheme.bodyMedium)),
+            ],
+          ),
+          onDeactive: (context) => ConditionalWidgets(
+              enable: validator.inLoadingError == null,
+              widgets: {
+                false: (context) => Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         WidgetConstant.height20,
                         ContainerWithBorder(
-                            child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            WidgetConstant.errorIcon,
-                            Text(validator.inLoadingError?.tr ?? ""),
-                            WidgetConstant.height8,
-                            FilledButton.icon(
-                                onPressed: () {
-                                  validator.onChangeResource(
-                                      validator.destination.value);
-                                },
-                                icon: const Icon(Icons.refresh),
-                                label: Text("take_another_shot".tr))
-                          ],
-                        )),
+                          validate: false,
+                          validateText: validator.inLoadingError?.tr ?? "",
+                          errorIcon: Icons.refresh,
+                          onTapError: () {
+                            validator
+                                .onChangeResource(validator.destination.value);
+                          },
+                        ),
                       ],
-                    )
-                  : validator.resourceInf0 == null
-                      ? WidgetConstant.sizedBox
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            WidgetConstant.height20,
-                            ContainerWithBorder(
-                                child: _ResourceDetailsView(
+                    ),
+                true: (context) {
+                  if (validator.resourceInf0 == null) {
+                    return WidgetConstant.sizedBox;
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      WidgetConstant.height20,
+                      ListView.separated(
+                          shrinkWrap: true,
+                          physics: WidgetConstant.noScrollPhysics,
+                          itemBuilder: (context, index) {
+                            final r = validator.resourceInf0!.resources[index];
+                            return _ResourceDetailsView(
                               account: account,
                               selected: validator.selectedResource,
                               onChanged: (p0) {
@@ -90,47 +92,52 @@ class TronUnDelegatedResourceFieldsView extends StatelessWidget {
                                   },
                                 );
                               },
-                              resource: validator.resourceInf0!,
-                            )),
-                            if (validator.selectedResource != null) ...[
-                              WidgetConstant.height20,
-                              TransactionAmountView(
-                                amount: validator.balance.value,
-                                title: "balance".tr,
-                                subtitle: "undelegated_balance_desc".tr,
-                                validate: validator.balance.isCompleted,
-                                onTap: () {
-                                  context
-                                      .openSliverBottomSheet<BigInt>(
-                                    "undelegated_resource".tr,
-                                    child: SetupNetworkAmount(
-                                      token: account.network.coinParam.token,
-                                      max: validator
-                                          .selectedResource!.balance.balance,
-                                      min: BigInt.zero,
-                                      subtitle:
-                                          Text("undelegated_balance_desc".tr),
-                                    ),
-                                  )
-                                      .then((value) {
-                                    if (value == null) {
-                                      validator.setValue(
-                                          validator.balance, null);
-                                    } else {
-                                      validator.setValue(
-                                          validator.balance,
-                                          IntegerBalance(
-                                              value,
-                                              account.network.coinParam.token
-                                                  .decimal!));
-                                    }
-                                  });
-                                },
+                              resource: r,
+                            );
+                          },
+                          separatorBuilder: (context, index) =>
+                              WidgetConstant.sizedBox,
+                          itemCount: validator.resourceInf0!.resources.length),
+                      if (validator.selectedResource != null) ...[
+                        WidgetConstant.height20,
+                        TransactionAmountView(
+                          amount: validator.balance.value,
+                          title: "balance".tr,
+                          subtitle: "undelegated_balance_desc".tr,
+                          validate: validator.balance.isCompleted,
+                          onTap: () {
+                            context
+                                .openSliverBottomSheet<BigInt>(
+                              "undelegated_resource".tr,
+                              initialExtend: 1,
+                              child: SetupNetworkAmount(
                                 token: account.network.coinParam.token,
+                                max:
+                                    validator.selectedResource!.balance.balance,
+                                min: BigInt.zero,
+                                subtitle: Text("undelegated_balance_desc".tr),
                               ),
-                            ]
-                          ],
+                            )
+                                .then((value) {
+                              if (value == null) {
+                                validator.setValue(validator.balance, null);
+                              } else {
+                                validator.setValue(
+                                    validator.balance,
+                                    IntegerBalance(
+                                        value,
+                                        account
+                                            .network.coinParam.token.decimal!));
+                              }
+                            });
+                          },
+                          token: account.network.coinParam.token,
                         ),
+                      ]
+                    ],
+                  );
+                }
+              }),
         ),
       ],
     );
@@ -145,7 +152,7 @@ class _ResourceDetailsView extends StatelessWidget {
       required this.resource,
       required this.onChanged,
       required this.selected});
-  final DelegatedAccountResourceInfo resource;
+  final DelegateResourceDetailsCore resource;
   final TronChain account;
   final _OnChangeResource onChanged;
   final DelegateResourceDetailsCore? selected;
@@ -155,62 +162,28 @@ class _ResourceDetailsView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ContainerWithBorder(
-            onRemove: resource.bandwidth == null
-                ? null
-                : () {
-                    onChanged(resource.bandwidth);
-                  },
-            onRemoveWidget: IgnorePointer(
-              child: Checkbox(
-                  value: selected?.resource == ResourceCode.bandWidth,
-                  onChanged: (v) {}),
+            onRemoveWidget: APPCheckBox(
+              ignoring: true,
+              activePress: resource.canUnDelegated,
+              value: selected == resource,
+              onChanged: (p0) {},
             ),
-            backgroundColor: context.colors.transparent,
+            onRemove: () {
+              onChanged(resource);
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("bandwidth".tr, style: context.textTheme.labelLarge),
-                WidgetConstant.height8,
-                if (resource.bandwidth == null)
-                  Text("no_bandwidth_resourced".tr)
-                else ...[
-                  CoinPriceView(
-                      token: account.network.coinParam.token,
-                      balance: resource.bandwidth!.balance,
-                      style: context.textTheme.titleMedium),
-                  if (!resource.bandwidth!.canUnDelegated)
-                    Text(resource.bandwidth!.expire!.toDateAndTime())
-                ],
-              ],
-            )),
-        Divider(color: context.colors.onPrimaryContainer),
-        ContainerWithBorder(
-            onRemoveWidget: IgnorePointer(
-              child: Checkbox(
-                  value: selected?.resource == ResourceCode.energy,
-                  onChanged: (v) {}),
-            ),
-            backgroundColor: context.colors.transparent,
-            onRemove: resource.energy == null
-                ? null
-                : () {
-                    onChanged(resource.energy);
-                  },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("energy".tr, style: context.textTheme.labelLarge),
-                WidgetConstant.height8,
-                if (resource.energy == null)
-                  Text("no_energy_resourced".tr)
-                else ...[
-                  CoinPriceView(
-                      token: account.network.coinParam.token,
-                      balance: resource.energy!.balance,
-                      style: context.textTheme.titleMedium),
-                  if (!resource.energy!.canUnDelegated)
-                    Text(resource.energy!.expire!.toDateAndTime())
-                ],
+                Text(resource.resource.name.camelCase,
+                    style: context.onPrimaryTextTheme.labelLarge),
+                CoinPriceView(
+                    token: account.network.coinParam.token,
+                    balance: resource.balance,
+                    style: context.onPrimaryTextTheme.titleMedium,
+                    symbolColor: context.onPrimaryContainer),
+                if (!resource.canUnDelegated)
+                  Text(resource.expire!.toDateAndTime(),
+                      style: context.onPrimaryTextTheme.bodySmall)
               ],
             ))
       ],

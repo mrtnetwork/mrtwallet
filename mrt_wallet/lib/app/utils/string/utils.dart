@@ -1,7 +1,4 @@
 import 'package:blockchain_utils/utils/utils.dart';
-// import 'package:mrt_wallet/app/core.dart';
-import 'dart:math' as math;
-
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 
 class StrUtils {
@@ -34,10 +31,10 @@ class StrUtils {
     }
     input = input.replaceAll('-', ' ').replaceAll('_', ' ');
 
-    List<String> words = input.split(' ');
+    final List<String> words = input.split(' ');
 
     // Capitalize the first letter of each words
-    List<String> capitalizedWords = words.map((word) {
+    final List<String> capitalizedWords = words.map((word) {
       if (word.isNotEmpty) {
         return word[0].toUpperCase() + word.substring(1);
       } else {
@@ -46,7 +43,7 @@ class StrUtils {
     }).toList();
 
     // Join the words to form CamelCase
-    String camelCaseString = capitalizedWords.join('');
+    final String camelCaseString = capitalizedWords.join('');
 
     return camelCaseString;
   }
@@ -107,7 +104,7 @@ class StrUtils {
     bool negative = false;
 
     if (number.contains('.')) {
-      List<String> parts = number.split('.');
+      final List<String> parts = number.split('.');
       integerPart = parts[0];
       fractionalPart = parts[1];
     } else {
@@ -119,10 +116,10 @@ class StrUtils {
       integerPart = integerPart.substring(1);
     }
 
-    List<String> groups = [];
+    final List<String> groups = [];
     int i = integerPart.length;
     while (i > 0) {
-      String group = integerPart.substring(math.max(0, i - 3), i);
+      final String group = integerPart.substring(IntUtils.max(0, i - 3), i);
       groups.insert(0, group);
 
       i -= 3;
@@ -148,7 +145,7 @@ class StrUtils {
   static String? validateIpfsCIDV1(String? cid,
       {List<String> schame = const ['http', 'https']}) {
     if (cid == null) return null;
-    RegExp regex = RegExp(
+    final RegExp regex = RegExp(
         r'^(Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,})$');
     if (regex.hasMatch(cid)) {
       return cid;
@@ -160,7 +157,7 @@ class StrUtils {
     final List<int> sortedNumbers = List.from(numbers)..sort();
     int missingNumber = start;
 
-    for (int number in sortedNumbers) {
+    for (final number in sortedNumbers) {
       if (number == missingNumber) {
         missingNumber++;
       } else if (number > missingNumber) {
@@ -266,5 +263,22 @@ class StrUtils {
     if (url == null) return false;
     return _domainRegex.hasMatch(url);
   }
-  // final r = RegExp(validHostnameRegex, unicode: true);
+
+  static List<String> separateBySpace(String? str) {
+    if (str == null) return [];
+    final sperate = str.trim().split(" ");
+    return sperate.map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+  }
+
+  static List<String>? separateByLength(String str, int length) {
+    if (str.length % length != 0) return null;
+    if (str.isEmpty) return [];
+    int offset = 0;
+    final List<String> results = [];
+    while (offset < str.length) {
+      results.add(str.substring(offset, offset + length));
+      offset += length;
+    }
+    return results;
+  }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/worker.dart';
@@ -81,8 +83,10 @@ class Web3StellarTransactionRequestController
             .error(Web3RequestExceptionConst.fromException(result.exception!));
         return;
       }
-      request.completeResponse(result.result.hash);
-      progressKey.responseTx(hash: result.result.hash, network: network);
+      final txId = result.result?.hash ??
+          signedEnvlope.result.txId(network.coinParam.passphraseHash());
+      request.completeResponse(txId);
+      progressKey.responseTx(hash: txId, network: network);
       return;
     }
     request.completeResponse(envlopeXdr);
@@ -94,7 +98,7 @@ class Web3StellarTransactionRequestController
     final result = await MethodUtils.call(() async {
       final envlope = request.params.transaction;
       final accountResponse =
-          await apiProvider.getAccountFromIStellarAddress(address);
+          await apiProvider.getAccountFromIStellarAddress(address, account);
       if (accountResponse == null) return null;
       final transactionInfo = await apiProvider.getWeb3TransactionInfo(
           envlope: envlope,

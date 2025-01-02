@@ -10,8 +10,7 @@ typedef OnTapToken = void Function(TokenCore);
 
 class AccountTokenListView extends StatelessWidget {
   const AccountTokenListView(
-      {required this.tokens, this.onTapToken, this.onRemoveWidget, Key? key})
-      : super(key: key);
+      {required this.tokens, this.onTapToken, this.onRemoveWidget, super.key});
   final List<TokenCore> tokens;
   final OnTapToken? onTapToken;
   final Widget? onRemoveWidget;

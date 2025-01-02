@@ -11,7 +11,7 @@ class ETHAccountPageView extends StatelessWidget {
   final EthereumChain chainAccount;
   @override
   Widget build(BuildContext context) {
-    return TabBarView(children: [
+    return TabBarView(physics: WidgetConstant.noScrollPhysics, children: [
       _EthereumTokenView(account: chainAccount),
     ]);
   }

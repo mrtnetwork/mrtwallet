@@ -1,6 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
-import 'package:mrt_wallet/crypto/constant/const.dart';
+import 'package:mrt_wallet/crypto/constant/tags.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/crypto/keys/keys.dart';
 
@@ -12,7 +12,7 @@ class GlobalSignResponse with CborSerializable {
     required List<int> signature,
     required this.index,
     required this.signerPubKey,
-  }) : signature = BytesUtils.toBytes(signature);
+  }) : signature = signature.asImmutableBytes;
 
   factory GlobalSignResponse.deserialize(List<int> bytes) {
     final CborListValue values = CborSerializable.cborTagValue(
@@ -23,8 +23,8 @@ class GlobalSignResponse with CborSerializable {
     return GlobalSignResponse(
         signature: signature,
         index: index,
-        signerPubKey:
-            PublicKeyData.fromCborBytesOrObject(obj: values.getCborTag(2)));
+        signerPubKey: CryptoPublicKeyData.fromCborBytesOrObject(
+            obj: values.getCborTag(2)));
   }
 
   @override

@@ -8,15 +8,19 @@ class SubstrateChain extends Chain<
     NFTCore,
     ISubstrateAddress,
     WalletPolkadotNetwork,
-    SubstrateClient> {
+    SubstrateClient,
+    ChainStorageKey,
+    DefaultChainConfig,
+    WalletTransaction<SubstrateAddress>> {
   SubstrateChain._(
       {required super.network,
       required super.totalBalance,
       required super.addressIndex,
       required super.id,
-      super.client,
-      super.contacts,
-      super.addresses})
+      required super.config,
+      required super.client,
+      required super.contacts,
+      required super.addresses})
       : super._();
   @override
   SubstrateChain copyWith({
@@ -27,6 +31,7 @@ class SubstrateChain extends Chain<
     int? addressIndex,
     SubstrateClient? client,
     String? id,
+    DefaultChainConfig? config,
   }) {
     return SubstrateChain._(
         network: network ?? this.network,
@@ -35,7 +40,8 @@ class SubstrateChain extends Chain<
         addresses: addresses ?? _addresses,
         contacts: contacts ?? _contacts,
         client: client ?? _client,
-        id: id ?? this.id);
+        id: id ?? this.id,
+        config: config ?? this.config);
   }
 
   factory SubstrateChain.setup({
@@ -49,20 +55,22 @@ class SubstrateChain extends Chain<
         addressIndex: 0,
         totalBalance:
             Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
-        client: client);
+        client: client,
+        config: DefaultChainConfig.none,
+        addresses: [],
+        contacts: []);
   }
 
   factory SubstrateChain.deserialize(
       {required WalletPolkadotNetwork network,
       required CborListValue cbor,
-      required String id,
       SubstrateClient? client}) {
     final int networkId = cbor.elementAt(0);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
     final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
-    List<ISubstrateAddress> toAccounts = [];
+    final List<ISubstrateAddress> toAccounts = [];
     for (final i in accounts) {
       final acc = MethodUtils.nullOnException(
           () => CryptoAddress.fromCbor(network, i).cast<ISubstrateAddress>());
@@ -86,14 +94,14 @@ class SubstrateChain extends Chain<
     final BigInt? totalBalance = cbor.elementAt(4);
 
     return SubstrateChain._(
-      network: network,
-      addresses: toAccounts,
-      addressIndex: addressIndex < 0 ? 0 : addressIndex,
-      contacts: contacts,
-      totalBalance: Live(IntegerBalance(
-          totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
-      client: client,
-      id: cbor.elementAt<String?>(8) ?? id,
-    );
+        network: network,
+        addresses: toAccounts,
+        addressIndex: addressIndex < 0 ? 0 : addressIndex,
+        contacts: contacts,
+        totalBalance: Live(IntegerBalance(
+            totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
+        client: client,
+        id: cbor.elementAt<String>(8),
+        config: DefaultChainConfig.none);
   }
 }

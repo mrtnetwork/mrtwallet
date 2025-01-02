@@ -14,19 +14,17 @@ class TonTransactionFeeView extends StatelessWidget {
             children: [
               ContainerWithBorder(
                 onRemove: fee.onTapErrorEstimate,
-                onTapWhenOnRemove: false,
+                enableTap: false,
                 onRemoveIcon: _FeeDetailsIconView(status: fee.feeStatus),
+                iconAlginment: CrossAxisAlignment.start,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "transaction_fee".tr,
-                      style: context.textTheme.titleMedium
-                          ?.copyWith(color: context.colors.onPrimaryContainer),
-                    ),
-                    // WidgetConstant.height8,
+                    Text("transaction_fee".tr,
+                        style: context.onPrimaryTextTheme.titleMedium),
+                    WidgetConstant.height8,
                     ContainerWithBorder(
-                      backgroundColor: context.colors.onPrimaryContainer,
+                      backgroundColor: context.onPrimaryContainer,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -42,18 +40,19 @@ class TonTransactionFeeView extends StatelessWidget {
                       ),
                     ),
                     if (fee.feeDetails.hasInternalFee) ...[
-                      WidgetConstant.height8,
+                      WidgetConstant.height20,
                       Text("other_fees".tr,
-                          style: context.textTheme.titleMedium),
-                      Text("ton_transaction_fee_desc2".tr),
-                      // WidgetConstant.height8,
+                          style: context.onPrimaryTextTheme.titleMedium),
+                      Text("ton_transaction_fee_desc2".tr,
+                          style: context.onPrimaryTextTheme.bodyMedium),
+                      WidgetConstant.height8,
                       ...List.generate(
                         fee.feeDetails.internalMessages.length,
                         (index) {
                           final intFee = fee.feeDetails.internalMessages[index];
                           return ContainerWithBorder(
-                            backgroundColor: context.colors.onPrimaryContainer,
-                            onTapWhenOnRemove: false,
+                            backgroundColor: context.onPrimaryContainer,
+                            enableTap: false,
                             validate: intFee.success,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,9 +60,8 @@ class TonTransactionFeeView extends StatelessWidget {
                                 CoinPriceView(
                                   token: fee.network.token,
                                   balance: intFee.total,
-                                  style: context.textTheme.titleLarge?.copyWith(
-                                      color: context.colors.primaryContainer),
-                                  symbolColor: context.colors.primaryContainer,
+                                  style: context.primaryTextTheme.titleMedium,
+                                  symbolColor: context.primaryContainer,
                                 ),
                                 ErrorTextContainer(
                                   error: intFee.success
@@ -78,20 +76,18 @@ class TonTransactionFeeView extends StatelessWidget {
                         },
                       ),
                     ],
-                    WidgetConstant.height8,
+                    WidgetConstant.height20,
                     Text(
                       "total_fees".tr,
-                      style: context.textTheme.titleMedium
-                          ?.copyWith(color: context.colors.onPrimaryContainer),
+                      style: context.onPrimaryTextTheme.titleMedium,
                     ),
                     ContainerWithBorder(
                         backgroundColor: context.colors.onPrimaryContainer,
                         child: CoinPriceView(
                           token: fee.network.token,
                           balance: fee.feeDetails.totalFee,
-                          style: context.textTheme.titleLarge?.copyWith(
-                              color: context.colors.primaryContainer),
-                          symbolColor: context.colors.primaryContainer,
+                          style: context.primaryTextTheme.titleMedium,
+                          symbolColor: context.primaryContainer,
                         )),
                   ],
                 ),
@@ -113,9 +109,8 @@ class _FeeDetailsView extends StatelessWidget {
         return CoinPriceView(
           token: fee.network.token,
           balance: fee.feeDetails.fee,
-          style: context.textTheme.titleLarge
-              ?.copyWith(color: context.colors.primaryContainer),
-          symbolColor: context.colors.primaryContainer,
+          style: context.primaryTextTheme.titleMedium,
+          symbolColor: context.primaryContainer,
         );
       case StreamWidgetStatus.error:
         return ErrorTextContainer(
@@ -123,14 +118,12 @@ class _FeeDetailsView extends StatelessWidget {
       case StreamWidgetStatus.idle:
         return Text(
           "transaction_is_not_ready".tr,
-          style: context.textTheme.bodyMedium
-              ?.copyWith(color: context.colors.primaryContainer),
+          style: context.primaryTextTheme.bodyMedium,
         );
       default:
         return Text(
           "estimating_fee_please_wait".tr,
-          style: context.textTheme.bodyMedium
-              ?.copyWith(color: context.colors.primaryContainer),
+          style: context.primaryTextTheme.bodyMedium,
         );
     }
   }
@@ -150,7 +143,7 @@ class _FeeDetailsIconView extends StatelessWidget {
       case StreamWidgetStatus.idle:
         return Icon(Icons.circle, color: context.colors.transparent);
       case StreamWidgetStatus.progress:
-        return const CircularProgressIndicator();
+        return CircularProgressIndicator(color: context.onPrimaryContainer);
       default:
         return WidgetConstant.sizedBox;
     }

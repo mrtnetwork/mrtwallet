@@ -4,3 +4,4 @@ export 'transaction/transaction.dart';
 export 'token/import.dart';
 export 'web3/web3.dart';
 export 'settings/settings.dart';
+export 'network/network.dart';

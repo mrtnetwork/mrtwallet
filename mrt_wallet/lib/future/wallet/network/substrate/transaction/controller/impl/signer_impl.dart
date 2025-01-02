@@ -55,7 +55,7 @@ mixin SubstrateSignerImpl on SubstrateTransactiomImpl {
     } else {
       progressKey.success(
           progressWidget: SuccessTransactionTextView(
-              network: network, txId: [result.result]),
+              network: network, txIds: [result.result]),
           backToIdle: false);
     }
   }

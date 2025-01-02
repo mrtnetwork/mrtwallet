@@ -3,6 +3,7 @@ import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
+import 'package:mrt_wallet/future/wallet/network/bch/token/pages/cash_token_info.dart';
 import 'package:mrt_wallet/future/wallet/network/bch/transaction/cotnroller/bitcoin_operation.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -39,7 +40,6 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
       token.cashToken.capability == CashTokenCapability.noCapability;
   late final bool isMutable = token.cashToken.hasNFT &&
       token.cashToken.capability == CashTokenCapability.mutable;
-  String? selected;
 
   @override
   void initState() {
@@ -69,7 +69,7 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
   List<BitcoinCashTokenOperation> get receivers => _receivers.values.toList();
   bool isReady = false;
 
-  void onAddRecever(ReceiptAddress<BitcoinBaseAddress>? addr) {
+  void onAddRecever_(ReceiptAddress<BitcoinBaseAddress>? addr) {
     if (addr == null) return;
     final toAddr = addr.networkAddress
         .toAddress(widget.network.coinParam.transacationNetwork);
@@ -85,11 +85,17 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
       _receivers[toAddr] = operation;
       if (isImMutable) {
         operation.receiver.tokenBalance?.updateBalance(token.cashToken.amount);
-        calculateRemindAmounts();
       }
     }
-    selected = toAddr;
-    setState(() {});
+  }
+
+  void onAddRecever(List<ReceiptAddress<BitcoinBaseAddress>>? addr) {
+    if (addr == null) return;
+    for (final i in addr) {
+      onAddRecever_(i);
+    }
+    calculateRemindAmounts();
+    updateState();
   }
 
   void onRemoveReceiver(String address) {
@@ -106,16 +112,16 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
           (previousValue, element) => previousValue + element.tokenAmount);
       remindTokenAmount.updateBalance(token.cashToken.amount - spendToken);
     }
-    bool receiversIsReady = receivers.isEmpty ||
+    final bool receiversIsReady = receivers.isEmpty ||
         _receivers.values.any((element) => !element.isReady);
     isReady = (!remindAmount.isNegative && remindTokenAmount.isZero) &&
         !receiversIsReady;
-    setState(() {});
+    updateState(() {});
   }
 
   void setupAccountAmount(String address, BigInt? amount) {
     if (amount == null) return;
-    BitcoinCashTokenOperation operation = _receivers[address]!;
+    final BitcoinCashTokenOperation operation = _receivers[address]!;
     operation as SpendBitcoinCashTokenOperation;
     operation.receiver.balance.updateBalance(amount);
     calculateRemindAmounts();
@@ -140,10 +146,10 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
     }
     if (isMutable && capability == CashTokenCapability.minting) {
       context.showAlert("bch_nft_wrong_capability".tr);
-      setState(() {});
+      updateState(() {});
       return;
     }
-    BitcoinCashTokenOperation operation = _receivers[addres]!;
+    final BitcoinCashTokenOperation operation = _receivers[addres]!;
     operation as SpendBitcoinCashTokenOperation;
     BitcoinOutputWithBalance receiver = operation.receiver;
     receiver = receiver.copyWith(
@@ -170,7 +176,7 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
     }
     final String? correctCommitment =
         (commitment?.isEmpty ?? true) ? null : commitment;
-    BitcoinCashTokenOperation operation = _receivers[address]!;
+    final BitcoinCashTokenOperation operation = _receivers[address]!;
     operation as SpendBitcoinCashTokenOperation;
     final receiver = operation.receiver.copyWith(
         token: operation.receiver.token?.copyWith(
@@ -186,15 +192,6 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
     calculateRemindAmounts();
   }
 
-  void onSelect(String addr) {
-    if (selected == addr) {
-      selected = null;
-    } else {
-      selected = addr;
-    }
-    setState(() {});
-  }
-
   void onAddBurnOperantion() {
     final BurnableBitcoinCashTokenOperation operation =
         BurnableBitcoinCashTokenOperation(
@@ -204,7 +201,6 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
     if (isImMutable) {
       operation.receiver.tokenBalance?.updateBalance(token.cashToken.amount);
     }
-    selected = token.cashToken.category;
     calculateRemindAmounts();
   }
 
@@ -215,390 +211,261 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
       children: [
         PageTitleSubtitle(
             title: "token_operation".tr,
-            body: ContainerWithBorder(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            body: Column(
               children: [
-                Text(token.cashToken.category),
-                Divider(
-                  color: context.colors.onPrimaryContainer,
-                ),
-                if (token.cashToken.hasNFT)
-                  Row(
-                    children: [
-                      RichText(
-                          text: TextSpan(
-                              style: context.textTheme.bodyMedium,
-                              children: [
-                            TextSpan(text: "nft".tr),
-                            const TextSpan(text: "-"),
-                            TextSpan(text: token.cashToken.capability!.name.tr),
-                          ])),
-                      if (token.cashToken.hasCommitment) ...[
-                        WidgetConstant.width8,
-                        Flexible(
-                            child: OneLineTextWidget(
-                                token.cashToken.commitmentInHex ?? ""))
-                      ],
-                    ],
-                  ),
-                if (token.cashToken.hasAmount)
-                  CoinPriceView(
-                      token: widget.token.token,
-                      balance: widget.token.cashToken.balance,
-                      style: context.textTheme.titleLarge),
+                ContainerWithBorder(
+                    child: BCHCashTokenDetailsView(
+                        token: token, color: context.onPrimaryContainer)),
+                ErrorTextContainer(
+                    error: "assets_balance_not_supported_desc".tr,
+                    enableTap: false),
               ],
-            ))),
+            )),
         Text("list_of_operations".tr, style: context.textTheme.titleMedium),
         Text("initiate_operations".tr),
         WidgetConstant.height8,
         Column(
           children: List.generate(receivers.length, (index) {
             final address = _receivers.keys.toList()[index];
-            final bool isSelected = address == selected;
             final receiver = receivers[index].receiver;
             final operation = receivers[index];
             return ContainerWithBorder(
               validate: receivers[index].isReady,
               iconAlginment: CrossAxisAlignment.start,
-              child: AnimatedSize(
-                duration: APPConst.animationDuraion,
-                alignment: Alignment.topCenter,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    InkWell(
-                      onTap: () => onSelect(address),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Text(
-                                operation.isBurnable
-                                    ? "burn".tr
-                                    : "recipient".tr,
-                                style: context.textTheme.titleMedium),
+              child: APPExpansionListTile(
+                tilePadding: EdgeInsets.zero,
+
+                title: Text(operation.isBurnable ? "burn".tr : "recipient".tr,
+                    style: context.onPrimaryTextTheme.bodyMedium),
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (!operation.isBurnable) ...[
+                        ContainerWithBorder(
+                          backgroundColor: context.onPrimaryContainer,
+                          onRemoveIcon: Icon(Icons.remove_circle,
+                              color: context.primaryContainer),
+                          onRemove: () {
+                            onRemoveReceiver(address);
+                          },
+                          child: ReceiptAddressDetailsView(
+                              address: receiver.address,
+                              color: context.primaryContainer),
+                        ),
+                        ContainerWithBorder(
+                          backgroundColor: context.onPrimaryContainer,
+                          onRemoveIcon: AddOrEditIconWidget(receiver.hasAmount,
+                              color: context.primaryContainer),
+                          validate: receiver.hasAmount,
+                          onRemove: () {
+                            context
+                                .openSliverBottomSheet<BigInt>(
+                              "setup_output_amount".tr,
+                              initialExtend: 1,
+                              child: SetupNetworkAmount(
+                                token: widget.network.coinParam.token,
+                                max: remindAmount.balance +
+                                    receiver.balance.balance,
+                                min: BCHUtils.minimumSatoshiTokenOutput,
+                                subtitle: PageTitleSubtitle(
+                                    title: "receiver".tr,
+                                    body: ContainerWithBorder(
+                                        child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                            receiver.address.networkAddress.type
+                                                .value,
+                                            style:
+                                                context.textTheme.labelLarge),
+                                        OneLineTextWidget(receiver.viewAddress)
+                                      ],
+                                    ))),
+                              ),
+                            )
+                                .then((amount) {
+                              if (context.mounted) {
+                                setupAccountAmount(
+                                    receiver.viewAddress, amount);
+                              }
+                            });
+                          },
+                          child: CoinPriceView(
+                            balance: receiver.balance,
+                            token: widget.network.coinParam.token,
+                            style: context.primaryTextTheme.titleMedium,
+                            symbolColor: context.primaryContainer,
+                            showTokenImage: true,
                           ),
-                          IconButton(
-                              onPressed: () => onSelect(address),
-                              icon: isSelected
-                                  ? const Icon(Icons.arrow_drop_up)
-                                  : const Icon(Icons.arrow_drop_down))
-                        ],
-                      ),
-                    ),
-                    !isSelected
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ContainerWithBorder(
-                                backgroundColor: context.colors.secondary,
-                                onRemoveIcon: Icon(Icons.remove_circle,
-                                    color: context.colors.onSecondary),
-                                onRemove: () {
-                                  onRemoveReceiver(address);
-                                },
-                                onTapWhenOnRemove: false,
-                                child: operation.isBurnable
-                                    ? OneLineTextWidget(
-                                        token.cashToken.category,
-                                        style: context.textTheme.bodyMedium
-                                            ?.copyWith(
-                                                color:
-                                                    context.colors.onSecondary),
-                                      )
-                                    : Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              receiver.address.networkAddress
-                                                  .type.value,
-                                              style: context
-                                                  .textTheme.labelLarge
-                                                  ?.copyWith(
-                                                      color: context
-                                                          .colors.onSecondary)),
-                                          OneLineTextWidget(
-                                            receiver.viewAddress,
-                                            style: context.textTheme.bodyMedium
-                                                ?.copyWith(
-                                                    color: context
-                                                        .colors.onSecondary),
-                                          ),
-                                        ],
-                                      ),
-                              )
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (!operation.isBurnable) ...[
-                                ContainerWithBorder(
-                                  backgroundColor: context.colors.secondary,
-                                  onRemoveIcon: Icon(Icons.remove_circle,
-                                      color: context.colors.onSecondary),
-                                  onRemove: () {
-                                    onRemoveReceiver(address);
-                                  },
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                          receiver.address.networkAddress.type
-                                              .value,
-                                          style: context.textTheme.labelLarge
-                                              ?.copyWith(
-                                                  color: context
-                                                      .colors.onSecondary)),
-                                      OneLineTextWidget(
-                                        receiver.viewAddress,
-                                        style: context.textTheme.bodyMedium
-                                            ?.copyWith(
-                                                color:
-                                                    context.colors.onSecondary),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text("amount".tr,
-                                    style: context.textTheme.titleMedium),
-                                Text("t_amount".tr.replaceOne(
-                                    widget.network.coinParam.token.symbol)),
-                                WidgetConstant.height8,
-                                ContainerWithBorder(
-                                  backgroundColor: context.colors.secondary,
-                                  onRemoveIcon: receiver.hasAmount
-                                      ? Icon(Icons.edit,
-                                          color: context.colors.onSecondary)
-                                      : Icon(Icons.add_box,
-                                          color: context.colors.onSecondary),
-                                  validate: receiver.hasAmount,
-                                  onRemove: () {
-                                    context
-                                        .openSliverBottomSheet<BigInt>(
-                                      "setup_output_amount".tr,
-                                      child: SetupNetworkAmount(
-                                        token: widget.network.coinParam.token,
-                                        max: remindAmount.balance +
-                                            receiver.balance.balance,
-                                        min: BCHUtils.minimumSatoshiTokenOutput,
-                                        subtitle: PageTitleSubtitle(
-                                            title: "receiver".tr,
-                                            body: ContainerWithBorder(
-                                                child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                    receiver
-                                                        .address
-                                                        .networkAddress
-                                                        .type
-                                                        .value,
-                                                    style: context
-                                                        .textTheme.labelLarge),
-                                                OneLineTextWidget(
-                                                    receiver.viewAddress)
-                                              ],
-                                            ))),
-                                      ),
-                                    )
-                                        .then((amount) {
-                                      if (context.mounted) {
-                                        setupAccountAmount(
+                        ),
+                      ] else
+                        ContainerWithBorder(
+                            backgroundColor: context.onPrimaryContainer,
+                            onRemoveIcon: Icon(Icons.remove_circle,
+                                color: context.primaryContainer),
+                            onRemove: () {
+                              onRemoveReceiver(address);
+                            },
+                            enableTap: false,
+                            child: OneLineTextWidget(
+                              token.cashToken.category,
+                              style: context.primaryTextTheme.bodyMedium,
+                            )),
+                      if (token.cashToken.hasAmount) ...[
+                        ContainerWithBorder(
+                          backgroundColor: context.onPrimaryContainer,
+                          onRemoveIcon: AddOrEditIconWidget(
+                            receiver.hasTokenAmount,
+                            color: context.primaryContainer,
+                          ),
+                          validate: receiver.hasTokenAmount,
+                          onRemove: isImMutable
+                              ? null
+                              : () {
+                                  context
+                                      .openSliverBottomSheet<BigInt>(
+                                    operation.isBurnable
+                                        ? "burn_amount".tr
+                                        : "setup_output_amount".tr,
+                                    initialExtend: 1,
+                                    child: SetupNetworkAmount(
+                                      token: widget.token.token,
+                                      max: remindTokenAmount.balance +
+                                          receiver.tokenBalance!.balance,
+                                      min: BigInt.zero,
+                                      subtitle: PageTitleSubtitle(
+                                          title: operation.isBurnable
+                                              ? "burn_amount".tr
+                                              : "receiver".tr,
+                                          body: operation.isBurnable
+                                              ? Text("setup_burnable_amount".tr)
+                                              : ContainerWithBorder(
+                                                  child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                        receiver
+                                                            .address
+                                                            .networkAddress
+                                                            .type
+                                                            .value,
+                                                        style: context.textTheme
+                                                            .labelLarge),
+                                                    OneLineTextWidget(
+                                                        receiver.viewAddress)
+                                                  ],
+                                                ))),
+                                    ),
+                                  )
+                                      .then((amount) {
+                                    if (context.mounted) {
+                                      if (operation.isBurnable) {
+                                        setupTokenAmount(
+                                            token.cashToken.category, amount);
+                                      } else {
+                                        setupTokenAmount(
                                             receiver.viewAddress, amount);
                                       }
-                                    });
-                                  },
-                                  child: CoinPriceView(
-                                    balance: receiver.balance,
-                                    token: widget.network.coinParam.token,
-                                    style: context.textTheme.titleLarge
-                                        ?.copyWith(
-                                            color: context.colors.onSecondary),
-                                    symbolColor: context.colors.onSecondary,
-                                  ),
-                                ),
-                              ] else
-                                ContainerWithBorder(
-                                    backgroundColor: context.colors.secondary,
-                                    onRemoveIcon: Icon(Icons.remove_circle,
-                                        color: context.colors.onSecondary),
-                                    onRemove: () {
-                                      onRemoveReceiver(address);
-                                    },
-                                    onTapWhenOnRemove: false,
-                                    child: OneLineTextWidget(
-                                      token.cashToken.category,
-                                      style: context.textTheme.bodyMedium
-                                          ?.copyWith(
-                                              color:
-                                                  context.colors.onSecondary),
-                                    )),
-                              if (token.cashToken.hasAmount) ...[
-                                Text("token_amount".tr,
-                                    style: context.textTheme.titleMedium),
-                                WidgetConstant.height8,
-                                ContainerWithBorder(
-                                  backgroundColor: context.colors.secondary,
-                                  onRemoveIcon: receiver.hasTokenAmount
-                                      ? Icon(Icons.edit,
-                                          color: context.colors.onSecondary)
-                                      : Icon(Icons.add_box,
-                                          color: context.colors.onSecondary),
-                                  validate: receiver.hasTokenAmount,
-                                  onRemove: isImMutable
-                                      ? null
-                                      : () {
-                                          context
-                                              .openSliverBottomSheet<BigInt>(
-                                            operation.isBurnable
-                                                ? "burn_amount".tr
-                                                : "setup_output_amount".tr,
-                                            child: SetupNetworkAmount(
-                                              token: widget.token.token,
-                                              max: remindTokenAmount.balance +
-                                                  receiver
-                                                      .tokenBalance!.balance,
-                                              min: BigInt.zero,
-                                              subtitle: PageTitleSubtitle(
-                                                  title: operation.isBurnable
-                                                      ? "burn_amount".tr
-                                                      : "receiver".tr,
-                                                  body: operation.isBurnable
-                                                      ? Text(
-                                                          "setup_burnable_amount"
-                                                              .tr)
-                                                      : ContainerWithBorder(
-                                                          child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                                receiver
-                                                                    .address
-                                                                    .networkAddress
-                                                                    .type
-                                                                    .value,
-                                                                style: context
-                                                                    .textTheme
-                                                                    .labelLarge),
-                                                            OneLineTextWidget(
-                                                                receiver
-                                                                    .viewAddress)
-                                                          ],
-                                                        ))),
-                                            ),
-                                          )
-                                              .then((amount) {
-                                            if (context.mounted) {
-                                              if (operation.isBurnable) {
-                                                setupTokenAmount(
-                                                    token.cashToken.category,
-                                                    amount);
-                                              } else {
-                                                setupTokenAmount(
-                                                    receiver.viewAddress,
-                                                    amount);
-                                              }
-                                            }
-                                          });
-                                        },
-                                  child: CoinPriceView(
-                                    balance: receiver.tokenBalance,
-                                    token: widget.token.token,
-                                    style: context.textTheme.titleLarge
-                                        ?.copyWith(
-                                            color: context.colors.onSecondary),
-                                    symbolColor: context.colors.onSecondary,
-                                  ),
-                                ),
-                              ],
-                              if (token.cashToken.hasNFT) ...[
-                                Text("capability".tr,
-                                    style: context.textTheme.titleMedium),
-                                WidgetConstant.height8,
-                                ContainerWithBorder(
-                                    backgroundColor: context.colors.secondary,
-                                    child: AppDropDownBottom(
-                                      items: {
-                                        for (final i
-                                            in CashTokenCapability.values)
-                                          i: Text(i.name.tr)
-                                      },
-                                      label: "capability".tr,
-                                      value: receiver.token!.capability,
-                                      key: UniqueKey(),
-                                      onChanged:
-                                          isImMutable || operation.isBurnable
-                                              ? null
-                                              : (p0) {
-                                                  onChangeCapability(address,
-                                                      p0 as CashTokenCapability?);
-                                                },
-                                    )),
-                                Text("commitment".tr,
-                                    style: context.textTheme.titleMedium),
-                                WidgetConstant.height8,
-                                ContainerWithBorder(
-                                  onRemoveIcon: Icon(Icons.edit,
-                                      color: context.colors.onSecondary),
-                                  onRemove: isImMutable || operation.isBurnable
-                                      ? null
-                                      : () {
-                                          context
-                                              .openSliverBottomSheet<String>(
-                                            "update_commitment".tr,
-                                            child: StringWriterView(
-                                              defaultValue: receiver
-                                                  .token?.commitmentInHex,
-                                              maxLength:
-                                                  RippleConst.maxDomainLength,
-                                              customForm: commitmentValidate,
-                                              title: PageTitleSubtitle(
-                                                  title: "commitment".tr,
-                                                  body: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                          "commitment_desc".tr),
-                                                      WidgetConstant.height8,
-                                                      Text("empty_desc".tr)
-                                                    ],
-                                                  )),
-                                              buttonText: "setup_input".tr,
-                                              label: "commitment".tr,
-                                            ),
-                                          )
-                                              .then(
-                                            (value) {
-                                              onUpdateCommitment(
-                                                  address, value);
-                                            },
-                                          );
-                                        },
-                                  backgroundColor: context.colors.secondary,
-                                  child: Text(
-                                      receiver.token!.commitmentInHex ??
-                                          (!isImMutable
-                                              ? "tap_to_add_commitment".tr
-                                              : "without_commitment".tr),
-                                      style: context.textTheme.bodyMedium
-                                          ?.copyWith(
-                                              color:
-                                                  context.colors.onSecondary)),
-                                )
-                              ],
-                            ],
+                                    }
+                                  });
+                                },
+                          child: CoinPriceView(
+                            balance: receiver.tokenBalance,
+                            token: widget.token.token,
+                            style: context.primaryTextTheme.titleMedium,
+                            symbolColor: context.primaryContainer,
+                            showTokenImage: true,
                           ),
-                  ],
-                ),
+                        ),
+                      ],
+                      if (token.cashToken.hasNFT) ...[
+                        ContainerWithBorder(
+                            backgroundColor: context.colors.secondary,
+                            child: AppDropDownBottom(
+                              border: InputBorder.none,
+                              iconEnabledColor: context.colors.onSecondary,
+                              items: {
+                                for (final i in CashTokenCapability.values)
+                                  i: Text(i.name.tr,
+                                      style: context.colors.onSecondary
+                                          .bodyMedium(context))
+                              },
+                              itemBuilder: {
+                                for (final i in CashTokenCapability.values)
+                                  i: Text(i.name.tr)
+                              },
+                              value: receiver.token!.capability,
+                              fillColor: context.colors.transparent,
+                              key: UniqueKey(),
+                              onChanged: isImMutable || operation.isBurnable
+                                  ? null
+                                  : (p0) {
+                                      onChangeCapability(
+                                          address, p0 as CashTokenCapability?);
+                                    },
+                            )),
+                        WidgetConstant.height20,
+                        Text("commitment".tr,
+                            style: context.textTheme.titleMedium),
+                        WidgetConstant.height8,
+                        ContainerWithBorder(
+                          onRemoveIcon: Icon(Icons.edit,
+                              color: context.colors.onSecondary),
+                          onRemove: isImMutable || operation.isBurnable
+                              ? null
+                              : () {
+                                  context
+                                      .openSliverBottomSheet<String>(
+                                    "update_commitment".tr,
+                                    child: StringWriterView(
+                                      defaultValue:
+                                          receiver.token?.commitmentInHex,
+                                      maxLength: RippleConst.maxDomainLength,
+                                      customForm: commitmentValidate,
+                                      title: PageTitleSubtitle(
+                                          title: "commitment".tr,
+                                          body: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text("commitment_desc".tr),
+                                              WidgetConstant.height8,
+                                              Text("empty_desc".tr)
+                                            ],
+                                          )),
+                                      buttonText: "setup_input".tr,
+                                      label: "commitment".tr,
+                                    ),
+                                  )
+                                      .then(
+                                    (value) {
+                                      onUpdateCommitment(address, value);
+                                    },
+                                  );
+                                },
+                          backgroundColor: context.colors.secondary,
+                          child: Text(
+                              receiver.token!.commitmentInHex ??
+                                  (!isImMutable
+                                      ? "tap_to_add_commitment".tr
+                                      : "without_commitment".tr),
+                              style: context.textTheme.bodyMedium?.copyWith(
+                                  color: context.colors.onSecondary)),
+                        )
+                      ],
+                    ],
+                  ),
+                ],
+
+                // duration: APPConst.animationDuraion,
+                // alignment: Alignment.topCenter,
+                // children: Column(
+                //   crossAxisAlignment: CrossAxisAlignment.start,
+                //   children: [],
+                // ),
               ),
             );
           }),
@@ -616,37 +483,42 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
                         onRemove: () {
                           context
                               .openSliverBottomSheet<
-                                      ReceiptAddress<BitcoinBaseAddress>>(
+                                      List<ReceiptAddress<BitcoinBaseAddress>>>(
                                   "receiver_address".tr,
                                   bodyBuilder: (c) =>
                                       SelectRecipientAccountView<
-                                              BitcoinBaseAddress>(
-                                          account: widget.account,
-                                          scrollController: c),
+                                          BitcoinBaseAddress>(
+                                        account: widget.account,
+                                        scrollController: c,
+                                        multipleSelect: true,
+                                      ),
                                   maxExtend: 1,
                                   minExtent: 0.8,
                                   initialExtend: 0.9)
                               .then(onAddRecever);
                         },
-                        onRemoveIcon: const Icon(Icons.add_box),
-                        child: Text("tap_to_add_operation".tr),
+                        onRemoveIcon: Icon(Icons.add_box,
+                            color: context.onPrimaryContainer),
+                        child: Text("tap_to_add_operation".tr,
+                            style: context.onPrimaryTextTheme.bodyMedium),
                       ),
                     if (!haveBurnaleOutput)
                       ContainerWithBorder(
                         onRemove: () {
                           onAddBurnOperantion();
                         },
-                        onRemoveIcon: const Icon(Icons.add_box),
-                        child: Text("tap_to_add_burn_operation".tr),
+                        onRemoveIcon: Icon(Icons.add_box,
+                            color: context.onPrimaryContainer),
+                        child: Text("tap_to_add_burn_operation".tr,
+                            style: context.onPrimaryTextTheme.bodyMedium),
                       ),
                   ],
                 ),
         ),
-        AnimatedSize(
-          duration: APPConst.animationDuraion,
-          child: remindTokenAmount.isZero
-              ? WidgetConstant.sizedBox
-              : Column(
+        APPAnimatedSize(
+            isActive: remindTokenAmount.isZero,
+            onActive: (context) => WidgetConstant.sizedBox,
+            onDeactive: (context) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     WidgetConstant.height20,
@@ -656,19 +528,18 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
                     WidgetConstant.height8,
                     ContainerWithBorder(
                       child: CoinPriceView(
-                        balance: remindTokenAmount,
-                        token: widget.token.token,
-                        style: context.textTheme.titleLarge,
-                      ),
+                          balance: remindTokenAmount,
+                          token: widget.token.token,
+                          style: context.onPrimaryTextTheme.titleMedium,
+                          symbolColor: context.onPrimaryContainer),
                     ),
                   ],
-                ),
-        ),
+                )),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
-              padding: WidgetConstant.paddingVertical20,
+              padding: WidgetConstant.paddingVertical40,
               onPressed: isReady ? onSetupOperation : null,
               child: Text("setup_operation".tr),
             )

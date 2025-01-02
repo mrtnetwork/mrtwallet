@@ -3,21 +3,16 @@ import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/providers/electr
 import 'package:mrt_wallet/wallet/api/services/models/models.dart';
 import 'package:mrt_wallet/wallet/api/services/networks/electrum/electrum.dart';
 
-abstract class ElectrumService with BitcoinBaseElectrumRPCService {
+abstract class ElectrumService with ElectrumServiceProvider {
   ElectrumService();
-  factory ElectrumService.fromProvider({
-    required ElectrumAPIProvider provider,
-    required ElectrumAPIProvider service,
-  }) {
-    switch (service.protocol) {
+  factory ElectrumService.fromProvider(ElectrumAPIProvider provider) {
+    switch (provider.protocol) {
       case ServiceProtocol.ssl:
-        return ElectrumSSLSocketService(
-            url: service.endpoint, provider: provider);
+        return ElectrumSSLSocketService(provider: provider);
       case ServiceProtocol.tcp:
-        return ElectrumSocketService(url: service.endpoint, provider: provider);
+        return ElectrumSocketService(provider: provider);
       default:
-        return ElectrumWebsocketService(
-            url: service.endpoint, provider: provider);
+        return ElectrumWebsocketService(provider: provider);
     }
   }
 }

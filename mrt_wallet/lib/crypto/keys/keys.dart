@@ -13,4 +13,7 @@ export 'access/seed_response.dart';
 export 'access/key_request.dart';
 export 'access/key_response.dart';
 export 'access/ada_legacy_public_key.dart';
+export 'access/monero_private_key.dart';
+export 'access/monero_public_key.dart';
+export 'access/view_keys.dart';
 export 'import/import_keys.dart';

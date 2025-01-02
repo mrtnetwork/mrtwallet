@@ -8,15 +8,21 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 import 'address_details.dart';
 
-class SwitchOrSelectAccountView extends StatelessWidget {
+typedef OnSelectAccountFilter<CHAINACCOUNT extends ChainAccount> = String?
+    Function(CHAINACCOUNT account);
+
+class SwitchOrSelectAccountView<CHAINACCOUNT extends ChainAccount>
+    extends StatelessWidget {
   const SwitchOrSelectAccountView(
       {super.key,
       required this.account,
       required this.showMultiSig,
+      this.filter,
       this.isSwitch = false});
-  final Chain account;
+  final APPCHAINACCOUNT<CHAINACCOUNT> account;
   final bool showMultiSig;
   final bool isSwitch;
+  final OnSelectAccountFilter<CHAINACCOUNT>? filter;
   @override
   Widget build(BuildContext context) {
     return MrtViewBuilder<WalletProvider>(
@@ -53,8 +59,8 @@ class SwitchOrSelectAccountView extends StatelessWidget {
             );
           }
           final currentAccount = account.address;
-          List<ChainAccount> addresses =
-              List<ChainAccount>.from(account.addresses)
+          List<CHAINACCOUNT> addresses =
+              List<CHAINACCOUNT>.from(account.addresses)
                 ..sort((a, b) => a == currentAccount ? 0 : 1);
           if (!showMultiSig) {
             addresses = addresses.where((e) => !e.multiSigAccount).toList();
@@ -65,7 +71,7 @@ class SwitchOrSelectAccountView extends StatelessWidget {
               shrinkWrap: true,
               physics: WidgetConstant.noScrollPhysics,
               itemBuilder: (context, index) {
-                final addr = addresses[index];
+                final CHAINACCOUNT addr = addresses[index];
                 bool isSelected = false;
                 if (isSwitch) {
                   isSelected = addr == currentAccount;
@@ -81,6 +87,11 @@ class SwitchOrSelectAccountView extends StatelessWidget {
                           onTap: isSelected
                               ? null
                               : () {
+                                  final err = filter?.call(addr);
+                                  if (err != null) {
+                                    context.showAlert(err);
+                                    return;
+                                  }
                                   if (context.mounted) {
                                     context.pop(addr);
                                   }

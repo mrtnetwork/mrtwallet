@@ -6,18 +6,22 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
 
 class CacheMemoryImageProvider extends ImageProvider<CacheMemoryImageProvider>
-    with CryptoWokerImpl {
-  final APPImage image;
+    with CryptoWokerImpl, HttpImpl {
+  final APPImageInfo image;
   CacheMemoryImageProvider(this.image);
 
   @override
   ImageStreamCompleter loadImage(
       CacheMemoryImageProvider key, ImageDecoderCallback decode) {
     StreamController<ImageChunkEvent>? chunkEvent;
-    if (image.type == ContentType.favIcon) {
+    if (image.type == ContentType.favIcon ||
+        image.type == ContentType.network ||
+        image.type == ContentType.lazy) {
       chunkEvent = StreamController<ImageChunkEvent>();
+      chunkEvent.add(
+          ImageChunkEvent(cumulativeBytesLoaded: 0, expectedTotalBytes: 100));
     }
-    Future<Codec> codec = _loadAsync(
+    final Future<Codec> codec = _loadAsync(
         decode: decode,
         onStreamResponse: (cumulativeBytesLoaded, expectedTotalBytes) {
           chunkEvent?.add(ImageChunkEvent(
@@ -31,9 +35,9 @@ class CacheMemoryImageProvider extends ImageProvider<CacheMemoryImageProvider>
     return MultiFrameImageStreamCompleter(
         codec: codec,
         scale: 1.0,
-        debugLabel: image.cacheKey,
+        debugLabel: image.toString(),
         informationCollector: () sync* {
-          yield ErrorDescription('Tag: ${image.cacheKey}');
+          yield ErrorDescription('Tag: ${image.toString()}');
         },
         chunkEvents: chunkEvent?.stream);
   }
@@ -43,31 +47,41 @@ class CacheMemoryImageProvider extends ImageProvider<CacheMemoryImageProvider>
       required OnStreamReapose onStreamResponse,
       required DynamicVoid onDone}) async {
     ImmutableBuffer buffer;
-    switch (image.type) {
-      case ContentType.local:
-        final bytes = await PlatformUtils.loadAssets(image.uri);
-        buffer = await ImmutableBuffer.fromUint8List(Uint8List.fromList(bytes));
-        break;
-      case ContentType.hex:
-        final data = Uint8List.fromList(await crypto.hexToBytes(image.uri));
-        buffer = await ImmutableBuffer.fromUint8List(data);
-        break;
-      case ContentType.favIcon:
-      case ContentType.network:
-        String url = image.uri;
-        if (image.type == ContentType.favIcon) {
-          url = LinkConst.faviIconGenerator + image.uri;
-        }
-        final fetch =
-            await HttpUtils.getStream(url, response: onStreamResponse);
-        onDone();
-        buffer = await ImmutableBuffer.fromUint8List(
-            Uint8List.fromList(fetch.hasResult ? fetch.result : const []));
-        break;
-      default:
+    try {
+      // final cacheKey = await image.loadCacheKey();
+      String uri = await image.loadUrl();
+      if (uri.isEmpty) {
         throw StateError('${image.type} cannot be loaded as an image.');
+      }
+      switch (image.type) {
+        case ContentType.local:
+          final bytes = await PlatformUtils.loadAssets(uri);
+          buffer =
+              await ImmutableBuffer.fromUint8List(Uint8List.fromList(bytes));
+          break;
+        case ContentType.hex:
+          final data = Uint8List.fromList(await crypto.hexToBytes(uri));
+          buffer = await ImmutableBuffer.fromUint8List(data);
+          break;
+        case ContentType.favIcon:
+        case ContentType.network:
+        case ContentType.lazy:
+          if (image.type == ContentType.favIcon) {
+            uri = LinkConst.faviIconGenerator + uri;
+          }
+          final fetch =
+              await makeStream(uri: uri, onProgress: onStreamResponse);
+          buffer = await ImmutableBuffer.fromUint8List(
+              Uint8List.fromList(fetch.hasResult ? fetch.result : const []));
+          break;
+        default:
+          throw StateError('${image.type} cannot be loaded as an image.');
+      }
+
+      return await decode(buffer);
+    } finally {
+      onDone();
     }
-    return await decode(buffer);
   }
 
   @override
@@ -78,8 +92,7 @@ class CacheMemoryImageProvider extends ImageProvider<CacheMemoryImageProvider>
   @override
   bool operator ==(Object other) {
     if (other.runtimeType != runtimeType) return false;
-    return other is CacheMemoryImageProvider &&
-        other.image.cacheKey == image.cacheKey;
+    return other is CacheMemoryImageProvider && other.image == image;
   }
 
   @override

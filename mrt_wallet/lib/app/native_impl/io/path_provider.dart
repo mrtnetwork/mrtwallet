@@ -6,7 +6,7 @@ import 'package:mrt_wallet/app/native_impl/core/core.dart';
 mixin PathProvider {
   static AppPath? _path;
   static Future<AppPath> getPaths() async {
-    _path ??= await BaseNativeMEthod.platform.path();
+    _path ??= await AppNativeMethods.platform.path();
     return _path!;
   }
 

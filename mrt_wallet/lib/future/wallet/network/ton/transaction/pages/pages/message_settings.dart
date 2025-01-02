@@ -91,10 +91,7 @@ class _TonTransactionMessageSettingsViewState
               ),
             ),
             AppSwitchListTile(
-              title: Text(
-                "bounce".tr,
-                style: context.textTheme.titleMedium,
-              ),
+              title: Text("bounce".tr, style: context.textTheme.titleMedium),
               contentPadding: EdgeInsets.zero,
               subtitle: Text("ton_bounce_desc2".tr),
               value: isBounce,
@@ -109,7 +106,7 @@ class _TonTransactionMessageSettingsViewState
                 for (final i in TonMessageBodyType.supportValues)
                   i: Text(i.name.tr)
               },
-              label: "choose_the_type".tr,
+              hint: "choose_the_type".tr,
               onChanged: onChageBodyType,
               value: bodyType,
             ),
@@ -124,7 +121,7 @@ class _TonTransactionMessageSettingsViewState
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 FixedElevatedButton(
-                    padding: WidgetConstant.paddingVertical20,
+                    padding: WidgetConstant.paddingVertical40,
                     onPressed: submit,
                     child: Text("update_messsage".tr))
               ],
@@ -152,18 +149,14 @@ class _TonBodyBuilderView extends StatelessWidget {
         Text(state.bodyType.helperText.tr),
         WidgetConstant.height8,
         AppTextField(
-          key: state.bodyTextController,
-          validator: state.bodyForm,
-          label: "message_body".tr,
-          minlines: 5,
-          maxLines: 8,
-          initialValue: initialValue,
-          prefixIcon: PasteTextIcon(
-            onPaste: state.onPaste,
-            isSensitive: false,
-          ),
-          helperText: state.bodyType.helperText.tr,
-        )
+            key: state.bodyTextController,
+            validator: state.bodyForm,
+            label: "message_body".tr,
+            minlines: 2,
+            maxLines: 8,
+            initialValue: initialValue,
+            pasteIcon: true,
+            helperText: state.bodyType.helperText.tr)
       ],
     );
   }

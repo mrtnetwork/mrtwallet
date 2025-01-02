@@ -29,18 +29,17 @@ enum SolidityContractInterface {
   }
 }
 
-class RPCDetectContactInterface extends ETHRPCRequest<bool> {
+class RPCDetectContactInterface extends EthereumRequest<bool, String> {
   RPCDetectContactInterface(
       {required this.interface,
       required this.contractAddress,
       required this.from,
-      BlockTagOrNumber? blockNumber = BlockTagOrNumber.latest})
-      : assert(interface.id != null, "Interface id must not be null."),
-        super(blockNumber: blockNumber);
+      super.blockNumber = BlockTagOrNumber.latest})
+      : assert(interface.id != null, "Interface id must not be null.");
   final SolidityContractInterface interface;
 
   @override
-  EthereumMethods get method => EthereumMethods.call;
+  String get method => EthereumMethods.call.value;
   final SolidityAddress from;
 
   final SolidityAddress contractAddress;

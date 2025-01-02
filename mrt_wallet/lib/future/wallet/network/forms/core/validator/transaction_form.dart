@@ -32,5 +32,5 @@ abstract class Web3Form<
   OnChangeForm? onChanged;
   abstract final Web3Request<dynamic, NETWORKADDRESS, CHAIN, CHAINACCOUNT,
       WEB3CHAIN, PARAMS> request;
-  ObjectVoid? onCompeleteForm;
+  ObjectVoid? onCompleteForm;
 }

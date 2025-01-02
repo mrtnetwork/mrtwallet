@@ -15,8 +15,7 @@ class UpdateWalletInfosWidget extends StatefulWidget {
       required this.onUpdate,
       required this.asDefaultWallet,
       required this.protectWallet,
-      Key? key})
-      : super(key: key);
+      super.key});
   final String name;
   final WalletLockTime locktime;
   final bool requrmentPassword;
@@ -126,7 +125,7 @@ class _UpdateWalletInfosWidgetState extends State<UpdateWalletInfosWidget>
             WidgetConstant.height8,
             AppDropDownBottom(
               items: lockTimeWidget,
-              label: "automatic_loc".tr,
+              hint: "automatic_loc".tr,
               value: locktime,
               onChanged: onChangeLockTime,
             ),

@@ -22,7 +22,7 @@ class StellarKeyConversionView extends StatelessWidget {
 }
 
 class _StellarConversionView extends StatefulWidget {
-  const _StellarConversionView(this.network, {Key? key}) : super(key: key);
+  const _StellarConversionView(this.network);
   final WalletStellarNetwork network;
 
   @override
@@ -101,11 +101,11 @@ class __StellarKeyConversionViewState extends State<_StellarConversionView>
             slivers: [
               SliverConstraintsBoxView(
                   padding: WidgetConstant.paddingHorizontal20,
-                  sliver: SliverToBoxAdapter(
-                    child: APPAnimatedSwitcher(
-                        enable: generatedKey != null,
-                        widgets: {
-                          false: (c) => Column(
+                  sliver: APPSliverAnimatedSwitcher(
+                      enable: generatedKey != null,
+                      widgets: {
+                        false: (c) => SliverToBoxAdapter(
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   PageTitleSubtitle(
@@ -151,10 +151,10 @@ class __StellarKeyConversionViewState extends State<_StellarConversionView>
                                   )
                                 ],
                               ),
-                          true: (c) => ImportCustomKeyToWalletView(
-                              keypair: generatedKey!)
-                        }),
-                  )),
+                            ),
+                        true: (c) =>
+                            ImportCustomKeyToWalletView(keypair: generatedKey!)
+                      })),
             ],
           ),
         ),

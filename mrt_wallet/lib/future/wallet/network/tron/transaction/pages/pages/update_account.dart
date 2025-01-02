@@ -42,12 +42,11 @@ class TronUpdateAccountFieldsView extends StatelessWidget {
               },
             );
           },
-          onRemoveIcon: validator.accountName.hasValue
-              ? const Icon(Icons.edit)
-              : const Icon(Icons.add),
+          onRemoveIcon: AddOrEditIconWidget(validator.accountName.hasValue),
           child: Text(
               validator.accountName.value?.orEmpty ?? "tap_to_input_value".tr,
-              maxLines: 3),
+              maxLines: 3,
+              style: context.onPrimaryTextTheme.bodyMedium),
         ),
       ],
     );

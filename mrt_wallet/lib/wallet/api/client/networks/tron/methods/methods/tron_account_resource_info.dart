@@ -4,7 +4,7 @@ import 'package:on_chain/tron/tron.dart';
 /// Query the resource information of an account(bandwidth,energy,etc).
 /// [developers.tron.network](https://developers.tron.network/reference/getaccountresource).
 class TronRequestGetAccountResourceInfo
-    extends TVMRequestParam<TronAccountResourceInfo, Map<String, dynamic>> {
+    extends TronRequest<TronAccountResourceInfo, Map<String, dynamic>> {
   TronRequestGetAccountResourceInfo(
       {required this.address, this.visible = true});
 

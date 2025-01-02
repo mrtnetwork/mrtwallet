@@ -9,8 +9,7 @@ import 'package:mrt_wallet/wallet/web3/networks/ethereum/etherum.dart';
 import 'package:on_chain/ethereum/src/address/evm_address.dart';
 
 class EthereumWeb3PermissionView extends StatefulWidget {
-  const EthereumWeb3PermissionView({required this.permission, Key? key})
-      : super(key: key);
+  const EthereumWeb3PermissionView({required this.permission, super.key});
   final Web3EthereumChain? permission;
 
   @override
@@ -39,13 +38,9 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
         address: address, chainId: chain.chainId, defaultAddress: false);
   }
 
-  bool _initialized = false;
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_initialized) return;
-    _initialized = true;
+  void onInitOnce() {
+    super.onInitOnce();
     permission = widget.permission ?? Web3EthereumChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<EthereumChain>().toList();
