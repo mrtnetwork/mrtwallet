@@ -75,14 +75,13 @@ class IBitcoinAddress
         BitcoinAddressType.fromValue(cbor.elementAt(5));
     final keyType = PubKeyModes.fromValue(cbor.elementAs(8),
         defaultValue: PubKeyModes.compressed);
-    final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
-        publicKey: publicKey,
-        coin: coin,
-        addressType: bitcoinAddressType,
-        keyType: keyType);
-    if (bitcoinAddress.toAddress(
-            (network as WalletBitcoinNetwork).coinParam.transacationNetwork) !=
-        address.toAddress) {
+    final btcNetwork =
+        network.toNetwork<WalletBitcoinNetwork>().coinParam.transacationNetwork;
+    final bitcoinAddress = BlockchainAddressUtils.toBitcoinAddress(
+        address.toAddress, btcNetwork,
+        p2shAddressType: bitcoinAddressType);
+    if (bitcoinAddress.toAddress(btcNetwork) != address.toAddress ||
+        bitcoinAddress.type != bitcoinAddressType) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
     final String? name = cbor.elementAt(7);

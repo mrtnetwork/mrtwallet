@@ -4,7 +4,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:stellar_dart/stellar_dart.dart';
 
-abstract class StellarTransactionForm implements TransactionForm {
+abstract class StellarTransactionForm extends TransactionForm {
   BigInt get callValue;
   DynamicVoid? onReadyField;
   @override

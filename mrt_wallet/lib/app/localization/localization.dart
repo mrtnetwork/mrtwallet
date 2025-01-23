@@ -208,7 +208,7 @@ class Localization {
               "Kindly paste the encrypted text of your mnemonic or wallet backup.",
           "enter_backup": "Input backup text.",
           "bcakup_validator":
-              "The backup text should exceed 100 characters in length.",
+              "The backup must be a valid bytes as hexadecimal string.",
           "input_backup_password": "Input backup password.",
           "backup_password_validator": "Backup password should not be empty.",
           "clipboard_empty": "Clipboard is empty.",
@@ -812,6 +812,7 @@ class Localization {
           "saved_fulfillment_desc":
               "Are you certain that the fulfillment and conditions have been securely saved?",
           "key_algorithm": "Key algorithm",
+          "key_algorithms": "Key algorithms",
           "invalid_ripple_privatekey_algorithm":
               "Invalid Ripple private key encryption algorithm.",
           "ed25519_support_derivation_desc":
@@ -1113,6 +1114,7 @@ class Localization {
               "Error 500: Internal Server Error. The server encountered an unexpected condition that prevented it from fulfilling the reques",
           "http_error_503":
               "Error 503: Service Unavailable. The server is currently unable to handle the request due to temporary overloading or maintenance of the server",
+
           "network_chain_id_already_exist": "The network already exists.",
           "invalid_chain_id":
               "The Chain ID does not match the Network ID associated with the provided RPC link.",
@@ -1130,7 +1132,7 @@ class Localization {
               "A provider already exists with this RPC URL.",
           "tap_to_add_new_service_provider":
               "Tap to add a new service provider.",
-          "update_network": "Update Network Information",
+          "update_network": "Update Network",
           "chain_id_of_network": "The chain ID of the network",
           "updating_network": "Updating network information. Please Wait.",
           "network_updated_successfully":
@@ -1783,6 +1785,8 @@ class Localization {
               "The number of token decimal places must be between 0 and 255.",
           "change_token_decimal_desc":
               "Warning: Changing the token decimal places can significantly impact token balances and transactions. For example, changing from 9 to 10 decimal places may cause balance discrepancies and potential loss of funds. Proceed with caution and ensure you understand the consequences before making this change. The number of decimal places must be between 0 and 255.",
+          "change_token_decimal_desc3":
+              "Warning: Changing token decimal places can significantly impact balances and transactions. Ensure the decimal setting is accurate before proceeding.",
           "change_decimals": "Change decimals",
           "change_token_decimal_desc2":
               "The token decimal places will be changed from ___1__ to ___2__ .",
@@ -1833,7 +1837,8 @@ class Localization {
           "unsuported_legacy_backup": "Unsupported: Legacy backup",
           "verified_accounts": "Verified accounts",
           "total_accounts": "Total accounts",
-          "decrypting_backup_please_wait": "Decrypting backup. Please wait.",
+          "decrypting_backup_please_wait":
+              "Decrypting your backup. This process may take up to 10 minutes.",
           "generating_wallet_please_wait": "Generating wallet. Please wait.",
           "verifying_backup_please_wait": "Verifying backup. Please wait",
           "unverified_account": "Unverified Account",
@@ -1935,7 +1940,6 @@ class Localization {
               "Network providers has been updated.",
           "ethereum_rpc_url_desc":
               "The RPC URL must be associated with the Ethereum network that has the chain ID ___1__ (___2__).",
-          "confirm_chain_id": "Confirm chain ID",
           "coin_type_desc2":
               "The coin type is always determined by a hardened index. You can also set up a custom derivation on the setup address page.",
           "update_provider_desc":
@@ -1988,9 +1992,9 @@ class Localization {
               "You can also enable or disable the Web3 feature for this application. (Applying this change requires reloading the page.)",
           "eth_subscribe_websocket_requirment":
               "`eth_subscribe` method only works with the WebSocket protocol.",
-          "switch_ethereum_chain": "Switch ethereum chain",
-          "switch_ethereum_chain_desc":
-              "The client has sent a request to switch the EVM chain.",
+          "switch_chain": "Switch ___1__ chain",
+          "switch_chain_desc":
+              "The client has sent a request to switch the chain.",
           "current_chain": "Current chain",
           "requested_chain": "Requested chain",
           "agree": "Agree",
@@ -2703,7 +2707,99 @@ class Localization {
           "create_sign_transaction":
               "Creating and signing transaction. Kindly await completion.",
           "monero_slow_chain_tracking_alert":
-              "Currently, account chain tracking is very slow. We recommend using the sync option to update your account state efficiently."
+              "Currently, account chain tracking is very slow. We recommend using the sync option to update your account state efficiently.",
+          "paste_your_backup_here": "Paste the backup of your wallet here",
+          "constants": "Constants",
+          "access_network_constants": "Access network constants.",
+          "retrieving_constants_please_wait":
+              "Retrieving Constants, please wait",
+          "storages": "Storages",
+          "query_network_storages": "Query network storages",
+          "query_again": "Query again",
+          "retrieving_data_please_wait": "Retrieving data, please wait",
+          "get_storages": "Query Storages",
+          "query_storages_n": "Query Storages ( ___1__ )",
+          "inputs_not_needed": "Inputs not needed.",
+          "enter_hex_bytes": "Enter the value in hexadecimal byte format.",
+          "bytes": "Bytes",
+          "invalid_hex_validator":
+              "Invalid hex format. Please enter the value in hexadecimal format",
+          "invalid_hex_length":
+              "The hexadecimal value must be a ___1__-character string (___2__ bytes).",
+          "runtime_apis": "Runtime API's",
+          "interact_with_substrate_network_run_time_api":
+              "Interact with network runtime API's.",
+          "call_api": "Call API",
+          "call_again": "Call again",
+          "tap_to_create_object": "Tap to create ___1__ object.",
+          "create_extrinsic": "Create Extrinsic",
+          "create_and_sign_extrinsic": "Create and sign extrinsic",
+          "create_payload": "Create payload",
+          "address_decoder": "Address decoder",
+          "utf8_encoder": "UTF-8 encoder",
+          "spec_version": "Spec Version",
+          "bytes_tools": "Bytes tools",
+          "bytes_tools_desc":
+              "Bytes Tools: Convert hex bytes to addresses or compute hashes from them",
+          "convert": "Convert",
+          "block_hash": "Block Hash",
+          "finaliz_block_era": "Finaliz Block and Era",
+          "finaliz_block": "Finaliz Block",
+          "genesis_hash": "Genesis hash",
+          "era": "Era",
+          "quick_era": "Era: Validated for approximately 150 blocks.",
+          "substrate_quick_block_access": "Quick block access",
+          "serialized_data": "Serialized Data",
+          "serialized_call": "Serialized Call",
+          "sing_and_setup_extrinsic": "Sign and setup extrinsic",
+          "payload_info": "Payload info",
+          "substrate_determine_address_signature_failed":
+              "Unable to determine the metadata address or signature type.",
+          "create_and_review_extrinsic": "Create and review extrinsic",
+          "some_input_not_filled": "Some inputs are not filled.",
+          "extrinsic": "Extrinsic",
+          "payload": "Payload",
+          "unsigned_transaction": "Unsigned Transaction",
+          "unsigned_extrinsic_desc": "Create without signature.",
+          "submit_extrinsic": "Submit Extrinsic",
+          "fake_extrinsic_signature_desc":
+              "The extrinsic contains a fake signature. The actual signature is added to the extrinsic when it is submitted.",
+          "import_substrate_network": "Import substrate network",
+          "token_decimal_maxn_validator":
+              "Token decimals must be between 0 and ___1__.",
+          "unsuported_network_metadata": "Unsuported network metadata.",
+          "extrinsic_encoding_failed": "Extrinsic encoding failed.",
+          "websocket_authenticated_unsuported_desc":
+              "The provided authentication method is incompatible with WebSocket connections.",
+          "network_type": "Network type",
+          "ss58_prefix": "SS58 Prefix",
+          "substrate_disable_transfer_option_desc":
+              "Unable to find the transfer_allow_death and transfer_keep_alive methods. The transfer option will be disabled.",
+          "substrate_unsuported_account_template_desc":
+              "Unsupported account template. The account balance will always display as zero.",
+          "add_or_updating_wallet_network":
+              "Add or updating wallet network. please wait.",
+          "page_not_found": "Page not found.",
+          "substrate_networks": "Substrate networks",
+          "web3_client_connection_failed":
+              "The current Web3 request requires interaction with a node, but the connection to the node could not be established.",
+          "web3_retrieval_requirment":
+              "Web3 Retrieval Requirements. please wait.",
+          "network_enable_web3_desc":
+              "Ensure that after adding the chain, you update the application permissions to enable Web3 features for the network.",
+          "number_to_decimal": "10^___1__ (___2__)",
+          "update_metadata": "Update metadata",
+          "substrate_update_metadata_desc":
+              "The client has requested an update to your network metadata.",
+          "invalid_spec_version": "Invalid spec version.",
+          "select_provider_to_use":
+              "Please select one of the providers you want to use when interacting chain",
+          "keep_unlock": "Keep unlock",
+          "wallet_lock_timer_desc":
+              "The wallet will be locked after ___1__ seconds",
+          "another_instance_already_active":
+              "Another instance is already active.",
+          "web3_permission": "Web3 Application Permission",
         }
       };
 }

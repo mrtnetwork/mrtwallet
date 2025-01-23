@@ -40,30 +40,45 @@ class WalletController extends _WalletController
         Web3EthereumImpl,
         Web3TronImpl,
         Web3TonImpl,
+        Web3SubstrateImpl,
         Web3StellarImpl,
         Web3Impl,
         WalletMoneroImpl {
   WalletController._(WalletCore super.core, super.wallet, super.chains);
-  static Future<ChainsHandler> _setupNetwork(
+  static Future<(ChainsHandler, List<String>)> _setupNetwork(
       WalletCore core, HDWallet wallet) async {
     final List<Chain> chains = [];
     final keys = await core._readAccounts(wallet);
-    final keyBytes = keys.map((e) => BytesUtils.fromHexString(e.$2)).toList();
+    final keyBytes = keys.map((e) => e.$2).toList();
+    List<String> junkKeys = [];
     for (final i in keyBytes) {
       try {
-        final chain = Chain.deserialize(bytes: i);
+        final chain = Chain.deserialize(hex: i);
         chains.add(chain);
-      } catch (_) {}
+      } catch (_) {
+        junkKeys.add(i);
+      }
     }
     final chain = ChainsHandler(
         chains: chains, currentNetwork: wallet.network, id: wallet._checksum);
-    return chain;
+
+    return (chain, junkKeys);
   }
 
   static Future<WalletController> _setup(
       WalletCore core, HDWallet wallet) async {
-    final chains = await _setupNetwork(core, wallet);
-    final controller = WalletController._(core, wallet, chains);
+    final handler = await _setupNetwork(core, wallet);
+    final storageVersion = await core._readStorageVersion();
+    if (storageVersion != core.storageVersion) {
+      await core._writeStorageVersion(core.storageVersion);
+      await core._deleteMultiple(keys: handler.$2);
+      final chains = handler.$1.chains();
+      for (final i in chains) {
+        await i.save();
+      }
+    }
+    final controller = WalletController._(core, wallet, handler.$1);
+
     await controller._onInitController();
     return controller;
   }

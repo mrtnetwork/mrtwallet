@@ -17,6 +17,9 @@ class TestWallet extends WalletCore {
   bool onWeb3Request(Web3Request request) {
     throw UnimplementedError();
   }
+
+  @override
+  int get storageVersion => 0;
 }
 
 void main() async {

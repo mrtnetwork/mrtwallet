@@ -2,9 +2,9 @@ import 'package:blockchain_utils/bip/bip/bip.dart';
 import 'package:blockchain_utils/bip/slip/slip44/slip44.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/wallet/global/pages/http_authenticated.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ethereum/forms/core/ethereum.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -23,14 +23,12 @@ class ImportEthereumNetwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final WalletEthereumNetwork? network = context.getNullArgruments();
-    return _ImportEthereumNetwork(network: network, web3: web3);
+    return _ImportEthereumNetwork(web3: web3);
   }
 }
 
 class _ImportEthereumNetwork extends StatefulWidget {
-  const _ImportEthereumNetwork({this.network, this.web3});
-  final WalletEthereumNetwork? network;
+  const _ImportEthereumNetwork({this.web3});
   final EthereumWeb3Form<Web3EthereumAddNewChain>? web3;
   @override
   State<_ImportEthereumNetwork> createState() => __ImportEthereumNetworkState();
@@ -38,26 +36,22 @@ class _ImportEthereumNetwork extends StatefulWidget {
 
 class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
     with SafeState {
-  late final WalletEthereumNetwork network;
-  late final bool isWalletNetwork = network.isWalletNetwork;
-  late final bool isDefaultNetwork = network.coinParam.defaultNetwork;
   final GlobalKey<PageProgressState> pageProgressKey = GlobalKey();
   final GlobalKey<AppTextFieldState> uriFieldKey = GlobalKey();
   final GlobalKey<AppTextFieldState> explorerFieldKey = GlobalKey();
-  final GlobalKey<FormState> formKey = GlobalKey(debugLabel: "form key!");
+  final GlobalKey<FormState> formKey = GlobalKey();
   final GlobalKey<AppTextFieldState> transactionFieldKey = GlobalKey();
-  late final List<BigInt> existsChainIds;
-  late String symbol = network.coinParam.token.symbol;
-  late String networkName = network.coinParam.token.name;
-  late BigInt chainId = network.coinParam.chainId;
-  late int coinType = network.coinParam.bip32CoinType ?? Slip44.ethereum;
-  late String explorerAddressLink = network.coinParam.addressExplorer ?? "";
-  late String explorerTransaction = network.coinParam.transactionExplorer ?? "";
-  late final bool editableChainId = !isWalletNetwork && widget.web3 == null;
+  final GlobalKey<HTTPServiceProviderFieldsState> rpcKey = GlobalKey();
+  RPCURL? rpcUrl;
+  List<BigInt> existsChainIds = [];
+  String symbol = '';
+  String networkName = '';
+  BigInt chainId = BigInt.one;
+  int coinType = Slip44.ethereum;
+  String explorerAddressLink = "";
+  String explorerTransaction = "";
+  late final bool editableChainId = widget.web3 == null;
   late final bool isWeb3 = widget.web3 != null;
-  EthereumChain? chain;
-  bool get hasProvider =>
-      defaultProviders.isNotEmpty || importedProviders.isNotEmpty;
 
   void onChangeSymbol(String v) {
     symbol = v;
@@ -75,18 +69,9 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
     explorerTransaction = v;
   }
 
-  String? chainError;
+  // String? chainError;
   void onChangeChainId(int v) {
     chainId = BigInt.from(v);
-    if (chainError != null) {
-      chainError = null;
-      updateState();
-    }
-    final exists = existsChainIds.contains(chainId);
-    if (exists) {
-      chainError = "network_chain_id_already_exist".tr;
-      updateState();
-    }
   }
 
   void onChangeCoinType(int v) {
@@ -113,6 +98,9 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
   String? validateChainId(String? v) {
     final toInt = BigInt.tryParse(v ?? "");
     if (toInt == null) return "chain_id_validator".tr;
+    if (existsChainIds.contains(chainId)) {
+      return "network_chain_id_already_exist".tr;
+    }
     return null;
   }
 
@@ -144,10 +132,7 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
     return null;
   }
 
-  late final List<EthereumAPIProvider> defaultProviders;
-
-  late List<EthereumAPIProvider> importedProviders =
-      List.from(network.coinParam.providers);
+  List<EthereumAPIProvider> importedProviders = [];
 
   _Page page = _Page.infos;
 
@@ -158,105 +143,77 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
     }
   }
 
-  void onTapUpdateProviders() async {
-    final to = await context.to<List<EthereumAPIProvider>>(
-        PageRouter.updateEthereumProvider,
-        argruments: (chainId, importedProviders));
-    if (to != null) {
-      importedProviders = to;
-      updateState();
-    }
-  }
-
-  void onRemoveProvider(APIProvider provider) {
-    importedProviders.remove(provider);
+  void onTapProvider(EthereumAPIProvider provider) async {
+    rpcUrl = RPCURL(url: provider.callUrl, auth: provider.auth);
     updateState();
   }
 
-  late WalletProvider wallet;
-  bool get showRemoveIcon =>
-      chain != null && isWalletNetwork && !isDefaultNetwork;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    MethodUtils.after(() async {
-      wallet = context.watch<WalletProvider>(StateConst.main);
-      final evmNetworks =
-          wallet.wallet.getChains().whereType<EthereumChain>().toList();
-
-      if (widget.web3 == null) {
-        network = widget.network ?? WalletEthereumNetwork.create();
-        final networkExist = evmNetworks
-            .firstWhereOrNull((e) => e.chainId == network.coinParam.chainId);
-        chain = networkExist;
-      } else {
-        final web3Network = widget.web3!.request.params.toNewNetwork();
-        final networkExist = evmNetworks.firstWhereOrNull(
-            (e) => e.chainId == web3Network.coinParam.chainId);
-        network = networkExist?.network ?? web3Network;
-
-        if (networkExist != null) {
-          importedProviders.addAll(web3Network.coinParam.providers);
-        }
-      }
-
-      existsChainIds = evmNetworks.map((e) => e.chainId).toList();
-      defaultProviders = List<EthereumAPIProvider>.unmodifiable(
-          ProvidersConst.getDefaultProvider(network));
-      if (editableChainId) {
-        page = _Page.chainId;
-      }
-      pageProgressKey.backToIdle();
-      updateState();
-    });
-  }
-
-  void removeChain(bool? remove) async {
-    if (remove != true) return;
-    pageProgressKey.progressText("removing_chain_please_wait".tr);
-    final result = await wallet.wallet.removeChain(chain!);
-    if (result.hasError) {
-      pageProgressKey.errorText(result.error!.tr);
+  void _init() {
+    final wallet = context.watch<WalletProvider>(StateConst.main);
+    final evmNetworks =
+        wallet.wallet.getChains().whereType<EthereumChain>().toList();
+    existsChainIds = evmNetworks.map((e) => e.chainId).toList();
+    final WalletEthereumNetwork network;
+    if (widget.web3 == null) {
+      network = WalletEthereumNetwork.create();
+      page = _Page.chainId;
     } else {
-      pageProgressKey.successText("chain_removed_desc".tr, backToIdle: false);
+      final web3Network = widget.web3!.request.params.toNewNetwork();
+      final networkExist = evmNetworks
+          .firstWhereOrNull((e) => e.chainId == web3Network.coinParam.chainId);
+      network = networkExist?.network ?? web3Network;
+      if (networkExist != null) {
+        pageProgressKey.errorText("network_chain_id_already_exist".tr,
+            backToIdle: false, showBackButton: false);
+        return;
+      }
+      symbol = network.coinParam.token.symbol;
+      networkName = network.coinParam.token.name;
+      chainId = network.coinParam.chainId;
+      coinType = network.coinParam.bip32CoinType ?? Slip44.ethereum;
+      explorerAddressLink = network.coinParam.addressExplorer ?? "";
+      explorerTransaction = network.coinParam.transactionExplorer ?? "";
+      importedProviders = network.coinParam.providers;
     }
+
+    pageProgressKey.backToIdle();
+    updateState();
   }
 
   void onAddChain() async {
     if (!(formKey.currentState?.validate() ?? false)) return;
-    if (!hasProvider) return;
+    rpcUrl = rpcKey.currentState?.getEndpoint();
+    if (rpcUrl == null) return;
+    final provider = EthereumAPIProvider(
+        uri: rpcUrl!.url,
+        identifier: APIUtils.getProviderIdentifier(),
+        auth: rpcUrl!.auth);
     pageProgressKey.progressText("checking_rpc_network_info".tr);
     final result = await MethodUtils.call(() async {
       final wallet = context.watch<WalletProvider>(StateConst.main);
       final chain = chainId;
-      WalletEthereumNetwork updateNetwork;
-      if (isDefaultNetwork) {
-        updateNetwork = network.copyWith(
-            coinParam: network.coinParam.updateProviders(importedProviders));
-      } else {
-        final client = APIUtils.buildEthereumProvider(
-            provider: importedProviders[0], network: network);
-        final info = await client.getNetworkInfo();
-        updateNetwork = network.copyWith(
-            coinParam: EthereumNetworkParams(
-                transactionExplorer: explorerTransaction.nullOnEmpty,
-                addressExplorer: explorerAddressLink.nullOnEmpty,
-                token: Token(
-                    name: networkName,
-                    symbol: symbol,
-                    decimal: EthereumUtils.decimal),
-                providers: importedProviders,
-                chainId: chain,
-                supportEIP1559: info.$2,
-                defaultNetwork: false,
-                chainType: ChainType.mainnet,
-                bip32CoinType: coinType));
-      }
+      final client = APIUtils.buildEthereumProvider(provider: provider);
+      final info = await client.getNetworkInfo();
+      WalletEthereumNetwork updateNetwork = WalletEthereumNetwork(
+          -1,
+          EthereumNetworkParams(
+              transactionExplorer: explorerTransaction.nullOnEmpty,
+              addressExplorer: explorerAddressLink.nullOnEmpty,
+              token: Token(
+                  name: networkName,
+                  symbol: symbol,
+                  decimal: EthereumUtils.decimal),
+              providers: importedProviders,
+              chainId: chain,
+              supportEIP1559: info.$2,
+              defaultNetwork: false,
+              chainType: ChainType.mainnet,
+              bip32CoinType: coinType));
       return await wallet.wallet.updateImportNetwork(updateNetwork);
     });
     if (result.hasError) {
-      pageProgressKey.errorText(result.error!.tr);
+      pageProgressKey.errorText(result.error!.tr,
+          showBackButton: true, backToIdle: false);
     } else {
       pageProgressKey.successText("network_imported_to_your_wallet".tr,
           backToIdle: false);
@@ -265,41 +222,15 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
   }
 
   @override
+  void onInitOnce() {
+    super.onInitOnce();
+    MethodUtils.after(() async => _init(), duration: APPConst.animationDuraion);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ScaffolPageView(
-      appBar: isWeb3
-          ? null
-          : AppBar(
-              title: Text("import_network".tr),
-              actions: [
-                if (showRemoveIcon)
-                  TextButton.icon(
-                    onPressed: () {
-                      context
-                          .openSliverDialog<bool>(
-                              (p0) => DialogTextView(
-                                    widget: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text("remove_network_desc2".tr,
-                                            style:
-                                                context.textTheme.titleMedium),
-                                        WidgetConstant.height8,
-                                        Text("remove_network_desc".tr),
-                                      ],
-                                    ),
-                                    buttonWidget:
-                                        const DialogDoubleButtonView(),
-                                  ),
-                              "remove_network".tr)
-                          .then(removeChain);
-                    },
-                    label: Text("remove".tr),
-                    icon: Icon(Icons.delete, color: context.colors.error),
-                  )
-              ],
-            ),
+    return ScaffoldPageView(
+      appBar: isWeb3 ? null : AppBar(title: Text("import_network".tr)),
       child: Form(
         key: formKey,
         child: UnfocusableChild(
@@ -356,19 +287,16 @@ class _SetupChainId extends StatelessWidget {
               defaultValue: state.chainId.toInt(),
               onChange: state.onChangeChainId,
               validator: state.validateChainId,
-              error: state.chainError,
               showPasteIcon: true,
-              // suffixIcon: PasteTextIcon(onPaste: (v) {}, isSensitive: false),
               max: null,
               min: 0),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
-                padding: WidgetConstant.paddingVertical40,
-                onPressed: state.confirmChainId,
-                child: Text("confirm_chain_id".tr),
-              ),
+                  padding: WidgetConstant.paddingVertical40,
+                  onPressed: state.confirmChainId,
+                  child: Text("continue".tr)),
             ],
           ),
         ],
@@ -408,37 +336,30 @@ class _ChainInfos extends StatelessWidget {
           Text("network_name_desc".tr),
           WidgetConstant.height8,
           AppTextField(
-            initialValue: state.networkName,
-            onChanged: state.onChangeNetworkName,
-            validator: state.validateNetworkName,
-            label: "network_name".tr,
-            readOnly: state.isDefaultNetwork,
-          ),
+              initialValue: state.networkName,
+              onChanged: state.onChangeNetworkName,
+              validator: state.validateNetworkName,
+              label: "network_name".tr),
           WidgetConstant.height20,
           Text("symbol".tr, style: context.textTheme.titleMedium),
           Text("symbol_desc".tr),
           WidgetConstant.height8,
           AppTextField(
-            initialValue: state.symbol,
-            onChanged: state.onChangeSymbol,
-            validator: state.validateSymbol,
-            label: "symbol".tr,
-            readOnly: state.isDefaultNetwork,
-          ),
-          if (!state.isDefaultNetwork) ...[
-            WidgetConstant.height20,
-            Text("coin_type".tr, style: context.textTheme.titleMedium),
-            LargeTextView(["slip_44_desc".tr, "coin_type_desc2".tr],
-                maxLine: 1),
-            WidgetConstant.height8,
-            NumberTextField(
-                label: "coin_type".tr,
-                defaultValue: state.coinType,
-                onChange: state.onChangeCoinType,
-                validator: state.validateCoinType,
-                max: Bip32KeyDataConst.keyIndexMaxVal,
-                min: 0),
-          ],
+              initialValue: state.symbol,
+              onChanged: state.onChangeSymbol,
+              validator: state.validateSymbol,
+              label: "symbol".tr),
+          WidgetConstant.height20,
+          Text("coin_type".tr, style: context.textTheme.titleMedium),
+          LargeTextView(["slip_44_desc".tr, "coin_type_desc2".tr], maxLine: 1),
+          WidgetConstant.height8,
+          NumberTextField(
+              label: "coin_type".tr,
+              defaultValue: state.coinType,
+              onChange: state.onChangeCoinType,
+              validator: state.validateCoinType,
+              max: Bip32KeyDataConst.keyIndexMaxVal,
+              min: 0),
           WidgetConstant.height20,
           Text("network_explorer_address_link".tr,
               style: context.textTheme.titleMedium),
@@ -466,75 +387,54 @@ class _ChainInfos extends StatelessWidget {
             label: "network_explorer_transaction_link".tr,
             pasteIcon: true,
           ),
-          if (state.defaultProviders.isNotEmpty) ...[
-            WidgetConstant.height20,
-            Text("default_providers".tr, style: context.textTheme.titleMedium),
-            WidgetConstant.height8,
-            ...List.generate(state.defaultProviders.length, (index) {
-              final provider = state.defaultProviders[index];
-              return ContainerWithBorder(
-                  child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(provider.protocol.name),
-                  Text(provider.callUrl),
-                ],
-              ));
-            }),
-          ],
+          ConditionalWidget(
+              enable: state.importedProviders.isNotEmpty,
+              onActive: (context) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        WidgetConstant.height20,
+                        Text("providers".tr,
+                            style: context.textTheme.titleMedium),
+                        Text("select_provider_to_use".tr),
+                        WidgetConstant.height8,
+                        ...List.generate(state.importedProviders.length,
+                            (index) {
+                          final provider = state.importedProviders[index];
+                          return ContainerWithBorder(
+                              onRemove: () {
+                                state.onTapProvider(provider);
+                              },
+                              onRemoveIcon: Icon(Icons.open_in_new,
+                                  color: context.colors.onPrimaryContainer),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(provider.protocol.value.tr,
+                                      style: context
+                                          .onPrimaryTextTheme.labelLarge),
+                                  Text(provider.callUrl,
+                                      style:
+                                          context.onPrimaryTextTheme.bodyMedium,
+                                      maxLines: 2),
+                                ],
+                              ));
+                        }),
+                      ])),
           WidgetConstant.height20,
           Text("providers".tr, style: context.textTheme.titleMedium),
-          Text("edit_or_add_evm_provider_desc".tr),
+          LargeTextView(["network_title_http_wss_url".tr], maxLine: 2),
           WidgetConstant.height8,
-          APPAnimatedSize(
-            isActive: true,
-            onDeactive: (c) => WidgetConstant.sizedBox,
-            onActive: (c) => Column(
-              children: [
-                ContainerWithBorder(
-                  validate: state.defaultProviders.isNotEmpty ||
-                      state.importedProviders.isNotEmpty,
-                  onRemove: () {
-                    state.onTapUpdateProviders();
-                  },
-                  onRemoveIcon: Icon(Icons.add_box,
-                      color: context.colors.onPrimaryContainer),
-                  child: Text(
-                    "tap_to_add_new_service_provider".tr,
-                    style: context.onPrimaryTextTheme.bodyMedium,
-                  ),
-                ),
-                ...List.generate(state.importedProviders.length, (index) {
-                  final provider = state.importedProviders[index];
-                  return ContainerWithBorder(
-                      onRemove: () {
-                        state.onRemoveProvider(provider);
-                      },
-                      onRemoveIcon: Icon(Icons.remove_circle,
-                          color: context.colors.onPrimaryContainer),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(provider.protocol.value.tr,
-                              style: context.onPrimaryTextTheme.labelLarge),
-                          Text(provider.callUrl,
-                              style: context.onPrimaryTextTheme.bodyMedium,
-                              maxLines: 2),
-                        ],
-                      ));
-                }),
-              ],
-            ),
-          ),
+          HTTPServiceProviderFields(
+              key: state.rpcKey,
+              protocols: [ServiceProtocol.http, ServiceProtocol.websocket],
+              initialUrl: state.rpcUrl),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
                   padding: WidgetConstant.paddingVertical40,
-                  onPressed: state.hasProvider ? state.onAddChain : null,
-                  child: Text(state.isWalletNetwork
-                      ? "update_network".tr
-                      : "import".tr))
+                  onPressed: state.onAddChain,
+                  child: Text("import".tr))
             ],
           )
         ],

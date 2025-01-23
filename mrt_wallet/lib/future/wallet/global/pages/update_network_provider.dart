@@ -249,8 +249,12 @@ mixin UpdateNetworkProviderState<
     final result = await MethodUtils.call(() async {
       final wallet = context.watch<WalletProvider>(StateConst.main);
       final services = providers.map((e) => e).toList();
+      final param = network.coinParam;
       final updatedNetwork = network.copyWith(
-          coinParam: network.coinParam.updateProviders(services));
+          coinParam: param.updateParams(
+              updateProviders: services,
+              addressExplorer: param.addressExplorer,
+              transactionExplorer: param.transactionExplorer));
       return await wallet.wallet.updateImportNetwork(updatedNetwork);
     });
     if (result.hasError) {
@@ -269,7 +273,7 @@ mixin UpdateNetworkProviderState<
 
   @override
   Widget build(BuildContext context) {
-    return ScaffolPageView(
+    return ScaffoldPageView(
       appBar: AppBar(title: Text("network_update_node_provider".tr)),
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {
@@ -280,295 +284,305 @@ mixin UpdateNetworkProviderState<
           key: progressKey,
           initialStatus: StreamWidgetStatus.progress,
           backToIdle: APPConst.twoSecoundDuration,
-          child: (c) => CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: ConstraintsBoxView(
-                    padding: WidgetConstant.padding20,
-                    child: Form(
-                      key: formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          PageTitleSubtitle(
-                              title: "network_security_title".tr,
-                              body: LargeTextView([
-                                "network_security_desc".tr,
-                                "network_change_detect_desc".tr
-                              ])),
-                          Text("network".tr,
-                              style: context.textTheme.titleMedium),
-                          WidgetConstant.height8,
-                          ContainerWithBorder(
-                              child: Text(
-                            network.coinParam.token.name,
-                            style: context.colors.onPrimaryContainer
-                                .bodyMedium(context),
-                          )),
-                          WidgetConstant.height20,
-                          AnimatedSize(
-                              duration: APPConst.animationDuraion,
-                              child: ConditionalWidgets(
-                                  enable: !inAddProvider,
-                                  widgets: {
-                                    true: (context) => Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text("default_providers".tr,
-                                                style: context
-                                                    .textTheme.titleMedium),
-                                            WidgetConstant.height8,
-                                            APPExpansionListTile(
-                                              title: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    "default_providers".tr,
-                                                    style: context.colors
-                                                        .onPrimaryContainer
-                                                        .bodyMedium(context),
-                                                  ),
-                                                  Text(
-                                                    "network_unbale_change_providers"
-                                                        .tr,
-                                                    style: context.colors
-                                                        .onPrimaryContainer
-                                                        .bodySmall(context),
-                                                  )
-                                                ],
-                                              ),
-                                              children: List.generate(
-                                                  defaultProviders.length,
-                                                  (index) {
-                                                final provider =
-                                                    defaultProviders[index];
-                                                return ContainerWithBorder(
-                                                    backgroundColor: context
-                                                        .colors
-                                                        .onPrimaryContainer,
-                                                    child: CopyableTextWidget(
-                                                        text: provider.callUrl,
-                                                        color: context.colors
-                                                            .primaryContainer));
-                                              }),
-                                            ),
-                                            if (providers.isNotEmpty) ...[
-                                              WidgetConstant.height20,
-                                              Text("providers".tr,
+          child: (c) => UnfocusableChild(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: ConstraintsBoxView(
+                      padding: WidgetConstant.padding20,
+                      child: Form(
+                        key: formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            PageTitleSubtitle(
+                                title: "network_security_title".tr,
+                                body: LargeTextView([
+                                  "network_security_desc".tr,
+                                  "network_change_detect_desc".tr
+                                ])),
+                            Text("network".tr,
+                                style: context.textTheme.titleMedium),
+                            WidgetConstant.height8,
+                            ContainerWithBorder(
+                                child: Text(
+                              network.coinParam.token.name,
+                              style: context.colors.onPrimaryContainer
+                                  .bodyMedium(context),
+                            )),
+                            WidgetConstant.height20,
+                            AnimatedSize(
+                                duration: APPConst.animationDuraion,
+                                child: ConditionalWidgets(
+                                    enable: !inAddProvider,
+                                    widgets: {
+                                      true: (context) => Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text("default_providers".tr,
                                                   style: context
                                                       .textTheme.titleMedium),
-                                              Text(
-                                                  "tap_to_add_new_service_provider"
-                                                      .tr),
                                               WidgetConstant.height8,
-                                              ...List.generate(providers.length,
-                                                  (index) {
-                                                final provider =
-                                                    providers[index];
-                                                return ContainerWithBorder(
-                                                    onRemove: () {},
-                                                    enableTap: false,
-                                                    onRemoveWidget: IconButton(
-                                                        onPressed: () {
-                                                          deleteProvider(
-                                                              provider);
-                                                        },
-                                                        icon: Icon(
-                                                            Icons.remove_circle,
-                                                            color: context
-                                                                .colors
-                                                                .onPrimaryContainer)),
-                                                    child: CopyableTextWidget(
-                                                        text: provider.callUrl,
-                                                        widget: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                                provider
-                                                                    .protocol
-                                                                    .value,
-                                                                style: context
-                                                                    .onPrimaryTextTheme
-                                                                    .labelLarge),
-                                                            Text(
-                                                                provider
-                                                                    .callUrl,
-                                                                style: context
-                                                                    .onPrimaryTextTheme
-                                                                    .bodyMedium),
-                                                          ],
-                                                        ),
-                                                        color: context.colors
-                                                            .onPrimaryContainer));
-                                              }),
-                                            ],
-                                            WidgetConstant.height20,
-                                            Text("service_provider".tr,
-                                                style: context
-                                                    .textTheme.titleMedium),
-                                            if (serviceDescription != null)
-                                              Text(serviceDescription!),
-                                            WidgetConstant.height8,
-                                            ContainerWithBorder(
-                                              enableTap: false,
-                                              onRemove: service.url == null
-                                                  ? null
-                                                  : () {
-                                                      UriUtils.lunch(
-                                                          service.url);
+                                              APPExpansionListTile(
+                                                title: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      "default_providers".tr,
+                                                      style: context.colors
+                                                          .onPrimaryContainer
+                                                          .bodyMedium(context),
+                                                    ),
+                                                    Text(
+                                                      "network_unbale_change_providers"
+                                                          .tr,
+                                                      style: context.colors
+                                                          .onPrimaryContainer
+                                                          .bodySmall(context),
+                                                    )
+                                                  ],
+                                                ),
+                                                children: List.generate(
+                                                    defaultProviders.length,
+                                                    (index) {
+                                                  final provider =
+                                                      defaultProviders[index];
+                                                  return ContainerWithBorder(
+                                                      backgroundColor: context
+                                                          .colors
+                                                          .onPrimaryContainer,
+                                                      child: CopyableTextWidget(
+                                                          text:
+                                                              provider.callUrl,
+                                                          color: context.colors
+                                                              .primaryContainer));
+                                                }),
+                                              ),
+                                              if (providers.isNotEmpty) ...[
+                                                WidgetConstant.height20,
+                                                Text("providers".tr,
+                                                    style: context
+                                                        .textTheme.titleMedium),
+                                                Text(
+                                                    "tap_to_add_new_service_provider"
+                                                        .tr),
+                                                WidgetConstant.height8,
+                                                ...List.generate(
+                                                    providers.length, (index) {
+                                                  final provider =
+                                                      providers[index];
+                                                  return ContainerWithBorder(
+                                                      onRemove: () {},
+                                                      enableTap: false,
+                                                      onRemoveWidget:
+                                                          IconButton(
+                                                              onPressed: () {
+                                                                deleteProvider(
+                                                                    provider);
+                                                              },
+                                                              icon: Icon(
+                                                                  Icons
+                                                                      .remove_circle,
+                                                                  color: context
+                                                                      .colors
+                                                                      .onPrimaryContainer)),
+                                                      child: CopyableTextWidget(
+                                                          text:
+                                                              provider.callUrl,
+                                                          widget: Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                  provider
+                                                                      .protocol
+                                                                      .value,
+                                                                  style: context
+                                                                      .onPrimaryTextTheme
+                                                                      .labelLarge),
+                                                              Text(
+                                                                  provider
+                                                                      .callUrl,
+                                                                  style: context
+                                                                      .onPrimaryTextTheme
+                                                                      .bodyMedium),
+                                                            ],
+                                                          ),
+                                                          color: context.colors
+                                                              .onPrimaryContainer));
+                                                }),
+                                              ],
+                                              WidgetConstant.height20,
+                                              Text("service_provider".tr,
+                                                  style: context
+                                                      .textTheme.titleMedium),
+                                              if (serviceDescription != null)
+                                                Text(serviceDescription!),
+                                              WidgetConstant.height8,
+                                              ContainerWithBorder(
+                                                enableTap: false,
+                                                onRemove: service.url == null
+                                                    ? null
+                                                    : () {
+                                                        UriUtils.lunch(
+                                                            service.url);
+                                                      },
+                                                onRemoveIcon: ToolTipView(
+                                                  key: ValueKey(service),
+                                                  message: service.url,
+                                                  child: Icon(
+                                                      Icons.open_in_new_rounded,
+                                                      color: context
+                                                          .onPrimaryContainer),
+                                                ),
+                                                child: AppDropDownBottom(
+                                                    key: ValueKey(service),
+                                                    border: InputBorder.none,
+                                                    isExpanded: true,
+                                                    fillColor: context
+                                                        .colors.transparent,
+                                                    items: {
+                                                      for (final i in services)
+                                                        i: Text(i.name,
+                                                            style: context
+                                                                .onPrimaryTextTheme
+                                                                .bodyMedium)
                                                     },
-                                              onRemoveIcon: ToolTipView(
-                                                key: ValueKey(service),
-                                                message: service.url,
-                                                child: Icon(
-                                                    Icons.open_in_new_rounded,
+                                                    itemBuilder: {
+                                                      for (final i in services)
+                                                        i: Text(i.name)
+                                                    },
+                                                    labelStyle: context.colors
+                                                        .onPrimaryContainer
+                                                        .lableLarge(context),
+                                                    value: service,
+                                                    onChanged: onChangeService),
+                                              ),
+                                              WidgetConstant.height20,
+                                              Text("protocol".tr,
+                                                  style: context
+                                                      .textTheme.titleMedium),
+                                              WidgetConstant.height8,
+                                              ContainerWithBorder(
+                                                onRemove: createNewProvider,
+                                                enableTap: false,
+                                                onRemoveIcon: Icon(
+                                                    Icons.add_box,
                                                     color: context
                                                         .onPrimaryContainer),
-                                              ),
-                                              child: AppDropDownBottom(
-                                                  key: ValueKey(service),
+                                                child: AppDropDownBottom(
+                                                  key: ValueKey(protocol),
                                                   border: InputBorder.none,
-                                                  isExpanded: true,
                                                   fillColor: context
                                                       .colors.transparent,
                                                   items: {
-                                                    for (final i in services)
-                                                      i: Text(i.name,
-                                                          style: context
-                                                              .onPrimaryTextTheme
-                                                              .bodyMedium)
+                                                    for (final i
+                                                        in supportedProtocol)
+                                                      i: Text(
+                                                        i.value,
+                                                        style: context.colors
+                                                            .onPrimaryContainer
+                                                            .bodyMedium(
+                                                                context),
+                                                      )
                                                   },
                                                   itemBuilder: {
-                                                    for (final i in services)
-                                                      i: Text(i.name)
+                                                    for (final i
+                                                        in supportedProtocol)
+                                                      i: Text(i.value)
                                                   },
                                                   labelStyle: context
                                                       .colors.onPrimaryContainer
                                                       .lableLarge(context),
-                                                  value: service,
-                                                  onChanged: onChangeService),
-                                            ),
-                                            WidgetConstant.height20,
-                                            Text("protocol".tr,
-                                                style: context
-                                                    .textTheme.titleMedium),
-                                            WidgetConstant.height8,
-                                            ContainerWithBorder(
-                                              onRemove: createNewProvider,
-                                              enableTap: false,
-                                              onRemoveIcon: Icon(Icons.add_box,
-                                                  color: context
-                                                      .onPrimaryContainer),
-                                              child: AppDropDownBottom(
-                                                key: ValueKey(protocol),
-                                                border: InputBorder.none,
-                                                fillColor:
-                                                    context.colors.transparent,
-                                                items: {
-                                                  for (final i
-                                                      in supportedProtocol)
-                                                    i: Text(
-                                                      i.value,
-                                                      style: context.colors
-                                                          .onPrimaryContainer
-                                                          .bodyMedium(context),
-                                                    )
-                                                },
-                                                itemBuilder: {
-                                                  for (final i
-                                                      in supportedProtocol)
-                                                    i: Text(i.value)
-                                                },
-                                                labelStyle: context
-                                                    .colors.onPrimaryContainer
-                                                    .lableLarge(context),
-                                                value: protocol,
-                                                onChanged: onChangeProtocol,
-                                              ),
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                FixedElevatedButton(
-                                                  padding: WidgetConstant
-                                                      .paddingVertical20,
-                                                  onPressed: enableUpdateButton
-                                                      ? null
-                                                      : updateNetworkProviders,
-                                                  child: Text(
-                                                      "network_update_network_providers"
-                                                          .tr),
-                                                )
-                                              ],
-                                            )
-                                          ],
-                                        ),
-                                    false: (cotext) => Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text("api_url".tr,
-                                                style: context
-                                                    .textTheme.titleMedium),
-                                            Text(protocolTitle),
-                                            WidgetConstant.height8,
-                                            AppTextField(
-                                              key: uriFieldKey,
-                                              initialValue: rpcUrl,
-                                              onChanged: onChageUrl,
-                                              validator: validateRpcUrl,
-                                              suffixIcon: PasteTextIcon(
-                                                onPaste: onPasteUri,
-                                                isSensitive: false,
-                                              ),
-                                              label: "api_url".tr,
-                                              hint: protocolHint,
-                                            ),
-                                            ProviderAuthView(
-                                                enableAuthMode: enableAuthMode,
-                                                useAuthenticated:
-                                                    useAuthenticated,
-                                                onChangeAuthenticated:
-                                                    onChangeAuthenticated,
-                                                onChangeAuthMode:
-                                                    onChangeAuthMode,
-                                                auth: auth,
-                                                authKey: authKey,
-                                                authValue: authValue,
-                                                onChangeKey: onChangeKey,
-                                                validateKey: validateKey,
-                                                onChangeValue: onChangeValue,
-                                                validateValue: validateValue,
-                                                supportedAuths: supportedAuth),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                FixedElevatedButton.icon(
-                                                  padding: WidgetConstant
-                                                      .paddingVertical40,
-                                                  label: Text(
-                                                      "network_verify_server_status"
-                                                          .tr),
-                                                  onPressed: importProvider,
-                                                  icon:
-                                                      const Icon(Icons.update),
+                                                  value: protocol,
+                                                  onChanged: onChangeProtocol,
                                                 ),
-                                              ],
-                                            )
-                                          ],
-                                        )
-                                  }))
-                        ],
-                      ),
-                    )),
-              ),
-            ],
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  FixedElevatedButton(
+                                                    padding: WidgetConstant
+                                                        .paddingVertical20,
+                                                    onPressed: enableUpdateButton
+                                                        ? null
+                                                        : updateNetworkProviders,
+                                                    child: Text(
+                                                        "network_update_network_providers"
+                                                            .tr),
+                                                  )
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                      false: (cotext) => Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text("api_url".tr,
+                                                  style: context
+                                                      .textTheme.titleMedium),
+                                              Text(protocolTitle),
+                                              WidgetConstant.height8,
+                                              AppTextField(
+                                                key: uriFieldKey,
+                                                initialValue: rpcUrl,
+                                                onChanged: onChageUrl,
+                                                validator: validateRpcUrl,
+                                                suffixIcon: PasteTextIcon(
+                                                  onPaste: onPasteUri,
+                                                  isSensitive: false,
+                                                ),
+                                                label: "api_url".tr,
+                                                hint: protocolHint,
+                                              ),
+                                              ProviderAuthView(
+                                                  enableAuthMode:
+                                                      enableAuthMode,
+                                                  useAuthenticated:
+                                                      useAuthenticated,
+                                                  onChangeAuthenticated:
+                                                      onChangeAuthenticated,
+                                                  onChangeAuthMode:
+                                                      onChangeAuthMode,
+                                                  auth: auth,
+                                                  authKey: authKey,
+                                                  authValue: authValue,
+                                                  onChangeKey: onChangeKey,
+                                                  validateKey: validateKey,
+                                                  onChangeValue: onChangeValue,
+                                                  validateValue: validateValue,
+                                                  supportedAuths:
+                                                      supportedAuth),
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  FixedElevatedButton.icon(
+                                                    padding: WidgetConstant
+                                                        .paddingVertical40,
+                                                    label: Text(
+                                                        "network_verify_server_status"
+                                                            .tr),
+                                                    onPressed: importProvider,
+                                                    icon: const Icon(
+                                                        Icons.update),
+                                                  ),
+                                                ],
+                                              )
+                                            ],
+                                          )
+                                    }))
+                          ],
+                        ),
+                      )),
+                ),
+              ],
+            ),
           ),
         ),
       ),

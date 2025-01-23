@@ -5,6 +5,7 @@ mixin Web3Impl
         WalletManager,
         Web3EthereumImpl,
         Web3TonImpl,
+        Web3SubstrateImpl,
         Web3StellarImpl,
         Web3SolanaImpl,
         Web3TronImpl {
@@ -15,60 +16,58 @@ mixin Web3Impl
       case NetworkType.ethereum:
         final web3Chain = authenticated
             .getChainFromNetworkType<Web3EthereumChain>(param.method.network);
-        if (param.account != null && web3Chain == null) {
-          throw Web3RequestExceptionConst.missingPermission;
+        if (web3Chain == null) {
+          throw Web3RequestExceptionConst.bannedHost;
         }
-        return _appChains._networks.values
-            .whereType<EthereumChain>()
-            .firstWhere(
-                (e) => e.chainId == (web3Chain?.currentChain ?? BigInt.one),
-                orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+        final chains =
+            _appChains._networks.values.whereType<EthereumChain>().toList();
+        return web3Chain.getCurrentPermissionChain(chains);
       case NetworkType.tron:
         final web3Chain = authenticated
             .getChainFromNetworkType<Web3TronChain>(param.method.network);
-        if (param.account != null && web3Chain == null) {
-          throw Web3RequestExceptionConst.missingPermission;
+        if (web3Chain == null) {
+          throw Web3RequestExceptionConst.bannedHost;
         }
-        return _appChains._networks.values.whereType<TronChain>().firstWhere(
-            (e) =>
-                e.network.tronNetworkType ==
-                (web3Chain?.currentChain ?? TronChainType.mainnet),
-            orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+        final chains =
+            _appChains._networks.values.whereType<TronChain>().toList();
+        return web3Chain.getCurrentPermissionChain(chains);
       case NetworkType.solana:
         final web3Chain = authenticated
             .getChainFromNetworkType<Web3SolanaChain>(param.method.network);
-        if (param.account != null && web3Chain == null) {
-          throw Web3RequestExceptionConst.missingPermission;
+        if (web3Chain == null) {
+          throw Web3RequestExceptionConst.bannedHost;
         }
-        return _appChains._networks.values.whereType<SolanaChain>().firstWhere(
-            (e) =>
-                e.network.genesisBlock ==
-                (web3Chain?.currentChain ?? TronChainType.mainnet),
-            orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+        final chains =
+            _appChains._networks.values.whereType<SolanaChain>().toList();
+        return web3Chain.getCurrentPermissionChain(chains);
       case NetworkType.ton:
         final web3Chain = authenticated
             .getChainFromNetworkType<Web3TonChain>(param.method.network);
-        if (param.account != null && web3Chain == null) {
-          throw Web3RequestExceptionConst.missingPermission;
+        if (web3Chain == null) {
+          throw Web3RequestExceptionConst.bannedHost;
         }
-        return _appChains._networks.values
+        final chains = _appChains._networks.values
             .whereType<TheOpenNetworkChain>()
-            .firstWhere(
-                (e) =>
-                    e.network.coinParam.workchain ==
-                    (web3Chain?.currentChain ?? TonConst.mainnetWokchainId),
-                orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+            .toList();
+        return web3Chain.getCurrentPermissionChain(chains);
       case NetworkType.stellar:
         final web3Chain = authenticated
             .getChainFromNetworkType<Web3StellarChain>(param.method.network);
-        if (param.account != null && web3Chain == null) {
+        if (web3Chain == null) {
           throw Web3RequestExceptionConst.missingPermission;
         }
-        return _appChains._networks.values.whereType<StellarChain>().firstWhere(
-            (e) =>
-                e.network.coinParam.passphrase ==
-                (web3Chain?.currentChain ?? StellarConst.mainnetPassphrase),
-            orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
+        final chains =
+            _appChains._networks.values.whereType<StellarChain>().toList();
+        return web3Chain.getCurrentPermissionChain(chains);
+      case NetworkType.substrate:
+        final web3Chain = authenticated
+            .getChainFromNetworkType<Web3SubstrateChain>(param.method.network);
+        if (web3Chain == null) {
+          throw Web3RequestExceptionConst.missingPermission;
+        }
+        final chains =
+            _appChains._networks.values.whereType<SubstrateChain>().toList();
+        return web3Chain.getCurrentPermissionChain(chains);
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
@@ -82,8 +81,7 @@ mixin Web3Impl
         dataBytes: StringUtils.encode(info.clientId),
         isolate: false);
     final message = Web3ChainMessage(
-        authenticated: auth,
-        message: _appChains.toCbor(onlyWeb3Chains: true).encode(),
+        authenticated: auth.createAuth(_appChains.getWeb3NetworkData()),
         type: Web3MessageTypes.chains);
     final encryptedKey = await crypto.cryptoMainRequest(
         CryptoRequestEncryptChacha(
@@ -95,8 +93,7 @@ mixin Web3Impl
   Future<Web3EncryptedMessage> _getWeb3Permission(Web3ClientInfo info) async {
     final auth = await _getOrCreateAppAuthenticated(info);
     final message = Web3ChainMessage(
-        authenticated: auth,
-        message: _appChains.toCbor(onlyWeb3Chains: true).encode(),
+        authenticated: auth.createAuth(_appChains.getWeb3NetworkData()),
         type: Web3MessageTypes.chains);
     final encryptedKey = await crypto.cryptoMainRequest(
         CryptoRequestEncryptChacha(
@@ -108,9 +105,7 @@ mixin Web3Impl
   Future<Web3APPAuthentication> _getOrCreateAppAuthenticated(
       Web3ClientInfo info) async {
     final permission = await _core._readWeb3Permission(
-      applicationId: info.applicationId,
-      wallet: _wallet,
-    );
+        applicationId: info.applicationId, wallet: _wallet);
 
     final toPermission = MethodUtils.nullOnException(() {
       return Web3APPAuthentication.deserialize(hex: permission);
@@ -122,12 +117,11 @@ mixin Web3Impl
           dataBytes: info.applicationId.codeUnits,
           isolate: false);
       final permission = Web3APPAuthentication(
-        name: info.name,
-        applicationKey: applicationKey,
-        applicationId: info.applicationId,
-        icon: info.image,
-        token: token,
-      );
+          name: info.name,
+          applicationKey: applicationKey,
+          applicationId: info.applicationId,
+          icon: info.image,
+          token: token);
       await _core._savePermission(permission: permission, wallet: _wallet);
       return permission;
     }
@@ -159,41 +153,63 @@ mixin Web3Impl
         return await _getTonWeb3Result(request as Web3TonRequest);
       case NetworkType.stellar:
         return await _getStellarWeb3Result(request as Web3StellarRequest);
-
+      case NetworkType.substrate:
+        return await _getSubstrateWeb3Result(request as Web3SubstrateRequest);
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
   }
 
-  Future<Web3MessageCore> _handleGlobalRequest({
-    required Web3GlobalRequestParams requestParams,
-    required Web3APPAuthentication authenticated,
-    required Web3RequestApplicationInformation walletRequest,
-  }) async {
-    throw UnimplementedError();
+  Future<Web3MessageCore> _handleGlobalRequest(
+      {required Web3GlobalRequestParams requestParams,
+      required Web3APPAuthentication authenticated,
+      required Web3RequestApplicationInformation walletRequest}) async {
+    try {
+      switch (requestParams.method) {
+        case Web3GlobalRequestMethods.disconnect:
+          final disconnect = requestParams.cast<Web3DisconnectApplication>();
+          authenticated.disconnectChain(disconnect.chain);
+          return Web3WalletResponseMessage(
+              result: true,
+              authenticated:
+                  authenticated.createAuth(_appChains.getWeb3NetworkData()),
+              network: disconnect.chain);
+        default:
+      }
+      throw UnimplementedError();
+    } finally {
+      await _core._savePermission(wallet: _wallet, permission: authenticated);
+    }
   }
 
   Future<Web3MessageCore> _handleChainRequest(
       {required Web3RequestParams requestParams,
       required Web3APPAuthentication authenticated,
       required Web3RequestApplicationInformation walletRequest}) async {
-    final chain =
-        _getWeb3ChainId(authenticated: authenticated, param: requestParams);
-    final request = requestParams.toRequest(
-        request: walletRequest, chain: chain, authenticated: authenticated);
-    request.verifyPermissioon();
-    final Object? result = await _getWeb3Result(request: request);
-    request.authenticated
-        .addActivity(param: request.params, url: request.info.info.url);
-    await _core._savePermission(wallet: _wallet, permission: authenticated);
-    final walletResponse = request.params.toJsWalletResponse(result);
-    return Web3WalletResponseMessage(
-        result: walletResponse,
-        authenticated: authenticated,
-        network: chain.network.type,
-        chain: request.params.isPermissionRequest
-            ? _appChains.toCbor(onlyWeb3Chains: true).encode()
-            : null);
+    try {
+      final chain =
+          _getWeb3ChainId(authenticated: authenticated, param: requestParams);
+      final request = requestParams.toRequest(
+          request: walletRequest, chain: chain, authenticated: authenticated);
+      request.verifyPermission();
+      final Object? result = await _getWeb3Result(request: request);
+      request.authenticated
+          .addActivity(param: request.params, url: request.info.info.url);
+
+      final walletResponse = request.params.toJsWalletResponse(result);
+      Web3APPData? auth;
+      if (requestParams.isPermissionRequest ||
+          request.params.method.reloadAuthenticated) {
+        auth = authenticated.createAuth(_appChains.getWeb3NetworkData(),
+            web3Networks: [request.chain.network.type]);
+      }
+      return Web3WalletResponseMessage(
+          result: walletResponse,
+          authenticated: auth,
+          network: chain.network.type);
+    } finally {
+      await _core._savePermission(wallet: _wallet, permission: authenticated);
+    }
   }
 
   Future<Web3EncryptedMessage> _web3Request(
@@ -237,8 +253,16 @@ mixin Web3Impl
     } on Web3RejectException {
       rethrow;
     } on Web3RequestException catch (e) {
-      response =
-          e.toResponseMessage(requestId: walletRequest.request.requestId);
+      Web3APPData? auth;
+      switch (e) {
+        case Web3RequestExceptionConst.missingPermission:
+        case Web3RequestExceptionConst.invalidNetwork:
+          auth = authenticated.createAuth(_appChains.getWeb3NetworkData());
+          break;
+        default:
+      }
+      response = e.toResponseMessage(
+          requestId: walletRequest.request.requestId, authenticated: auth);
     } catch (e) {
       const exception = Web3RequestExceptionConst.internalError;
       response = exception.toResponseMessage(
@@ -256,8 +280,7 @@ mixin Web3Impl
     await _core._savePermission(wallet: _wallet, permission: application);
     final message = Web3ChainMessage(
         type: Web3MessageTypes.chains,
-        authenticated: application,
-        message: _appChains.toCbor(onlyWeb3Chains: true).encode());
+        authenticated: application.createAuth(_appChains.getWeb3NetworkData()));
     final CryptoEncryptChachaResponse encryptResponse =
         await crypto.cryptoMainRequest(CryptoRequestEncryptChacha(
             key: application.token, message: message.toCbor().encode()));

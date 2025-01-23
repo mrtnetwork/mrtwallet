@@ -36,7 +36,7 @@ class _SecureBackupViewState extends State<GenerateBackupView> with SafeState {
   String? backup;
   void createBackup() async {
     final wallet = context.watch<WalletProvider>(StateConst.main);
-    progressKey.progressText("creating_backup_desc".tr, sliver: false);
+    progressKey.progressText("creating_backup_desc".tr);
     final MethodResult<String> result;
     if (widget.type == MrtBackupTypes.wallet) {
       result = await wallet.wallet.generateWalletBackup(widget.password);
@@ -162,8 +162,8 @@ class _SecureBackupViewState extends State<GenerateBackupView> with SafeState {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    StreamWidget(
-                                      buttonWidget: FilledButton.icon(
+                                    ButtonProgress(
+                                      child: (context) => FilledButton.icon(
                                           onPressed: share,
                                           icon: const Icon(Icons.share),
                                           label: Text("share_as_file".tr)),

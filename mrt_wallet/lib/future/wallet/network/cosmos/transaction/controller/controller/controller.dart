@@ -66,5 +66,6 @@ class CosomosTransactionStateController extends CosmosTransactiomImpl
   void close() {
     super.close();
     validator.removeListener(_onChangeForm);
+    validator.validator.close();
   }
 }

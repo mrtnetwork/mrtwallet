@@ -7,25 +7,16 @@ import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart
 import 'response.dart';
 
 class Web3WalletResponseMessage extends Web3ResponseMessage {
-  final Web3APPAuthentication authenticated;
-  final List<int>? chain;
-  Web3WalletResponseMessage._({
-    super.result,
-    required super.network,
-    required this.authenticated,
-    List<int>? chain,
-  }) : chain = BytesUtils.tryToBytes(chain, unmodifiable: true);
+  final Web3APPData? authenticated;
+  Web3WalletResponseMessage._(
+      {super.result, required super.network, required this.authenticated});
   factory Web3WalletResponseMessage({
     Object? result,
     required NetworkType network,
-    required Web3APPAuthentication authenticated,
-    List<int>? chain,
+    required Web3APPData? authenticated,
   }) {
     return Web3WalletResponseMessage._(
-        result: result,
-        authenticated: authenticated,
-        network: network,
-        chain: chain);
+        result: result, authenticated: authenticated, network: network);
   }
 
   factory Web3WalletResponseMessage.deserialize(
@@ -39,10 +30,9 @@ class Web3WalletResponseMessage extends Web3ResponseMessage {
         StringUtils.toJson(values.elementAt<String>(0));
     return Web3WalletResponseMessage._(
         result: result["result"],
-        authenticated:
-            Web3APPAuthentication.deserialize(object: values.getCborTag(1)),
-        network: NetworkType.fromTag(values.elementAt(2)),
-        chain: values.elementAt(3));
+        authenticated: values.elemetMybeAs<Web3APPData, CborTagValue>(
+            1, (p0) => Web3APPData.deserialize(object: p0)),
+        network: NetworkType.fromTag(values.elementAt(2)));
   }
 
   @override
@@ -50,9 +40,8 @@ class Web3WalletResponseMessage extends Web3ResponseMessage {
     return CborTagValue(
         CborListValue.fixedLength([
           StringUtils.fromJson({"result": result}),
-          authenticated.toCbor(),
+          authenticated?.toCbor(),
           CborBytesValue(network.tag),
-          chain == null ? const CborNullValue() : CborBytesValue(chain!)
         ]),
         type.tag);
   }

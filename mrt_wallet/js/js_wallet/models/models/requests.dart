@@ -187,7 +187,8 @@ enum JSClientType {
   tron(tag: [152], networkName: "Tron"),
   solana(tag: [153], networkName: "Solana"),
   ton(tag: [154], networkName: "TON"),
-  stellar(tag: [155], networkName: "Stellar");
+  stellar(tag: [155], networkName: "Stellar"),
+  substrate(tag: [156], networkName: "Substrate");
 
   final List<int> tag;
   final String networkName;

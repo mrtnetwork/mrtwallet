@@ -33,7 +33,7 @@ class _UpdateSolanaProviderState extends State<_UpdateSubstrateProvider>
         UpdateNetworkProviderState<
             _UpdateSubstrateProvider,
             SubstrateAPIProvider,
-            SubstrateAddress,
+            BaseSubstrateAddress,
             ISubstrateAddress,
             SubstrateClient,
             TokenCore,

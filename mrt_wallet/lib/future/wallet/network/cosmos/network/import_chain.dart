@@ -16,15 +16,30 @@ enum _Page { selectChain, search, review }
 typedef _OnAddOrUpdateTOken = Future<CosmosFeeToken?> Function(
     CosmosFeeToken? token);
 
-class CosmosImportNetworkView extends StatefulWidget {
+class CosmosImportNetworkView extends StatelessWidget {
   const CosmosImportNetworkView({super.key});
 
   @override
-  State<CosmosImportNetworkView> createState() =>
-      _CosmosImportNetworkViewState();
+  Widget build(BuildContext context) {
+    return PasswordCheckerView(
+      accsess: WalletAccsessType.unlock,
+      appbar: AppBar(title: Text("import_network".tr)),
+      onAccsess: (credential, password, network) {
+        return _CosmosImportNetworkView();
+      },
+    );
+  }
 }
 
-class _CosmosImportNetworkViewState extends State<CosmosImportNetworkView>
+class _CosmosImportNetworkView extends StatefulWidget {
+  const _CosmosImportNetworkView();
+
+  @override
+  State<_CosmosImportNetworkView> createState() =>
+      __CosmosImportNetworkViewState();
+}
+
+class __CosmosImportNetworkViewState extends State<_CosmosImportNetworkView>
     with HttpImpl, CosmosCustomRequest, ProgressMixin, SafeState {
   late final List<CosmosChain> existChains;
   late final WalletProvider wallet;
@@ -406,33 +421,28 @@ class _CosmosImportNetworkViewState extends State<CosmosImportNetworkView>
   @override
   Widget build(BuildContext context) {
     return UnfocusableChild(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("import_network".tr),
-        ),
-        body: PopScope(
-          canPop: chaintype == null,
-          onPopInvokedWithResult: (didPop, result) {
-            onBackButton();
+      child: PopScope(
+        canPop: chaintype == null,
+        onPopInvokedWithResult: (didPop, result) {
+          onBackButton();
+        },
+        child: PageProgress(
+          key: progressKey,
+          backToIdle: APPConst.oneSecoundDuration,
+          child: (context) {
+            return CustomScrollView(
+              slivers: [
+                APPSliverAnimatedSwitcher<_Page>(
+                  enable: page,
+                  widgets: {
+                    _Page.selectChain: (context) => _SelectChainType(this),
+                    _Page.search: (context) => _SelectNetwork(this),
+                    _Page.review: (context) => _Review(this),
+                  },
+                )
+              ],
+            );
           },
-          child: PageProgress(
-            key: progressKey,
-            backToIdle: APPConst.oneSecoundDuration,
-            child: (context) {
-              return CustomScrollView(
-                slivers: [
-                  APPSliverAnimatedSwitcher<_Page>(
-                    enable: page,
-                    widgets: {
-                      _Page.selectChain: (context) => _SelectChainType(this),
-                      _Page.search: (context) => _SelectNetwork(this),
-                      _Page.review: (context) => _Review(this),
-                    },
-                  )
-                ],
-              );
-            },
-          ),
         ),
       ),
     );
@@ -441,7 +451,7 @@ class _CosmosImportNetworkViewState extends State<CosmosImportNetworkView>
 
 class _SelectChainType extends StatelessWidget {
   const _SelectChainType(this.state);
-  final _CosmosImportNetworkViewState state;
+  final __CosmosImportNetworkViewState state;
 
   @override
   Widget build(BuildContext context) {
@@ -456,11 +466,10 @@ class _SelectChainType extends StatelessWidget {
             Text("select_cosmos_chain_type_desc".tr),
             WidgetConstant.height8,
             AppDropDownBottom<ChainType>(
-              items: state.chainTypeWidgets,
-              value: state.chaintype,
-              hint: "chain_type".tr,
-              onChanged: state.onChangeChainType,
-            )
+                items: state.chainTypeWidgets,
+                value: state.chaintype,
+                hint: "chain_type".tr,
+                onChanged: state.onChangeChainType)
           ],
         ),
       ),
@@ -470,7 +479,7 @@ class _SelectChainType extends StatelessWidget {
 
 class _SelectNetwork extends StatelessWidget {
   const _SelectNetwork(this.state);
-  final _CosmosImportNetworkViewState state;
+  final __CosmosImportNetworkViewState state;
 
   @override
   Widget build(BuildContext context) {
@@ -536,7 +545,7 @@ class _SelectNetwork extends StatelessWidget {
 
 class _Review extends StatelessWidget {
   const _Review(this.state);
-  final _CosmosImportNetworkViewState state;
+  final __CosmosImportNetworkViewState state;
 
   @override
   Widget build(BuildContext context) {
@@ -701,9 +710,11 @@ class _Review extends StatelessWidget {
                 Text("enter_tendermint_rpc_desc".tr),
                 WidgetConstant.height8,
                 HTTPServiceProviderFields(
-                    key: state.serviceProviderStateKey,
-                    initialUrl: state.rpcUrl,
-                    enableAuth: true),
+                  key: state.serviceProviderStateKey,
+                  initialUrl: state.rpcUrl,
+                  enableAuth: true,
+                  protocols: [ServiceProtocol.http],
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

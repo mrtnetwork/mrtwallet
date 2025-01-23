@@ -62,6 +62,8 @@ class Web3PageRequestControllerView<T extends Web3RequestControllerState>
                 return Web3PageProgress(
                     key: controller.progressKey,
                     initialStatus: Web3ProgressStatus.progress,
+                    initialWidget: ProgressWithTextView(
+                        text: "web3_retrieval_requirment".tr),
                     child: (context) => CustomScrollView(slivers: [
                           SliverConstraintsBoxView(
                               maxWidth: width,

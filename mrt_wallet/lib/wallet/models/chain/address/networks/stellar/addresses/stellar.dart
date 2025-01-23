@@ -99,7 +99,9 @@ class IStellarAddress
         StellarAddress.fromBase32Addr(cbor.elementAt(5));
     final BigInt? id = cbor.elementAt(6);
     final List<StellarIssueToken> tokens = (cbor.elementAt<List<dynamic>>(8))
-        .map((e) => StellarIssueToken.fromCborBytesOrObject(obj: e))
+        .map((e) => MethodUtils.nullOnException(
+            () => StellarIssueToken.fromCborBytesOrObject(obj: e)))
+        .whereType<StellarIssueToken>()
         .toList();
     final String? accountName = cbor.elementAt(10);
     return IStellarAddress._(

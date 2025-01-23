@@ -323,7 +323,7 @@ class TronClient extends NetworkClient<ITronAddress, TronAPIProvider>
 
   Future<bool> checkGenesis() async {
     final block = await provider.request(TronRequestGetBlockByNum(num: 0));
-    return block["blockID"] == network.coinParam.genesis;
+    return block["blockID"] == network.genesisBlock;
   }
 
   Future<bool> checkSolidityChainId() async {

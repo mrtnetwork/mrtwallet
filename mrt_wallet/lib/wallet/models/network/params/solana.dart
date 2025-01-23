@@ -24,7 +24,6 @@ enum SolanaNetworkType {
 }
 
 class SolanaNetworkParams extends NetworkCoinParams<SolanaAPIProvider> {
-  final String genesis;
   final int chainId;
   final SolanaNetworkType type;
 
@@ -34,79 +33,58 @@ class SolanaNetworkParams extends NetworkCoinParams<SolanaAPIProvider> {
         bytes, obj, CborTagsConst.solNetworkParam);
 
     return SolanaNetworkParams(
-        transactionExplorer: values.elementAs(0),
-        addressExplorer: values.elementAs(1),
         token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
         providers: values
             .elementAsListOf<CborTagValue>(3)
             .map((e) => SolanaAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
         chainType: ChainType.fromValue(values.elementAs(4)),
-        genesis: values.elementAs(5),
         chainId: values.elementAs(6),
-        type: SolanaNetworkType.fromValue(values.elementAs(7)));
+        type: SolanaNetworkType.fromValue(values.elementAs(7)),
+        addressExplorer: values.elementAs(8),
+        transactionExplorer: values.elementAs(9));
   }
   SolanaNetworkParams(
-      {required super.transactionExplorer,
-      required super.addressExplorer,
-      required super.token,
+      {required super.token,
       required super.providers,
       required super.chainType,
-      required this.genesis,
       required this.chainId,
-      required this.type});
-
-  SolanaNetworkParams copyWith({
-    ChainType? chainType,
-    String? transactionExplorer,
-    String? addressExplorer,
-    Token? token,
-    List<SolanaAPIProvider>? providers,
-    String? genesis,
-    int? chainId,
-    SolanaNetworkType? type,
-  }) {
-    return SolanaNetworkParams(
-        chainType: chainType ?? this.chainType,
-        transactionExplorer: transactionExplorer ?? this.transactionExplorer,
-        addressExplorer: addressExplorer ?? this.addressExplorer,
-        token: token ?? this.token,
-        providers: providers ?? this.providers,
-        genesis: genesis ?? this.genesis,
-        chainId: chainId ?? this.chainId,
-        type: type ?? this.type);
-  }
+      required this.type,
+      super.addressExplorer,
+      super.transactionExplorer});
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          transactionExplorer,
-          addressExplorer,
+          const CborNullValue(),
+          const CborNullValue(),
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
           chainType.name,
-          genesis,
+          const CborNullValue(),
           chainId,
-          type.value
+          type.value,
+          addressExplorer,
+          transactionExplorer
         ]),
         CborTagsConst.solNetworkParam);
   }
 
   @override
-  NetworkCoinParams<SolanaAPIProvider> updateProviders(
-      List<APIProvider> updateProviders) {
+  NetworkCoinParams<SolanaAPIProvider> updateParams(
+      {List<APIProvider>? updateProviders,
+      Token? token,
+      String? transactionExplorer,
+      String? addressExplorer}) {
     return SolanaNetworkParams(
-        transactionExplorer: transactionExplorer,
-        addressExplorer: addressExplorer,
-        token: token,
-        providers: updateProviders.cast<SolanaAPIProvider>(),
+        token: NetworkCoinParams.validateUpdateParams(
+            token: this.token, updateToken: token),
+        providers: updateProviders?.cast<SolanaAPIProvider>() ?? providers,
         chainType: chainType,
-        genesis: genesis,
         chainId: chainId,
-        type: type);
+        type: type,
+        addressExplorer: addressExplorer,
+        transactionExplorer: transactionExplorer);
   }
-
-  @override
-  String get identifier => genesis;
 }

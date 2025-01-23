@@ -30,9 +30,23 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
   List<CryptoCoins> get coins;
   bool get supportImportNetwork => false;
   bool get supportWeb3 => false;
+  String? get accountExplorer => ChainConst.getAddressExplorer(value);
+  String? get txExplorer => ChainConst.getTxExplorer(value);
+
+  Object get identifier;
+
+  String? getAccountExplorer(String? address) {
+    if (address == null) return null;
+    return accountExplorer?.replaceAll(
+        NetworkCoinParamsConst.addrArgs, address);
+  }
+
+  String? getTransactionExplorer(String txId) {
+    return txExplorer?.replaceAll(NetworkCoinParamsConst.txIdArgs, txId);
+  }
 
   T? getProvider<T extends APIProvider>(
-      {T? selectProvider, bool allowInWeb3 = false}) {
+      {String? identifier, bool allowInWeb3 = false}) {
     Iterable<T> supportedProviders = coinParam.providers.whereType<T>().where(
         (element) => element.protocol
             .supportOnThisPlatform(PlatformInterface.appPlatform));
@@ -41,13 +55,11 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
     }
     if (supportedProviders.isEmpty) return null;
 
-    if (selectProvider == null ||
-        !selectProvider.protocol
-            .supportOnThisPlatform(PlatformInterface.appPlatform)) {
+    if (identifier == null) {
       return supportedProviders.first;
     }
     return supportedProviders.firstWhere(
-        (element) => element.identifier == selectProvider.identifier,
+        (element) => element.identifier == identifier,
         orElse: () => supportedProviders.first);
   }
 
@@ -79,10 +91,8 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
         return WalletTonNetwork.fromCborBytesOrObject(obj: toCborTag);
       case NetworkType.tron:
         return WalletTronNetwork.fromCborBytesOrObject(obj: toCborTag);
-      case NetworkType.polkadot:
-        return WalletPolkadotNetwork.fromCborBytesOrObject(obj: toCborTag);
-      case NetworkType.kusama:
-        return WalletKusamaNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.substrate:
+        return WalletSubstrateNetwork.fromCborBytesOrObject(obj: toCborTag);
       case NetworkType.stellar:
         return WalletStellarNetwork.fromCborBytesOrObject(obj: toCborTag);
       case NetworkType.monero:
@@ -165,6 +175,11 @@ class WalletBitcoinNetwork extends WalletNetwork<BitcoinParams> {
     return WalletBitcoinNetwork(
         value ?? this.value, coinParam ?? this.coinParam);
   }
+
+  String get genesisBlock => ChainConst.getDefaultGenesisBlock(value);
+
+  @override
+  Object get identifier => genesisBlock;
 }
 
 class WalletBitcoinCashNetwork extends WalletBitcoinNetwork {
@@ -242,6 +257,9 @@ class WalletXRPNetwork extends WalletNetwork<RippleNetworkParams> {
   WalletXRPNetwork copyWith({int? value, RippleNetworkParams? coinParam}) {
     return WalletXRPNetwork(value ?? this.value, coinParam ?? this.coinParam);
   }
+
+  @override
+  Object get identifier => coinParam.identifier;
 }
 //
 
@@ -308,6 +326,16 @@ class WalletEthereumNetwork extends WalletNetwork<EthereumNetworkParams> {
           chainType: ChainType.testnet),
     );
   }
+
+  @override
+  Object get identifier => coinParam.identifier;
+
+  @override
+  String? get accountExplorer =>
+      coinParam.addressExplorer ?? ChainConst.getAddressExplorer(value);
+  @override
+  String? get txExplorer =>
+      coinParam.transactionExplorer ?? ChainConst.getTxExplorer(value);
 }
 
 class WalletTronNetwork extends WalletNetwork<TronNetworkParams> {
@@ -355,6 +383,10 @@ class WalletTronNetwork extends WalletNetwork<TronNetworkParams> {
   WalletTronNetwork copyWith({int? value, TronNetworkParams? coinParam}) {
     return WalletTronNetwork(value ?? this.value, coinParam ?? this.coinParam);
   }
+
+  String get genesisBlock => ChainConst.getDefaultGenesisBlock(value);
+  @override
+  Object get identifier => genesisBlock;
 }
 
 class WalletSolanaNetwork extends WalletNetwork<SolanaNetworkParams> {
@@ -362,7 +394,7 @@ class WalletSolanaNetwork extends WalletNetwork<SolanaNetworkParams> {
   final int value;
   @override
   final SolanaNetworkParams coinParam;
-  String get genesisBlock => coinParam.genesis;
+  String get genesisBlock => ChainConst.getDefaultGenesisBlock(value);
   @override
   bool get supportWeb3 => true;
   const WalletSolanaNetwork(this.value, this.coinParam);
@@ -403,6 +435,8 @@ class WalletSolanaNetwork extends WalletNetwork<SolanaNetworkParams> {
 
   @override
   NetworkType get type => NetworkType.solana;
+  @override
+  Object get identifier => genesisBlock;
 }
 
 class WalletCardanoNetwork extends WalletNetwork<CardanoNetworkParams> {
@@ -463,6 +497,9 @@ class WalletCardanoNetwork extends WalletNetwork<CardanoNetworkParams> {
     return WalletCardanoNetwork(
         value ?? this.value, coinParam ?? this.coinParam);
   }
+
+  @override
+  Object get identifier => coinParam.identifier;
 }
 
 class WalletCosmosNetwork extends WalletNetwork<CosmosNetworkParams> {
@@ -508,6 +545,16 @@ class WalletCosmosNetwork extends WalletNetwork<CosmosNetworkParams> {
     return WalletCosmosNetwork(
         value ?? this.value, coinParam ?? this.coinParam);
   }
+
+  @override
+  Object get identifier => coinParam.identifier;
+
+  @override
+  String? get accountExplorer =>
+      coinParam.addressExplorer ?? ChainConst.getAddressExplorer(value);
+  @override
+  String? get txExplorer =>
+      coinParam.transactionExplorer ?? ChainConst.getTxExplorer(value);
 }
 
 class WalletTonNetwork extends WalletNetwork<TonNetworkParams> {
@@ -555,19 +602,22 @@ class WalletTonNetwork extends WalletNetwork<TonNetworkParams> {
   WalletTonNetwork copyWith({int? value, TonNetworkParams? coinParam}) {
     return WalletTonNetwork(value ?? this.value, coinParam ?? this.coinParam);
   }
+
+  @override
+  Object get identifier => coinParam.identifier;
 }
 
-class WalletPolkadotNetwork extends WalletNetwork<SubstrateNetworkParams> {
+class WalletSubstrateNetwork extends WalletNetwork<SubstrateNetworkParams> {
   @override
   final int value;
   @override
   final SubstrateNetworkParams coinParam;
-  const WalletPolkadotNetwork(this.value, this.coinParam);
-  factory WalletPolkadotNetwork.fromCborBytesOrObject(
+  const WalletSubstrateNetwork(this.value, this.coinParam);
+  factory WalletSubstrateNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
-        bytes, obj, CborTagsConst.polkadotNetwork);
-    return WalletPolkadotNetwork(cbor.elementAt(0),
+        bytes, obj, CborTagsConst.substrateNetwork);
+    return WalletSubstrateNetwork(cbor.elementAt(0),
         SubstrateNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)));
   }
 
@@ -577,10 +627,13 @@ class WalletPolkadotNetwork extends WalletNetwork<SubstrateNetworkParams> {
       SubstrateCoins.genericEd25519,
       SubstrateCoins.genericSecp256k1,
       SubstrateCoins.genericSr25519,
-      if (coinParam.mainnet)
-        Bip44Coins.polkadotEd25519Slip
-      else
-        Bip44Coins.polkadotTestnetEd25519Slip
+      if (coinParam.mainnet) ...[
+        Bip44Coins.polkadotEd25519Slip,
+        Bip44Coins.ethereum
+      ] else ...[
+        Bip44Coins.polkadotTestnetEd25519Slip,
+        Bip44Coins.ethereumTestnet
+      ]
     ];
   }
 
@@ -590,61 +643,33 @@ class WalletPolkadotNetwork extends WalletNetwork<SubstrateNetworkParams> {
   @override
   CborTagValue toCbor() {
     return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
-        CborTagsConst.polkadotNetwork);
+        CborTagsConst.substrateNetwork);
   }
 
   @override
   bool get supportCustomNode => true;
 
   @override
-  NetworkType get type => NetworkType.polkadot;
+  NetworkType get type => NetworkType.substrate;
 
   @override
-  WalletPolkadotNetwork copyWith(
+  WalletSubstrateNetwork copyWith(
       {int? value, SubstrateNetworkParams? coinParam}) {
-    return WalletPolkadotNetwork(
+    return WalletSubstrateNetwork(
         value ?? this.value, coinParam ?? this.coinParam);
   }
-}
 
-class WalletKusamaNetwork extends WalletPolkadotNetwork {
-  const WalletKusamaNetwork(super.value, super.coinParam);
-  factory WalletKusamaNetwork.fromCborBytesOrObject(
-      {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
-        bytes, obj, CborTagsConst.kusamaNetwork);
-    return WalletKusamaNetwork(cbor.elementAt(0),
-        SubstrateNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)));
-  }
+  String get genesisBlock =>
+      coinParam.gnesisBlock ?? ChainConst.getDefaultGenesisBlock(value);
 
   @override
-  List<CryptoCoins> get coins {
-    return [
-      SubstrateCoins.genericEd25519,
-      SubstrateCoins.genericSecp256k1,
-      SubstrateCoins.genericSr25519,
-      if (coinParam.mainnet)
-        Bip44Coins.kusamaEd25519Slip
-      else
-        Bip44Coins.kusamaTestnetEd25519Slip
-    ];
-  }
+  Object get identifier => genesisBlock;
 
   @override
-  CborTagValue toCbor() {
-    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
-        CborTagsConst.kusamaNetwork);
-  }
+  bool get supportImportNetwork => true;
 
   @override
-  NetworkType get type => NetworkType.kusama;
-
-  @override
-  WalletKusamaNetwork copyWith(
-      {int? value, SubstrateNetworkParams? coinParam}) {
-    return WalletKusamaNetwork(
-        value ?? this.value, coinParam ?? this.coinParam);
-  }
+  bool get supportWeb3 => true;
 }
 
 class WalletStellarNetwork extends WalletNetwork<StellarNetworkParams> {
@@ -694,6 +719,9 @@ class WalletStellarNetwork extends WalletNetwork<StellarNetworkParams> {
     return WalletStellarNetwork(
         value ?? this.value, coinParam ?? this.coinParam);
   }
+
+  @override
+  Object get identifier => coinParam.identifier;
 }
 
 class WalletMoneroNetwork extends WalletNetwork<MoneroNetworkParams> {
@@ -740,4 +768,8 @@ class WalletMoneroNetwork extends WalletNetwork<MoneroNetworkParams> {
     return WalletMoneroNetwork(
         value ?? this.value, coinParam ?? this.coinParam);
   }
+
+  String get genesisBlock => ChainConst.getDefaultGenesisBlock(value);
+  @override
+  Object get identifier => genesisBlock;
 }

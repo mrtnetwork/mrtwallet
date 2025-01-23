@@ -4,6 +4,18 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        //   "args": ["-d", "chrome","--web-port", "8000"],
+        {
+            "name": "web",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "-d",
+                "chrome",
+                "--web-port",
+                "8080"
+            ]
+        },
         {
             "name": "mrt_wallet",
             "request": "launch",

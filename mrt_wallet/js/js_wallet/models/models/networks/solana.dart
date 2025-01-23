@@ -79,11 +79,11 @@ extension type SolanaWalletAdapter(JSObject _) implements MRTNetworkAdapter {
 }
 
 @JS("Uint8Array")
-extension type JSUint8Array(JSAny _) implements JSAny {
-  external static JSUint8Array from(JSAny? v);
-  external JSUint8Array slice();
-  factory JSUint8Array.fromList(List<int> bytes) {
-    return JSUint8Array.from(bytes.jsify());
+extension type APPJSUint8Array(JSAny _) implements JSAny {
+  external static APPJSUint8Array from(JSAny? v);
+  external APPJSUint8Array slice();
+  factory APPJSUint8Array.fromList(List<int> bytes) {
+    return APPJSUint8Array.from(bytes.jsify());
   }
   List<int> toListInt() {
     return (dartify() as List?)?.cast() ?? [];
@@ -195,18 +195,18 @@ extension type JSSolanaTransactionSerializationConfig._(JSObject _)
 @JS()
 extension type JSSolanaSignMessageResponse._(JSObject _) implements JSAny {
   external factory JSSolanaSignMessageResponse(
-      {required JSUint8Array signature,
+      {required APPJSUint8Array signature,
       required JSObject publicKey,
-      required JSUint8Array signedMessage});
-  external JSUint8Array get signature;
+      required APPJSUint8Array signedMessage});
+  external APPJSUint8Array get signature;
   external JSObject get publicKey;
-  external JSUint8Array get signedMessage;
+  external APPJSUint8Array get signedMessage;
 
   factory JSSolanaSignMessageResponse.fromJson(Map<String, dynamic> json) {
     return JSSolanaSignMessageResponse(
-        signature: JSUint8Array.fromList((json["signature"] as List).cast()),
+        signature: APPJSUint8Array.fromList((json["signature"] as List).cast()),
         signedMessage:
-            JSUint8Array.fromList((json["signedMessage"] as List).cast()),
+            APPJSUint8Array.fromList((json["signedMessage"] as List).cast()),
         publicKey: JSSolanaPublicKey(
                 base58: json["signer"],
                 bytes: (json["signerAddressBytes"] as List).cast())
@@ -282,9 +282,9 @@ enum JSSolanalaTransactionType {
 
 extension type SolanaSignTransactionOutput._(JSObject _) implements JSAny {
   external factory SolanaSignTransactionOutput(
-      {JSUint8Array signedTransaction});
+      {APPJSUint8Array signedTransaction});
 
-  external JSUint8Array get signedTransaction;
+  external APPJSUint8Array get signedTransaction;
 }
 extension type SolanaSignAndSendTransactionOutput._(JSObject _)
     implements JSAny {
@@ -307,15 +307,15 @@ extension type JSSolanaTransaction(JSObject _) implements JSAny {
     switch (type) {
       case JSSolanalaTransactionType.walletAdapter:
         return SolanaSignTransactionOutput(
-            signedTransaction: JSUint8Array.fromList(signedTransaction));
+            signedTransaction: APPJSUint8Array.fromList(signedTransaction));
       case JSSolanalaTransactionType.web3:
         final SolanaWeb3Transaction tx = this as SolanaWeb3Transaction;
-        tx.addSignature(signer.toJS, JSUint8Array.fromList(signature));
+        tx.addSignature(signer.toJS, APPJSUint8Array.fromList(signature));
         return this;
     }
   }
 
-  JSUint8Array transactionSerialize() {
+  APPJSUint8Array transactionSerialize() {
     final type = this.type;
     switch (type) {
       case JSSolanalaTransactionType.walletAdapter:
@@ -330,12 +330,12 @@ extension type JSSolanaTransaction(JSObject _) implements JSAny {
 }
 extension type SolanaWeb3Transaction(JSObject _)
     implements JSSolanaTransaction {
-  external set serializedBytes(JSUint8Array _);
-  external JSUint8Array get serializedBytes;
-  external JSUint8Array serialize(
+  external set serializedBytes(APPJSUint8Array _);
+  external APPJSUint8Array get serializedBytes;
+  external APPJSUint8Array serialize(
       JSSolanaTransactionSerializationConfig? config);
   external void addSignature(JSObject pubkey, JSAny? signature);
-  JSUint8Array transactionSerialize() {
+  APPJSUint8Array transactionSerialize() {
     return serializedBytes;
   }
 
@@ -355,7 +355,7 @@ extension type SolanaWeb3Transaction(JSObject _)
 }
 extension type SolanaWalletAdapterSignMessage(JSObject _) implements JSAny {
   external JSSolanaWalletAccount get account;
-  external JSUint8Array get message;
+  external APPJSUint8Array get message;
 
   static SolanaWalletAdapterSignMessage? fromJSAny(JSAny? object) {
     final message = MRTJsObject.as<SolanaWalletAdapterSignMessage>(
@@ -366,8 +366,8 @@ extension type SolanaWalletAdapterSignMessage(JSObject _) implements JSAny {
 extension type SolanaWalletAdapterStandardTransaction(JSObject _)
     implements JSSolanaTransaction {
   external JSSolanaWalletAccount? get account;
-  external JSUint8Array get transaction;
-  external set transaction(JSUint8Array _);
+  external APPJSUint8Array get transaction;
+  external set transaction(APPJSUint8Array _);
   external String? get chain;
 
   static SolanaWalletAdapterStandardTransaction? fromJSAny(JSAny? object) {
@@ -394,12 +394,12 @@ extension type SolanaWeb3JSPubKey._(JSObject _) implements JSAny {
 
 class JSSolanaPublicKey {
   final String base58;
-  final JSUint8Array bytes;
+  final APPJSUint8Array bytes;
   const JSSolanaPublicKey._(this._bn,
       {required this.base58, required this.bytes});
   factory JSSolanaPublicKey(
       {required String base58, required List<int> bytes}) {
-    final jsBuffer = JSUint8Array.from(bytes.jsify());
+    final jsBuffer = APPJSUint8Array.from(bytes.jsify());
     return JSSolanaPublicKey._(JSBN(jsBuffer.slice()),
         base58: base58, bytes: jsBuffer);
   }
@@ -436,7 +436,7 @@ class JSSolanaPublicKey {
   }
 
   @JSExport("toBytes")
-  JSUint8Array toBytes() {
+  APPJSUint8Array toBytes() {
     return bytes.slice();
   }
 
@@ -449,10 +449,10 @@ extension type JSSolanaWalletAccount._(JSObject _) implements JSAny {
   }
   external set address(String address);
   external String get address;
-  external JSUint8Array get publicKey;
+  external APPJSUint8Array get publicKey;
   external JSArray<JSString>? get chains;
   external JSArray<JSString>? get features;
-  external set publicKey(JSUint8Array bytes);
+  external set publicKey(APPJSUint8Array bytes);
   external set chains(JSArray<JSString>? chains);
   external set features(JSArray<JSString>? features);
 
@@ -512,7 +512,7 @@ class SolanaWalletAccount {
       ..address = base58
       ..chains = chains.map((e) => e.toJS).toList().toJS.freez
       ..features = SolanaJSConstant.solanaDefaultAccountFeatures.freez
-      ..publicKey = JSUint8Array.fromList(bytes);
+      ..publicKey = APPJSUint8Array.fromList(bytes);
   }
 }
 

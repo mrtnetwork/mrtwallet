@@ -17,6 +17,8 @@ abstract class _WalletCore extends WalletStateController
 
 abstract class WalletCore extends _WalletCore
     with WalletsManager, WalletsListener {
+  int get storageVersion;
+
   @override
   bool get useMemoryStorage => false;
   bool get isJsWallet => false;
@@ -585,14 +587,6 @@ abstract class WalletCore extends _WalletCore
     });
   }
 
-  // Future<MethodResult<List<MoneroAccountWithUtxo>>> moneroUpdateAccountUtxos(
-  //     {required MoneroChain account, required IMoneroAddress address}) async {
-  //   return await _callSynchronized(() async {
-  //     return await _controller._moneroUpdateAccountUtxos(
-  //         account: account, address: address);
-  //   }, conditionStatus: isOpen);
-  // }
-
   Future<MethodResult<void>> moneroAddSyncRequest(
       {required MoneroChain account,
       required IMoneroAddress address,
@@ -622,23 +616,6 @@ abstract class WalletCore extends _WalletCore
           account: account, tracker: tracker, status: status);
     }, conditionStatus: isOpen);
   }
-
-  // Future<MethodResult<void>> saveTransaction<
-  //         NETWORKADDRESS,
-  //         CHAINACCOUNT extends NETWORKCHAINACCOUNT<NETWORKADDRESS>,
-  //         CHAIN extends APPCHAINACCOUNT<CHAINACCOUNT>,
-  //         TRANSACTION extends WALLETNETWORKTRANSACTION<NETWORKADDRESS>>(
-  //     {required CHAINACCOUNT address,
-  //     required CHAIN account,
-  //     required TRANSACTION transaction}) async {
-  //   final result = await _callSynchronized(
-  //       () async => await _controller._saveTransaction(
-  //           address: address, account: account, transaction: transaction),
-  //       conditionStatus: isOpen,
-  //       refresh: false,
-  //       update: true);
-  //   return result;
-  // }
 
   Future<void> updateAccountBalance<CHAINACCOUNT extends ChainAccount>(
       APPCHAINACCOUNT<CHAINACCOUNT> account,

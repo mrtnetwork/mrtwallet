@@ -32,11 +32,10 @@ class IBitcoinCashAddress extends IBitcoinAddress {
     final transactionNetwork =
         network.coinParam.transacationNetwork as BitcoinCashNetwork;
     final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
-      publicKey: publicKey,
-      coin: accountParams.coin,
-      addressType: accountParams.bitcoinAddressType,
-      keyType: accountParams.keyType,
-    );
+        publicKey: publicKey,
+        coin: accountParams.coin,
+        addressType: accountParams.bitcoinAddressType,
+        keyType: accountParams.keyType);
 
     final addressDetauls = AccountBalance(
         address: bitcoinAddress.toAddress(transactionNetwork),
@@ -82,18 +81,15 @@ class IBitcoinCashAddress extends IBitcoinAddress {
         BitcoinAddressType.fromValue(cbor.elementAt(5));
     final keyType = PubKeyModes.fromValue(cbor.elementAs(8),
         defaultValue: PubKeyModes.compressed);
-    final bitcoinAddress = BlockchainAddressUtils.publicKeyToBitcoinAddress(
-      publicKey: publicKey,
-      coin: coin,
-      addressType: bitcoinAddressType,
-      keyType: keyType,
-    );
-    if (bitcoinAddress.toAddress(network.coinParam.transacationNetwork) !=
-        address.toAddress) {
+    final btcNetwork = network.coinParam.transacationNetwork;
+    final bitcoinAddress = BlockchainAddressUtils.toBitcoinAddress(
+        address.toAddress, btcNetwork,
+        p2shAddressType: bitcoinAddressType);
+    if (bitcoinAddress.toAddress(btcNetwork) != address.toAddress ||
+        bitcoinAddress.type != bitcoinAddressType) {
       throw WalletExceptionConst.invalidAccountDetails;
     }
     final String? name = cbor.elementAt(7);
-
     return IBitcoinCashAddress._(
         coin: coin,
         publicKey: publicKey,

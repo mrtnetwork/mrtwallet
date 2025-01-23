@@ -12,27 +12,28 @@ class TronChain extends Chain<
     ChainStorageKey,
     DefaultChainConfig,
     WalletTransaction<TronAddress>> {
-  TronChain._({
-    required super.network,
-    required super.totalBalance,
-    required super.addressIndex,
-    required super.id,
-    required super.config,
-    required super.client,
-    required super.contacts,
-    required super.addresses,
-  }) : super._();
+  TronChain._(
+      {required super.network,
+      required super.totalBalance,
+      required super.addressIndex,
+      required super.id,
+      required super.config,
+      required super.client,
+      required super.contacts,
+      required super.addresses,
+      required super.status})
+      : super._();
   @override
-  TronChain copyWith({
-    WalletTronNetwork? network,
-    Live<IntegerBalance>? totalBalance,
-    List<ITronAddress>? addresses,
-    List<ContactCore<TronAddress>>? contacts,
-    int? addressIndex,
-    TronClient? client,
-    String? id,
-    DefaultChainConfig? config,
-  }) {
+  TronChain copyWith(
+      {WalletTronNetwork? network,
+      Live<IntegerBalance>? totalBalance,
+      List<ITronAddress>? addresses,
+      List<ContactCore<TronAddress>>? contacts,
+      int? addressIndex,
+      TronClient? client,
+      String? id,
+      DefaultChainConfig? config,
+      WalletChainStatus? status}) {
     return TronChain._(
         network: network ?? this.network,
         totalBalance: totalBalance ?? this.totalBalance,
@@ -41,7 +42,8 @@ class TronChain extends Chain<
         contacts: contacts ?? _contacts,
         client: client ?? _client,
         id: id ?? this.id,
-        config: config ?? this.config);
+        config: config ?? this.config,
+        status: status ?? _chainStatus);
   }
 
   factory TronChain.setup(
@@ -49,15 +51,16 @@ class TronChain extends Chain<
       required String id,
       TronClient? client}) {
     return TronChain._(
-        network: network,
-        addressIndex: 0,
-        id: id,
-        totalBalance:
-            Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
-        client: client,
-        addresses: [],
-        config: DefaultChainConfig.none,
-        contacts: []);
+      network: network,
+      addressIndex: 0,
+      id: id,
+      totalBalance: Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
+      client: client,
+      addresses: [],
+      config: DefaultChainConfig.none,
+      contacts: [],
+      status: WalletChainStatus.ready,
+    );
   }
   factory TronChain.deserialize(
       {required WalletTronNetwork network,
@@ -91,14 +94,16 @@ class TronChain extends Chain<
     final BigInt? totalBalance = cbor.elementAt(4);
 
     return TronChain._(
-        network: network,
-        addresses: toAccounts,
-        addressIndex: addressIndex < 0 ? 0 : addressIndex,
-        contacts: contacts,
-        totalBalance: Live(IntegerBalance(
-            totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
-        client: client,
-        id: cbor.elementAt<String>(8),
-        config: DefaultChainConfig.none);
+      network: network,
+      addresses: toAccounts,
+      addressIndex: addressIndex < 0 ? 0 : addressIndex,
+      contacts: contacts,
+      totalBalance: Live(IntegerBalance(
+          totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
+      client: client,
+      id: cbor.elementAt<String>(8),
+      config: DefaultChainConfig.none,
+      status: WalletChainStatus.ready,
+    );
   }
 }

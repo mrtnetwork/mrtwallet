@@ -100,23 +100,18 @@ abstract class MoneroTransactionImpl extends StateController {
   }
 
   Future<void> initTransaction() async {
-    try {
-      await client.updateAccountUtxos(address: address, account: account);
-      _utxos = account.relatedTxAccountsUtxos(address.addrDetails.viewKey);
-      for (final i in _utxos) {
-        _selectedUtxos.putIfAbsent(
-            i.address, () => i.utxos.where((e) => !e.needUpdate).toList());
-      }
-      _change = ReceiptAddress(
-          view: address.networkAddress.address,
-          networkAddress: address.networkAddress,
-          account: address,
-          type: address.networkAddress.type.name);
-      _checkUtxos();
-    } catch (e, s) {
-      WalletLogging.log("error here $e $s");
-      rethrow;
+    await client.updateAccountUtxos(address: address, account: account);
+    _utxos = account.relatedTxAccountsUtxos(address.addrDetails.viewKey);
+    for (final i in _utxos) {
+      _selectedUtxos.putIfAbsent(
+          i.address, () => i.utxos.where((e) => !e.needUpdate).toList());
     }
+    _change = ReceiptAddress(
+        view: address.networkAddress.address,
+        networkAddress: address.networkAddress,
+        account: address,
+        type: address.networkAddress.type.name);
+    _checkUtxos();
   }
 
   void goToSend() async {
@@ -148,9 +143,9 @@ abstract class MoneroTransactionImpl extends StateController {
       if (_canSendToAddress(addr.networkAddress)) {
         _receivers[addr.networkAddress] =
             MoneroOutputWithBalance(address: addr, network: network);
-        return true;
+        return null;
       }
-      return false;
+      return true;
     }
   }
 

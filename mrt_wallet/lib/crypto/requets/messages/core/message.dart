@@ -58,6 +58,7 @@ enum NoneEncryptedCryptoRequestMethod {
   moneroGenerateProof(CryptoKeyConst.moneroGenerateProof),
   moneroVerifyProof(CryptoKeyConst.moneroVerifyProof),
   cbor(CryptoKeyConst.cbor),
+  substrateReadApi(CryptoKeyConst.substrateReadApi),
 
   test([0, 0, 0, 1]);
 
@@ -277,6 +278,9 @@ abstract class NoneEncryptedCryptoRequest<T, A extends CborMessageArgs>
         break;
       case NoneEncryptedCryptoRequestMethod.hashing:
         args = NoneEncryptedRequestHashing.deserialize(object: decode);
+        break;
+      case NoneEncryptedCryptoRequestMethod.substrateReadApi:
+        args = NoneEncryptedRequestSubstrateGetAPI.deserialize(object: decode);
         break;
     }
     if (args is! NoneEncryptedCryptoRequest<T, A>) {

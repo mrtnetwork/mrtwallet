@@ -47,10 +47,7 @@ class IMoneroAddress extends ChainAccount<MoneroAddress, TokenCore, NFTCore>
     final AccountBalance address = AccountBalance.fromCborBytesOrObject(
         network.coinParam.decimal,
         obj: values.getCborTag(3));
-    final networkAddress = addrDetails.toAddress(network.toNetwork());
-    if (networkAddress.address != address.toAddress) {
-      throw WalletExceptionConst.invalidAccountDetails;
-    }
+    final networkAddress = MoneroAddress(address.toAddress);
     final int networkId = values.elementAs(4);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;

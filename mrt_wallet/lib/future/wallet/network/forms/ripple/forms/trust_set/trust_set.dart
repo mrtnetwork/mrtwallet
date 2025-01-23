@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 
-class RippleTrustSetForm implements RippleTransactionForm {
+class RippleTrustSetForm extends RippleTransactionForm {
   final TransactionFormField<XRPCurrencyAmount> amount = TransactionFormField(
     name: "amount",
     subject: "ripple_trust_set_limit_amount",
@@ -76,9 +76,6 @@ class RippleTrustSetForm implements RippleTransactionForm {
       flags: flag.value?.value,
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

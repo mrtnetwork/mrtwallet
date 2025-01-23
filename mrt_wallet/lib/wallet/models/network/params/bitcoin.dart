@@ -10,76 +10,61 @@ import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 
 class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
   final BasedUtxoNetwork transacationNetwork;
-  final String genesis;
 
   factory BitcoinParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
-        bytes, obj, CborTagsConst.bitconNetworkParam);
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes, object: obj, tags: CborTagsConst.bitconNetworkParam);
 
     return BitcoinParams(
-        transactionExplorer: cbor.elementAt(0),
-        addressExplorer: cbor.elementAt(1),
-        token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        transacationNetwork: BasedUtxoNetwork.fromName(cbor.elementAt(3)),
-        providers: (cbor.elementAt(4) as List)
+        token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
+        transacationNetwork: BasedUtxoNetwork.fromName(values.elementAs(3)),
+        providers: values
+            .elementAsListOf<CborTagValue>(4)
             .map((e) => BaseBitcoinAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        genesis: cbor.elementAt(5));
+        addressExplorer: values.elementAs(6),
+        transactionExplorer: values.elementAs(7));
   }
   BitcoinParams({
-    required super.transactionExplorer,
-    required super.addressExplorer,
     required super.providers,
     required super.token,
     required this.transacationNetwork,
-    required this.genesis,
+    super.addressExplorer,
+    super.transactionExplorer,
   }) : super(
             chainType: transacationNetwork.isMainnet
                 ? ChainType.mainnet
                 : ChainType.testnet);
 
-  BitcoinParams copyWith(
-      {List<BaseBitcoinAPIProvider>? providers,
-      String? transactionExplorer,
-      String? addressExplorer,
-      Token? token,
-      BasedUtxoNetwork? transacationNetwork,
-      String? genesis}) {
-    return BitcoinParams(
-        transactionExplorer: transactionExplorer ?? this.transactionExplorer,
-        addressExplorer: addressExplorer ?? this.addressExplorer,
-        transacationNetwork: transacationNetwork ?? this.transacationNetwork,
-        providers: providers ?? this.providers,
-        token: token ?? this.token,
-        genesis: genesis ?? this.genesis);
-  }
-
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          transactionExplorer,
-          addressExplorer,
+          const CborNullValue(),
+          const CborNullValue(),
           token.toCbor(),
           transacationNetwork.value,
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          genesis
+          const CborNullValue(),
+          addressExplorer,
+          transactionExplorer,
         ]),
         CborTagsConst.bitconNetworkParam);
   }
 
   @override
-  BitcoinParams updateProviders(List<APIProvider> updateProviders) {
+  NetworkCoinParams<BaseBitcoinAPIProvider> updateParams(
+      {List<APIProvider>? updateProviders,
+      Token? token,
+      String? transactionExplorer,
+      String? addressExplorer}) {
     return BitcoinParams(
-        transactionExplorer: transactionExplorer,
+        providers: updateProviders?.cast<BaseBitcoinAPIProvider>() ?? providers,
+        token: NetworkCoinParams.validateUpdateParams(
+            token: this.token, updateToken: token),
         addressExplorer: addressExplorer,
-        transacationNetwork: transacationNetwork,
-        providers: updateProviders.cast<BaseBitcoinAPIProvider>(),
-        token: token,
-        genesis: genesis);
+        transactionExplorer: transactionExplorer,
+        transacationNetwork: transacationNetwork);
   }
-
-  @override
-  String get identifier => genesis;
 }

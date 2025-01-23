@@ -11,7 +11,6 @@ import 'package:mrt_wallet/future/wallet/web3/pages/page_progress.dart';
 import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
 import 'package:mrt_wallet/wallet/models/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/models/signing/signing.dart';
-import 'package:mrt_wallet/wallet/web3/networks/ton/params/models/transaction.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:ton_dart/ton_dart.dart';
 
@@ -31,7 +30,8 @@ class Web3TonTransactionRequestController
   late final IntegerBalance remindAmount =
       IntegerBalance.zero(network.coinParam.decimal);
 
-  Future<void> _init() async {
+  @override
+  Future<void> initWeb3() async {
     progressKey.process(text: "transaction_retrieval_requirment".tr);
     final result = await MethodUtils.call(() async {
       final List<TonWeb3TransactionMessageInfo> messages = [];
@@ -112,11 +112,5 @@ class Web3TonTransactionRequestController
     final remind = address.address.currencyBalance - (form.totalTon + fee);
     remindAmount.updateBalance(remind);
     notify();
-  }
-
-  @override
-  Future<void> readyWeb3() async {
-    await super.readyWeb3();
-    _init();
   }
 }

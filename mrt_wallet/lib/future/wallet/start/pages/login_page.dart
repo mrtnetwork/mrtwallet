@@ -73,9 +73,9 @@ class _WalletLoginPageViewState extends State<WalletLoginPageView>
                       return "password_validator".tr;
                     },
                   ),
-                  StreamWidget(
+                  ButtonProgress(
                     padding: WidgetConstant.paddingVertical20,
-                    buttonWidget: FixedElevatedButton(
+                    child: (context) => FixedElevatedButton(
                       onPressed: unlock,
                       child: Text("unlock".tr),
                     ),

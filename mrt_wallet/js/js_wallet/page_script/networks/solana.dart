@@ -38,12 +38,13 @@ class SolanaPageController extends PageNetworkController {
     adapter.cancelListener = _removeListener.toJS;
     adapter.sendWalletRequest = _buildWalletRequest.toJS;
     adapter.sendTransaction = signAndSendTransaction;
-    adapter.features = features.toProxy;
+    adapter.features = features.toProxy();
     adapter.name = JSWalletConstant.name;
     adapter.version = SolanaJSConstant.version;
     adapter.icon = JSWalletConstant.mrtPngBase64;
     adapter.accounts = <JSSolanaWalletAccount>[].toJS.freez;
     adapter.chains = SolanaJSConstant.supportedChains.freez;
+    adapter.disconnect = _disconnectChain.toJS;
     final event = CustomEvent(
         SolanaJSConstant.walletStandardRegisterEvent,
         EventInit(
@@ -61,13 +62,13 @@ class SolanaPageController extends PageNetworkController {
     return ProxyMethodHandler<SolanaWalletAdapter>(adapter);
   }
 
-  void _init() {
+  void _initController() {
     _solana ??= _createAdapter();
     final proxy = Proxy(_solana!.object, createJSInteropWrapper(_solana!));
     solana = proxy;
   }
 
-  void _disable(String? message) {
+  void _disable({String? message}) {
     solana = null;
     jsConsole.error(message);
   }
@@ -75,7 +76,7 @@ class SolanaPageController extends PageNetworkController {
   JSPromise<JSAny?> _signMessage(JSAny? message) {
     final walletAdapterMessage =
         SolanaWalletAdapterSignMessage.fromJSAny(message);
-    return _onNetworkRequest(PageMessageRequest.create(
+    return _postNetworkRequestMessage(PageMessageRequest.create(
             method: Web3SolanaConst.signMessage, params: [message].toJS))
         .then((e) {
       final result =
@@ -120,7 +121,7 @@ class SolanaPageController extends PageNetworkController {
       {required JSArray<JSSolanaTransaction> transactions,
       required String method}) async {
     final message = transactions.toDart.map((e) => e).toList();
-    final result = _onNetworkRequest(
+    final result = _postNetworkRequestMessage(
             PageMessageRequest.create(method: method, params: message.toJS))
         .then((e) {
       return _onTransactionResponse(
@@ -141,13 +142,13 @@ class SolanaPageController extends PageNetworkController {
   JSPromise<JSAny?> _buildWalletRequest(Web3JSRequestParams request) {
     switch (request.method) {
       case Web3SolanaConst.requestAccounts:
-        return _onWalletRequest(request);
+        return _postWalletRequest(request);
       case Web3SolanaConst.signMessage:
         final message = PageMessageRequest.create(
             method: request.method,
             params: request.params,
             id: request.id ?? (_id++).toString());
-        return _onWalletRequest_(message).then((e) {
+        return _postWalletRequestMessage(message).then((e) {
           if (e.error != null) return e;
           return WalletResponseSuccess(
               result: JSSolanaSignMessageResponse.fromJson(
@@ -208,7 +209,7 @@ class SolanaPageController extends PageNetworkController {
                 message: Web3RequestExceptionConst.methodDoesNotExist.toJson()),
             id: id);
     }
-    final result = _onWalletRequest_(PageMessageRequest.create(
+    final result = _postWalletRequestMessage(PageMessageRequest.create(
             method: request.method, params: transactions.toJS, id: id))
         .then((e) {
       if (e.error != null) {
@@ -263,7 +264,8 @@ class SolanaPageController extends PageNetworkController {
   JSPromise<JSArray<JSSolanaWalletAccount>> _connect() {
     final params =
         PageMessageRequest.create(method: Web3SolanaConst.requestAccounts);
-    final promise = _onNetworkRequest<JSArray>(params).then((e) => e.toDart
+    final promise = _postNetworkRequestMessage<JSArray>(params).then((e) => e
+        .toDart
         .map((e) =>
             SolanaWalletAccount.fromJson((e.dartify() as Map).cast()).toJS)
         .toList()
@@ -301,10 +303,10 @@ class SolanaPageController extends PageNetworkController {
         _solana?.object.isConnected = false;
         break;
       case JSEventType.disable:
-        _disable(message.asString());
+        _disable(message: message.asString());
         return;
       case JSEventType.active:
-        _init();
+        _initController();
         return;
       default:
         return;

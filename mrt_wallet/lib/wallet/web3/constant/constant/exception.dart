@@ -13,6 +13,9 @@ class Web3RequestExceptionConst {
       "The current network does not support EIP-1559 transactions.";
   static Web3RequestException get invalidSignMessageData => invalidParameters(
       "Invalid message bytes. message must be a valid bytes like Uint8Array");
+
+  static Web3RequestException get invalidSignMessageFormat => invalidParameters(
+      "Invalid message format: The message must be a valid byte array (e.g., Uint8Array) or a string.");
   static Web3RequestException fromException(Object exception) {
     if (exception is Web3RequestException) return exception;
     if (exception is RPCError) {
@@ -108,6 +111,13 @@ class Web3RequestExceptionConst {
           message: "Invalid method parameters.",
           data:
               "Invalid string argument provided for $parameterName. Please ensure the input is a valid string and try again.",
+          walletCode: "WEB3-0020",
+          code: -32602);
+  static Web3RequestException invalidBoolean(String parameterName) =>
+      Web3RequestException(
+          message: "Invalid method parameters.",
+          data:
+              "Invalid boolean argument provided for $parameterName. Please ensure the input is a valid bool and try again.",
           walletCode: "WEB3-0020",
           code: -32602);
 
@@ -241,6 +251,13 @@ class Web3RequestExceptionConst {
           data: data ?? StringUtils.tryFromJson(dataJson),
           walletCode: "WEB3-5100",
           code: -32602);
+
+  static Web3RequestException unsuportedfeatures(String message,
+          {String? data, Map<String, dynamic>? dataJson}) =>
+      Web3RequestException(
+          message: "Unsuported features: $message",
+          walletCode: "WEB3-4030",
+          code: 4200);
 }
 
 /// The Provider is disconnected

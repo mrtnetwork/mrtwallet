@@ -1,4 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/http/impl/impl.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
@@ -20,6 +21,6 @@ abstract class BitcoinClient<T extends IBitcoinAddress>
   @override
   Future<bool> onInit() async {
     final genesisHash = await genesis();
-    return genesisHash == network.coinParam.genesis;
+    return genesisHash == network.genesisBlock;
   }
 }

@@ -10,8 +10,6 @@ import 'package:mrt_wallet/wallet/api/api.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/models/others/models/life_cycle.dart';
-import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
-import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:mrt_wallet/crypto/worker.dart';
 
@@ -24,6 +22,7 @@ part 'controller/networks/solana.dart';
 part 'controller/networks/ton.dart';
 part 'controller/networks/stellar.dart';
 part 'controller/networks/monero.dart';
+part 'controller/networks/substrate.dart';
 part 'core/core.dart';
 part 'impl/manager.dart';
 part 'impl/storage_impl.dart';

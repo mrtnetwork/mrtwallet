@@ -7,7 +7,8 @@ abstract class PageNetworkController {
   PageNetworkController(this.postMessage);
   int _id = 0;
   abstract final JSClientType _client;
-  static late final String _walletId;
+
+  // static late final String _walletId;
   static final Map<String, PageRequestCompleter> _waitingRequest = {};
   final Map<JSEventType, List<JSFunction>> _listeners = {
     JSEventType.accountsChanged: [],
@@ -23,12 +24,26 @@ abstract class PageNetworkController {
     _waitingRequest[requestId]?.completeMessage(walletResponse);
   }
 
-  JSPromise<JSAny?> _onWalletRequest(Web3JSRequestParams params) {
+  JSPromise<JSAny?> _postWalletRequest(Web3JSRequestParams params) {
     final message = PageMessageRequest.create(
         method: params.method,
         params: params.params,
         id: params.id ?? (_id++).toString());
-    final promise = _onWalletRequest_(message).toPromise;
+    final promise = _postWalletRequestMessage(message).toPromise;
+    return promise;
+  }
+
+  JSPromise<JSAny?> _postNetworkRequest(Web3JSRequestParams params) {
+    final message =
+        PageMessageRequest.create(method: params.method, params: params.params);
+    final promise = _postNetworkRequestMessage(message).toPromise;
+    return promise;
+  }
+
+  JSPromise<JSAny?> _disconnectChain() {
+    final message =
+        PageMessageRequest.create(method: 'disconnect', id: (_id++).toString());
+    final promise = _postWalletRequestMessage(message).toPromise;
     return promise;
   }
 
@@ -39,9 +54,6 @@ abstract class PageNetworkController {
       final toWalletRequest =
           PageMessage.request(data: message, id: request.id, client: _client);
       postMessage(toWalletRequest);
-      // final event =
-      //     CustomEvent.create(type: _walletId, eventData: toWalletRequest);
-      // jsWindow.dispatchEvent(event);
       _waitingRequest[request.id] ??= request;
       return await request.wait;
     } finally {
@@ -54,12 +66,9 @@ abstract class PageNetworkController {
     final toWalletRequest =
         PageMessage.event(data: message, id: "", client: _client);
     postMessage(toWalletRequest);
-    // final event =
-    //     CustomEvent.create(type: _walletId, eventData: toWalletRequest);
-    //
   }
 
-  Future<T> _onNetworkRequest<T extends JSAny?>(
+  Future<T> _postNetworkRequestMessage<T extends JSAny?>(
       PageMessageRequest message) async {
     final response = await _getWalleResponse(message);
     switch (response.statusType) {
@@ -70,7 +79,8 @@ abstract class PageNetworkController {
     }
   }
 
-  Future<WalletResponse> _onWalletRequest_(PageMessageRequest message) async {
+  Future<WalletResponse> _postWalletRequestMessage(
+      PageMessageRequest message) async {
     final response = await _getWalleResponse(message);
     switch (response.statusType) {
       case JSWalletResponseType.success:

@@ -6,7 +6,7 @@ import 'package:mrt_wallet/wallet/web3/networks/tron/permission/models/permissio
 import 'package:on_chain/on_chain.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 
-abstract class TronTransactionForm implements TransactionForm {
+abstract class TronTransactionForm extends TransactionForm {
   BigInt get callValue;
   BigInt get tokenValue;
   @override
@@ -19,9 +19,7 @@ abstract class TronTransactionForm implements TransactionForm {
       {required TronClient provider,
       required ITronAddress address,
       required TronChain account});
-
   TronBaseContract toContract({required ITronAddress owner});
-
   bool get showTxInfo => true;
 }
 

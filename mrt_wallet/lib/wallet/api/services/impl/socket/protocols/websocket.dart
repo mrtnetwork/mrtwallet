@@ -33,8 +33,8 @@ class WebSocketService<T extends APIProvider> extends BaseSocketService<T> {
 
   void _onClose() {
     _status = SocketStatus.disconnect;
-    _socket?.close(code: 1000);
     _subscription?.cancel().catchError((e) {});
+    _socket?.close();
     _subscription = null;
     _socket = null;
   }

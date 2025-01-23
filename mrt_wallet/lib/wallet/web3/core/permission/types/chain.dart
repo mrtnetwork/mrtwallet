@@ -1,32 +1,40 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/wallet/models/chain/account.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
+import 'package:mrt_wallet/wallet/web3/models/models/network.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
+import 'package:mrt_wallet/wallet/web3/networks/substrate/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'account.dart';
 import '../models/activity.dart';
 
-typedef Web3ChainNetwork<NETWORKADDRESS> = Web3Chain<NETWORKADDRESS,
-    APPCHAINNETWORK<NETWORKADDRESS>, Web3ChainAccount<NETWORKADDRESS>>;
+typedef Web3ChainNetwork<NETWORKADDRESS> = Web3Chain<
+    NETWORKADDRESS,
+    APPCHAINNETWORK<NETWORKADDRESS>,
+    Web3ChainAccount<NETWORKADDRESS>,
+    WalletNetwork>;
 
 abstract class Web3Chain<
-        NETWORKADDRESS,
-        CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
-        CHAINACCOUT extends Web3ChainAccount<NETWORKADDRESS>>
-    with CborSerializable {
+    NETWORKADDRESS,
+    CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
+    CHAINACCOUT extends Web3ChainAccount<NETWORKADDRESS>,
+    NETWORK extends WalletNetwork> with CborSerializable {
   List<CHAINACCOUT> _accounts;
   List<CHAINACCOUT> get activeAccounts => _accounts;
   List<CHAINACCOUT> chainAccounts(CHAIN chain);
   List<Web3AccountAcitvity> _activities;
   List<Web3AccountAcitvity> get activities => _activities;
+  Web3ChainAuthenticated createAuthenticated(
+      List<Web3ChainNetworkData<NETWORK>> networks);
+  NETWORK getCurrentPermissionNetwork(List<NETWORK> networks);
   abstract final NetworkType network;
-  bool hasPermission(CHAIN chain) => chainAccounts(chain).isNotEmpty;
+  bool chainHasPermission(CHAIN chain) => chainAccounts(chain).isNotEmpty;
   Web3Chain(
       {required List<CHAINACCOUT> accounts,
       required List<Web3AccountAcitvity> activities})
@@ -55,16 +63,22 @@ abstract class Web3Chain<
       case NetworkType.stellar:
         chain = Web3StellarChain.deserialize(object: decode);
         break;
+      case NetworkType.substrate:
+        chain = Web3SubstrateChain.deserialize(object: decode);
+        break;
       default:
         throw WalletExceptionConst.unsuportedFeature;
     }
-    if (chain is! Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUT>) {
+    if (chain is! Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUT, NETWORK>) {
       throw WalletExceptionConst.dataVerificationFailed;
     }
     return chain;
   }
   NETWORKCHAINACCOUNT<NETWORKADDRESS> getAccountPermission(
       {required NETWORKADDRESS address, required CHAIN chain});
+
+  CHAIN getCurrentPermissionChain(List<CHAIN> chain);
+
   CHAINACCOUT? getPermission(NETWORKADDRESS address);
 
   Web3Chain clone();
@@ -88,5 +102,5 @@ abstract class Web3Chain<
     _accounts = updatedAccounts.imutable;
   }
 
-  void setActiveChain(CHAIN chain);
+  void setActiveChain(NETWORK network);
 }

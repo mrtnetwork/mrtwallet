@@ -8,76 +8,85 @@ enum StreamWidgetStatus {
   idle,
   success,
   error,
-  progress,
-  hide;
+  progress;
 
   bool get inProgress => this == StreamWidgetStatus.progress;
 }
 
-class StreamWidget extends StatefulWidget {
-  const StreamWidget({
+class ButtonProgress extends StatefulWidget {
+  const ButtonProgress({
     GlobalKey<StreamWidgetState>? key,
-    required this.buttonWidget,
+    required this.child,
+    this.onError,
     this.padding = EdgeInsets.zero,
     this.initialStatus = StreamWidgetStatus.idle,
     this.backToIdle,
-    this.hideAfterError = false,
-    this.hideAfterSuccsess = false,
     this.fixedSize = true,
     this.color,
   }) : super(key: key);
   final StreamWidgetStatus initialStatus;
   final EdgeInsets padding;
   final Duration? backToIdle;
-  final Widget buttonWidget;
-  final bool hideAfterError;
-  final bool hideAfterSuccsess;
+  final WidgetContext child;
+  final WidgetDataContext<String?>? onError;
   final bool fixedSize;
   final Color? color;
 
   @override
-  State<StreamWidget> createState() => StreamWidgetState();
+  State<ButtonProgress> createState() => StreamWidgetState();
 }
 
-class StreamWidgetState extends State<StreamWidget> with SafeState {
+class StreamWidgetState extends State<ButtonProgress>
+    with SafeState<ButtonProgress> {
   late StreamWidgetStatus _status = widget.initialStatus;
-  @override
-  void initState() {
-    super.initState();
-  }
+  String? error;
 
   void _listen(StreamWidgetStatus status) async {
     if (status == StreamWidgetStatus.progress ||
-        status == StreamWidgetStatus.idle ||
-        status == StreamWidgetStatus.hide) {
+        status == StreamWidgetStatus.idle) {
       return;
     }
     if (widget.backToIdle == null) return;
     await Future.delayed(widget.backToIdle ?? Duration.zero);
-    if (widget.hideAfterError && status == StreamWidgetStatus.error) {
-      updateStream(StreamWidgetStatus.hide);
-    } else if (widget.hideAfterSuccsess &&
-        status == StreamWidgetStatus.success) {
-      updateStream(StreamWidgetStatus.hide);
-    } else {
-      updateStream(StreamWidgetStatus.idle);
-    }
+    updateStream(StreamWidgetStatus.idle);
   }
 
   void updateStream(StreamWidgetStatus status) {
-    if (!mounted) return;
+    error = null;
     _status = status;
     _listen(status);
-    setState(() {});
+    updateState();
+  }
+
+  void errorProgress({String? message}) {
+    error = message;
+    _status = StreamWidgetStatus.error;
+    _listen(_status);
+    updateState();
   }
 
   bool get isProgress => _status == StreamWidgetStatus.progress;
+
   Size? size;
-  void onChangeSize(Size widgetSize) {
+
+  void onChangeSize(Size v) {
     if (!widget.fixedSize) return;
-    if (size != widgetSize && _status == StreamWidgetStatus.idle) {
-      size = widgetSize;
-      setState(() {});
+    if (_status == StreamWidgetStatus.idle) {
+      size = v;
+      updateState();
+    }
+  }
+
+  Size? getSize() {
+    switch (_status) {
+      case StreamWidgetStatus.idle:
+      case StreamWidgetStatus.progress:
+        return size;
+      case StreamWidgetStatus.error:
+        if (widget.onError != null) return null;
+        return size;
+      default:
+        return null;
     }
   }
 
@@ -89,23 +98,44 @@ class StreamWidgetState extends State<StreamWidget> with SafeState {
         duration: APPConst.animationDuraion,
         child: MeasureSize(
           onChange: onChangeSize,
-          key: ValueKey(_status),
           child: SizedBox.fromSize(
-              size: size,
-              child: _status == StreamWidgetStatus.hide
-                  ? WidgetConstant.sizedBox
-                  : _status == StreamWidgetStatus.success
-                      ? WidgetConstant.checkCircle
-                      : _status == StreamWidgetStatus.error
-                          ? WidgetConstant.errorIcon
-                          : _status == StreamWidgetStatus.progress
-                              ? Center(
-                                  child: CircularProgressIndicator(
-                                  color: widget.color,
-                                ))
-                              : widget.buttonWidget),
+            size: getSize(),
+            child: _ProgressWidget(
+                key: ValueKey<StreamWidgetStatus>(_status),
+                status: _status,
+                color: widget.color,
+                child: widget.child,
+                onError: (context) =>
+                    widget.onError?.call(context, error) ??
+                    WidgetConstant.errorIcon),
+          ),
         ),
       ),
     );
+  }
+}
+
+class _ProgressWidget extends StatelessWidget {
+  final StreamWidgetStatus status;
+  final Color? color;
+  final WidgetContext child;
+  final WidgetContext? onError;
+  const _ProgressWidget(
+      {required this.status,
+      required this.child,
+      this.onError,
+      this.color,
+      super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ConditionalWidgets<StreamWidgetStatus>(enable: status, widgets: {
+      StreamWidgetStatus.success: (context) => WidgetConstant.checkCircle,
+      StreamWidgetStatus.error: (context) =>
+          onError?.call(context) ?? WidgetConstant.errorIcon,
+      StreamWidgetStatus.progress: (context) =>
+          Center(child: APPCircularProgressIndicator(color: color)),
+      StreamWidgetStatus.idle: child
+    });
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 export 'page_progress.dart';
@@ -7,15 +8,10 @@ export 'progress_widgets.dart';
 export 'stream_bottun.dart';
 
 extension QuickAccsessStreamButtonStateState on GlobalKey<StreamWidgetState> {
-  void updateStream(StreamWidgetStatus status) {
-    currentState?.updateStream(status);
-  }
-
-  void error() {
-    currentState?.updateStream(StreamWidgetStatus.error);
-  }
-
   bool get inProgress => currentState?.isProgress ?? false;
+  void error({String? message}) {
+    currentState?.errorProgress(message: message);
+  }
 
   void success() {
     currentState?.updateStream(StreamWidgetStatus.success);
@@ -27,7 +23,7 @@ extension QuickAccsessStreamButtonStateState on GlobalKey<StreamWidgetState> {
 
   void fromMethodResult(MethodResult result) {
     if (result.hasError) {
-      error();
+      error(message: result.error!.tr);
     } else {
       success();
     }
@@ -44,10 +40,13 @@ extension QuickAccsessPageProgressState on GlobalKey<PageProgressBaseState> {
         progressWidget: progressWidget);
   }
 
-  void progressText(String text, {Widget? bottomWidget, bool sliver = true}) {
+  void progressText(String text, {Widget? bottomWidget, Widget? icon}) {
     currentState?.updateStream(StreamWidgetStatus.progress,
-        progressWidget:
-            ProgressWithTextView(text: text, bottomWidget: bottomWidget));
+        progressWidget: ProgressWithTextView(
+          text: text,
+          bottomWidget: bottomWidget,
+          icon: icon,
+        ));
   }
 
   void error([Widget? progressWidget]) {

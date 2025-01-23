@@ -11,6 +11,7 @@ class PickFromAccountAssets extends StatefulWidget {
   final StellarAccountResponse accountInfo;
   final StellarChain chain;
   final bool allowNativeAssets;
+
   const PickFromAccountAssets(
       {required this.accountInfo,
       required this.chain,
@@ -21,7 +22,8 @@ class PickFromAccountAssets extends StatefulWidget {
   State<PickFromAccountAssets> createState() => _PickFromAccountAssetsState();
 }
 
-class _PickFromAccountAssetsState extends State<PickFromAccountAssets> {
+class _PickFromAccountAssetsState extends State<PickFromAccountAssets>
+    with SafeState<PickFromAccountAssets> {
   List<StellarIssueToken> tokens = [];
   late final natvieAsset = StellarPickedIssueAsset(
       asset: StellarAssetNative(),
@@ -29,13 +31,20 @@ class _PickFromAccountAssetsState extends State<PickFromAccountAssets> {
       issueToken: null,
       tokenBalance: IntegerBalance(
           widget.accountInfo.nativeBalance, widget.chain.network.coinDecimal));
+  List<StellarIssueToken> addressTokens = [];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    tokens = widget.accountInfo.issueAssetBalances
-        .map((e) => e.toIssueToken())
-        .toList();
+  void onInitOnce() {
+    super.onInitOnce();
+    addressTokens = widget.chain.address.tokens;
+    tokens = widget.accountInfo.issueAssetBalances.map((e) {
+      return addressTokens.firstWhere(
+          (i) =>
+              i.assetCode == e.assetCode &&
+              i.issuer == e.assetIssuer &&
+              i.assetType == e.assetType.assetType,
+          orElse: () => e.toIssueToken());
+    }).toList();
   }
 
   void onTapAsset(StellarIssueToken asset) {
@@ -56,7 +65,9 @@ class _PickFromAccountAssetsState extends State<PickFromAccountAssets> {
   void dispose() {
     super.dispose();
     for (final e in tokens) {
-      e.balance.dispose();
+      if (!addressTokens.contains(e)) {
+        e.balance.dispose();
+      }
     }
   }
 

@@ -3,6 +3,20 @@ part of '../scripts.dart';
 typedef POSTPAGEMESSAGE = void Function(PageMessage message);
 
 abstract class JSBasePageController {
+  SynchronizedLock? _lock = SynchronizedLock();
+  Completer<void>? _wait = Completer();
+
+  Future<void> _waitForActivation() async {
+    return await _lock?.synchronized(() async {
+      try {
+        return await _wait?.future;
+      } finally {
+        _wait = null;
+        _lock = null;
+      }
+    });
+  }
+
   void postMessage(PageMessage message) {}
   late final EthereumPageController ethereumPageController =
       EthereumPageController(postMessage);
@@ -14,6 +28,36 @@ abstract class JSBasePageController {
       TonPageController(postMessage);
   late final StellarPageController stellarPageController =
       StellarPageController(postMessage);
+  late final SubstratePageController substratePageController =
+      SubstratePageController(postMessage);
+
+  String? _walletId;
+
+  void _initControllers() {
+    try {
+      ethereumPageController._initController();
+      tronPageController._initController();
+      solanaPageController._initController();
+      tonPageController._initController();
+      stellarPageController._initController();
+      substratePageController._initController();
+    } catch (e) {
+      jsConsole.error("Initializing wallet failed: $e");
+    }
+  }
+
+  void disable(JSWalletError err) {
+    ethereumPageController._disable(message: err.message);
+    tronPageController._disable(message: err.message);
+    solanaPageController._disable(message: err.message);
+    tonPageController._disable(message: err.message);
+    stellarPageController._disable(message: err.message);
+    substratePageController._disable(message: err.message);
+    _wait?.completeError(err);
+  }
+
+  void initClients(String clientId);
+
   void handleWalletMessage(WalletMessage walletResponse) {
     try {
       if (walletResponse.data.messageType == JSWalletMessageType.response) {
@@ -39,6 +83,9 @@ abstract class JSBasePageController {
         case JSClientType.stellar:
           stellarPageController.onEvent(event);
           break;
+        case JSClientType.substrate:
+          substratePageController.onEvent(event);
+          break;
         default:
           break;
       }
@@ -51,17 +98,15 @@ abstract class JSBasePageController {
 class JSPageController extends JSBasePageController {
   JSPageController._();
   @override
-  void postMessage(PageMessage message) {
-    final event = CustomEvent.create(
-        type: PageNetworkController._walletId, detail: message);
+  void postMessage(PageMessage message) async {
+    await _waitForActivation();
+    final event = CustomEvent.create(type: _walletId, detail: message);
     jsWindow.dispatchEvent(event);
   }
 
-  factory JSPageController.setup(String clientId) {
+  factory JSPageController.setup() {
     final client = JSPageController._();
-    PageNetworkController._walletId = JsUtils.toWalletId(clientId);
-    jsWindow.addEventListener(
-        JsUtils.toEthereumClientId(clientId), client._onWalletEvent.toJS);
+    client._initControllers();
     return client;
   }
 
@@ -69,22 +114,38 @@ class JSPageController extends JSBasePageController {
     final WalletMessage walletResponse = response.detail as WalletMessage;
     handleWalletMessage(walletResponse);
   }
+
+  @override
+  void initClients(String clientId) {
+    if (_walletId != null) return;
+    _walletId = JsUtils.toWalletId(clientId);
+    jsWindow.addEventListener(
+        JsUtils.toEthereumClientId(clientId), _onWalletEvent.toJS);
+    _wait?.complete();
+  }
 }
 
 class JSWithWorkerPageController extends JSBasePageController {
-  final Worker _worker;
-  JSWithWorkerPageController._(this._worker);
+  Worker? _worker;
+  JSWithWorkerPageController._();
   @override
-  void postMessage(PageMessage message) {
+  void postMessage(PageMessage message) async {
+    await _waitForActivation();
     _worker
-        .postMessage(JSWorkerEvent(data: message, type: JSWorkerType.client));
+        ?.postMessage(JSWorkerEvent(data: message, type: JSWorkerType.client));
   }
 
-  factory JSWithWorkerPageController.setup(
-      {required String clientId, required Worker worker}) {
-    final client = JSWithWorkerPageController._(worker);
-    PageNetworkController._walletId = JsUtils.toWalletId(clientId);
+  factory JSWithWorkerPageController.setup() {
+    final client = JSWithWorkerPageController._();
+    client._initControllers();
     return client;
+  }
+
+  @override
+  void initClients(String clientId, {Worker? worker}) {
+    if (_worker != null) return;
+    _worker = worker;
+    _wait?.complete();
   }
 
   void onWalletEvent(WalletMessage response) {

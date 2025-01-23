@@ -17,7 +17,7 @@ mixin WalletsStoragesManger on WalletStorageWriter, CryptoWokerImpl {
   Future<void> _removeWalletStorage(HDWallet wallet) async {
     final keys = await _readAll();
     final walletKeys = keys.keys
-        .where((element) => element.startsWith(wallet._networkKey))
+        .where((element) => element.startsWith(wallet.networkKey))
         .toList();
     final permissionKeys = keys.keys
         .where((element) => element.startsWith(wallet._permissionKey))
@@ -45,9 +45,9 @@ mixin WalletsStoragesManger on WalletStorageWriter, CryptoWokerImpl {
   }
 
   Future<List<(String, String)>> _readAccounts(HDWallet wallet) async {
-    final keys = await _readAll(prefix: wallet._networkKey);
+    final keys = await _readAll(prefix: wallet.networkKey);
     return keys.keys
-        .where((e) => e.startsWith(wallet._networkKey))
+        .where((e) => e.startsWith(wallet.networkKey))
         .map((e) => (e, keys[e]!))
         .toList();
   }
@@ -58,14 +58,23 @@ mixin WalletsStoragesManger on WalletStorageWriter, CryptoWokerImpl {
         type: CryptoRequestHashingType.md4,
         dataBytes: applicationId.codeUnits,
         isolate: false);
-    return await _read(key: wallet._toPermissionKey(key));
+    return await _read(key: wallet.toPermissionKey(key));
   }
 
   Future<void> _savePermission(
       {required HDWallet wallet,
       required Web3APPAuthentication permission}) async {
     await _write(
-        key: wallet._toPermissionKey(permission.applicationKey),
+        key: wallet.toPermissionKey(permission.applicationKey),
         value: permission.toCbor().toCborHex());
+  }
+
+  Future<int?> _readStorageVersion() async {
+    final r = await _read(key: StorageConst.storageVersion);
+    return IntUtils.tryParse(r);
+  }
+
+  Future<void> _writeStorageVersion(int version) async {
+    await _write(key: StorageConst.storageVersion, value: version.toString());
   }
 }

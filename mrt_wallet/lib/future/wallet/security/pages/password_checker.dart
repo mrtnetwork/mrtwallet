@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -25,6 +26,7 @@ class PasswordCheckerView extends StatefulWidget {
       this.password,
       this.importedKey,
       this.controller,
+      this.backgroundColor,
       this.appbar});
   final FuncWidgetStringPaagePrgoressKey? onAccsess;
   final WalletAccsessType accsess;
@@ -36,6 +38,7 @@ class PasswordCheckerView extends StatefulWidget {
   final ScrollController? controller;
   final AppBar? appbar;
   final ONWALLETACCESSS? onWalletAccess;
+  final Color? backgroundColor;
 
   @override
   State<PasswordCheckerView> createState() => _PasswordCheckerViewState();
@@ -44,8 +47,51 @@ class PasswordCheckerView extends StatefulWidget {
 class _PasswordCheckerViewState extends State<PasswordCheckerView>
     with SafeState {
   late final WalletAccsessType access = widget.accsess;
+  StreamSubscription<dynamic>? _walletStatus;
+  Live<int?> lockTime = Live(null);
   String _entredPassword = "";
   String _correctPassword = "";
+  AppLifecycleListener? _lifeCycle;
+  final GlobalKey<FormState> form =
+      GlobalKey<FormState>(debugLabel: "ExportSeedView");
+  final GlobalKey<StreamWidgetState> progressKey =
+      GlobalKey<StreamWidgetState>(debugLabel: "ExportSeedView");
+  final GlobalKey<AppTextFieldState> textFildState =
+      GlobalKey<AppTextFieldState>(debugLabel: "AppTextFieldState");
+  late WalletProvider wallet;
+  List<CryptoKeyData>? credentials;
+  String? error;
+  static const int reminingWalletTimeAlert = kDebugMode ? 100 : 15;
+  final GlobalKey<ScaffoldMessengerState> scaffolKey = GlobalKey();
+
+  ScaffoldFeatureController<MaterialBanner, MaterialBannerClosedReason>?
+      controller;
+  void onUpdateWalletTimer(dynamic _) {
+    final time = wallet.wallet.reminingWalletTime;
+
+    if (time == null || time > reminingWalletTimeAlert) {
+      controller?.close();
+      controller = null;
+      lockTime.dispose();
+      lockTime.value = time;
+    } else {
+      lockTime.value = time;
+      controller ??= scaffolKey.currentState?.showMaterialBanner(MaterialBanner(
+          actions: [
+            ElevatedButton(
+                onPressed: () {
+                  wallet.wallet.accsess(WalletAccsessType.unlock, '');
+                },
+                child: Text("keep_unlock".tr))
+          ],
+          content: LiveWidget(() {
+            return Text("wallet_lock_timer_desc"
+                .tr
+                .replaceOne(lockTime.value.toString()));
+          })));
+    }
+    // scaffolKey.
+  }
 
   void _onPause() {
     credentials = null;
@@ -54,19 +100,6 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     updateState();
   }
 
-  AppLifecycleListener? _lifeCycle;
-
-  final GlobalKey<FormState> form =
-      GlobalKey<FormState>(debugLabel: "ExportSeedView");
-  final GlobalKey<StreamWidgetState> progressKey =
-      GlobalKey<StreamWidgetState>(debugLabel: "ExportSeedView");
-  final GlobalKey<AppTextFieldState> textFildState =
-      GlobalKey<AppTextFieldState>(debugLabel: "AppTextFieldState");
-  // String _password = "";
-  late WalletProvider wallet;
-
-  List<CryptoKeyData>? credentials;
-  String? error;
   String? psaswordForm(String? v) {
     if (StrUtils.isStrongPassword(v)) return null;
     return "password_validator".tr;
@@ -76,7 +109,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     _entredPassword = v;
     if (error != null) {
       error = null;
-      setState(() {});
+      updateState();
     }
   }
 
@@ -84,7 +117,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
     if (!(form.currentState?.validate() ?? false)) return;
     if (error != null) {
       error = null;
-      setState(() {});
+      updateState();
     }
     await getKey();
   }
@@ -130,7 +163,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
       mid = 0;
     }
     _heightSpace = mid;
-    setState(() {});
+    updateState();
   }
 
   void listener(WalletEventStaus status) {
@@ -147,14 +180,6 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    wallet = context.watch<WalletProvider>(StateConst.main);
-    wallet.wallet.addWalletStatusListener(listener);
-    MethodUtils.after(() => getKey(password: widget.password));
-  }
-
-  @override
   void initState() {
     if (!widget.accsess.isUnlock) {
       _lifeCycle = AppLifecycleListener(onHide: _onPause);
@@ -163,10 +188,24 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
   }
 
   @override
+  void onInitOnce() {
+    super.onInitOnce();
+    wallet = context.watch<WalletProvider>(StateConst.main);
+    wallet.wallet.addWalletStatusListener(listener);
+    MethodUtils.after(() => getKey(password: widget.password));
+    _walletStatus =
+        Stream.periodic(const Duration(seconds: 1)).listen(onUpdateWalletTimer);
+  }
+
+  @override
   void dispose() {
     super.dispose();
+    _walletStatus?.cancel();
+    _walletStatus = null;
     wallet.wallet.removeWalletStatusListener(listener);
     _lifeCycle?.dispose();
+    lockTime.dispose();
+    controller = null;
   }
 
   PreferredSizeWidget? appBar() {
@@ -176,17 +215,21 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appBar(),
-      body: UnfocusableChild(
-        child: APPAnimatedSwitcher(
-          duration: APPConst.animationDuraion,
-          enable: credentials != null,
-          widgets: {
-            true: (c) => widget.onAccsess
-                ?.call(credentials!, _correctPassword, wallet.wallet.network),
-            false: (c) => _PasswordWriterView(this)
-          },
+    return ScaffoldMessenger(
+      key: scaffolKey,
+      child: Scaffold(
+        backgroundColor: credentials == null ? null : widget.backgroundColor,
+        appBar: appBar(),
+        body: UnfocusableChild(
+          child: APPAnimatedSwitcher(
+            duration: APPConst.animationDuraion,
+            enable: credentials != null,
+            widgets: {
+              true: (c) => widget.onAccsess
+                  ?.call(credentials!, _correctPassword, wallet.wallet.network),
+              false: (c) => _PasswordWriterView(this)
+            },
+          ),
         ),
       ),
     );
@@ -203,71 +246,68 @@ class _PasswordWriterView extends StatelessWidget {
         shrinkWrap: true,
         controller: state.widget.controller,
         slivers: [
-          SliverToBoxAdapter(
-            child: ConstraintsBoxView(
-              padding: WidgetConstant.padding20,
-              child: AnimatedSwitcher(
-                duration: APPConst.animationDuraion,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    state.widget.subtitle ??
-                        PageTitleSubtitle(
-                            title: "wallet_password".tr,
-                            body: Text("enter_wallet_password_request".tr)),
-                    Form(
-                      key: state.form,
-                      child: AnimatedSwitcher(
-                        duration: APPConst.animationDuraion,
-                        child: MeasureSize(
-                          onChange: state.onChangeHeight,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: state._heightSpace),
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.security,
-                                      size: APPConst.double80,
-                                      color: ColorConst.green),
-                                ],
-                              ),
-                              WidgetConstant.height8,
-                              AppTextField(
-                                  label: "wallet_password".tr,
-                                  obscureText: true,
-                                  key: state.textFildState,
-                                  validator: state.psaswordForm,
-                                  initialValue: state._entredPassword,
-                                  onChanged: state.onChange,
-                                  error: state.error,
-                                  helperText:
-                                      "enter_wallet_password_to_continue".tr),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  StreamWidget(
-                                    key: state.progressKey,
-                                    initialStatus: state.widget.password != null
-                                        ? StreamWidgetStatus.progress
-                                        : StreamWidgetStatus.idle,
-                                    buttonWidget: FixedElevatedButton(
-                                      onPressed: state.onSubmit,
-                                      child: Text("unlock".tr),
-                                    ),
-                                    backToIdle: APPConst.milliseconds100,
-                                    padding: WidgetConstant.paddingVertical20,
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
+          SliverConstraintsBoxView(
+            padding: WidgetConstant.paddingHorizontal20,
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  state.widget.subtitle ??
+                      PageTitleSubtitle(
+                          title: "wallet_password".tr,
+                          body: Text("enter_wallet_password_request".tr)),
+                  Form(
+                    key: state.form,
+                    child: AnimatedSwitcher(
+                      duration: APPConst.animationDuraion,
+                      child: MeasureSize(
+                        onChange: state.onChangeHeight,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: state._heightSpace),
+                            const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.security,
+                                    size: APPConst.double80,
+                                    color: ColorConst.green),
+                              ],
+                            ),
+                            WidgetConstant.height8,
+                            AppTextField(
+                                label: "wallet_password".tr,
+                                obscureText: true,
+                                key: state.textFildState,
+                                validator: state.psaswordForm,
+                                initialValue: state._entredPassword,
+                                onChanged: state.onChange,
+                                error: state.error,
+                                helperText:
+                                    "enter_wallet_password_to_continue".tr),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ButtonProgress(
+                                  key: state.progressKey,
+                                  initialStatus: state.widget.password != null
+                                      ? StreamWidgetStatus.progress
+                                      : StreamWidgetStatus.idle,
+                                  child: (context) => FixedElevatedButton(
+                                    onPressed: state.onSubmit,
+                                    child: Text("unlock".tr),
+                                  ),
+                                  backToIdle: APPConst.milliseconds100,
+                                  padding: WidgetConstant.paddingVertical20,
+                                )
+                              ],
+                            )
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           )

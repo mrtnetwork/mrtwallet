@@ -22,7 +22,6 @@ class Web3EthereumConst {
   static const String ethChinId = "eth_chainId";
   static const String addChain = "wallet_addEthereumChain";
   static const String switchEthereumChain = "wallet_switchEthereumChain";
-  static const String disconnect = "wallet_switchEthereumChain";
 
   static const List<String> ethereumSupportedRpcPorotocols = [
     "http",

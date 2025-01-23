@@ -4,6 +4,7 @@ import 'js_wallet/js_wallet.dart';
 import 'dart:js_interop';
 
 void main(List<String> args) async {
+  final pageController = JSPageController.setup();
   mrt = MRTWallet(JSObject());
   bool inited = false;
   void onActivation(CustomEvent data) {
@@ -11,13 +12,13 @@ void main(List<String> args) async {
     final event = (data.detail as WalletMessage).data as WalletMessageResponse;
     if (event.statusType == JSWalletResponseType.failed) {
       final walletError = JSWalletError.fromJson(message: event.asMap());
-      jsConsole.errorObject(walletError);
+      pageController.disable(walletError);
       return;
     }
     inited = true;
     jsWindow.addEventListener(
         JSWalletConstant.activationEventName, onActivation.toJS);
-    JSPageController.setup(event.asString());
+    pageController.initClients(event.asString());
   }
 
   jsWindow.addEventListener(

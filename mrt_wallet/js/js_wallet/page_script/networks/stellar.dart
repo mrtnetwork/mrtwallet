@@ -8,15 +8,16 @@ class StellarPageController extends PageNetworkController {
     adapter.enable = _requestAccount.toJS;
     adapter.on = _addListener.toJS;
     adapter.on = _addListener.toJS;
+    adapter.disconnect = _disconnectChain.toJS;
 
     adapter.removeListener = _removeListener.toJS;
     adapter.cancelListener = _removeListener.toJS;
-    adapter.sendWalletRequest = _onWalletRequest.toJS;
+    adapter.sendWalletRequest = _postWalletRequest.toJS;
     adapter.cancelAllListener = _cancelAllListeners.toJS;
     return ProxyMethodHandler<StellarWalletAdapter>(adapter);
   }
 
-  void _init() {
+  void _initController() {
     _stellar ??= _createAdapter();
     final proxy = Proxy(_stellar!.object, createJSInteropWrapper(_stellar!));
     stellar = proxy;
@@ -24,11 +25,11 @@ class StellarPageController extends PageNetworkController {
 
   JSPromise<JSAny?> _requestAccount() {
     final params = Web3JSRequestParams(method: "stellar_requestAccounts");
-    return _onWalletRequest(params);
+    return _postWalletRequest(params);
   }
 
-  void _disable(String? message) {
-    ton = null;
+  void _disable({String? message}) {
+    stellar = null;
     jsConsole.error(message);
   }
 
@@ -54,10 +55,10 @@ class StellarPageController extends PageNetworkController {
         _stellar?.object.selectedAddress = null;
         break;
       case JSEventType.disable:
-        _disable(message.asString());
+        _disable(message: message.asString());
         return;
       case JSEventType.active:
-        _init();
+        _initController();
         return;
       default:
         return;

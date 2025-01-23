@@ -27,6 +27,7 @@ class TokenDetailsModalView<NETWORKADDRESS, TOKEN extends TokenCore,
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
+    final addr = wallet.wallet.network.getAccountExplorer(token.issuer);
     return CustomScrollView(
       shrinkWrap: true,
       slivers: [
@@ -36,22 +37,19 @@ class TokenDetailsModalView<NETWORKADDRESS, TOKEN extends TokenCore,
           leadingWidth: 0,
           pinned: true,
           actions: [
-            if (token.issuer != null)
-              LaunchBrowserIcon(
-                  url: wallet.wallet.network.coinParam
-                      .getAccountExplorer(token.issuer!),
-                  size: APPConst.double20),
+            if (addr != null)
+              LaunchBrowserIcon(url: addr, size: APPConst.double20),
             IconButton(
                 onPressed: () {
                   context
-                      .openSliverBottomSheet<bool>(
-                    "update_token".tr,
-                    child: UpdateTokenDetailsView(
-                      token: token,
-                      account: account,
-                      address: address,
-                    ),
-                  )
+                      .openSliverBottomSheet<bool>("update_token".tr,
+                          bodyBuilder: (scrollController) =>
+                              UpdateTokenDetailsView(
+                                  token: token,
+                                  account: account,
+                                  address: address,
+                                  scrollController: scrollController),
+                          centerContent: false)
                       .then((v) {
                     if (v == true) context.pop();
                   });

@@ -46,12 +46,10 @@ class _StellarWeb3PermissionViewState extends State<StellarWeb3PermissionView>
     permission = widget.permission ?? Web3StellarChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<StellarChain>().toList();
+    chain = permission.getCurrentPermissionChain(chains);
     for (final i in chains) {
       permissions[i] = permission.chainAccounts(i);
     }
-    chain = chains.firstWhere(
-        (e) => e.network.coinParam.passphrase == permission.currentChain,
-        orElse: () => chains.first);
   }
 
   @override

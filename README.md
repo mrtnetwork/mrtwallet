@@ -105,13 +105,11 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 
 
 
-### Kusama
+### Substrate
 
-- **Features:** Seamless support for Kusama transactions.
-
-### Polkadot
-
-- **Features:** Seamless support for Polkadot transactions.
+- **Features:** Provides seamless support for Kusama, Polkadot transactions, and standalone chains.
+- **Highlights:** Enables importing Substrate networks, interacting with metadata, creating extrinsics, querying storage, and making runtime calls.
+- **Web3 Support** Fully compatible with Web3 on Chrome, Brave, Firefox, Edge, Android, and macOS.
 
 ### Monero
 

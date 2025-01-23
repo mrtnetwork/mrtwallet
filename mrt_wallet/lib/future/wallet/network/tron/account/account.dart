@@ -123,11 +123,7 @@ class _Services extends StatelessWidget {
                   return;
                 }
                 final validator = LiveTransactionForm(
-                    validator: TronAccountUpdatePermissionForm(
-                        permissions: account.accountInfo!.permissions
-                            .map((e) => e.clone())
-                            .toList()
-                            .cast<AccountPermission>()));
+                    validator: TronAccountUpdatePermissionForm());
                 context.to(PageRouter.tronTransaction, argruments: validator);
               },
             ),
@@ -154,9 +150,8 @@ class _Services extends StatelessWidget {
               title: Text("tron_unstack_v2".tr),
               subtitle: Text("unfreeze_balance".tr),
               onTap: () {
-                final validator = LiveTransactionForm(
-                    validator: TronUnFreezBalanceV2Form(
-                        accountInfo: account.accountInfo));
+                final validator =
+                    LiveTransactionForm(validator: TronUnFreezBalanceV2Form());
                 context.to(PageRouter.tronTransaction, argruments: validator);
               },
             ),

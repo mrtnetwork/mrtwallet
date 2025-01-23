@@ -20,19 +20,20 @@ class TheOpenNetworkChain extends Chain<
       required super.config,
       required super.client,
       required super.contacts,
-      required super.addresses})
+      required super.addresses,
+      required super.status})
       : super._();
   @override
-  TheOpenNetworkChain copyWith({
-    WalletTonNetwork? network,
-    Live<IntegerBalance>? totalBalance,
-    List<ITonAddress>? addresses,
-    List<ContactCore<TonAddress>>? contacts,
-    int? addressIndex,
-    TonClient? client,
-    String? id,
-    DefaultChainConfig? config,
-  }) {
+  TheOpenNetworkChain copyWith(
+      {WalletTonNetwork? network,
+      Live<IntegerBalance>? totalBalance,
+      List<ITonAddress>? addresses,
+      List<ContactCore<TonAddress>>? contacts,
+      int? addressIndex,
+      TonClient? client,
+      String? id,
+      DefaultChainConfig? config,
+      WalletChainStatus? status}) {
     return TheOpenNetworkChain._(
         network: network ?? this.network,
         totalBalance: totalBalance ?? this.totalBalance,
@@ -41,7 +42,8 @@ class TheOpenNetworkChain extends Chain<
         contacts: contacts ?? _contacts,
         client: client ?? _client,
         id: id ?? this.id,
-        config: config ?? this.config);
+        config: config ?? this.config,
+        status: status ?? _chainStatus);
   }
 
   factory TheOpenNetworkChain.setup(
@@ -57,7 +59,8 @@ class TheOpenNetworkChain extends Chain<
         client: client,
         addresses: [],
         config: DefaultChainConfig.none,
-        contacts: []);
+        contacts: [],
+        status: WalletChainStatus.ready);
   }
 
   factory TheOpenNetworkChain.deserialize(
@@ -100,6 +103,7 @@ class TheOpenNetworkChain extends Chain<
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
         client: client,
         id: cbor.elementAt<String>(8),
-        config: DefaultChainConfig.none);
+        config: DefaultChainConfig.none,
+        status: WalletChainStatus.ready);
   }
 }

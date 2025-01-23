@@ -16,12 +16,12 @@ class Web3ClientInfo with Equatable {
     required this.name,
   });
   static Web3ClientInfo? info(
-      {required String clientId,
+      {required String? clientId,
       required String? url,
       String? name,
       required APPImage faviIcon}) {
     final applicationId = Web3APPAuthentication.toApplicationId(url);
-    if (applicationId == null) return null;
+    if (applicationId == null || clientId == null) return null;
     final Uri uri = Uri.parse(applicationId);
     return Web3ClientInfo._(
         image: faviIcon,

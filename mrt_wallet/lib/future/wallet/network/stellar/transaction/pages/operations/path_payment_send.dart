@@ -63,23 +63,6 @@ class _PathPaymentStrictSendOperationViewState
     remindAmount.updateBalance(remind);
   }
 
-  StellarIssueToken? findToken() {
-    final asset = this.asset;
-    if (asset == null || asset.asset.type.isNative) {
-      return null;
-    }
-    final inAccount = controller.accountInfo.getAsset(asset.asset);
-    if (inAccount != null) {
-      final StellarIssueToken token = chain.address.tokens.firstWhere(
-          (e) =>
-              e.issuer == inAccount.assetIssuer &&
-              e.token.symbol == inAccount.assetCode,
-          orElse: () => inAccount.toIssueToken());
-      return token;
-    }
-    return null;
-  }
-
   void pickAssets(StellarPickedIssueAsset? asset) {
     if (asset == null) return;
     this.asset = asset;

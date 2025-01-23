@@ -15,7 +15,7 @@ packages:
       path: "../../../blockchain_utils"
       relative: true
     source: path
-    version: "3.5.0"
+    version: "4.0.0"
   boolean_selector:
     dependency: transitive
     description:

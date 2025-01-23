@@ -46,9 +46,6 @@ class TonTransferForm extends TonTransactionForm {
   BigInt get callValue => destination.value.fold<BigInt>(BigInt.zero,
       (previousValue, element) => previousValue + element.balance.balance);
 
-  List<TransactionFormField> get fields => throw UnimplementedError();
-
-  @override
   @override
   String get name => "transfer".tr;
 
@@ -155,5 +152,11 @@ class TonTransferForm extends TonTransactionForm {
   @override
   List<MessageRelaxed> toMessages(TonAddress account) {
     return destination.value.map((e) => e.toMessage(network, account)).toList();
+  }
+
+  @override
+  void close() {
+    super.close();
+    tokens.clear();
   }
 }

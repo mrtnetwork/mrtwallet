@@ -8,12 +8,13 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
-class RipplePaymentForm implements RippleTransactionForm {
+class RipplePaymentForm extends RippleTransactionForm {
   RipplePaymentForm(this._issueToken);
   Token? get token => issueToken?.token;
 
   XRPPickedAssets? _issueToken;
   XRPPickedAssets? get issueToken => _issueToken;
+
   late final TransactionFormField<BalanceCore> amount = TransactionFormField(
     name: "amount",
     subject: "",
@@ -102,9 +103,6 @@ class RipplePaymentForm implements RippleTransactionForm {
   }
 
   @override
-  OnChangeForm? onChanged;
-
-  @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {
@@ -135,4 +133,12 @@ class RipplePaymentForm implements RippleTransactionForm {
 
   @override
   XRPLTransactionType get transactionType => XRPLTransactionType.payment;
+  @override
+  bool get enableSwitchAccount => _issueToken == null;
+
+  @override
+  void close() {
+    super.close();
+    _issueToken = null;
+  }
 }

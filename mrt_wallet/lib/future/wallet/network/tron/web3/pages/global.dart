@@ -6,6 +6,7 @@ import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'fields/request_account.dart';
 import 'fields/sign_message_v2.dart';
+import 'fields/switch_chain.dart';
 
 class TronWeb3GlobalFieldsView<RESPONSE,
     T extends Web3TronRequestParam<RESPONSE>> extends StatelessWidget {
@@ -45,6 +46,10 @@ class _GlobalFieldsView extends StatelessWidget {
         return TronWeb3SignMessageV2RequestView(
           request: form as TronWeb3Form<Web3TronSignMessageV2>,
         );
+      case Web3TronRequestMethods.switchTronChain:
+        return TronWeb3SwitchTronChainView(
+            request: form as Web3TronSwitchTronChain);
+
       default:
         return const SliverPadding(padding: EdgeInsets.zero);
     }

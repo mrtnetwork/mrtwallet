@@ -24,7 +24,7 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
   Future<void> updateBalance(
       IStellarAddress address, APPCHAINACCOUNT<IStellarAddress> chain,
       {bool updateTokens = true}) async {
-    await getAccountFromIStellarAddress(address, chain);
+    await getAccountFromIStellarAddress(address, chain.cast());
   }
 
   Future<StellarAccountResponse?> getAccount(StellarAddress address) async {
@@ -34,6 +34,15 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
       if (e.statusCode == ServiceConst.notFoundStatusCode) return null;
       rethrow;
     }
+  }
+
+  Future<StellarAccountResponse?> getAccountFromIStellarAddress(
+      IStellarAddress address, StellarChain chain) async {
+    final accountInfo = await getAccount(address.networkAddress);
+    if (accountInfo == null) return null;
+    _updateAccountTokensBalances(
+        account: address, accountInfo: accountInfo, chain: chain);
+    return accountInfo;
   }
 
   void _updateAccountTokensBalances({
@@ -268,22 +277,6 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
         type: type,
         operations: baseOperation,
         soroban: soroban);
-  }
-
-  Future<StellarAccountResponse?> getAccountFromIStellarAddress(
-    IStellarAddress account,
-    APPCHAINACCOUNT<IStellarAddress> chain,
-  ) async {
-    try {
-      final result = await provider
-          .request(HorizonRequestAccount(account.networkAddress.baseAddress));
-      _updateAccountTokensBalances(
-          account: account, accountInfo: result, chain: chain);
-      return result;
-    } on ApiProviderException catch (e) {
-      if (e.statusCode == ServiceConst.notFoundStatusCode) return null;
-      rethrow;
-    }
   }
 
   Future<StellarAllTransactionResponse?> submitTx(String envelopeXdr) async {

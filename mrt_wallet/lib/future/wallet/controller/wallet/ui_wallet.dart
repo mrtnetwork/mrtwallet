@@ -15,8 +15,14 @@ import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
 
 abstract class UIWallet extends WalletCore {
-  UIWallet(this.navigatorKey);
+  UIWallet({
+    required this.navigatorKey,
+    required this.storageVersion,
+  });
   final GlobalKey<NavigatorState> navigatorKey;
+  @override
+  final int storageVersion;
+
   DynamicVoid? onNotify;
   bool get isolate => true;
 
@@ -127,8 +133,8 @@ abstract class UIWallet extends WalletCore {
         false;
   }
 
-  void init(DynamicVoid onNotification) {
+  Future<void> init(DynamicVoid onNotification) async {
     onNotify = onNotification;
-    initWallet();
+    await initWallet();
   }
 }

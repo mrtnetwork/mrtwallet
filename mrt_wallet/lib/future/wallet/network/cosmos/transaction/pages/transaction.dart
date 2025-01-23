@@ -342,12 +342,11 @@ class _CosmosFeeView extends StatelessWidget {
             ),
           ),
           ContainerWithBorder(
-            onRemoveIcon: StreamWidget(
+            onRemoveIcon: ButtonProgress(
               color: context.primaryContainer,
-              buttonWidget: EditOrRemoveIconWidget(
-                controller.fee.feeType.isManually,
-                color: context.primaryContainer,
-              ),
+              child: (context) => EditOrRemoveIconWidget(
+                  controller.fee.feeType.isManually,
+                  color: context.primaryContainer),
               key: controller.feeProgressKey,
             ),
             backgroundColor: context.onPrimaryContainer,

@@ -3,9 +3,7 @@ part of 'package:mrt_wallet/repository/repository.dart';
 mixin BaseRepository {
   String get repositoryStorageId;
   String _toKey(String storageId, String key) {
-    assert(key.trim().isNotEmpty &&
-        key != StorageConst.walletStorageKey &&
-        key != StorageConst.walletNetworkKey);
+    assert(key.trim().isNotEmpty && key != StorageConst.walletStorageKey);
     return "ST_${storageId}_$key";
   }
 

@@ -9,6 +9,9 @@ class RippleIssueToken with Equatable implements TokenCore<BigRational> {
   RippleIssueToken._(this.balance, this.token, this.issuer, this._updated);
   factory RippleIssueToken.create(
       {required String balance, required Token token, required String issuer}) {
+    if (token.decimal != null) {
+      throw WalletExceptionConst.invalidTokenInformation;
+    }
     final Live<DecimalBalance> liveBalance =
         Live(DecimalBalance.fromString(balance));
     return RippleIssueToken._(liveBalance, token, issuer, DateTime.now());
@@ -32,7 +35,8 @@ class RippleIssueToken with Equatable implements TokenCore<BigRational> {
     }
   }
   RippleIssueToken updateToken(Token updateToken) {
-    return RippleIssueToken._(balance, updateToken, issuer, _updated);
+    return RippleIssueToken.create(
+        balance: balance.value.price, token: updateToken, issuer: issuer);
   }
 
   @override

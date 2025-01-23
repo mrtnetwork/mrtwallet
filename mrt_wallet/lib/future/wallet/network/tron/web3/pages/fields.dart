@@ -12,8 +12,11 @@ class TronWeb3FieldsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final Web3TronRequest request = context.getArgruments();
     final wallet = context.watch<WalletProvider>(StateConst.main);
+
+    /// TronWeb3SwitchTronChainView
     switch (request.params.method) {
       case Web3TronRequestMethods.requestAccounts:
+      case Web3TronRequestMethods.switchTronChain:
         return TronWeb3GlobalFieldsView(request: request, wallet: wallet);
       case Web3TronRequestMethods.signMessageV2:
         return TronWeb3GlobalFieldsView<String, Web3TronSignMessageV2>(

@@ -313,7 +313,7 @@ class _SetupBitcoinMultiSigAddressViewState
           _onBack();
         }
       },
-      child: ScaffolPageView(
+      child: ScaffoldPageView(
         appBar: AppBar(title: Text("generate_address".tr)),
         child: PageProgress(
           key: progressKey,
@@ -534,8 +534,8 @@ class _SetupBitcoinMultiSigAddressViewState
                                                                 MainAxisAlignment
                                                                     .spaceEvenly,
                                                             children: [
-                                                              StreamWidget(
-                                                                buttonWidget: FilledButton.icon(
+                                                              ButtonProgress(
+                                                                child: (context) => FilledButton.icon(
                                                                     onPressed:
                                                                         share,
                                                                     icon: const Icon(
@@ -660,7 +660,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                     Flexible(
                                       child: NumberTextField(
                                         label: "threshold".tr,
-                                        disableWriting: true,
+                                        readOnly: true,
                                         onChange: onChangeThreshHold,
                                         max: 16,
                                         min: 2,
@@ -710,7 +710,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                                     WidgetConstant.height8,
                                                     NumberTextField(
                                                         label: "weight".tr,
-                                                        disableWriting: true,
+                                                        readOnly: true,
                                                         onChange: (p0) {
                                                           onChangeSignerWeight(
                                                               signers[index],

@@ -117,7 +117,7 @@ class _MacosBarcodeScannerViewState extends State<BarcodeScannerView>
   @override
   Widget build(BuildContext context) {
     return MaterialPageView(
-        child: ScaffolPageView(
+        child: ScaffoldPageView(
             appBar: AppBar(
               title: Text("qr_code_scanner".tr),
             ),

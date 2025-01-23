@@ -25,9 +25,6 @@ class TronCreateWitnessForm extends TronTransactionForm {
     },
   );
 
-  @override
-  OnChangeForm? onChanged;
-
   List<TransactionFormField> get fields => [url];
 
   @override
@@ -86,4 +83,10 @@ class TronCreateWitnessForm extends TronTransactionForm {
       {required TronClient provider,
       required ITronAddress address,
       required TronChain account}) async {}
+
+  @override
+  void close() {
+    url.clear();
+    super.close();
+  }
 }

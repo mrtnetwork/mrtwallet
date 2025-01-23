@@ -14,5 +14,10 @@
         "**/Thumbs.db": true,
         "**/.rmv/catalog/**": true,
         "*/_*": false
-    }
+    },
+    "dart.includeDependenciesInWorkspaceSymbols": false,
+    "dart.showExtensionRecommendations": false,
+    "dart.devToolsReuseWindows": false,
+    "dart.enableServerSnippets": false,
+    "dart.showTestCodeLens": false
 }

@@ -48,25 +48,27 @@ class RippleTransactionFieldsView extends StatelessWidget {
                           ContainerWithBorder(
                             onRemoveIcon: Icon(Icons.edit,
                                 color: context.onPrimaryContainer),
+                            onRemove: controller.form.enableSwitchAccount
+                                ? () {
+                                    context
+                                        .openSliverBottomSheet<IXRPAddress>(
+                                          "switch_account".tr,
+                                          child: SwitchOrSelectAccountView(
+                                              account: controller.account,
+                                              showMultiSig: true),
+                                          minExtent: 0.5,
+                                          maxExtend: 0.9,
+                                          initialExtend: 0.7,
+                                          centerContent: false,
+                                        )
+                                        .then(switchAccount);
+                                  }
+                                : null,
                             child: AddressDetailsView(
                                 address: controller.address,
                                 color: context.colors.onPrimaryContainer,
                                 key:
                                     ValueKey<IXRPAddress?>(controller.address)),
-                            onRemove: () {
-                              context
-                                  .openSliverBottomSheet<IXRPAddress>(
-                                    "switch_account".tr,
-                                    child: SwitchOrSelectAccountView(
-                                        account: controller.account,
-                                        showMultiSig: true),
-                                    minExtent: 0.5,
-                                    maxExtend: 0.9,
-                                    initialExtend: 0.7,
-                                    centerContent: false,
-                                  )
-                                  .then(switchAccount);
-                            },
                           ),
                           WidgetConstant.height20,
                           PageTitleSubtitle(
@@ -91,10 +93,10 @@ class RippleTransactionFieldsView extends StatelessWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              StreamWidget(
+                              ButtonProgress(
                                 key: controller.buttonKey,
                                 backToIdle: APPConst.oneSecoundDuration,
-                                buttonWidget: FixedElevatedButton(
+                                child: (context) => FixedElevatedButton(
                                   padding: WidgetConstant.paddingVertical40,
                                   activePress: controller.trIsReady,
                                   onPressed: () {

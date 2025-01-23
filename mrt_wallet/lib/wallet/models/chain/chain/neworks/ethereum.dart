@@ -12,16 +12,17 @@ class EthereumChain extends Chain<
     ChainStorageKey,
     DefaultChainConfig,
     WalletTransaction<ETHAddress>> {
-  EthereumChain._({
-    required super.network,
-    required super.totalBalance,
-    required super.addressIndex,
-    required super.id,
-    required super.config,
-    required super.contacts,
-    required super.addresses,
-    required super.client,
-  }) : super._();
+  EthereumChain._(
+      {required super.network,
+      required super.totalBalance,
+      required super.addressIndex,
+      required super.id,
+      required super.config,
+      required super.contacts,
+      required super.addresses,
+      required super.client,
+      required super.status})
+      : super._();
   @override
   EthereumChain copyWith(
       {WalletEthereumNetwork? network,
@@ -31,7 +32,8 @@ class EthereumChain extends Chain<
       int? addressIndex,
       EthereumClient? client,
       String? id,
-      DefaultChainConfig? config}) {
+      DefaultChainConfig? config,
+      WalletChainStatus? status}) {
     return EthereumChain._(
         network: network ?? this.network,
         totalBalance: totalBalance ?? this.totalBalance,
@@ -40,7 +42,8 @@ class EthereumChain extends Chain<
         contacts: contacts ?? _contacts,
         client: client ?? _client,
         id: id ?? this.id,
-        config: config ?? this.config);
+        config: config ?? this.config,
+        status: status ?? _chainStatus);
   }
 
   factory EthereumChain.setup(
@@ -56,7 +59,8 @@ class EthereumChain extends Chain<
         client: client,
         addresses: [],
         config: DefaultChainConfig.none,
-        contacts: []);
+        contacts: [],
+        status: WalletChainStatus.ready);
   }
 
   factory EthereumChain.deserialize(
@@ -99,7 +103,8 @@ class EthereumChain extends Chain<
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
         client: client,
         id: cbor.elementAt<String>(8),
-        config: DefaultChainConfig.none);
+        config: DefaultChainConfig.none,
+        status: WalletChainStatus.ready);
   }
 
   BigInt get chainId => network.coinParam.chainId;

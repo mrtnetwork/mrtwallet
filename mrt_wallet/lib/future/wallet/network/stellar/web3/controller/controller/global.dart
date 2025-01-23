@@ -13,6 +13,8 @@ class Web3StellarGlobalRequestController<RESPONSE,
     required super.walletProvider,
     required super.request,
   }) : super(account: request.chain);
+  @override
+  bool get clientRequired => false;
   void onChangeForm() {
     notify();
   }
@@ -59,18 +61,13 @@ class Web3StellarGlobalRequestController<RESPONSE,
     progressKey.response(text: "request_completed_success".tr);
   }
 
-  void _init() {
-    MethodUtils.after(() async {
+  @override
+  Future<void> initWeb3() async {
+    await MethodUtils.after(() async {
       liveRequest.addListener(onChangeForm);
       form.onCompleteForm = onCompleteForm;
       progressKey.idle();
     });
-  }
-
-  @override
-  Future<void> readyWeb3() async {
-    await super.readyWeb3();
-    _init();
   }
 
   @override

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
-import 'package:mrt_wallet/future/wallet/network/substrate/transaction/controller/controller/controller.dart';
+import 'package:mrt_wallet/app/constant/global/app.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/wallet/network/substrate/transaction/controller/impl/fee_impl.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
 class SubstrateTransactionFeeView extends StatelessWidget {
   const SubstrateTransactionFeeView(this.controller, {super.key});
-  final SubstrateTransactionStateController controller;
+  final SubstrateFeeImpl controller;
 
   @override
   Widget build(BuildContext context) {
@@ -16,26 +17,30 @@ class SubstrateTransactionFeeView extends StatelessWidget {
         Text("transaction_fee".tr, style: context.textTheme.titleMedium),
         Text("cost_for_transaction".tr),
         WidgetConstant.height8,
-        ContainerWithBorder(
-            validateText: controller.feeError?.tr,
-            validate: controller.hasFee,
-            enableTap: false,
-            onTapError: () {
-              controller.estimateFee();
-            },
-            onRemove: () {},
-            onRemoveIcon: StatusIconWidget(
-              status: controller.feeStatus,
-              onSuccessIcon: _FeeInfoWidget(
-                  feeInfo: controller.feeInfo, network: controller.network),
-            ),
-            child: CoinPriceView(
-              balance: controller.fee,
-              token: controller.network.token,
-              style: context.onPrimaryTextTheme.titleLarge,
-              showTokenImage: true,
-              symbolColor: context.onPrimaryContainer,
-            )),
+        LiveWidget(() {
+          final status = controller.feeStatus;
+          return ContainerWithBorder(
+              validateText: controller.feeError?.tr,
+              validate: controller.hasFee,
+              enableTap: false,
+              onTapError: () {
+                controller.estimateFee();
+              },
+              onRemove: () {},
+              onRemoveIcon: StatusIconWidget(
+                status: status,
+                size: APPConst.iconSize,
+                onSuccessIcon: _FeeInfoWidget(
+                    feeInfo: controller.feeInfo, network: controller.network),
+              ),
+              child: CoinPriceView(
+                balance: controller.fee,
+                token: controller.network.token,
+                style: context.onPrimaryTextTheme.titleLarge,
+                showTokenImage: true,
+                symbolColor: context.onPrimaryContainer,
+              ));
+        })
       ],
     );
   }
@@ -44,7 +49,7 @@ class SubstrateTransactionFeeView extends StatelessWidget {
 class _FeeInfoWidget extends StatelessWidget {
   const _FeeInfoWidget({required this.feeInfo, required this.network});
   final SubstrateFeeInfos feeInfo;
-  final WalletPolkadotNetwork network;
+  final WalletSubstrateNetwork network;
 
   @override
   Widget build(BuildContext context) {

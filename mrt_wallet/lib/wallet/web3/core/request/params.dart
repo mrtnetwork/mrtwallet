@@ -10,6 +10,7 @@ import 'package:mrt_wallet/wallet/web3/networks/global/global.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
+import 'package:mrt_wallet/wallet/web3/networks/substrate/params/core/request.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'web_request.dart';
@@ -19,7 +20,7 @@ abstract class Web3GlobalRequestParams<RESPONSE> extends Web3MessageCore
   @override
   Web3MessageTypes get type => Web3MessageTypes.walletGlobalRequest;
   const Web3GlobalRequestParams();
-  abstract final Web3RequestMethods method;
+  abstract final Web3GlobalRequestMethods method;
 
   factory Web3GlobalRequestParams.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -46,14 +47,14 @@ abstract class Web3GlobalRequestParams<RESPONSE> extends Web3MessageCore
 }
 
 abstract class Web3RequestParams<
-        RESPONSE,
-        NETWORKADDRESS,
-        CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
-        CHAINACCOUNT extends Web3ChainAccount<NETWORKADDRESS>,
-        WEB3ChAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUNT>>
-    extends Web3GlobalRequestParams<RESPONSE> {
+    RESPONSE,
+    NETWORKADDRESS,
+    CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
+    CHAINACCOUNT extends Web3ChainAccount<NETWORKADDRESS>,
+    WEB3ChAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUNT,
+        WalletNetwork>> extends Web3MessageCore {
   bool get isPermissionRequest => false;
-
+  abstract final Web3RequestMethods method;
   abstract final NETWORKADDRESS? account;
 
   Web3RequestParams();
@@ -101,6 +102,10 @@ abstract class Web3RequestParams<
         break;
       case NetworkType.stellar:
         param = Web3StellarRequestParam.deserialize(
+            bytes: bytes, object: object, hex: hex);
+        break;
+      case NetworkType.substrate:
+        param = Web3SubstrateRequestParam.deserialize(
             bytes: bytes, object: object, hex: hex);
         break;
       default:

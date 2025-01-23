@@ -38,13 +38,15 @@ class __MonitorStellarTokenViewState extends State<_MonitorStellarTokenView>
     with SafeState {
   late final address = widget.chain.address;
   StellarClient get client => widget.chain.client;
+  List<StellarIssueToken> addressTokens = [];
   final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
       debugLabel: "__MonitorStellarTokenViewState");
   final Set<StellarIssueToken> tokens = {};
   void fetchingTokens() async {
     if (progressKey.isSuccess || progressKey.inProgress) return;
     final result = await MethodUtils.call(() async {
-      final account = await client.getAccount(address.networkAddress);
+      final account =
+          await client.getAccountFromIStellarAddress(address, widget.chain);
       if (account == null) return <StellarAssetBalanceResponse>[];
       return account.balances.whereType<StellarAssetBalanceResponse>().toList();
     });
@@ -52,7 +54,14 @@ class __MonitorStellarTokenViewState extends State<_MonitorStellarTokenView>
     if (result.hasError) {
       progressKey.errorText(result.error!.tr, backToIdle: false);
     } else {
-      final toRippleIssue = result.result.map((e) => e.toIssueToken()).toList();
+      final toRippleIssue = result.result.map((e) {
+        return addressTokens.firstWhere(
+            (i) =>
+                i.assetCode == e.assetCode &&
+                i.issuer == e.assetIssuer &&
+                i.assetType == e.assetType.assetType,
+            orElse: () => e.toIssueToken());
+      }).toList();
       tokens.addAll(toRippleIssue);
       progressKey.success();
     }
@@ -61,26 +70,21 @@ class __MonitorStellarTokenViewState extends State<_MonitorStellarTokenView>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    addressTokens = address.tokens;
     fetchingTokens();
   }
 
   @override
   void dispose() {
     for (final i in tokens) {
-      i.balance.dispose();
+      if (!addressTokens.contains(i)) i.balance.dispose();
     }
     super.dispose();
   }
 
   Future<void> add(StellarIssueToken token) async {
-    final result = await widget.wallet.wallet.addNewToken(
-        token: StellarIssueToken.create(
-            balance: token.balance.value.balance,
-            token: token.token,
-            issuer: token.issuer,
-            assetType: token.assetType),
-        address: address,
-        account: widget.chain);
+    final result = await widget.wallet.wallet
+        .addNewToken(token: token, address: address, account: widget.chain);
     if (result.hasError) throw result.error!;
     return result.result;
   }

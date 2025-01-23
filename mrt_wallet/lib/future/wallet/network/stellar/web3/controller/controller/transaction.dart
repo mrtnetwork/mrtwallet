@@ -93,7 +93,8 @@ class Web3StellarTransactionRequestController
     progressKey.response(text: "transaction_signed".tr);
   }
 
-  Future<void> _init() async {
+  @override
+  Future<void> initWeb3() async {
     progressKey.process(text: "transaction_retrieval_requirment".tr);
     final result = await MethodUtils.call(() async {
       final envlope = request.params.transaction;
@@ -118,11 +119,5 @@ class Web3StellarTransactionRequestController
     accountInfo = result.result!.$1;
     transactionInfo = result.result!.$2;
     progressKey.idle();
-  }
-
-  @override
-  Future<void> readyWeb3() async {
-    await super.readyWeb3();
-    _init();
   }
 }

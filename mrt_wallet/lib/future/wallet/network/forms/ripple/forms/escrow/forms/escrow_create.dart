@@ -5,7 +5,7 @@ import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 
-class RippleEscrowCreateForm implements RippleTransactionForm {
+class RippleEscrowCreateForm extends RippleTransactionForm {
   final TransactionFormField<IntegerBalance> amount = TransactionFormField(
     name: "amount",
     subject: "ripple_escrow_create_amount",
@@ -99,9 +99,6 @@ class RippleEscrowCreateForm implements RippleTransactionForm {
       fee: fee,
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

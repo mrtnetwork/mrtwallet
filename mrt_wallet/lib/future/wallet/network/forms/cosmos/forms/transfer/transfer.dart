@@ -42,9 +42,6 @@ class CosmosTransferForm extends CosmosTransactionForm {
           });
 
   @override
-  OnChangeForm? onChanged;
-
-  @override
   String get name => "transfer";
 
   void _setReceiver(
@@ -122,5 +119,14 @@ class CosmosTransferForm extends CosmosTransactionForm {
   @override
   List<ServiceMessage> messages(CosmosBaseAddress signer) {
     return destinations.value.map((e) => e.toMessage(signer, network)).toList();
+  }
+
+  @override
+  void close() {
+    _callValue = BigInt.zero;
+    remindTokenAmounts.clear();
+    _feeInfo = null;
+    destinations.clear();
+    super.close();
   }
 }

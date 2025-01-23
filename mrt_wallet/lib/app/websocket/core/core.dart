@@ -3,7 +3,7 @@ import '../platform_impl/cross.dart'
     if (dart.library.io) '../platform_impl/io.dart';
 
 abstract class PlatformWebScoket {
-  void close({int? code});
+  void close();
   void sink(List<int> message);
   Stream<dynamic> get stream;
   bool get isConnected;

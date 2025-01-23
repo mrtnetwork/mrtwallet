@@ -15,7 +15,7 @@ mixin Web3EthereumImpl on WalletManager {
         }
         await _getWalletOwnerResult(request);
         final Web3EthereumChain? permission = request.currentPermission;
-        permission?.setActiveChain(network);
+        permission?.setActiveChain(network.network);
         request.authenticated.updateChainAccount(permission!);
         return network.chainId.toRadix16;
       default:

@@ -7,32 +7,34 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:stellar_dart/stellar_dart.dart';
 
 class StellarIssueToken with Equatable implements TokenCore<BigInt> {
-  StellarIssueToken._(
-      this.balance, this.token, this.issuer, this._updated, this.assetType);
-  factory StellarIssueToken.create({
-    required BigInt balance,
-    required Token token,
-    required String issuer,
-    required AssetType assetType,
-  }) {
+  StellarIssueToken._(this.balance, this.token, this.issuer, this._updated,
+      this.assetType, this.assetCode);
+  factory StellarIssueToken.create(
+      {required BigInt balance,
+      required Token token,
+      required String issuer,
+      required AssetType assetType,
+      required String assetCode}) {
     final Live<IntegerBalance> liveBalance =
         Live(IntegerBalance(balance, token.decimal!));
     return StellarIssueToken._(
-        liveBalance, token, issuer, DateTime.now(), assetType);
+        liveBalance, token, issuer, DateTime.now(), assetType, assetCode);
   }
   factory StellarIssueToken.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     try {
-      final CborListValue cbor = CborSerializable.decodeCborTags(
-          bytes, obj, CborTagsConst.stellarIssueToken);
+      final CborListValue values = CborSerializable.cborTagValue(
+          cborBytes: bytes, object: obj, tags: CborTagsConst.stellarIssueToken);
 
-      final Token token = Token.fromCborBytesOrObject(obj: cbor.getCborTag(0));
-      final String issuer = cbor.elementAt(1);
+      final Token token =
+          Token.fromCborBytesOrObject(obj: values.getCborTag(0));
+      final String issuer = values.elementAs(1);
       final Live<IntegerBalance> balance =
-          Live(IntegerBalance(cbor.elementAt(2), token.decimal!));
-      final DateTime updated = cbor.elementAt(3);
-      final AssetType assetType = AssetType.fromName(cbor.elementAt(4));
-      return StellarIssueToken._(balance, token, issuer, updated, assetType);
+          Live(IntegerBalance(values.elementAs(2), token.decimal!));
+      final DateTime updated = values.elementAs(3);
+      final AssetType assetType = AssetType.fromName(values.elementAs(4));
+      return StellarIssueToken._(
+          balance, token, issuer, updated, assetType, values.elementAs(5));
     } on WalletException {
       rethrow;
     } catch (e) {
@@ -40,8 +42,11 @@ class StellarIssueToken with Equatable implements TokenCore<BigInt> {
     }
   }
   StellarIssueToken updateToken(Token updateToken) {
+    if (updateToken.decimal != token.decimal) {
+      throw WalletExceptionConst.invalidTokenInformation;
+    }
     return StellarIssueToken._(
-        balance, updateToken, issuer, _updated, assetType);
+        balance, updateToken, issuer, _updated, assetType, assetCode);
   }
 
   @override
@@ -50,9 +55,10 @@ class StellarIssueToken with Equatable implements TokenCore<BigInt> {
   @override
   DateTime get updated => _updated;
   final AssetType assetType;
-
   @override
   final String issuer;
+
+  final String assetCode;
   @override
   void updateBalance([BigInt? updateBalance]) {
     balance.value.updateBalance(updateBalance);
@@ -70,13 +76,14 @@ class StellarIssueToken with Equatable implements TokenCore<BigInt> {
           issuer,
           balance.value.balance,
           CborEpochIntValue(_updated),
-          assetType.name
+          assetType.name,
+          assetCode
         ]),
         CborTagsConst.stellarIssueToken);
   }
 
   @override
-  List get variabels => [issuer, assetType.name, token.name];
+  List get variabels => [issuer, assetType.name, assetCode];
 
   @override
   final Token token;
@@ -90,15 +97,14 @@ class StellarIssueToken with Equatable implements TokenCore<BigInt> {
         return StellarAssetCreditAlphanum4(
             issuer: StellarPublicKey.fromAddress(
                 StellarAddress.fromBase32Addr(issuer)),
-            code: token.symbol);
+            code: assetCode);
       case AssetType.creditAlphanum12:
         return StellarAssetCreditAlphanum12(
             issuer: StellarPublicKey.fromAddress(
                 StellarAddress.fromBase32Addr(issuer)),
-            code: token.symbol);
+            code: assetCode);
       default:
         throw WalletExceptionConst.unsuportedFeature;
     }
-    // return
   }
 }

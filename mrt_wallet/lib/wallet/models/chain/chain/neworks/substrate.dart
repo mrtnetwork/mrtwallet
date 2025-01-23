@@ -3,11 +3,11 @@ part of 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 class SubstrateChain extends Chain<
     SubstrateAPIProvider,
     SubstrateNetworkParams,
-    SubstrateAddress,
+    BaseSubstrateAddress,
     TokenCore,
     NFTCore,
     ISubstrateAddress,
-    WalletPolkadotNetwork,
+    WalletSubstrateNetwork,
     SubstrateClient,
     ChainStorageKey,
     DefaultChainConfig,
@@ -20,19 +20,20 @@ class SubstrateChain extends Chain<
       required super.config,
       required super.client,
       required super.contacts,
-      required super.addresses})
+      required super.addresses,
+      required super.status})
       : super._();
   @override
-  SubstrateChain copyWith({
-    WalletPolkadotNetwork? network,
-    Live<IntegerBalance>? totalBalance,
-    List<ISubstrateAddress>? addresses,
-    List<ContactCore<SubstrateAddress>>? contacts,
-    int? addressIndex,
-    SubstrateClient? client,
-    String? id,
-    DefaultChainConfig? config,
-  }) {
+  SubstrateChain copyWith(
+      {WalletSubstrateNetwork? network,
+      Live<IntegerBalance>? totalBalance,
+      List<ISubstrateAddress>? addresses,
+      List<ContactCore<BaseSubstrateAddress>>? contacts,
+      int? addressIndex,
+      SubstrateClient? client,
+      String? id,
+      DefaultChainConfig? config,
+      WalletChainStatus? status}) {
     return SubstrateChain._(
         network: network ?? this.network,
         totalBalance: totalBalance ?? this.totalBalance,
@@ -41,11 +42,12 @@ class SubstrateChain extends Chain<
         contacts: contacts ?? _contacts,
         client: client ?? _client,
         id: id ?? this.id,
-        config: config ?? this.config);
+        config: config ?? this.config,
+        status: status ?? _chainStatus);
   }
 
   factory SubstrateChain.setup({
-    required WalletPolkadotNetwork network,
+    required WalletSubstrateNetwork network,
     required String id,
     SubstrateClient? client,
   }) {
@@ -58,11 +60,12 @@ class SubstrateChain extends Chain<
         client: client,
         config: DefaultChainConfig.none,
         addresses: [],
-        contacts: []);
+        contacts: [],
+        status: WalletChainStatus.ready);
   }
 
   factory SubstrateChain.deserialize(
-      {required WalletPolkadotNetwork network,
+      {required WalletSubstrateNetwork network,
       required CborListValue cbor,
       SubstrateClient? client}) {
     final int networkId = cbor.elementAt(0);
@@ -102,6 +105,7 @@ class SubstrateChain extends Chain<
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
         client: client,
         id: cbor.elementAt<String>(8),
-        config: DefaultChainConfig.none);
+        config: DefaultChainConfig.none,
+        status: WalletChainStatus.ready);
   }
 }

@@ -7,17 +7,12 @@ import 'package:ton_dart/ton_dart.dart' as ton_dart;
 
 enum TonTransactionType { ton, jetton }
 
-abstract class TonTransactionForm implements TransactionForm {
+abstract class TonTransactionForm extends TransactionForm {
   TonTransactionForm();
   BigInt get callValue;
-
   @override
   String? validateError({ITonAddress? account});
-  // StringVoid? onReadyField;
   List<ton_dart.MessageRelaxed> toMessages(ton_dart.TonAddress account);
-
-  @override
-  OnChangeForm? onChanged;
 }
 
 abstract class TonWeb3Form<PARAMS extends Web3TonRequestParam>

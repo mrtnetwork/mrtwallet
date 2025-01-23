@@ -13,12 +13,11 @@ enum JSWebviewTraget {
 class JSWebviewWallet extends JSWalletHandler {
   @override
   final String clientId;
-  @override
-  ChainsHandler _chain;
+
   final JSWebviewTraget target;
   final bool isWorker;
 
-  Web3APPAuthentication? _initializeAuthenticated;
+  Web3APPData? _initializeAuthenticated;
 
   void initClients() {
     final auth = _initializeAuthenticated;
@@ -31,7 +30,7 @@ class JSWebviewWallet extends JSWalletHandler {
     final event = jsRequest.data as JSWorkerEvent;
     switch (event.eventType) {
       case JSWorkerType.wallet:
-        _onResponse(event.data as JSWalletEvent);
+        _onResponse((event.data as JSWalletEvent).toEvent());
         break;
       case JSWorkerType.client:
         handleClientMessage(event.data as PageMessage);
@@ -48,13 +47,11 @@ class JSWebviewWallet extends JSWalletHandler {
 
   JSWebviewWallet._({
     required ChaCha20Poly1305 crypto,
-    required ChainsHandler chain,
     required this.clientId,
     required this.target,
     required this.isWorker,
-    Web3APPAuthentication? initializeAuthenticated,
-  })  : _chain = chain,
-        _initializeAuthenticated = initializeAuthenticated,
+    Web3APPData? initializeAuthenticated,
+  })  : _initializeAuthenticated = initializeAuthenticated,
         super._(crypto);
   factory JSWebviewWallet.initialize(
       {required WalletEvent request,
@@ -69,7 +66,6 @@ class JSWebviewWallet extends JSWalletHandler {
     final message = Web3ChainMessage.deserialize(bytes: decode);
     final handler = JSWebviewWallet._(
         crypto: ChaCha20Poly1305(message.authenticated.token),
-        chain: ChainsHandler.fromWeb3(bytes: message.message),
         clientId: clientId,
         target: target,
         isWorker: true,
@@ -111,4 +107,7 @@ class JSWebviewWallet extends JSWalletHandler {
     mrt.onMrtJsRequest(
         clientId, encryptedMessage, requestId, WalletEventTypes.message.name);
   }
+
+  @override
+  JSWalletMode get mode => JSWalletMode.webview;
 }

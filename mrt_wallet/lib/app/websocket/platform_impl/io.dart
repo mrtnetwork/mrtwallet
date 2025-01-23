@@ -9,8 +9,12 @@ Future<PlatformWebScoket> connectSoc(String url,
 
 class WebsocketIO implements PlatformWebScoket {
   final WebSocket _socket;
-  final StreamController<dynamic> _streamController =
-      StreamController<dynamic>();
+  late final StreamController<dynamic> _streamController =
+      StreamController<dynamic>()..onCancel = _onCloseStream;
+  void _onCloseStream() {
+    _socket.close(1000, "closed by client.");
+  }
+
   @override
   bool get isConnected => _socket.readyState == WebSocket.open;
   WebsocketIO._(this._socket) {
@@ -28,8 +32,8 @@ class WebsocketIO implements PlatformWebScoket {
   }
 
   @override
-  void close({int? code}) {
-    _socket.close(code, 'Closed by client.');
+  void close() {
+    _streamController.close();
   }
 
   @override
@@ -38,13 +42,11 @@ class WebsocketIO implements PlatformWebScoket {
   static Future<WebsocketIO> connect(String url,
       {List<String>? protocols}) async {
     try {
-      final completer = Completer<WebsocketIO>();
       final socket = await WebSocket.connect(url, protocols: protocols);
-      completer.complete(WebsocketIO._(socket));
-      return completer.future;
+      return WebsocketIO._(socket);
     } on WebSocketException catch (e) {
       throw ApiProviderException(message: e.message);
-    } on HandshakeException catch (e) {
+    } on TlsException catch (e) {
       throw ApiProviderException(message: e.message);
     }
   }

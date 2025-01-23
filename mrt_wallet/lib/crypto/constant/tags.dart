@@ -35,8 +35,7 @@ class CryptoKeyConst {
   static const List<int> cosmosNetwork = [80, 0, 7];
   static const List<int> bitcoinCashNetwork = [80, 0, 10];
   static const List<int> tonNetwork = [80, 0, 11];
-  static const List<int> polkadotNetwork = [80, 0, 12];
-  static const List<int> kusamaNetwork = [80, 0, 13];
+  static const List<int> substrateNetwork = [80, 0, 12];
   static const List<int> stellar = [80, 0, 14];
   static const List<int> monero = [80, 0, 15];
 
@@ -89,5 +88,7 @@ class CryptoKeyConst {
   static const List<int> moneroBlocksInfo = [61, 4];
   static const List<int> moneroGenerateProof = [61, 5];
   static const List<int> moneroVerifyProof = [61, 6];
+
+  static const List<int> substrateReadApi = [61, 7];
 }
 // PublicKeyData

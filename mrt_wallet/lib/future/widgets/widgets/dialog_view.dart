@@ -191,16 +191,16 @@ class _AsyncDialogDoubleButtonViewState
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          StreamWidget(
-              buttonWidget: FilledButton(
+          ButtonProgress(
+              child: (context) => FilledButton(
                   onPressed: () {
                     onTap(true);
                   },
                   child: Text(widget.firstButtonLabel ?? "yes".tr)),
               key: progressKeyFirst),
           WidgetConstant.width8,
-          StreamWidget(
-              buttonWidget: FilledButton(
+          ButtonProgress(
+              child: (context) => FilledButton(
                   style: ButtonStyle(
                       backgroundColor: WidgetStatePropertyAll(
                           context.colors.tertiaryContainer),

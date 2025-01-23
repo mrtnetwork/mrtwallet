@@ -26,10 +26,8 @@ class NetworkType {
       NetworkType._(name: "Cosmos", tag: CryptoKeyConst.cosmosNetwork);
   static const NetworkType ton =
       NetworkType._(name: "TON", tag: CryptoKeyConst.tonNetwork);
-  static const NetworkType polkadot =
-      NetworkType._(name: "Polkadot", tag: CryptoKeyConst.polkadotNetwork);
-  static const NetworkType kusama =
-      NetworkType._(name: "Kusama", tag: CryptoKeyConst.kusamaNetwork);
+  static const NetworkType substrate =
+      NetworkType._(name: "Substrate", tag: CryptoKeyConst.substrateNetwork);
   static const NetworkType stellar =
       NetworkType._(name: "Stellar", tag: CryptoKeyConst.stellar);
   static const NetworkType monero =
@@ -45,8 +43,7 @@ class NetworkType {
     cardano,
     ton,
     cosmos,
-    polkadot,
-    kusama,
+    substrate,
     stellar,
     monero
   ];
@@ -62,5 +59,10 @@ class NetworkType {
   static NetworkType fromName(String? name) {
     return values.firstWhere((e) => e.name == name,
         orElse: () => throw WalletExceptionConst.incorrectNetwork);
+  }
+
+  @override
+  String toString() {
+    return "NetworkType.$name";
   }
 }

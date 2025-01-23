@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/solana.dart';
 import 'package:on_chain/solana/solana.dart';
@@ -12,6 +11,7 @@ class SolanaMintToForm extends SolanaTransactionForm {
   Token _token =
       Token(name: "unknown_token".tr, symbol: "unknown_token".tr, decimal: 0);
   Token get token => _token;
+
   void _updateToken() {
     if (mint.hasValue) {
       _token =
@@ -61,8 +61,6 @@ class SolanaMintToForm extends SolanaTransactionForm {
       onChangeForm: (p0) {
         return p0;
       });
-  @override
-  OnChangeForm? onChanged;
 
   List<TransactionFormField> get fields =>
       [mint, destination, authority, programId, amount];
@@ -192,5 +190,18 @@ class SolanaMintToForm extends SolanaTransactionForm {
       }
     }
     return null;
+  }
+
+  @override
+  void close() {
+    super.close();
+    _token =
+        Token(name: "unknown_token".tr, symbol: "unknown_token".tr, decimal: 0);
+    for (final i in fields) {
+      i.clear();
+    }
+    _cancelable.cancel();
+    _destinationAccount = null;
+    _fetchingAccountError = null;
   }
 }

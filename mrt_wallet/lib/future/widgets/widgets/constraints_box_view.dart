@@ -25,10 +25,7 @@ class ConstraintsBoxView extends StatelessWidget {
         constraints: BoxConstraints(
             maxWidth: maxWidth ?? double.infinity,
             maxHeight: maxHeight ?? double.infinity),
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }

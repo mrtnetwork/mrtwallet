@@ -1,14 +1,30 @@
 import 'package:blockchain_utils/bip/bip/conf/bip/bip_coins.dart';
 import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
+import 'package:blockchain_utils/bip/ecc/curve/elliptic_curve_types.dart';
 import 'package:blockchain_utils/bip/substrate/conf/substrate_coins.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
-import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/substrate.dart';
 import 'package:mrt_wallet/crypto/keys/models/seed.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+
+enum _SubstrateKeyAlgorithm {
+  sr25519(name: "Sr25519", value: 0),
+  ecdsa(name: "Ecdsa", value: 1),
+  ed25519(name: "Ed25519", value: 2),
+  ethereum(name: "Ethereum", value: 3),
+  ed25519Slip(name: "Ed25519(SLIP)", value: 2);
+
+  final String name;
+  final int value;
+  const _SubstrateKeyAlgorithm({required this.name, required this.value});
+  SubstrateKeyAlgorithm get algorithm {
+    return SubstrateKeyAlgorithm.fromValue(value);
+  }
+}
 
 class SetupSubstrateAddressView extends StatefulWidget {
   final AddressDerivationController controller;
@@ -20,39 +36,37 @@ class SetupSubstrateAddressView extends StatefulWidget {
 
 class _SetupSubstrateAddressViewState extends State<SetupSubstrateAddressView>
     with SafeState {
-  SubstrateKeyAlgorithm? algorithm;
+  _SubstrateKeyAlgorithm algorithm = _SubstrateKeyAlgorithm.ed25519Slip;
+  late final List<_SubstrateKeyAlgorithm> supportedAlgorithms;
 
-  late final Map<SubstrateKeyAlgorithm, Widget> algorithmTypesWidget = {
-    for (final i in SubstrateKeyAlgorithm.values) i: Text(i.name.camelCase)
-  };
+  late final Map<_SubstrateKeyAlgorithm, Widget> algorithmTypesWidget;
 
-  void onChangeCustomDerivation(bool? _) {
-    if (algorithm == null) {
-      algorithm = SubstrateKeyAlgorithm.sr25519;
-    } else {
-      algorithm = null;
-    }
-    updateState();
-  }
-
-  void onChangeAlgorithm(SubstrateKeyAlgorithm? alg) {
+  void onChangeAlgorithm(_SubstrateKeyAlgorithm? alg) {
+    if (!supportedAlgorithms.contains(alg)) return;
     algorithm = alg ?? algorithm;
     updateState();
   }
 
-  void generateAddress() async {
-    CryptoCoins coin;
+  CryptoCoins findCoin() {
+    final coins = widget.controller.network.coins;
+    switch (algorithm) {
+      case _SubstrateKeyAlgorithm.ethereum:
+        return coins
+            .whereType<BipCoins>()
+            .firstWhere((e) => e.conf.type == EllipticCurveTypes.secp256k1);
 
-    /// bip coin -Slip-10
-    if (algorithm == null) {
-      coin = widget.controller.network.coins.whereType<BipCoins>().first;
-    } else {
-      /// substrate coins
-      coin = widget.controller.network.coins
-          .whereType<SubstrateCoins>()
-          .firstWhere((element) => element.conf.type == algorithm!.curve);
+      case _SubstrateKeyAlgorithm.ed25519Slip:
+        return coins
+            .whereType<BipCoins>()
+            .firstWhere((e) => e.conf.type == EllipticCurveTypes.ed25519);
+      default:
+        return coins.whereType<SubstrateCoins>().firstWhere(
+            (element) => element.conf.type == algorithm.algorithm.curve);
     }
+  }
 
+  void generateAddress() async {
+    final coin = findCoin();
     final keyIndex = await widget.controller.getCoin(
         context: context,
         seedGeneration:
@@ -66,50 +80,50 @@ class _SetupSubstrateAddressViewState extends State<SetupSubstrateAddressView>
   }
 
   @override
+  void onInitOnce() {
+    super.onInitOnce();
+    final network =
+        widget.controller.network.toNetwork<WalletSubstrateNetwork>();
+    supportedAlgorithms = network.coinParam.keyAlgorithms
+        .map((e) =>
+            _SubstrateKeyAlgorithm.values.where((i) => e.value == i.value))
+        .expand((e) => e)
+        .toList();
+    algorithm = supportedAlgorithms.firstWhere(
+      (e) => e == _SubstrateKeyAlgorithm.ed25519Slip,
+      orElse: () => supportedAlgorithms.first,
+    );
+    algorithmTypesWidget = {
+      for (final i in supportedAlgorithms) i: Text(i.name)
+    };
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppCheckListTile(
-          title: Text("customize_key_derivation".tr,
-              style: context.textTheme.titleMedium),
-          contentPadding: EdgeInsets.zero,
-          subtitle: Text("substrate_customize_derivation_desc".tr),
-          value: algorithm == null,
-          onChanged: onChangeCustomDerivation,
+        WidgetConstant.height20,
+        Text("keypair_type".tr, style: context.textTheme.titleMedium),
+        TextAndLinkView(
+          text: "choose_substrate_key_algorithm_desc".tr,
+          url: LinkConst.reviewSubstrateSignatureSchame,
+          linkDesc: "read_more".tr,
         ),
-        APPAnimatedSize(
-            isActive: algorithm != null,
-            onActive: (c) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    WidgetConstant.height20,
-                    Text("keypair_type".tr,
-                        style: context.textTheme.titleMedium),
-                    TextAndLinkView(
-                      text: "choose_substrate_key_algorithm_desc".tr,
-                      url: LinkConst.reviewSubstrateSignatureSchame,
-                      linkDesc: "read_more".tr,
-                    ),
-                    WidgetConstant.height8,
-                    AppDropDownBottom(
-                      items: algorithmTypesWidget,
-                      hint: "keypair_type".tr,
-                      onChanged: onChangeAlgorithm,
-                      isExpanded: true,
-                      value: algorithm,
-                    ),
-                  ],
-                ),
-            onDeactive: (c) => WidgetConstant.sizedBox),
+        WidgetConstant.height8,
+        AppDropDownBottom(
+            items: algorithmTypesWidget,
+            hint: "keypair_type".tr,
+            onChanged: onChangeAlgorithm,
+            isExpanded: true,
+            value: algorithm),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
-              padding: WidgetConstant.paddingVertical40,
-              onPressed: generateAddress,
-              child: Text("generate_address".tr),
-            ),
+                padding: WidgetConstant.paddingVertical40,
+                onPressed: generateAddress,
+                child: Text("generate_address".tr)),
           ],
         )
       ],

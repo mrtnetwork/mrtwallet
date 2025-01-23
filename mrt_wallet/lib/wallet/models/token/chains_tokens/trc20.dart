@@ -38,7 +38,10 @@ class TronTRC20Token with Equatable implements SolidityToken, TronToken {
   }
   @override
   TronTRC20Token updateToken(Token updateToken) {
-    return TronTRC20Token._(balance, updateToken, contractAddress, _updated);
+    return TronTRC20Token.create(
+        balance: balance.value.balance,
+        token: updateToken,
+        contractAddress: contractAddress);
   }
 
   @override

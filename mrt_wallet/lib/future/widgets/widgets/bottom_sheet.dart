@@ -63,10 +63,14 @@ class _AppBottomSheetState extends State<AppBottomSheet> with SafeState {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
     if (widget.initiaalExtend != null) {
       _calculateAppBarRadius(widget.initiaalExtend!);
     }
+  }
+
+  @override
+  void onInitOnce() {
+    super.onInitOnce();
     final height = context.mediaQuery.viewInsets.bottom;
     if (height > 0 && controller.isAttached) {
       inChangeExtend = true;

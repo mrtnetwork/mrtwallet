@@ -21,6 +21,7 @@ class ADAChain extends Chain<
     required super.client,
     required super.contacts,
     required super.addresses,
+    required super.status,
   }) : super._();
   @override
   ADAChain copyWith({
@@ -32,6 +33,7 @@ class ADAChain extends Chain<
     CardanoClient? client,
     String? id,
     DefaultChainConfig? config,
+    WalletChainStatus? status,
   }) {
     return ADAChain._(
         network: network ?? this.network,
@@ -41,7 +43,8 @@ class ADAChain extends Chain<
         contacts: contacts ?? _contacts,
         client: client ?? _client,
         id: id ?? this.id,
-        config: config ?? this.config);
+        config: config ?? this.config,
+        status: status ?? _chainStatus);
   }
 
   factory ADAChain.setup({
@@ -58,7 +61,8 @@ class ADAChain extends Chain<
         client: client,
         addresses: [],
         config: DefaultChainConfig.none,
-        contacts: []);
+        contacts: [],
+        status: WalletChainStatus.ready);
   }
 
   factory ADAChain.deserialize(
@@ -101,6 +105,7 @@ class ADAChain extends Chain<
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
         client: client,
         id: cbor.elementAt<String>(8),
-        config: DefaultChainConfig.none);
+        config: DefaultChainConfig.none,
+        status: WalletChainStatus.ready);
   }
 }

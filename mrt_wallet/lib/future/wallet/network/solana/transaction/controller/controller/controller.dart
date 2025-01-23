@@ -109,7 +109,8 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
   @override
   void close() {
     validator.removeListener(onChange);
-    validator.validator.dispose();
+    validator.validator.close();
+
     super.close();
   }
 }

@@ -232,8 +232,8 @@ class _SolidityTypesView extends StatelessWidget {
                       color: context.colors.tertiary,
                       child: Text(
                         addr.toTronAddress().toAddress(),
-                        style: context.textTheme.bodyMedium?.copyWith(
-                            color: context.colors.onTertiaryContainer),
+                        style: context.textTheme.bodyMedium
+                            ?.copyWith(color: context.colors.onTertiary),
                       ));
                 },
                 child: Icon(Icons.help, color: style?.color)),

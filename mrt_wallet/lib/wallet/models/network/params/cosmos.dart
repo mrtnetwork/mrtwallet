@@ -22,6 +22,7 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
   final List<CosmosKeysAlgs> keysAlgs;
   final List<CosmosFeeToken> feeTokens;
   final bool useNativeTokenAsFee;
+
   List<Bip44Coins> coins() {
     return keysAlgs.map((e) => e.coin(chainType)).toList();
   }
@@ -96,8 +97,6 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
         bytes, obj, CborTagsConst.cosmosNetworkParams);
 
     return CosmosNetworkParams(
-      transactionExplorer: values.elementAs(0),
-      addressExplorer: values.elementAs(1),
       token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
       providers: values
           .elementAsListOf<CborTagValue>(3)
@@ -118,6 +117,8 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
           .elementAsListOf<CborStringValue>(12)
           .map((e) => CosmosKeysAlgs.fromName(e.value))
           .toList(),
+      transactionExplorer: values.elementAs(13),
+      addressExplorer: values.elementAs(14),
     );
   }
 
@@ -125,8 +126,8 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          transactionExplorer,
-          addressExplorer,
+          const CborNullValue(),
+          const CborNullValue(),
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
           chainType.name,
@@ -139,6 +140,8 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
           networkConstantUri,
           CborListValue.fixedLength(
               keysAlgs.map((e) => CborStringValue(e.name)).toList()),
+          transactionExplorer,
+          addressExplorer,
         ]),
         CborTagsConst.cosmosNetworkParams);
   }
@@ -173,14 +176,20 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
         feeTokens: feeTokens ?? this.feeTokens);
   }
 
+  String get identifier => chainId;
+
   @override
-  NetworkCoinParams<CosmosAPIProvider> updateProviders(
-      List<APIProvider> updateProviders) {
+  NetworkCoinParams<CosmosAPIProvider> updateParams(
+      {List<APIProvider>? updateProviders,
+      Token? token,
+      String? transactionExplorer,
+      String? addressExplorer}) {
     return CosmosNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,
-        token: token,
-        providers: updateProviders.cast<CosmosAPIProvider>(),
+        token: NetworkCoinParams.validateUpdateParams(
+            token: this.token, updateToken: token),
+        providers: updateProviders?.cast<CosmosAPIProvider>() ?? providers,
         chainType: chainType,
         hrp: hrp,
         feeTokens: feeTokens,
@@ -191,7 +200,4 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
         networkConstantUri: networkConstantUri,
         keysAlgs: keysAlgs);
   }
-
-  @override
-  String get identifier => chainId;
 }

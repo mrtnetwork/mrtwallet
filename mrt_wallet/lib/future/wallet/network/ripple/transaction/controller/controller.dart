@@ -29,10 +29,11 @@ class RippleTransactionStateController extends RippleTransactionImpl
   }
 
   final LiveTransactionForm<RippleTransactionForm> validator;
+  RippleTransactionForm get form => validator.validator;
   late final RipplePaymentForm? _isPayment = _getPaymentForm;
   RipplePaymentForm? get _getPaymentForm {
-    if (validator.validator.transactionType == XRPLTransactionType.payment) {
-      return validator.validator as RipplePaymentForm;
+    if (form.transactionType == XRPLTransactionType.payment) {
+      return form.cast<RipplePaymentForm>();
     }
     return null;
   }
@@ -201,13 +202,13 @@ class RippleTransactionStateController extends RippleTransactionImpl
 
   void _updateCustomFee() {
     if (transactionType != XRPLTransactionType.escrowFinish) return;
-    final v = validator.validator as RippleEscrowFinishForm;
+    final v = form.cast<RippleEscrowFinishForm>();
     updateFee(v.fulfillment.value);
   }
 
   void _onChangeForm() {
     _checkTransaction();
-    _fieldError = validator.validator.validateError(account: address);
+    _fieldError = form.validateError(account: address);
     _trIsReady = _isReady();
     notify();
   }
@@ -222,6 +223,7 @@ class RippleTransactionStateController extends RippleTransactionImpl
   @override
   void close() {
     validator.dispose();
+    validator.validator.close();
     super.close();
   }
 

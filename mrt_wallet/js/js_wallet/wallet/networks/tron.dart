@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 import 'package:blockchain_utils/utils/utils.dart';
+import 'package:mrt_wallet/app/isolate/types.dart';
 import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/app/utils/numbers/numbers.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
@@ -12,58 +13,55 @@ import '../../models/models.dart';
 import '../../utils/utils/utils.dart';
 import '../core/network_handler.dart';
 
-class TronWeb3State
-    extends ChainWeb3State<TronAddress, TronChain, Web3TronChain> {
-  final TronChain? chain;
-  final JSTronAddress? defaultAddress;
+class TronWeb3State extends ChainWeb3State {
+  final WalletTronNetwork? network;
+  final JSTronDefaultAddress? defaultAddress;
   final TronClient? client;
+  final List<BigInt> existsChain;
+  final List<String> permissionAccounts;
 
-  TronWeb3State._(
-      {super.permission,
-      required super.chains,
-      required super.state,
-      required super.permissionAccounts,
-      this.defaultAddress,
-      this.client,
-      this.chain});
+  TronWeb3State._({
+    required super.state,
+    required List<String> permissionAccounts,
+    required List<BigInt> existsChain,
+    this.defaultAddress,
+    this.client,
+    this.network,
+  })  : existsChain = existsChain.imutable,
+        permissionAccounts = permissionAccounts.imutable;
   factory TronWeb3State.init(
       {JSNetworkState state = JSNetworkState.disconnect}) {
     return TronWeb3State._(
-        chains: const [], permissionAccounts: const [], state: state);
+        permissionAccounts: const [], state: state, existsChain: []);
   }
-  factory TronWeb3State(
-      {required Web3APPAuthentication authenticated,
-      required ChainsHandler chainHandler}) {
-    final permission =
-        authenticated.getChainFromNetworkType<Web3TronChain>(NetworkType.tron);
-    if (permission == null) {
+  factory TronWeb3State(Web3TronChainAuthenticated? authenticated) {
+    if (authenticated == null) {
       return TronWeb3State.init(state: JSNetworkState.block);
     }
-    final chains = chainHandler.chains().whereType<TronChain>().toList();
-    final currentChain = chains.firstWhere(
-        (e) => e.network.tronNetworkType == permission.currentChain);
-    final permissionAccounts = permission.chainAccounts(currentChain);
+    final permissionAccounts = authenticated.accounts;
     final defaultAddress = permissionAccounts
         .firstWhereOrNull((e) => e.defaultAddress, orElse: () {
       if (permissionAccounts.isEmpty) return null;
       return permissionAccounts.first;
     });
     return TronWeb3State._(
-        chains: chainHandler.chains().whereType<TronChain>().toList(),
-        permission: permission,
         permissionAccounts:
             permissionAccounts.map((e) => e.address.toAddress()).toList()
               ..sort((a, b) =>
                   JsUtils.compareAddress(a, b, defaultAddress?.addressStr)),
         state: JSNetworkState.init,
-        chain: currentChain,
+        existsChain: authenticated.chainIds,
+        network: authenticated.network,
         defaultAddress: defaultAddress == null
             ? null
-            : JSTronAddress(
+            : JSTronDefaultAddress(
                 base58: defaultAddress.address.toAddress(),
                 hex: defaultAddress.address.toHex()),
-        client: currentChain.getWeb3Provider(
-            requestTimeout: ChainWeb3State.requestTimeout));
+        client: APIUtils.createApiClient(authenticated.network,
+            allowInWeb3: true,
+            identifier: authenticated.serviceIdentifier,
+            isolate: APPIsolate.current,
+            requestTimeut: ChainWeb3State.requestTimeout));
   }
 
   bool accountChanged(TronWeb3State other) {
@@ -73,24 +71,23 @@ class TronWeb3State
   }
 
   bool chainChanged(TronWeb3State other) {
-    return other.chain?.network.tronNetworkType !=
-        chain?.network.tronNetworkType;
+    return other.network?.tronNetworkType != network?.tronNetworkType;
   }
 
   bool needToggle(TronWeb3State other) {
     return other.state != state;
   }
 
-  bool get isConnect => chain?.clientNullable != null;
+  bool get isConnect => network != null;
   TronAccountsChanged get accountsChange => TronAccountsChanged(
       accounts: permissionAccounts, defaultAddress: defaultAddress);
   TronChainChanged get chainChangedEvent => TronChainChanged(
-      netVersion:
-          BigInt.from(chain!.network.tronNetworkType.genesisBlockNumber),
+      netVersion: BigInt.from(network!.tronNetworkType.genesisBlockNumber),
       fullNode: client!.service.provider.callUrl,
-      solidityNode: client!.solidityProvider.service.provider.callUrl);
+      solidityNode: client!.solidityProvider.service.provider.callUrl,
+      address: defaultAddress);
   bool hasPermission(TronAddress address) {
-    return permission?.getPermission(address) != null;
+    return permissionAccounts.any((e) => e == address.toAddress());
   }
 
   TronWebNodeInfo? get nodeInfo => client == null
@@ -102,21 +99,17 @@ class TronWeb3State
               client!.network.tronNetworkType.genesisBlockNumber.toRadix16);
 }
 
-class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
-    Web3TronChainAccount, Web3TronChain, TronWeb3State> {
+class JSTronHandler extends JSNetworkHandler<TronWeb3State> {
   @override
   TronWeb3State state = TronWeb3State.init();
 
   JSTronHandler({required super.sendMessageToClient});
 
   @override
-  void initChain(
-      {required Web3APPAuthentication authenticated,
-      required ChainsHandler chainHandler}) {
+  void initChain(Web3APPData authenticated) {
     lock.synchronized(() async {
       final currentState = state;
-      state = TronWeb3State(
-          authenticated: authenticated, chainHandler: chainHandler);
+      state = TronWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {
         _toggleTron(state);
         _disconnect();
@@ -150,6 +143,17 @@ class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
           return buildResponse(state.permissionAccounts);
         }
         return Web3TronRequestAccounts();
+      case Web3TronRequestMethods.switchTronChain:
+        final parse = _parseSwitchTronChain(params);
+        if (parse.chainId.toInt() ==
+            state.network?.tronNetworkType.genesisBlockNumber) {
+          return buildResponse(parse.chainId.toRadix16);
+        }
+        final chain = state.existsChain.contains(parse.chainId);
+        if (!chain) {
+          throw Web3TronExceptionConstant.tronNetworkDoesNotExist;
+        }
+        return parse;
       case Web3TronRequestMethods.signTransaction:
         return _parseTransaction(params, state);
       case Web3TronRequestMethods.signMessageV2:
@@ -158,6 +162,17 @@ class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
       default:
         throw Web3RequestExceptionConst.methodDoesNotExist;
     }
+  }
+
+  static Web3TronSwitchChain _parseSwitchTronChain(PageMessageRequest params) {
+    final toList = params.getFirstParam;
+    if (toList == null) {
+      throw Web3RequestExceptionConst.invalidList(parameterName: params.method);
+    }
+    final toObject = JsUtils.toMap(toList,
+        error:
+            Web3RequestExceptionConst.invalidMethodArgruments(params.method));
+    return Web3TronSwitchChain.fromJson(toObject);
   }
 
   Web3TronSignMessageV2 _signMessageV2(
@@ -242,7 +257,7 @@ class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
   }
 
   void _connect(TronWeb3State state) async {
-    if (state.chain == null) return;
+    if (state.network == null) return;
     _sendEvent(
         event: JSEventType.connect, data: state.chainChangedEvent.toJson());
   }
@@ -254,7 +269,7 @@ class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
   }
 
   void _chainChanged(TronWeb3State state) async {
-    if (state.chain == null) return;
+    if (state.network == null) return;
     _sendEvent(
         event: JSEventType.chainChanged,
         data: state.chainChangedEvent.toJson());
@@ -272,21 +287,12 @@ class JSTronHandler extends JSNetworkHandler<TronAddress, TronChain,
   }
 
   @override
-  void onRequestDone(PageMessageRequest message) {
-    // final method = Web3TronRequestMethods.fromName(message.method);
-
-    // switch (method) {
-    //   case Web3TronRequestMethods.requestAccounts:
-    //     _accountChanged(state);
-    //     break;
-    //   default:
-    // }
-  }
+  void onRequestDone(PageMessageRequest message) {}
 
   @override
   WalletMessageResponse finilizeWalletResponse(
       {required PageMessageRequest message,
-      required Web3RequestParams params,
+      required Web3RequestParams? params,
       required Web3WalletResponseMessage response}) {
     final method = Web3TronRequestMethods.fromName(message.method);
 

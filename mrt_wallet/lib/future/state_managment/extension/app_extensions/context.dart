@@ -77,7 +77,11 @@ extension QuickContextAccsess on BuildContext {
     }
   }
 
-  Future<T?> to<T>(String path, {dynamic argruments}) async {
+  Future<T?> to<T>(String? path, {dynamic argruments}) async {
+    if (path == null) {
+      showAlert('page_not_found'.tr);
+      return null;
+    }
     if (mounted) {
       final push = await Navigator.pushNamed(this, path, arguments: argruments);
       return (push as T?);

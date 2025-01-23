@@ -1,21 +1,18 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
-import 'package:blockchain_utils/helper/helper.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message_types.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart';
 
 class Web3ChainMessage extends Web3MessageCore {
-  final List<int> message;
   @override
   final Web3MessageTypes type;
-  final Web3APPAuthentication authenticated;
+  final Web3APPData authenticated;
 
   Web3ChainMessage({
-    required List<int> message,
     required this.type,
     required this.authenticated,
-  }) : message = message.asImmutableBytes;
+  });
   factory Web3ChainMessage.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborTagValue tag =
@@ -23,18 +20,14 @@ class Web3ChainMessage extends Web3MessageCore {
     final type = Web3MessageTypes.fromTag(tag.tags);
     final values = tag.getList;
     return Web3ChainMessage(
-        message: values.elementAt(0),
         type: type,
-        authenticated:
-            Web3APPAuthentication.deserialize(object: values.getCborTag(1)));
+        authenticated: Web3APPData.deserialize(object: values.getCborTag(0)));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength(
-            [CborBytesValue(message), authenticated.toCbor()]),
-        type.tag);
+        CborListValue.fixedLength([authenticated.toCbor()]), type.tag);
   }
 
   @override

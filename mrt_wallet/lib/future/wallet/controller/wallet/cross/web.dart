@@ -16,16 +16,17 @@ import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'io.dart';
 
-UIWallet uiWallet(GlobalKey<NavigatorState> navigatorKey) {
+UIWallet uiWallet(GlobalKey<NavigatorState> navigatorKey, int storageVersion) {
   if (PlatformInterface.isWeb && isExtension) {
-    return ExtentionWallet(navigatorKey);
+    return ExtentionWallet(
+        navigatorKey: navigatorKey, storageVersion: storageVersion);
   }
-  return Wallet(navigatorKey);
+  return Wallet(navigatorKey: navigatorKey, storageVersion: storageVersion);
 }
 
 class ExtentionWallet extends UIWallet
     with CryptoWokerImpl, Web3RequestControllerImpl, ExtentionWalletHandler {
-  ExtentionWallet(super.navigatorKey);
+  ExtentionWallet({required super.navigatorKey, required super.storageVersion});
   final _lock = SynchronizedLock();
 
   @override
@@ -82,10 +83,10 @@ class ExtentionWallet extends UIWallet
   }
 
   @override
-  void init(DynamicVoid onNotification) async {
+  Future<void> init(DynamicVoid onNotification) async {
     onNotify = onNotification;
     await initWallet();
-    initExtention();
+    await initExtention();
   }
 
   @override

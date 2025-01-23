@@ -41,9 +41,8 @@ class NetworkGenericAddressDerivationView extends StatelessWidget {
             case NetworkType.tron:
               return _NetworkGenericAddressDerivationView<TronAddress,
                   ITronAddress>(chain.cast());
-            case NetworkType.polkadot:
-            case NetworkType.kusama:
-              return _NetworkGenericAddressDerivationView<SubstrateAddress,
+            case NetworkType.substrate:
+              return _NetworkGenericAddressDerivationView<BaseSubstrateAddress,
                   ISubstrateAddress>(chain.cast());
             case NetworkType.xrpl:
               return _NetworkGenericAddressDerivationView<XRPAddress,

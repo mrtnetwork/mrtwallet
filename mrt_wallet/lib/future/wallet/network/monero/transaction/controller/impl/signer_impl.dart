@@ -70,6 +70,7 @@ mixin MoneroTransactionSignerImpl on MoneroTransactionImpl {
           },
         ),
         backToIdle: false);
+    notify();
   }
 
   Future<MoneroRignOutput> _generateRingOutput(

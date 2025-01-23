@@ -44,15 +44,14 @@ class HTTPCaller {
       Map<String, String>? headers,
       Duration timeout = const Duration(seconds: 60)}) async {
     final data = await _clientManager.call(
-      t: ({required client, required headers, required uri}) {
-        return client.get(uri, headers: headers).timeout(timeout);
-      },
-      uri: uri,
-      clientType: clientType,
-      method: HTTPRequestType.post,
-      authenticated: authenticated,
-      headers: headers,
-    );
+        t: ({required client, required headers, required uri}) {
+          return client.get(uri, headers: headers).timeout(timeout);
+        },
+        uri: uri,
+        clientType: clientType,
+        method: HTTPRequestType.post,
+        authenticated: authenticated,
+        headers: headers);
     return HTTPCallerResponse.parse(
         bodyBytes: data.bodyBytes,
         statusCode: data.statusCode,

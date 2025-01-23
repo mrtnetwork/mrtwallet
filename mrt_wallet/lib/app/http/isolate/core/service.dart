@@ -32,7 +32,7 @@ abstract class HTTPServiceWorker {
         timeout: timeout,
         clientType: clientType,
         authenticated: authenticated);
-    if (!isolate.separateThread) {
+    if (isolate.separateThread) {
       try {
         return send(request);
       } on FailedIsolateInitialization catch (_) {}

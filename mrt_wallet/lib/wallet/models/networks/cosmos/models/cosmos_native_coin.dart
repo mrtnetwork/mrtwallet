@@ -26,13 +26,12 @@ class CosmosFeeToken with CborSerializable {
       required this.lowGasPrice,
       required this.averageGasPrice,
       required this.highGasPrice});
-  factory CosmosFeeToken({
-    required Token token,
-    required String denom,
-    BigRational? lowGasPrice,
-    BigRational? averageGasPrice,
-    BigRational? highGasPrice,
-  }) {
+  factory CosmosFeeToken(
+      {required Token token,
+      required String denom,
+      BigRational? lowGasPrice,
+      BigRational? averageGasPrice,
+      BigRational? highGasPrice}) {
     final e = token.decimal;
     if (e == null || e.isNegative || e > CosmosConst.maxTokenExponent) {
       throw WalletException("invalid_token_exponent");

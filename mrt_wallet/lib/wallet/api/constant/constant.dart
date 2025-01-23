@@ -17,11 +17,16 @@ class ProvidersConst {
           APIProviderServiceInfo(
               name: "Blockfrost", url: "https://blockfrost.io/"),
         ],
+      NetworkType.ethereum => [
+          APIProviderServiceInfo(
+              name: "JSON RPC",
+              url: "https://ethereum.org/en/developers/docs/apis/json-rpc/"),
+        ],
       NetworkType.solana => [
           APIProviderServiceInfo(
               name: "JSON RPC", url: "https://solana.com/docs/rpc"),
         ],
-      NetworkType.kusama || NetworkType.polkadot => [
+      NetworkType.substrate => [
           APIProviderServiceInfo(
               name: "JSON RPC",
               url: "https://wiki.polkadot.network/docs/maintain-endpoints"),
@@ -181,9 +186,17 @@ class ProvidersConst {
     ],
     11: <APIProvider>[
       ElectrumAPIProvider(
-          identifier: "${defaultidentifierName}20",
-          url: "wss://chipnet.imaginary.cash:50004",
+          identifier: "${defaultidentifierName}0",
+          url: "ws://cbch.loping.net:62103",
           protocol: ServiceProtocol.websocket),
+      ElectrumAPIProvider(
+          identifier: "${defaultidentifierName}1",
+          url: "ws://cbch.loping.net:62104",
+          protocol: ServiceProtocol.websocket),
+      ElectrumAPIProvider(
+          identifier: "${defaultidentifierName}3",
+          url: "cbch.loping.net:62102",
+          protocol: ServiceProtocol.ssl),
       ElectrumAPIProvider(
           identifier: "${defaultidentifierName}21",
           url: "chipnet.imaginary.cash:50002",
@@ -291,7 +304,7 @@ class ProvidersConst {
       ),
       EthereumAPIProvider(
         identifier: "${defaultidentifierName}39",
-        uri: "wss://ethereum.publicnode.com",
+        uri: "https://ethereum.publicnode.com",
       ),
     ],
     101: <APIProvider>[
@@ -456,6 +469,50 @@ class ProvidersConst {
           identifier: "${defaultidentifierName}455",
           uri: "wss://westend-bridge-hub-rpc.polkadot.io:443"),
     ],
+    461: <APIProvider>[
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}461",
+          uri: "wss://moonbase-rpc.dwellir.com"),
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}461/2",
+          uri: "wss://moonbeam-alpha.api.onfinality.io:443/public-ws"),
+    ],
+    460: <APIProvider>[
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}460",
+          uri: "wss://moonbeam-rpc.dwellir.com"),
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}460/2",
+          uri: "wss://moonbeam.api.onfinality.io/public"),
+    ],
+    462: <APIProvider>[
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}462",
+          uri: "wss://moonriver-rpc.dwellir.com"),
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}462/2",
+          uri: "wss://moonriver.api.onfinality.io/public"),
+    ],
+    463: <APIProvider>[
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}463",
+          uri: "wss://astar-rpc.dwellir.com"),
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}463/2",
+          uri: "wss://astar.api.onfinality.io/public"),
+    ],
+    464: <APIProvider>[
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}462",
+          uri: "wss://centrifuge-rpc.dwellir.com"),
+    ],
+    465: <APIProvider>[
+      SubstrateAPIProvider(
+          identifier: "${defaultidentifierName}465",
+          uri: "wss://acala-rpc-0.aca-api.network"),
+    ],
+
+    /// wss%3A%2F%2Ffullnode.centrifuge.io
     600: <APIProvider>[
       const StellarAPIProvider(
           identifier: "${defaultidentifierName}600",

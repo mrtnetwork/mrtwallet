@@ -10,10 +10,12 @@ class StatusIconWidget extends StatelessWidget {
       {this.onSuccessIcon,
       super.key,
       required this.status,
-      this.size = APPConst.double40});
+      this.size = APPConst.double40,
+      this.color});
   final StreamWidgetStatus status;
   final Widget? onSuccessIcon;
   final double? size;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,7 @@ class StatusIconWidget extends StatelessWidget {
         return SizedBox(
             height: size,
             width: size,
-            child: const CircularProgressIndicator());
+            child: CircularProgressIndicator(color: color));
       },
     });
   }

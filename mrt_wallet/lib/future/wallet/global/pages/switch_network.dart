@@ -76,15 +76,12 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         return allChains
             .where((element) => (element.network.type == NetworkType.ton));
       case 8:
-        return allChains
-            .where((element) => (element.network.type == NetworkType.polkadot));
+        return allChains.where(
+            (element) => (element.network.type == NetworkType.substrate));
       case 9:
         return allChains
-            .where((element) => (element.network.type == NetworkType.kusama));
-      case 10:
-        return allChains
             .where((element) => (element.network.type == NetworkType.stellar));
-      case 11:
+      case 10:
         return allChains
             .where((element) => (element.network.type == NetworkType.monero));
       default:
@@ -108,14 +105,12 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         return 6;
       case NetworkType.ton:
         return 7;
-      case NetworkType.polkadot:
+      case NetworkType.substrate:
         return 8;
-      case NetworkType.kusama:
-        return 9;
       case NetworkType.stellar:
-        return 10;
+        return 9;
       case NetworkType.monero:
-        return 11;
+        return 10;
       default:
         return 0;
     }
@@ -133,6 +128,9 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         break;
       case 6:
         importNetwork = NetworkType.cosmos;
+        break;
+      case 8:
+        importNetwork = NetworkType.substrate;
         break;
       default:
         break;
@@ -226,12 +224,7 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                                       label: WidgetConstant.sizedBox),
                                   NavigationRailDestination(
                                       icon: CircleAssetsImageView(
-                                          APPConst.polkadot,
-                                          radius: imageRadius),
-                                      label: WidgetConstant.sizedBox),
-                                  NavigationRailDestination(
-                                      icon: CircleAssetsImageView(
-                                          APPConst.kusama,
+                                          APPConst.substrate,
                                           radius: imageRadius),
                                       label: WidgetConstant.sizedBox),
                                   NavigationRailDestination(
@@ -257,11 +250,8 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                     child: AnimatedSwitcher(
                   duration: APPConst.animationDuraion,
                   child: _NetworksView(
-                    widget.selectedNetwork,
-                    networks,
-                    showImport,
-                    key: ValueKey(initialIndex),
-                  ),
+                      widget.selectedNetwork, networks, showImport,
+                      key: ValueKey(initialIndex)),
                 ))
               ],
             ),

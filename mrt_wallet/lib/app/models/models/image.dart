@@ -3,6 +3,7 @@ import 'package:mrt_wallet/app/constant/global/serialization.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/euqatable/equatable.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/app/utils/string/utils.dart';
 import 'content_type.dart';
 
 // import 'package:mrt_wallet/app/core.dart';
@@ -39,9 +40,12 @@ class APPImage with CborSerializable, Equatable implements APPImageInfo {
   factory APPImage.base64({required String hexData}) {
     return APPImage._(type: ContentType.base64, uri: hexData);
   }
-  factory APPImage.network(String imageUrl) {
-    return APPImage._(type: ContentType.network, uri: imageUrl);
+  static APPImage? network(String? imageUrl) {
+    final validateUrl = StrUtils.validateUri(imageUrl);
+    if (validateUrl == null) return null;
+    return APPImage._(type: ContentType.network, uri: imageUrl!);
   }
+
   factory APPImage.faviIcon(String websiteUrl) {
     final host = Uri.tryParse(websiteUrl);
     String cacheKey = host?.host ?? "";

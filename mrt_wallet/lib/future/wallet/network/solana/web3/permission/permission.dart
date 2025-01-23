@@ -25,13 +25,13 @@ class _SolanaWeb3PermissionViewState extends State<SolanaWeb3PermissionView>
   Web3SolanaChainAccount createNewAccountPermission(ISolanaAddress address) {
     return Web3SolanaChainAccount.fromChainAccount(
         address: address,
-        genesis: chain.network.genesisBlock,
+        genesis: chain.network.coinParam.type,
         isDefault: false);
   }
 
   @override
   Web3SolanaChain createNewChainPermission() {
-    return Web3SolanaChain.create(genesisBlock: chain.network.genesisBlock);
+    return Web3SolanaChain.create(genesisBlock: chain.network.coinParam.type);
   }
 
   @override
@@ -40,12 +40,10 @@ class _SolanaWeb3PermissionViewState extends State<SolanaWeb3PermissionView>
     permission = widget.permission ?? Web3SolanaChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<SolanaChain>().toList();
+    chain = permission.getCurrentPermissionChain(chains);
     for (final i in chains) {
       permissions[i] = permission.chainAccounts(i);
     }
-    chain = chains.firstWhere(
-        (e) => e.network.genesisBlock == permission.currentChain,
-        orElse: () => chains.first);
   }
 
   @override

@@ -8,9 +8,11 @@ import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/crypto/utils/substrate/substrate.dart';
+import 'package:mrt_wallet/wallet/models/networks/substrate/substrate.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
-class SubstrateNewAddressParams implements NewAccountParams<SubstrateAddress> {
+class SubstrateNewAddressParams
+    implements NewAccountParams<BaseSubstrateAddress> {
   @override
   bool get isMultiSig => false;
   @override
@@ -34,12 +36,15 @@ class SubstrateNewAddressParams implements NewAccountParams<SubstrateAddress> {
     );
   }
 
-  SubstrateAddress toAddress(
-      {required List<int> publicKey, required int ss58Format}) {
+  BaseSubstrateAddress toAddress(
+      {required List<int> publicKey,
+      required int ss58Format,
+      required SubstrateChainType type}) {
     return SubstrateUtils.toAddress(
         publicKey: publicKey,
         ss58Format: ss58Format,
-        curve: deriveIndex.currencyCoin.conf.type);
+        curve: deriveIndex.currencyCoin.conf.type,
+        isEthereum: type.isEthereum);
   }
 
   @override

@@ -7,13 +7,14 @@ import 'package:on_chain/on_chain.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TronUnFreezBalanceV2Form extends TronTransactionForm {
-  TronUnFreezBalanceV2Form({required this.accountInfo});
+  TronUnFreezBalanceV2Form();
   @override
   BigInt get callValue => BigInt.zero;
 
   @override
   final BigInt tokenValue = BigInt.zero;
-  final TronAccountInfo? accountInfo;
+  TronAccountInfo? _accountInfo;
+  TronAccountInfo? get accountInfo => _accountInfo;
 
   late final TransactionFormField<IntegerBalance> amount = TransactionFormField(
     name: "unfreeze_balance",
@@ -40,9 +41,6 @@ class TronUnFreezBalanceV2Form extends TronTransactionForm {
       }
     },
   );
-
-  @override
-  OnChangeForm? onChanged;
 
   List<TransactionFormField> get fields => [resource, amount];
 
@@ -114,5 +112,15 @@ class TronUnFreezBalanceV2Form extends TronTransactionForm {
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
-      required TronChain account}) async {}
+      required TronChain account}) async {
+    _accountInfo = address.accountInfo;
+  }
+
+  @override
+  void close() {
+    _accountInfo = null;
+    amount.clear();
+    resource.clear();
+    super.close();
+  }
 }

@@ -1,7 +1,10 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:blockchain_utils/helper/helper.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
+import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:on_chain/ethereum/ethereum.dart';
@@ -52,4 +55,54 @@ class Web3EthereumChainAccount extends Web3ChainAccount<ETHAddress> {
 
   @override
   List get variabels => [keyIndex, addressStr, chainId];
+}
+
+class Web3EthereumChainAuthenticated extends Web3ChainAuthenticated {
+  final List<BigInt> existsChain;
+  final List<Web3EthereumChainAccount> accounts;
+  final WalletEthereumNetwork network;
+  final String? serviceIdentifier;
+  @override
+  NetworkType get networkType => NetworkType.ethereum;
+  Web3EthereumChainAuthenticated({
+    required this.accounts,
+    required this.network,
+    required this.serviceIdentifier,
+    required List<BigInt> existsChain,
+  }) : existsChain = existsChain.immutable;
+
+  factory Web3EthereumChainAuthenticated.deserialize(
+      {List<int>? bytes, CborObject? object, String? hex}) {
+    final CborListValue values = CborSerializable.cborTagValue(
+        object: object,
+        cborBytes: bytes,
+        hex: hex,
+        tags: NetworkType.ethereum.tag);
+    return Web3EthereumChainAuthenticated(
+      accounts: values
+          .elementAsListOf<CborTagValue>(0)
+          .map((e) => Web3EthereumChainAccount.deserialize(object: e))
+          .toList(),
+      network: WalletEthereumNetwork.fromCborBytesOrObject(
+          obj: values.getCborTag(1)),
+      serviceIdentifier: values.elementAs(2),
+      existsChain: values
+          .elementAsListOf<CborBigIntValue>(3)
+          .map((e) => e.value)
+          .toList(),
+    );
+  }
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(
+        CborListValue.fixedLength([
+          CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
+          network.toCbor(),
+          serviceIdentifier,
+          CborListValue.fixedLength(
+              existsChain.map((e) => CborBigIntValue(e)).toList()),
+        ]),
+        networkType.tag);
+  }
 }

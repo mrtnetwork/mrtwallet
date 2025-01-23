@@ -7,7 +7,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 
-class RippleSignerListForm implements RippleTransactionForm {
+class RippleSignerListForm extends RippleTransactionForm {
   final TransactionFormField<List<XRPSignerEntries>> signerEntries =
       TransactionFormField(
     name: "SignerEntries",
@@ -64,9 +64,6 @@ class RippleSignerListForm implements RippleTransactionForm {
       fee: fee,
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

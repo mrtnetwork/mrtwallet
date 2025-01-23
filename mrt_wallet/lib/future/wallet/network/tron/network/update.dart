@@ -132,7 +132,7 @@ class _UpdateTronProviderState extends State<_UpdateTronProvider>
 
   @override
   Widget build(BuildContext context) {
-    return ScaffolPageView(
+    return ScaffoldPageView(
       appBar: AppBar(title: Text("network_update_node_provider".tr)),
       child: PopScope(
         onPopInvokedWithResult: (didPop, result) {

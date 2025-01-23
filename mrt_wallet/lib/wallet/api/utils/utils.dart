@@ -81,7 +81,7 @@ class APIUtils {
 
   static EthereumClient buildEthereumProvider(
       {required EthereumAPIProvider provider,
-      required WalletNetwork network,
+      WalletNetwork? network,
       APPIsolate isolate = APPIsolate.separate,
       Duration? requestTimeout}) {
     return EthereumClient(
@@ -138,7 +138,7 @@ class APIUtils {
 
   static SubstrateClient buildsubstrateClient(
       {required SubstrateAPIProvider provider,
-      required WalletPolkadotNetwork network,
+      WalletSubstrateNetwork? network,
       APPIsolate isolate = APPIsolate.separate}) {
     if (provider.protocol == ServiceProtocol.websocket) {
       return SubstrateClient(
@@ -276,8 +276,7 @@ class APIUtils {
             network: network.toNetwork(),
             isolate: isolate);
         break;
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         client = buildsubstrateClient(
             provider: serviceProvider.toProvider(),
             network: network.toNetwork(),

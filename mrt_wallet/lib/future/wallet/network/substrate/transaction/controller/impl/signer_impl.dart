@@ -1,62 +1,45 @@
-import 'package:blockchain_utils/crypto/crypto/schnorrkel/keys/keys.dart';
-import 'package:mrt_wallet/future/state_managment/extension/app_extensions/string.dart';
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
-import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/wallet/controller/controller.dart';
+import 'package:mrt_wallet/future/wallet/network/forms/substrate/core/substrate.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/substrate/substrate.dart';
+import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
+import 'package:mrt_wallet/wallet/models/networks/substrate/models/metadata_fields.dart';
 import 'package:mrt_wallet/wallet/models/signing/signing.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
-import 'package:mrt_wallet/crypto/utils/substrate/substrate.dart';
-import 'package:polkadot_dart/polkadot_dart.dart';
 
-import 'transaction.dart';
+mixin SubstrateSignerImpl {
+  WalletProvider get walletProvider;
+  Future<ExtrinsicInfo> buildAndSignTransaction(
+      {ONSUBSTRATEREQUESTSIGNATURE? onGenerateSignature,
+      required ISubstrateAddress address,
+      List<String> memos = const []});
 
-mixin SubstrateSignerImpl on SubstrateTransactiomImpl {
-  Future<Extrinsic> buildEstimateTransaction() async {
-    return _buildAndSignTransaction(fakeSignature: true);
+  Future<List<int>> _signTransaction({
+    required ISubstrateAddress address,
+    required WalletSubstrateNetwork network,
+    required List<int> digest,
+  }) async {
+    final sig = await walletProvider.wallet.signTransaction(
+        request: WalletSigningRequest<List<int>>(
+      addresses: [address],
+      network: network,
+      sign: (generateSignature) async {
+        final signature = await generateSignature(GlobalSignRequest.substrate(
+            digest: digest, index: address.keyIndex));
+        return signature.signature;
+      },
+    ));
+    return sig.result;
   }
 
-  Future<Extrinsic> _buildAndSignTransaction(
-      {bool fakeSignature = false}) async {
-    final transaction = await buildTransaction();
-    final digest = transaction.serialzeSign();
-    final SubstrateMultiSignature signature;
-    final algorithm = address.keyIndex.currencyCoin.conf.type;
-    if (fakeSignature) {
-      signature = SubstrateMultiSignature(SubstrateSr25519Signature(
-          List<int>.filled(SchnorrkelKeyCost.signatureLength, 0)));
-    } else {
-      final sig = await walletProvider.wallet.signTransaction(
-          request: WalletSigningRequest<SubstrateMultiSignature>(
-        addresses: [address],
-        network: network,
-        sign: (generateSignature) async {
-          final signature = await generateSignature(GlobalSignRequest.substrate(
-              digest: digest, index: address.keyIndex));
-          return SubstrateUtils.buildMultiSignature(
-              algorithm: algorithm, signature: signature.signature);
+  Future<ExtrinsicInfo> signTransaction({
+    required ISubstrateAddress address,
+    required WalletSubstrateNetwork network,
+  }) async {
+    return await buildAndSignTransaction(
+        onGenerateSignature: (digest) async {
+          return await _signTransaction(
+              address: address, network: network, digest: digest);
         },
-      ));
-      signature = sig.result;
-    }
-    final extrinsic = transaction.toExtrinsic(
-        signature: signature, signer: address.networkAddress);
-    return extrinsic;
-  }
-
-  Future<void> signAndSendTransaction() async {
-    progressKey.progressText(
-        "create_send_transaction".tr.replaceOne(network.coinParam.token.name));
-    final result = await MethodUtils.call(() async {
-      final extrinsic = await _buildAndSignTransaction();
-      return await apiProvider.broadcastTransaction(extrinsic);
-    });
-    if (result.hasError) {
-      progressKey.errorText(result.error!.tr,
-          showBackButton: true, backToIdle: false);
-    } else {
-      progressKey.success(
-          progressWidget: SuccessTransactionTextView(
-              network: network, txIds: [result.result]),
-          backToIdle: false);
-    }
+        address: address);
   }
 }

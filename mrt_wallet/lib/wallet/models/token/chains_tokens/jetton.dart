@@ -91,16 +91,15 @@ class TonJettonToken with Equatable implements TokenCore<BigInt> {
   }
 
   TonJettonToken updateToken(Token updateToken) {
-    return TonJettonToken._(
-        balance:
-            Live(IntegerBalance(balance.value.balance, updateToken.decimal!)),
-        token: updateToken,
-        minterAddress: minterAddress,
-        walletAddress: walletAddress,
-        updated: updated,
-        description: description,
-        uri: uri,
-        verified: verified);
+    return TonJettonToken.create(
+      balance: balance.value.balance,
+      token: updateToken,
+      minterAddress: minterAddress,
+      walletAddress: walletAddress,
+      description: description,
+      uri: uri,
+      verified: verified,
+    );
   }
 
   @override

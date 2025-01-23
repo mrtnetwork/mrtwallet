@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/state_managment/extension/app_extensions/context.dart';
+import 'package:mrt_wallet/future/widgets/widgets/widget_constant.dart';
 
 List<Widget> bottomAppBarWidgets(BuildContext context) {
   if (PlatformInterface.supportWebView) {
@@ -15,3 +16,5 @@ List<Widget> bottomAppBarWidgets(BuildContext context) {
   }
   return [];
 }
+
+Widget appbarWidgets() => WidgetConstant.sizedBox;

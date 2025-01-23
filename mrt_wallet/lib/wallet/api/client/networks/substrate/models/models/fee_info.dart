@@ -16,7 +16,7 @@ class SubstrateFeeInfos {
       required this.tip,
       required this.total,
       required this.calculated});
-  factory SubstrateFeeInfos.zero(WalletPolkadotNetwork network) {
+  factory SubstrateFeeInfos.zero(WalletSubstrateNetwork network) {
     return SubstrateFeeInfos(
         baseFee: IntegerBalance.zero(network.coinDecimal),
         lenFee: IntegerBalance.zero(network.coinDecimal),
@@ -27,7 +27,7 @@ class SubstrateFeeInfos {
   }
   factory SubstrateFeeInfos.fromFeeDetails(
       {required QueryFeeInfoFrame fee,
-      required WalletPolkadotNetwork network}) {
+      required WalletSubstrateNetwork network}) {
     if (fee.inclusionFee == null) return SubstrateFeeInfos.zero(network);
     final inclusionFee = fee.inclusionFee!;
     final BigRational totalFee = BigRational(inclusionFee.adjustedWeightFee +
@@ -41,7 +41,7 @@ class SubstrateFeeInfos {
         adjustedWeightFee:
             IntegerBalance(inclusionFee.adjustedWeightFee, network.coinDecimal),
         tip: IntegerBalance(fee.tip, network.coinDecimal),
-        total: IntegerBalance((totalFee * SubstrateConst.feeRate).toBigInt(),
+        total: IntegerBalance((totalFee * APPSubstrateConst.feeRate).toBigInt(),
             network.coinDecimal),
         calculated: true);
   }

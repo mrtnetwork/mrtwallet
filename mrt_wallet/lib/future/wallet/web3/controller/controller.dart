@@ -11,10 +11,14 @@ abstract class Web3StateContoller extends StateController
     with Web3RequestControllerState {}
 
 mixin Web3RequestControllerState on StateController {
+  bool get clientRequired => true;
   Web3Request get web3Request;
   StreamSubscription<dynamic>? onRequestError;
   final GlobalKey<Web3PageProgressState> progressKey =
       GlobalKey<Web3PageProgressState>();
+  ChainAccount? permissionAccount;
+  Future<void> initWeb3();
+  bool get web3Closed => web3Request.info.isClosed;
 
   void _onChangeStatus(Web3RequestCompleterErrorType status) {
     switch (status) {
@@ -28,34 +32,46 @@ mixin Web3RequestControllerState on StateController {
     }
   }
 
-  void _init() {
-    if (web3Request.info.isClosed) {
+  Future<bool> _init() async {
+    if (web3Closed) {
       progressKey.closedRequest();
     } else {
       onRequestError =
           web3Request.info.stream.asBroadcastStream().listen(_onChangeStatus);
-      progressKey.idle();
+      if (clientRequired) {
+        progressKey.process(text: 'node_connectiong_please_wait'.tr);
+        final init = await web3Request.chain.client.init();
+        if (!init) {
+          progressKey.error(
+              backToIdle: null, text: "web3_client_connection_failed".tr);
+          return false;
+        }
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  Future<void> _readyWeb3() async {
+    permissionAccount = web3Request.accountPermission();
+    notify();
+    final isReady = await MethodUtils.after(() async => _init());
+    if (isReady) {
+      await initWeb3();
     }
   }
 
-  ChainAccount? permissionAccount;
+  @override
+  void ready() {
+    super.ready();
+    _readyWeb3();
+  }
 
   @override
   void close() {
     onRequestError?.cancel();
     onRequestError = null;
     super.close();
-  }
-
-  Future<void> readyWeb3() async {
-    permissionAccount = web3Request.accountPermission();
-    notify();
-    await MethodUtils.after(() async => _init());
-  }
-
-  @override
-  void ready() {
-    super.ready();
-    readyWeb3();
   }
 }

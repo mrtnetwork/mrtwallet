@@ -15,6 +15,7 @@ class EthereumTransactionStateController extends EthTransactionImpl
   final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
       debugLabel: "progressKey_EthTransactionImpl");
   final LiveTransactionForm<EthereumTransactionForm> validator;
+  EthereumTransactionForm get form => validator.validator;
   IntegerBalance? _remindTokenAmount;
   late final IntegerBalance _remindAmount =
       IntegerBalance.zero(network.coinParam.decimal);
@@ -141,7 +142,8 @@ class EthereumTransactionStateController extends EthTransactionImpl
   void _close() {
     validator.removeListener(onFeeChanged);
     validator.dispose();
-    validator.validator.onStimateChanged = null;
+    form.onStimateChanged = null;
+    form.close();
   }
 
   @override

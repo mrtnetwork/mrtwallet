@@ -1,4 +1,4 @@
-library io_platform_interface;
+library;
 
 import 'dart:async';
 import 'dart:io';

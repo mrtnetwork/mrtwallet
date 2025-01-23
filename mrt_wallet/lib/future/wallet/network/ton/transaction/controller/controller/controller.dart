@@ -52,6 +52,7 @@ class TonTransactionStateController extends TonTransactionImpl
 
   void _close() {
     validator.removeListener(onChangeForm);
+    validator.validator.close();
   }
 
   void sendTransaction() {

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:mrt_native_support/web/api/api.dart';
+import 'package:mrt_wallet/app/dev/logging.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/http/isolate/exception/exception.dart';
 import 'package:mrt_wallet/app/http/isolate/models/mode.dart';
@@ -14,14 +15,14 @@ import 'package:mrt_native_support/web/mrt_native_web.dart' as web;
 import 'package:mrt_wallet/app/synchronized/basic_lock.dart';
 import 'package:mrt_wallet/app/utils/utils.dart';
 
-@JS("workerListener_")
+@JS("serviceWorkerListener_")
 external set workerListener(JSFunction? f);
-@JS("workerListener_")
+@JS("serviceWorkerListener_")
 external JSFunction get workerListener;
 
-@JS("errorListener_")
+@JS("serviceErrorListener_")
 external set onWorkerErrorListener(JSFunction? f);
-@JS("errorListener_")
+@JS("serviceErrorListener_")
 external JSFunction get onWorkerErrorListener;
 
 WebHTTPServiceWorker getHTTPWorker() => WebHTTPServiceWorker();
@@ -136,11 +137,22 @@ class _WorkerConnection {
     worker.addEventListener("error", onWorkerErrorListener);
     workerListener = onEvent.toJS;
     worker.addEventListener("message", workerListener);
-    worker.postMessage(
-        {"module": moudle, "wasm": wasm, "isWasm": !isJs}.jsify()!);
+    worker.postMessage({
+      "module": moudle,
+      "wasm": wasm,
+      "isWasm": !isJs,
+      "isHttp": true
+    }.jsify()!);
     final result = await completer.future.timeout(const Duration(seconds: 20));
     worker.removeEventListener("message", workerListener);
     worker.addEventListener("message", result.onResponse.toJS);
+    worker.removeEventListener("error", onWorkerErrorListener);
+    worker.addEventListener(
+        "error",
+        (MessageEvent event) {
+          onDone(event, mode);
+        }.toJS);
+
     return result;
   }
 

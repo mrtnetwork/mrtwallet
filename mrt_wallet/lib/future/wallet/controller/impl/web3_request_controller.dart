@@ -21,10 +21,8 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
       required String? title,
       required String? faviIcon}) async {
     if (url == null || clientId == null) return null;
-    APPImage image = APPImage.faviIcon(url);
-    if (faviIcon != null) {
-      image = APPImage.network(faviIcon);
-    }
+    APPImage? image = APPImage.network(faviIcon);
+    image ??= APPImage.faviIcon(url);
     return Web3ClientInfo.info(
         clientId: clientId, url: url, faviIcon: image, name: title);
   }
@@ -62,7 +60,7 @@ mixin Web3RequestControllerImpl on CryptoWokerImpl {
     return toResponseEvent(
         id: clientId,
         type: WalletEventTypes.exception,
-        data: onException.toCbor().encode());
+        data: onException.message.codeUnits);
   }
 
   Future<void> onWalletEvent(Web3RequestApplicationInformation request) async {

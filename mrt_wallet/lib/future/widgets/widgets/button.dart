@@ -21,7 +21,6 @@ class FixedElevatedButton extends StatelessWidget {
   }) : child = label;
   final DynamicVoid? onPressed;
   final Widget child;
-
   final EdgeInsets padding;
   final Icon? icon;
   final FocusNode? focusNode;

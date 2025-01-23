@@ -13,6 +13,7 @@ import 'package:mrt_wallet/future/wallet/network/stellar/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/substrate.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/account/account.dart';
+import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
@@ -95,8 +96,7 @@ class _AccountPageView extends StatelessWidget {
         return CardanoAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.ton:
         return TonAccountPageView(chainAccount: chainAccount.cast());
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         return SubstrateAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.cosmos:
         return CosmosAccountPageView(chainAccount: chainAccount.cast());
@@ -127,7 +127,7 @@ class _BottomAppBar extends StatelessWidget {
             Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.refresh_sharp),
+                  icon: const Icon(Icons.switch_account_sharp),
                   tooltip: "switch_address".tr,
                   onPressed: () {
                     final account = wallet.wallet.chain;
@@ -172,7 +172,22 @@ class _BottomAppBar extends StatelessWidget {
                       ? const Icon(Icons.lock_open)
                       : const Icon(Icons.lock),
                   onPressed: () {
-                    wallet.wallet.lock();
+                    if (wallet.wallet.isUnlock) {
+                      wallet.wallet.lock();
+                    } else {
+                      context.openDialogPage(
+                        "",
+                        child: (c) {
+                          return PasswordCheckerView(
+                            title: "unlock_wallet".tr,
+                            accsess: WalletAccsessType.unlock,
+                            onWalletAccess: (password) async {
+                              return null;
+                            },
+                          );
+                        },
+                      );
+                    }
                   },
                 ),
                 SelectProviderIcon(key: UniqueKey()),

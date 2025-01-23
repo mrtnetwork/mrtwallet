@@ -55,8 +55,7 @@ abstract class ContactCore<T> with CborSerializable {
       case NetworkType.stellar:
         contact = StellarContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
         break;
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         contact =
             SubstrateContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
         break;
@@ -95,8 +94,7 @@ abstract class ContactCore<T> with CborSerializable {
         contact = SolanaContact.newContact(address: address, name: name);
       case NetworkType.ton:
         contact = TonContact.newContact(address: address, name: name);
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         contact = SubstrateContact.newContact(address: address, name: name);
       case NetworkType.xrpl:
         contact = RippleContact.newContact(address: address, name: name);

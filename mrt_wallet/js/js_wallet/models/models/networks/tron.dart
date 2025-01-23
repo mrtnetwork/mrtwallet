@@ -4,33 +4,29 @@ import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/app/utils/numbers/numbers.dart';
 import 'ethereum.dart';
 
+class JSTronConst {
+  static const String defaultTronWebEndpoint = 'https://api.shasta.trongrid.io';
+}
+
 @JS("tron")
-external set tron(Proxy? tron);
-
+external set tron(Proxy<TIP1193>? tron);
 @JS("tronWeb")
-external set tronWeb_(Proxy? tronWeb);
-
+external set tronWeb_(Proxy<TronWeb>? tronWeb);
 @JS("tronLink")
-external set tronLink(Proxy? tronLink);
+external set tronLink(Proxy<TIP1193>? tronLink);
 
-class JSTronAddress {
-  @JSExport("base58")
+class JSTronDefaultAddress {
   final String base58;
-  @JSExport("hex")
   final String hex;
-  const JSTronAddress({required this.base58, required this.hex});
-  factory JSTronAddress.fromJson(Map<String, dynamic> json) {
-    return JSTronAddress(base58: json["base58"], hex: json["hex"]);
-  }
-  factory JSTronAddress.none() {
-    return JSTronAddress(base58: '', hex: '');
+  const JSTronDefaultAddress({required this.base58, required this.hex});
+  factory JSTronDefaultAddress.fromJson(Map<String, dynamic> json) {
+    return JSTronDefaultAddress(base58: json["base58"], hex: json["hex"]);
   }
 
   Map<String, dynamic> toJson() {
     return {"base58": base58, "hex": hex};
   }
 
-  @JSExport("toString")
   @override
   String toString() {
     return base58;
@@ -38,11 +34,9 @@ class JSTronAddress {
 
   @override
   bool operator ==(other) {
-    if (other is! JSTronAddress) return false;
+    if (other is! JSTronDefaultAddress) return false;
     return hex == other.hex;
   }
-
-  JSObject get toJS => createJSInteropWrapper(this);
 
   @override
   int get hashCode => hex.hashCode ^ base58.hashCode;
@@ -55,21 +49,26 @@ extension type TronLinkParams(JSAny _) implements JSAny {
   external set openUrlWhenWalletNotFound(bool _);
   external set openTronLinkAppOnMobile(bool _);
 }
-
-@JS()
-extension type TronWebConstroctorOption._(JSAny _) implements JSAny {
-  external factory TronWebConstroctorOption(String? fullHost,
-      String? solidityNode, String? eventServer, String? privateKey);
+extension type TronWebOptions._(JSAny _) implements JSAny {
+  external factory TronWebOptions(
+      {String? fullNode, String? solidityNode, String? privateKey});
 }
+
 @JS("TronWeb")
 extension type TronWeb._(JSAny _) implements JSAny {
   external factory TronWeb(
       String? solidityNode, String? eventServer, String? privateKey);
+  static TronWeb defaultTronWeb() {
+    final tronWeb = TronWeb(JSTronConst.defaultTronWebEndpoint,
+        JSTronConst.defaultTronWebEndpoint, JSTronConst.defaultTronWebEndpoint);
+    return tronWeb;
+  }
 
+  external bool isAddress(JSAny _);
   @JS("trx")
   external TronWebTRX get trx;
   @JS("trx")
-  external set trx_(Proxy trx);
+  external set trx_(Proxy<TronWebTRX> trx);
 
   external set setSolidityNode(JSFunction setAddress);
   external set setFullNode(JSFunction setPrivateKey);
@@ -78,18 +77,39 @@ extension type TronWeb._(JSAny _) implements JSAny {
   external set defaultPrivateKey(String s);
   external set solidityNode(HttpProvider? solidityNode);
   external set fullNode(HttpProvider? fullNode);
+  external void setEventServer(HttpProvider? fullNode);
   external set setHeader(JSFunction setHeader);
   external set setFullNodeHeader(JSAny? setFullNodeHeader);
   external set setDefaultBlock(JSAny? fullNodsetDefaultBlocke);
+
   external HttpProvider get solidityNode;
   external HttpProvider get fullNode;
-  external JSObject? get defaultAddress;
-  external set defaultAddress(JSObject? defaultAddress);
+  external Proxy<JSTronAddress> get defaultAddress;
+  external set defaultAddress(Proxy<JSTronAddress> defaultAddress);
 }
+
 @JS("TronWeb.providers.HttpProvider")
 extension type HttpProvider._(JSAny _) implements JSAny {
   external factory HttpProvider(String host);
   external String get host;
+  external String get statusPage;
+  external set statusPage(String _);
+}
+
+@JS("TronWeb.types.DefaultAddress")
+extension type JSTronAddress._(JSAny _) implements JSAny {
+  external factory JSTronAddress({required JSAny base58, required JSAny hex});
+  @JS("base58")
+  external set base58(JSAny _);
+  external JSAny get base58;
+  external JSAny get hex;
+  @JS("hex")
+  external set hex(JSAny _);
+
+  void setAddress(JSTronDefaultAddress? address) {
+    base58 = address?.base58.toJS ?? false.toJS;
+    hex = address?.hex.toJS ?? false.toJS;
+  }
 }
 
 @JS("TIP-1193")
@@ -98,25 +118,23 @@ extension type TIP1193(JSObject _) implements EIP1193 {
   external set tronWeb(Proxy tronWeb);
   @JS("ready")
   external set ready(bool ready);
-  external set tronlinkParams(TronLinkParams _);
+  external set config(TronLinkParams _);
 
-  static TIP1193 setup({
-    required JSFunction request,
-    required JSFunction on,
-    required JSFunction removeListener,
-    required JSFunction disconnect,
-    required JSFunction cancelAllListener,
-    required Proxy tronWeb,
-    required JSFunction enable,
-    required JSFunction sendWalletRequest,
-    required TronLinkParams params,
-  }) {
+  static TIP1193 setup(
+      {required JSFunction request,
+      required JSFunction on,
+      required JSFunction removeListener,
+      required JSFunction disconnect,
+      required JSFunction cancelAllListener,
+      required Proxy tronWeb,
+      required JSFunction enable,
+      required JSFunction sendWalletRequest,
+      required TronLinkParams params}) {
     final tip = TIP1193(JSObject());
     tip.sendWalletRequest = sendWalletRequest;
     tip.cancelAllListener = cancelAllListener;
     tip.cancelAllListener = removeListener;
-    tip.tronlinkParams = params;
-
+    tip.config = params;
     tip.request = request;
     tip.on = on;
     tip.removeListener = removeListener;
@@ -175,27 +193,15 @@ class TronWebNodeInfo {
     };
   }
 
-  JSTronAddress? toAddress() {
-    if (base58 == null || hex == null) return null;
-    return JSTronAddress(base58: base58!, hex: hex!);
-  }
-
   TronWeb toTronWeb() {
-    try {
-      final tronWeb = TronWeb(fullNode, fullNode, eventServer);
-      final addr = toAddress();
-      tronWeb.defaultAddress =
-          addr == null ? null : createJSInteropWrapper(addr);
-      return tronWeb;
-    } catch (e) {
-      rethrow;
-    }
+    final tronWeb = TronWeb(fullNode, fullNode, eventServer);
+    return tronWeb;
   }
 }
 
 class TronAccountsChanged {
   final List<String> accounts;
-  final JSTronAddress? defaultAddress;
+  final JSTronDefaultAddress? defaultAddress;
   TronAccountsChanged(
       {required List<String> accounts, required this.defaultAddress})
       : accounts = accounts.imutable;
@@ -204,7 +210,7 @@ class TronAccountsChanged {
         accounts: (json["accounts"] as List).cast(),
         defaultAddress: json["defaultAddress"] == null
             ? null
-            : JSTronAddress.fromJson(json["defaultAddress"]));
+            : JSTronDefaultAddress.fromJson(json["defaultAddress"]));
   }
   Map<String, dynamic> toJson() {
     return {"accounts": accounts, "defaultAddress": defaultAddress?.toJson()};
@@ -225,22 +231,28 @@ class TronChainChanged {
   final BigInt netVersion;
   final String solidityNode;
   final String fullNode;
+  final JSTronDefaultAddress? address;
   TronChainChanged(
       {required this.netVersion,
       required this.fullNode,
-      required this.solidityNode})
+      required this.solidityNode,
+      required this.address})
       : chainId = netVersion.toRadix16;
   factory TronChainChanged.fromJson(Map<String, dynamic> json) {
     return TronChainChanged(
         netVersion: BigInt.parse(json["net_version"]),
         fullNode: json["fullNode"],
-        solidityNode: json["solidityNode"]);
+        solidityNode: json["solidityNode"],
+        address: json["address"] == null
+            ? null
+            : JSTronDefaultAddress.fromJson((json["address"] as Map).cast()));
   }
   Map<String, dynamic> toJson() {
     return {
       "net_version": netVersion.toString(),
       "fullNode": fullNode,
-      "solidityNode": solidityNode
+      "solidityNode": solidityNode,
+      "address": address?.toJson()
     };
   }
 

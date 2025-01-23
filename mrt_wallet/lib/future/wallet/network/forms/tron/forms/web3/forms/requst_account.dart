@@ -97,7 +97,7 @@ class TronRequestAccountForm extends TronWeb3Form {
       accounts.addAll(i.value.value);
     }
     newPermission.updateChainAccount(accounts);
-    newPermission.setActiveChain(chain);
+    newPermission.setActiveChain(chain.network);
     onCompleteForm?.call(newPermission);
   }
 

@@ -1,10 +1,6 @@
 import 'dart:async';
 import 'package:mrt_wallet/app/core.dart';
 
-class _WalletTimeoutListener {
-  static const int prediocTime = 15;
-}
-
 typedef FuncWalletLockTime = int? Function();
 
 class WalletTimeoutListener {
@@ -42,15 +38,15 @@ class WalletTimeoutListener {
   }
 
   void _onListenTimer(int tick) {
-    _tick -= _WalletTimeoutListener.prediocTime;
+    _tick--;
   }
 
   StreamSubscription<int> _buildTimer(int t) {
-    final int tick = t ~/ _WalletTimeoutListener.prediocTime;
+    // final int tick = t ~/ _WalletTimeoutListener.prediocTime;
     return Stream<int>.periodic(
-      const Duration(seconds: _WalletTimeoutListener.prediocTime),
+      Duration(seconds: 1),
       (computationCount) => computationCount,
-    ).take(tick).listen(_onListenTimer, onDone: _onTimer);
+    ).take(t).listen(_onListenTimer, onDone: _onTimer);
   }
 
   void _setupTimer(int lockTime) {

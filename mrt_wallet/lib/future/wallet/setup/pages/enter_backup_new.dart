@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/bip/mnemonic/mnemonic.dart';
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
@@ -27,8 +28,7 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
   final GlobalKey<AppTextFieldState> backupTextField =
       GlobalKey<AppTextFieldState>(debugLabel: "EnterMnemonicBackupView_2");
   _BackupPage page = _BackupPage.fields;
-
-  String _backup = "";
+  String? backup;
   String _passphrase = "";
   bool passphrase = false;
   String? _error;
@@ -45,23 +45,13 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
     _passphrase = v;
   }
 
-  void onChange(String v) {
-    _backup = v;
-    if (_error != null) {
-      setState(() {
-        _error = null;
-      });
+  String? validateBackup(String? backup) {
+    if (backup == null || backup.trim().isEmpty) return "bcakup_validator".tr;
+    backup = backup.trim();
+    if (!StringUtils.isHexBytes(backup)) {
+      return "bcakup_validator".tr;
     }
-  }
-
-  bool isValid(String? v) {
-    if (v == null) return false;
-    return v.trim().length > 100;
-  }
-
-  String? bcakupForm(String? v) {
-    if (isValid(v)) return null;
-    return "bcakup_validator".tr;
+    return null;
   }
 
   String _backupPassword = "";
@@ -76,10 +66,6 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
     return null;
   }
 
-  void onPaseBackupText(String v) {
-    backupTextField.currentState?.updateText(v);
-  }
-
   void onSetupBackup() {
     if (restoredBackup == null) return;
     final model = context.watch<SetupWalletController>(StateConst.setup);
@@ -88,23 +74,27 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
 
   void setup() async {
     if (!(form.currentState?.validate() ?? false)) return;
+    backup = backupTextField.currentState?.getValue().trim();
+    if (backup == null) return;
     final model = context.watch<SetupWalletController>(StateConst.setup);
-    progressKey.progressText("decrypting_backup_please_wait".tr);
+    progressKey.progressText("decrypting_backup_please_wait".tr,
+        icon: Icon(Icons.restore, size: APPConst.largeIconSize));
+
     final result = await MethodUtils.call(() async {
       final walletProvider = context.watch<WalletProvider>(StateConst.main);
       return await walletProvider.wallet
-          .restoreMRTBackup(password: _backupPassword, backup: _backup);
-    });
+          .restoreMRTBackup(password: _backupPassword, backup: backup!);
+    }, delay: APPConst.animationDuraion);
     if (result.hasError) {
       progressKey.errorText(result.error!.tr);
       return;
     }
-    final backup = result.result;
-    if (backup.type == MrtBackupTypes.mnemonic) {
+    final mrtBackup = result.result;
+    if (mrtBackup.type == MrtBackupTypes.mnemonic) {
       progressKey.progressText("generating_wallet_please_wait".tr);
       final generateWalletResult = await MethodUtils.call(() async {
-        BlockchainUtils.validateMnemonic(backup.key);
-        final Mnemonic exitingMnemonic = Mnemonic.fromString(backup.key);
+        BlockchainUtils.validateMnemonic(mrtBackup.key);
+        final Mnemonic exitingMnemonic = Mnemonic.fromString(mrtBackup.key);
         final String? mnemonicPassphrase = passphrase ? _passphrase : null;
         await model.setup(mnemonicPassphrase, exitingMnemonic: exitingMnemonic);
       });
@@ -120,7 +110,6 @@ class _EnterMnemonicBackupViewState extends State<EnterWalletBackupView>
       });
       if (restoreWalletResult.hasError) {
         progressKey.errorText(restoreWalletResult.error!.tr);
-        WalletLogging.log("error ${result.error} ${result.trace}");
       } else {
         restoredBackup = restoreWalletResult.result;
         page = _BackupPage.verify;
@@ -255,22 +244,19 @@ class _BackupFieldsWidget extends StatelessWidget {
           title: "restore_wallet_from_bcakup".tr,
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("restore_mnemonic_desc".tr),
-            ],
+            children: [Text("restore_mnemonic_desc".tr)],
           ),
         ),
         WidgetConstant.height8,
         AppTextField(
-          label: "enter_backup".tr,
-          validator: state.bcakupForm,
-          onChanged: state.onChange,
           key: state.backupTextField,
-          minlines: 3,
-          maxLines: 5,
-          initialValue: state._backup,
-          suffixIcon: PasteTextIcon(
-              onPaste: state.onPaseBackupText, isSensitive: false),
+          onChanged: state.validateBackup,
+          initialValue: state.backup,
+          label: "backup".tr,
+          pasteIcon: true,
+          hint: "paste_your_backup_here".tr,
+          minlines: 1,
+          maxLines: 4,
         ),
         AppTextField(
           label: "input_backup_password".tr,

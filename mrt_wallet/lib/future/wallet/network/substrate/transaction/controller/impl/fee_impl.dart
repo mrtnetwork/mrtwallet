@@ -1,48 +1,56 @@
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/stream_bottun.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
-import 'signer_impl.dart';
-import 'transaction.dart';
-
-mixin SubstrateFeeImpl on SubstrateSignerImpl, SubstrateTransactiomImpl {
+mixin SubstrateFeeImpl on StateController {
+  WalletSubstrateNetwork get network;
+  SubstrateClient get apiProvider;
+  Future<ExtrinsicInfo> buildEstimateTransaction();
   late SubstrateFeeInfos _feeInfo = SubstrateFeeInfos.zero(network);
   SubstrateFeeInfos get feeInfo => _feeInfo;
   IntegerBalance get fee => _feeInfo.total;
   String? _feeError;
   final Cancelable _cancelabe = Cancelable();
-  StreamWidgetStatus _feeStatus = StreamWidgetStatus.idle;
+  final Live<StreamWidgetStatus> _feeStatus = Live(StreamWidgetStatus.idle);
 
-  StreamWidgetStatus get feeStatus => _feeStatus;
+  StreamWidgetStatus get feeStatus => _feeStatus.value;
 
   bool get hasFee => _feeInfo.calculated;
   String? get feeError => _feeError;
 
-  Future<void> estimateFee() async {
+  Future<void> estimateFee({ExtrinsicInfo? extrinsic}) async {
     _cancelabe.cancel();
     _feeInfo = SubstrateFeeInfos.zero(network);
     _feeError = null;
-    _feeStatus = StreamWidgetStatus.progress;
-    validator.validator.setupFee(BigInt.zero);
+    _feeStatus.value = StreamWidgetStatus.progress;
     final result = await MethodUtils.call(() async {
-      final extrinsic = await buildEstimateTransaction();
-      return await apiProvider.estimateFee(extrinsic);
+      extrinsic ??= await buildEstimateTransaction();
+      return await apiProvider.estimateFee(
+          extrinsic: extrinsic!.serialize(encodeLength: false),
+          network: network);
     });
     if (result.isCancel) return;
     if (result.hasError) {
       _feeError = result.error;
-      _feeStatus = StreamWidgetStatus.error;
+      _feeStatus.value = StreamWidgetStatus.error;
     } else {
       final feeInfo = result.result;
-      validator.validator.setupFee(feeInfo.total.balance);
+
       if (!feeInfo.calculated) {
         _feeError = "estimate_fee_error_desc";
-        _feeStatus = StreamWidgetStatus.error;
+        _feeStatus.value = StreamWidgetStatus.error;
         return;
       }
       _feeInfo = feeInfo;
-      _feeStatus = StreamWidgetStatus.success;
+      _feeStatus.value = StreamWidgetStatus.success;
     }
-    notify();
+  }
+
+  @override
+  void close() {
+    super.close();
+    _feeStatus.dispose();
+    _cancelabe.cancel();
   }
 }

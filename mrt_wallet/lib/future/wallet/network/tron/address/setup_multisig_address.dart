@@ -13,7 +13,7 @@ class SetupTronMultiSigAddressView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialPageView(
-      child: ScaffolPageView(
+      child: ScaffoldPageView(
           appBar: AppBar(title: Text("multi_sig_addr".tr)),
           child: _SetupTronMultisigAddressView(context.getArgruments())),
     );

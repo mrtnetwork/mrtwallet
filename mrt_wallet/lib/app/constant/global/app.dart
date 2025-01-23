@@ -37,6 +37,16 @@ class APPConst {
   static final APPImage osmo = APPImage.local("assets/image/osmo.png");
   static final APPImage ton = APPImage.local("assets/image/ton.png");
   static final APPImage polkadot = APPImage.local("assets/image/polkadot.png");
+  static final APPImage substrate =
+      APPImage.local("assets/image/substrate.png");
+  static final APPImage moonbeam = APPImage.local("assets/image/moonbeam.png");
+  static final APPImage moonriver =
+      APPImage.local("assets/image/moonriver.png");
+  static final APPImage astar = APPImage.local("assets/image/astar.png");
+
+  static final APPImage centrifuge = APPImage.local("assets/image/cfg.png");
+  static final APPImage acala = APPImage.local("assets/image/acala.png");
+
   static final APPImage kusama = APPImage.local("assets/image/ksm.png");
   static final APPImage stellar = APPImage.local("assets/image/xlm.png");
   static final APPImage monero = APPImage.local("assets/image/monero.png");
@@ -53,6 +63,7 @@ class APPConst {
   static const double double40 = 40;
   static const double double20 = 20;
   static const double iconSize = 24;
+  static const double largeIconSize = 80;
   static const double tooltipConstrainedWidth = 300;
   static const double dialogWidth = 650;
   static const double maxViewWidth = 650;

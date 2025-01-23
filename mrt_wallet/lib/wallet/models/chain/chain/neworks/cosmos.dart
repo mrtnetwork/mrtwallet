@@ -12,16 +12,17 @@ class CosmosChain extends Chain<
     ChainStorageKey,
     DefaultChainConfig,
     WalletTransaction<CosmosBaseAddress>> {
-  CosmosChain._({
-    required super.network,
-    required super.totalBalance,
-    required super.addressIndex,
-    required super.id,
-    required super.config,
-    required super.client,
-    required super.contacts,
-    required super.addresses,
-  }) : super._();
+  CosmosChain._(
+      {required super.network,
+      required super.totalBalance,
+      required super.addressIndex,
+      required super.id,
+      required super.config,
+      required super.client,
+      required super.contacts,
+      required super.addresses,
+      required super.status})
+      : super._();
   @override
   CosmosChain copyWith(
       {WalletCosmosNetwork? network,
@@ -31,7 +32,8 @@ class CosmosChain extends Chain<
       int? addressIndex,
       CosmosClient? client,
       String? id,
-      DefaultChainConfig? config}) {
+      DefaultChainConfig? config,
+      WalletChainStatus? status}) {
     return CosmosChain._(
         network: network ?? this.network,
         totalBalance: totalBalance ?? this.totalBalance,
@@ -40,7 +42,8 @@ class CosmosChain extends Chain<
         contacts: contacts ?? _contacts,
         client: client ?? _client,
         id: id ?? this.id,
-        config: config ?? this.config);
+        config: config ?? this.config,
+        status: status ?? _chainStatus);
   }
 
   factory CosmosChain.setup(
@@ -56,7 +59,8 @@ class CosmosChain extends Chain<
         client: client,
         addresses: [],
         config: DefaultChainConfig.none,
-        contacts: []);
+        contacts: [],
+        status: WalletChainStatus.ready);
   }
   factory CosmosChain.deserialize(
       {required WalletCosmosNetwork network,
@@ -100,6 +104,7 @@ class CosmosChain extends Chain<
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
         client: client,
         id: cbor.elementAt<String>(8),
-        config: DefaultChainConfig.none);
+        config: DefaultChainConfig.none,
+        status: WalletChainStatus.ready);
   }
 }

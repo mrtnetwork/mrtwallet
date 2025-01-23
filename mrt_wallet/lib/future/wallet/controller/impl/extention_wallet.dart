@@ -3,7 +3,12 @@ import 'dart:js_interop';
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/constant/constant.dart';
+import 'package:mrt_wallet/app/live_listener/live.dart';
+import 'package:mrt_wallet/app/models/models/typedef.dart';
+import 'package:mrt_wallet/app/synchronized/basic_lock.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
+// import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/controller/models/key.dart';
 import 'package:mrt_wallet/future/wallet/controller/models/login_history.dart';
@@ -11,32 +16,87 @@ import 'package:mrt_wallet/future/wallet/controller/impl/web3_request_controller
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:mrt_wallet/crypto/requets/messages/crypto/requests/chacha.dart';
 
+@JS("OnBackgroundListener_")
+external set _OnContentListener(JSFunction? f);
+
+@JS("OnBackgroundListener_")
+external JSFunction get _OnContentListener;
+
 class ExtentionSessionStorageConst {
   static const String key = "extention_setting";
   static const String history = "extention_history";
   static const String expireKey = "extention_expire";
+  static const String extentionType = "popup";
+  static const String normalTabType = "normal";
   static const List<int> keyTag = [23, 123, 21, 10];
   static const List<int> historyTag = [123, 21, 10, 21];
+  static final popEvent = WalletEvent(
+      clientId: extension.runtime.id,
+      data: const [],
+      requestId: "",
+      type: WalletEventTypes.popup);
+
+  static final windowIdEvent = WalletEvent(
+      clientId: "",
+      data: const [],
+      requestId: "0",
+      type: WalletEventTypes.windowId);
+  // static final create = WalletEvent(
+  //     clientId: "",
+  //     data: const [],
+  //     requestId: "1",
+  //     type: WalletEventTypes.popup);
+  static final ping = WalletEvent(
+      clientId: "",
+      data: const [],
+      requestId: "1",
+      type: WalletEventTypes.ping);
 }
 
 mixin ExtentionWalletHandler on Web3RequestControllerImpl {
-  bool _fromAction = true;
+  Live<bool> fromActionLive = Live(true);
+  bool get fromAction => fromActionLive.value;
   final sessionStorage = extension.storage.session;
   StreamSubscription<int>? _onWalletExpireTime;
   @override
   Future<Web3ClientInfo?> currentApllicationId() async {
-    final tabs = await extension.tabs.query_(
-        active: true,
-        lastFocusedWindow: _fromAction ? true : false,
-        currentWindow: _fromAction);
-    if (tabs.length != 1) return null;
-    final tab = tabs[0];
-    final client = createClientInfos(
-        clientId: tab.id?.toString(),
-        url: tab.url,
-        title: tab.title,
-        faviIcon: tab.favIconUrl);
-    return client;
+    if (jsWindow.navigator.isFirefox && isMozila) {
+      List<ChromeWindow> windows = await extension.windows.getAll_(
+        populate: true,
+        windowTypes: [ExtentionSessionStorageConst.normalTabType],
+      );
+      for (final w in windows) {
+        final tabs = w.tabs?.toDart ?? [];
+        for (final i in tabs) {
+          if (!i.active) continue;
+          final client = await createClientInfos(
+              clientId: i.id?.toString(),
+              url: i.url,
+              title: i.title,
+              faviIcon: i.favIconUrl);
+          if (client == null) continue;
+          return client;
+        }
+      }
+      return null;
+      // final window
+    }
+    ChromeWindow window = await extension.windows.getLastFocused_(
+      populate: true,
+      windowTypes: [ExtentionSessionStorageConst.normalTabType],
+    );
+    final tabs = window.tabs?.toDart ?? [];
+    for (final i in tabs) {
+      if (!i.active) continue;
+      final client = await createClientInfos(
+          clientId: i.id?.toString(),
+          url: i.url,
+          title: i.title,
+          faviIcon: i.favIconUrl);
+      if (client == null) continue;
+      return client;
+    }
+    return null;
   }
 
   void _onTick(int _) {
@@ -127,9 +187,6 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
     switch (event?.type) {
       case WalletEventTypes.popup:
         sendResponse.callAsFunction(null, message);
-        if (event?.requestId == "1") {
-          _fromAction = false;
-        }
         return true;
       case WalletEventTypes.windowId:
         extension.windows
@@ -154,6 +211,17 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
                   .toJsEvent());
           return null;
         });
+        return true;
+      case WalletEventTypes.ping:
+        if (fromAction) return false;
+        sendResponse.callAsFunction(
+            null,
+            WalletEvent(
+                    clientId: 'popup',
+                    data: const [],
+                    requestId: event?.requestId ?? "",
+                    type: WalletEventTypes.ping)
+                .toJsEvent());
         return true;
       default:
         break;
@@ -237,17 +305,13 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
     }
   }
 
-  static final popEvent = WalletEvent(
-      clientId: extension.runtime.id,
-      data: const [],
-      requestId: "",
-      type: WalletEventTypes.popup);
-
-  void initExtention() {
+  Future<void> initExtention() async {
     extension.runtime.onMessage.addListener(_onRuntimeMessage.toJS);
     extension.runtime.onConnect.addListener(_onConnet.toJS);
     extension.tabs.onActivated.addListener(_onActivateChain.toJS);
-    extension.runtime.sendMessage_(message: popEvent);
+    extension.runtime
+        .sendMessage_(message: ExtentionSessionStorageConst.popEvent);
+    fromActionLive.value = await _openedFromAction();
   }
 
   @override
@@ -276,6 +340,82 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
         .timeout(APPConst.tenSecoundDuration, onTimeout: () => null)
         .catchError((e) {
       return null;
+    });
+  }
+
+  Future<WalletEvent> sendPopupRuntimeMessage(WalletEvent messageToSend) async {
+    bool hasListener = false;
+    try {
+      final Completer<WalletEvent> completer = Completer();
+
+      bool onMessage(JSWalletEvent message, MessageSender sender,
+          JSFunction sendResponse) {
+        final event = message.toEvent();
+        if (event?.type != WalletEventTypes.popup) {
+          return false;
+        }
+        extension.runtime.sendMessage_(message: messageToSend).then((e) {
+          completer.complete(e);
+          sendResponse.callAsFunction(null, null);
+          return e;
+        }).catchError((e) {
+          completer.completeError(e);
+          sendResponse.callAsFunction(null, null);
+          return null;
+        });
+        return true;
+      }
+
+      extension.runtime.sendMessage_(message: messageToSend).then((e) {
+        completer.complete(e);
+      }).catchError((e) {
+        _OnContentListener = onMessage.toJS;
+        extension.runtime.onMessage.addListener(_OnContentListener);
+        hasListener = true;
+        return null;
+      });
+      return await completer.future;
+    } finally {
+      if (hasListener) {
+        extension.runtime.onMessage.removeListener(_OnContentListener);
+      }
+    }
+  }
+
+  Future<bool> _openedFromAction() async {
+    final info = await extension.windows.getCurrent_(populate: true);
+    return info.type == ExtentionSessionStorageConst.normalTabType;
+  }
+
+  final _lock = SynchronizedLock();
+  Future<void> openPopup(DynamicVoid onExists) async {
+    if (!fromAction) return;
+    await _lock.synchronized(() async {
+      final r = await extension.runtime
+          .sendMessage_(message: ExtentionSessionStorageConst.ping)
+          .then((e) {
+        return e?.type == WalletEventTypes.ping;
+      }).catchError((e) {
+        return false;
+      });
+      if (r) {
+        onExists();
+        return;
+      }
+      final info = await extension.windows.getCurrent_(populate: true);
+      final newLeft = IntUtils.max(0, info.left! + 100);
+      final newTop = IntUtils.max(0, info.top! + 100);
+      final newWidth = IntUtils.min(info.width!, 400);
+      final newHeight = IntUtils.min(info.height!, 600);
+      await extension.windows.create_(
+          url: extension.runtime.getURL("index.html"),
+          type: ExtentionSessionStorageConst.extentionType,
+          width: newWidth,
+          height: newHeight,
+          top: newTop,
+          focused: true,
+          left: newLeft);
+      await Future.delayed(const Duration(seconds: 5));
     });
   }
 }

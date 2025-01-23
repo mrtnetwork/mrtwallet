@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 
-class RippleRegularKeyForm implements RippleTransactionForm {
+class RippleRegularKeyForm extends RippleTransactionForm {
   final TransactionFormField<ReceiptAddress<XRPAddress>> regularKey =
       TransactionFormField(
     name: "regular_key",
@@ -41,9 +41,6 @@ class RippleRegularKeyForm implements RippleTransactionForm {
       fee: fee,
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

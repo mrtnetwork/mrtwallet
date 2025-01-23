@@ -162,8 +162,7 @@ class CborTagsConst {
   static const List<int> cosmosNetwork = [80, 0, 7];
   static const List<int> bitcoinCashNetwork = [80, 0, 10];
   static const List<int> tonNetwork = [80, 0, 11];
-  static const List<int> polkadotNetwork = [80, 0, 12];
-  static const List<int> kusamaNetwork = [80, 0, 13];
+  static const List<int> substrateNetwork = [80, 0, 12];
   static const List<int> stellarNetwork = [80, 0, 14];
   static const List<int> moneroNetwork = [80, 0, 15];
 
@@ -209,6 +208,8 @@ class CborTagsConst {
   static const List<int> web3SolanaAccount = [161, 2, 2];
   static const List<int> web3TonAccount = [161, 2, 3];
   static const List<int> web3StellarAccount = [161, 2, 4];
+  static const List<int> web3SubstrateAccount = [161, 2, 5];
+  static const List<int> web3SubstrateChainMetadata = [161, 2, 5, 0];
 
   /// address params
   static const List<int> bitcoinCashNewAddressParams = [12, 0];

@@ -16,7 +16,7 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
   EthereumClient({required this.provider, required this.network});
   final EthereumProvider provider;
   @override
-  final WalletNetwork network;
+  final WalletNetwork? network;
   @override
   BaseServiceProtocol<EthereumAPIProvider> get service =>
       provider.rpc as BaseServiceProtocol<EthereumAPIProvider>;
@@ -326,16 +326,25 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
         .request(EthereumRequestDynamic(methodName: method, params: params));
   }
 
+  Future<bool> checkNetworkChainId() async {
+    if (network?.type != NetworkType.ethereum) return false;
+    final networkChainId =
+        network!.toNetwork<WalletEthereumNetwork>().coinParam.chainId;
+    final chainId = await getChainId();
+    return chainId == networkChainId;
+  }
+
   @override
   Future<bool> onInit() async {
-    if (network.type == NetworkType.ethereum) {
+    if (network?.type == NetworkType.ethereum) {
       final result = await MethodUtils.call(() async {
         final BigInt chainId =
             await provider.request(EthereumRequestGetChainId());
         return chainId;
       });
       return result.hasResult &&
-          result.result == (network as WalletEthereumNetwork).coinParam.chainId;
+          result.result ==
+              network?.toNetwork<WalletEthereumNetwork>().coinParam.chainId;
     }
     return false;
   }

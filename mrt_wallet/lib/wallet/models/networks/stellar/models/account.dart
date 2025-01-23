@@ -33,7 +33,7 @@ extension StellarAccountResponseUtils on StellarAccountResponse {
   StellarAssetBalanceResponse? getAssetByIssueAsset(StellarIssueToken asset) {
     return issueAssetBalances.firstWhereOrNull((e) =>
         e.assetType.assetType == asset.assetType &&
-        e.assetCode == asset.token.symbol &&
+        e.assetCode == asset.assetCode &&
         asset.issuer == e.assetIssuer);
   }
 }
@@ -44,6 +44,7 @@ extension StellarAssetBalanceResponseUtils on StellarAssetBalanceResponse {
       issuer: assetIssuer,
       balance: unlockedBalance,
       assetType: assetType.assetType,
+      assetCode: assetCode,
       token: Token(
           name: assetCode, symbol: assetCode, decimal: StellarConst.decimal),
     );

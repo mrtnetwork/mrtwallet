@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 
-class RippleCreateOfferForm implements RippleTransactionForm {
+class RippleCreateOfferForm extends RippleTransactionForm {
   RippleCreateOfferForm({String? offerID}) {
     if (offerID != null) {
       setValue(nftokenId, offerID);
@@ -105,9 +105,6 @@ class RippleCreateOfferForm implements RippleTransactionForm {
       owner: owner.value?.view,
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

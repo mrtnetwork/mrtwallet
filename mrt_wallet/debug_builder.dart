@@ -58,12 +58,13 @@ Future<void> buildCryptoJs() async {
   }
 }
 
-Future<void> buildHttpJs() async {
+Future<void> buildHttpJs({bool minify = true}) async {
   print("Building JS web http. please wait...");
   const String command = 'dart';
   final List<String> args = [
     'compile',
     'js',
+    if (minify) '-m',
     '-o',
     'assets/wasm/http.js',
     'web_http/http.dart'
@@ -143,12 +144,12 @@ Future<void> buildContent({bool minify = false, bool isMozila = false}) async {
     "--no-source-maps",
     if (minify) '-m',
     '-o',
-    'web/content.js',
+    'extensions/content.js',
     'js/content.dart'
   ];
 
   await _doProcess(command, args);
-  File file = File("web/content.js");
+  File file = File("extensions/content.js");
   if (isMozila) {
     String data = file.readAsStringSync();
     if (minify) {
@@ -163,10 +164,10 @@ Future<void> buildContent({bool minify = false, bool isMozila = false}) async {
     }
     await file.writeAsString(data);
   }
-  file = File("web/content.js.deps");
+  file = File("extensions/content.js.deps");
   file.deleteSync(recursive: true);
   if (Directory("build/web/").existsSync()) {
-    file = File("web/content.js");
+    file = File("extensions/content.js");
     await file.copy("build/web/content.js");
   }
 }
@@ -180,14 +181,15 @@ Future<void> buildBackground({bool minify = false}) async {
     "--no-source-maps",
     if (minify) '-m',
     '-o',
-    'web/background.js',
+    'extensions/background.js',
     'js/background.dart'
   ];
+
   await _doProcess(command, args);
-  File file = File("web/background.js.deps");
+  File file = File("extensions/background.js.deps");
   file.deleteSync(recursive: true);
   if (Directory("build/web/").existsSync()) {
-    file = File("web/background.js");
+    file = File("extensions/background.js");
     await file.copy("build/web/background.js");
   }
 }
@@ -201,24 +203,26 @@ Future<void> buildPage({bool minify = false}) async {
     "--no-source-maps",
     if (minify) '-m',
     '-o',
-    'web/page.js',
+    'extensions/page.js',
     'js/page.dart'
   ];
+
   await _doProcess(command, args);
-  File file = File("web/page.js.deps");
+  File file = File("extensions/page.js.deps");
   file.deleteSync(recursive: true);
   if (Directory("build/web/").existsSync()) {
-    file = File("web/page.js");
+    file = File("extensions/page.js");
     await file.copy("build/web/page.js");
   }
 }
 
 Future<void> _doProcess(String command, List<String> args,
-    {bool runInShell = false}) async {
-  final process = await Process.start(command, args, runInShell: runInShell);
+    {bool shell = false}) async {
+  final process = await Process.start(command, args, runInShell: shell);
   await stdout.addStream(process.stdout);
   await stderr.addStream(process.stderr);
   final result = await process.exitCode;
+
   print("${[command, ...args].join(" ")} done with exit code $result");
   if (result != 0) {
     throw Exception("process failed with exit code $result");
@@ -228,12 +232,11 @@ Future<void> _doProcess(String command, List<String> args,
 Future<void> _clean() async {
   const String command = 'flutter';
   List<String> args = ['clean'];
-  await _doProcess(command, args, runInShell: true);
+  await _doProcess(command, args, shell: Platform.isWindows);
   args = ["pub", "get"];
-  await _doProcess(command, args, runInShell: true);
+  await _doProcess(command, args, shell: Platform.isWindows);
 }
 
-///  'build','web','--wasm', fix
 Future<void> _build(
     {bool wasm = true,
     bool csp = false,
@@ -244,13 +247,12 @@ Future<void> _build(
     'build',
     'web',
     if (wasm) '--wasm',
-    // if (!csp) '-O0',
     if (!minify) '--profile' else '--release',
     if (csp) '--csp',
-    if (baseHref != null) baseHref,
+    if (!csp && baseHref != null) baseHref,
   ];
-  print("is csp $csp");
-  await _doProcess(command, args, runInShell: true);
+  // print("is csp $csp");
+  await _doProcess(command, args, shell: Platform.isWindows);
   if (csp) {
     const canvasUri =
         r"https://www\.gstatic\.com/flutter-canvaskit/([a-f0-9]+)/";
@@ -269,34 +271,51 @@ Future<void> _build(
   }
 }
 
+void copyFiles() {
+  final r = Directory("web");
+  if (r.existsSync()) {
+    r.deleteSync(recursive: true);
+  }
+  r.createSync(recursive: true);
+  final browserFiles = Directory("browser");
+  _copyDirectory(browserFiles, r);
+}
+
 Future<void> _buildWeb(
     {bool extension = false,
     bool mozila = false,
     bool minify = false,
     bool clean = false,
-    String? baseHref}) async {
+    bool wasm = true,
+    String? baseHref,
+    bool crypto = false,
+    bool scripts = true}) async {
   print("come build Extension: $extension Mozila: $mozila Minify: $minify");
 
   if (clean) {
     await _clean();
   }
-  // await buildCrypto();
-  final r = Directory("web");
-  if (r.existsSync()) {
-    await r.delete(recursive: true);
+  if (crypto) {
+    await buildCrypto();
   }
-  await r.create(recursive: true);
-  final browserFiles = Directory("browser");
-  _copyDirectory(browserFiles, r);
 
-  if (extension) {
+  copyFiles();
+  if (extension && scripts) {
     await buildBackground(minify: minify);
     await buildPage(minify: minify);
     await buildContent(minify: minify, isMozila: mozila);
+  }
+  if (extension) {
     File file = File("extensions/tron_web.js");
     await file.copy("web/tron_web.js");
     file = File("extensions/bn.js");
     await file.copy("web/bn.js");
+    file = File("extensions/content.js");
+    await file.copy("web/content.js");
+    file = File("extensions/background.js");
+    await file.copy("web/background.js");
+    file = File("extensions/page.js");
+    await file.copy("web/page.js");
     file = File("extensions/index.html");
     await file.copy("web/index.html");
     file = File("extensions/popup.html");
@@ -306,10 +325,16 @@ Future<void> _buildWeb(
         : "extensions/chrome_manifest.json");
     await file.copy("web/manifest.json");
   }
-  await _build(minify: minify, csp: extension, wasm: true, baseHref: baseHref);
+  await _build(minify: minify, csp: extension, wasm: wasm, baseHref: baseHref);
 }
 
 void main(List<String> args) async {
+  // await buildWebView(minify: true);
+  // return;
+  // await buildHttpJs();
+  // return;
+  // await _build(minify: true, csp: true, wasm: true, baseHref: null);
+  // return;
   // await buildCrypto();
   // return;
   // await buildHttpJs();
@@ -332,21 +357,29 @@ void main(List<String> args) async {
     await buildPage();
     return;
   }
-  final bool minify = fixedArgs.contains("--release");
-  final bool clean = fixedArgs.contains("--clean");
-  final bool extension = fixedArgs.contains("-extension");
-  final bool mozila = fixedArgs.contains("--mozila");
-  final bool web = fixedArgs.contains("-web");
-  final bool webviewScript = fixedArgs.contains("-webview");
+  final bool minify =
+      fixedArgs.contains("--release") || fixedArgs.contains("--r");
+  final bool clean = fixedArgs.contains("--clean") || fixedArgs.contains("--c");
+  final bool extension =
+      fixedArgs.contains("-extension") || fixedArgs.contains("-e");
+  final bool mozila =
+      fixedArgs.contains("--mozila") || fixedArgs.contains("-m");
+  final bool web = fixedArgs.contains("-web") || fixedArgs.contains("-w");
+  final bool wasm = fixedArgs.contains("--wasm") || fixedArgs.contains("--w");
+  final bool scripts =
+      fixedArgs.contains("--scripts") || fixedArgs.contains("-s");
+  final bool crypto = fixedArgs.contains("--crypto");
 
-  if (extension) {
+  if (extension || web) {
     return await _buildWeb(
-        extension: true, mozila: mozila, minify: minify, clean: clean);
-  } else if (web) {
-    return await _buildWeb(
-        minify: minify, baseHref: "--base-href=/mrtwallet/", clean: clean);
-  } else if (webviewScript) {
-    return await buildWebView(minify: minify);
+        extension: extension,
+        mozila: mozila,
+        minify: minify,
+        clean: clean,
+        baseHref: "--base-href=/mrtwallet/",
+        wasm: wasm,
+        scripts: scripts,
+        crypto: crypto);
   }
 
   if (fixedArgs.contains("w")) {

@@ -1,5 +1,6 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/worker.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -13,10 +14,12 @@ class UpdateTokenDetailsView<NETWORKADDRESS, TOKEN extends TokenCore,
       {super.key,
       required this.token,
       required this.account,
-      required this.address});
+      required this.address,
+      required this.scrollController});
   final TOKEN token;
   final APPCHAINACCOUNT<CHAINACCOUNT> account;
   final CHAINACCOUNT address;
+  final ScrollController? scrollController;
 
   @override
   State<UpdateTokenDetailsView> createState() => _UpdateTokenDetailsViewState();
@@ -40,7 +43,7 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
   late String tokenSymbol = token.symbol;
   late String apiId = token.market?.apiId ?? "";
   late int decimal = token.decimal ?? 0;
-  bool get canChangeDecimal => token.decimal != null;
+  bool canChangeDecimal = false;
 
   String? onValidateDecimal(String? v) {
     if (token.decimal == null) return "";
@@ -101,8 +104,7 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
       final alert = await context.openSliverDialog(
           (ctx) => DialogTextView(
                 buttonWidget: AsyncDialogDoubleButtonView(
-                  firstButtonLabel: "change_decimals".tr,
-                ),
+                    firstButtonLabel: "change_decimals".tr),
                 widget: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -142,12 +144,11 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
     final update = await wallet.wallet.updateToken(
         token: widget.token,
         updatedToken: Token(
-          name: tokenName,
-          symbol: tokenSymbol,
-          decimal: currectDecimal,
-          market: market,
-          assetLogo: token.assetLogo,
-        ),
+            name: tokenName,
+            symbol: tokenSymbol,
+            decimal: currectDecimal,
+            market: market,
+            assetLogo: token.assetLogo),
         address: widget.address,
         account: widget.account);
     if (update.hasError) {
@@ -157,78 +158,105 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
     progressKey.successText("token_updated_successfully".tr, backToIdle: false);
   }
 
+  bool _canChangeDecimal() {
+    if (token.decimal == null) return false;
+    switch (widget.account.network.type) {
+      case NetworkType.stellar:
+      case NetworkType.xrpl:
+        return false;
+      default:
+        return true;
+    }
+  }
+
+  @override
+  void onInitOnce() {
+    super.onInitOnce();
+    canChangeDecimal = _canChangeDecimal();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return PageProgress(
-      key: progressKey,
-      backToIdle: APPConst.oneSecoundDuration,
-      initialStatus: StreamWidgetStatus.idle,
-      initialWidget:
-          ProgressWithTextView(text: "retrieving_token_information".tr),
-      child: (c) => Form(
+    return Scaffold(
+      appBar: AppBar(title: Text("update_token".tr)),
+      body: Form(
         key: formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PageTitleSubtitle(
-                title: "update_token_information".tr,
-                body: Text("update_token_desc".tr)),
-            WidgetConstant.height20,
-            AppTextField(
-                label: "name".tr,
-                minlines: 1,
-                initialValue: tokenName,
-                validator: tokenNamevalidator,
-                onChanged: onTokenNameChange,
-                key: nameTextFieldKey),
-            WidgetConstant.height20,
-            AppTextField(
-                label: "symbol".tr,
-                minlines: 1,
-                initialValue: tokenName,
-                validator: tokenSymbolvalidator,
-                onChanged: onTokenSymbolChange,
-                key: symbolTextFieldKey),
-            WidgetConstant.height20,
-            Text("live_price".tr, style: context.textTheme.titleMedium),
-            Text("coin_gecko_desc".tr),
-            WidgetConstant.height8,
-            AppTextField(
-              label: "api_id".tr,
-              key: apiIdTextField,
-              validator: apiIdForm,
-              onChanged: onChangeApiId,
-              initialValue: apiId,
-            ),
-            WidgetConstant.height20,
-            if (canChangeDecimal) ...[
-              Text("token_decimals".tr, style: context.textTheme.titleMedium),
-              Text("change_token_decimal_desc".tr),
-              WidgetConstant.height8,
-              NumberTextField(
-                  label: "decimals".tr,
-                  validator: onValidateDecimal,
-                  onChange: onChangeDicmal,
-                  defaultValue: decimal,
-                  max: BlockchainConst.maxTokenDecimal,
-                  min: 0),
+        child: PageProgress(
+          key: progressKey,
+          backToIdle: APPConst.oneSecoundDuration,
+          initialStatus: StreamWidgetStatus.idle,
+          initialWidget:
+              ProgressWithTextView(text: "retrieving_token_information".tr),
+          child: (c) => CustomScrollView(
+            controller: widget.scrollController,
+            slivers: [
+              SliverConstraintsBoxView(
+                padding: WidgetConstant.paddingHorizontal20,
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PageTitleSubtitle(
+                          title: "update_token_information".tr,
+                          body: Text("update_token_desc".tr)),
+                      WidgetConstant.height20,
+                      AppTextField(
+                          label: "name".tr,
+                          minlines: 1,
+                          initialValue: tokenName,
+                          validator: tokenNamevalidator,
+                          onChanged: onTokenNameChange,
+                          key: nameTextFieldKey),
+                      WidgetConstant.height20,
+                      AppTextField(
+                          label: "symbol".tr,
+                          minlines: 1,
+                          initialValue: tokenName,
+                          validator: tokenSymbolvalidator,
+                          onChanged: onTokenSymbolChange,
+                          key: symbolTextFieldKey),
+                      WidgetConstant.height20,
+                      Text("live_price".tr,
+                          style: context.textTheme.titleMedium),
+                      Text("coin_gecko_desc".tr),
+                      WidgetConstant.height8,
+                      AppTextField(
+                        label: "api_id".tr,
+                        key: apiIdTextField,
+                        validator: apiIdForm,
+                        onChanged: onChangeApiId,
+                        initialValue: apiId,
+                      ),
+                      WidgetConstant.height20,
+                      if (canChangeDecimal) ...[
+                        Text("token_decimals".tr,
+                            style: context.textTheme.titleMedium),
+                        Text("change_token_decimal_desc".tr),
+                        WidgetConstant.height8,
+                        NumberTextField(
+                            label: "decimals".tr,
+                            validator: onValidateDecimal,
+                            onChange: onChangeDicmal,
+                            defaultValue: decimal,
+                            max: BlockchainConst.maxTokenDecimal,
+                            min: 0),
+                      ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          FixedElevatedButton(
+                            padding: WidgetConstant.paddingVertical40,
+                            onPressed: onUpdate,
+                            child: Text("update_token".tr),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
             ],
-            // AppDropDownBottom(
-            //     onChanged: (p0) {},
-            //     isExpanded: true,
-            //     items: {for (final i in coins!.coins) i: Text(i.coinName)},
-            //     label: "coingecko_id".tr),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FixedElevatedButton(
-                  padding: WidgetConstant.paddingVertical40,
-                  onPressed: onUpdate,
-                  child: Text("update_token".tr),
-                )
-              ],
-            )
-          ],
+          ),
         ),
       ),
     );

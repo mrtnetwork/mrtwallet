@@ -39,6 +39,8 @@ class PageRouter {
 
   // substrate transfer
   static const String substrateTransfer = "/substrate/transfer";
+  static const String substrateTransaction = "/substrate/transaction";
+  static const String importSubstrateNetwork = "/substrate/networks/import";
 
   /// cardano
   static const String cardanoTransaction = "/cardano/transaction";
@@ -84,6 +86,8 @@ class PageRouter {
   static const String updateStellarProviders = "/networks/stellar/providers";
   static const String updateTronProviders = "/networks/tron/providers";
 
+  static const String updateNetwork = "/networks/update";
+
   /// UpdateStellarProvider
   static const String importERC20Token = "ethereum/import_token";
   static const String importTronToken = "tron/import_trc10_token";
@@ -111,6 +115,7 @@ class PageRouter {
   static const String web3Solana = "web3/solana";
   static const String web3Ton = "web3/ton";
   static const String web3Stellar = "web3/stellar";
+  static const String web3Substrate = "web3/substrate";
 
   static const String webview = "web/";
 
@@ -235,6 +240,8 @@ class PageRouter {
         return const BarcodeScannerView();
       case substrateTransfer:
         return const SubstrateTransferTransactionView();
+      case substrateTransaction:
+        return const SubstrateTransactionFieldsView();
       case web3Ethereum:
         return const EthereumWeb3FieldsView();
       case web3Tron:
@@ -243,6 +250,8 @@ class PageRouter {
         return const TonWeb3FieldsView();
       case web3Stellar:
         return const StellarWeb3FieldsView();
+      case web3Substrate:
+        return const SubstrateWeb3FieldsView();
       case web3Solana:
         return const SolanaWeb3FieldsView();
       case updateEthereumProvider:
@@ -268,6 +277,10 @@ class PageRouter {
         return const MoneroTransferTransactionView();
       case moneroMnemonic:
         return const GenerateMoneroMnemonicView();
+      case importSubstrateNetwork:
+        return const SubstrateImportChainView();
+      case updateNetwork:
+        return const UpdateNetworkView();
       default:
         return const HomeScreen();
     }
@@ -292,7 +305,7 @@ class PageRouter {
   static String providerDetails(WalletNetwork network) {
     switch (network.type) {
       case NetworkType.ethereum:
-        return importEthereumNetwork;
+        return updateEthereumProvider;
       case NetworkType.solana:
         return updateSolanaProviders;
       case NetworkType.ton:
@@ -309,8 +322,7 @@ class PageRouter {
         return updateMoneroProviders;
       case NetworkType.stellar:
         return updateStellarProviders;
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         return updateSubstrateProviders;
       case NetworkType.bitcoinAndForked:
       case NetworkType.bitcoinCash:
@@ -338,8 +350,7 @@ class PageRouter {
         return cardanoTransaction;
       case NetworkType.cosmos:
         return cosmosTransaction;
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         return substrateTransfer;
       case NetworkType.stellar:
         return stellarTransaction;
@@ -347,6 +358,7 @@ class PageRouter {
         return moneroTransfer;
       case NetworkType.xrpl:
         return rippleTransfer;
+
       default:
         throw UnimplementedError();
     }
@@ -364,6 +376,8 @@ class PageRouter {
         return web3Ton;
       case NetworkType.stellar:
         return web3Stellar;
+      case NetworkType.substrate:
+        return web3Substrate;
       default:
         return null;
     }
@@ -375,6 +389,8 @@ class PageRouter {
         return importEthereumNetwork;
       case NetworkType.cosmos:
         return importCosmosNetwork;
+      case NetworkType.substrate:
+        return importSubstrateNetwork;
       default:
         return null;
     }

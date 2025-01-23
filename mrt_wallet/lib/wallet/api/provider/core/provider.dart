@@ -66,8 +66,7 @@ abstract class APIProvider with Equatable, CborSerializable {
         return TonAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
       case NetworkType.monero:
         return MoneroAPIProvider.fromCborBytesOrObject(obj: obj, bytes: bytes);
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         return SubstrateAPIProvider.fromCborBytesOrObject(
             obj: obj, bytes: bytes);
       case NetworkType.stellar:

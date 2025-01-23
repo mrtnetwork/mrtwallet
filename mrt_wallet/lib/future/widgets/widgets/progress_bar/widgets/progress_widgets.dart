@@ -204,7 +204,6 @@ class SuccessTransactionTextView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool openTxPage = network.coinParam.hasTransactionExplorer;
     final Widget successTrText = Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -216,6 +215,7 @@ class SuccessTransactionTextView extends StatelessWidget {
             shrinkWrap: true,
             itemBuilder: (context, index) {
               final id = txIds[index];
+              final txUrl = network.getTransactionExplorer(id);
               return ContainerWithBorder(
                   child: Row(
                 children: [
@@ -225,12 +225,10 @@ class SuccessTransactionTextView extends StatelessWidget {
                         text: txIds[index],
                         color: context.onPrimaryContainer),
                   ),
-                  if (openTxPage)
+                  if (txUrl != null)
                     IconButton(
                         onPressed: () {
-                          final addr =
-                              network.coinParam.getTransactionExplorer(id);
-                          UriUtils.lunch(addr);
+                          UriUtils.lunch(txUrl);
                         },
                         icon: Icon(Icons.open_in_new,
                             color: context.colors.onPrimaryContainer))

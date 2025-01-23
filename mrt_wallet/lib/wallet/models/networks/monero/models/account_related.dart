@@ -274,6 +274,7 @@ class MoneroAccountBlocksTracker with CborSerializable {
     assert(!isRequest, "cannot update sync request.");
     if (isRequest) return;
     if (isStart) {
+      if (_accounts.isEmpty) return;
       _setStartHeight(endHeight - 1000);
     }
     assert(endHeight >= this.endHeight, "invalid height.");
@@ -502,7 +503,7 @@ class MoneroAccountBlocksTracker with CborSerializable {
   }
 
   MoneroSyncBlocksRequest? getHeightRequest() {
-    if (synced) return null;
+    if (synced || isStart) return null;
     return MoneroSyncBlocksInfoRequest(height: currentHeight);
   }
 
@@ -518,7 +519,6 @@ class MoneroAccountBlocksTracker with CborSerializable {
   @override
   String toString() {
     return {
-      // "accounts": accounts,
       "offsets": _currentOffsets,
       "error": _failedOffsets,
       "height": _currentHeight,
@@ -610,33 +610,29 @@ class MoneroChainAccountTranckerInfo with CborSerializable {
 }
 
 class MoneroViewPrimaryAccountDetails with CborSerializable, Equatable {
-  final MoneroPrivateKey viewPrivateKey;
-  final MoneroPublicKey spendPublicKey;
-  final MoneroAccount account;
-  final MoneroAddress primaryAddress;
+  final List<int> viewPrivateKey;
+  final List<int> spendPublicKey;
   final MoneroNetwork network;
+  late final account = MoneroAccount.fromWatchOnly(
+      viewPrivateKey, spendPublicKey,
+      coinType: network.coin);
+  late final primaryAddress = MoneroAccountAddress(account.primaryAddress,
+      network: network, type: XmrAddressType.primaryAddress);
   MoneroViewPrimaryAccountDetails._(
-      {required this.viewPrivateKey,
-      required this.spendPublicKey,
-      required this.network,
-      required this.account,
-      required this.primaryAddress});
+      {required List<int> viewPrivateKey,
+      required List<int> spendPublicKey,
+      required this.network})
+      : viewPrivateKey = viewPrivateKey.asImmutableBytes,
+        spendPublicKey = spendPublicKey.asImmutableBytes;
   factory MoneroViewPrimaryAccountDetails({
     required MoneroPrivateKey viewPrivateKey,
     required MoneroPublicKey spendPublicKey,
     required MoneroNetwork network,
   }) {
-    final account = MoneroAccount.fromWatchOnly(
-        viewPrivateKey.key, spendPublicKey.key,
-        coinType: network.coin);
-    final primaryAddress = MoneroAccountAddress(account.primaryAddress,
-        network: network, type: XmrAddressType.primaryAddress);
     return MoneroViewPrimaryAccountDetails._(
-        viewPrivateKey: viewPrivateKey,
-        spendPublicKey: spendPublicKey,
-        network: network,
-        account: account,
-        primaryAddress: primaryAddress);
+        viewPrivateKey: viewPrivateKey.key,
+        spendPublicKey: spendPublicKey.key,
+        network: network);
   }
 
   factory MoneroViewPrimaryAccountDetails.deserialize(
@@ -646,9 +642,10 @@ class MoneroViewPrimaryAccountDetails with CborSerializable, Equatable {
         object: object,
         hex: hex,
         tags: CborTagsConst.moneroViewPrimaryAccountDetails);
-    return MoneroViewPrimaryAccountDetails(
-        viewPrivateKey: MoneroPrivateKey.fromBytes(values.elementAs(0)),
-        spendPublicKey: MoneroPublicKey.fromBytes(values.elementAs(1)),
+
+    return MoneroViewPrimaryAccountDetails._(
+        viewPrivateKey: values.elementAs(0),
+        spendPublicKey: values.elementAs(1),
         network: MoneroNetwork.fromIndex(values.elementAs(2)));
   }
 
@@ -662,8 +659,8 @@ class MoneroViewPrimaryAccountDetails with CborSerializable, Equatable {
   @override
   CborTagValue toCbor() {
     return CborTagValue([
-      CborBytesValue(viewPrivateKey.key),
-      CborBytesValue(spendPublicKey.key),
+      CborBytesValue(viewPrivateKey),
+      CborBytesValue(spendPublicKey),
       network.index
     ], CborTagsConst.moneroViewPrimaryAccountDetails);
   }
@@ -692,9 +689,8 @@ class MoneroViewAccountDetails with Equatable, CborSerializable {
       required int major,
       required int minor}) {
     return MoneroViewAccountDetails._(
-      viewKey: viewKey,
-      index: MoneroAccountIndex(minor: minor, major: major),
-    );
+        viewKey: viewKey,
+        index: MoneroAccountIndex(minor: minor, major: major));
   }
   factory MoneroViewAccountDetails.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -703,9 +699,10 @@ class MoneroViewAccountDetails with Equatable, CborSerializable {
         object: object,
         hex: hex,
         tags: NewAccountParamsType.moneroNewAddressParams.tag);
+    final viewKey = MoneroViewPrimaryAccountDetails.deserialize(
+        object: values.getCborTag(0));
     return MoneroViewAccountDetails(
-      viewKey: MoneroViewPrimaryAccountDetails.deserialize(
-          object: values.getCborTag(0)),
+      viewKey: viewKey,
       major: values.elementAs(1),
       minor: values.elementAs(2),
     );
@@ -1010,7 +1007,7 @@ class MoneroOutputDetails with CborSerializable, Equatable {
             amount: lockedOutput.amount,
             derivation: lockedOutput.derivation,
             ephemeralSecretKey: RCT.identity(clone: false),
-            ephemeralPublicKey: lockedOutput.outputPublicKey.key,
+            ephemeralPublicKey: lockedOutput.outputPublicKey,
             keyImage: RCT.identity(clone: false),
             mask: lockedOutput.mask,
             outputPublicKey: lockedOutput.outputPublicKey,

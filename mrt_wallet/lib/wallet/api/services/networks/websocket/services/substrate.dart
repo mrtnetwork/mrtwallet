@@ -19,12 +19,5 @@ class SubstrateWebsocketService extends WebSocketService<SubstrateAPIProvider>
         SocketRequestCompleter(params.body()!, params.requestID);
     final r = await addMessage(message, timeout ?? defaultTimeOut);
     return params.toResponse(r);
-    // final SocketRequestCompleter message = SocketRequestCompleter(
-    //     StringUtils.fromJson(params.jsonBody), params.requestID);
-    // final result = await addMessage(message, timeout ?? defaultTimeOut);
-    // return ServiceSuccessRespose(
-    //     statusCode: ServiceProviderUtils.successStatucCode,
-    //     response:
-    //         ServiceProviderUtils.parseResponse(object: result, params: params));
   }
 }

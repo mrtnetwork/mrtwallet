@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/forms/core/solana.dart';
 import 'package:on_chain/solana/src/address/sol_address.dart';
@@ -51,8 +50,6 @@ class SolanaCreateAccountForm extends SolanaTransactionForm {
       onChangeForm: (p0) {
         return p0;
       });
-  @override
-  OnChangeForm? onChanged;
 
   List<TransactionFormField> get fields =>
       [newAccountAddress, ownerAddress, space, lamports];
@@ -145,5 +142,16 @@ class SolanaCreateAccountForm extends SolanaTransactionForm {
       }
     }
     return null;
+  }
+
+  @override
+  void close() {
+    super.close();
+    _cancelable.cancel();
+    _transferValue = BigInt.zero;
+    _manuallyLamports = false;
+    for (final i in fields) {
+      i.clear();
+    }
   }
 }

@@ -186,6 +186,16 @@ Future<void> _build(
   }
 }
 
+void copyfiles() {
+  final r = Directory("web");
+  if (r.existsSync()) {
+    r.deleteSync(recursive: true);
+  }
+  r.createSync(recursive: true);
+  final browserFiles = Directory("browser");
+  _copyDirectory(browserFiles, r);
+}
+
 Future<void> _buildWeb(
     {bool extension = false,
     bool mozila = false,
@@ -198,14 +208,7 @@ Future<void> _buildWeb(
     await _clean();
   }
   await buildCrypto();
-  final r = Directory("web");
-  if (r.existsSync()) {
-    await r.delete(recursive: true);
-  }
-  await r.create(recursive: true);
-  final browserFiles = Directory("browser");
-  _copyDirectory(browserFiles, r);
-
+  copyfiles();
   if (extension) {
     await buildBackground(minify: minify);
     await buildPage(minify: minify);
@@ -227,6 +230,7 @@ Future<void> _buildWeb(
 }
 
 void main(List<String> args) async {
+  // await _build(minify: true, csp: true, wasm: true, baseHref: null);
   // await buildWebView();
   // return;
   final fixedArgs = List<String>.from(args);

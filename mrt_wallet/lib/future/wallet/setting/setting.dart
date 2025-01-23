@@ -35,7 +35,7 @@ class _AppSettingViewState extends State<AppSettingView> {
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>(StateConst.main);
     final setting = PageRouter.networkSettings(wallet.wallet.network);
-    return ScaffolPageView(
+    return ScaffoldPageView(
       appBar: AppBar(title: Text("wallet_preferences".tr)),
       child: SingleChildScrollView(
         child: ConstraintsBoxView(

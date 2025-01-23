@@ -1,3 +1,5 @@
+import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
+
 typedef DynamicVoid = void Function();
 
 typedef ObjectVoid = void Function(Object?);
@@ -12,6 +14,7 @@ typedef FutureVoid = Future<void> Function();
 typedef FutureT<T> = Future<T> Function();
 typedef VoidSetT<T> = Function(Set<T>);
 typedef FuncBool<T> = bool Function(T);
+typedef BigIntRationalVoid = void Function(BigRational);
 
 typedef FuncBoolString = bool Function(String);
 typedef FuncFutureBoolString = Future<bool> Function(String);

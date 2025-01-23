@@ -12,6 +12,23 @@ class TronFreezBalanceV2Form extends TronTransactionForm {
   @override
   final BigInt tokenValue = BigInt.zero;
 
+  @override
+  late final TransactionContractType type =
+      TransactionContractType.freezeBalanceV2Contract;
+
+  List<TransactionFormField> get fields => [amount, resource];
+
+  @override
+  late final String name = "tron_stack_v2";
+
+  @override
+  TronAddress? get smartContractAddress => null;
+
+  @override
+  TronAddress? get destinationAccount {
+    return null;
+  }
+
   late final TransactionFormField<IntegerBalance> amount = TransactionFormField(
     name: "frozen_balance",
     optional: false,
@@ -36,14 +53,6 @@ class TronFreezBalanceV2Form extends TronTransactionForm {
       }
     },
   );
-
-  @override
-  OnChangeForm? onChanged;
-
-  List<TransactionFormField> get fields => [amount, resource];
-
-  @override
-  late final String name = "tron_stack_v2";
 
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
@@ -70,15 +79,6 @@ class TronFreezBalanceV2Form extends TronTransactionForm {
   }
 
   @override
-  late final TransactionContractType type =
-      TransactionContractType.freezeBalanceV2Contract;
-
-  @override
-  TronAddress? get destinationAccount {
-    return null;
-  }
-
-  @override
   TronBaseContract toContract({required ITronAddress owner}) {
     final validate = validateError(account: owner);
     if (validate != null) {
@@ -92,11 +92,14 @@ class TronFreezBalanceV2Form extends TronTransactionForm {
   }
 
   @override
-  TronAddress? get smartContractAddress => null;
-
-  @override
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
       required TronChain account}) async {}
+
+  @override
+  void close() {
+    amount.clear();
+    resource.clear();
+  }
 }

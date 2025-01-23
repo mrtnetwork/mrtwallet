@@ -129,7 +129,7 @@ abstract class IsolateCryptoWoker {
       {List<int>? encryptedPart,
       Duration? timeout,
       bool isolate = true,
-      required WorkerMode mode}) async {
+      WorkerMode mode = WorkerMode.main}) async {
     return _call(
         onIsolate: () async {
           final A response = await sendRequest(

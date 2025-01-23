@@ -17,26 +17,27 @@ class StellarNetworkParams extends NetworkCoinParams<StellarAPIProvider> {
 
   factory StellarNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
-        bytes, obj, CborTagsConst.stellarNetworkParam);
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes, object: obj, tags: CborTagsConst.stellarNetworkParam);
 
     return StellarNetworkParams(
-        transactionExplorer: cbor.elementAt(0),
-        addressExplorer: cbor.elementAt(1),
-        token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(2)),
-        providers: (cbor.elementAt(3) as List)
+        token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
+        providers: values
+            .elementAsListOf<CborTagValue>(3)
             .map((e) => StellarAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
-        chainType: ChainType.fromValue(cbor.elementAt(4)),
-        passphrase: cbor.elementAt(5));
+        chainType: ChainType.fromValue(values.elementAs(4)),
+        passphrase: values.elementAs(5),
+        addressExplorer: values.elementAs(6),
+        transactionExplorer: values.elementAs(7));
   }
   StellarNetworkParams(
-      {required super.transactionExplorer,
-      required super.addressExplorer,
-      required super.token,
+      {required super.token,
       required super.providers,
       required super.chainType,
-      required this.passphrase});
+      required this.passphrase,
+      super.addressExplorer,
+      super.transactionExplorer});
 
   StellarNetworkParams copyWith(
       {ChainType? chainType,
@@ -47,8 +48,6 @@ class StellarNetworkParams extends NetworkCoinParams<StellarAPIProvider> {
       String? passphrase}) {
     return StellarNetworkParams(
         chainType: chainType ?? this.chainType,
-        transactionExplorer: transactionExplorer ?? this.transactionExplorer,
-        addressExplorer: addressExplorer ?? this.addressExplorer,
         token: token ?? this.token,
         providers: providers ?? this.providers,
         passphrase: passphrase ?? this.passphrase);
@@ -58,28 +57,33 @@ class StellarNetworkParams extends NetworkCoinParams<StellarAPIProvider> {
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          transactionExplorer,
-          addressExplorer,
+          const CborNullValue(),
+          const CborNullValue(),
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
           chainType.name,
-          passphrase
+          passphrase,
+          addressExplorer,
+          transactionExplorer
         ]),
         CborTagsConst.stellarNetworkParam);
   }
 
-  @override
-  NetworkCoinParams<StellarAPIProvider> updateProviders(
-      List<APIProvider> updateProviders) {
-    return StellarNetworkParams(
-        transactionExplorer: transactionExplorer,
-        addressExplorer: addressExplorer,
-        token: token,
-        providers: updateProviders.cast<StellarAPIProvider>(),
-        chainType: chainType,
-        passphrase: passphrase);
-  }
+  String get identifier => passphrase;
 
   @override
-  String get identifier => passphrase;
+  NetworkCoinParams<StellarAPIProvider> updateParams(
+      {List<APIProvider>? updateProviders,
+      Token? token,
+      String? transactionExplorer,
+      String? addressExplorer}) {
+    return StellarNetworkParams(
+        token: NetworkCoinParams.validateUpdateParams(
+            token: this.token, updateToken: token),
+        providers: updateProviders?.cast<StellarAPIProvider>() ?? providers,
+        chainType: chainType,
+        passphrase: passphrase,
+        addressExplorer: addressExplorer,
+        transactionExplorer: transactionExplorer);
+  }
 }

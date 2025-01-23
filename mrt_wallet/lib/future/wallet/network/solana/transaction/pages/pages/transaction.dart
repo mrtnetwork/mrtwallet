@@ -48,26 +48,32 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                     style: context.textTheme.titleMedium),
                                 WidgetConstant.height8,
                                 ContainerWithBorder(
-                                  onRemoveIcon: const Icon(Icons.edit),
+                                  onRemoveIcon: Icon(Icons.edit,
+                                      color: context.onPrimaryContainer),
+                                  onRemove: controller.form.enableSwitchAccount
+                                      ? () {
+                                          context
+                                              .openSliverBottomSheet<
+                                                  ISolanaAddress>(
+                                                "switch_account".tr,
+                                                child:
+                                                    SwitchOrSelectAccountView(
+                                                        account:
+                                                            controller.account,
+                                                        showMultiSig: true),
+                                                minExtent: 0.5,
+                                                maxExtend: 0.9,
+                                                initialExtend: 0.7,
+                                                centerContent: false,
+                                              )
+                                              .then(switchAccount);
+                                        }
+                                      : null,
                                   child: AddressDetailsView(
                                       color: context.onPrimaryContainer,
                                       address: controller.owner,
                                       key: ValueKey<ISolanaAddress?>(
                                           controller.owner)),
-                                  onRemove: () {
-                                    context
-                                        .openSliverBottomSheet<ISolanaAddress>(
-                                          "switch_account".tr,
-                                          child: SwitchOrSelectAccountView(
-                                              account: controller.account,
-                                              showMultiSig: true),
-                                          minExtent: 0.5,
-                                          maxExtend: 0.9,
-                                          initialExtend: 0.7,
-                                          centerContent: false,
-                                        )
-                                        .then(switchAccount);
-                                  },
                                 ),
                                 WidgetConstant.height20,
                                 _SolanaTransactionFileds(
@@ -89,11 +95,12 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                               controller.feeError == null,
                                           onRemove: () {},
                                           enableTap: false,
-                                          onRemoveIcon: StreamWidget(
+                                          onRemoveIcon: ButtonProgress(
                                             key: controller.feeProgressKey,
                                             initialStatus:
                                                 StreamWidgetStatus.idle,
-                                            buttonWidget: Icon(Icons.circle,
+                                            child: (context) => Icon(
+                                                Icons.circle,
                                                 color:
                                                     context.colors.transparent),
                                           ),
@@ -548,9 +555,9 @@ class _CreateAccountFields extends StatelessWidget {
           title: "lamports".tr,
           subtitle: "solana_create_account_lamports_desc".tr,
           validate: field.lamports.isCompleted,
-          onRemoveIcon: StreamWidget(
+          onRemoveIcon: ButtonProgress(
               key: field.rentProgress,
-              buttonWidget: field.lamports.hasValue
+              child: (context) => field.lamports.hasValue
                   ? const Icon(Icons.edit)
                   : const Icon(Icons.add)),
           onTap: () {
@@ -829,8 +836,8 @@ class _MintToFields extends StatelessWidget {
         Text("destination_info_desc".tr),
         WidgetConstant.height8,
         ContainerWithBorder(
-            onRemoveIcon: StreamWidget(
-                buttonWidget:
+            onRemoveIcon: ButtonProgress(
+                child: (context) =>
                     Icon(Icons.circle, color: context.colors.transparent),
                 key: field.accountProgressKey),
             onRemove: () {

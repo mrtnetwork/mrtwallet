@@ -35,7 +35,8 @@ class TronTRC10Token with Equatable implements TokenCore<BigInt>, TronToken {
   }
   @override
   TronTRC10Token updateToken(Token updateToken) {
-    return TronTRC10Token._(balance, updateToken, tokenID, _updated);
+    return TronTRC10Token.create(
+        balance: balance.value.balance, token: updateToken, tokenID: tokenID);
   }
 
   @override

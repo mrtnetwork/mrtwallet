@@ -6,22 +6,6 @@ class ChainsHandler with CborSerializable {
   int _network;
   ChainsHandler._(this._networks, this._network, this.id);
 
-  // factory ChainsHandler.deserialize(
-  //     {String? hex, CborObject? obj, List<int>? bytes}) {
-  //   final CborListValue values = CborSerializable.cborTagValue(
-  //       cborBytes: bytes,
-  //       object: obj,
-  //       hex: hex,
-  //       tags: CborTagsConst.chainHandler);
-  //   final String id = values.elementAs(2);
-  //   return ChainsHandler(
-  //       chains: values
-  //           .elementAsListOf<CborObject>(0)
-  //           .map((e) => Chain.deserialize(obj: e))
-  //           .toList(),
-  //       currentNetwork: values.elementAs(1),
-  //       id: id);
-  // }
   factory ChainsHandler.fromWeb3(
       {String? hex, CborObject? obj, List<int>? bytes}) {
     final CborListValue values = CborSerializable.cborTagValue(
@@ -125,7 +109,7 @@ class ChainsHandler with CborSerializable {
       }
       if (_networks.values.any((e) =>
           e.network.type == network.type &&
-          e.network.coinParam.identifier == network.coinParam.identifier)) {
+          e.network.identifier == network.identifier)) {
         throw const WalletException("network_chain_id_already_exist");
       }
       final ids = _networks.values.map((e) => e.network.value).toList();
@@ -177,5 +161,42 @@ class ChainsHandler with CborSerializable {
           id
         ]),
         CborTagsConst.chainHandler);
+  }
+
+  List<Web3ChainNetworkData> getWeb3NetworkData() {
+    return _networks.values
+        .where((e) => e.network.supportWeb3)
+        .map((e) {
+          return switch (e.network.type) {
+            NetworkType.ethereum => Web3ChainNetworkData<WalletEthereumNetwork>(
+                network: e.network.toNetwork(),
+                serviceIdentifier:
+                    e.clientNullable?.service.provider.identifier),
+            NetworkType.tron => Web3ChainNetworkData<WalletTronNetwork>(
+                network: e.network.toNetwork(),
+                serviceIdentifier:
+                    e.clientNullable?.service.provider.identifier),
+            NetworkType.solana => Web3ChainNetworkData<WalletSolanaNetwork>(
+                network: e.network.toNetwork(),
+                serviceIdentifier:
+                    e.clientNullable?.service.provider.identifier),
+            NetworkType.stellar => Web3ChainNetworkData<WalletStellarNetwork>(
+                network: e.network.toNetwork(),
+                serviceIdentifier:
+                    e.clientNullable?.service.provider.identifier),
+            NetworkType.ton => Web3ChainNetworkData<WalletTonNetwork>(
+                network: e.network.toNetwork(),
+                serviceIdentifier:
+                    e.clientNullable?.service.provider.identifier),
+            NetworkType.substrate =>
+              Web3ChainNetworkData<WalletSubstrateNetwork>(
+                  network: e.network.toNetwork(),
+                  serviceIdentifier:
+                      e.clientNullable?.service.provider.identifier),
+            _ => throw UnimplementedError()
+          };
+        })
+        .toList()
+        .cast();
   }
 }

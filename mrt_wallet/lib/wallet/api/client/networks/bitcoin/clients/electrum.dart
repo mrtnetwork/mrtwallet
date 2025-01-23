@@ -1,6 +1,5 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/blockchain_utils.dart';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/core/core.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/bitcoin/methods/script_hash_balance.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
@@ -102,11 +101,6 @@ class BitcoinElectrumClient extends BitcoinClient<IBitcoinAddress> {
 
   @override
   Future<String> genesis() async {
-    final result = await MethodUtils.call(() async {
-      final features = await serverFeatures();
-      return (features["genesis_hash"] as String);
-    });
-    if (result.hasResult) return result.result;
     return genesisHash();
   }
 }

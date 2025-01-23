@@ -214,43 +214,6 @@ class _ManageBuyOfferOperationViewState
                   radius: APPConst.circleRadius25,
                   tokenAddress: asset!.issuer,
                 ),
-          // child: asset == null
-          //     ? Text("tap_to_select_or_create_asset".tr)
-          //     : Column(
-          //         crossAxisAlignment: CrossAxisAlignment.start,
-          //         children: [
-          //           if (asset!.asset.type.isNative) ...[
-          //             Text(asset!.asset.type.name,
-          //                 style: context.colors.onPrimaryContainer
-          //                     .lableLarge(context)),
-          //             WidgetConstant.height8,
-          //             ContainerWithBorder(
-          //               backgroundColor: context.colors.onPrimaryContainer,
-          //               child: TokenDetailsWidget(
-          //                 token: asset!.token,
-          //                 liveBalance: chain.address.address.balance,
-          //                 color: context.colors.primaryContainer,
-          //               ),
-          //             )
-          //           ] else ...[
-          //             Text(asset!.asset.type.name,
-          //                 style: context.colors.onPrimaryContainer
-          //                     .lableLarge(context)),
-          //             OneLineTextWidget(asset!.issuer ?? '',
-          //                 style: context.colors.onPrimaryContainer
-          //                     .bodyMedium(context)),
-          //             ContainerWithBorder(
-          //               backgroundColor: context.colors.onPrimaryContainer,
-          //               enableTap: false,
-          //               child: TokenDetailsWidget(
-          //                 token: asset!.currentToken,
-          //                 balance: asset?.tokenBalance,
-          //                 color: context.colors.primaryContainer,
-          //               ),
-          //             ),
-          //           ]
-          //         ],
-          //       ),
           onRemove: () {
             context
                 .openSliverDialog<StellarPickedIssueAsset>(

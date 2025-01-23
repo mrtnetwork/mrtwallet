@@ -1,9 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/theme/theme.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/setting/color_selector.dart';
+import 'package:mrt_wallet/future/wallet/start/pages/platform_widgets/widgets.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/test/test.dart';
 import 'package:mrt_wallet/wallet/models/others/models/status.dart';
 import 'package:mrt_wallet/wallet/wallet.dart' show HDWallet;
 import 'account_page.dart';
@@ -94,12 +97,14 @@ class _AccountAppBar extends StatelessWidget {
                 context.to(PageRouter.setting);
               },
               icon: const Icon(Icons.settings)),
-        // WidgetConstant.width8,
-        // TextButton(
-        //     onPressed: () {
-        //       context.toPage(TestPage());
-        //     },
-        //     child: Text("test"))
+        WidgetConstant.width8,
+        appbarWidgets(),
+        if (kDebugMode)
+          TextButton(
+              onPressed: () {
+                context.toPage(TestWidget());
+              },
+              child: Text("test"))
       ],
       leading: IconButton(
           onPressed: () {

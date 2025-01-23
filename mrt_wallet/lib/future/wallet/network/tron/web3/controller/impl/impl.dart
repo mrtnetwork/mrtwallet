@@ -31,6 +31,14 @@ abstract class Web3TronImpl<RESPONSE, T extends Web3TronRequestParam<RESPONSE>>
             as TronWeb3Form<T>;
       case Web3TronRequestMethods.signMessageV2:
         return Web3TronReadOnlyForm<T>(request: request) as TronWeb3Form<T>;
+      case Web3TronRequestMethods.switchTronChain:
+        final switchChainRequest = request.params as Web3TronSwitchChain;
+        final chain = walletProvider.wallet.getChains<TronChain>().firstWhere(
+            (e) =>
+                e.network.tronNetworkType.genesisBlockNumber ==
+                switchChainRequest.chainId.toInt());
+        return Web3TronSwitchTronChain(request: request, newChain: chain)
+            as TronWeb3Form<T>;
       default:
         throw UnimplementedError();
     }

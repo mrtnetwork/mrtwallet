@@ -12,43 +12,27 @@ class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
   final int workchain;
   ton.TonChain get chain => ton.TonChain.fromWorkchain(workchain);
   TonNetworkParams(
-      {required super.transactionExplorer,
-      required super.addressExplorer,
-      required super.token,
+      {required super.token,
       required super.providers,
       required this.workchain,
-      required super.chainType});
-  TonNetworkParams copyWith(
-      {String? transactionExplorer,
-      String? addressExplorer,
-      Token? token,
-      List<TonAPIProvider>? providers,
-      int? workchain,
-      bool? supportEIP1559,
-      ChainType? chainType,
-      bool? defaultNetwork}) {
-    return TonNetworkParams(
-        transactionExplorer: transactionExplorer ?? this.transactionExplorer,
-        addressExplorer: addressExplorer ?? this.addressExplorer,
-        token: token ?? this.token,
-        providers: providers ?? List.from(this.providers),
-        workchain: workchain ?? this.workchain,
-        chainType: chainType ?? this.chainType);
-  }
+      required super.chainType,
+      super.addressExplorer,
+      super.transactionExplorer});
 
   factory TonNetworkParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
-    final CborListValue cbor = CborSerializable.decodeCborTags(
-        bytes, obj, CborTagsConst.tonNetworkParam);
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes, object: obj, tags: CborTagsConst.tonNetworkParam);
     return TonNetworkParams(
-        workchain: cbor.elementAt(0),
-        chainType: ChainType.fromValue(cbor.elementAt(1)),
-        transactionExplorer: cbor.elementAt(2),
-        addressExplorer: cbor.elementAt(3),
-        token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(4)),
-        providers: (cbor.elementAt(5) as List)
+        workchain: values.elementAs(0),
+        chainType: ChainType.fromValue(values.elementAs(1)),
+        token: Token.fromCborBytesOrObject(obj: values.getCborTag(4)),
+        providers: values
+            .elementAsListOf<CborTagValue>(5)
             .map((e) => TonAPIProvider.fromCborBytesOrObject(obj: e))
-            .toList());
+            .toList(),
+        addressExplorer: values.elementAs(6),
+        transactionExplorer: values.elementAs(7));
   }
   @override
   CborTagValue toCbor() {
@@ -56,26 +40,31 @@ class TonNetworkParams extends NetworkCoinParams<TonAPIProvider> {
         CborListValue.fixedLength([
           workchain,
           chainType.name,
-          transactionExplorer,
-          addressExplorer,
+          const CborNullValue(),
+          const CborNullValue(),
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
+          addressExplorer,
+          transactionExplorer
         ]),
         CborTagsConst.tonNetworkParam);
   }
 
-  @override
-  NetworkCoinParams<TonAPIProvider> updateProviders(
-      List<APIProvider> updateProviders) {
-    return TonNetworkParams(
-        transactionExplorer: transactionExplorer,
-        addressExplorer: addressExplorer,
-        token: token,
-        providers: updateProviders.cast<TonAPIProvider>(),
-        workchain: workchain,
-        chainType: chainType);
-  }
+  int get identifier => workchain;
 
   @override
-  int get identifier => workchain;
+  NetworkCoinParams<TonAPIProvider> updateParams(
+      {List<APIProvider>? updateProviders,
+      Token? token,
+      String? transactionExplorer,
+      String? addressExplorer}) {
+    return TonNetworkParams(
+        token: NetworkCoinParams.validateUpdateParams(
+            token: this.token, updateToken: token),
+        providers: updateProviders?.cast<TonAPIProvider>() ?? providers,
+        workchain: workchain,
+        chainType: chainType,
+        addressExplorer: addressExplorer,
+        transactionExplorer: transactionExplorer);
+  }
 }

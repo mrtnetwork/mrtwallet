@@ -7,7 +7,7 @@ import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
-class RippleMintTokenForm implements RippleTransactionForm {
+class RippleMintTokenForm extends RippleTransactionForm {
   final TransactionFormField<BigRational> nftokenTaxon = TransactionFormField(
     name: "NFTokenTaxon",
     subject: "ripple_nftokentaxon",
@@ -86,9 +86,6 @@ class RippleMintTokenForm implements RippleTransactionForm {
       transferFee: transferFee.value?.toBigInt().toInt(),
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

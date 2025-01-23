@@ -1,6 +1,8 @@
 import 'dart:js_interop';
 
 import 'package:blockchain_utils/utils/utils.dart';
+import 'package:mrt_wallet/app/isolate/types.dart';
+import 'package:mrt_wallet/app/utils/utils.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
@@ -11,76 +13,63 @@ import '../../models/models.dart';
 import '../../utils/utils/utils.dart';
 import '../core/network_handler.dart';
 
-class TonWeb3State
-    extends ChainWeb3State<TonAddress, TheOpenNetworkChain, Web3TonChain> {
-  final TheOpenNetworkChain? chain;
+class TonWeb3State extends ChainWeb3State {
+  final WalletTonNetwork? network;
   final TonAddressItemDTO? defaultAddress;
   final TonClient? client;
+  final List<String> permissionAccounts;
 
   TonWeb3State._(
-      {super.permission,
-      required super.chains,
-      required super.state,
-      required super.permissionAccounts,
+      {required super.state,
+      required List<String> permissionAccounts,
       this.defaultAddress,
       this.client,
-      this.chain});
+      this.network})
+      : permissionAccounts = permissionAccounts.imutable;
   factory TonWeb3State.init(
       {JSNetworkState state = JSNetworkState.disconnect}) {
-    return TonWeb3State._(
-        chains: const [], permissionAccounts: const [], state: state);
+    return TonWeb3State._(permissionAccounts: const [], state: state);
   }
-  factory TonWeb3State(
-      {required Web3APPAuthentication authenticated,
-      required ChainsHandler chainHandler}) {
-    final permission =
-        authenticated.getChainFromNetworkType<Web3TonChain>(NetworkType.ton);
-    if (permission == null) {
+  factory TonWeb3State(Web3TonChainAuthenticated? authenticated) {
+    if (authenticated == null) {
       return TonWeb3State.init(state: JSNetworkState.block);
     }
-    final chains =
-        chainHandler.chains().whereType<TheOpenNetworkChain>().toList();
-    final currentChain = chains.firstWhere(
-        (e) => e.network.coinParam.workchain == permission.currentChain);
-    final permissionAccounts = permission.chainAccounts(currentChain);
-
+    final permissionAccounts = authenticated.accounts;
     TonAddressItemDTO? defaultAddress;
     if (permissionAccounts.isNotEmpty) {
       final defaultNetworkAddress =
           permissionAccounts.firstWhere((e) => e.defaultAddress, orElse: () {
         return permissionAccounts.first;
       });
-      final chainAddress = currentChain.addresses.firstWhere((e) =>
-          e.networkAddress == defaultNetworkAddress.address &&
-          e.keyIndex == defaultNetworkAddress.keyIndex);
+      final stateInit = defaultNetworkAddress
+          .toWalletContract()
+          .state!
+          .initialState()
+          .serialize()
+          .toBase64();
       defaultAddress = TonAddressItemDTO.create(
-          address: chainAddress.networkAddress.toFriendlyAddress(),
-          network:
-              TonChainId.fromNetworkId(currentChain.network.coinParam.workchain)
-                  .value,
-          walletStateInit: chainAddress
-                  .toWalletContract()
-                  .state
-                  ?.initialState()
-                  .serialize()
-                  .toBase64() ??
-              "",
-          publicKey: BytesUtils.toHexString(chainAddress.publicKey));
+          address: defaultNetworkAddress.address.toFriendlyAddress(),
+          network: TonChainId.fromNetworkId(
+                  authenticated.network.coinParam.workchain)
+              .value,
+          walletStateInit: stateInit,
+          publicKey: BytesUtils.toHexString(defaultNetworkAddress.publicKey));
     }
 
     return TonWeb3State._(
-        chains: chainHandler.chains().whereType<TheOpenNetworkChain>().toList(),
-        permission: permission,
-        permissionAccounts: permissionAccounts
-            .map((e) => e.address.toFriendlyAddress())
-            .toList()
-          ..sort(
-              (a, b) => JsUtils.compareAddress(a, b, defaultAddress?.address)),
-        state: JSNetworkState.init,
-        chain: currentChain,
-        defaultAddress: defaultAddress,
-        client: currentChain.getWeb3Provider(
-            requestTimeout: ChainWeb3State.requestTimeout));
+      permissionAccounts: permissionAccounts
+          .map((e) => e.address.toFriendlyAddress())
+          .toList()
+        ..sort((a, b) => JsUtils.compareAddress(a, b, defaultAddress?.address)),
+      state: JSNetworkState.init,
+      defaultAddress: defaultAddress,
+      network: authenticated.network,
+      client: APIUtils.createApiClient(authenticated.network,
+          allowInWeb3: true,
+          identifier: authenticated.serviceIdentifier,
+          isolate: APPIsolate.current,
+          requestTimeut: ChainWeb3State.requestTimeout),
+    );
   }
 
   bool accountChanged(TonWeb3State other) {
@@ -90,39 +79,35 @@ class TonWeb3State
   }
 
   bool chainChanged(TonWeb3State other) {
-    return other.chain?.network != chain?.network;
+    return other.network != network;
   }
 
   bool needToggle(TonWeb3State other) {
     return other.state != state;
   }
 
-  bool get isConnect => chain?.clientNullable != null;
+  bool get isConnect => client != null;
   TonAccountsChanged get accountsChange => TonAccountsChanged(
       accounts: permissionAccounts, defaultAddress: defaultAddress?.address);
 
   TonChainChanged get chainChangedEvent =>
-      TonChainChanged(chain!.network.coinParam.workchain);
+      TonChainChanged(network!.coinParam.workchain);
   bool hasPermission(TonAddress address) {
-    return permission?.getPermission(address) != null;
+    return permissionAccounts.any((e) => e == address.toFriendlyAddress());
   }
 }
 
-class JSTonHandler extends JSNetworkHandler<TonAddress, TheOpenNetworkChain,
-    Web3TonChainAccount, Web3TonChain, TonWeb3State> {
+class JSTonHandler extends JSNetworkHandler<TonWeb3State> {
   @override
   TonWeb3State state = TonWeb3State.init();
 
   JSTonHandler({required super.sendMessageToClient});
 
   @override
-  void initChain(
-      {required Web3APPAuthentication authenticated,
-      required ChainsHandler chainHandler}) {
+  void initChain(Web3APPData authenticated) {
     lock.synchronized(() async {
       final currentState = state;
-      state = TonWeb3State(
-          authenticated: authenticated, chainHandler: chainHandler);
+      state = TonWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {
         _toggleTon(state);
         _disconnect();
@@ -216,7 +201,7 @@ class JSTonHandler extends JSNetworkHandler<TonAddress, TheOpenNetworkChain,
   }
 
   void _connect(TonWeb3State state) async {
-    if (state.chain == null) return;
+    if (state.network == null) return;
     _sendEvent(
         event: JSEventType.connect, data: state.chainChangedEvent.toJson());
   }
@@ -228,14 +213,14 @@ class JSTonHandler extends JSNetworkHandler<TonAddress, TheOpenNetworkChain,
   }
 
   void _chainChanged(TonWeb3State state) async {
-    if (state.chain == null) return;
+    if (state.network == null) return;
     _sendEvent(
         event: JSEventType.chainChanged,
         data: state.chainChangedEvent.toJson());
   }
 
   void _toggleTon(TonWeb3State state) {
-    if (state.chain != null) {
+    if (state.network != null) {
       _sendEvent(event: JSEventType.active);
     } else {
       _sendEvent(
@@ -262,7 +247,7 @@ class JSTonHandler extends JSNetworkHandler<TonAddress, TheOpenNetworkChain,
   @override
   WalletMessageResponse finilizeWalletResponse(
       {required PageMessageRequest message,
-      required Web3RequestParams params,
+      required Web3RequestParams? params,
       required Web3WalletResponseMessage response}) {
     final method = Web3TonRequestMethods.fromName(message.method);
 

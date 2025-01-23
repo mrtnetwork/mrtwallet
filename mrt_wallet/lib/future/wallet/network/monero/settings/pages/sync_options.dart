@@ -423,10 +423,12 @@ class _WalletRPCSynOption extends StatelessWidget {
                   Text("wallet_rpc_url_desc".tr),
                   WidgetConstant.height8,
                   HTTPServiceProviderFields(
-                      key: state.serviceProviderStateKey,
-                      initialUrl: state.rpcUrl,
-                      hint: MoneroConst.walletRPCLinkExample,
-                      enableAuth: true),
+                    key: state.serviceProviderStateKey,
+                    initialUrl: state.rpcUrl,
+                    hint: MoneroConst.walletRPCLinkExample,
+                    enableAuth: true,
+                    protocols: [ServiceProtocol.http],
+                  ),
                 ]),
             true: (context) =>
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

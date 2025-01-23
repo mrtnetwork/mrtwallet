@@ -31,6 +31,7 @@ void postToWallet(
 }
 
 void main(List<String> args) async {
+  final pageController = JSWithWorkerPageController.setup();
   if (mrtNull == null) {
     mrt = MRTWallet(JSObject());
   }
@@ -45,6 +46,11 @@ void main(List<String> args) async {
   bool onActivation(JSWalletEvent data) {
     final walletEvent = data.toEvent();
     if (walletEvent == null || walletEvent.clientId != mrt.clientId) {
+      return false;
+    }
+    if (walletEvent.type == WalletEventTypes.exception) {
+      workerCompleter.completeError(
+          JSWalletError(message: String.fromCharCodes(walletEvent.data)));
       return false;
     }
     final target = JSWebviewTraget.fromName(walletEvent.platform);
@@ -79,6 +85,7 @@ void main(List<String> args) async {
         case JSWorkerType.error:
           final error = workerEvent.data as JSWalletError;
           worker.terminate();
+          pageController.disable(error);
           workerCompleter.completeError(error);
           postToWallet(
               data: JSWorkerWalletData(
@@ -103,12 +110,11 @@ void main(List<String> args) async {
 
   mrt.onMrtMessage = onActivation.toJS;
   final activation = await workerCompleter.future;
+  pageController.initClients('', worker: activation.$1);
 
   final worker = activation.$1;
   final target = activation.$2;
 
-  final pageController =
-      JSWithWorkerPageController.setup(clientId: mrt.clientId, worker: worker);
   mrt.onMrtMessage = null;
 
   bool onWalletEvent(JSWalletEvent jsRequest) {

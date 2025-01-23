@@ -44,11 +44,10 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
     permission = widget.permission ?? Web3EthereumChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<EthereumChain>().toList();
+    chain = permission.getCurrentPermissionChain(chains);
     for (final i in chains) {
       permissions[i] = permission.chainAccounts(i);
     }
-    chain = chains.firstWhere((e) => e.chainId == permission.currentChain,
-        orElse: () => chains.first);
   }
 
   @override

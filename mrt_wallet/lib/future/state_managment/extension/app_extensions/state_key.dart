@@ -3,7 +3,7 @@ import 'package:flutter/material.dart'
 import 'package:mrt_wallet/app/models/models/typedef.dart';
 
 extension QuickWidgetKeys on GlobalKey {
-  void ensureKeyVisible(
+  Future<void> ensureKeyVisible(
       {int afterMilliseconds = 400,
       int jumpDuration = 320,
       double alignment = 0.5,

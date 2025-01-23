@@ -1,6 +1,5 @@
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/forms/core/solana.dart';
 import 'package:on_chain/solana/src/address/sol_address.dart';
@@ -52,9 +51,6 @@ class SolanaCreateAssociatedTokenAccountForm extends SolanaTransactionForm {
             return p0;
           });
 
-  @override
-  OnChangeForm? onChanged;
-
   List<TransactionFormField> get fields =>
       [ownerAddress, mintAddress, tokenProgram];
 
@@ -99,5 +95,14 @@ class SolanaCreateAssociatedTokenAccountForm extends SolanaTransactionForm {
       }
     }
     return null;
+  }
+
+  @override
+  void close() {
+    super.close();
+    _assosicatedAddress = null;
+    for (final i in fields) {
+      i.clear();
+    }
   }
 }

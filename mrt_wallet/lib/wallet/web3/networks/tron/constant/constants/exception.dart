@@ -7,7 +7,12 @@ class Web3TronExceptionConstant {
   static Web3RequestException get invalidTransactionParams =>
       Web3RequestExceptionConst.invalidParameters(
           "Invalid transaction JSON. Parsing unsuccessful.");
-
+  static const Web3RequestException tronNetworkDoesNotExist =
+      Web3RequestException(
+          message: "Invalid method parameters.",
+          data: "The specified Tron network does not exist.",
+          walletCode: "WEB3-5080",
+          code: -32600);
   static Web3RequestException get invalidTransactionTxId =>
       Web3RequestExceptionConst.invalidParameters(
           "Mismatch in transaction ID: The serialized transaction produced a different ID than the one provided.");

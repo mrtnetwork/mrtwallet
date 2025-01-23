@@ -2,7 +2,7 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
-import 'package:mrt_wallet/future/secure_state/secure_state.dart';
+import 'package:mrt_wallet/future/tools/secure_state/secure_state.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/address_details.dart';
 import 'package:mrt_wallet/future/wallet/security/security.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';

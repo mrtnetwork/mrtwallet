@@ -106,21 +106,8 @@ class TronTransactionStateController extends TronTransactionImpl
     if (_error == null) {
       calculateFee();
     }
+    notify();
     return isOK;
-  }
-
-  @override
-  void init() {
-    super.init();
-    _init();
-    validator.addPageChangedListener(_onFormListener);
-    validator.validator.onStimateChanged = _onEstimateNeeded;
-  }
-
-  @override
-  void close() {
-    validator.removePageChangedListener(_onFormListener);
-    super.close();
   }
 
   @override
@@ -133,5 +120,19 @@ class TronTransactionStateController extends TronTransactionImpl
   void onFeeChanged() {
     _trIsReady = _checkTransaction();
     notify();
+  }
+
+  @override
+  void init() {
+    super.init();
+    validator.addListener(_onFormListener);
+    validator.validator.onStimateChanged = _onEstimateNeeded;
+  }
+
+  @override
+  void close() {
+    validator.removeListener(_onFormListener);
+    validator.validator.close();
+    super.close();
   }
 }

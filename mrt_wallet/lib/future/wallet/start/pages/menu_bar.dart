@@ -126,19 +126,32 @@ class AccountAppbarPopupMenu extends StatelessWidget {
               context.to(PageRouter.removeAccount, argruments: chain);
               break;
             case 4:
-              UriUtils.lunch(chain.network.coinParam
-                  .getAccountExplorer(chain.address.address.toAddress));
+              final accountUrl = chain.network
+                  .getAccountExplorer(chain.address.address.toAddress);
+              UriUtils.lunch(accountUrl);
               break;
             case 5:
               UriUtils.lunch(chain.network.coinParam.marketUri!);
               break;
+            case 7:
+              context.openSliverDialog<bool>((context) {
+                return DialogTextView(
+                    widget: const _RemoveChainDialog(),
+                    buttonWidget: DialogDoubleButtonView());
+              }, 'remove_network'.tr).then((v) {
+                if (v != true) return;
+                wallet.wallet.removeChain(chain);
+              });
+              break;
             case 6:
-              wallet.wallet.removeChain(chain);
+              context.to(PageRouter.updateNetwork);
               break;
             default:
           }
         },
         itemBuilder: (context) {
+          final accountUrl =
+              chain.network.getAccountExplorer(chain.address.address.toAddress);
           return [
             ..._chainCustomButton(chain: chain, context: context, value: 20),
             PopupMenuItem<int>(
@@ -168,12 +181,11 @@ class AccountAppbarPopupMenu extends StatelessWidget {
             PopupMenuItem<int>(
               value: 3,
               child: AppListTile(
-                trailing: const Icon(Icons.remove),
-                title: Text("remove_account".tr,
-                    style: context.textTheme.labelMedium),
-              ),
+                  trailing: const Icon(Icons.remove),
+                  title: Text("remove_account".tr,
+                      style: context.textTheme.labelMedium)),
             ),
-            if (chain.network.coinParam.hasAccountExplorer)
+            if (accountUrl != null)
               PopupMenuItem<int>(
                 value: 4,
                 child: AppListTile(
@@ -192,15 +204,23 @@ class AccountAppbarPopupMenu extends StatelessWidget {
                       style: context.textTheme.labelMedium),
                 ),
               ),
-            if (chain.network.isImportedNetwork)
+            PopupMenuItem<int>(
+              value: 6,
+              child: AppListTile(
+                  trailing: const Icon(Icons.edit),
+                  title: Text("update_network".tr,
+                      style: context.textTheme.labelMedium)),
+            ),
+            if (chain.network.isImportedNetwork) ...[
               PopupMenuItem<int>(
-                value: 6,
+                value: 7,
                 child: AppListTile(
                   trailing: const Icon(Icons.remove),
                   title: Text("remove_network".tr,
                       style: context.textTheme.labelMedium),
                 ),
               ),
+            ],
           ];
         });
   }
@@ -213,4 +233,20 @@ List<PopupMenuItem<int>> _chainCustomButton(
         chain: chain.cast(), context: context, value: value),
     _ => []
   };
+}
+
+class _RemoveChainDialog extends StatelessWidget {
+  const _RemoveChainDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text("remove_network_desc2".tr, style: context.textTheme.titleMedium),
+        Text("remove_network_desc".tr),
+      ],
+    );
+  }
 }

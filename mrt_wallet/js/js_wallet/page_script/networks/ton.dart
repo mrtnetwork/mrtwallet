@@ -11,12 +11,13 @@ class TonPageController extends PageNetworkController {
 
     adapter.removeListener = _removeListener.toJS;
     adapter.cancelListener = _removeListener.toJS;
-    adapter.sendWalletRequest = _onWalletRequest.toJS;
+    adapter.sendWalletRequest = _postWalletRequest.toJS;
     adapter.cancelAllListener = _cancelAllListeners.toJS;
+    adapter.disconnect = _disconnectChain.toJS;
     return ProxyMethodHandler<TonWalletAdapter>(adapter);
   }
 
-  void _init() {
+  void _initController() {
     _ton ??= _createAdapter();
     final proxy = Proxy(_ton!.object, createJSInteropWrapper(_ton!));
     ton = proxy;
@@ -24,10 +25,10 @@ class TonPageController extends PageNetworkController {
 
   JSPromise<JSAny?> _requestAccount() {
     final params = Web3JSRequestParams(method: "ton_requestAccounts");
-    return _onWalletRequest(params);
+    return _postWalletRequest(params);
   }
 
-  void _disable(String? message) {
+  void _disable({String? message}) {
     ton = null;
     jsConsole.error(message);
   }
@@ -52,10 +53,10 @@ class TonPageController extends PageNetworkController {
         _ton?.object.selectedAddress = null;
         break;
       case JSEventType.disable:
-        _disable(message.asString());
+        _disable(message: message.asString());
         return;
       case JSEventType.active:
-        _init();
+        _initController();
         return;
       default:
         return;

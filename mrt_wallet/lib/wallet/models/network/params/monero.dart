@@ -9,7 +9,6 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 
 class MoneroNetworkParams extends NetworkCoinParams<MoneroAPIProvider> {
   final MoneroNetwork network;
-  final String gnesisHash;
   final int rctHeight;
 
   factory MoneroNetworkParams.fromCborBytesOrObject(
@@ -18,8 +17,6 @@ class MoneroNetworkParams extends NetworkCoinParams<MoneroAPIProvider> {
         bytes, obj, CborTagsConst.moneroNetworkParams);
 
     return MoneroNetworkParams(
-        transactionExplorer: values.elementAs(0),
-        addressExplorer: values.elementAs(1),
         token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
         providers: values
             .elementAsListOf<CborObject>(3)
@@ -27,69 +24,51 @@ class MoneroNetworkParams extends NetworkCoinParams<MoneroAPIProvider> {
             .toList(),
         chainType: ChainType.fromValue(values.elementAs(4)),
         network: MoneroNetwork.fromName(values.elementAs(5)),
-        gnesisHash: String.fromCharCodes(values.elementAt<List<int>>(6)),
-        rctHeight: values.elementAs(7));
+        rctHeight: values.elementAs(7),
+        addressExplorer: values.elementAs(8),
+        transactionExplorer: values.elementAs(9));
   }
   MoneroNetworkParams(
-      {required super.transactionExplorer,
-      required super.addressExplorer,
-      required super.token,
+      {required super.token,
       required super.providers,
       required super.chainType,
       required this.network,
-      required this.gnesisHash,
-      required this.rctHeight});
-
-  MoneroNetworkParams copyWith(
-      {ChainType? chainType,
-      String? transactionExplorer,
-      String? addressExplorer,
-      Token? token,
-      List<MoneroAPIProvider>? providers,
-      MoneroNetwork? network,
-      String? gnesisHash,
-      int? rctHeight}) {
-    return MoneroNetworkParams(
-        chainType: chainType ?? this.chainType,
-        transactionExplorer: transactionExplorer ?? this.transactionExplorer,
-        addressExplorer: addressExplorer ?? this.addressExplorer,
-        token: token ?? this.token,
-        providers: providers ?? this.providers,
-        network: network ?? this.network,
-        gnesisHash: gnesisHash ?? this.gnesisHash,
-        rctHeight: rctHeight ?? this.rctHeight);
-  }
+      required this.rctHeight,
+      super.addressExplorer,
+      super.transactionExplorer});
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          transactionExplorer,
-          addressExplorer,
+          const CborNullValue(),
+          const CborNullValue(),
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
           chainType.name,
           network.name,
-          CborBytesValue(gnesisHash.codeUnits),
+          const CborNullValue(),
           rctHeight,
+          addressExplorer,
+          transactionExplorer
         ]),
         CborTagsConst.moneroNetworkParams);
   }
 
   @override
-  NetworkCoinParams<MoneroAPIProvider> updateProviders(
-      List<APIProvider> updateProviders) {
+  NetworkCoinParams<MoneroAPIProvider> updateParams(
+      {List<APIProvider>? updateProviders,
+      Token? token,
+      String? transactionExplorer,
+      String? addressExplorer}) {
     return MoneroNetworkParams(
-        transactionExplorer: transactionExplorer,
-        addressExplorer: addressExplorer,
-        token: token,
-        providers: updateProviders.cast<MoneroAPIProvider>(),
+        token: NetworkCoinParams.validateUpdateParams(
+            token: this.token, updateToken: token),
+        providers: updateProviders?.cast<MoneroAPIProvider>() ?? providers,
         chainType: chainType,
         network: network,
-        gnesisHash: gnesisHash,
-        rctHeight: rctHeight);
+        rctHeight: rctHeight,
+        addressExplorer: addressExplorer,
+        transactionExplorer: transactionExplorer);
   }
-
-  @override
-  String get identifier => gnesisHash;
 }

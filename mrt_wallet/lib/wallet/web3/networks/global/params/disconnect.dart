@@ -8,19 +8,13 @@ class Web3DisconnectApplication extends Web3GlobalRequestParams {
   final NetworkType chain;
   Web3DisconnectApplication({required this.chain});
 
-  factory Web3DisconnectApplication.fromJson(Map<String, dynamic> json) {
-    return Web3DisconnectApplication(
-        chain: NetworkType.fromName(json["chain"]));
-  }
-
   factory Web3DisconnectApplication.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborListValue values = CborSerializable.cborTagValue(
-      cborBytes: bytes,
-      object: object,
-      hex: hex,
-      tags: Web3MessageTypes.walletGlobalRequest.tag,
-    );
+        cborBytes: bytes,
+        object: object,
+        hex: hex,
+        tags: Web3MessageTypes.walletGlobalRequest.tag);
     return Web3DisconnectApplication(
         chain: NetworkType.fromTag(values.elementAt(1)));
   }

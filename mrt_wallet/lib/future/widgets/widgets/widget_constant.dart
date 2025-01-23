@@ -33,8 +33,12 @@ class WidgetConstant {
       EdgeInsets.symmetric(vertical: 10);
   static const SliverPadding sliverPaddingVertial20 =
       SliverPadding(padding: paddingVertical20);
+  static const SliverPadding sliverPaddingVertial10 =
+      SliverPadding(padding: paddingVertical10);
   static const SliverPadding sliverPaddingVertial40 =
       SliverPadding(padding: paddingVertical40);
+  static const SliverPadding sliverSizedBox =
+      SliverPadding(padding: EdgeInsets.zero);
   static const EdgeInsets paddingVertical8 = EdgeInsets.symmetric(vertical: 8);
   static final BorderRadius border8 = BorderRadius.circular(8);
   static final BorderRadius border25 = BorderRadius.circular(25);
@@ -55,4 +59,6 @@ class WidgetConstant {
       color: ThemeController.appTheme.colorScheme.error, size: 40);
   static final Icon errorIconLarge = Icon(Icons.error,
       color: ThemeController.appTheme.colorScheme.error, size: 80);
+  static const Size circularProgressIndicatorSize = Size(24, 24);
+  static const Size circularProgressIndicatorSize40 = Size(40, 40);
 }

@@ -125,12 +125,11 @@ class _AddToContactListViewState<NETWORKADDRESS>
                         Text("contact_saved".tr)
                       ],
                     )
-                  : StreamWidget(
+                  : ButtonProgress(
                       padding: WidgetConstant.paddingVertical20,
-                      buttonWidget: FixedElevatedButton(
-                        onPressed: onTapAdd,
-                        child: Text("add_to_contacts".tr),
-                      ),
+                      child: (context) => FixedElevatedButton(
+                          onPressed: onTapAdd,
+                          child: Text("add_to_contacts".tr)),
                       backToIdle: APPConst.oneSecoundDuration,
                       key: buttonProgressKey,
                     ),

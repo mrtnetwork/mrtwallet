@@ -3,7 +3,7 @@ import 'package:mrt_wallet/wallet/models/chain/address/networks/cosmos/cosmos.da
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/wallet/models/networks/cosmos/models/transaction_output.dart';
 
-abstract class CosmosTransactionForm implements TransactionForm {
+abstract class CosmosTransactionForm extends TransactionForm {
   BigInt get callValue;
   @override
   String? validateError({ICosmosAddress? account});

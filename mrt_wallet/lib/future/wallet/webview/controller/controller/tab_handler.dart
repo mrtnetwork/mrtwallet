@@ -184,10 +184,8 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   }
 
   Future<WebViewTab> _eventToTab(WebViewEvent event) async {
-    APPImage image = APPImage.faviIcon(event.url!);
-    if (event.favicon != null) {
-      image = APPImage.network(event.favicon!);
-    }
+    APPImage? image = APPImage.network(event.favicon);
+    image ??= APPImage.faviIcon(event.url!);
     return WebViewTab(
         url: event.url!,
         title: event.title,

@@ -37,7 +37,10 @@ class ETHERC20Token with Equatable implements SolidityToken {
   }
 
   ETHERC20Token updateToken(Token updateToken) {
-    return ETHERC20Token._(balance, updateToken, contractAddress, _updated);
+    return ETHERC20Token.create(
+        balance: balance.value.balance,
+        token: updateToken,
+        contractAddress: contractAddress);
   }
 
   @override

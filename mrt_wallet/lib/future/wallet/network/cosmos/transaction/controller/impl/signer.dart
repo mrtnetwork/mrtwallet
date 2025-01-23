@@ -41,7 +41,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
           final signRequest = CosmosSigningRequest(
               digest: digest,
               index: signerKeyIndexes.elementAt(i).cast(),
-              alg: signers[i].publicKey.algorithm);
+              alg: signers[i].algorithm);
           final sss = await generateSignature(signRequest);
           signatures.add(sss.signature);
         }

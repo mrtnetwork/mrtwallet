@@ -138,7 +138,6 @@ class StrUtils {
     if (uri == null) return null;
     if (uri.host.isEmpty) return null;
     if (!schame.contains(uri.scheme.toLowerCase())) return null;
-    // if (!uri.host.contains(".")) return null;
     return uri.normalizePath().toString();
   }
 

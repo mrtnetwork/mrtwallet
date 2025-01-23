@@ -28,3 +28,4 @@ export 'pages/http_authenticated.dart';
 export 'pages/accout_appbar.dart';
 export 'pages/account_state.dart';
 export 'pages/transaction.dart';
+export 'pages/update_network.dart';

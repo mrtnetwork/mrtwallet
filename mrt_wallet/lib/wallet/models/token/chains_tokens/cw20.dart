@@ -36,11 +36,8 @@ class CW20Token with Equatable implements TokenCore<BigInt> {
   }
 
   CW20Token updateToken(Token updateToken) {
-    return CW20Token._(
-        Live(IntegerBalance(balance.value.balance, updateToken.decimal!)),
-        updateToken,
-        _updated,
-        denom);
+    return CW20Token.create(
+        balance: balance.value.balance, token: updateToken, denom: denom);
   }
 
   @override

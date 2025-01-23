@@ -15,49 +15,55 @@ class CardanoNetworkParams extends NetworkCoinParams<CardanoAPIProvider> {
         bytes, obj, CborTagsConst.cardanoNetworkParams);
 
     return CardanoNetworkParams(
-        transactionExplorer: values.elementAs(0),
-        addressExplorer: values.elementAs(1),
         token: Token.fromCborBytesOrObject(obj: values.getCborTag(2)),
         providers: values
             .elementAsListOf<CborTagValue>(3)
             .map((e) => CardanoAPIProvider.fromCborBytesOrObject(obj: e))
             .toList(),
         chainType: ChainType.fromValue(values.elementAs(4)),
-        magic: values.elementAs(5));
+        magic: values.elementAs(5),
+        addressExplorer: values.elementAs(6),
+        transactionExplorer: values.elementAs(7));
   }
   CardanoNetworkParams(
-      {required super.transactionExplorer,
-      required super.addressExplorer,
-      required super.token,
+      {required super.token,
       required super.providers,
       required super.chainType,
-      required this.magic});
+      required this.magic,
+      super.addressExplorer,
+      super.transactionExplorer});
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          transactionExplorer,
-          addressExplorer,
+          const CborNullValue(),
+          const CborNullValue(),
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
           chainType.name,
-          magic
+          magic,
+          addressExplorer,
+          transactionExplorer
         ]),
         CborTagsConst.cardanoNetworkParams);
   }
 
-  @override
-  CardanoNetworkParams updateProviders(List<APIProvider> updateProviders) {
-    return CardanoNetworkParams(
-        transactionExplorer: transactionExplorer,
-        addressExplorer: addressExplorer,
-        token: token,
-        providers: updateProviders.cast<CardanoAPIProvider>(),
-        chainType: chainType,
-        magic: magic);
-  }
+  int get identifier => magic;
 
   @override
-  int get identifier => magic;
+  NetworkCoinParams<CardanoAPIProvider> updateParams(
+      {List<APIProvider>? updateProviders,
+      Token? token,
+      String? transactionExplorer,
+      String? addressExplorer}) {
+    return CardanoNetworkParams(
+        token: NetworkCoinParams.validateUpdateParams(
+            token: this.token, updateToken: token),
+        providers: updateProviders?.cast<CardanoAPIProvider>() ?? providers,
+        chainType: chainType,
+        magic: magic,
+        addressExplorer: addressExplorer,
+        transactionExplorer: transactionExplorer);
+  }
 }

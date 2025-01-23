@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/global/app.dart';
-import 'package:mrt_wallet/app/http/models/auth.dart';
-import 'package:mrt_wallet/app/utils/utils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/api/services/models/models/auth.dart';
+import 'package:mrt_wallet/wallet/api/services/models/models/protocols.dart';
 
 class HTTPServiceProviderFields extends StatefulWidget {
   const HTTPServiceProviderFields(
@@ -13,12 +12,14 @@ class HTTPServiceProviderFields extends StatefulWidget {
       super.key,
       this.initialUrl,
       this.hint,
-      this.enableAuth = true});
+      this.enableAuth = true,
+      required this.protocols});
   final String? error;
   final List<String> exclude;
   final RPCURL? initialUrl;
   final String? hint;
   final bool enableAuth;
+  final List<ServiceProtocol> protocols;
 
   @override
   State<HTTPServiceProviderFields> createState() =>
@@ -27,22 +28,26 @@ class HTTPServiceProviderFields extends StatefulWidget {
 
 class HTTPServiceProviderFieldsState extends State<HTTPServiceProviderFields>
     with SafeState {
-  String? error;
   bool useAuthenticated = false;
   ProviderAuthType auth = ProviderAuthType.header;
+  final GlobalKey<AppTextFieldState> urlKey = GlobalKey();
 
   void onChangeAuthMode(ProviderAuthType? auth) {
     this.auth = auth ?? this.auth;
     updateState();
+    checkAtuthError();
   }
 
   void onChangeAuthenticated(bool? v) {
     useAuthenticated = !useAuthenticated;
     updateState();
+    checkAtuthError();
   }
 
   String authKey = "";
   String authValue = "";
+
+  String? authError;
 
   String get authKeyLabe {
     return auth.isDigest ? "username".tr : "authenticated_key".tr;
@@ -107,12 +112,33 @@ class HTTPServiceProviderFieldsState extends State<HTTPServiceProviderFields>
 
   void onChageUrl(String v) {
     rpcURL = v;
+    checkAtuthError();
+  }
+
+  void checkAtuthError() {
+    String? err;
+    if (useAuthenticated &&
+        auth != ProviderAuthType.query &&
+        rpcURL.toLowerCase().startsWith("ws")) {
+      err = "websocket_authenticated_unsuported_desc".tr;
+    }
+    if (authError != err) {
+      authError = err;
+      updateState();
+    }
+  }
+
+  String? _validateRpcUrl(String? v) {
+    if (v == null) return null;
+    if (widget.protocols.contains(ServiceProtocol.websocket)) {
+      return StrUtils.validateUri(v, schame: ['http', 'https', 'wss', 'ws']);
+    }
+    return StrUtils.validateUri(v, schame: ['http', 'https']);
   }
 
   String? validateRpcUrl(String? v) {
-    final path =
-        StrUtils.validateUri(v, schame: ['http', 'https', 'wss', 'ws']);
-    if (path == null) return "rpc_url_validator".tr;
+    final path = _validateRpcUrl(v);
+    if (path == null) return "invalid_url".tr;
     if (widget.exclude.contains(path)) {
       return "rpc_url_already_exists".tr;
     }
@@ -123,7 +149,9 @@ class HTTPServiceProviderFieldsState extends State<HTTPServiceProviderFields>
       GlobalKey(debugLabel: "HTTPServiceProviderFieldsState_formstate");
 
   RPCURL? getEndpoint() {
-    if (!(formKey.currentState?.validate() ?? false)) return null;
+    if (authError != null || !(formKey.currentState?.validate() ?? false)) {
+      return null;
+    }
     ProviderAuthenticated? authenticated;
     if (useAuthenticated) {
       if (auth.isDigest) {
@@ -141,6 +169,7 @@ class HTTPServiceProviderFieldsState extends State<HTTPServiceProviderFields>
     final initialUrl = widget.initialUrl;
     if (initialUrl != null) {
       rpcURL = initialUrl.url;
+      urlKey.currentState?.updateText(rpcURL);
       if (widget.enableAuth && initialUrl.auth != null) {
         useAuthenticated = true;
         final auth = initialUrl.auth!;
@@ -184,12 +213,12 @@ class HTTPServiceProviderFieldsState extends State<HTTPServiceProviderFields>
       child: Column(
         children: [
           AppTextField(
+            key: urlKey,
             label: "endpoint_url".tr,
             pasteIcon: true,
             prefixIcon: const Icon(Icons.link),
             validator: validateRpcUrl,
             onChanged: onChageUrl,
-            error: error,
             initialValue: rpcURL,
             maxLines: 2,
             minlines: 1,
@@ -235,6 +264,9 @@ class HTTPServiceProviderFieldsState extends State<HTTPServiceProviderFields>
                           hint: authValueExample,
                           onChanged: onChangeValue,
                           validator: validateValue),
+                      ErrorTextContainer(
+                          error: authError,
+                          verticalMargin: WidgetConstant.paddingVertical10),
                     ],
                   ),
               onDeactive: (c) => WidgetConstant.sizedBox),

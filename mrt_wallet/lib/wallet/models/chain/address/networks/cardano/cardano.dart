@@ -57,7 +57,6 @@ class ICardanoAddress extends ChainAccount<ADAAddress, TokenCore, NFTCore>
   factory ICardanoAddress.fromCborBytesOrObject(WalletNetwork network,
       {List<int>? bytes, CborObject? obj}) {
     final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-
     final CborListValue cbor = CborSerializable.decodeCborTags(
         null, toCborTag, CborTagsConst.cardanoAccount);
     final CryptoCoins coin = CustomCoins.getCoin(
@@ -73,15 +72,9 @@ class ICardanoAddress extends ChainAccount<ADAAddress, TokenCore, NFTCore>
     final AccountBalance address = AccountBalance.fromCborBytesOrObject(
         network.coinParam.decimal,
         obj: cbor.getCborTag(4));
-
     final ADAAddress adaAddress = ADAAddress.fromAddress(cbor.elementAt(5));
     final CardanoAddrDetails addrDetails =
         CardanoAddrDetails.fromCborBytesOrObject(obj: cbor.getCborTag(7));
-    if (addrDetails.toAddress(coin, !network.coinParam.mainnet).address !=
-        adaAddress.address) {
-      throw const WalletException("Incorrect ADA addresss.");
-    }
-
     final String? accountName = cbor.elementAt(10);
     final CborTagValue? rewardIndexCbor = cbor.getCborTag(11);
     final rewardIndex = rewardIndexCbor == null

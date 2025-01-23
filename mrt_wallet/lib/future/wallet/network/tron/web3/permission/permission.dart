@@ -39,12 +39,10 @@ class _TronWeb3PermissionViewState extends State<TronWeb3PermissionView>
     permission = widget.permission ?? Web3TronChain.create();
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains = wallet.wallet.getChains().whereType<TronChain>().toList();
+    chain = permission.getCurrentPermissionChain(chains);
     for (final i in chains) {
       permissions[i] = permission.chainAccounts(i);
     }
-    chain = chains.firstWhere(
-        (e) => e.network.tronNetworkType == permission.currentChain,
-        orElse: () => chains.first);
   }
 
   @override

@@ -25,9 +25,6 @@ class TronUpdateAccountForm extends TronTransactionForm {
     },
   );
 
-  @override
-  OnChangeForm? onChanged;
-
   List<TransactionFormField> get fields => [accountName];
 
   @override
@@ -86,4 +83,10 @@ class TronUpdateAccountForm extends TronTransactionForm {
       {required TronClient provider,
       required ITronAddress address,
       required TronChain account}) async {}
+
+  @override
+  void close() {
+    super.close();
+    accountName.clear();
+  }
 }

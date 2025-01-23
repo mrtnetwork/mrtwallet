@@ -6,7 +6,6 @@ import 'package:mrt_wallet/future/wallet/web3/controller/controller.dart';
 import 'package:mrt_wallet/wallet/api/client/client.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
-import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 
 abstract class Web3TonImpl<RESPONSE, T extends Web3TonRequestParam<RESPONSE>>

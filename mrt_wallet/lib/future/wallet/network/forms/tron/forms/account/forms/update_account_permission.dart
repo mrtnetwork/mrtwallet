@@ -8,26 +8,43 @@ import 'package:on_chain/on_chain.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class TronAccountUpdatePermissionForm extends TronTransactionForm {
-  TronAccountUpdatePermissionForm({required this.permissions});
-
+  TronAccountUpdatePermissionForm();
   static const List<int> disabledOperation = [51, 52, 53];
   @override
   final BigInt callValue = BigInt.zero;
-
   @override
   final BigInt tokenValue = BigInt.zero;
 
-  final List<AccountPermission> permissions;
-
-  // ignore: unused_field
-  late final List<AccountPermission> _orginalPermissions =
-      List.unmodifiable(permissions.map((e) => e.clone()).toList());
+  late List<AccountPermission> _permissions;
+  List<AccountPermission> get permissions => _permissions;
 
   List<TransactionContractType>? _operations;
   List<TransactionContractType>? get operations => _operations;
   bool get allOperationSelected =>
       (_operations?.length ?? 0) ==
       TransactionContractType.values.length - disabledOperation.length;
+
+  AccountPermission? _selectedPermission;
+  int? permissionId;
+  AccountPermission? get selectedPermission => _selectedPermission;
+
+  @override
+  bool get showTxInfo => _selectedPermission == null;
+  String? _permissionError;
+
+  String? get permissionError => _permissionError;
+  @override
+  final String name = "update_account_permission";
+
+  @override
+  final TransactionContractType type =
+      TransactionContractType.accountPermissionUpdateContract;
+
+  @override
+  final TronAddress? destinationAccount = null;
+
+  @override
+  final TronAddress? smartContractAddress = null;
 
   void clearOrSelectAll() {
     if (_operations == null) return;
@@ -42,19 +59,8 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
     _onChangeForm();
   }
 
-  AccountPermission? _selectedPermission;
-  int? permissionId;
-  AccountPermission? get selectedPermission => _selectedPermission;
-
-  String? _permissionError;
-
-  String? get permissionError => _permissionError;
-
-  @override
-  bool get showTxInfo => _selectedPermission == null;
-
   void _onChangeForm() {
-    onChanged?.call(_selectedPermission == null);
+    onChanged?.call();
     if (_selectedPermission == null) {
       onStimateChanged?.call();
     }
@@ -104,7 +110,7 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
       _operations = TronHelper.decodePermissionOperation(
           _selectedPermission!.operations!);
     }
-    onChanged?.call(true);
+    onChanged?.call();
   }
 
   void addOrRemoveOperation(
@@ -216,14 +222,6 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
     _onChangeForm();
   }
 
-  @override
-  OnChangeForm? onChanged;
-
-  List<TransactionFormField> get fields => [];
-
-  @override
-  late final String name = "update_account_permission";
-
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
     if (field.setValue(value)) {
@@ -252,13 +250,6 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
   }
 
   @override
-  final TransactionContractType type =
-      TransactionContractType.accountPermissionUpdateContract;
-
-  @override
-  final TronAddress? destinationAccount = null;
-
-  @override
   TronBaseContract toContract({required ITronAddress owner}) {
     final validate = validateError(account: owner);
     if (validate != null) {
@@ -280,11 +271,22 @@ class TronAccountUpdatePermissionForm extends TronTransactionForm {
   }
 
   @override
-  final TronAddress? smartContractAddress = null;
-
-  @override
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
-      required TronChain account}) async {}
+      required TronChain account}) async {
+    _permissions = address.accountInfo!.permissions
+        .map((e) => e.clone())
+        .toList()
+        .cast<AccountPermission>();
+  }
+
+  @override
+  void close() {
+    _permissions = [];
+    _operations = null;
+    _selectedPermission = null;
+    permissionId = null;
+    _permissionError = null;
+  }
 }

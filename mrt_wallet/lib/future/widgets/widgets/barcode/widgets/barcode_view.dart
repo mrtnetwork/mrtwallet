@@ -119,10 +119,10 @@ class _BarcodeViewState extends State<BarcodeView> with SafeState {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            StreamWidget(
+            ButtonProgress(
               backToIdle: APPConst.animationDuraion,
               key: buttonState,
-              buttonWidget: IconButton.filled(
+              child: (context) => IconButton.filled(
                 onPressed: share,
                 icon: const Icon(Icons.share),
               ),

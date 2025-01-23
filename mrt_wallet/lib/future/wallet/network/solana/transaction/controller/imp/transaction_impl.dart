@@ -21,6 +21,7 @@ abstract class SolanaTransactionImpl extends StateController {
   final SolanaClient apiProvider;
   final ISolanaAddress address;
   final LiveTransactionForm<SolanaTransactionForm> validator;
+  SolanaTransactionForm get form => validator.validator;
   ISolanaAddress get owner => address;
   final GlobalKey<PageProgressState> progressKey = GlobalKey<PageProgressState>(
       debugLabel: "progressKey_SolanaTransactionImpl");

@@ -34,7 +34,7 @@ class SetupWallet extends StatelessWidget {
               model.backButton();
             }
           },
-          child: ScaffolPageView(
+          child: ScaffoldPageView(
             appBar: AppBar(title: Text("setup".tr)),
             child: UnfocusableChild(
               child: Center(

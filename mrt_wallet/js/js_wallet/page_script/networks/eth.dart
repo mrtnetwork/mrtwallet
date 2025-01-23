@@ -11,21 +11,21 @@ class EthereumPageController extends PageNetworkController {
         request: _onRequest.toJS,
         on: _addListener.toJS,
         removeListener: _removeListener.toJS,
-        disconnect: _disconnect.toJS,
+        disconnect: _disconnectChain.toJS,
         enable: _enable.toJS,
         cancelAllListener: _cancelAllListeners.toJS,
-        onWalletRequest: _onWalletRequest.toJS);
+        onWalletRequest: _postWalletRequest.toJS);
     return ProxyMethodHandler(eip);
   }
 
-  void _init() {
+  void _initController() {
     _ethereum ??= _setupEIP();
     final proxy = Proxy(_ethereum!.object, createJSInteropWrapper(_ethereum!));
     ethereum = proxy;
     EIP6963ProviderDetail.setup(proxy);
   }
 
-  void _disable(String? message) {
+  void _disable({String? message}) {
     ethereum = null;
     jsConsole.error(message);
   }
@@ -57,10 +57,10 @@ class EthereumPageController extends PageNetworkController {
         _ethereum?.object.selectedAddress = changeInfo.defaultAddress?.toJS;
         break;
       case JSEventType.disable:
-        _disable(message.asString());
+        _disable(message: message.asString());
         break;
       case JSEventType.active:
-        _init();
+        _initController();
         break;
       default:
     }
@@ -74,8 +74,6 @@ class EthereumPageController extends PageNetworkController {
       i.callAsFunction(null, jsObject);
     }
   }
-
-  void _disconnect() {}
 
   void _addListener(String type, JSFunction listener) {
     final event = JSEventType.fromName(type);
@@ -105,7 +103,7 @@ class EthereumPageController extends PageNetworkController {
         method: params.method,
         params: params.params,
         id: (_requestId++).toString());
-    final promise = _onNetworkRequest(message).toPromise;
+    final promise = _postNetworkRequestMessage(message).toPromise;
     return promise;
   }
 

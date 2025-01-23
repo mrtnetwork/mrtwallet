@@ -42,7 +42,7 @@ mixin TronNetworkConditionImpl on TronTransactionImpl {
             provider: apiProvider, address: address, account: account);
       });
       if (initFields.hasError) {
-        progressKey.errorText(initFields.error!);
+        progressKey.errorText(initFields.error!, backToIdle: false);
       } else {
         progressKey.success();
         return true;

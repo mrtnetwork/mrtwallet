@@ -13,45 +13,42 @@ external JSFunction get _OnBackgroundListener;
 class JSExtentionWallet extends JSWalletHandler {
   final _portLock = SynchronizedLock();
   @override
-  late ChainsHandler _chain;
-  @override
   final String clientId;
   RuntimePort? _port;
-  Web3APPAuthentication? _initializeAuthenticated;
+  Web3APPData? _initializeAuthenticated;
 
   bool onMessage(
       JSWalletEvent message, MessageSender sender, JSFunction sendResponse) {
-    _onResponse(message);
+    _onResponse(message.toEvent());
     return true;
   }
 
   JSExtentionWallet._(
       {required ChaCha20Poly1305 crypto,
-      required ChainsHandler chain,
       required this.clientId,
-      required Web3APPAuthentication authenticated})
-      : _chain = chain,
-        _initializeAuthenticated = authenticated,
+      required Web3APPData authenticated})
+      : _initializeAuthenticated = authenticated,
         super._(crypto);
 
   static JSExtentionWallet initialize(WalletEvent activationEvent) {
-    final chacha = ChaCha20Poly1305(
-        QuickCrypto.sha256Hash(StringUtils.encode(activationEvent.clientId)));
-    final data = List<int>.from(activationEvent.data);
-    final encryptedMessage = Web3EncryptedMessage.deserialize(bytes: data);
-    final decode =
-        chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message);
-    final message = Web3ChainMessage.deserialize(bytes: decode);
-    final chain = ChainsHandler.fromWeb3(bytes: message.message);
-    final handler = JSExtentionWallet._(
-        crypto: ChaCha20Poly1305(message.authenticated.token),
-        chain: chain,
-        clientId: activationEvent.clientId,
-        authenticated: message.authenticated);
-    handler._listenOnClients();
-    extension.runtime.onMessage.addListener(handler.onMessage.toJS);
-    // handler._updateAuthenticated(message.authenticated, network: null);
-    return handler;
+    try {
+      final chacha = ChaCha20Poly1305(
+          QuickCrypto.sha256Hash(StringUtils.encode(activationEvent.clientId)));
+      final data = List<int>.from(activationEvent.data);
+      final encryptedMessage = Web3EncryptedMessage.deserialize(bytes: data);
+      final decode =
+          chacha.decrypt(encryptedMessage.nonce, encryptedMessage.message);
+      final message = Web3ChainMessage.deserialize(bytes: decode);
+      final handler = JSExtentionWallet._(
+          crypto: ChaCha20Poly1305(message.authenticated.token),
+          clientId: activationEvent.clientId,
+          authenticated: message.authenticated);
+      handler._listenOnClients();
+      extension.runtime.onMessage.addListener(handler.onMessage.toJS);
+      return handler;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   void initClients() {
@@ -147,6 +144,21 @@ class JSExtentionWallet extends JSWalletHandler {
     }
   }
 
+  @override
+  Future<void> _sendDisconnect({
+    required Web3MessageCore message,
+    required String requestId,
+    required NetworkType network,
+  }) async {
+    final event = WalletEvent(
+        clientId: clientId,
+        data: network.tag,
+        requestId: requestId,
+        type: WalletEventTypes.background);
+    final r = await sendBackgroudMessage(event);
+    _onResponse(r);
+  }
+
   Future<void> _sendMessageToExtention(
       {required WalletEvent message, required String requestId}) async {
     final openWallet = await sendBackgroudMessage(JSWalletConstant.openEvent);
@@ -163,7 +175,7 @@ class JSExtentionWallet extends JSWalletHandler {
 
     void onMessage(JSWalletEvent event, RuntimePort port) {
       if (event.clientId != clientId || event.requestId != requestId) return;
-      _onResponse(event);
+      _onResponse(event.toEvent());
     }
 
     port.onDisconnect.addListener(onDisconnect.toJS);
@@ -174,6 +186,8 @@ class JSExtentionWallet extends JSWalletHandler {
   @override
   Future<void> _sendMessageToWallet(
       {required Web3MessageCore message, required String requestId}) async {
+    // List<int> messageBytes;
+    // if(message.type == Web3MessageTypes.)
     final encryptedMessage = _encryptMessage(message);
     final event = WalletEvent(
         clientId: clientId,
@@ -182,4 +196,7 @@ class JSExtentionWallet extends JSWalletHandler {
         type: WalletEventTypes.message);
     await _sendMessageToExtention(message: event, requestId: requestId);
   }
+
+  @override
+  JSWalletMode get mode => JSWalletMode.extension;
 }

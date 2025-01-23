@@ -78,17 +78,18 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
         bytes, obj, CborTagsConst.evmNetworkParam);
     final bool? defaultNetwork = cbor.elementAt(7);
     return EthereumNetworkParams(
-        chainId: cbor.elementAt(0),
-        supportEIP1559: cbor.elementAt(1),
-        chainType: ChainType.fromValue(cbor.elementAt(2)),
-        transactionExplorer: cbor.elementAt(3),
-        addressExplorer: cbor.elementAt(4),
-        token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(5)),
-        providers: (cbor.elementAt(6) as List)
-            .map((e) => EthereumAPIProvider.fromCborBytesOrObject(obj: e))
-            .toList(),
-        defaultNetwork: defaultNetwork ?? true,
-        bip32CoinType: cbor.elementAt(8));
+      chainId: cbor.elementAt(0),
+      supportEIP1559: cbor.elementAt(1),
+      chainType: ChainType.fromValue(cbor.elementAt(2)),
+      token: Token.fromCborBytesOrObject(obj: cbor.getCborTag(5)),
+      providers: (cbor.elementAt(6) as List)
+          .map((e) => EthereumAPIProvider.fromCborBytesOrObject(obj: e))
+          .toList(),
+      defaultNetwork: defaultNetwork ?? true,
+      bip32CoinType: cbor.elementAt(8),
+      transactionExplorer: cbor.elementAt(9),
+      addressExplorer: cbor.elementAt(10),
+    );
   }
   @override
   CborTagValue toCbor() {
@@ -97,30 +98,37 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
           chainId,
           supportEIP1559,
           chainType.name,
-          transactionExplorer,
-          addressExplorer,
+          const CborNullValue(),
+          const CborNullValue(),
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
           defaultNetwork,
-          bip32CoinType
+          bip32CoinType,
+          transactionExplorer,
+          addressExplorer,
         ]),
         CborTagsConst.evmNetworkParam);
   }
 
-  @override
-  EthereumNetworkParams updateProviders(List<APIProvider> updateProviders) {
-    return EthereumNetworkParams(
-        transactionExplorer: transactionExplorer,
-        addressExplorer: addressExplorer,
-        token: token,
-        providers: updateProviders.cast<EthereumAPIProvider>(),
-        chainId: chainId,
-        supportEIP1559: supportEIP1559,
-        chainType: chainType,
-        defaultNetwork: defaultNetwork,
-        bip32CoinType: bip32CoinType);
-  }
+  BigInt get identifier => chainId;
 
   @override
-  BigInt get identifier => chainId;
+  EthereumNetworkParams updateParams(
+      {List<APIProvider>? updateProviders,
+      Token? token,
+      String? transactionExplorer,
+      String? addressExplorer}) {
+    return EthereumNetworkParams(
+      transactionExplorer: transactionExplorer,
+      addressExplorer: addressExplorer,
+      token: NetworkCoinParams.validateUpdateParams(
+          token: this.token, updateToken: token),
+      providers: updateProviders?.cast<EthereumAPIProvider>() ?? providers,
+      chainId: chainId,
+      supportEIP1559: supportEIP1559,
+      chainType: chainType,
+      defaultNetwork: defaultNetwork,
+      bip32CoinType: bip32CoinType,
+    );
+  }
 }

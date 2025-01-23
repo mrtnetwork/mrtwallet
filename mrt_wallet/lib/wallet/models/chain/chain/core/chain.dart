@@ -45,8 +45,14 @@ abstract class Chain<
   Live<CONFIG> _config;
   @override
   CONFIG get config => _config.value;
+
+  bool get transferEnabled => true;
+
   @override
   final _lock = SynchronizedLock();
+
+  WalletChainStatus _chainStatus;
+  WalletChainStatus get chainStatus => _chainStatus;
 
   factory Chain.deserialize({String? hex, CborObject? obj, List<int>? bytes}) {
     final CborListValue values = CborSerializable.cborTagValue(
@@ -62,7 +68,10 @@ abstract class Chain<
     return Chain._fromNetwork(
         network: network, values: values, provider: providerId);
   }
-  static Chain setup({required WalletNetwork network, required String id}) {
+  static Chain setup({
+    required WalletNetwork network,
+    required String id,
+  }) {
     switch (network.type) {
       case NetworkType.ethereum:
         return EthereumChain.setup(
@@ -110,8 +119,7 @@ abstract class Chain<
             network: network.toNetwork(),
             client: APIUtils.createApiClient(network),
             id: id);
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         return SubstrateChain.setup(
             network: network.toNetwork(),
             client: APIUtils.createApiClient(network),
@@ -140,8 +148,7 @@ abstract class Chain<
             cbor: values,
             client: APIUtils.createApiClient(network, identifier: provider));
         break;
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         chain = SubstrateChain.deserialize(
             network: network.toNetwork(),
             cbor: values,
@@ -216,12 +223,14 @@ abstract class Chain<
       List<ADDRESS> addresses = const [],
       List<ContactCore<NETWORKADDRESS>> contacts = const [],
       required int addressIndex,
-      required CLIENT? client})
+      required CLIENT? client,
+      required WalletChainStatus status})
       : _addresses = addresses.imutable,
         _addressIndex = addressIndex,
         _contacts = contacts.imutable,
         _client = client,
-        _config = Live(config);
+        _config = Live(config),
+        _chainStatus = status;
 
   Chain copyWith(
       {NETWORK? network,

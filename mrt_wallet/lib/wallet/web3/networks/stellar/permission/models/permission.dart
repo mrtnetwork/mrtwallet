@@ -1,15 +1,18 @@
-import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
+import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/activity.dart';
+import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/chain.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/models/models/network.dart';
 import 'package:stellar_dart/stellar_dart.dart';
 import 'account.dart';
 
-class Web3StellarChain
-    extends Web3Chain<StellarAddress, StellarChain, Web3StellarChainAccount> {
+class Web3StellarChain extends Web3Chain<StellarAddress, StellarChain,
+    Web3StellarChainAccount, WalletStellarNetwork> {
   String _passphrase;
   String get currentChain => _passphrase;
   Web3StellarChain._(
@@ -93,8 +96,8 @@ class Web3StellarChain
   }
 
   @override
-  void setActiveChain(StellarChain chain) {
-    _passphrase = chain.network.coinParam.passphrase;
+  void setActiveChain(WalletStellarNetwork network) {
+    _passphrase = network.coinParam.passphrase;
   }
 
   @override
@@ -119,5 +122,58 @@ class Web3StellarChain
       }
     }
     return existsAccounts;
+  }
+
+  @override
+  Web3ChainAuthenticated createAuthenticated(
+      List<Web3ChainNetworkData<WalletStellarNetwork>> networks) {
+    final currentNetwork =
+        getCurrentPermissionNetwork(networks.map((e) => e.network).toList());
+    final network = networks.firstWhere((e) =>
+        e.network.coinParam.passphrase == currentNetwork.coinParam.passphrase);
+    final currentAccounts = activeAccounts
+        .where((e) => e.passphrase == currentNetwork.coinParam.passphrase)
+        .toList();
+    return Web3StellarChainAuthenticated(
+        accounts: currentAccounts,
+        network: network.network,
+        serviceIdentifier: network.serviceIdentifier);
+  }
+
+  @override
+  StellarChain getCurrentPermissionChain(List<StellarChain> chain) {
+    final currentNetwork =
+        getCurrentPermissionNetwork(chain.map((e) => e.network).toList());
+    List<Web3StellarChainAccount> accounts = activeAccounts.clone();
+    List<Web3StellarChainAccount> existsAccount = [];
+    for (final i in accounts) {
+      final network = chain.firstWhereOrNull(
+          (e) => e.network.coinParam.passphrase == i.passphrase);
+      if (network == null) continue;
+      final exist = network.addresses.any((e) => e.networkAddress == i.address);
+      if (exist) existsAccount.add(i);
+    }
+    updateChainAccount(existsAccount);
+    return chain.firstWhere((e) => e.network == currentNetwork);
+  }
+
+  @override
+  WalletStellarNetwork getCurrentPermissionNetwork(
+      List<WalletStellarNetwork> networks) {
+    final currentChain = _passphrase;
+    final network = networks
+        .firstWhereOrNull((e) => e.coinParam.passphrase == currentChain);
+    if (network != null) {
+      return network;
+    }
+    final mainNetwork = networks.firstWhere(
+        (e) => e.coinParam.passphrase == StellarNetwork.mainnet.passphrase);
+    List<Web3StellarChainAccount> accounts = activeAccounts
+        .clone()
+        .where((e) => e.passphrase != currentChain)
+        .toList();
+    setActiveChain(mainNetwork);
+    updateChainAccount(accounts);
+    return mainNetwork;
   }
 }

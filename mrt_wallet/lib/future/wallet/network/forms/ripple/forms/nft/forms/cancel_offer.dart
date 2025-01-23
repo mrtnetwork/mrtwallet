@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 
-class RippleCancelOfferForm implements RippleTransactionForm {
+class RippleCancelOfferForm extends RippleTransactionForm {
   RippleCancelOfferForm({String? offerID}) {
     if (offerID != null) {
       setValue(nftokenOffers, <String>[offerID, ...nftokenOffers.value ?? []]);
@@ -45,9 +45,6 @@ class RippleCancelOfferForm implements RippleTransactionForm {
       nftokenOffers: nftokenOffers.value!,
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

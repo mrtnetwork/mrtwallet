@@ -20,19 +20,20 @@ class RippleChain extends Chain<
       required super.config,
       required super.client,
       required super.contacts,
-      required super.addresses})
+      required super.addresses,
+      required super.status})
       : super._();
   @override
-  RippleChain copyWith({
-    WalletXRPNetwork? network,
-    Live<IntegerBalance>? totalBalance,
-    List<IXRPAddress>? addresses,
-    List<ContactCore<XRPAddress>>? contacts,
-    int? addressIndex,
-    RippleClient? client,
-    String? id,
-    DefaultChainConfig? config,
-  }) {
+  RippleChain copyWith(
+      {WalletXRPNetwork? network,
+      Live<IntegerBalance>? totalBalance,
+      List<IXRPAddress>? addresses,
+      List<ContactCore<XRPAddress>>? contacts,
+      int? addressIndex,
+      RippleClient? client,
+      String? id,
+      DefaultChainConfig? config,
+      WalletChainStatus? status}) {
     return RippleChain._(
         network: network ?? this.network,
         totalBalance: totalBalance ?? this.totalBalance,
@@ -41,7 +42,8 @@ class RippleChain extends Chain<
         contacts: contacts ?? _contacts,
         client: client ?? _client,
         id: id ?? this.id,
-        config: config ?? this.config);
+        config: config ?? this.config,
+        status: status ?? _chainStatus);
   }
 
   factory RippleChain.setup(
@@ -49,15 +51,16 @@ class RippleChain extends Chain<
       required String id,
       RippleClient? client}) {
     return RippleChain._(
-        network: network,
-        id: id,
-        addressIndex: 0,
-        totalBalance:
-            Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
-        client: client,
-        contacts: [],
-        addresses: [],
-        config: DefaultChainConfig.none);
+      network: network,
+      id: id,
+      addressIndex: 0,
+      totalBalance: Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
+      client: client,
+      contacts: [],
+      addresses: [],
+      config: DefaultChainConfig.none,
+      status: WalletChainStatus.ready,
+    );
   }
 
   factory RippleChain.deserialize(
@@ -99,6 +102,7 @@ class RippleChain extends Chain<
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
         client: client,
         id: cbor.elementAt<String>(8),
-        config: DefaultChainConfig.none);
+        config: DefaultChainConfig.none,
+        status: WalletChainStatus.ready);
   }
 }

@@ -13,7 +13,7 @@ enum SolanaTransactionType {
   mintTo;
 }
 
-abstract class SolanaTransactionForm implements TransactionForm {
+abstract class SolanaTransactionForm extends TransactionForm {
   BigInt get transferValue;
   SolanaTransactionType get mode;
   SolanaChain? _account;
@@ -33,10 +33,12 @@ abstract class SolanaTransactionForm implements TransactionForm {
   }
 
   Future<List<TransactionInstruction>> instructions(SolAddress owner);
-  void dispose() {
+  @override
+  void close() {
     _account = null;
     _address = null;
     _apiProvider = null;
+    super.close();
   }
 }
 

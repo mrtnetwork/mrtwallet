@@ -72,7 +72,7 @@ class SolanaRequestAccountForm extends SolanaWeb3Form {
     } else {
       permissions[chain]?.addValue(Web3SolanaChainAccount.fromChainAccount(
           address: address,
-          genesis: chain.network.genesisBlock,
+          genesis: chain.network.coinParam.type,
           isDefault: false));
     }
     if (permissions[chain]!.isNotEmpty &&
@@ -99,7 +99,7 @@ class SolanaRequestAccountForm extends SolanaWeb3Form {
       accounts.addAll(i.value.value);
     }
     newPermission.updateChainAccount(accounts);
-    newPermission.setActiveChain(chain);
+    newPermission.setActiveChain(chain.network);
     onCompleteForm?.call(newPermission);
   }
 

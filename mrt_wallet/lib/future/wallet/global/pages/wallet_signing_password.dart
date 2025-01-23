@@ -36,6 +36,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
   String _password = "";
   String? _error;
   int _attemped = 0;
+  bool get locked => _attemped > 3;
   bool get toManyRequest => _attemped > 3;
   void onChagePassword(String v) {
     if (toManyRequest) return;
@@ -53,14 +54,10 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
     return null;
   }
 
-  void _updaateProgress(MethodResult result) async {
+  void _updateProgress(MethodResult result) async {
     if (result.hasError || !result.result) {
       _attemped++;
-      if (_attemped > 3) {
-        keyState.updateStream(StreamWidgetStatus.hide);
-      } else {
-        keyState.error();
-      }
+      keyState.error();
       if (result.hasError) {
         _error = result.error!.tr;
       } else {
@@ -86,7 +83,7 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
     final result = await MethodUtils.call(() async {
       return await widget.onPasswordForm(_password);
     });
-    _updaateProgress(result);
+    _updateProgress(result);
     updateState();
   }
 
@@ -261,9 +258,10 @@ class _WalletSigningPasswordState extends State<WalletSigningPassword>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        StreamWidget(
+                        ButtonProgress(
                           key: keyState,
-                          buttonWidget: FixedElevatedButton(
+                          child: (context) => FixedElevatedButton(
+                              activePress: !locked,
                               onPressed: onPassword,
                               child: Text("sign_transaction".tr)),
                           backToIdle: APPConst.oneSecoundDuration,

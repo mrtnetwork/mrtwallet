@@ -6,7 +6,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/ripple/forms/core/ripple.
 import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/crypto/utils/ripple/ripple.dart';
 
-class RippleEscrowFinishForm implements RippleTransactionForm {
+class RippleEscrowFinishForm extends RippleTransactionForm {
   final TransactionFormField<ReceiptAddress> owner = TransactionFormField(
     name: "owner",
     subject: "ripple_escrow_finish_owner",
@@ -84,9 +84,6 @@ class RippleEscrowFinishForm implements RippleTransactionForm {
       fee: fee,
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

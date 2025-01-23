@@ -152,7 +152,8 @@ class Web3TronTransactionRequestController
         isNewAccount: isNewAccount);
   }
 
-  Future<void> _initializeTransaction() async {
+  @override
+  Future<void> initWeb3() async {
     progressKey.process(text: "transaction_retrieval_requirment".tr);
     final tx = await MethodUtils.call(() async {
       final transaction = MethodUtils.nullOnException(
@@ -281,11 +282,5 @@ class Web3TronTransactionRequestController
       request.completeResponse(json);
       progressKey.response(text: "transaction_signed".tr);
     }
-  }
-
-  @override
-  Future<void> readyWeb3() async {
-    await super.readyWeb3();
-    _initializeTransaction();
   }
 }

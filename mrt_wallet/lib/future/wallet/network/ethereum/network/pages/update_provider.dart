@@ -1,377 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/wallet/controller/controller.dart';
-import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
+import 'package:mrt_wallet/future/wallet/global/pages/update_network_provider.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
+import 'package:on_chain/ethereum/ethereum.dart';
 
 class UpdateEthereumProvider extends StatelessWidget {
   const UpdateEthereumProvider({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final (BigInt, List<EthereumAPIProvider> provides) args =
-        context.getArgruments();
-    return _UpdateEthereumProvider(args.$1, args.$2);
+    return NetworkAccountControllerView<EthereumChain>(
+        clientRequired: false,
+        childBulder: (wallet, chain, onAccountChanged) =>
+            _UpdateEthereumProvider(chain));
   }
 }
 
 class _UpdateEthereumProvider extends StatefulWidget {
-  const _UpdateEthereumProvider(this.chainId, this.providers);
-  final List<EthereumAPIProvider> providers;
-  final BigInt chainId;
+  const _UpdateEthereumProvider(this.account);
+  final EthereumChain account;
 
   @override
-  State<_UpdateEthereumProvider> createState() =>
-      __UpdateEthereumNetworkState();
+  State<_UpdateEthereumProvider> createState() => _UpdateSolanaProviderState();
 }
 
-class __UpdateEthereumNetworkState extends State<_UpdateEthereumProvider>
-    with SafeState {
-  late final BigInt chainId = widget.chainId;
-  final Set<String> existsProviders = {};
-  // EthereumAPIProvider? provider;
-  ProviderAuthType auth = ProviderAuthType.header;
-  void onChangeAuthMode(ProviderAuthType? auth) {
-    this.auth = auth ?? this.auth;
-    updateState();
-  }
+class _UpdateSolanaProviderState extends State<_UpdateEthereumProvider>
+    with
+        SafeState<_UpdateEthereumProvider>,
+        ProgressMixin<_UpdateEthereumProvider>,
+        UpdateNetworkProviderState<
+            _UpdateEthereumProvider,
+            EthereumAPIProvider,
+            ETHAddress,
+            IEthAddress,
+            EthereumClient,
+            TokenCore,
+            NFTCore,
+            EthereumChain> {
+  @override
+  EthereumChain get chain => widget.account;
 
-  final GlobalKey<FormState> formKey = GlobalKey();
-  final GlobalKey<PageProgressState> pageProgressKey = GlobalKey();
-
-  late List<EthereumAPIProvider> providers = List.from(widget.providers);
-
-  late bool addNewProviders = providers.isEmpty;
-
-  late String rpcUrl = "";
-
-  String authKey = "";
-  String authValue = "";
-
-  void onChangeKey(String v) {
-    authKey = v;
-  }
-
-  void onChangeValue(String v) {
-    authValue = v;
-  }
-
-  String? validateKey(String? v) {
-    if (v?.trim().isEmpty ?? true) {
-      return "authenticated_key_validator".tr;
-    }
-    if (v!.length > APPConst.maximumHeaderValue) {
-      return "value_is_to_large".tr;
-    }
-    return null;
-  }
-
-  String? validateValue(String? v) {
-    if (v?.trim().isEmpty ?? true) {
-      return "authenticated_value_validator".tr;
-    }
-    if (v!.length > APPConst.maximumHeaderValue) {
-      return "value_is_to_large".tr;
-    }
-    return null;
-  }
-
-  bool useAuthenticated = false;
-
-  void onChangeAuthenticated(bool? v) {
-    useAuthenticated = !useAuthenticated;
-    updateState();
-  }
-
-  void onChageUrl(String v) {
-    rpcUrl = v;
-  }
-
-  bool useInWeb3 = true;
-  void onChangeUseInWeb3(bool? web3) {
-    useInWeb3 = !useInWeb3;
-    updateState();
-  }
-
-  void reset() {
-    rpcUrl = "";
-    authKey = "";
-    authValue = "";
-    auth = ProviderAuthType.header;
-    useAuthenticated = false;
-    useInWeb3 = true;
-    addNewProviders = false;
-  }
-
-  String? validateRpcUrl(String? v) {
-    final path =
-        StrUtils.validateUri(v, schame: ['http', 'https', 'wss', 'ws']);
-    if (path == null) return "rpc_url_validator".tr;
-    final exists = existsProviders.contains(v);
-    if (exists) {
-      return "rpc_url_already_exists".tr;
-    }
-
-    return null;
-  }
-
-  void onUpdate() async {
-    if (!(formKey.currentState?.validate() ?? false)) return;
-    pageProgressKey.progressText("checking_rpc_network_info".tr);
-    EthereumClient? client;
-    final result = await MethodUtils.call(() async {
-      final WalletProvider wallet =
-          context.watch<WalletProvider>(StateConst.main);
-      final ethNetwork = wallet.wallet.networks<WalletEthereumNetwork>();
-      final uri = Uri.parse(rpcUrl.trim()).normalizePath();
-      ProviderAuthenticated? auth;
-      if (useAuthenticated) {
-        auth = BasicProviderAuthenticated(
-            type: this.auth, key: authKey, value: authValue);
-      }
-      final serviceProvider = EthereumAPIProvider(
-          identifier: APIUtils.getProviderIdentifier(),
-          uri: uri.toString(),
-          auth: auth,
-          allowInWeb3: useInWeb3);
-      client = APIUtils.buildEthereumProvider(
-          provider: serviceProvider, network: ethNetwork.first);
-      final info = await client!.getNetworkInfo();
-      if (info.$1 != widget.chainId) {
-        throw WalletException("invalid_chain_id");
-      }
-      providers.add(serviceProvider);
-    });
-    if (result.hasError) {
-      pageProgressKey.errorText(result.error!.tr,
-          backToIdle: false, showBackButton: true);
-    } else {
-      setState(() {});
-      pageProgressKey.successText("network_providers_has_been_updated".tr,
-          backToIdle: true);
-      reset();
-    }
-    client?.service.disposeService();
-  }
-
-  void addNewProvider() {
-    addNewProviders = true;
-    updateState();
-  }
-
-  void onBackButton(bool v, _) {
-    if (providers.isNotEmpty) {
-      addNewProviders = false;
-      updateState();
-    }
-  }
-
-  void removeProvider(EthereumAPIProvider provider) {
-    providers.remove(provider);
-
-    updateState();
-  }
-
-  void updateProviders() {
-    context.pop(providers);
+  @override
+  EthereumAPIProvider createProvider(
+      {required String url,
+      required APIProviderServiceInfo service,
+      ProviderAuthenticated? auth}) {
+    return EthereumAPIProvider(
+        uri: url, auth: auth, identifier: APIUtils.getProviderIdentifier());
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ScaffolPageView(
-      appBar: AppBar(title: Text("update_network".tr)),
-      child: UnfocusableChild(
-        child: Form(
-          key: formKey,
-          canPop: (addNewProviders && providers.isEmpty) || !addNewProviders,
-          onPopInvokedWithResult: onBackButton,
-          child: PageProgress(
-            key: pageProgressKey,
-            backToIdle: APPConst.oneSecoundDuration,
-            child: (c) => CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: WidgetConstant.padding20,
-                  sliver: SliverConstraintsBoxView(
-                    sliver: APPSliverAnimatedSwitcher(
-                        enable: addNewProviders,
-                        widgets: {
-                          true: (c) => _ImportProviderWidget(this),
-                          false: (c) => _ShowProvidersWidget(this)
-                        }),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+  late final List<ServiceProtocol> supportedProtocol;
 
-class _ShowProvidersWidget extends StatelessWidget {
-  const _ShowProvidersWidget(this.state);
-  final __UpdateEthereumNetworkState state;
+  void init() {
+    supportedProtocol = [ServiceProtocol.http, ServiceProtocol.websocket];
+    protocol = supportedProtocol.first;
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return SliverMainAxisGroup(slivers: [
-      SliverToBoxAdapter(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("providers".tr, style: context.textTheme.titleMedium),
-            Text("update_provider_desc".tr),
-            WidgetConstant.height8,
-          ],
-        ),
-      ),
-      SliverList.builder(
-        itemBuilder: (context, index) {
-          final provider = state.providers[index];
-          return ContainerWithBorder(
-              iconAlginment: CrossAxisAlignment.start,
-              onRemove: () {},
-              onRemoveWidget: IconButton(
-                  onPressed: () => state.removeProvider(provider),
-                  icon: Icon(Icons.remove_circle,
-                      color: context.colors.onPrimaryContainer)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(provider.protocol.value.tr,
-                      style: context.colors.onPrimaryContainer
-                          .lableLarge(context)),
-                  OneLineTextWidget(provider.callUrl,
-                      style: context.colors.onPrimaryContainer
-                          .bodyMedium(context)),
-                ],
-              ));
-        },
-        itemCount: state.providers.length,
-      ),
-      SliverToBoxAdapter(
-        child: Column(
-          children: [
-            ContainerWithBorder(
-              onRemove: state.addNewProvider,
-              onRemoveIcon: Icon(
-                Icons.add_box,
-                color: context.onPrimaryContainer,
-              ),
-              child: Text("tap_to_add_new_service_provider".tr,
-                  style: context.onPrimaryTextTheme.bodyMedium),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                FixedElevatedButton(
-                  padding: WidgetConstant.paddingVertical40,
-                  onPressed: state.updateProviders,
-                  child: Text("update_providers".tr),
-                )
-              ],
-            )
-          ],
-        ),
-      ),
-    ]);
+  void onInitOnce() {
+    MethodUtils.after(() async => init());
+    super.onInitOnce();
   }
-}
-
-class _ImportProviderWidget extends StatelessWidget {
-  const _ImportProviderWidget(this.state);
-  final __UpdateEthereumNetworkState state;
 
   @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          WidgetConstant.height20,
-          Text("rpc_url".tr, style: context.textTheme.titleMedium),
-          Text("rpc_url_desc".tr),
-          Text("ethereum_rpc_url_desc"
-              .tr
-              .replaceOne(state.chainId.toString())
-              .replaceTwo(state.chainId.toRadix16)),
-          WidgetConstant.height8,
-          AppTextField(
-            initialValue: state.rpcUrl,
-            onChanged: state.onChageUrl,
-            validator: state.validateRpcUrl,
-            pasteIcon: true,
-            label: "rpc_url".tr,
-          ),
-          WidgetConstant.height20,
-          AppSwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text("authenticated".tr),
-            subtitle: Text("add_provider_authenticated".tr),
-            value: state.useAuthenticated,
-            onChanged: state.onChangeAuthenticated,
-          ),
-          APPAnimatedSize(
-              isActive: state.useAuthenticated,
-              onActive: (c) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      WidgetConstant.height8,
-                      AppDropDownBottom(
-                        items: {
-                          for (final i in ProviderAuthType.values)
-                            i: Text(i.name.camelCase)
-                        },
-                        label: "authenticated_type".tr,
-                        onChanged: state.onChangeAuthMode,
-                        value: state.auth,
-                      ),
-                      WidgetConstant.height20,
-                      AppTextField(
-                        label: "authenticated_key".tr,
-                        pasteIcon: true,
-                        hint: "example_value".tr.replaceOne(state.auth.isHeader
-                            ? APPConst.exampleAuthenticatedHeader
-                            : APPConst.exampleAuthenticatedQuery),
-                        onChanged: state.onChangeKey,
-                        validator: state.validateKey,
-                      ),
-                      AppTextField(
-                        pasteIcon: true,
-                        label: "authenticated_value".tr,
-                        hint: "example_value".tr.replaceOne(state.auth.isHeader
-                            ? APPConst.exampleAuthenticatedHeaderValue
-                            : APPConst.exampleBase58),
-                        onChanged: state.onChangeValue,
-                        validator: state.validateValue,
-                      ),
-                    ],
-                  ),
-              onDeactive: (c) => WidgetConstant.sizedBox),
-          WidgetConstant.height20,
-          AppSwitchListTile(
-            title: Text("access_in_web3_apps".tr),
-            subtitle: Text("access_provider_in_web3_apps_desc".tr),
-            contentPadding: EdgeInsets.zero,
-            value: state.useInWeb3,
-            onChanged: state.onChangeUseInWeb3,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              FixedElevatedButton.icon(
-                padding: WidgetConstant.paddingVertical40,
-                label: Text("import_providers".tr),
-                onPressed: state.onUpdate,
-                icon: const Icon(Icons.update),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
+  Future<EthereumAPIProvider> validate(EthereumAPIProvider provider) async {
+    final client = APIUtils.buildEthereumProvider(
+        provider: provider, network: network.toNetwork());
+    final init = await client.checkNetworkChainId();
+    if (!init) {
+      throw WalletException("network_incorrect_chain_id");
+    }
+    return provider;
   }
 }

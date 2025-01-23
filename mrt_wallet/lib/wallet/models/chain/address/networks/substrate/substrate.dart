@@ -13,7 +13,8 @@ import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
 class ISubstrateAddress
-    extends ChainAccount<SubstrateAddress, TokenCore, NFTCore> with Equatable {
+    extends ChainAccount<BaseSubstrateAddress, TokenCore, NFTCore>
+    with Equatable {
   ISubstrateAddress._(
       {required this.keyIndex,
       required this.coin,
@@ -23,19 +24,20 @@ class ISubstrateAddress
       required this.networkAddress,
       required List<TokenCore> tokens,
       required List<NFTCore> nfts,
-      String? accountName,
-      required this.ss58Format})
-      : publicKey = List.unmodifiable(publicKey),
-        _tokens = List.unmodifiable(tokens),
-        _nfts = List.unmodifiable(nfts),
+      String? accountName})
+      : publicKey = publicKey.asImmutableBytes,
+        _tokens = tokens.immutable,
+        _nfts = nfts.immutable,
         _accountName = accountName;
 
   factory ISubstrateAddress.newAccount(
       {required SubstrateNewAddressParams accountParams,
       required List<int> publicKey,
-      required WalletPolkadotNetwork network}) {
+      required WalletSubstrateNetwork network}) {
     final addr = accountParams.toAddress(
-        publicKey: publicKey, ss58Format: network.coinParam.ss58Format);
+        publicKey: publicKey,
+        ss58Format: network.coinParam.ss58Format,
+        type: network.coinParam.substrateChainType);
     final addressDetauls = AccountBalance(
         address: addr.address,
         balance: IntegerBalance.zero(network.coinParam.decimal));
@@ -47,8 +49,7 @@ class ISubstrateAddress
         networkAddress: addr,
         network: network.value,
         tokens: const [],
-        nfts: const [],
-        ss58Format: network.coinParam.ss58Format);
+        nfts: const []);
   }
   factory ISubstrateAddress.fromCborBytesOrObject(WalletNetwork network,
       {List<int>? bytes, CborObject? obj}) {
@@ -66,9 +67,7 @@ class ISubstrateAddress
     final AccountBalance address = AccountBalance.fromCborBytesOrObject(
         network.coinParam.decimal,
         obj: cbor.getCborTag(4));
-    final int ss58Format = cbor.elementAt(10);
-    final SubstrateAddress addr =
-        SubstrateAddress(cbor.elementAt(5), ss58Format: ss58Format);
+    final BaseSubstrateAddress addr = BaseSubstrateAddress(cbor.elementAt(5));
     final networkId = cbor.elementAt(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
@@ -83,8 +82,7 @@ class ISubstrateAddress
         network: networkId,
         tokens: [],
         nfts: [],
-        accountName: accountName,
-        ss58Format: ss58Format);
+        accountName: accountName);
   }
 
   @override
@@ -106,7 +104,7 @@ class ISubstrateAddress
 
   final List<int> publicKey;
 
-  final int ss58Format;
+  // final int ss58Format;
 
   @override
   CborTagValue toCbor() {
@@ -122,7 +120,6 @@ class ISubstrateAddress
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
           accountName ?? const CborNullValue(),
-          ss58Format
         ]),
         CborTagsConst.substrateAccount);
   }
@@ -133,7 +130,7 @@ class ISubstrateAddress
   }
 
   @override
-  final SubstrateAddress networkAddress;
+  final BaseSubstrateAddress networkAddress;
 
   @override
   String? type;

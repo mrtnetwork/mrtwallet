@@ -38,150 +38,158 @@ class TronTransactionFieldsView extends StatelessWidget {
               initialWidget:
                   ProgressWithTextView(text: "retrieving_network_condition".tr),
               backToIdle: APPConst.oneSecoundDuration,
-              child: (c) => CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: ConstraintsBoxView(
-                      padding: WidgetConstant.padding20,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("account".tr,
-                              style: context.textTheme.titleLarge),
-                          WidgetConstant.height8,
-                          ContainerWithBorder(
-                            onRemoveIcon: Icon(
-                              Icons.edit,
-                              color: context.onPrimaryContainer,
-                            ),
-                            child: AddressDetailsView(
-                                address: controller.address,
-                                color: context.onPrimaryContainer,
-                                key: ValueKey<ITronAddress?>(
-                                    controller.address)),
-                            onRemove: () {
-                              context
-                                  .openSliverBottomSheet<ITronAddress>(
-                                    "switch_account".tr,
-                                    child: SwitchOrSelectAccountView(
-                                      account: controller.account,
-                                      showMultiSig: true,
-                                    ),
-                                    minExtent: 0.5,
-                                    maxExtend: 0.9,
-                                    initialExtend: 0.7,
-                                    centerContent: false,
-                                  )
-                                  .then(switchAccount);
-                            },
-                          ),
-                          WidgetConstant.height20,
-                          _TronTransactionFields(
-                              account: chain,
-                              validator: controller.validator,
-                              address: controller.address),
-                          APPAnimatedSize(
-                              isActive: controller.showTxInfo,
-                              onActive: (context) {
-                                return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      WidgetConstant.height20,
-                                      Text("setup_memo".tr,
-                                          style: context.textTheme.titleMedium),
-                                      WidgetConstant.height8,
-                                      ContainerWithBorder(
-                                          onRemoveIcon: AddOrEditIconWidget(
-                                              controller.hasMemo),
-                                          onRemove: () {
-                                            controller.onTapMemo((s) async {
-                                              final result = await context
-                                                  .openSliverBottomSheet<
-                                                      String>(
-                                                "transaction_memo".tr,
-                                                child: StringWriterView(
-                                                  defaultValue: controller.memo,
-                                                  title: PageTitleSubtitle(
-                                                      title: "setup_memo".tr,
-                                                      body: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text("memo_desc1".tr),
-                                                          WidgetConstant
-                                                              .height8,
-                                                          Text("empty_desc".tr),
-                                                        ],
-                                                      )),
-                                                  buttonText: "setup_memo".tr,
-                                                  label: "memo".tr,
-                                                ),
-                                              );
-                                              return result;
-                                            });
-                                          },
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: controller.hasMemo
-                                                    ? Text(
-                                                        controller.memo ?? "",
-                                                        style: context
-                                                            .onPrimaryTextTheme
-                                                            .bodyMedium)
-                                                    : Text("tap_to_add_memo".tr,
-                                                        style: context
-                                                            .onPrimaryTextTheme
-                                                            .labelLarge),
-                                              ),
-                                            ],
-                                          )),
-                                      WidgetConstant.height20,
-                                      TronFeeDetailsView(
-                                          transaction: controller),
-                                      InsufficientBalanceErrorView(
-                                        verticalMargin:
-                                            WidgetConstant.paddingVertical10,
-                                        balance: controller.remindAmount.$1,
-                                        token: controller.remindAmount.$2,
-                                      ),
-                                      ErrorTextContainer(
-                                          error: controller.error,
-                                          verticalMargin:
-                                              WidgetConstant.paddingVertical10),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          FixedElevatedButton(
-                                            padding: WidgetConstant
-                                                .paddingVertical20,
-                                            onPressed: controller.trIsReady
-                                                ? controller.sedTransaction
-                                                : null,
-                                            child: Text("send_transaction".tr),
+              child: (c) => UnfocusableChild(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: ConstraintsBoxView(
+                        padding: WidgetConstant.padding20,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("account".tr,
+                                style: context.textTheme.titleLarge),
+                            WidgetConstant.height8,
+                            ContainerWithBorder(
+                              onRemoveIcon: Icon(Icons.edit,
+                                  color: context.onPrimaryContainer),
+                              onRemove: controller.field.enableSwitchAccount
+                                  ? () {
+                                      context
+                                          .openSliverBottomSheet<ITronAddress>(
+                                            "switch_account".tr,
+                                            child: SwitchOrSelectAccountView(
+                                              account: controller.account,
+                                              showMultiSig: true,
+                                            ),
+                                            minExtent: 0.5,
+                                            maxExtend: 0.9,
+                                            initialExtend: 0.7,
+                                            centerContent: false,
                                           )
-                                        ],
-                                      )
-                                    ]);
-                              },
-                              onDeactive: (context) => Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      ErrorTextContainer(
-                                          error: controller.error,
+                                          .then(switchAccount);
+                                    }
+                                  : null,
+                              child: AddressDetailsView(
+                                  address: controller.address,
+                                  color: context.onPrimaryContainer,
+                                  key: ValueKey<ITronAddress?>(
+                                      controller.address)),
+                            ),
+                            WidgetConstant.height20,
+                            _TronTransactionFields(
+                                account: chain,
+                                validator: controller.validator,
+                                address: controller.address),
+                            APPAnimatedSize(
+                                isActive: controller.showTxInfo,
+                                onActive: (context) {
+                                  return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        WidgetConstant.height20,
+                                        Text("setup_memo".tr,
+                                            style:
+                                                context.textTheme.titleMedium),
+                                        WidgetConstant.height8,
+                                        ContainerWithBorder(
+                                            onRemoveIcon: AddOrEditIconWidget(
+                                                controller.hasMemo),
+                                            onRemove: () {
+                                              controller.onTapMemo((s) async {
+                                                final result = await context
+                                                    .openSliverBottomSheet<
+                                                        String>(
+                                                  "transaction_memo".tr,
+                                                  child: StringWriterView(
+                                                    defaultValue:
+                                                        controller.memo,
+                                                    title: PageTitleSubtitle(
+                                                        title: "setup_memo".tr,
+                                                        body: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text("memo_desc1"
+                                                                .tr),
+                                                            WidgetConstant
+                                                                .height8,
+                                                            Text("empty_desc"
+                                                                .tr),
+                                                          ],
+                                                        )),
+                                                    buttonText: "setup_memo".tr,
+                                                    label: "memo".tr,
+                                                  ),
+                                                );
+                                                return result;
+                                              });
+                                            },
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  child: controller.hasMemo
+                                                      ? Text(
+                                                          controller.memo ?? "",
+                                                          style: context
+                                                              .onPrimaryTextTheme
+                                                              .bodyMedium)
+                                                      : Text(
+                                                          "tap_to_add_memo".tr,
+                                                          style: context
+                                                              .onPrimaryTextTheme
+                                                              .labelLarge),
+                                                ),
+                                              ],
+                                            )),
+                                        WidgetConstant.height20,
+                                        TronFeeDetailsView(
+                                            transaction: controller),
+                                        InsufficientBalanceErrorView(
                                           verticalMargin:
-                                              WidgetConstant.paddingVertical10),
-                                    ],
-                                  )),
-                        ],
+                                              WidgetConstant.paddingVertical10,
+                                          balance: controller.remindAmount.$1,
+                                          token: controller.remindAmount.$2,
+                                        ),
+                                        ErrorTextContainer(
+                                            error: controller.error,
+                                            verticalMargin: WidgetConstant
+                                                .paddingVertical10),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            FixedElevatedButton(
+                                              padding: WidgetConstant
+                                                  .paddingVertical20,
+                                              onPressed: controller.trIsReady
+                                                  ? controller.sedTransaction
+                                                  : null,
+                                              child:
+                                                  Text("send_transaction".tr),
+                                            )
+                                          ],
+                                        )
+                                      ]);
+                                },
+                                onDeactive: (context) => Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        ErrorTextContainer(
+                                            error: controller.error,
+                                            verticalMargin: WidgetConstant
+                                                .paddingVertical10),
+                                      ],
+                                    )),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           }),

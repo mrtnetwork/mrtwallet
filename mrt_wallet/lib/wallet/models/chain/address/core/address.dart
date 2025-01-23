@@ -113,8 +113,7 @@ abstract class CryptoAddress<X> with CborSerializable {
       case NetworkType.monero:
         address = IMoneroAddress.fromCborBytesOrObject(network, obj: cbor);
         break;
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         address = ISubstrateAddress.fromCborBytesOrObject(network, obj: cbor);
         break;
       default:

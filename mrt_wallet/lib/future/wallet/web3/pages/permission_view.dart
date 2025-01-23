@@ -3,6 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/web3/permission/permission.dart';
+import 'package:mrt_wallet/future/wallet/network/substrate/web3/permission/permission.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/web3/permission/permission.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
@@ -15,13 +16,13 @@ import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 
 mixin Web3PermissionState<
-        T extends StatefulWidget,
-        NETWORKADDRESS,
-        CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
-        ADDRESS extends NETWORKCHAINACCOUNT<NETWORKADDRESS>,
-        CHAINACCOUT extends Web3ChainAccount<NETWORKADDRESS>,
-        WEB3CHAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUT>>
-    on SafeState<T> {
+    T extends StatefulWidget,
+    NETWORKADDRESS,
+    CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
+    ADDRESS extends NETWORKCHAINACCOUNT<NETWORKADDRESS>,
+    CHAINACCOUT extends Web3ChainAccount<NETWORKADDRESS>,
+    WEB3CHAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUT,
+        WalletNetwork>> on SafeState<T> {
   WEB3CHAIN createNewChainPermission();
   CHAINACCOUT createNewAccountPermission(ADDRESS address);
 
@@ -95,12 +96,12 @@ class Web3PermissionUpdateView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ConstraintsBoxView(
       alignment: Alignment.center,
-      maxHeight: APPConst.maxDialogHeight,
-      padding: WidgetConstant.padding20,
+      padding: WidgetConstant.paddingHorizontal20,
       maxWidth: APPConst.dialogWidth,
       child: ClipRRect(
           borderRadius: WidgetConstant.border25,
           child: PasswordCheckerView(
+              title: 'web3_permission'.tr,
               accsess: WalletAccsessType.unlock,
               onAccsess: (credential, password, network) =>
                   _Web3APPPermissionView(controller: controller))),
@@ -170,6 +171,7 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
         await permissionState[_selectedIndex]?.currentState?.getPermission();
     Web3APPAuthentication? permission = application;
     if (permission == null) return;
+
     progressKey.progressText("updating_permission".tr);
     updateState();
     if (update != null) {
@@ -217,12 +219,16 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     2: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_tron"),
     3: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_solana"),
     4: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_ton"),
-    5: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_stellar")
+    5: GlobalKey<Web3PermissionState>(
+        debugLabel: "Web3PermissionState_stellar"),
+    6: GlobalKey<Web3PermissionState>(
+        debugLabel: "Web3PermissionState_substrate")
   };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       floatingActionButton: APPAnimatedSwitcher<bool>(
           enable: showUpdateButton && !progressKey.inProgress,
           widgets: {
@@ -276,6 +282,10 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
                                 icon: CircleAssetsImageView(APPConst.stellar,
                                     radius: 15),
                                 label: WidgetConstant.sizedBox),
+                            NavigationRailDestination(
+                                icon: CircleAssetsImageView(APPConst.polkadot,
+                                    radius: 15),
+                                label: WidgetConstant.sizedBox),
                           ],
                           selectedIndex: _selectedIndex,
                         ),
@@ -297,10 +307,12 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
                               padding: WidgetConstant.padding10,
                               child: Web3ClientInfoView(
                                   permission: application!))),
-                      child: CircleAPPImageView(application?.icon,
-                          radius: 35,
-                          onError: (c) => const Icon(Icons.broken_image,
-                              size: APPConst.double40))),
+                      child: Padding(
+                          padding: WidgetConstant.padding10,
+                          child: CircleAPPImageView(application?.icon,
+                              radius: 20,
+                              onError: (c) => const Icon(Icons.broken_image,
+                                  size: APPConst.double40)))),
                 ),
               ],
             ),
@@ -342,7 +354,12 @@ class _APPPermissionWidget extends StatelessWidget {
               key: state.permissionState[5],
               permission: state.application
                   ?.getChainFromNetworkType(NetworkType.stellar)),
+          6: (context) => SubstrateWeb3PermissionView(
+              key: state.permissionState[6],
+              permission: state.application
+                  ?.getChainFromNetworkType(NetworkType.substrate)),
         }),
+        WidgetConstant.sliverPaddingVertial40,
       ],
     );
   }

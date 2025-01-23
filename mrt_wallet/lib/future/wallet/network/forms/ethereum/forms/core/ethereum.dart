@@ -6,7 +6,7 @@ import 'package:on_chain/on_chain.dart';
 
 enum ETHTransactionMode { transfer, erc20Transfer, contract, callContract }
 
-abstract class EthereumTransactionForm implements TransactionForm {
+abstract class EthereumTransactionForm extends TransactionForm {
   BigInt get callValue;
   BigInt get tokenValue;
   @override
@@ -21,7 +21,6 @@ abstract class EthereumTransactionForm implements TransactionForm {
       required EthereumFee fee,
       String? memo});
   ETHTransactionMode get mode;
-
   DynamicVoid? onStimateChanged;
 }
 

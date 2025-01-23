@@ -40,8 +40,8 @@ abstract class NetworkClient<T extends ChainAccount, P extends APIProvider>
 
   final _lock = SynchronizedLock();
 
-  Future<void> _init() async {
-    if (_status.value.isConnect || _status.value.isPending) return;
+  Future<bool> _init() async {
+    if (_status.value.isConnect) return true;
     _status.value = NodeClientStatus.pending;
     final init = await MethodUtils.call(() async => await onInit());
     if (init.hasResult && init.result) {
@@ -49,10 +49,11 @@ abstract class NetworkClient<T extends ChainAccount, P extends APIProvider>
     } else {
       _status.value = NodeClientStatus.disconnect;
     }
+    return init.hasResult && init.result;
   }
 
-  Future<void> init() async {
-    await _lock.synchronized(() async => await _init());
+  Future<bool> init() async {
+    return await _lock.synchronized(() async => await _init());
   }
 
   void dispose() {

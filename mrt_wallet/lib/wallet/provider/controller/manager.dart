@@ -395,6 +395,8 @@ mixin WalletManager on _WalletController {
       {CHAINACCOUNT? address}) async {
     final provider = account.clientNullable;
     if (provider == null) return;
+    final init = await provider.init();
+    if (!init) return;
     if (address != null) {
       await MethodUtils.call(() async {
         await provider.updateBalance(address, account);
@@ -485,12 +487,17 @@ mixin WalletManager on _WalletController {
   Future<void> _onInitController() async {
     await chain.init();
     if (_core.isJsWallet) return;
+    // return;
     final chains = _appChains.chains();
     _balanceUpdaterStream = MethodUtils.prediocCaller(
             () async => await MethodUtils.call(() async {
                   for (final chain in chains) {
+                    if (!chain.haveAddress) continue;
                     await chain.init();
                     await _updateAccountBalance(chain);
+                    if (chain != this.chain) {
+                      chain.disposeProvider();
+                    }
                   }
                 }),
             canclable: _balanceUpdaterCancelable,

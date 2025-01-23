@@ -1,5 +1,7 @@
 part of 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 
+enum WalletChainStatus { init, ready }
+
 abstract class ChainConfig<STORAGE extends ChainStorageKey>
     with CborSerializable {
   abstract final double appbarHeight;
@@ -154,17 +156,18 @@ abstract class BaseChain<
         TRANSACTION extends WalletTransaction<NETWORKADDRESS>>
     with CborSerializable {
   abstract final NETWORK network;
+  abstract final Live<IntegerBalance> totalBalance;
+  abstract final String id;
   abstract CLIENT? _client;
+
   abstract List<ADDRESS> _addresses;
   abstract int _addressIndex;
-  abstract final Live<IntegerBalance> totalBalance;
   abstract final List<String> services;
   abstract List<ContactCore<NETWORKADDRESS>> _contacts;
   List<ADDRESS> get addresses => _addresses;
   bool get haveAddress => addresses.isNotEmpty;
   List<ContactCore<NETWORKADDRESS>> get contacts => _contacts;
   ADDRESS get address => addresses.elementAt(_addressIndex);
-  abstract final String id;
   abstract Live<CONFIG> _config;
   CONFIG get config => _config.value;
   abstract final SynchronizedLock _lock;

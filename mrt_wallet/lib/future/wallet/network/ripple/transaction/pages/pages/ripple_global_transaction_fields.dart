@@ -561,9 +561,9 @@ class _GenerateFulFillmentViewState extends State<_GenerateFulFillmentView>
               child: Padding(
                 padding: WidgetConstant.paddingVertical20,
                 child: fulFillment == null
-                    ? StreamWidget(
+                    ? ButtonProgress(
                         key: progressKey,
-                        buttonWidget: FilledButton(
+                        child: (context) => FilledButton(
                             onPressed: generateFulFillment,
                             child: Text("generate".tr)))
                     : Row(children: [

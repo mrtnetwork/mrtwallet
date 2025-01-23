@@ -20,7 +20,8 @@ class MoneroChain extends Chain<
       required super.config,
       required super.client,
       required super.contacts,
-      required super.addresses})
+      required super.addresses,
+      required super.status})
       : super._();
   @override
   MoneroChain copyWith(
@@ -33,7 +34,8 @@ class MoneroChain extends Chain<
       String? id,
       MoneroChainConfig? config,
       List<MoneroAccountBlocksTracker>? syncRequests,
-      MoneroAccountBlocksTracker? defaultTracker}) {
+      MoneroAccountBlocksTracker? defaultTracker,
+      WalletChainStatus? status}) {
     return MoneroChain._(
         network: network ?? this.network,
         totalBalance: totalBalance ?? this.totalBalance,
@@ -42,13 +44,15 @@ class MoneroChain extends Chain<
         contacts: contacts ?? _contacts,
         client: client ?? _client,
         id: id ?? this.id,
-        config: config ?? this.config);
+        config: config ?? this.config,
+        status: status ?? _chainStatus);
   }
 
-  factory MoneroChain.setup(
-      {required WalletMoneroNetwork network,
-      required String id,
-      MoneroClient? client}) {
+  factory MoneroChain.setup({
+    required WalletMoneroNetwork network,
+    required String id,
+    MoneroClient? client,
+  }) {
     return MoneroChain._(
         network: network,
         addressIndex: 0,
@@ -58,7 +62,8 @@ class MoneroChain extends Chain<
         client: client,
         config: MoneroChainConfig(),
         addresses: [],
-        contacts: []);
+        contacts: [],
+        status: WalletChainStatus.ready);
   }
 
   factory MoneroChain.deserialize(
@@ -102,6 +107,7 @@ class MoneroChain extends Chain<
         id: cbor.elementAs<String>(8),
         config: cbor.elemetMybeAs<MoneroChainConfig, CborObject>(
                 9, (e) => MoneroChainConfig.deserialize(object: e)) ??
-            MoneroChainConfig());
+            MoneroChainConfig(),
+        status: WalletChainStatus.ready);
   }
 }

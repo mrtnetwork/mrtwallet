@@ -1,7 +1,8 @@
-import 'package:mrt_wallet/app/error/exception.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/models/models/exception.dart';
+import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart';
 
-class Web3RequestException implements Exception {
+class Web3RequestException with Equatable implements Exception {
   final String message;
   final int code;
   final String walletCode;
@@ -22,15 +23,24 @@ class Web3RequestException implements Exception {
       required this.walletCode,
       this.data});
   Web3ExceptionMessage toResponseMessage(
-      {Map<String, dynamic>? request, String? requestId}) {
+      {Map<String, dynamic>? request,
+      String? requestId,
+      Web3APPData? authenticated}) {
     return Web3ExceptionMessage(
-        message: message, code: code, walletCode: walletCode, data: data);
+        message: message,
+        code: code,
+        walletCode: walletCode,
+        data: data,
+        authenticated: authenticated);
   }
 
   @override
   String toString() {
     return message;
   }
+
+  @override
+  List get variabels => [code, message];
 }
 
 class Web3RejectException implements AppException {

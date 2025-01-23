@@ -12,54 +12,51 @@ import '../../models/models/requests.dart';
 import '../../utils/utils/utils.dart';
 import '../core/network_handler.dart';
 
-class StellarWeb3State
-    extends ChainWeb3State<StellarAddress, StellarChain, Web3StellarChain> {
-  final StellarChain? chain;
+class StellarWeb3State extends ChainWeb3State {
+  final WalletStellarNetwork? network;
   final StellarAddress? defaultAddress;
   final StellarClient? client;
+  final List<String> permissionAccounts;
 
   StellarWeb3State._(
-      {super.permission,
-      required super.chains,
-      required super.state,
-      required super.permissionAccounts,
+      {required super.state,
+      required List<String> permissionAccounts,
       this.defaultAddress,
       this.client,
-      this.chain});
+      this.network})
+      : permissionAccounts = permissionAccounts.imutable;
   factory StellarWeb3State.init(
       {JSNetworkState state = JSNetworkState.disconnect}) {
-    return StellarWeb3State._(
-        chains: const [], permissionAccounts: const [], state: state);
+    return StellarWeb3State._(permissionAccounts: const [], state: state);
   }
-  factory StellarWeb3State(
-      {required Web3APPAuthentication authenticated,
-      required ChainsHandler chainHandler}) {
-    final permission = authenticated
-        .getChainFromNetworkType<Web3StellarChain>(NetworkType.stellar);
-    if (permission == null) {
+  factory StellarWeb3State(Web3StellarChainAuthenticated? authenticated) {
+    // final permission = authenticated
+    //     .getChainFromNetworkType<Web3StellarChain>(NetworkType.stellar);
+    if (authenticated == null) {
       return StellarWeb3State.init(state: JSNetworkState.block);
     }
-    final chains = chainHandler.chains().whereType<StellarChain>().toList();
-    final currentChain = chains.firstWhere(
-        (e) => e.network.coinParam.passphrase == permission.currentChain);
-    final permissionAccounts = permission.chainAccounts(currentChain);
+    // final chains = chainHandler.chains().whereType<StellarChain>().toList();
+    // final currentChain = chains.firstWhere(
+    //     (e) => e.network.coinParam.passphrase == permission.currentChain);
+    final permissionAccounts = authenticated.accounts;
     final defaultAddress = permissionAccounts
         .firstWhereOrNull((e) => e.defaultAddress, orElse: () {
       if (permissionAccounts.isEmpty) return null;
       return permissionAccounts.first;
     });
     return StellarWeb3State._(
-        chains: chainHandler.chains().whereType<StellarChain>().toList(),
-        permission: permission,
         permissionAccounts:
             permissionAccounts.map((e) => e.address.toString()).toList()
               ..sort((a, b) =>
                   JsUtils.compareAddress(a, b, defaultAddress?.addressStr)),
         state: JSNetworkState.init,
-        chain: currentChain,
+        network: authenticated.network,
         defaultAddress: defaultAddress?.address,
-        client: currentChain.getWeb3Provider(
-            requestTimeout: ChainWeb3State.requestTimeout));
+        client: APIUtils.createApiClient(authenticated.network,
+            allowInWeb3: true,
+            identifier: authenticated.serviceIdentifier,
+            isolate: APPIsolate.current,
+            requestTimeut: ChainWeb3State.requestTimeout));
   }
 
   bool accountChanged(StellarWeb3State other) {
@@ -69,8 +66,7 @@ class StellarWeb3State
   }
 
   bool chainChanged(StellarWeb3State other) {
-    return other.chain?.network.coinParam.passphrase !=
-        chain?.network.coinParam.passphrase;
+    return other.network?.coinParam.passphrase != network?.coinParam.passphrase;
   }
 
   bool needToggle(StellarWeb3State other) {
@@ -82,16 +78,15 @@ class StellarWeb3State
       defaultAddress: defaultAddress?.toString(),
       connectInfo: chainChangedEvent);
   StellarProviderConnectInfo get chainChangedEvent =>
-      StellarProviderConnectInfo(chain!.network.coinParam.passphrase);
+      StellarProviderConnectInfo(network!.coinParam.passphrase);
   bool hasPermission(StellarAddress address) {
-    return permission?.getPermission(address) != null;
+    return permissionAccounts.any((e) => e == address.baseAddress);
   }
 
   bool get isConnect => defaultAddress != null;
 }
 
-class JSStellarHandler extends JSNetworkHandler<StellarAddress, StellarChain,
-    Web3StellarChainAccount, Web3StellarChain, StellarWeb3State> {
+class JSStellarHandler extends JSNetworkHandler<StellarWeb3State> {
   @override
   StellarWeb3State state = StellarWeb3State.init();
 
@@ -102,13 +97,10 @@ class JSStellarHandler extends JSNetworkHandler<StellarAddress, StellarChain,
   }
 
   @override
-  void initChain(
-      {required Web3APPAuthentication authenticated,
-      required ChainsHandler chainHandler}) {
+  void initChain(Web3APPData authenticated) {
     lock.synchronized(() async {
       final currentState = state;
-      state = StellarWeb3State(
-          authenticated: authenticated, chainHandler: chainHandler);
+      state = StellarWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {
         _toggleStellar(state);
         _disconnect();
@@ -233,14 +225,14 @@ class JSStellarHandler extends JSNetworkHandler<StellarAddress, StellarChain,
   }
 
   void _chainChanged(StellarWeb3State state) async {
-    if (state.chain == null) return;
+    if (state.network == null) return;
     _sendEvent(
         event: JSEventType.chainChanged,
         data: state.chainChangedEvent.toJson());
   }
 
   void _toggleStellar(StellarWeb3State state) {
-    final chain = state.chain;
+    final chain = state.network;
     if (chain != null) {
       _sendEvent(event: JSEventType.active);
     } else {
@@ -268,7 +260,7 @@ class JSStellarHandler extends JSNetworkHandler<StellarAddress, StellarChain,
   @override
   WalletMessageResponse finilizeWalletResponse(
       {required PageMessageRequest message,
-      required Web3RequestParams params,
+      required Web3RequestParams? params,
       required Web3WalletResponseMessage response}) {
     final method = Web3StellarRequestMethods.fromName(message.method);
     switch (method) {

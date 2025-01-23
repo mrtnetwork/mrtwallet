@@ -12,6 +12,31 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
   @override
   final BigInt tokenValue = BigInt.zero;
 
+  List<ReceiptAddress<TronAddress>> _resourceAddresses = [];
+  List<ReceiptAddress<TronAddress>> get resourceAddresses => _resourceAddresses;
+  DelegatedAccountResourceInfo? _delegatedAccountResourceInfo;
+  TronClient? _provider;
+  DelegatedAccountResourceInfo? get resourceInf0 =>
+      _delegatedAccountResourceInfo;
+  bool _isLoading = false;
+  bool get isLoadingResource => _isLoading;
+  final Cancelable _requestCancelable = Cancelable();
+  String? _inLoadingError;
+  String? get inLoadingError => _inLoadingError;
+  final Map<TronAddress, DelegatedAccountResourceInfo> _fetchedResource = {};
+
+  DelegateResourceDetailsCore? _selectedResource;
+  DelegateResourceDetailsCore? get selectedResource => _selectedResource;
+
+  @override
+  TronAddress? get smartContractAddress => null;
+  ITronAddress? _address;
+
+  List<TransactionFormField> get fields => [balance, destination];
+
+  @override
+  late final String name = "undelegated_resource";
+
   final TransactionFormField<IntegerBalance> balance = TransactionFormField(
     name: "balance",
     optional: false,
@@ -39,18 +64,6 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
     _fetchAccountDelegateInfo(destination.value!.networkAddress);
   }
 
-  late final List<ReceiptAddress<TronAddress>> resourceAddresses;
-  DelegatedAccountResourceInfo? _delegatedAccountResourceInfo;
-  TronClient? _provider;
-  DelegatedAccountResourceInfo? get resourceInf0 =>
-      _delegatedAccountResourceInfo;
-  bool _isLoading = false;
-  bool get isLoadingResource => _isLoading;
-  final Cancelable _requestCancelable = Cancelable();
-  String? _inLoadingError;
-  String? get inLoadingError => _inLoadingError;
-  final Map<TronAddress, DelegatedAccountResourceInfo> _fetchedResource = {};
-
   Future<void> _fetchAccountDelegateInfo(TronAddress to) async {
     _requestCancelable.cancel();
     _inLoadingError = null;
@@ -58,7 +71,7 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
     _isLoading = true;
     _selectedResource = null;
 
-    onChanged?.call(true);
+    onChanged?.call();
     final result = await MethodUtils.call(() async {
       if (_fetchedResource.containsKey(to)) {
         return _fetchedResource[to]!;
@@ -74,11 +87,9 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
       _delegatedAccountResourceInfo = _fetchedResource[to];
     }
     _isLoading = false;
-    onChanged?.call(false);
+    onChanged?.call();
   }
 
-  DelegateResourceDetailsCore? _selectedResource;
-  DelegateResourceDetailsCore? get selectedResource => _selectedResource;
   void onSetResource(
       DelegateResourceDetailsCore? resource, DynamicVoid duringPeriodLock) {
     if (resource == null) return;
@@ -93,14 +104,6 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
     balance.setValue(selectedResource!.balance);
     onChanged?.call();
   }
-
-  @override
-  OnChangeForm? onChanged;
-
-  List<TransactionFormField> get fields => [balance, destination];
-
-  @override
-  late final String name = "undelegated_resource";
 
   void setValue<T>(TransactionFormField<T>? field, T? value) {
     if (field == null) return;
@@ -152,21 +155,34 @@ class TronUnDelegatedResourceV2Form extends TronTransactionForm {
   }
 
   @override
-  TronAddress? get smartContractAddress => null;
-  ITronAddress? _address;
-  @override
   Future<void> init(
       {required TronClient provider,
       required ITronAddress address,
       required TronChain account}) async {
-    _provider ??= provider;
-    _address ??= address;
+    _provider = provider;
+    _address = address;
     final delegated = await _provider!.getDelegatedResourceAddresses(address);
-    resourceAddresses = delegated
+    _resourceAddresses = delegated
         .map((e) =>
             account.getReceiptAddress(e) ??
             ReceiptAddress<TronAddress>(
                 view: e, type: null, networkAddress: TronAddress(e)))
         .toList();
+  }
+
+  @override
+  void close() {
+    _requestCancelable.cancel();
+    _resourceAddresses = [];
+    _provider = null;
+    _address = null;
+    _fetchedResource.clear();
+    _selectedResource = null;
+    _inLoadingError = null;
+    _isLoading = false;
+    _delegatedAccountResourceInfo = null;
+    balance.clear();
+    destination.clear();
+    super.close();
   }
 }

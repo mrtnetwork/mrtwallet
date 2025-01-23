@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 5.8.2+16
+version: 5.9.0+17
 
 homepage: "https://github.com/mrtnetwork/mrtwallet"
 repository: "https://github.com/mrtnetwork/mrtwallet"
@@ -42,45 +42,44 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  image: ^4.2.0
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
   mrt_native_support:
     path: ../mrt_native_support
-  http: ^1.1.0
-  blockchain_utils: ^4.0.0
+  http: ^1.2.2
+  blockchain_utils: ^4.0.1
   # blockchain_utils:
   #   path: ../../blockchain_utils
 
-  bitcoin_base: ^5.0.0
+  bitcoin_base: ^5.1.0
   # bitcoin_base:
   #   path: ../../bitcoin_base
 
 
-  xrpl_dart: ^5.0.0
+  xrpl_dart: ^5.1.0
   # xrpl_dart:
   #   path: ../../xrpl_dart
 
-  on_chain: ^5.0.0
+  on_chain: ^5.1.0
   # on_chain:
   #   path: ../../on_chain
 
 
-  cosmos_sdk: ^2.0.0
+  cosmos_sdk: ^2.1.0
   # cosmos_sdk:
   #   path: ../../cosmos_sdk
-  ton_dart: ^1.0.0
+  ton_dart: ^1.1.0
   # ton_dart:
   #   path: ../../ton_dart
-  polkadot_dart: ^2.0.0
+  polkadot_dart: ^3.1.0
   # polkadot_dart:
   #   path: ../../polkadot_dart
-  stellar_dart: ^1.0.0
+  stellar_dart: ^1.1.0
   # stellar_dart:
   #   path: ../../stellar_dart
-  monero_dart: ^0.3.0
+  monero_dart: ^0.4.0
   # monero_dart:
   #   path: ../../monero_dart
   # The following adds the Cupertino Icons font to your application.

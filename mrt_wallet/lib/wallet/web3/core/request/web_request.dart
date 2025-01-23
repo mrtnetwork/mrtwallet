@@ -100,21 +100,22 @@ typedef WEB3CHAINREQUEST<NETWORKADDRESS> = Web3Request<
     APPCHAINNETWORK<NETWORKADDRESS>,
     Web3ChainAccount<NETWORKADDRESS>,
     Web3Chain<NETWORKADDRESS, APPCHAINNETWORK<NETWORKADDRESS>,
-        Web3ChainAccount<NETWORKADDRESS>>,
+        Web3ChainAccount<NETWORKADDRESS>, WalletNetwork>,
     Web3RequestParams<
         dynamic,
         NETWORKADDRESS,
         APPCHAINNETWORK<NETWORKADDRESS>,
         Web3ChainAccount<NETWORKADDRESS>,
         Web3Chain<NETWORKADDRESS, APPCHAINNETWORK<NETWORKADDRESS>,
-            Web3ChainAccount<NETWORKADDRESS>>>>;
+            Web3ChainAccount<NETWORKADDRESS>, WalletNetwork>>>;
 
 abstract class Web3Request<
     RESPONSE,
     NETWORKADDRESS,
     CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
     CHANACCOUNT extends Web3ChainAccount<NETWORKADDRESS>,
-    WEB3CHAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHANACCOUNT>,
+    WEB3CHAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHANACCOUNT,
+        WalletNetwork>,
     PARAMS extends Web3RequestParams<RESPONSE, NETWORKADDRESS, CHAIN,
         CHANACCOUNT, WEB3CHAIN>> {
   Web3Request(
@@ -129,7 +130,8 @@ abstract class Web3Request<
 
   WEB3CHAIN? get currentPermission =>
       authenticated.getChainFromNetworkType(chain.network.type);
-  bool get hasAnyPermission => currentPermission?.hasPermission(chain) ?? false;
+  bool get hasAnyPermission =>
+      currentPermission?.chainHasPermission(chain) ?? false;
   NETWORKCHAINACCOUNT<NETWORKADDRESS>? accountPermission();
   bool get isPermissionRequest => params.isPermissionRequest;
   bool get needPermission => params.account != null;
@@ -163,5 +165,5 @@ abstract class Web3Request<
     return result as RESPONSE;
   }
 
-  void verifyPermissioon() => accountPermission();
+  void verifyPermission() => accountPermission();
 }

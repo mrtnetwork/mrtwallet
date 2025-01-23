@@ -143,13 +143,22 @@ class WalletRequestSign
         signature = solanaSigner.sign(digest);
         break;
       case SigningRequestNetwork.cardano:
-        final cardaoSigner = CardanoSigner.fromKeyBytes(keyBytes);
-        signature = cardaoSigner.sign(digest);
+        final cardanoSigner = CardanoSigner.fromKeyBytes(keyBytes);
+        signature = cardanoSigner.sign(digest);
         break;
       case SigningRequestNetwork.substrate:
-        final cardaoSigner =
-            SubstrateSigner.fromBytes(keyBytes, key.coin.conf.type);
-        signature = cardaoSigner.sign(digest);
+        switch (key.coin) {
+          case Bip44Coins.ethereum:
+          case Bip44Coins.ethereumTestnet:
+            final signer = ETHSigner.fromKeyBytes(keyBytes);
+            signature = signer.sign(digest).toBytes();
+            break;
+          default:
+            final substrateSigner =
+                SubstrateSigner.fromBytes(keyBytes, key.coin.conf.type);
+            signature = substrateSigner.sign(digest);
+            break;
+        }
         break;
       default:
         throw WalletExceptionConst.dataVerificationFailed;

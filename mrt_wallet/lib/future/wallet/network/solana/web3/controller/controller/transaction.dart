@@ -18,7 +18,6 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
   Web3SolanaSendTransactionForm get form =>
       liveRequest.validator as Web3SolanaSendTransactionForm;
   bool get isMultipleTransaction => request.params.isBatchRequest;
-  // Web3SolanaSendTransactionOptions? _sendOption;
   bool get isSend => request.params.isSend;
   bool _hasSimulateError = false;
   bool _isReady = false;
@@ -42,7 +41,9 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
     notify();
   }
 
-  Future<void> _init() async {
+  @override
+  Future<void> initWeb3() async {
+    form.onChanged = onChange;
     progressKey.process(text: "transaction_retrieval_requirment".tr);
     final r = await MethodUtils.call(() async {
       final params = request.params.messages;
@@ -197,8 +198,7 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
                 final SolanaWeb3TransactionSendResponse txResult = e.cast();
                 return ProgressMultipleTextViewObject.success(
                     message: txResult.txHash,
-                    openUrl: network.coinParam
-                        .getTransactionExplorer(txResult.txHash));
+                    openUrl: network.getTransactionExplorer(txResult.txHash));
               }).toList(),
               logo: network.token.assetLogo,
               title: network.networkName));
@@ -209,12 +209,5 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
 
   void onChange([bool? changed]) {
     _checkTransaction();
-  }
-
-  @override
-  Future<void> readyWeb3() async {
-    await super.readyWeb3();
-    form.onChanged = onChange;
-    _init();
   }
 }

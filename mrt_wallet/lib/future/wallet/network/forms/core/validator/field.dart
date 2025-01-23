@@ -32,6 +32,10 @@ class TransactionFormField<T> {
     }
     return true;
   }
+
+  void clear() {
+    _value = null;
+  }
 }
 
 class TransactionListFormField<T> {
@@ -69,5 +73,9 @@ class TransactionListFormField<T> {
 
   bool removeValue(T? v) {
     return _value.remove(v);
+  }
+
+  void clear() {
+    _value.clear();
   }
 }

@@ -16,16 +16,18 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
   ICosmosAddress._({
     required this.keyIndex,
     required this.coin,
-    required this.publicKey,
+    required List<int> publicKey,
     required this.address,
     required this.network,
     required this.networkAddress,
     required List<CW20Token> tokens,
     required List<NFTCore> nfts,
     String? accountName,
+    required this.algorithm,
   })  : _tokens = tokens.immutable,
         _nfts = nfts.immutable,
-        _accountName = accountName;
+        _accountName = accountName,
+        publicKey = publicKey.asImmutableBytes;
 
   factory ICosmosAddress.newAccount(
       {required CosmosNewAddressParams accountParams,
@@ -37,15 +39,15 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
         address: cosmosAddr.address,
         balance: IntegerBalance.zero(network.coinParam.decimal));
     return ICosmosAddress._(
-      coin: accountParams.coin,
-      publicKey: accountParams.toPublicKey(publicKey),
-      address: addressDetauls,
-      keyIndex: accountParams.deriveIndex,
-      networkAddress: cosmosAddr,
-      network: network.value,
-      tokens: const [],
-      nfts: const [],
-    );
+        coin: accountParams.coin,
+        publicKey: publicKey,
+        address: addressDetauls,
+        keyIndex: accountParams.deriveIndex,
+        networkAddress: cosmosAddr,
+        network: network.value,
+        tokens: const [],
+        nfts: const [],
+        algorithm: accountParams.algorithm);
   }
   factory ICosmosAddress.fromCbsorHex(String hex, WalletNetwork network) {
     return ICosmosAddress.fromCborBytesOrObject(network,
@@ -77,23 +79,20 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
         .elementAsListOf<CborTagValue>(7)
         .map((e) => CW20Token.fromCborBytesOrObject(obj: e))
         .toList();
-    final algorithm = values.elemetMybeAs<CosmosKeysAlgs, String>(10, (p0) {
-      return CosmosKeysAlgs.fromName(p0);
-    });
-
+    final algorithm = values.elemetMybeAs<CosmosKeysAlgs, String>(
+            10, (p0) => CosmosKeysAlgs.fromName(p0)) ??
+        CosmosKeysAlgs.secp256k1;
     return ICosmosAddress._(
-      coin: coin,
-      publicKey: CosmosPublicKey.fromBytes(
-          keyBytes: publicKey,
-          algorithm: algorithm ?? CosmosKeysAlgs.secp256k1),
-      address: address,
-      keyIndex: keyIndex,
-      networkAddress: cosmosAddr,
-      network: networkId,
-      tokens: tokens,
-      nfts: [],
-      accountName: accountName,
-    );
+        coin: coin,
+        publicKey: publicKey,
+        address: address,
+        keyIndex: keyIndex,
+        networkAddress: cosmosAddr,
+        network: networkId,
+        tokens: tokens,
+        nfts: [],
+        accountName: accountName,
+        algorithm: algorithm);
   }
 
   @override
@@ -113,9 +112,9 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
   @override
   final int network;
 
-  final CosmosPublicKey publicKey;
+  final List<int> publicKey;
 
-  // final String hrp;
+  final CosmosKeysAlgs algorithm;
 
   @override
   CborTagValue toCbor() {
@@ -124,15 +123,14 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
           coin.proposal.specName,
           coin.coinName,
           keyIndex.toCbor(),
-          publicKey.toBytes(),
+          publicKey,
           address.toCbor(),
           networkAddress.address,
           network,
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
           accountName,
-          publicKey.algorithm.name
-          // CborStringValue(hrp)
+          algorithm.name
         ]),
         CborTagsConst.cosmosAccount);
   }
@@ -188,7 +186,8 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
   void removeNFT(NFTCore nft) {}
 
   SignerInfo get signerInfo => SignerInfo(
-      publicKey: publicKey,
+      publicKey:
+          CosmosPublicKey.fromBytes(keyBytes: publicKey, algorithm: algorithm),
       modeInfo: const ModeInfo(ModeInfoSignle(SignMode.signModeDirect)),
       sequence: BigInt.zero);
 
@@ -216,6 +215,6 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
   @override
   CosmosNewAddressParams toAccountParams() {
     return CosmosNewAddressParams(
-        deriveIndex: keyIndex, coin: coin, algorithm: publicKey.algorithm);
+        deriveIndex: keyIndex, coin: coin, algorithm: algorithm);
   }
 }

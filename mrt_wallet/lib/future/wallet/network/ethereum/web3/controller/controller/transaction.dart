@@ -148,7 +148,8 @@ class Web3EthereumTransactionRequestController
     }
   }
 
-  Future<void> getTransactionInfos() async {
+  @override
+  Future<void> initWeb3() async {
     progressKey.process(text: "transaction_retrieval_requirment".tr);
     final result = await MethodUtils.call(() async =>
         await apiProvider.getWeb3TransactionInfos(
@@ -170,11 +171,5 @@ class Web3EthereumTransactionRequestController
       progressKey.idle();
       estimateGasLimit();
     }
-  }
-
-  @override
-  Future<void> readyWeb3() async {
-    await super.readyWeb3();
-    getTransactionInfos();
   }
 }

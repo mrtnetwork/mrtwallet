@@ -9,6 +9,8 @@ import 'package:mrt_wallet/wallet/web3/web3.dart';
 class Web3SolanaGlobalRequestController<RESPONSE,
         T extends Web3SolanaRequestParam<RESPONSE>>
     extends Web3SolanaImpl<RESPONSE, T> {
+  @override
+  bool get clientRequired => false;
   Web3SolanaGlobalRequestController({
     required super.walletProvider,
     required super.request,
@@ -62,18 +64,13 @@ class Web3SolanaGlobalRequestController<RESPONSE,
     progressKey.response(text: "request_completed_success".tr);
   }
 
-  void _init() {
-    MethodUtils.after(() async {
+  @override
+  Future<void> initWeb3() async {
+    await MethodUtils.after(() async {
       liveRequest.addListener(onChangeForm);
       form.onCompleteForm = onCompleteForm;
       progressKey.idle();
     });
-  }
-
-  @override
-  Future<void> readyWeb3() async {
-    await super.readyWeb3();
-    _init();
   }
 
   @override

@@ -27,6 +27,10 @@ class TronTransferForm extends TronTransactionForm {
 
   TokenCore<BigInt>? get transferToken => _trc20Token ?? _trc10Token;
 
+  @override
+  bool get enableSwitchAccount =>
+      type == TransactionContractType.transferContract;
+
   final TransactionFormField<ReceiptAddress<TronAddress>> destination =
       TransactionFormField(
     name: "destination",
@@ -47,10 +51,6 @@ class TronTransferForm extends TronTransactionForm {
       }
     },
   );
-
-  @override
-  OnChangeForm? onChanged;
-
   List<TransactionFormField> get fields => [destination, amount];
 
   @override
@@ -132,4 +132,9 @@ class TronTransferForm extends TronTransactionForm {
       {required TronClient provider,
       required ITronAddress address,
       required TronChain account}) async {}
+  @override
+  void close() {
+    destination.clear();
+    super.close();
+  }
 }

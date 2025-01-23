@@ -19,8 +19,7 @@ abstract class PageProgressBaseState<T extends StatefulWidget> extends State<T>
   void _listen(PageProgressStatus status) async {
     if (backToIdle == null) return;
     if (status == PageProgressStatus.progress ||
-        status == PageProgressStatus.idle ||
-        status == PageProgressStatus.hide) {
+        status == PageProgressStatus.idle) {
       return;
     }
     await Future.delayed(backToIdle ?? Duration.zero);
@@ -58,8 +57,7 @@ class PageProgress extends StatefulWidget {
     this.initialStatus = PageProgressStatus.idle,
     this.backToIdle,
     this.initialWidget,
-  }) : assert(initialStatus != PageProgressStatus.hide,
-            "hide does not work in page progress");
+  });
   final PageProgressStatus initialStatus;
   final FuncWidgetContext child;
   final Duration? backToIdle;

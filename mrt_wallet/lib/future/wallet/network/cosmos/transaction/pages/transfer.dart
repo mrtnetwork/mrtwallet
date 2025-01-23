@@ -10,9 +10,9 @@ class CosmosTransferTransactionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CosmosChain? token = context.getNullArgruments();
+    final CosmosChain? account = context.getNullArgruments();
     return CosmosTransactionFieldsView(
         field: LiveTransactionForm(
-            validator: CosmosTransferForm(network: token!.network)));
+            validator: CosmosTransferForm(network: account!.network)));
   }
 }

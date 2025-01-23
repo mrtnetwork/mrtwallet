@@ -42,26 +42,28 @@ class EthereumTransactionFieldsView extends StatelessWidget {
                           ContainerWithBorder(
                             onRemoveIcon: Icon(Icons.edit,
                                 color: context.onPrimaryContainer),
+                            onRemove: controller.form.enableSwitchAccount
+                                ? () {
+                                    context
+                                        .openSliverBottomSheet<IEthAddress>(
+                                          "switch_account".tr,
+                                          child: SwitchOrSelectAccountView(
+                                            account: controller.account,
+                                            showMultiSig: true,
+                                          ),
+                                          minExtent: 0.5,
+                                          maxExtend: 0.9,
+                                          initialExtend: 0.7,
+                                          centerContent: false,
+                                        )
+                                        .then(switchAccount);
+                                  }
+                                : null,
                             child: AddressDetailsView(
                                 address: controller.address,
                                 color: context.onPrimaryContainer,
                                 key:
                                     ValueKey<IEthAddress?>(controller.address)),
-                            onRemove: () {
-                              context
-                                  .openSliverBottomSheet<IEthAddress>(
-                                    "switch_account".tr,
-                                    child: SwitchOrSelectAccountView(
-                                      account: controller.account,
-                                      showMultiSig: true,
-                                    ),
-                                    minExtent: 0.5,
-                                    maxExtend: 0.9,
-                                    initialExtend: 0.7,
-                                    centerContent: false,
-                                  )
-                                  .then(switchAccount);
-                            },
                           ),
                           WidgetConstant.height20,
                           _ETHTransactionFileds(

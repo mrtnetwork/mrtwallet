@@ -267,9 +267,8 @@ class _NonContentJettonView extends StatelessWidget {
               enable: token.jettonToken != null),
           WidgetConstant.height8,
           LaunchBrowserIcon(
-              url: state.network.coinParam.getAccountExplorer(
-                      token.tokenAddress.toFriendlyAddress()) ??
-                  "",
+              url: state.network
+                  .getAccountExplorer(token.tokenAddress.toFriendlyAddress()),
               color: context.onPrimaryContainer)
         ],
       ),

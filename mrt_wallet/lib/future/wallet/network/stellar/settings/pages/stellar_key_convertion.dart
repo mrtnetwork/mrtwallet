@@ -97,65 +97,68 @@ class __StellarKeyConversionViewState extends State<_StellarConversionView>
         child: (c) => Form(
           key: formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: CustomScrollView(
-            slivers: [
-              SliverConstraintsBoxView(
-                  padding: WidgetConstant.paddingHorizontal20,
-                  sliver: APPSliverAnimatedSwitcher(
-                      enable: generatedKey != null,
-                      widgets: {
-                        false: (c) => SliverToBoxAdapter(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  PageTitleSubtitle(
-                                      title: "stellar_key_conversion".tr,
-                                      body: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                              "stellar_key_conversion_desc".tr),
-                                          WidgetConstant.height8,
-                                          Text(
-                                              "secret_key_conversion_desc2".tr),
-                                        ],
-                                      )),
-                                  Text("secret_key".tr,
-                                      style: context.textTheme.titleMedium),
-                                  Text("stellar_base32_secret_key_desc2".tr),
-                                  WidgetConstant.height8,
-                                  AppTextField(
-                                    key: keyController,
-                                    label: "secret_key".tr,
-                                    initialValue: key,
-                                    onChanged: onChangeKey,
-                                    validator: validate,
-                                    obscureText: true,
-                                    pasteIcon: true,
-                                    isSensitive: true,
-                                    hint: "example_s"
-                                        .tr
-                                        .replaceOne(APPConst.exampleBase32),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      FixedElevatedButton(
-                                        padding:
-                                            WidgetConstant.paddingVertical40,
-                                        onPressed: onSubmit,
-                                        child: Text("generate".tr),
-                                      )
-                                    ],
-                                  )
-                                ],
+          child: UnfocusableChild(
+            child: CustomScrollView(
+              slivers: [
+                SliverConstraintsBoxView(
+                    padding: WidgetConstant.paddingHorizontal20,
+                    sliver: APPSliverAnimatedSwitcher(
+                        enable: generatedKey != null,
+                        widgets: {
+                          false: (c) => SliverToBoxAdapter(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    PageTitleSubtitle(
+                                        title: "stellar_key_conversion".tr,
+                                        body: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text("stellar_key_conversion_desc"
+                                                .tr),
+                                            WidgetConstant.height8,
+                                            Text("secret_key_conversion_desc2"
+                                                .tr),
+                                          ],
+                                        )),
+                                    Text("secret_key".tr,
+                                        style: context.textTheme.titleMedium),
+                                    Text("stellar_base32_secret_key_desc2".tr),
+                                    WidgetConstant.height8,
+                                    AppTextField(
+                                      key: keyController,
+                                      label: "secret_key".tr,
+                                      initialValue: key,
+                                      onChanged: onChangeKey,
+                                      validator: validate,
+                                      obscureText: true,
+                                      pasteIcon: true,
+                                      isSensitive: true,
+                                      hint: "example_s"
+                                          .tr
+                                          .replaceOne(APPConst.exampleBase32),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        FixedElevatedButton(
+                                          padding:
+                                              WidgetConstant.paddingVertical40,
+                                          onPressed: onSubmit,
+                                          child: Text("generate".tr),
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                ),
                               ),
-                            ),
-                        true: (c) =>
-                            ImportCustomKeyToWalletView(keypair: generatedKey!)
-                      })),
-            ],
+                          true: (c) => ImportCustomKeyToWalletView(
+                              keypair: generatedKey!)
+                        })),
+              ],
+            ),
           ),
         ),
       ),

@@ -13,8 +13,10 @@ class EthereumWeb3SwitchEthereumChainView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageTitleSubtitle(
-              title: "switch_ethereum_chain".tr,
-              body: Text("switch_ethereum_chain_desc".tr)),
+              title: "switch_chain"
+                  .tr
+                  .replaceOne(request.newChain.network.networkName),
+              body: Text("switch_chain_desc".tr)),
           Text("current_chain".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           ContainerWithBorder(

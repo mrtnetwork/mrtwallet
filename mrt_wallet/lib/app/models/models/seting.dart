@@ -10,21 +10,27 @@ class APPSetting with CborSerializable {
       {required this.appColor,
       required this.appBrightness,
       required this.currency,
-      required this.config});
+      required this.config,
+      this.size});
   final String? appColor;
   final String? appBrightness;
   final Currency currency;
   final MRTAPPConfig config;
+  final WidgetRect? size;
 
   bool get supportBarcodeScanner => config.hasBarcodeScanner;
 
   APPSetting copyWith(
-      {String? appColor, String? appBrightness, Currency? currency}) {
+      {String? appColor,
+      String? appBrightness,
+      Currency? currency,
+      WidgetRect? size}) {
     return APPSetting._(
         appColor: appColor ?? this.appColor,
         appBrightness: appBrightness ?? this.appBrightness,
         currency: currency ?? this.currency,
-        config: config);
+        config: config,
+        size: size ?? this.size);
   }
 
   factory APPSetting.fromHex(String? cborHex, MRTAPPConfig config) {
@@ -37,12 +43,13 @@ class APPSetting with CborSerializable {
       final String? brightnessName = cbor.elementAs(1);
       final Currency currency =
           Currency.fromName(cbor.elementAs(2)) ?? Currency.USD;
-
+      WidgetRect? rect = WidgetRect.fromString(cbor.elementAs(3));
       return APPSetting._(
           appColor: colorHex,
           appBrightness: brightnessName,
           currency: currency,
-          config: config);
+          config: config,
+          size: rect);
     } catch (_) {
       return APPSetting._(
           appColor: null,
@@ -55,7 +62,12 @@ class APPSetting with CborSerializable {
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength([appColor, appBrightness, currency.name]),
+        CborListValue.fixedLength([
+          appColor,
+          appBrightness,
+          currency.name,
+          size?.toString(),
+        ]),
         APPSerializationConst.appSettingTag);
   }
 }

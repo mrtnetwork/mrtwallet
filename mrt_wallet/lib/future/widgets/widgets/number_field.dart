@@ -33,7 +33,7 @@ class NumberTextField extends StatefulWidget {
     required this.min,
     this.focusNode,
     this.nextFocus,
-    this.disableWriting = false,
+    this.readOnly = false,
     this.showPasteIcon = false,
   });
   final bool showPasteIcon;
@@ -49,7 +49,7 @@ class NumberTextField extends StatefulWidget {
   final int? defaultValue;
   final FocusNode? focusNode;
   final FocusNode? nextFocus;
-  final bool disableWriting;
+  final bool readOnly;
   @override
   State<NumberTextField> createState() => NumberTextFieldState();
 }
@@ -179,7 +179,7 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
       controller: controller,
       showPasteIcon: widget.showPasteIcon,
       allowSign: widget.min.isNegative,
-      disableWriting: widget.disableWriting,
+      disableWriting: widget.readOnly,
       error: widget.error,
       focusNode: widget.focusNode,
       helperText: widget.helperText,
@@ -213,7 +213,7 @@ class BigNumberTextField extends StatefulWidget {
     required this.min,
     this.focusNode,
     this.nextFocus,
-    this.disableWriting = false,
+    this.readOnly = false,
     this.showPasteIcon = false,
   });
   final bool showPasteIcon;
@@ -229,7 +229,7 @@ class BigNumberTextField extends StatefulWidget {
   final BigInt? defaultValue;
   final FocusNode? focusNode;
   final FocusNode? nextFocus;
-  final bool disableWriting;
+  final bool readOnly;
   @override
   State<BigNumberTextField> createState() => BigNumberTextFieldState();
 }
@@ -345,7 +345,7 @@ class BigNumberTextFieldState extends State<BigNumberTextField> with SafeState {
       controller: _controller,
       showPasteIcon: widget.showPasteIcon,
       allowSign: widget.min.isNegative,
-      disableWriting: widget.disableWriting,
+      disableWriting: widget.readOnly,
       error: widget.error,
       focusNode: widget.focusNode,
       helperText: widget.helperText,

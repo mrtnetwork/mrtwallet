@@ -144,9 +144,20 @@ class MethodResult<T> {
   bool get hasResult => exception == null;
   bool get isCancel => exception is CancelableExption;
   final bool unknownError;
+  bool errorISA<E extends Object>() {
+    return this.exception is E;
+  }
+
   T get result {
     if (hasError) {
       throw exception!;
+    }
+    return _result;
+  }
+
+  T? get resultOrNull {
+    if (hasError) {
+      return null;
     }
     return _result;
   }

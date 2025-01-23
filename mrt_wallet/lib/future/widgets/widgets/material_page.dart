@@ -15,8 +15,8 @@ class MaterialPageView extends StatelessWidget {
   }
 }
 
-class ScaffolPageView extends StatelessWidget {
-  const ScaffolPageView(
+class ScaffoldPageView extends StatelessWidget {
+  const ScaffoldPageView(
       {required this.child,
       super.key,
       this.appBar,

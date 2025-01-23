@@ -45,12 +45,10 @@ class _TonWeb3PermissionViewState extends State<TonWeb3PermissionView>
     final wallet = context.watch<WalletProvider>(StateConst.main);
     chains =
         wallet.wallet.getChains().whereType<TheOpenNetworkChain>().toList();
+    chain = permission.getCurrentPermissionChain(chains);
     for (final i in chains) {
       permissions[i] = permission.chainAccounts(i);
     }
-    chain = chains.firstWhere(
-        (e) => e.network.coinParam.workchain == permission.currentChain,
-        orElse: () => chains.first);
   }
 
   @override

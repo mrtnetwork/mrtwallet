@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:on_chain/solana/solana.dart';
@@ -11,22 +9,10 @@ class SolanaTransferForm extends SolanaTransactionForm {
   BigInt _transferValue = BigInt.zero;
   @override
   BigInt get transferValue => _transferValue;
-
   final Token token;
   final SolanaSPLToken? splToken;
-  final GlobalKey<StreamWidgetState> accountKey =
-      GlobalKey<StreamWidgetState>();
-  SolanaTransferDestinationInfo? _accountInfo;
-  SolanaTransferDestinationInfo? get accountInfo => _accountInfo;
-  final bool _isPubKey = false;
-  bool get isPubKey => _isPubKey;
 
-  final bool _hasError = false;
-  bool get hasError => _hasError;
   bool get isTokenTransfer => splToken != null;
-
-  final bool _showRequirementAmountAlert = false;
-  bool get showRequirementAmountAlert => _showRequirementAmountAlert;
 
   void checkAmount() {
     _transferValue =
@@ -49,9 +35,6 @@ class SolanaTransferForm extends SolanaTransactionForm {
           onChangeForm: (p0) {
             return p0;
           });
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   String get name => "transfer".tr;
@@ -123,4 +106,14 @@ class SolanaTransferForm extends SolanaTransactionForm {
   SolanaTransactionType get mode => isTokenTransfer
       ? SolanaTransactionType.spl
       : SolanaTransactionType.native;
+
+  @override
+  void close() {
+    destination.clear();
+    _transferValue = BigInt.zero;
+    super.close();
+  }
+
+  @override
+  late final bool enableSwitchAccount = !isTokenTransfer;
 }

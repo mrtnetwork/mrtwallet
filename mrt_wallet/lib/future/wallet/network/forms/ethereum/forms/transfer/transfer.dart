@@ -17,6 +17,8 @@ class EthereumTransferForm extends EthereumTransactionForm {
       : BigInt.zero;
   final Token token;
   final ETHERC20Token? erc20Token;
+  @override
+  bool get enableSwitchAccount => erc20Token == null;
   final TransactionFormField<ReceiptAddress<ETHAddress>> destination =
       TransactionFormField(
           name: "destination",
@@ -36,9 +38,6 @@ class EthereumTransferForm extends EthereumTransactionForm {
       }
     },
   );
-
-  @override
-  OnChangeForm? onChanged;
 
   List<TransactionFormField> get fields => [destination, amount];
 
@@ -129,4 +128,11 @@ class EthereumTransferForm extends EthereumTransactionForm {
   ETHTransactionMode get mode => erc20Token != null
       ? ETHTransactionMode.erc20Transfer
       : ETHTransactionMode.transfer;
+
+  @override
+  void close() {
+    destination.clear();
+    amount.clear();
+    super.close();
+  }
 }

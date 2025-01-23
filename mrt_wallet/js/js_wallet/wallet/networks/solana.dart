@@ -14,62 +14,53 @@ import '../../models/models/requests.dart';
 import '../../utils/utils/utils.dart';
 import '../core/network_handler.dart';
 
-class SolanaWeb3State
-    extends ChainWeb3State<SolAddress, SolanaChain, Web3SolanaChain> {
-  final SolanaChain? chain;
+class SolanaWeb3State extends ChainWeb3State {
+  final WalletSolanaNetwork? solanaNetwork;
   final SolAddress? defaultAddress;
   final SolanaClient? client;
-  late final SolanaNetworkType? network = chain!.network.coinParam.type;
+  late final SolanaNetworkType? network = solanaNetwork?.coinParam.type;
+  final List<Web3SolanaChainAccount> permissionAccounts;
   List<SolanaWalletAccount> get walletAccounts => permissionAccounts.map((e) {
-        final address = SolAddress.unchecked(e);
         return SolanaWalletAccount(
-            base58: address.address,
-            bytes: address.toBytes(),
+            base58: e.address.address,
+            bytes: e.address.toBytes(),
             chains: network == null ? [] : [network!.walletStandardChainName],
             features: []);
       }).toList();
   SolanaWeb3State._(
-      {super.permission,
-      required super.chains,
-      required super.state,
-      required super.permissionAccounts,
+      {required super.state,
+      required List<Web3SolanaChainAccount> permissionAccounts,
       this.defaultAddress,
       this.client,
-      this.chain});
+      this.solanaNetwork})
+      : permissionAccounts = permissionAccounts.imutable;
   factory SolanaWeb3State.init(
       {JSNetworkState state = JSNetworkState.disconnect}) {
-    return SolanaWeb3State._(
-        chains: const [], permissionAccounts: const [], state: state);
+    return SolanaWeb3State._(permissionAccounts: const [], state: state);
   }
-  factory SolanaWeb3State(
-      {required Web3APPAuthentication authenticated,
-      required ChainsHandler chainHandler}) {
-    final permission = authenticated
-        .getChainFromNetworkType<Web3SolanaChain>(NetworkType.solana);
-    if (permission == null) {
+  factory SolanaWeb3State(Web3SolanaChainAuthenticated? authenticated) {
+    if (authenticated == null) {
       return SolanaWeb3State.init(state: JSNetworkState.block);
     }
-    final chains = chainHandler.chains().whereType<SolanaChain>().toList();
-    final currentChain = chains
-        .firstWhere((e) => e.network.genesisBlock == permission.currentChain);
-    final permissionAccounts = permission.chainAccounts(currentChain);
+    final permissionAccounts =
+        List<Web3SolanaChainAccount>.from(authenticated.accounts);
     final defaultAddress = permissionAccounts
         .firstWhereOrNull((e) => e.defaultAddress, orElse: () {
       if (permissionAccounts.isEmpty) return null;
       return permissionAccounts.first;
     });
     return SolanaWeb3State._(
-        chains: chainHandler.chains().whereType<SolanaChain>().toList(),
-        permission: permission,
-        permissionAccounts:
-            permissionAccounts.map((e) => e.address.address).toList()
-              ..sort((a, b) =>
-                  JsUtils.compareAddress(a, b, defaultAddress?.addressStr)),
+        solanaNetwork: authenticated.network,
+        permissionAccounts: permissionAccounts
+          ..sort((a, b) => JsUtils.compareAddress(
+              a.addressStr, b.addressStr, defaultAddress?.addressStr)),
         state: JSNetworkState.init,
-        chain: currentChain,
         defaultAddress: defaultAddress?.address,
-        client: currentChain.getWeb3Provider(
-            requestTimeout: ChainWeb3State.requestTimeout));
+        client: APIUtils.createApiClient(authenticated.network,
+            allowInWeb3: true,
+            identifier: authenticated.serviceIdentifier,
+            isolate: APPIsolate.current,
+            requestTimeut: ChainWeb3State.requestTimeout));
   }
 
   bool accountChanged(SolanaWeb3State other) {
@@ -79,7 +70,7 @@ class SolanaWeb3State
   }
 
   bool chainChanged(SolanaWeb3State other) {
-    return other.chain?.network.genesisBlock != chain?.network.genesisBlock;
+    return other.solanaNetwork?.genesisBlock != solanaNetwork?.genesisBlock;
   }
 
   bool needToggle(SolanaWeb3State other) {
@@ -97,22 +88,16 @@ class SolanaWeb3State
               features: []),
       connectInfo: chainChangedEvent);
   SolanaProviderConnectInfo get chainChangedEvent => SolanaProviderConnectInfo(
-      genesisBlock: chain!.network.genesisBlock,
+      genesisBlock: solanaNetwork!.genesisBlock,
       name: network!.walletStandardChainName);
   bool hasPermission(SolAddress address) {
-    return permission?.getPermission(address) != null;
+    return permissionAccounts.any((e) => e.address == address);
   }
 
   bool get isConnect => defaultAddress != null;
 }
 
-class JSSolanaHandler extends JSNetworkHandler<
-    SolAddress,
-    SolanaChain,
-    Web3SolanaChainAccount,
-    Web3SolanaChain,
-    // PageMessageRequest,
-    SolanaWeb3State> {
+class JSSolanaHandler extends JSNetworkHandler<SolanaWeb3State> {
   @override
   SolanaWeb3State state = SolanaWeb3State.init();
 
@@ -123,13 +108,10 @@ class JSSolanaHandler extends JSNetworkHandler<
   }
 
   @override
-  void initChain(
-      {required Web3APPAuthentication authenticated,
-      required ChainsHandler chainHandler}) {
+  void initChain(Web3APPData authenticated) {
     lock.synchronized(() async {
       final currentState = state;
-      state = SolanaWeb3State(
-          authenticated: authenticated, chainHandler: chainHandler);
+      state = SolanaWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {
         _toggleSolana(state);
         _disconnect();
@@ -299,14 +281,14 @@ class JSSolanaHandler extends JSNetworkHandler<
   }
 
   void _chainChanged(SolanaWeb3State state) async {
-    if (state.chain == null) return;
+    if (state.network == null) return;
     _sendEvent(
         event: JSEventType.chainChanged,
         data: state.chainChangedEvent.toJson());
   }
 
   void _toggleSolana(SolanaWeb3State state) {
-    final chain = state.chain;
+    final chain = state.network;
     if (chain != null) {
       _sendEvent(event: JSEventType.active);
     } else {
@@ -334,7 +316,7 @@ class JSSolanaHandler extends JSNetworkHandler<
   @override
   WalletMessageResponse finilizeWalletResponse(
       {required PageMessageRequest message,
-      required Web3RequestParams params,
+      required Web3RequestParams? params,
       required Web3WalletResponseMessage response}) {
     final method = Web3SolanaRequestMethods.fromName(message.method);
     switch (method) {
@@ -379,7 +361,7 @@ class JSSolanaHandler extends JSNetworkHandler<
         return WalletMessageResponse.success([
           SolanaSignAndSendTransactionOutput(
               signature:
-                  JSUint8Array.fromList(Base58Decoder.decode(txHash.txHash)))
+                  APPJSUint8Array.fromList(Base58Decoder.decode(txHash.txHash)))
         ].toJS);
       case Web3SolanaRequestMethods.signMessage:
         final signer =

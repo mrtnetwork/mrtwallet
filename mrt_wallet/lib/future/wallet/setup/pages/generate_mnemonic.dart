@@ -85,12 +85,12 @@ class GenerateMnemonicView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    StreamWidget(
+                    ButtonProgress(
                       padding: WidgetConstant.paddingVertical40,
                       key: model.generateMnemonicKey,
                       backToIdle: APPConst.oneSecoundDuration,
                       fixedSize: false,
-                      buttonWidget: FixedElevatedButton(
+                      child: (context) => FixedElevatedButton(
                           child: model.mnemonic == null
                               ? Text("generate".tr)
                               : Text("v_mnemonic".tr),

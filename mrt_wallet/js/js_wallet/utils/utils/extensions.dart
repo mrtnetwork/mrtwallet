@@ -21,8 +21,8 @@ extension WalletPromise<T extends JSAny?> on Future<T> {
 }
 
 extension QuickJS<T extends JSAny> on T {
-  Proxy<T> get toProxy {
-    final handler = ProxyMethodHandler(this);
+  Proxy<T> toProxy({String? debugKey}) {
+    final handler = ProxyMethodHandler(this, debugKey: debugKey);
     return Proxy<T>(handler.object, createJSInteropWrapper(handler));
   }
 

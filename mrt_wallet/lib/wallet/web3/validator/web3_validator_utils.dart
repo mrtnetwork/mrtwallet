@@ -88,7 +88,7 @@ class Web3ValidatorUtils {
       toBytes = BytesUtils.tryFromHexString(value);
     }
     if (toBytes != null) {
-      if (T == String) return value as T;
+      if (T == String) return StringUtils.strip0x(value!).toLowerCase() as T;
       return toBytes as T;
     }
     throw Web3RequestExceptionConst.invalidHexBytes(key);
@@ -208,6 +208,7 @@ class Web3ValidatorUtils {
     required String key,
     required Web3RequestMethods method,
     required Map<String, dynamic>? json,
+    bool sign = true,
   }) {
     final value = json?[key] ?? json?[StrUtils.toSnakeCase(key)];
     if (null is T && value == null) {
@@ -215,12 +216,28 @@ class Web3ValidatorUtils {
     }
     final toBigInt = BigintUtils.tryParse(value);
     if (toBigInt != null) {
-      return toBigInt as T;
+      if (sign || !toBigInt.isNegative) return toBigInt as T;
     }
     throw Web3RequestExceptionConst.invalidNumbers(key);
   }
 
-  static T parseInt<T extends int?>({
+  static T parseInt<T extends int?>(
+      {required String key,
+      required Web3RequestMethods method,
+      required Map<String, dynamic>? json,
+      bool sign = true}) {
+    final value = json?[key] ?? json?[StrUtils.toSnakeCase(key)];
+    if (null is T && value == null) {
+      return null as T;
+    }
+    final toInt = IntUtils.tryParse(value);
+    if (toInt != null) {
+      if (sign || !toInt.isNegative) return toInt as T;
+    }
+    throw Web3RequestExceptionConst.invalidNumbers(key);
+  }
+
+  static T parseBool<T extends bool?>({
     required String key,
     required Web3RequestMethods method,
     required Map<String, dynamic>? json,
@@ -229,10 +246,10 @@ class Web3ValidatorUtils {
     if (null is T && value == null) {
       return null as T;
     }
-    final toBigInt = IntUtils.tryParse(value);
-    if (toBigInt != null) {
-      return toBigInt as T;
+
+    if (value is bool) {
+      return value as T;
     }
-    throw Web3RequestExceptionConst.invalidStringArgrument(key);
+    throw Web3RequestExceptionConst.invalidBoolean(key);
   }
 }

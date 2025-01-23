@@ -60,7 +60,6 @@ mixin WalletMoneroImpl on WalletManager {
       if (_syncAccountRequestSubscription != null) return;
       final client = account.client;
       final height = await client.getHeight();
-
       final tracker = account.defaultTracker;
       tracker.updateHeight(height.block);
       _syncAccountRequestSubscription = await _hanleStreamRequests(

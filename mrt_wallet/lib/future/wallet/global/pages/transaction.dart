@@ -59,6 +59,7 @@ class TransactionModalView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final txUrl = chain.network.getTransactionExplorer(transaction.txId);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -92,10 +93,8 @@ class TransactionModalView extends StatelessWidget {
         ContainerWithBorder(
           onRemove: () {},
           enableTap: false,
-          onRemoveIcon: LaunchBrowserIcon(
-              url: chain.network.coinParam
-                  .getTransactionExplorer(transaction.txId),
-              color: context.onPrimaryContainer),
+          onRemoveIcon:
+              LaunchBrowserIcon(url: txUrl, color: context.onPrimaryContainer),
           child: CopyableTextWidget(
               text: transaction.txId, color: context.onPrimaryContainer),
         ),

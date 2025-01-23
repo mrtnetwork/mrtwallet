@@ -6,7 +6,8 @@ abstract class Web3PermissionRequest<
         NETWORKADDRESS,
         CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
         CHAINACCOUNT extends Web3ChainAccount<NETWORKADDRESS>,
-        WEB3ChAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUNT>>
+        WEB3ChAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUNT,
+            WalletNetwork>>
     implements
         Web3RequestParams<WEB3ChAIN, NETWORKADDRESS, CHAIN, CHAINACCOUNT,
             WEB3ChAIN> {

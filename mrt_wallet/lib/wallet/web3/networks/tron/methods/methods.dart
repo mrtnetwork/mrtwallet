@@ -6,8 +6,12 @@ import 'package:mrt_wallet/wallet/web3/networks/ethereum/constant/constant.dart'
 import 'package:mrt_wallet/wallet/web3/networks/tron/constant/constants/constant.dart';
 
 class Web3TronRequestMethods extends Web3RequestMethods {
-  const Web3TronRequestMethods._(
-      {required super.id, required super.name, super.methodsName});
+  const Web3TronRequestMethods._({
+    required super.id,
+    required super.name,
+    this.needWalletOwnerAction = true,
+    super.methodsName,
+  });
 
   static const Web3TronRequestMethods requestAccounts =
       Web3TronRequestMethods._(
@@ -17,19 +21,27 @@ class Web3TronRequestMethods extends Web3RequestMethods {
   static const Web3TronRequestMethods signMessageV2 = Web3TronRequestMethods._(
       id: Web3TronConst.signMessageV2Tag, name: Web3TronConst.signMessageV2);
 
+  static const Web3TronRequestMethods switchTronChain =
+      Web3TronRequestMethods._(
+          id: Web3TronConst.switchChainTag,
+          name: Web3TronConst.switchChain,
+          needWalletOwnerAction: false,
+          methodsName: [Web3EthereumConst.switchEthereumChain]);
+
   static const Web3TronRequestMethods signTransaction =
       Web3TronRequestMethods._(
           id: Web3TronConst.signTransactionTag,
           name: Web3TronConst.signTransaction);
   @override
-  final bool needWalletOwnerAction = true;
+  final bool needWalletOwnerAction;
   @override
   NetworkType get network => NetworkType.tron;
 
   static List<Web3TronRequestMethods> values = [
     requestAccounts,
     signTransaction,
-    signMessageV2
+    signMessageV2,
+    switchTronChain
   ];
 
   static Web3TronRequestMethods fromId(int? id) {

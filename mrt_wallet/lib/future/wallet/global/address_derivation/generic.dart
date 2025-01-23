@@ -31,8 +31,7 @@ class SetupGenericAddressView extends StatelessWidget {
         return SetupTonAddressView(controller: controller);
       case NetworkType.monero:
         return SetupMoneroAddressView(controller: controller);
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         return SetupSubstrateAddressView(controller: controller);
       default:
         return _GenericNetworkAddressGenerationView(controller: controller);

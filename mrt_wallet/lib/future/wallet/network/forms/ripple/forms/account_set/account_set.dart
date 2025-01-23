@@ -7,7 +7,7 @@ import 'package:xrpl_dart/xrpl_dart.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
-class RippleAccountSetForm implements RippleTransactionForm {
+class RippleAccountSetForm extends RippleTransactionForm {
   /// does not need subject or id beacuse has own page
   final TransactionFormField<AccountSetAsfFlag> setFlag = TransactionFormField(
     name: "",
@@ -150,9 +150,6 @@ class RippleAccountSetForm implements RippleTransactionForm {
       transferRate: transferRate.value?.toBigInt().toInt(),
     );
   }
-
-  @override
-  OnChangeForm? onChanged;
 
   @override
   void setValue<T>(TransactionFormField<T>? field, T? value) {

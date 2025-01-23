@@ -243,29 +243,31 @@ class __GenerateTonMnemonicViewState extends State<_GenerateTonMnemonicView>
           key: progressKey,
           backToIdle: APPConst.oneSecoundDuration,
           child: (context) {
-            return CustomScrollView(
-              slivers: [
-                SliverConstraintsBoxView(
-                  padding: WidgetConstant.paddingHorizontal20,
-                  sliver: APPSliverAnimatedSwitcher(
-                    enable: page,
-                    widgets: {
-                      null: (context) =>
-                          _TonMnemonicChooseOptionPage(state: this),
-                      _MnemonicPage.import: (context) =>
-                          _TonMnemonicImportMnemonic(state: this),
-                      _MnemonicPage.importKey: (context) =>
-                          ImportCustomKeyToWalletView(keypair: keyPair!),
-                      _MnemonicPage.generate: (context) =>
-                          _TonMnemonicGeneratePage(state: this),
-                      _MnemonicPage.viewMnemonic: (context) =>
-                          _GenerateMnemonicView(state: this),
-                      _MnemonicPage.verifyMnemonic: (context) =>
-                          _VerifyMnemonicView(state: this)
-                    },
-                  ),
-                )
-              ],
+            return UnfocusableChild(
+              child: CustomScrollView(
+                slivers: [
+                  SliverConstraintsBoxView(
+                    padding: WidgetConstant.paddingHorizontal20,
+                    sliver: APPSliverAnimatedSwitcher(
+                      enable: page,
+                      widgets: {
+                        null: (context) =>
+                            _TonMnemonicChooseOptionPage(state: this),
+                        _MnemonicPage.import: (context) =>
+                            _TonMnemonicImportMnemonic(state: this),
+                        _MnemonicPage.importKey: (context) =>
+                            ImportCustomKeyToWalletView(keypair: keyPair!),
+                        _MnemonicPage.generate: (context) =>
+                            _TonMnemonicGeneratePage(state: this),
+                        _MnemonicPage.viewMnemonic: (context) =>
+                            _GenerateMnemonicView(state: this),
+                        _MnemonicPage.verifyMnemonic: (context) =>
+                            _VerifyMnemonicView(state: this)
+                      },
+                    ),
+                  )
+                ],
+              ),
             );
           },
         ),

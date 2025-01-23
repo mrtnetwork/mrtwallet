@@ -5,11 +5,13 @@ import 'package:mrt_wallet/wallet/models/contact/core/contract_core.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
-class SubstrateContact with Equatable implements ContactCore<SubstrateAddress> {
+class SubstrateContact
+    with Equatable
+    implements ContactCore<BaseSubstrateAddress> {
   SubstrateContact._(
       {required this.addressObject, required this.created, required this.name});
   factory SubstrateContact.newContact(
-      {required SubstrateAddress address, required String name}) {
+      {required BaseSubstrateAddress address, required String name}) {
     return SubstrateContact._(
         addressObject: address, created: DateTime.now(), name: name);
   }
@@ -20,13 +22,13 @@ class SubstrateContact with Equatable implements ContactCore<SubstrateAddress> {
     final String address = cbor.elementAt(0);
     final DateTime created = cbor.elementAt(1);
     final String name = cbor.elementAt(2);
-    final SubstrateAddress cardanoAddr = SubstrateAddress(address);
+    final BaseSubstrateAddress cardanoAddr = BaseSubstrateAddress(address);
     return SubstrateContact._(
         addressObject: cardanoAddr, created: created, name: name);
   }
 
   @override
-  final SubstrateAddress addressObject;
+  final BaseSubstrateAddress addressObject;
   @override
   String get address => addressObject.address;
   @override

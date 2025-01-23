@@ -83,6 +83,8 @@ class EncryptedIsolateMessageController {
       }
     } on WalletException catch (e) {
       result = MessageArgsException(e.toString());
+    } on ApiProviderException catch (e) {
+      result = MessageArgsException(e.toString());
     } on BlockchainUtilsException catch (e) {
       result = MessageArgsException(e.message);
     } catch (e) {

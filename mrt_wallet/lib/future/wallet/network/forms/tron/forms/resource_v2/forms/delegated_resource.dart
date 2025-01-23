@@ -14,6 +14,16 @@ class TronDelegatedResourceV2Form extends TronTransactionForm {
   @override
   final BigInt tokenValue = BigInt.zero;
 
+  MaxDelegatedResourceAmount? _bandWidthResource;
+  MaxDelegatedResourceAmount? _energy;
+  MaxDelegatedResourceAmount get bandWidthResource => _bandWidthResource!;
+  MaxDelegatedResourceAmount get energy => _energy!;
+
+  MaxDelegatedResourceAmount get maxResourceBalance =>
+      resource.value == ResourceCode.bandWidth ? bandWidthResource : energy;
+
+  List<TransactionFormField> get fields => [amount, destination, resource];
+
   final TransactionFormField<IntegerBalance> amount = TransactionFormField(
     name: "delegatable_amount",
     optional: false,
@@ -66,16 +76,6 @@ class TronDelegatedResourceV2Form extends TronTransactionForm {
       }
     },
   );
-  late final MaxDelegatedResourceAmount bandWidthResource;
-  late final MaxDelegatedResourceAmount energy;
-
-  MaxDelegatedResourceAmount get maxResourceBalance =>
-      resource.value == ResourceCode.bandWidth ? bandWidthResource : energy;
-
-  @override
-  OnChangeForm? onChanged;
-
-  List<TransactionFormField> get fields => [amount, destination, resource];
 
   @override
   late final String name = "delegated_resource";
@@ -152,7 +152,18 @@ class TronDelegatedResourceV2Form extends TronTransactionForm {
       required ITronAddress address,
       required TronChain account}) async {
     final delegated = await provider.getMaxDelegatedEnergyAndBandwidth(address);
-    energy = delegated.$1;
-    bandWidthResource = delegated.$2;
+    _energy = delegated.$1;
+    _bandWidthResource = delegated.$2;
+  }
+
+  @override
+  void close() {
+    _bandWidthResource = null;
+    _energy = null;
+    amount.clear();
+    destination.clear();
+    lock.clear();
+    lockPeriod.clear();
+    resource.clear();
   }
 }

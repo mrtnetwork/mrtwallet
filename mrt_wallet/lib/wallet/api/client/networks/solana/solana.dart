@@ -167,10 +167,7 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider>
       tokenInfo =
           metadatas.firstWhereOrNull((e) => e.address == mintAddress.address);
     }
-    APPImage? image;
-    if (tokenInfo != null) {
-      image = APPImage.network(tokenInfo.logoURI!);
-    }
+    APPImage? image = APPImage.network(tokenInfo?.logoURI);
     final token = Token(
         assetLogo: image,
         decimal: mintAccount.decimals,
@@ -211,7 +208,7 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider>
 
   Future<bool> validateNetworkGenesis() async {
     final result = await genesis();
-    return result == network.coinParam.genesis;
+    return result == network.genesisBlock;
   }
 
   @override

@@ -6,8 +6,12 @@ extension type ChromeWindows._(JSObject _) {
   external JSPromise<ChromeWindow> create(ChromeWindowsCreateData? ccreateData);
   external JSPromise<ChromeWindow> getCurrent(
       ChromeWindowsQueryOptions? queryOptions);
+  external JSPromise<ChromeWindow> getLastFocused(
+      ChromeWindowsQueryOptions? queryOptions);
   external JSPromise<ChromeWindow> get(
       int windowId, ChromeWindowsQueryOptions? queryOptions);
+  external JSPromise<JSArray<ChromeWindow>> getAll(
+      ChromeWindowsQueryOptions? queryOptions);
   external JSPromise<ChromeWindow> update(
       int windowId, ChromeWindowsUpdateInfo? updateInfo);
   Future<ChromeWindow> create_(
@@ -67,6 +71,25 @@ extension type ChromeWindows._(JSObject _) {
                 windowTypes: windowTypes?.map((e) => e.toJS).toList().toJS))
         .toDart;
     return await future;
+  }
+
+  Future<ChromeWindow> getLastFocused_(
+      {bool? populate, List<String>? windowTypes}) async {
+    final future = getLastFocused(ChromeWindowsQueryOptions(
+            populate: populate,
+            windowTypes: windowTypes?.map((e) => e.toJS).toList().toJS))
+        .toDart;
+    return await future;
+  }
+
+  Future<List<ChromeWindow>> getAll_(
+      {bool? populate, List<String>? windowTypes}) async {
+    final future = getAll(ChromeWindowsQueryOptions(
+            populate: populate,
+            windowTypes: windowTypes?.map((e) => e.toJS).toList().toJS))
+        .toDart;
+    final r = await future;
+    return r.toDart;
   }
 
   Future<ChromeWindow> getCurrent_(

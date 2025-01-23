@@ -6,17 +6,29 @@ import '../../models.dart';
 
 @JSExport()
 class ProxyMethodHandler<T> {
+  final String? debugKey;
   final T object;
-  ProxyMethodHandler(this.object);
+  ProxyMethodHandler(this.object, {this.debugKey});
 
   @JSExport("set")
-  bool set(JSAny object, JSAny prop, JSAny? value, JSAny? receiver) {
+  bool set(JSAny object, JSAny? prop, JSAny? value, JSAny? receiver) {
     return false;
   }
 
   @JSExport("get")
-  JSAny? get(JSAny object, JSAny? prop) {
-    return Reflect.get(object, prop, null);
+  JSAny? get(JSAny object, JSAny? prop, JSAny? receiver) {
+    if (prop?.isDefinedAndNotNull ?? false) {
+      if (prop.isA<JSString>()) {
+        // ignore: invalid_runtime_check_with_js_interop_types
+        final pr = prop as String;
+        if (pr.startsWith("is")) {
+          final r = Reflect.get(object, prop, receiver);
+          if (r.isDefinedAndNotNull) return r;
+          return true.toJS;
+        }
+      }
+    }
+    return Reflect.get(object, prop, receiver);
   }
 }
 
@@ -75,7 +87,7 @@ extension type EIP1193(JSObject _) implements MRTNetworkAdapter {
     eip.providerInfo = EIP6963ProviderInfo.providerInfo;
     eip.enable = enable;
     eip.cancelAllListener = cancelAllListener;
-
+    eip.disconnect = disconnect;
     return eip;
   }
 }

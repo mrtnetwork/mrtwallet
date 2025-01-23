@@ -237,9 +237,12 @@ class BlockchainAddressUtils {
     });
   }
 
-  static SubstrateAddress? validateSubstrateAddress(
-      String address, WalletPolkadotNetwork network) {
+  static BaseSubstrateAddress? validateSubstrateAddress(
+      String address, WalletSubstrateNetwork network) {
     return MethodUtils.nullOnException(() {
+      if (network.coinParam.substrateChainType.isEthereum) {
+        return SubstrateEthereumAddress(address);
+      }
       return SubstrateAddress(address,
           ss58Format: network.coinParam.ss58Format);
     });
@@ -292,8 +295,7 @@ class BlockchainAddressUtils {
         return validateStallerAddress(address, network.toNetwork());
       case NetworkType.monero:
         return validateMoneroAddress(address, network.toNetwork());
-      case NetworkType.polkadot:
-      case NetworkType.kusama:
+      case NetworkType.substrate:
         return validateSubstrateAddress(address, network.toNetwork());
       default:
         return validateBitcoinNetwork(address, network.toNetwork());

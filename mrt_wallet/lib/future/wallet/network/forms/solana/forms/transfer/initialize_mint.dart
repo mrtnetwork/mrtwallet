@@ -1,7 +1,6 @@
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/forms/core/solana.dart';
 import 'package:on_chain/solana/src/address/sol_address.dart';
@@ -50,8 +49,6 @@ class SolanaInitializeMintForm extends SolanaTransactionForm {
           onChangeForm: (p0) {
             return p0;
           });
-  @override
-  OnChangeForm? onChanged;
 
   List<TransactionFormField> get fields =>
       [mint, mintAuthority, decimals, freezAuthority];
@@ -92,5 +89,13 @@ class SolanaInitializeMintForm extends SolanaTransactionForm {
       }
     }
     return null;
+  }
+
+  @override
+  void close() {
+    super.close();
+    for (final i in fields) {
+      i.clear();
+    }
   }
 }
