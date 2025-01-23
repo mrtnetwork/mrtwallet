@@ -332,25 +332,6 @@ Future<void> _buildWeb(
 }
 
 void main(List<String> args) async {
-  // await buildWebView(minify: true);
-  // return;
-  // return;
-  // await _build(minify: true, csp: true, wasm: true, baseHref: null);
-  // return;
-  // await buildCrypto();
-  // return;
-  // await buildHttpJs();
-  // return;
-  // if (args.contains('p')) {
-  //   await buildWebViewPage();
-  // } else if (args.contains('w')) {
-  //   await buildWebView();
-  // } else {
-  //   await buildWebViewPage();
-  //   await buildWebView();
-  // }
-  // return;
-  // return;
   final fixedArgs = List<String>.from(args);
   final bool minify =
       fixedArgs.contains("--release") || fixedArgs.contains("--r");
