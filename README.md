@@ -155,15 +155,15 @@ Clone the repository and build using Flutter:
 ```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
-dart run web_builder -web --release --clean
+dart run debug_builder.dart -web --wasm --crypto --release --clean
 ```
 
-- **Chrome/Brave extention**
+- **Chrome, Edge, Brave extention**
 
 ```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
-dart run web_builder -extention --release --clean
+dart run debug_builder.dart -extension --wasm --scripts --crypto --release --clean
 ```
 
 - **Firefox extention**
@@ -171,7 +171,7 @@ dart run web_builder -extention --release --clean
 ```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
-dart run web_builder -extention --mozila --release --clean
+dart run debug_builder.dart -extension --wasm --scripts --crypto --release --clean --mozila
 ```
 
 
