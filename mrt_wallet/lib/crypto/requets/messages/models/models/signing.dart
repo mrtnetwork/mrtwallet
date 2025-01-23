@@ -22,7 +22,9 @@ abstract class SignRequest with CborSerializable {
         CborSerializable.decode(cborBytes: bytes, hex: hex, object: object);
     final network = SigningRequestNetwork.fromTag(tag.tags);
     return switch (network) {
-      SigningRequestNetwork.bitcoin => BitcoinSigning.deserialize(object: tag),
+      SigningRequestNetwork.bitcoin ||
+      SigningRequestNetwork.bitcoinCash =>
+        BitcoinSigning.deserialize(object: tag),
       SigningRequestNetwork.cosmos =>
         CosmosSigningRequest.deserialize(object: tag),
       SigningRequestNetwork.monero =>
@@ -49,7 +51,8 @@ enum SigningRequestNetwork {
   tron([32, 107]),
   substrate([32, 108]),
   stellar([32, 109]),
-  monero([32, 110]);
+  monero([32, 110]),
+  bitcoinCash([32, 111]);
 
   final List<int> tag;
   const SigningRequestNetwork(this.tag);
@@ -67,26 +70,34 @@ class BitcoinSigning extends GlobalSignRequest {
       {required super.digest,
       required this.sighash,
       required this.useTaproot,
-      required Bip32AddressIndex super.index})
-      : super._(network: SigningRequestNetwork.bitcoin);
+      required Bip32AddressIndex super.index,
+      required super.network})
+      : assert(
+            network == SigningRequestNetwork.bitcoin ||
+                network == SigningRequestNetwork.bitcoinCash,
+            "invalid bitcoin network."),
+        super._();
 
   factory BitcoinSigning.deserialize({
     List<int>? bytes,
     CborObject? object,
     String? hex,
   }) {
-    final CborListValue values = CborSerializable.cborTagValue(
-      cborBytes: bytes,
-      hex: hex,
-      object: object,
-      tags: SigningRequestNetwork.bitcoin.tag,
-    );
+    final CborTagValue tag =
+        CborSerializable.decode(cborBytes: bytes, object: object, hex: hex);
+    final network = SigningRequestNetwork.fromTag(tag.tags);
+    if (network != SigningRequestNetwork.bitcoin &&
+        network != SigningRequestNetwork.bitcoinCash) {
+      throw WalletExceptionConst.dataVerificationFailed;
+    }
+    final CborListValue values = tag.getList;
     return BitcoinSigning(
-      digest: values.elementAt(1),
-      sighash: values.elementAt(2),
-      useTaproot: values.elementAt(3),
-      index: Bip32AddressIndex.fromCborBytesOrObject(obj: values.getCborTag(0)),
-    );
+        digest: values.elementAt(1),
+        sighash: values.elementAt(2),
+        useTaproot: values.elementAt(3),
+        index:
+            Bip32AddressIndex.fromCborBytesOrObject(obj: values.getCborTag(0)),
+        network: network);
   }
   @override
   CborTagValue toCbor() {

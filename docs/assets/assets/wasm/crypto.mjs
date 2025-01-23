@@ -105,8 +105,10 @@ class CompiledApp {
     // Imports
     const dart2wasm = {
 
+      _11: x0 => new Array(x0),
       _13: x0 => x0.length,
       _15: (x0,x1) => x0[x1],
+      _16: (x0,x1,x2) => x0[x1] = x2,
       _19: (x0,x1,x2) => new DataView(x0,x1,x2),
       _21: x0 => new Int8Array(x0),
       _22: (x0,x1,x2) => new Uint8Array(x0,x1,x2),
@@ -154,6 +156,7 @@ class CompiledApp {
       _120: s => s.toLowerCase(),
       _121: (a, i) => a.push(i),
       _129: (a, s, e) => a.slice(s, e),
+      _131: (a, b) => a == b ? 0 : (a > b ? 1 : -1),
       _132: a => a.length,
       _134: (a, i) => a[i],
       _135: (a, i, v) => a[i] = v,
@@ -191,7 +194,9 @@ class CompiledApp {
       _168: Function.prototype.call.bind(DataView.prototype.getInt32),
       _169: Function.prototype.call.bind(DataView.prototype.setInt32),
       _174: Function.prototype.call.bind(DataView.prototype.getFloat32),
+      _175: Function.prototype.call.bind(DataView.prototype.setFloat32),
       _176: Function.prototype.call.bind(DataView.prototype.getFloat64),
+      _177: Function.prototype.call.bind(DataView.prototype.setFloat64),
       _179: () => ({}),
       _194: x0 => globalThis.postMessage(x0),
       _195: x0 => globalThis.postMessage(x0),
@@ -208,71 +213,81 @@ class CompiledApp {
       _207: (x0,x1,x2) => x0.removeEventListener(x1,x2),
       _208: f => finalizeWrapper(f, function(x0) { return dartInstance.exports._208(f,arguments.length,x0) }),
       _209: (x0,x1,x2) => x0.addEventListener(x1,x2),
-      _210: (x0,x1) => x0.postMessage(x1),
-      _211: x0 => globalThis.workerListener_ = x0,
-      _212: () => globalThis.workerListener_,
-      _213: x0 => globalThis.errorListener_ = x0,
-      _214: () => globalThis.errorListener_,
-      _231: o => Object.keys(o),
-      _232: (ms, c) =>
+      _210: (x0,x1,x2) => x0.removeEventListener(x1,x2),
+      _211: f => finalizeWrapper(f, function(x0) { return dartInstance.exports._211(f,arguments.length,x0) }),
+      _212: (x0,x1,x2) => x0.addEventListener(x1,x2),
+      _213: (x0,x1) => x0.postMessage(x1),
+      _214: x0 => globalThis.serviceWorkerListener_ = x0,
+      _215: () => globalThis.serviceWorkerListener_,
+      _216: x0 => globalThis.serviceErrorListener_ = x0,
+      _217: () => globalThis.serviceErrorListener_,
+      _234: o => Object.keys(o),
+      _235: (ms, c) =>
       setTimeout(() => dartInstance.exports.$invokeCallback(c),ms),
-      _233: (handle) => clearTimeout(handle),
-      _236: (c) =>
+      _236: (handle) => clearTimeout(handle),
+      _239: (c) =>
       queueMicrotask(() => dartInstance.exports.$invokeCallback(c)),
-      _239: (x0,x1,x2,x3) => x0.open(x1,x2,x3),
-      _242: (x0,x1) => x0.send(x1),
-      _248: f => finalizeWrapper(f, function(x0) { return dartInstance.exports._248(f,arguments.length,x0) }),
-      _249: (x0,x1,x2,x3) => x0.addEventListener(x1,x2,x3),
-      _250: (x0,x1,x2,x3) => x0.removeEventListener(x1,x2,x3),
-      _256: () => new XMLHttpRequest(),
-      _257: (x0,x1,x2) => x0.setRequestHeader(x1,x2),
-      _258: x0 => x0.abort(),
-      _259: x0 => x0.getAllResponseHeaders(),
-      _380: x0 => x0.runtime,
-      _384: () => globalThis.chrome,
-      _386: () => globalThis.browser,
-      _428: x0 => x0.id,
-      _466: () => globalThis.window,
-      _475: (x0,x1) => x0.fetch(x1),
-      _539: x0 => x0.text(),
-      _550: (x0,x1) => x0.type = x1,
-      _567: x0 => x0.data,
-      _637: (s, m) => {
+      _242: (x0,x1,x2,x3) => x0.open(x1,x2,x3),
+      _245: (x0,x1) => x0.send(x1),
+      _251: f => finalizeWrapper(f, function(x0) { return dartInstance.exports._251(f,arguments.length,x0) }),
+      _252: (x0,x1,x2,x3) => x0.addEventListener(x1,x2,x3),
+      _253: (x0,x1,x2,x3) => x0.removeEventListener(x1,x2,x3),
+      _259: () => new XMLHttpRequest(),
+      _260: (x0,x1,x2) => x0.setRequestHeader(x1,x2),
+      _261: x0 => x0.abort(),
+      _262: x0 => x0.getAllResponseHeaders(),
+      _386: x0 => x0.runtime,
+      _390: () => globalThis.chrome,
+      _392: () => globalThis.browser,
+      _434: x0 => x0.id,
+      _466: (x0,x1,x2) => x0.close(x1,x2),
+      _471: () => globalThis.window,
+      _482: (x0,x1) => x0.fetch(x1),
+      _548: x0 => x0.text(),
+      _563: (x0,x1) => x0.type = x1,
+      _581: x0 => x0.data,
+      _582: (x0,x1,x2) => x0.addEventListener(x1,x2),
+      _583: (x0,x1,x2) => x0.removeEventListener(x1,x2),
+      _585: f => finalizeWrapper(f, function(x0) { return dartInstance.exports._585(f,arguments.length,x0) }),
+      _603: (x0,x1) => new WebSocket(x0,x1),
+      _604: x0 => x0.readyState,
+      _606: (x0,x1) => x0.send(x1),
+      _648: (s, m) => {
         try {
           return new RegExp(s, m);
         } catch (e) {
           return String(e);
         }
       },
-      _638: (x0,x1) => x0.exec(x1),
-      _639: (x0,x1) => x0.test(x1),
-      _640: (x0,x1) => x0.exec(x1),
-      _644: o => o === undefined,
-      _663: o => typeof o === 'function' && o[jsWrappedDartFunctionSymbol] === true,
-      _665: o => {
+      _649: (x0,x1) => x0.exec(x1),
+      _650: (x0,x1) => x0.test(x1),
+      _651: (x0,x1) => x0.exec(x1),
+      _655: o => o === undefined,
+      _674: o => typeof o === 'function' && o[jsWrappedDartFunctionSymbol] === true,
+      _676: o => {
         const proto = Object.getPrototypeOf(o);
         return proto === Object.prototype || proto === null;
       },
-      _666: o => o instanceof RegExp,
-      _667: (l, r) => l === r,
-      _668: o => o,
-      _669: o => o,
-      _670: o => o,
-      _671: b => !!b,
-      _672: o => o.length,
-      _675: (o, i) => o[i],
-      _676: f => f.dartFunction,
-      _677: l => arrayFromDartList(Int8Array, l),
-      _678: l => arrayFromDartList(Uint8Array, l),
-      _679: l => arrayFromDartList(Uint8ClampedArray, l),
-      _680: l => arrayFromDartList(Int16Array, l),
-      _681: l => arrayFromDartList(Uint16Array, l),
-      _682: l => arrayFromDartList(Int32Array, l),
-      _683: l => arrayFromDartList(Uint32Array, l),
-      _684: l => arrayFromDartList(Float32Array, l),
-      _685: l => arrayFromDartList(Float64Array, l),
-      _686: x0 => new ArrayBuffer(x0),
-      _687: (data, length) => {
+      _677: o => o instanceof RegExp,
+      _678: (l, r) => l === r,
+      _679: o => o,
+      _680: o => o,
+      _681: o => o,
+      _682: b => !!b,
+      _683: o => o.length,
+      _686: (o, i) => o[i],
+      _687: f => f.dartFunction,
+      _688: l => arrayFromDartList(Int8Array, l),
+      _689: l => arrayFromDartList(Uint8Array, l),
+      _690: l => arrayFromDartList(Uint8ClampedArray, l),
+      _691: l => arrayFromDartList(Int16Array, l),
+      _692: l => arrayFromDartList(Uint16Array, l),
+      _693: l => arrayFromDartList(Int32Array, l),
+      _694: l => arrayFromDartList(Uint32Array, l),
+      _695: l => arrayFromDartList(Float32Array, l),
+      _696: l => arrayFromDartList(Float64Array, l),
+      _697: x0 => new ArrayBuffer(x0),
+      _698: (data, length) => {
         const getValue = dartInstance.exports.$byteDataGetUint8;
         const view = new DataView(new ArrayBuffer(length));
         for (let i = 0; i < length; i++) {
@@ -280,8 +295,8 @@ class CompiledApp {
         }
         return view;
       },
-      _688: l => arrayFromDartList(Array, l),
-      _689: (s, length) => {
+      _699: l => arrayFromDartList(Array, l),
+      _700: (s, length) => {
         if (length == 0) return '';
       
         const read = dartInstance.exports.$stringRead1;
@@ -301,7 +316,7 @@ class CompiledApp {
         }
         return result;
       },
-      _690: (s, length) => {
+      _701: (s, length) => {
         if (length == 0) return '';
       
         const read = dartInstance.exports.$stringRead2;
@@ -321,7 +336,7 @@ class CompiledApp {
         }
         return result;
       },
-      _691: (s) => {
+      _702: (s) => {
         let length = s.length;
         let range = 0;
         for (let i = 0; i < length; i++) {
@@ -376,15 +391,15 @@ class CompiledApp {
           return dartString;
         }
       },
-      _692: () => ({}),
-      _693: () => [],
-      _694: l => new Array(l),
-      _698: (o, p) => o[p],
-      _699: (o, p, v) => o[p] = v,
-      _700: (o, m, a) => o[m].apply(o, a),
-      _702: o => String(o),
-      _703: (p, s, f) => p.then(s, f),
-      _704: o => {
+      _703: () => ({}),
+      _704: () => [],
+      _705: l => new Array(l),
+      _709: (o, p) => o[p],
+      _710: (o, p, v) => o[p] = v,
+      _711: (o, m, a) => o[m].apply(o, a),
+      _713: o => String(o),
+      _714: (p, s, f) => p.then(s, f),
+      _715: o => {
         if (o === undefined) return 1;
         var type = typeof o;
         if (type === 'boolean') return 2;
@@ -406,61 +421,61 @@ class CompiledApp {
         if (o instanceof ArrayBuffer) return 16;
         return 17;
       },
-      _705: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
+      _716: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
         const getValue = dartInstance.exports.$wasmI8ArrayGet;
         for (let i = 0; i < length; i++) {
           jsArray[jsArrayOffset + i] = getValue(wasmArray, wasmArrayOffset + i);
         }
       },
-      _706: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
+      _717: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
         const setValue = dartInstance.exports.$wasmI8ArraySet;
         for (let i = 0; i < length; i++) {
           setValue(wasmArray, wasmArrayOffset + i, jsArray[jsArrayOffset + i]);
         }
       },
-      _707: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
+      _718: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
         const getValue = dartInstance.exports.$wasmI16ArrayGet;
         for (let i = 0; i < length; i++) {
           jsArray[jsArrayOffset + i] = getValue(wasmArray, wasmArrayOffset + i);
         }
       },
-      _709: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
+      _720: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
         const getValue = dartInstance.exports.$wasmI32ArrayGet;
         for (let i = 0; i < length; i++) {
           jsArray[jsArrayOffset + i] = getValue(wasmArray, wasmArrayOffset + i);
         }
       },
-      _711: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
+      _722: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
         const getValue = dartInstance.exports.$wasmF32ArrayGet;
         for (let i = 0; i < length; i++) {
           jsArray[jsArrayOffset + i] = getValue(wasmArray, wasmArrayOffset + i);
         }
       },
-      _713: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
+      _724: (jsArray, jsArrayOffset, wasmArray, wasmArrayOffset, length) => {
         const getValue = dartInstance.exports.$wasmF64ArrayGet;
         for (let i = 0; i < length; i++) {
           jsArray[jsArrayOffset + i] = getValue(wasmArray, wasmArrayOffset + i);
         }
       },
-      _718: x0 => x0.index,
-      _724: x0 => x0.flags,
-      _725: x0 => x0.multiline,
-      _726: x0 => x0.ignoreCase,
-      _727: x0 => x0.unicode,
-      _728: x0 => x0.dotAll,
-      _729: (x0,x1) => x0.lastIndex = x1,
-      _734: v => v.toString(),
-      _739: x0 => x0.random(),
-      _740: x0 => x0.random(),
-      _741: (x0,x1) => x0.getRandomValues(x1),
-      _742: () => globalThis.crypto,
-      _744: () => globalThis.Math,
-      _797: (x0,x1) => x0.withCredentials = x1,
-      _799: x0 => x0.responseURL,
-      _800: x0 => x0.status,
-      _801: x0 => x0.statusText,
-      _803: (x0,x1) => x0.responseType = x1,
-      _804: x0 => x0.response,
+      _729: x0 => x0.index,
+      _735: x0 => x0.flags,
+      _736: x0 => x0.multiline,
+      _737: x0 => x0.ignoreCase,
+      _738: x0 => x0.unicode,
+      _739: x0 => x0.dotAll,
+      _740: (x0,x1) => x0.lastIndex = x1,
+      _745: v => v.toString(),
+      _750: x0 => x0.random(),
+      _751: x0 => x0.random(),
+      _752: (x0,x1) => x0.getRandomValues(x1),
+      _753: () => globalThis.crypto,
+      _755: () => globalThis.Math,
+      _808: (x0,x1) => x0.withCredentials = x1,
+      _810: x0 => x0.responseURL,
+      _811: x0 => x0.status,
+      _812: x0 => x0.statusText,
+      _814: (x0,x1) => x0.responseType = x1,
+      _815: x0 => x0.response,
 
     };
 

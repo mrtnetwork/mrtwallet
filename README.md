@@ -103,8 +103,6 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 - **Highlights:** Supports Payment, ChangeTrust, PathPayment, ManageBuyOffer, ManageSellOffer, and more.
 - **Web3 Support** Compatible with Web3 on Chrome, Brave, Firefox, Edge, Android, and macOS for Soroban and native Stellar transactions.
 
-
-
 ### Substrate
 
 - **Features:** Provides seamless support for Kusama, Polkadot transactions, and standalone chains.

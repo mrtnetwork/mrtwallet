@@ -73,9 +73,9 @@ abstract class UIWallet extends WalletCore {
           addresses.map((e) => e.signerKeyIndexes()).expand((e) => e).toSet();
       if (wallet.protectWallet) {
         final password = await _getPassword(addresses: addresses, keys: keys);
-        return (await super.signRequest(
-                request: request, password: password, timeout: timeout))
-            .result;
+        final r = (await super.signRequest(
+            request: request, password: password, timeout: timeout));
+        return r.result;
       }
       return (await super.signRequest(request: request, timeout: timeout))
           .result;

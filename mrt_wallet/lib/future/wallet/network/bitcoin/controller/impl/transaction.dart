@@ -456,7 +456,10 @@ abstract class BitcoinTransactionImpl extends StateController
                 digest: trDigest,
                 index: keyIndex.cast(),
                 useTaproot: utxo.utxo.isP2tr,
-                sighash: sighash);
+                sighash: sighash,
+                network: isBCHTransaction
+                    ? SigningRequestNetwork.bitcoinCash
+                    : SigningRequestNetwork.bitcoin);
             final sig = await generateSignature(bitcoinSigning);
             return BytesUtils.toHexString(sig.signature);
           });
@@ -465,6 +468,7 @@ abstract class BitcoinTransactionImpl extends StateController
       final signedTr =
           await walletProvider.wallet.signTransaction(request: request);
       if (signedTr.hasError) {
+        WalletLogging.error("sig ${signedTr.trace}");
         throw signedTr.exception!;
       }
       assert(signedTr.result.getVSize() <= transactionSize,

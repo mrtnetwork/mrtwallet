@@ -9,7 +9,7 @@ self.addEventListener('message', async (event) => {
     console.log(event.data.isHttp)
     if (event.data.module === null) {
         if (event.data.isHttp) {
-            module = await import("./http.mjs");
+            module = await import("./http.js");
         } else {
             module = await import("./crypto.mjs");
         }

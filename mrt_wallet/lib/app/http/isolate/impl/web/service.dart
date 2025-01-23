@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:mrt_native_support/web/api/api.dart';
-import 'package:mrt_wallet/app/dev/logging.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/http/isolate/exception/exception.dart';
 import 'package:mrt_wallet/app/http/isolate/models/mode.dart';

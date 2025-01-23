@@ -104,6 +104,13 @@ class WalletRequestSign
     final List<int> digest = request.digest;
     final index = request.index;
     switch (request.network) {
+      case SigningRequestNetwork.bitcoinCash:
+        final BitcoinSigning bitcoinRequest = request.cast();
+        final btcSigner = BitcoinSigner.fromKeyBytes(key.privateKeyBytes());
+        final sig = btcSigner.signBcHTransaction(digest);
+        signature = [...sig, bitcoinRequest.sighash];
+        return GlobalSignResponse(
+            signature: signature, index: index, signerPubKey: key.publicKey);
       case SigningRequestNetwork.bitcoin:
         final BitcoinSigning bitcoinRequest = request.cast();
         final btcSigner = BitcoinSigner.fromKeyBytes(key.privateKeyBytes());
@@ -115,7 +122,7 @@ class WalletRequestSign
           }
           signature = sig;
         } else {
-          final sig = btcSigner.signBcHTransaction(digest);
+          final sig = btcSigner.signTransaction(digest);
           signature = [...sig, bitcoinRequest.sighash];
         }
         return GlobalSignResponse(

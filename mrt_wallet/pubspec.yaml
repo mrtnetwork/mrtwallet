@@ -170,6 +170,8 @@ msix_config:
     display_name: MRT Wallet
     publisher_display_name: MRT NETWORK
     identity_name: com.mrtnetwork.wallet
-    msix_version: 6.0.0.0
+    msix_version: 6.1.0.0
     logo_path: D:\mrt_wallet\mrt_wallet\assets\image\mrt_wallet.png
     publish_folder_path: D:\mrt_wallet\mrt_wallet\build\msix\
+    store: false
+
