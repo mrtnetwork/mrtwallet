@@ -6,6 +6,10 @@ labels: ''
 assignees: ''
 
 ---
+🚨 **Security Warning** 🚨  
+⚠️ MRTWallet does **not** provide external support links.  
+❌ Never share your private keys or seed phrases.  
+✅ Official support is only available on **GitHub**.  
 
 **Describe the bug**
 A clear and concise description of what the bug is.
