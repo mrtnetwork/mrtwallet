@@ -1,1 +1,5 @@
 blank_issues_enabled: false
+contact_links:
+  - name: 🚨 SECURITY WARNING: Do NOT Click on External Support Links! 🚨
+    url: https://github.com/mrtnetwork/mrtwallet
+    about: MRTWallet does NOT redirect users to external websites for support. Beware of scams!
