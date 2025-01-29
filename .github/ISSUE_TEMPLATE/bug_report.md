@@ -6,7 +6,6 @@ labels: ''
 assignees: ''
 
 ---
-**MRTWallet Security Warning**
 **Do NOT click on any support links claiming to be from MRTWallet!**  
 
 - MRTWallet **never** asks for private keys or seed phrases.  
@@ -14,6 +13,7 @@ assignees: ''
 - Official support is only available via **GitHub Issues**.  
 
 🚨 **If you see someone posting a support link, assume it’s a scam.**  
+
 
 **Describe the bug**
 A clear and concise description of what the bug is.
