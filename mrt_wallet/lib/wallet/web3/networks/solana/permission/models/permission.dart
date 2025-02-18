@@ -1,8 +1,8 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/constant/chain/const.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
-import 'package:mrt_wallet/wallet/models/network/params/solana.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/activity.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
@@ -14,25 +14,24 @@ import 'account.dart';
 
 class Web3SolanaChain extends Web3Chain<SolAddress, SolanaChain,
     Web3SolanaChainAccount, WalletSolanaNetwork> {
-  SolanaNetworkType _genesis;
-  SolanaNetworkType get currentChain => _genesis;
+  int _id;
+  @override
+  int get currentChain => _id;
   Web3SolanaChain._(
-      {required super.accounts,
-      required SolanaNetworkType genesis,
-      required super.activities})
-      : _genesis = genesis;
+      {required super.accounts, required int id, required super.activities})
+      : _id = id;
   @override
   Web3SolanaChain clone() {
     return Web3SolanaChain._(
         accounts: activeAccounts,
-        genesis: SolanaNetworkType.mainnet,
+        id: ChainConst.solanaMainnetId,
         activities: activities);
   }
 
-  factory Web3SolanaChain.create({SolanaNetworkType? genesisBlock}) {
+  factory Web3SolanaChain.create({int? id}) {
     return Web3SolanaChain._(
         accounts: const [],
-        genesis: genesisBlock ?? SolanaNetworkType.mainnet,
+        id: id ?? ChainConst.solanaMainnetId,
         activities: const []);
   }
 
@@ -52,7 +51,7 @@ class Web3SolanaChain extends Web3Chain<SolAddress, SolanaChain,
             .elementAt<List<dynamic>>(0)
             .map((e) => Web3SolanaChainAccount.deserialize(object: e))
             .toList(),
-        genesis: SolanaNetworkType.fromValue(values.elementAt(1)),
+        id: values.elementAt(1),
         activities: values
             .elementAt<List<dynamic>>(2)
             .map((e) => Web3AccountAcitvity.deserialize(object: e))
@@ -65,7 +64,7 @@ class Web3SolanaChain extends Web3Chain<SolAddress, SolanaChain,
         CborListValue.fixedLength([
           CborListValue.fixedLength(
               activeAccounts.map((e) => e.toCbor()).toList()),
-          _genesis.value,
+          _id,
           CborListValue.fixedLength(activities.map((e) => e.toCbor()).toList()),
         ]),
         network.tag);
@@ -78,8 +77,8 @@ class Web3SolanaChain extends Web3Chain<SolAddress, SolanaChain,
   ISolanaAddress getAccountPermission(
       {required SolAddress address, required SolanaChain chain}) {
     try {
-      final permissionAccount = activeAccounts.firstWhere((e) =>
-          e.address == address && e.genesis == chain.network.coinParam.type);
+      final permissionAccount = activeAccounts.firstWhere(
+          (e) => e.address == address && e.id == chain.network.value);
       final chainAccount = chain.addresses.firstWhere((e) {
         return e.networkAddress == permissionAccount.address &&
             e.keyIndex == permissionAccount.keyIndex;
@@ -97,22 +96,21 @@ class Web3SolanaChain extends Web3Chain<SolAddress, SolanaChain,
 
   @override
   void setActiveChain(WalletSolanaNetwork network) {
-    _genesis = network.coinParam.type;
+    _id = network.value;
   }
 
   @override
   Web3SolanaChain disconnect() {
     return Web3SolanaChain._(
         accounts: const [],
-        genesis: SolanaNetworkType.mainnet,
+        id: ChainConst.solanaMainnetId,
         activities: activities);
   }
 
   @override
   List<Web3SolanaChainAccount> chainAccounts(SolanaChain chain) {
-    final currentAccounts = activeAccounts
-        .where((e) => e.genesis == chain.network.coinParam.type)
-        .toList();
+    final currentAccounts =
+        activeAccounts.where((e) => e.id == chain.network.value).toList();
     final List<Web3SolanaChainAccount> existsAccounts = [];
     for (final i in chain.addresses) {
       final chainAccount = currentAccounts.firstWhereOrNull(
@@ -130,11 +128,10 @@ class Web3SolanaChain extends Web3Chain<SolAddress, SolanaChain,
     final currentNetwork =
         getCurrentPermissionNetwork(networks.map((e) => e.network).toList());
     final network = networks.firstWhere(
-        (e) => e.network.coinParam.type == currentNetwork.coinParam.type,
+        (e) => e.network.value == currentNetwork.value,
         orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
-    final currentAccounts = activeAccounts
-        .where((e) => e.genesis == currentNetwork.coinParam.type)
-        .toList();
+    final currentAccounts =
+        activeAccounts.where((e) => e.id == currentNetwork.value).toList();
     return Web3SolanaChainAuthenticated(
         accounts: currentAccounts,
         network: network.network,
@@ -149,29 +146,30 @@ class Web3SolanaChain extends Web3Chain<SolAddress, SolanaChain,
 
     List<Web3SolanaChainAccount> existsAccount = [];
     for (final i in accounts) {
-      final network =
-          chain.firstWhereOrNull((e) => e.network.coinParam.type == i.genesis);
+      final network = chain.firstWhereOrNull((e) => e.network.value == i.id);
       if (network == null) continue;
       final exist = network.addresses.any((e) => e.networkAddress == i.address);
       if (exist) existsAccount.add(i);
     }
     updateChainAccount(existsAccount);
-    return chain.firstWhere((e) => e.network == currentNetwork);
+    return chain.firstWhere(
+      (e) => e.network == currentNetwork,
+      orElse: () => throw Web3RequestExceptionConst.networkDoesNotExists,
+    );
   }
 
   @override
   WalletSolanaNetwork getCurrentPermissionNetwork(
       List<WalletSolanaNetwork> networks) {
-    final currentChain = _genesis;
-    final network =
-        networks.firstWhereOrNull((e) => e.coinParam.type == currentChain);
+    final currentChain = _id;
+    final network = networks.firstWhereOrNull((e) => e.value == currentChain);
     if (network != null) {
       return network;
     }
-    final mainNetwork = networks
-        .firstWhere((e) => e.coinParam.type == SolanaNetworkType.mainnet);
+    final mainNetwork =
+        networks.firstWhere((e) => e.value == ChainConst.solanaMainnetId);
     List<Web3SolanaChainAccount> accounts =
-        activeAccounts.clone().where((e) => e.genesis != currentChain).toList();
+        activeAccounts.clone().where((e) => e.id != currentChain).toList();
     setActiveChain(mainNetwork);
     updateChainAccount(accounts);
     return mainNetwork;

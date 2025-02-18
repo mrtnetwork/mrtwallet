@@ -67,7 +67,9 @@ class Web3StellarSendTransaction extends Web3StellarRequestParam<String> {
   Web3StellarRequest<String, Web3StellarSendTransaction> toRequest(
       {required Web3RequestApplicationInformation request,
       required Web3APPAuthentication authenticated,
-      required StellarChain chain}) {
+      required List<APPCHAIN> chains}) {
+    final StellarChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3StellarRequest<String, Web3StellarSendTransaction>(
         params: this,
         authenticated: authenticated,

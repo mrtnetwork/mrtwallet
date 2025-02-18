@@ -117,7 +117,8 @@ class EthereumNetworkParams extends NetworkCoinParams<EthereumAPIProvider> {
       {List<APIProvider>? updateProviders,
       Token? token,
       String? transactionExplorer,
-      String? addressExplorer}) {
+      String? addressExplorer,
+      int? bip32CoinType}) {
     return EthereumNetworkParams(
       transactionExplorer: transactionExplorer,
       addressExplorer: addressExplorer,

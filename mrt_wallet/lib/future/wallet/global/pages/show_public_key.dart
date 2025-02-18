@@ -22,7 +22,7 @@ class AccountPublicKeyView extends StatelessWidget {
         accsess: WalletAccsessType.unlock,
         onAccsess: (credential, password, network) =>
             _BipAccountPublicKey(account: account, network: network),
-        title: "publick_key".tr,
+        title: "public_key".tr,
         subtitle: PageTitleSubtitle(
             title: "unlock_wallet".tr, body: Text("unlock_access_desc".tr)));
   }
@@ -108,7 +108,8 @@ class __BipAccountPublicKeyState extends State<_BipAccountPublicKey> {
       key: progressKey,
       initialStatus: StreamWidgetStatus.progress,
       backToIdle: APPConst.oneSecoundDuration,
-      initialWidget: ProgressWithTextView(text: "retrieve_the_public".tr),
+      initialWidget:
+          ProgressWithTextView(text: "retrieve_account_informations".tr),
       child: (c) => CustomScrollView(
         shrinkWrap: true,
         slivers: [

@@ -40,7 +40,9 @@ abstract class Web3StellarRequestParam<RESPONSE> extends Web3RequestParams<
   Web3StellarRequest<RESPONSE, Web3StellarRequestParam<RESPONSE>> toRequest(
       {required Web3RequestApplicationInformation request,
       required Web3APPAuthentication authenticated,
-      required StellarChain chain}) {
+      required List<APPCHAIN> chains}) {
+    final StellarChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3StellarRequest<RESPONSE, Web3StellarRequestParam<RESPONSE>>(
         params: this,
         authenticated: authenticated,

@@ -1,61 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/constant/constant.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/wallet/web3/pages/page_progress.dart';
+import 'package:on_chain/on_chain.dart';
 
 import '../wallet/models/access/wallet_access.dart';
-
-class Web3PermissionUpdateViewTest extends StatelessWidget {
-  const Web3PermissionUpdateViewTest({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstraintsBoxView(
-      alignment: Alignment.center,
-      // maxHeight: APPConst.maxDialogHeight,
-      padding: WidgetConstant.paddingHorizontal20,
-      maxWidth: APPConst.dialogWidth,
-      child: ClipRRect(
-          borderRadius: WidgetConstant.border25,
-          child: PasswordCheckerView(
-            backgroundColor: Colors.transparent,
-            accsess: WalletAccsessType.unlock,
-            onAccsess: (credential, password, network) => ClipRRect(
-              borderRadius: WidgetConstant.border25,
-              child: ConstraintsBoxView(
-                alignment: Alignment.center,
-                maxHeight: APPConst.maxDialogHeight,
-                padding: WidgetConstant.paddingHorizontal20,
-                maxWidth: APPConst.dialogWidth,
-                child: Container(
-                  color: Colors.red,
-                ),
-              ),
-            ),
-          )),
-    );
-  }
-}
 
 class TestWidget extends StatefulWidget {
   const TestWidget({super.key});
 
   @override
-  State<TestWidget> createState() => _TestWidgetState();
+  State<TestWidget> createState() => _Web3PermissionUpdateViewTestState();
 }
 
-class _TestWidgetState extends State<TestWidget> {
+class _Web3PermissionUpdateViewTestState extends State<TestWidget> {
+  final GlobalKey<Web3PageProgressState> page = GlobalKey();
+  void success() {
+    page.response();
+  }
+
+  void suucessRespone() {
+    page.successRequest();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      ElevatedButton(
-          onPressed: () {
-            context.openDialogPage(
-              "update_permission".tr,
-              fullWidget: Web3PermissionUpdateViewTest(),
-            );
+    return PasswordCheckerView(
+      appbar: AppBar(
+        actions: [
+          TextButton(
+              onPressed: () {
+                page.errorResponse(error: DartSuiPluginException("jafar "));
+              },
+              child: Text("close request")),
+          TextButton(
+              onPressed: () {
+                page.error(
+                  error: WalletExceptionConst.rejectSigning,
+                  showBackButton: true,
+                );
+              },
+              child: Text("error")),
+          TextButton(
+              onPressed: () {
+                page.idle();
+              },
+              child: Text("idle")),
+          TextButton(
+              onPressed: () {
+                page.process(text: "working ...");
+              },
+              child: Text("process"))
+        ],
+      ),
+      accsess: WalletAccsessType.unlock,
+      onAccsess: (credential, password, network) {
+        return Web3PageProgress(
+          key: page,
+          child: (context) {
+            return Column(children: [
+              SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: Container(color: context.colors.inverseSurface))
+            ]);
           },
-          child: Text("Test")),
-    ]);
+        );
+      },
+    );
   }
 }

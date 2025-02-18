@@ -7,7 +7,6 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/models/access/wallet_access.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
-
 import 'appbar_action.dart';
 import 'client_info.dart';
 import 'page_progress.dart';

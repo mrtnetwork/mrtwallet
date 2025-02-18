@@ -9,7 +9,7 @@ class Web3EthereumRequestMethods extends Web3RequestMethods {
       {required super.id,
       required super.name,
       super.methodsName,
-      this.needWalletOwnerAction = true});
+      super.reloadAuthenticated});
   static const Web3EthereumRequestMethods sendTransaction =
       Web3EthereumRequestMethods._(
           id: Web3EthereumConst.sendTransactionTag,
@@ -34,7 +34,7 @@ class Web3EthereumRequestMethods extends Web3RequestMethods {
       Web3EthereumRequestMethods._(
           id: Web3EthereumConst.switchEthereumChainTag,
           name: Web3EthereumConst.switchEthereumChain,
-          needWalletOwnerAction: false);
+          reloadAuthenticated: true);
 
   static const Web3EthereumRequestMethods requestAccounts =
       Web3EthereumRequestMethods._(
@@ -70,9 +70,6 @@ class Web3EthereumRequestMethods extends Web3RequestMethods {
 
   @override
   NetworkType get network => NetworkType.ethereum;
-
-  @override
-  final bool needWalletOwnerAction;
 
   @override
   String toString() {

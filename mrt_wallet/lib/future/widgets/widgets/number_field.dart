@@ -21,7 +21,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 class NumberTextField extends StatefulWidget {
   const NumberTextField({
     super.key,
-    required this.label,
+    this.label,
     required this.onChange,
     this.padding = WidgetConstant.paddingVertical8,
     this.helperText,
@@ -35,12 +35,13 @@ class NumberTextField extends StatefulWidget {
     this.nextFocus,
     this.readOnly = false,
     this.showPasteIcon = false,
+    this.iconColor,
   });
   final bool showPasteIcon;
   final int min;
   final int? max;
   final EdgeInsets padding;
-  final String label;
+  final String? label;
   final String? helperText;
   final String? hintText;
   final String? error;
@@ -50,6 +51,9 @@ class NumberTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final FocusNode? nextFocus;
   final bool readOnly;
+  final Color? iconColor;
+  // final TextStyle? labelStyle;
+
   @override
   State<NumberTextField> createState() => NumberTextFieldState();
 }
@@ -189,8 +193,10 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
       add: add,
       onSubmitField: onSubmitField,
       onPaste: onPaste,
+      iconColor: widget.iconColor,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
+        ValidIntegerTextInputFormatter(),
         if (widget.validator == null)
           RangeTextInputFormatter(min: widget.min, max: widget.max)
       ],
@@ -199,23 +205,23 @@ class NumberTextFieldState extends State<NumberTextField> with SafeState {
 }
 
 class BigNumberTextField extends StatefulWidget {
-  const BigNumberTextField({
-    super.key,
-    required this.label,
-    required this.onChange,
-    this.padding = WidgetConstant.paddingVertical8,
-    this.helperText,
-    this.hintText,
-    this.error,
-    this.validator,
-    this.defaultValue,
-    required this.max,
-    required this.min,
-    this.focusNode,
-    this.nextFocus,
-    this.readOnly = false,
-    this.showPasteIcon = false,
-  });
+  const BigNumberTextField(
+      {super.key,
+      required this.label,
+      required this.onChange,
+      this.padding = WidgetConstant.paddingVertical8,
+      this.helperText,
+      this.hintText,
+      this.error,
+      this.validator,
+      this.defaultValue,
+      required this.max,
+      required this.min,
+      this.focusNode,
+      this.nextFocus,
+      this.readOnly = false,
+      this.showPasteIcon = false,
+      this.iconColor});
   final bool showPasteIcon;
   final BigInt min;
   final BigInt? max;
@@ -230,6 +236,7 @@ class BigNumberTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final FocusNode? nextFocus;
   final bool readOnly;
+  final Color? iconColor;
   @override
   State<BigNumberTextField> createState() => BigNumberTextFieldState();
 }
@@ -355,6 +362,7 @@ class BigNumberTextFieldState extends State<BigNumberTextField> with SafeState {
       add: add,
       onSubmitField: onSubmitField,
       onPaste: onPaste,
+      iconColor: widget.iconColor,
       inputFormatters: [
         FilteringTextInputFormatter.digitsOnly,
         BigRangeTextInputFormatter(min: widget.min, max: widget.max)
@@ -383,7 +391,8 @@ class _NumberTextFieldView extends StatelessWidget {
       required this.add,
       this.validator,
       required this.onSubmitField,
-      required this.onPaste});
+      required this.onPaste,
+      this.iconColor});
   final EdgeInsetsGeometry padding;
   final bool minus;
   final DynamicVoid onLongPressCancel;
@@ -403,6 +412,7 @@ class _NumberTextFieldView extends StatelessWidget {
   final NullStringString? validator;
   final StringVoid onSubmitField;
   final StringVoid onPaste;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -433,8 +443,8 @@ class _NumberTextFieldView extends StatelessWidget {
                             onPressed: () {
                               onTap(false);
                             },
-                            icon: const Icon(
-                                Icons.indeterminate_check_box_rounded)),
+                            icon: Icon(Icons.indeterminate_check_box_rounded,
+                                color: iconColor)),
                       ),
                     ),
                   ],
@@ -452,10 +462,6 @@ class _NumberTextFieldView extends StatelessWidget {
                     minLines: null,
                     maxLines: null,
                     inputFormatters: inputFormatters,
-                    //  [
-                    //   FilteringTextInputFormatter.digitsOnly,
-                    //   RangeTextInputFormatter(min: widget.min, max: widget.max)
-                    // ],
                     readOnly: disableWriting,
                     decoration: InputDecoration(
                         filled: true,
@@ -487,7 +493,7 @@ class _NumberTextFieldView extends StatelessWidget {
                         onLongPress: () => onLongPress(true),
                         onLongPressEnd: (e) => onLongPressCancel(),
                         child: IconButton(
-                          icon: const Icon(Icons.add_box),
+                          icon: Icon(Icons.add_box, color: iconColor),
                           onPressed: () {
                             onTap(true);
                           },

@@ -1,5 +1,6 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/stellar.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
@@ -309,4 +310,7 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
     final result = await MethodUtils.call(() async => await passphrase());
     return result.hasResult && result.result == network.coinParam.passphrase;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.stellar;
 }

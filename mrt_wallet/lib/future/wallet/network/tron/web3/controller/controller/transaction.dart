@@ -4,8 +4,6 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/tron/tron.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/controller/impl/impl.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
@@ -21,10 +19,6 @@ class Web3TronTransactionRequestController
     extends Web3TronImpl<Map<String, dynamic>, Web3TronSendTransaction> {
   TronFee? _consumedFee;
   TronFee? get consumedFee => _consumedFee;
-  @override
-  late final LiveTransactionForm<Web3TronReadOnlyForm<Web3TronSendTransaction>>
-      // ignore: overridden_fields
-      liveRequest;
 
   Web3TronTransactionRequestController({
     required super.walletProvider,
@@ -168,7 +162,7 @@ class Web3TronTransactionRequestController
       return transaction;
     });
     if (tx.hasError) {
-      progressKey.error(text: tx.error!.tr, backToIdle: null);
+      progressKey.errorResponse(error: tx.error);
       request.error(Web3RequestExceptionConst.fromException(tx.exception!));
       return;
     }
@@ -185,16 +179,16 @@ class Web3TronTransactionRequestController
       final multiSigAddress = address as ITronMultisigAddress;
       if (transaction.rawData.permissionId() !=
           multiSigAddress.multiSignatureAccount.permissionID) {
-        progressKey.error(
-            text: "tron_account_permission_not_access_desc".tr,
-            backToIdle: null);
+        progressKey.errorResponse(
+          message: "tron_account_permission_not_access_desc".tr,
+        );
         request.error(Web3RequestExceptionConst.missingPermission);
         return;
       }
     }
 
     if (transactionInfo.hasError) {
-      progressKey.error(text: transactionInfo.error!.tr, backToIdle: null);
+      progressKey.errorResponse(error: transactionInfo.exception);
       request.error(Web3RequestExceptionConst.internalError);
     } else {
       final fee = await MethodUtils.call(() => _calcuateFee(
@@ -202,7 +196,7 @@ class Web3TronTransactionRequestController
           transaction: transaction,
           resource: resource));
       if (fee.hasError) {
-        progressKey.error(text: fee.error!.tr, backToIdle: null);
+        progressKey.errorResponse(error: fee.exception);
         request.error(Web3RequestExceptionConst.fromException(fee.exception!));
         return;
       }
@@ -216,9 +210,9 @@ class Web3TronTransactionRequestController
         _memo = StringUtils.tryDecode(transaction.rawData.data) ??
             BytesUtils.toHexString(transaction.rawData.data!);
       }
-      liveRequest = LiveTransactionForm(
-          validator:
-              Web3TronReadOnlyForm<Web3TronSendTransaction>(request: request));
+      // liveRequest = LiveTransactionForm(
+      //     validator:
+      //         Web3TronReadOnlyForm<Web3TronSendTransaction>(request: request));
       _trIsReady = _checkTransaction();
       progressKey.idle();
     }
@@ -274,7 +268,7 @@ class Web3TronTransactionRequestController
     });
 
     if (result.hasError) {
-      progressKey.error(text: result.error!.tr);
+      progressKey.error(error: result.exception, showBackButton: true);
     } else {
       final json = Map<String, dynamic>.from(request.params.transaction);
       final signatures = List<String>.from(json["signature"] ?? []);

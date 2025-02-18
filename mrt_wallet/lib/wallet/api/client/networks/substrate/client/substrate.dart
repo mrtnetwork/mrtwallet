@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/error/exception.dart';
 import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/crypto/requets/messages/non_encrypted/requests/substrate_read_api.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/substrate/methods/metadata.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/substrate/models/models/block_info.dart';
@@ -192,4 +193,7 @@ class SubstrateClient
     _metadata = metadata;
     return true;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.substrate;
 }

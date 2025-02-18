@@ -88,7 +88,8 @@ class SubstrateNetworkParams extends NetworkCoinParams<SubstrateAPIProvider> {
       {List<APIProvider>? updateProviders,
       Token? token,
       String? transactionExplorer,
-      String? addressExplorer}) {
+      String? addressExplorer,
+      int? bip32CoinType}) {
     return SubstrateNetworkParams(
         token: NetworkCoinParams.validateUpdateParams(
             token: this.token, updateToken: token),

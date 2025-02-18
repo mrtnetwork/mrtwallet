@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/helper/helper.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
@@ -13,25 +14,22 @@ import 'account.dart';
 
 class Web3EthereumChain extends Web3Chain<ETHAddress, EthereumChain,
     Web3EthereumChainAccount, WalletEthereumNetwork> {
-  BigInt _currentChain;
-  BigInt get currentChain => _currentChain;
+  int _id;
+  @override
+  int get currentChain => _id;
   Web3EthereumChain._(
-      {required super.accounts,
-      required BigInt currentChain,
-      required super.activities})
-      : _currentChain = currentChain;
+      {required super.accounts, required int id, required super.activities})
+      : _id = id;
   @override
   Web3EthereumChain clone() {
     return Web3EthereumChain._(
-        accounts: activeAccounts,
-        currentChain: currentChain,
-        activities: activities);
+        accounts: activeAccounts, id: currentChain, activities: activities);
   }
 
-  factory Web3EthereumChain.create({BigInt? chainId}) {
+  factory Web3EthereumChain.create({int? id}) {
     return Web3EthereumChain._(
         accounts: const [],
-        currentChain: chainId ?? BigInt.one,
+        id: id ?? ChainConst.ethereumMainnetId,
         activities: const []);
   }
 
@@ -51,7 +49,7 @@ class Web3EthereumChain extends Web3Chain<ETHAddress, EthereumChain,
             .elementAt<List<dynamic>>(0)
             .map((e) => Web3EthereumChainAccount.deserialize(object: e))
             .toList(),
-        currentChain: values.elementAt(1),
+        id: values.elementAt(1),
         activities: values
             .elementAt<List<dynamic>>(2)
             .map((e) => Web3AccountAcitvity.deserialize(object: e))
@@ -64,7 +62,7 @@ class Web3EthereumChain extends Web3Chain<ETHAddress, EthereumChain,
         CborListValue.fixedLength([
           CborListValue.fixedLength(
               activeAccounts.map((e) => e.toCbor()).toList()),
-          _currentChain,
+          _id,
           CborListValue.fixedLength(activities.map((e) => e.toCbor()).toList()),
         ]),
         network.tag);
@@ -78,7 +76,7 @@ class Web3EthereumChain extends Web3Chain<ETHAddress, EthereumChain,
       {required ETHAddress address, required EthereumChain chain}) {
     try {
       final permissionAccount = activeAccounts.firstWhere(
-          (e) => e.address == address && e.chainId == chain.chainId);
+          (e) => e.address == address && e.id == chain.network.value);
       final chainAccount = chain.addresses.firstWhere((e) {
         return e.networkAddress == permissionAccount.address &&
             e.keyIndex == permissionAccount.keyIndex;
@@ -96,19 +94,21 @@ class Web3EthereumChain extends Web3Chain<ETHAddress, EthereumChain,
 
   @override
   void setActiveChain(WalletEthereumNetwork network) {
-    _currentChain = network.coinParam.chainId;
+    _id = network.value;
   }
 
   @override
   Web3EthereumChain disconnect() {
     return Web3EthereumChain._(
-        accounts: const [], currentChain: BigInt.one, activities: activities);
+        accounts: const [],
+        id: ChainConst.ethereumMainnetId,
+        activities: activities);
   }
 
   @override
   List<Web3EthereumChainAccount> chainAccounts(EthereumChain chain) {
     final currentAccounts =
-        activeAccounts.where((e) => e.chainId == chain.chainId).toList();
+        activeAccounts.where((e) => e.id == chain.network.value).toList();
     final List<Web3EthereumChainAccount> existsAccounts = [];
     for (final i in chain.addresses) {
       final chainAccount = currentAccounts.firstWhereOrNull(
@@ -128,9 +128,8 @@ class Web3EthereumChain extends Web3Chain<ETHAddress, EthereumChain,
     final network = networks.firstWhere(
         (e) => e.network.coinParam.chainId == currentNetwork.coinParam.chainId,
         orElse: () => throw Web3RequestExceptionConst.invalidNetwork);
-    final currentAccounts = activeAccounts
-        .where((e) => e.chainId == currentNetwork.coinParam.chainId)
-        .toList();
+    final currentAccounts =
+        activeAccounts.where((e) => e.id == currentNetwork.value).toList();
     return Web3EthereumChainAuthenticated(
         accounts: currentAccounts,
         network: network.network,
@@ -145,29 +144,30 @@ class Web3EthereumChain extends Web3Chain<ETHAddress, EthereumChain,
     List<Web3EthereumChainAccount> accounts = activeAccounts.clone();
     List<Web3EthereumChainAccount> existsAccount = [];
     for (final i in accounts) {
-      final network = chain
-          .firstWhereOrNull((e) => e.network.coinParam.chainId == i.chainId);
+      final network = chain.firstWhereOrNull((e) => e.network.value == i.id);
       if (network == null) continue;
       final exist = network.addresses.any((e) => e.networkAddress == i.address);
       if (exist) existsAccount.add(i);
     }
     updateChainAccount(existsAccount);
-    return chain.firstWhere((e) => e.network == currentNetwork);
+    return chain.firstWhere(
+      (e) => e.network == currentNetwork,
+      orElse: () => throw Web3RequestExceptionConst.ethereumNetworkDoesNotExist,
+    );
   }
 
   @override
   WalletEthereumNetwork getCurrentPermissionNetwork(
       List<WalletEthereumNetwork> networks) {
-    final currentChain = _currentChain;
-    final network =
-        networks.firstWhereOrNull((e) => e.coinParam.chainId == currentChain);
+    final currentChain = _id;
+    final network = networks.firstWhereOrNull((e) => e.value == currentChain);
     if (network != null) {
       return network;
     }
     final mainNetwork =
         networks.firstWhere((e) => e.coinParam.chainId == BigInt.one);
     List<Web3EthereumChainAccount> accounts =
-        activeAccounts.clone().where((e) => e.chainId != currentChain).toList();
+        activeAccounts.clone().where((e) => e.id != currentChain).toList();
     setActiveChain(mainNetwork);
     updateChainAccount(accounts);
     return mainNetwork;

@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/cbor/core/cbor.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/serialization/serialization.dart';
+import 'package:mrt_wallet/wallet/models/contact/networks/aptos.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/cardano.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/cosmos.dart';
@@ -8,6 +9,7 @@ import 'package:mrt_wallet/wallet/models/contact/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/monero.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/stellar.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/substrate.dart';
+import 'package:mrt_wallet/wallet/models/contact/networks/sui.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/xrp.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/solana.dart';
 import 'package:mrt_wallet/wallet/models/contact/networks/ton.dart';
@@ -62,6 +64,12 @@ abstract class ContactCore<T> with CborSerializable {
       case NetworkType.monero:
         contact = MoneroContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
         break;
+      case NetworkType.sui:
+        contact = SuiContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
+      case NetworkType.aptos:
+        contact = AptosContact.fromCborBytesOrObject(bytes: bytes, obj: obj);
+        break;
       default:
         throw WalletExceptionConst.networkDoesNotExist;
     }
@@ -102,6 +110,10 @@ abstract class ContactCore<T> with CborSerializable {
         contact = StellarContact.newContact(address: address, name: name);
       case NetworkType.monero:
         contact = MoneroContact.newContact(address: address, name: name);
+      case NetworkType.aptos:
+        contact = AptosContact.newContact(address: address, name: name);
+      case NetworkType.sui:
+        contact = SuiContact.newContact(address: address, name: name);
       default:
         throw WalletExceptionConst.networkDoesNotExist;
     }

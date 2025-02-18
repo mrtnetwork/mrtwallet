@@ -51,7 +51,8 @@ class TronNetworkParams extends NetworkCoinParams<TronAPIProvider> {
       {List<APIProvider>? updateProviders,
       Token? token,
       String? transactionExplorer,
-      String? addressExplorer}) {
+      String? addressExplorer,
+      int? bip32CoinType}) {
     return TronNetworkParams(
         token: NetworkCoinParams.validateUpdateParams(
             token: this.token, updateToken: token),

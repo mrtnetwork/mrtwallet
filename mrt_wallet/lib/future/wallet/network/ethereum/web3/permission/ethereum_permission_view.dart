@@ -8,9 +8,13 @@ import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/etherum.dart';
 import 'package:on_chain/ethereum/src/address/evm_address.dart';
 
+import '../../../../../../wallet/web3/core/permission/models/authenticated.dart';
+
 class EthereumWeb3PermissionView extends StatefulWidget {
-  const EthereumWeb3PermissionView({required this.permission, super.key});
+  const EthereumWeb3PermissionView(
+      {required this.permission, required this.application, super.key});
   final Web3EthereumChain? permission;
+  final Web3APPAuthentication application;
 
   @override
   State<EthereumWeb3PermissionView> createState() =>
@@ -28,14 +32,16 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
             Web3EthereumChainAccount,
             Web3EthereumChain> {
   @override
+  Web3APPAuthentication get application => widget.application;
+  @override
   Web3EthereumChain createNewChainPermission() {
-    return Web3EthereumChain.create(chainId: chain.chainId);
+    return Web3EthereumChain.create(id: chain.network.value);
   }
 
   @override
   Web3EthereumChainAccount createNewAccountPermission(IEthAddress address) {
     return Web3EthereumChainAccount.fromChainAccount(
-        address: address, chainId: chain.chainId, defaultAddress: false);
+        address: address, id: chain.network.value, defaultAddress: false);
   }
 
   @override
@@ -48,6 +54,7 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
     for (final i in chains) {
       permissions[i] = permission.chainAccounts(i);
     }
+    updateActivities();
   }
 
   @override
@@ -61,6 +68,7 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
       addAccount: addAccount,
       onChangeChain: onChangeChain,
       onChangeDefaultAccount: onChangeDefaultPermission,
+      activities: activities,
     );
   }
 }

@@ -127,8 +127,8 @@ class MethodResult<T> {
   late final T _result;
   static (String, bool) _errorMessage(Object exception) {
     if (exception is AppException ||
-        exception is BlockchainUtilsException ||
         exception is ApiProviderException ||
+        exception is BlockchainUtilsException ||
         exception is RPCError ||
         exception is ArgumentError) {
       return (exception.toString(), false);

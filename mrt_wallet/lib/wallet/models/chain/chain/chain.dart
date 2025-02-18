@@ -40,7 +40,8 @@ part 'neworks/substrate.dart';
 part 'neworks/xrp.dart';
 part 'neworks/stellar.dart';
 part 'neworks/monero.dart';
-
+part 'neworks/aptos.dart';
+part 'neworks/sui.dart';
 part 'types/types.dart';
 part 'types/monero.dart';
 

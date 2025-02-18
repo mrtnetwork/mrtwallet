@@ -7,6 +7,7 @@ import 'package:mrt_wallet/app/http/models/auth.dart';
 
 class ProvidersConst {
   static const String tonApiName = "Ton API";
+  static const String aptosGraphQlName = "Aptos GraphQL";
   static List<APIProviderServiceInfo> networkSupportServices(
       WalletNetwork network) {
     return switch (network.type) {
@@ -60,6 +61,19 @@ class ProvidersConst {
           APIProviderServiceInfo(
               name: "Fullnode",
               url: "https://developers.tron.network/docs/nodes-and-clients"),
+        ],
+      NetworkType.aptos => [
+          APIProviderServiceInfo(
+              name: "Aptos Node",
+              url:
+                  "https://aptos.dev/en/build/apis/fullnode-rest-api-reference"),
+          APIProviderServiceInfo(
+              name: aptosGraphQlName,
+              url: "https://aptos.dev/en/build/indexer"),
+        ],
+      NetworkType.sui => [
+          APIProviderServiceInfo(
+              name: "Sui Node", url: "https://docs.sui.io/sui-api-ref"),
         ],
       _ => throw UnimplementedError("invalid network."),
     };
@@ -600,6 +614,54 @@ class ProvidersConst {
         identifier: "${defaultidentifierName}71",
         uri: "https://optimism-rpc.publicnode.com",
       )
+    ],
+    800: <APIProvider>[
+      SuiAPIProvider(
+          identifier: "${defaultidentifierName}800_1",
+          fullNodeUri: "https://fullnode.mainnet.sui.io:443"),
+      SuiAPIProvider(
+          identifier: "${defaultidentifierName}800_2",
+          fullNodeUri: "https://sui-rpc.publicnode.com")
+    ],
+    801: <APIProvider>[
+      SuiAPIProvider(
+          identifier: "${defaultidentifierName}801",
+          fullNodeUri: "https://fullnode.devnet.sui.io:443")
+    ],
+    802: <APIProvider>[
+      SuiAPIProvider(
+          identifier: "${defaultidentifierName}802",
+          fullNodeUri: "https://fullnode.testnet.sui.io:443")
+    ],
+    810: <APIProvider>[
+      AptosAPIProvider(
+          identifier: "${defaultidentifierName}810_1",
+          fullNodeUri: "https://api.mainnet.aptoslabs.com/v1/",
+          type: AptosAPIProviderType.fullnode),
+      AptosAPIProvider(
+          identifier: "${defaultidentifierName}811_1",
+          fullNodeUri: "https://api.mainnet.aptoslabs.com/v1/graphql",
+          type: AptosAPIProviderType.graphQl),
+    ],
+    811: <APIProvider>[
+      AptosAPIProvider(
+          identifier: "${defaultidentifierName}811_1",
+          fullNodeUri: "https://api.testnet.aptoslabs.com/v1/",
+          type: AptosAPIProviderType.fullnode),
+      AptosAPIProvider(
+          identifier: "${defaultidentifierName}811_1",
+          fullNodeUri: "https://api.testnet.aptoslabs.com/v1/graphql",
+          type: AptosAPIProviderType.graphQl),
+    ],
+    812: <APIProvider>[
+      AptosAPIProvider(
+          identifier: "${defaultidentifierName}812_1",
+          fullNodeUri: "https://api.devnet.aptoslabs.com/v1/",
+          type: AptosAPIProviderType.fullnode),
+      AptosAPIProvider(
+          identifier: "${defaultidentifierName}812_1",
+          fullNodeUri: "https://api.devnet.aptoslabs.com/v1/graphql",
+          type: AptosAPIProviderType.graphQl),
     ],
   });
 

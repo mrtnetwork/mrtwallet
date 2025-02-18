@@ -1,7 +1,6 @@
 import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/substrate/core/substrate.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/substrate.dart';
@@ -49,10 +48,8 @@ class SubstrateRequestAccountForm extends SubstrateWeb3Form {
         chains: chains,
         permissions: fields,
         newPermission: Web3SubstrateChain.create(
-            genesis: request.currentPermission?.currentChain));
+            id: request.currentPermission?.currentChain));
   }
-  @override
-  OnChangeForm? onChanged;
   @override
   String get name => request.params.method.name;
   final Map<SubstrateChain, TransactionListFormField<Web3SubstrateChainAccount>>
@@ -73,9 +70,7 @@ class SubstrateRequestAccountForm extends SubstrateWeb3Form {
       permissions[chain]?.removeValue(exists);
     } else {
       permissions[chain]?.addValue(Web3SubstrateChainAccount.fromChainAccount(
-          address: address,
-          genesis: chain.network.genesisBlock,
-          isDefault: false));
+          address: address, id: chain.network.value, isDefault: false));
     }
     if (permissions[chain]!.isNotEmpty &&
         !permissions[chain]!.value.any((e) => e.defaultAddress)) {

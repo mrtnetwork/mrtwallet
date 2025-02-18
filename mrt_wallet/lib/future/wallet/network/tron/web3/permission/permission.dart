@@ -8,7 +8,9 @@ import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:on_chain/tron/src/address/tron_address.dart';
 
 class TronWeb3PermissionView extends StatefulWidget {
-  const TronWeb3PermissionView({required this.permission, super.key});
+  const TronWeb3PermissionView(
+      {required this.permission, required this.application, super.key});
+  final Web3APPAuthentication application;
   final Web3TronChain? permission;
 
   @override
@@ -21,16 +23,16 @@ class _TronWeb3PermissionViewState extends State<TronWeb3PermissionView>
         Web3PermissionState<TronWeb3PermissionView, TronAddress, TronChain,
             ITronAddress, Web3TronChainAccount, Web3TronChain> {
   @override
+  Web3APPAuthentication get application => widget.application;
+  @override
   Web3TronChainAccount createNewAccountPermission(ITronAddress address) {
     return Web3TronChainAccount.fromChainAccount(
-        address: address,
-        chain: chain.network.tronNetworkType,
-        isDefault: false);
+        address: address, id: chain.network.value, isDefault: false);
   }
 
   @override
   Web3TronChain createNewChainPermission() {
-    return Web3TronChain.create(chain: chain.network.tronNetworkType);
+    return Web3TronChain.create(id: chain.network.value);
   }
 
   @override
@@ -43,6 +45,7 @@ class _TronWeb3PermissionViewState extends State<TronWeb3PermissionView>
     for (final i in chains) {
       permissions[i] = permission.chainAccounts(i);
     }
+    updateActivities();
   }
 
   @override
@@ -55,6 +58,7 @@ class _TronWeb3PermissionViewState extends State<TronWeb3PermissionView>
         hasPermission: hasPermission,
         addAccount: addAccount,
         onChangeChain: onChangeChain,
-        onChangeDefaultAccount: onChangeDefaultPermission);
+        onChangeDefaultAccount: onChangeDefaultPermission,
+        activities: activities);
   }
 }

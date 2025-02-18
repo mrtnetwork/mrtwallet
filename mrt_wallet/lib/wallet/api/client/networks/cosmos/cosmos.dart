@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cosmos.dart';
 import 'package:mrt_wallet/wallet/api/services/networks/networks.dart';
@@ -302,4 +303,7 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider>
     });
     return result.hasResult && result.result;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.cosmos;
 }

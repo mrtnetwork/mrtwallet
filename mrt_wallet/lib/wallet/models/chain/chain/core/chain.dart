@@ -62,16 +62,15 @@ abstract class Chain<
       return WalletNetwork.fromCborBytesOrObject(obj: values.getCborTag(6));
     });
     network = ChainConst.updateNetwork(networkId: networkId, network: network);
-    final String? providerId = MethodUtils.nullOnException(() {
-      return values.elementAs(7);
+    final ProviderIdentifier? providerId = MethodUtils.nullOnException(() {
+      final CborTagValue? identifier = values.elementAs(10);
+      if (identifier == null) return null;
+      return ProviderIdentifier.deserialize(cbor: identifier);
     });
     return Chain._fromNetwork(
         network: network, values: values, provider: providerId);
   }
-  static Chain setup({
-    required WalletNetwork network,
-    required String id,
-  }) {
+  static Chain setup({required WalletNetwork network, required String id}) {
     switch (network.type) {
       case NetworkType.ethereum:
         return EthereumChain.setup(
@@ -130,15 +129,25 @@ abstract class Chain<
             network: network.toNetwork(),
             client: APIUtils.createApiClient(network),
             id: id);
+      case NetworkType.sui:
+        return SuiChain.setup(
+            network: network.toNetwork(),
+            client: APIUtils.createApiClient(network),
+            id: id);
+      case NetworkType.aptos:
+        return AptosChain.setup(
+            network: network.toNetwork(),
+            client: APIUtils.createApiClient(network),
+            id: id);
       default:
-        throw UnimplementedError("network does not eixst. ");
+        throw UnimplementedError("network does not eixst.");
     }
   }
 
   factory Chain._fromNetwork(
       {required WalletNetwork network,
       required CborListValue values,
-      String? provider}) {
+      ProviderIdentifier? provider}) {
     final Chain chain;
     switch (network.type) {
       case NetworkType.bitcoinCash:
@@ -205,6 +214,18 @@ abstract class Chain<
 
       case NetworkType.cardano:
         chain = ADAChain.deserialize(
+            network: network.toNetwork(),
+            cbor: values,
+            client: APIUtils.createApiClient(network, identifier: provider));
+        break;
+      case NetworkType.sui:
+        chain = SuiChain.deserialize(
+            network: network.toNetwork(),
+            cbor: values,
+            client: APIUtils.createApiClient(network, identifier: provider));
+        break;
+      case NetworkType.aptos:
+        chain = AptosChain.deserialize(
             network: network.toNetwork(),
             cbor: values,
             client: APIUtils.createApiClient(network, identifier: provider));

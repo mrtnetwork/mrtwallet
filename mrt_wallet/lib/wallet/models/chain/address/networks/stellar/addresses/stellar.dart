@@ -125,7 +125,6 @@ class IStellarAddress
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -206,9 +205,6 @@ class IStellarAddress
 
   @override
   void removeNFT(NFTCore nft) {}
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override
@@ -352,11 +348,11 @@ class IStellarMultisigAddress extends IStellarAddress
   }
 
   @override
-  bool get multiSigAccount => true;
-
-  @override
   List<(String, Bip32AddressIndex)> get keyDetails =>
       multiSignatureAccount.signers
           .map((e) => (e.publicKey, e.keyIndex))
           .toList();
+
+  @override
+  IAdressType get iAddressType => throw UnimplementedError();
 }

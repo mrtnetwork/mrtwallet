@@ -43,7 +43,8 @@ class Web3TonTransactionRequestController
       return messages;
     });
     if (result.hasError) {
-      progressKey.error(backToIdle: null, text: result.error!.tr);
+      progressKey.errorResponse(error: result.exception);
+      request.error(Web3RequestExceptionConst.fromException(result.exception!));
       return;
     }
     form.init(
@@ -84,13 +85,13 @@ class Web3TonTransactionRequestController
     });
 
     if (externalMessage.hasError) {
-      progressKey.error(text: externalMessage.error!.tr);
+      progressKey.error(error: externalMessage.exception, showBackButton: true);
       return;
     }
     final result = await MethodUtils.call(
         () async => await apiProvider.sendMessage(boc: externalMessage.result));
     if (result.hasError) {
-      progressKey.error(text: result.error!.tr, backToIdle: null);
+      progressKey.errorResponse(error: result.exception);
       request.error(Web3RequestExceptionConst.fromException(result.exception!));
       return;
     }

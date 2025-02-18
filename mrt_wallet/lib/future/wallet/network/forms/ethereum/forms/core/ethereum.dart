@@ -1,3 +1,4 @@
+import 'package:mrt_wallet/app/error/exception.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/core.dart';
 import 'package:mrt_wallet/app/models/models/typedef.dart';
@@ -25,20 +26,24 @@ abstract class EthereumTransactionForm extends TransactionForm {
 }
 
 abstract class EthereumWeb3Form<PARAMS extends Web3EthereumRequestParam>
-    implements
-        Web3Form<ETHAddress, EthereumChain, Web3EthereumChainAccount,
-            Web3EthereumChain, PARAMS> {
+    extends Web3Form<ETHAddress, EthereumChain, Web3EthereumChainAccount,
+        Web3EthereumChain, PARAMS> {
   @override
   abstract final Web3EthereumRequest<dynamic, PARAMS> request;
 
   DynamicVoid? onStimateChanged;
-  @override
-  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;
 
   void confirmRequest({Object? response}) {
     onCompleteForm?.call(response);
+  }
+
+  ETHFORM cast<ETHFORM extends EthereumWeb3Form>() {
+    if (this is! ETHFORM) {
+      throw WalletException.invalidArgruments(["$ETHFORM", "$runtimeType"]);
+    }
+    return this as ETHFORM;
   }
 }

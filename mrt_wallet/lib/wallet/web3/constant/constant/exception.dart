@@ -40,6 +40,12 @@ class Web3RequestExceptionConst {
       message: "An error occurred during the request",
       walletCode: "WALLET-000",
       code: -32603);
+  static const Web3RequestException internalErrorParsingTransactionFailed =
+      Web3RequestException(
+          message: "An error occurred during the request",
+          data: "Parsing transaction failed.",
+          walletCode: "WALLET-000",
+          code: -32603);
   static const Web3RequestException networkNotSupported = Web3RequestException(
       message: "The wallet does not support the selected network.",
       walletCode: "WALLET-1000",
@@ -143,12 +149,25 @@ class Web3RequestExceptionConst {
               "Invalid base64 string for $parameterName: Please check the input and try again.",
           walletCode: "WEB3-0040",
           code: -32602);
-
+  static Web3RequestException invalidBase58(String parameterName) =>
+      Web3RequestException(
+          message: "Invalid method parameters.",
+          data:
+              "Invalid base58 string for $parameterName: Please check the input and try again.",
+          walletCode: "WEB3-0040",
+          code: -32602);
   static Web3RequestException invalidList({String? parameterName}) =>
       Web3RequestException(
           message: "Invalid method parameters.",
           data:
               "Invalid list argument provided${parameterName != null ? ' for $parameterName' : ''}. Please ensure the input is a valid list and try again.",
+          walletCode: "WEB3-0050",
+          code: -32602);
+  static Web3RequestException emptyList({String? parameterName, int? length}) =>
+      Web3RequestException(
+          message: "Invalid method parameters.",
+          data:
+              "Invalid list argument provided${parameterName != null ? ' for $parameterName' : ''}. ${length == null ? 'At least one $parameterName required' : '$length $parameterName required.'}.",
           walletCode: "WEB3-0050",
           code: -32602);
 
@@ -167,6 +186,16 @@ class Web3RequestExceptionConst {
               "Invalid number argument provided for $parameterName: Numbers must be valid hexadecimal values starting with '0x'. Please check the input and try again.",
           walletCode: "WEB3-0070",
           code: -32602);
+  static Web3RequestException invalidObjectKeys(
+          String parameterName, List<String> keys) =>
+      Web3RequestException(
+          message: "Invalid method parameters.",
+          data:
+              "Invalid $parameterName object. The object must contain one of the following keys: ${keys.join(", ")}",
+          walletCode: "WEB3-0070",
+          code: -32602);
+
+  // Invalid gas data object. The object must contain one of the following keys: Result, Input, or NestedResult
   static Web3RequestException invalidMethodArgruments(String methodName) =>
       Web3RequestException(
           message: "Invalid method parameters.",
@@ -226,6 +255,11 @@ class Web3RequestExceptionConst {
               "The specified Ethereum network does not exist. Please use 'wallet_addEthereumChain' to add the network before proceeding.",
           walletCode: "WEB3-5080",
           code: -32600);
+  static const Web3RequestException networkDoesNotExists = Web3RequestException(
+      message: "Invalid method parameters.",
+      data: "The specified Network does not exist.",
+      walletCode: "WEB3-5080",
+      code: -32600);
   static const Web3RequestException ethereumRpcWrongChainId = Web3RequestException(
       message:
           "The provided RPC link returned a different chain ID. Please ensure the RPC URL matches the expected chain ID.",
@@ -244,6 +278,13 @@ class Web3RequestExceptionConst {
           data: message,
           walletCode: "WEB3-5100",
           code: -32602);
+  static Web3RequestException invalidParametersParsingObjectFailed(
+          String message) =>
+      Web3RequestException(
+          message: "Invalid method parameters: parsing $message failed.",
+          data: message,
+          walletCode: "WEB3-5100",
+          code: -32602);
   static Web3RequestException failedRequest(String message,
           {String? data, Map<String, dynamic>? dataJson}) =>
       Web3RequestException(
@@ -258,6 +299,9 @@ class Web3RequestExceptionConst {
           message: "Unsuported features: $message",
           walletCode: "WEB3-4030",
           code: 4200);
+  static Web3RequestException excuteTransactionFailed(String error) =>
+      Web3RequestException(
+          message: "Excute transaction failed: $error",
+          walletCode: "WEB3-4030",
+          code: 4200);
 }
-
-/// The Provider is disconnected

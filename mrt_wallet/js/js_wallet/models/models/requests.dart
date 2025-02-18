@@ -188,7 +188,9 @@ enum JSClientType {
   solana(tag: [153], networkName: "Solana"),
   ton(tag: [154], networkName: "TON"),
   stellar(tag: [155], networkName: "Stellar"),
-  substrate(tag: [156], networkName: "Substrate");
+  substrate(tag: [156], networkName: "Substrate"),
+  aptos(tag: [157], networkName: "Aptos"),
+  sui(tag: [158], networkName: "Sui");
 
   final List<int> tag;
   final String networkName;
@@ -200,7 +202,7 @@ enum JSClientType {
   }
 
   static JSClientType fronNetworkName(String? name) {
-    if (name == null) return JSClientType.global;
+    // if (name == null) return JSClientType.global;
     return values.firstWhere((e) => e.networkName == name,
         orElse: () => throw Web3RequestExceptionConst.internalError);
   }
@@ -327,6 +329,14 @@ extension type Web3JSRequestParams._(JSObject o) implements JSAny {
     }
   }
 }
+
+enum PageRequestType {
+  wallet,
+  network;
+
+  bool get isNetworkRequest => this == network;
+}
+
 @JS("PageMessageRequest")
 extension type PageMessageRequest._(JSObject object)
     implements PageMessageData {
@@ -388,6 +398,11 @@ extension type PageMessageRequest._(JSObject object)
       return null;
     }
     return toDart.first;
+  }
+
+  PageRequestType get pageRequestType {
+    if (id.isEmpty) return PageRequestType.network;
+    return PageRequestType.wallet;
   }
 }
 

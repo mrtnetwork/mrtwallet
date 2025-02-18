@@ -9,10 +9,7 @@ import 'wallet.dart';
 
 abstract class ChainWeb3State {
   static const requestTimeout = Duration(seconds: 1);
-
-  ChainWeb3State({
-    required this.state,
-  });
+  ChainWeb3State({required this.state});
 
   final JSNetworkState state;
 }
@@ -54,7 +51,7 @@ abstract class JSNetworkHandler<STATE extends ChainWeb3State> {
     return Web3ResponseMessage(result: result, network: networkType);
   }
 
-  void initChain(Web3APPData authenticated);
+  Future<void> initChain(Web3APPData authenticated);
 
   Future<Web3MessageCore> discoonect() async {
     return Web3DisconnectApplication(chain: networkType);

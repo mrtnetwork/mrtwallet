@@ -1,30 +1,31 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
-import 'package:mrt_wallet/wallet/models/network/params/solana.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:on_chain/solana/solana.dart';
 
 class Web3SolanaChainAccount extends Web3ChainAccount<SolAddress> {
-  final SolanaNetworkType genesis;
+  @override
+  final int id;
   Web3SolanaChainAccount({
     required super.keyIndex,
     required super.address,
     required super.defaultAddress,
-    required this.genesis,
+    required this.id,
   });
   factory Web3SolanaChainAccount.fromChainAccount(
       {required ISolanaAddress address,
-      required SolanaNetworkType genesis,
+      required int id,
       required bool isDefault}) {
     return Web3SolanaChainAccount(
         keyIndex: address.keyIndex,
         address: address.networkAddress,
-        genesis: genesis,
+        id: id,
         defaultAddress: isDefault);
   }
 
@@ -39,19 +40,15 @@ class Web3SolanaChainAccount extends Web3ChainAccount<SolAddress> {
         keyIndex: AddressDerivationIndex.fromCborBytesOrObject(
             obj: values.getCborTag(0)),
         address: SolAddress(values.elementAt(1)),
-        genesis: SolanaNetworkType.fromValue(values.elementAt(2)),
+        id: values.elementAt(2),
         defaultAddress: values.elementAt(3));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength([
-          keyIndex.toCbor(),
-          address.address,
-          genesis.value,
-          defaultAddress
-        ]),
+        CborListValue.fixedLength(
+            [keyIndex.toCbor(), address.address, id, defaultAddress]),
         CborTagsConst.web3SolanaAccount);
   }
 
@@ -59,13 +56,13 @@ class Web3SolanaChainAccount extends Web3ChainAccount<SolAddress> {
   String get addressStr => address.address;
 
   @override
-  List get variabels => [keyIndex, addressStr, genesis];
+  List get variabels => [keyIndex, addressStr, id];
 }
 
 class Web3SolanaChainAuthenticated extends Web3ChainAuthenticated {
   final List<Web3SolanaChainAccount> accounts;
   final WalletSolanaNetwork network;
-  final String? serviceIdentifier;
+  final ProviderIdentifier? serviceIdentifier;
   Web3SolanaChainAuthenticated(
       {required List<Web3SolanaChainAccount> accounts,
       required this.network,
@@ -80,13 +77,15 @@ class Web3SolanaChainAuthenticated extends Web3ChainAuthenticated {
         hex: hex,
         tags: NetworkType.solana.tag);
     return Web3SolanaChainAuthenticated(
-        accounts: values
-            .elementAsListOf<CborTagValue>(0)
-            .map((e) => Web3SolanaChainAccount.deserialize(object: e))
-            .toList(),
-        network: WalletSolanaNetwork.fromCborBytesOrObject(
-            obj: values.getCborTag(1)),
-        serviceIdentifier: values.elementAs(2));
+      accounts: values
+          .elementAsListOf<CborTagValue>(0)
+          .map((e) => Web3SolanaChainAccount.deserialize(object: e))
+          .toList(),
+      network:
+          WalletSolanaNetwork.fromCborBytesOrObject(obj: values.getCborTag(1)),
+      serviceIdentifier: values.elemetMybeAs<ProviderIdentifier, CborTagValue>(
+          2, (p0) => ProviderIdentifier.deserialize(cbor: p0)),
+    );
   }
 
   @override
@@ -95,7 +94,7 @@ class Web3SolanaChainAuthenticated extends Web3ChainAuthenticated {
         CborListValue.fixedLength([
           CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
           network.toCbor(),
-          serviceIdentifier
+          serviceIdentifier?.toCbor()
         ]),
         networkType.tag);
   }

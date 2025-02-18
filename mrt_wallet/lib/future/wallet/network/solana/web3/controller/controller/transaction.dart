@@ -76,7 +76,7 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
           isSend && form.transaction.any((e) => e.canUpdateBlockHash);
     });
     if (r.hasError) {
-      progressKey.error(text: r.error!.tr, backToIdle: null);
+      progressKey.errorResponse(error: r.exception);
       request.error(Web3RequestExceptionConst.fromException(r.exception!));
       return;
     }
@@ -131,7 +131,7 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
       },
     ));
     if (signedTr.hasError) {
-      progressKey.error(text: signedTr.error!.tr);
+      progressKey.error(error: signedTr.exception, showBackButton: true);
       return;
     }
     final List<SolanaWeb3SignedTransactionInfo> result = signedTr.result;
@@ -161,9 +161,10 @@ class Web3SolanaTransactionRequestController extends Web3SolanaImpl<
               signerAddressBytes: signer.toBytes()));
         } else {
           if (!isMultipleTransaction) {
+            progressKey.errorResponse(error: txResult.exception);
             request.error(
                 Web3RequestExceptionConst.fromException(txResult.exception!));
-            progressKey.error(text: txResult.error!.tr, backToIdle: null);
+
             return;
           }
           response.add(SolanaWeb3TransactionErrorResponse(

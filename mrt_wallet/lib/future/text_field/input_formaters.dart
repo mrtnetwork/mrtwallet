@@ -1,4 +1,5 @@
 import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
+import 'package:blockchain_utils/utils/numbers/utils/int_utils.dart';
 import 'package:flutter/services.dart';
 import 'package:mrt_wallet/app/utils/price/utils.dart';
 
@@ -62,6 +63,39 @@ class RangeTextInputFormatter extends TextInputFormatter {
       }
     } else {
       newString = min.toString();
+    }
+    return TextEditingValue(
+      text: newString,
+      selection: TextSelection.collapsed(offset: newString.length),
+    );
+  }
+}
+
+class ValidIntegerTextInputFormatter extends TextInputFormatter {
+  ValidIntegerTextInputFormatter();
+  static TextEditingValue _buildOldValue(TextEditingValue oldValue) {
+    final int? enteredNumber = IntUtils.tryParse(oldValue.text);
+    if (enteredNumber == null) {
+      return const TextEditingValue(
+        text: "",
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+    return oldValue;
+  }
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    String newString = newValue.text.trim();
+
+    if (newString.isNotEmpty) {
+      final int? enteredNumber = IntUtils.tryParse(newString);
+      if (enteredNumber == null) {
+        return _buildOldValue(oldValue);
+      }
+    } else {
+      newString = '';
     }
     return TextEditingValue(
       text: newString,

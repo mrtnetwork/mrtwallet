@@ -1,6 +1,5 @@
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/forms/core/solana.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/solana/solana.dart';
@@ -12,9 +11,6 @@ import 'package:on_chain/solana/src/transaction/transaction/transaction.dart';
 
 class Web3SolanaSendTransactionForm
     extends SolanaWeb3Form<Web3SolanaSendTransaction> {
-  @override
-  OnChangeForm? onChanged;
-
   Web3SolanaSendTransactionForm({required this.request});
   List<SolanaWeb3TransactionInfo> _transactions = [];
   List<SolanaWeb3TransactionInfo> get transaction => _transactions;

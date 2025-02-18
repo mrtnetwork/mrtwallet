@@ -70,7 +70,6 @@ class SolanaPageController extends PageNetworkController {
 
   void _disable({String? message}) {
     solana = null;
-    jsConsole.error(message);
   }
 
   JSPromise<JSAny?> _signMessage(JSAny? message) {
@@ -261,16 +260,20 @@ class SolanaPageController extends PageNetworkController {
     }
   }
 
-  JSPromise<JSArray<JSSolanaWalletAccount>> _connect() {
+  Future<JSArray<JSSolanaWalletAccount>> _connect_() async {
     final params =
         PageMessageRequest.create(method: Web3SolanaConst.requestAccounts);
-    final promise = _postNetworkRequestMessage<JSArray>(params).then((e) => e
-        .toDart
-        .map((e) =>
-            SolanaWalletAccount.fromJson((e.dartify() as Map).cast()).toJS)
-        .toList()
-        .toJS);
-    return promise.toPromise;
+    final promise = await _postNetworkRequestMessage<JSArray>(params).then(
+        (e) => e.toDart
+            .map((e) =>
+                SolanaWalletAccount.fromJson((e.dartify() as Map).cast()).toJS)
+            .toList()
+            .toJS);
+    return promise;
+  }
+
+  JSPromise<JSArray<JSSolanaWalletAccount>> _connect() {
+    return _connect_().toPromise;
   }
 
   void onEvent(WalletMessageEvent message) {

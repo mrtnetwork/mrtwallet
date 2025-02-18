@@ -345,4 +345,7 @@ class TronClient extends NetworkClient<ITronAddress, TronAPIProvider>
 
     return false;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.tron;
 }

@@ -16,11 +16,13 @@ class TokenDetailsView extends StatelessWidget {
     this.radius = 40,
     this.showBalance = true,
     this.enableTap = true,
+    this.error,
   });
   final TokenCore token;
   final DynamicVoid? onSelect;
   final Widget? onSelectWidget;
   final Widget? onSelectIcon;
+  final String? error;
   // final Color? backgroundColor;
   final Color? textColor;
   final double radius;
@@ -33,6 +35,8 @@ class TokenDetailsView extends StatelessWidget {
       onRemoveIcon: onSelectIcon,
       onRemoveWidget: onSelectWidget,
       enableTap: enableTap,
+      validate: error == null,
+      validateText: error,
       child: TokenDetailsWidget(
           token: token.token,
           tokenAddress: token.issuer,

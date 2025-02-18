@@ -84,6 +84,12 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
       case 10:
         return allChains
             .where((element) => (element.network.type == NetworkType.monero));
+      case 11:
+        return allChains
+            .where((element) => (element.network.type == NetworkType.sui));
+      case 12:
+        return allChains
+            .where((element) => (element.network.type == NetworkType.aptos));
       default:
         throw UnimplementedError();
     }
@@ -111,6 +117,10 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
         return 9;
       case NetworkType.monero:
         return 10;
+      case NetworkType.sui:
+        return 11;
+      case NetworkType.aptos:
+        return 12;
       default:
         return 0;
     }
@@ -237,6 +247,15 @@ class _SwitchNetworkViewState extends State<SwitchNetworkView>
                                           APPConst.monero,
                                           radius: imageRadius),
                                       label: WidgetConstant.sizedBox),
+                                  NavigationRailDestination(
+                                      icon: CircleAssetsImageView(APPConst.sui,
+                                          radius: imageRadius),
+                                      label: WidgetConstant.sizedBox),
+                                  NavigationRailDestination(
+                                      icon: CircleAssetsImageView(
+                                          APPConst.aptos,
+                                          radius: imageRadius),
+                                      label: WidgetConstant.sizedBox),
                                 ],
                                 selectedIndex: initialIndex),
                           ),
@@ -323,7 +342,21 @@ class _NetworksView extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          CircleTokenImageView(net.coinParam.token, radius: 20),
+                          Column(
+                            children: [
+                              CircleTokenImageView(net.coinParam.token,
+                                  radius: 20),
+                              if (net.coinParam.isTestNet)
+                                ToolTipView(
+                                  message: "testnet_price_desc".tr,
+                                  child: Text(
+                                    "testnet".tr,
+                                    style: context.textTheme.labelSmall
+                                        ?.copyWith(color: context.colors.error),
+                                  ),
+                                ),
+                            ],
+                          ),
                           WidgetConstant.width8,
                           Expanded(
                               child: Column(

@@ -2071,6 +2071,11 @@
     _failedAsCheck(object, testRti) {
       throw A.wrapException(A._TypeError$fromMessage(A._Error_compose(object, A._rtiToString(testRti, null))));
     },
+    checkTypeBound(type, bound, variable, methodName) {
+      if (A.isSubtype(init.typeUniverse, type, bound))
+        return type;
+      throw A.wrapException(A._TypeError$fromMessage("The type argument '" + A._rtiToString(type, null) + "' is not a subtype of the type variable bound '" + A._rtiToString(bound, null) + "' of type variable '" + variable + "' in '" + methodName + "'."));
+    },
     _Error_compose(object, checkedTypeDescription) {
       return A.Error_safeToString(object) + ": type '" + A._rtiToString(A._structuralTypeOf(object), null) + "' is not a subtype of type '" + checkedTypeDescription + "'";
     },
@@ -3332,6 +3337,15 @@
       }
       return B.C__StringStackTrace;
     },
+    Future_Future$delayed(duration, $T) {
+      var result,
+        t1 = !$T._is(null);
+      if (t1)
+        throw A.wrapException(A.ArgumentError$value(null, "computation", "The type parameter is not nullable"));
+      result = new A._Future($.Zone__current, $T._eval$1("_Future<0>"));
+      A.Timer_Timer(duration, new A.Future_Future$delayed_closure(null, result, $T));
+      return result;
+    },
     _interceptError(error, stackTrace) {
       if ($.Zone__current === B.C__RootZone)
         return null;
@@ -3674,6 +3688,11 @@
     AsyncError: function AsyncError(t0, t1) {
       this.error = t0;
       this.stackTrace = t1;
+    },
+    Future_Future$delayed_closure: function Future_Future$delayed_closure(t0, t1, t2) {
+      this.computation = t0;
+      this.result = t1;
+      this.T = t2;
     },
     TimeoutException: function TimeoutException(t0, t1) {
       this.message = t0;
@@ -5847,6 +5866,38 @@
       _._fragment = t6;
       _.___Uri_hashCode_FI = _.___Uri__text_FI = $;
     },
+    ListToJSArray_get_toJS(_this, $T) {
+      return _this;
+    },
+    JSAnyUtilityExtension_instanceOfString(_this, constructorName) {
+      var parts, $constructor, t1, t2, _i, part;
+      if (constructorName.length === 0)
+        return false;
+      parts = constructorName.split(".");
+      $constructor = type$.JSObject._as(self);
+      for (t1 = parts.length, t2 = type$.nullable_JSObject, _i = 0; _i < t1; ++_i) {
+        part = parts[_i];
+        $constructor = t2._as($constructor[part]);
+        if ($constructor == null)
+          return false;
+      }
+      return _this instanceof type$.JavaScriptFunction._as($constructor);
+    },
+    FutureOfVoidToJSPromise_get_toJS(_this) {
+      return type$.JSObject._as(new self.Promise(A._functionToJS2(new A.FutureOfVoidToJSPromise_get_toJS_closure(_this))));
+    },
+    NumToJSExtension_get_toJS(_this) {
+      return _this;
+    },
+    FutureOfVoidToJSPromise_get_toJS_closure: function FutureOfVoidToJSPromise_get_toJS_closure(t0) {
+      this._this = t0;
+    },
+    FutureOfVoidToJSPromise_get_toJS__closure: function FutureOfVoidToJSPromise_get_toJS__closure(t0) {
+      this.resolve = t0;
+    },
+    FutureOfVoidToJSPromise_get_toJS__closure0: function FutureOfVoidToJSPromise_get_toJS__closure0(t0) {
+      this.reject = t0;
+    },
     _functionToJS0(f) {
       var result;
       if (typeof f == "function")
@@ -5959,6 +6010,8 @@
     },
     callConstructor(constr, $arguments, $T) {
       var args, factoryFunction;
+      if ($arguments == null)
+        return $T._as(new constr());
       if ($arguments instanceof Array)
         switch ($arguments.length) {
           case 0:
@@ -6130,6 +6183,75 @@
     Web3SolanaRequestMethods_fromName_closure: function Web3SolanaRequestMethods_fromName_closure(t0) {
       this.name = t0;
     },
+    JSAptosAccountChanged_toWalletEvent(_this) {
+      var t1 = type$.JSArray_nullable_Object._as(_this.addresses);
+      t1 = type$.List_JSObject._is(t1) ? t1 : new A.CastList(t1, A._arrayInstanceType(t1)._eval$1("CastList<1,JSObject>"));
+      t1 = J.map$1$1$ax(t1, new A.JSAptosAccountChanged_toWalletEvent_closure(), type$.String);
+      return A.List_List$of(t1, true, t1.$ti._eval$1("ListIterable.E"));
+    },
+    JSAptosSignTransactionParams_toRequest(_this) {
+      var isMultiAgnet, t1, _this0, exception;
+      try {
+        t1 = A.MRTJsObject_keys_(_this);
+        t1 = t1 == null ? null : B.JSArray_methods.contains$1(t1, "secondarySignerAddresses");
+        isMultiAgnet = t1 === true;
+        _this0 = {};
+        _this0.data = type$.Object._as(_this.bcsToBytes());
+        _this0.isMultiAgent = isMultiAgnet;
+        return _this0;
+      } catch (exception) {
+        t1 = A.Web3RequestExceptionConst_invalidParameters("Invalid Aptos transaction. The transaction must be a valid Aptos transaction and include a method like bcsToBytes.");
+        throw A.wrapException(t1);
+      }
+    },
+    JSAptosSerializableObject_get__toString(_this) {
+      return new A.JSAptosSerializableObject_get__toString_closure(_this);
+    },
+    JSAptosSerializableObject_get__toStringWithoutPrefix(_this) {
+      return new A.JSAptosSerializableObject_get__toStringWithoutPrefix_closure(_this);
+    },
+    JSAptosSerializableObject_buildSerializable(_this) {
+      _this.bcsToBytes = A._functionToJS0(new A.JSAptosSerializableObject_buildSerializable_closure(_this));
+      _this.serialize = A._functionToJS1(new A.JSAptosSerializableObject_buildSerializable_closure0(_this));
+      _this.bcsToHex = A._functionToJS0(new A.JSAptosSerializableObject_buildSerializable_closure1(_this));
+      _this.toStringWithoutPrefix = A._functionToJS0(A.JSAptosSerializableObject_get__toStringWithoutPrefix(_this));
+      _this.toString = A._functionToJS0(A.JSAptosSerializableObject_get__toString(_this));
+    },
+    JSAptosWalletStandardUserResponseStatus_fromName($name) {
+      return B.JSArray_methods.firstWhere$2$orElse(B.List_xmd, new A.JSAptosWalletStandardUserResponseStatus_fromName_closure($name), new A.JSAptosWalletStandardUserResponseStatus_fromName_closure0());
+    },
+    JSAptosWalletStandardUserResponse_constructor_approved(args, ARGS) {
+      var _this = {};
+      _this.status = "Approved";
+      _this.args = args;
+      return _this;
+    },
+    JSAptosAccountChanged_toWalletEvent_closure: function JSAptosAccountChanged_toWalletEvent_closure() {
+    },
+    JSAptosSerializableObject_get__toString_closure: function JSAptosSerializableObject_get__toString_closure(t0) {
+      this._this = t0;
+    },
+    JSAptosSerializableObject_get__toStringWithoutPrefix_closure: function JSAptosSerializableObject_get__toStringWithoutPrefix_closure(t0) {
+      this._this = t0;
+    },
+    JSAptosSerializableObject_buildSerializable_closure: function JSAptosSerializableObject_buildSerializable_closure(t0) {
+      this._this = t0;
+    },
+    JSAptosSerializableObject_buildSerializable_closure0: function JSAptosSerializableObject_buildSerializable_closure0(t0) {
+      this._this = t0;
+    },
+    JSAptosSerializableObject_buildSerializable_closure1: function JSAptosSerializableObject_buildSerializable_closure1(t0) {
+      this._this = t0;
+    },
+    JSAptosWalletStandardUserResponseStatus: function JSAptosWalletStandardUserResponseStatus(t0, t1) {
+      this.name = t0;
+      this._name = t1;
+    },
+    JSAptosWalletStandardUserResponseStatus_fromName_closure: function JSAptosWalletStandardUserResponseStatus_fromName_closure(t0) {
+      this.name = t0;
+    },
+    JSAptosWalletStandardUserResponseStatus_fromName_closure0: function JSAptosWalletStandardUserResponseStatus_fromName_closure0() {
+    },
     PageRequestCompleter: function PageRequestCompleter(t0, t1) {
       this.id = t0;
       this._completer = t1;
@@ -6251,7 +6373,7 @@
       return B.JSArray_methods.firstWhere$2$orElse(B.List_JEF, new A.JSWalletResponseType_fromName_closure($name), new A.JSWalletResponseType_fromName_closure0());
     },
     JSClientType_fromName($name) {
-      return B.JSArray_methods.firstWhere$2$orElse(B.List_HVt, new A.JSClientType_fromName_closure($name), new A.JSClientType_fromName_closure0());
+      return B.JSArray_methods.firstWhere$2$orElse(B.List_PwA, new A.JSClientType_fromName_closure($name), new A.JSClientType_fromName_closure0());
     },
     JSArrayFuture_elemetAt(_this, index, $T, $E) {
       var t1, exception;
@@ -6346,9 +6468,32 @@
       _._worker = null;
       _._lock = t0;
       _._wait = t1;
-      _.__JSBasePageController_substratePageController_FI = _.__JSBasePageController_stellarPageController_FI = _.__JSBasePageController_tonPageController_FI = _.__JSBasePageController_solanaPageController_FI = _.__JSBasePageController_tronPageController_FI = _.__JSBasePageController_ethereumPageController_FI = $;
+      _.__JSBasePageController_suiPageController_FI = _.__JSBasePageController_aptosPageController_FI = _.__JSBasePageController_substratePageController_FI = _.__JSBasePageController_stellarPageController_FI = _.__JSBasePageController_tonPageController_FI = _.__JSBasePageController_solanaPageController_FI = _.__JSBasePageController_tronPageController_FI = _.__JSBasePageController_ethereumPageController_FI = $;
     },
     PageNetworkController: function PageNetworkController() {
+    },
+    AptosPageController: function AptosPageController(t0, t1, t2) {
+      var _ = this;
+      _._aptosLiteners = t0;
+      _._aptos = null;
+      _.postMessage = t1;
+      _._id = 0;
+      _._listeners = t2;
+    },
+    AptosPageController__createAdapter_closure: function AptosPageController__createAdapter_closure(t0) {
+      this.adapter = t0;
+    },
+    AptosPageController__createAdapter_closure0: function AptosPageController__createAdapter_closure0(t0) {
+      this.event = t0;
+    },
+    AptosPageController__initController__closure: function AptosPageController__initController__closure(t0) {
+      this._dartInstance = t0;
+    },
+    AptosPageController__initController__closure0: function AptosPageController__initController__closure0(t0) {
+      this._dartInstance = t0;
+    },
+    AptosPageController__initController_closure: function AptosPageController__initController_closure(t0) {
+      this.$this = t0;
     },
     EthereumPageController: function EthereumPageController(t0, t1) {
       var _ = this;
@@ -6411,9 +6556,9 @@
     },
     SolanaPageController__onTransactionResponse_closure: function SolanaPageController__onTransactionResponse_closure() {
     },
-    SolanaPageController__connect_closure: function SolanaPageController__connect_closure() {
-    },
     SolanaPageController__connect__closure: function SolanaPageController__connect__closure() {
+    },
+    SolanaPageController__connect___closure: function SolanaPageController__connect___closure() {
     },
     SolanaPageController_onEvent_closure: function SolanaPageController_onEvent_closure() {
     },
@@ -6451,6 +6596,19 @@
       this.$this = t0;
     },
     SubstratePageController_onEvent_closure: function SubstratePageController_onEvent_closure() {
+    },
+    SuiPageController: function SuiPageController(t0, t1) {
+      var _ = this;
+      _._suiProxy = _._sui = null;
+      _.postMessage = t0;
+      _._id = 0;
+      _._listeners = t1;
+    },
+    SuiPageController__createAdapter_closure: function SuiPageController__createAdapter_closure(t0) {
+      this.proxy = t0;
+    },
+    SuiPageController__createAdapter_closure0: function SuiPageController__createAdapter_closure0(t0) {
+      this.event = t0;
     },
     TonPageController: function TonPageController(t0, t1) {
       var _ = this;
@@ -6678,6 +6836,111 @@
     StellarProviderConnectInfo_toJS_closure: function StellarProviderConnectInfo_toJS_closure(t0) {
       this.$this = t0;
     },
+    JSSuiAccountChanged_toWalletEvent(_this) {
+      var t1 = type$.JSArray_nullable_Object._as(_this.accounts);
+      t1 = type$.List_JSObject._is(t1) ? t1 : new A.CastList(t1, A._arrayInstanceType(t1)._eval$1("CastList<1,JSObject>"));
+      t1 = J.map$1$1$ax(t1, new A.JSSuiAccountChanged_toWalletEvent_closure(), type$.String);
+      return A.List_List$of(t1, true, t1.$ti._eval$1("ListIterable.E"));
+    },
+    JSSuiTransactionBlockResponseParams_clone(_this) {
+      var _this0 = {};
+      _this0.showBalanceChanges = A._asBoolQ(_this.showBalanceChanges);
+      _this0.showEffects = A._asBoolQ(_this.showEffects);
+      _this0.showEvents = A._asBoolQ(_this.showEvents);
+      _this0.showInput = A._asBoolQ(_this.showInput);
+      _this0.showObjectChanges = A._asBoolQ(_this.showObjectChanges);
+      _this0.showRawEffects = A._asBoolQ(_this.showRawEffects);
+      _this0.showRawInput = A._asBoolQ(_this.showRawInput);
+      return _this0;
+    },
+    JSSuiSignTransactionParams_toRequest(_this) {
+      return A.JSSuiSignTransactionParams_toRequest$body(_this);
+    },
+    JSSuiSignTransactionParams_toRequest$body(_this) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.Object),
+        $async$returnValue, $async$handler = 2, $async$currentError, transactionJson, transactionJson0, t1, _this0, exception, $async$exception;
+      var $async$JSSuiSignTransactionParams_toRequest = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1) {
+          $async$currentError = $async$result;
+          $async$goto = $async$handler;
+        }
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              $async$handler = 4;
+              $async$goto = _this.transaction != null ? 7 : 8;
+              break;
+            case 7:
+              // then
+              t1 = type$.JSObject;
+              $async$goto = 9;
+              return A._asyncAwait(A.promiseToFuture(t1._as(_this.transaction.toJSON()), type$.String), $async$JSSuiSignTransactionParams_toRequest);
+            case 9:
+              // returning from await.
+              transactionJson = $async$result;
+              _this0 = {};
+              _this0.chain = A._asString(_this.chain);
+              _this0.account = A._asString(t1._as(_this.account).address);
+              _this0.transaction = transactionJson;
+              _this0.requestType = A._asStringQ(_this.requestType);
+              t1 = _this.options;
+              t1 = t1 == null ? null : A.JSSuiTransactionBlockResponseParams_clone(t1);
+              _this0.options = t1;
+              $async$returnValue = _this0;
+              // goto return
+              $async$goto = 1;
+              break;
+            case 8:
+              // join
+              if (_this.transactionBlock != null) {
+                transactionJson0 = type$.Object._as(_this.transactionBlock.blockData);
+                _this0 = {};
+                _this0.chain = A._asString(_this.chain);
+                t1 = type$.JSObject;
+                _this0.account = A._asString(t1._as(_this.account).address);
+                _this0.transaction = A._asString(t1._as(self.JSON).stringify(transactionJson0));
+                _this0.requestType = A._asStringQ(_this.requestType);
+                t1 = _this.options;
+                t1 = t1 == null ? null : A.JSSuiTransactionBlockResponseParams_clone(t1);
+                _this0.options = t1;
+                $async$returnValue = _this0;
+                // goto return
+                $async$goto = 1;
+                break;
+              }
+              $async$handler = 2;
+              // goto after finally
+              $async$goto = 6;
+              break;
+            case 4:
+              // catch
+              $async$handler = 3;
+              $async$exception = $async$currentError;
+              // goto after finally
+              $async$goto = 6;
+              break;
+            case 3:
+              // uncaught
+              // goto rethrow
+              $async$goto = 2;
+              break;
+            case 6:
+              // after finally
+              throw A.wrapException($.$get$SuiJSConstant_invalidTransaction());
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+            case 2:
+              // rethrow
+              return A._asyncRethrow($async$currentError, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$JSSuiSignTransactionParams_toRequest, $async$completer);
+    },
+    JSSuiAccountChanged_toWalletEvent_closure: function JSSuiAccountChanged_toWalletEvent_closure() {
+    },
     TonAccountsChanged: function TonAccountsChanged(t0, t1) {
       this.accounts = t0;
       this.defaultAddress = t1;
@@ -6761,73 +7024,42 @@
     main$body(args) {
       var $async$goto = 0,
         $async$completer = A._makeAsyncAwaitCompleter(type$.void),
-        $async$handler = 1, $async$currentError, pageController, applicationId, workerCompleter, onActivation, activation, worker, target, onWalletEvent, onWorkerWalletEvent, e, client, t1, t2, t3, exception, $async$exception;
+        t1, t2, t3, activation, worker, target, client;
       var $async$main = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
-        if ($async$errorCode === 1) {
-          $async$currentError = $async$result;
-          $async$goto = $async$handler;
-        }
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
         while (true)
           switch ($async$goto) {
             case 0:
               // Function start
-              $async$handler = 3;
-              A.print("\x1b[33mpage started?!\x1b[0m");
               client = new A.JSWithWorkerPageController(new A.SynchronizedLock(), new A._AsyncCompleter(new A._Future($.Zone__current, type$._Future_void), type$._AsyncCompleter_void));
               client._initControllers$0();
-              pageController = client;
               t1 = self;
               if (type$.nullable_JSObject._as(t1.MRT) == null)
                 t1.MRT = {};
               t2 = type$.JSObject;
-              applicationId = A.Web3APPAuthentication_toApplicationId(A._asString(t2._as(t2._as(t1.window).location).origin));
-              if (applicationId == null)
+              if (A.Web3APPAuthentication_toApplicationId(A._asString(t2._as(t2._as(t1.window).location).origin)) == null)
                 throw A.wrapException(B.Web3RequestException_LzG);
-              workerCompleter = new A._AsyncCompleter(new A._Future($.Zone__current, type$._Future_Record_2_JSObject_and_JSWebviewTraget), type$._AsyncCompleter_Record_2_JSObject_and_JSWebviewTraget);
-              onActivation = new A.main_onActivation(workerCompleter, pageController);
-              t2._as(t1.MRT).onMrtMessage = A._functionToJS1(onActivation);
-              $async$goto = 6;
-              return A._asyncAwait(workerCompleter.future, $async$main);
-            case 6:
+              t3 = new A._Future($.Zone__current, type$._Future_Record_2_JSObject_and_JSWebviewTraget);
+              t2._as(t1.MRT).onMrtMessage = A._functionToJS1(new A.main_onActivation(new A._AsyncCompleter(t3, type$._AsyncCompleter_Record_2_JSObject_and_JSWebviewTraget), client));
+              $async$goto = 2;
+              return A._asyncAwait(t3, $async$main);
+            case 2:
               // returning from await.
               activation = $async$result;
-              pageController.initClients$2$worker("", activation._0);
               worker = activation._0;
               target = activation._1;
               t2._as(t1.MRT).onMrtMessage = null;
-              onWalletEvent = new A.main_onWalletEvent(worker);
-              onWorkerWalletEvent = new A.main_onWorkerWalletEvent(target, pageController);
               t1.errorListener_ = A._functionToJS1(new A.main_closure());
-              t1.workerListener_ = A._functionToJS1(onWorkerWalletEvent);
+              t1.workerListener_ = A._functionToJS1(new A.main_onWorkerWalletEvent(target, client));
               t3 = type$.JavaScriptFunction;
               worker.addEventListener("error", t3._as(t1.errorListener_));
               worker.addEventListener("message", t3._as(t1.workerListener_));
-              t2._as(t1.MRT).onMrtMessage = A._functionToJS1(onWalletEvent);
-              $async$handler = 1;
-              // goto after finally
-              $async$goto = 5;
-              break;
-            case 3:
-              // catch
-              $async$handler = 2;
-              $async$exception = $async$currentError;
-              e = A.unwrapException($async$exception);
-              A.print("\x1b[31m" + ("stup page failed " + A.S(e)) + "\x1b[0m");
-              // goto after finally
-              $async$goto = 5;
-              break;
-            case 2:
-              // uncaught
-              // goto rethrow
-              $async$goto = 1;
-              break;
-            case 5:
-              // after finally
+              t2._as(t1.MRT).onMrtMessage = A._functionToJS1(new A.main_onWalletEvent(worker));
+              client.initClients$2$worker("", worker);
+              A.print("\x1b[33minited!\x1b[0m");
               // implicit return
               return A._asyncReturn(null, $async$completer);
-            case 1:
-              // rethrow
-              return A._asyncRethrow($async$currentError, $async$completer);
           }
       });
       return A._asyncStartSync($async$main, $async$completer);
@@ -6869,26 +7101,6 @@
         return;
       }
       throw "Unable to print message: " + String(string);
-    },
-    ListToJSArray_get_toJS(_this, $T) {
-      return _this;
-    },
-    JSAnyUtilityExtension_instanceOfString(_this, constructorName) {
-      var parts, $constructor, t1, t2, _i, part;
-      if (constructorName.length === 0)
-        return false;
-      parts = constructorName.split(".");
-      $constructor = type$.JSObject._as(self);
-      for (t1 = parts.length, t2 = type$.nullable_JSObject, _i = 0; _i < t1; ++_i) {
-        part = parts[_i];
-        $constructor = t2._as($constructor[part]);
-        if ($constructor == null)
-          return false;
-      }
-      return _this instanceof type$.JavaScriptFunction._as($constructor);
-    },
-    NumToJSExtension_get_toJS(_this) {
-      return _this;
     },
     BytesUtils_validateListOfBytes(bytes) {
       var t1, t2, t3, i, byte;
@@ -6954,6 +7166,9 @@
         } else
           throw exception;
       }
+    },
+    Web3RequestExceptionConst_invalidParameters(message) {
+      return new A.Web3RequestException("Invalid method parameters: " + message, -32602, "WEB3-5100", message);
     },
     Web3APPAuthentication_toApplicationId(url) {
       var t2, t3, scheme, userInfo, host, query, fragment, port, isFile, hasAuthority, path, _null = null,
@@ -8077,13 +8292,13 @@
     call$2(o, tag) {
       return this.getUnknownTag(o, tag);
     },
-    $signature: 42
+    $signature: 34
   };
   A.initHooks_closure1.prototype = {
     call$1(tag) {
       return this.prototypeForTag(A._asString(tag));
     },
-    $signature: 61
+    $signature: 63
   };
   A._Record.prototype = {
     toString$0(_) {
@@ -8383,19 +8598,19 @@
       t2 = this.span;
       t1.firstChild ? t1.removeChild(t2) : t1.appendChild(t2);
     },
-    $signature: 31
+    $signature: 51
   };
   A._AsyncRun__scheduleImmediateJsOverride_internalCallback.prototype = {
     call$0() {
       this.callback.call$0();
     },
-    $signature: 29
+    $signature: 28
   };
   A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback.prototype = {
     call$0() {
       this.callback.call$0();
     },
-    $signature: 29
+    $signature: 28
   };
   A._TimerImpl.prototype = {
     _TimerImpl$2(milliseconds, callback) {
@@ -8452,19 +8667,19 @@
     call$1(result) {
       return this.bodyFunction.call$2(0, result);
     },
-    $signature: 14
+    $signature: 17
   };
   A._awaitOnObject_closure0.prototype = {
     call$2(error, stackTrace) {
       this.bodyFunction.call$2(1, new A.ExceptionAndStackTrace(error, type$.StackTrace._as(stackTrace)));
     },
-    $signature: 70
+    $signature: 39
   };
   A._wrapJsFunctionForAsync_closure.prototype = {
     call$2(errorCode, result) {
       this.$protected(A._asInt(errorCode), result);
     },
-    $signature: 69
+    $signature: 46
   };
   A.AsyncError.prototype = {
     toString$0(_) {
@@ -8474,6 +8689,13 @@
     get$stackTrace() {
       return this.stackTrace;
     }
+  };
+  A.Future_Future$delayed_closure.prototype = {
+    call$0() {
+      this.T._as(null);
+      this.result._complete$1(null);
+    },
+    $signature: 0
   };
   A.TimeoutException.prototype = {
     toString$0(_) {
@@ -8848,7 +9070,7 @@
     call$1(_) {
       return this.originalSource;
     },
-    $signature: 62
+    $signature: 50
   };
   A._Future__propagateToListeners_handleValueCallback.prototype = {
     call$0() {
@@ -9235,7 +9457,7 @@
     call$2(k, v) {
       this.result.$indexSet(0, this.K._as(k), this.V._as(v));
     },
-    $signature: 28
+    $signature: 29
   };
   A.ListBase.prototype = {
     get$iterator(receiver) {
@@ -9340,7 +9562,7 @@
       t2 = A.S(v);
       t1._contents += t2;
     },
-    $signature: 49
+    $signature: 38
   };
   A.Base64Codec.prototype = {
     normalize$3(source, start, end) {
@@ -10186,13 +10408,13 @@
     call$2(msg, position) {
       throw A.wrapException(A.FormatException$("Illegal IPv4 address, " + msg, this.host, position));
     },
-    $signature: 47
+    $signature: 41
   };
   A.Uri_parseIPv6Address_error.prototype = {
     call$2(msg, position) {
       throw A.wrapException(A.FormatException$("Illegal IPv6 address, " + msg, this.host, position));
     },
-    $signature: 45
+    $signature: 49
   };
   A.Uri_parseIPv6Address_parseHex.prototype = {
     call$2(start, end) {
@@ -10380,7 +10602,7 @@
       B.NativeUint8List_methods.fillRange$3(t1, 0, 96, defaultTransition);
       return t1;
     },
-    $signature: 44
+    $signature: 36
   };
   A._createTables_setChars.prototype = {
     call$3(target, chars, transition) {
@@ -10496,6 +10718,39 @@
     $isUri: 1
   };
   A._DataUri.prototype = {};
+  A.FutureOfVoidToJSPromise_get_toJS_closure.prototype = {
+    call$2(resolve, reject) {
+      var t1 = type$.JavaScriptFunction;
+      this._this.then$1$2$onError(new A.FutureOfVoidToJSPromise_get_toJS__closure(t1._as(resolve)), new A.FutureOfVoidToJSPromise_get_toJS__closure0(t1._as(reject)), type$.nullable_Object);
+    },
+    $signature: 25
+  };
+  A.FutureOfVoidToJSPromise_get_toJS__closure.prototype = {
+    call$1(_) {
+      var t1 = this.resolve;
+      return t1.call(t1);
+    },
+    $signature: 47
+  };
+  A.FutureOfVoidToJSPromise_get_toJS__closure0.prototype = {
+    call$2(error, stackTrace) {
+      var t1, errorConstructor, box, t2;
+      type$.Object._as(error);
+      type$.StackTrace._as(stackTrace);
+      t1 = type$.JSObject;
+      errorConstructor = type$.JavaScriptFunction._as(t1._as(self).Error);
+      t1 = A.callConstructor(errorConstructor, ["Dart exception thrown from converted Future. Use the properties 'error' to fetch the boxed error and 'stack' to recover the stack trace."], t1);
+      if (type$.JavaScriptObject._is(error))
+        A.throwExpression("Attempting to box non-Dart object.");
+      box = {};
+      box[$.$get$_jsBoxedDartObjectProperty()] = error;
+      t1.error = box;
+      t1.stack = stackTrace.toString$0(0);
+      t2 = this.reject;
+      t2.call(t2, t1);
+    },
+    $signature: 18
+  };
   A.jsify__convert.prototype = {
     call$1(o) {
       var t1, convertedMap, key, convertedList;
@@ -10520,13 +10775,13 @@
       } else
         return o;
     },
-    $signature: 10
+    $signature: 12
   };
   A.promiseToFuture_closure.prototype = {
     call$1(r) {
       return this.completer.complete$1(this.T._eval$1("0/?")._as(r));
     },
-    $signature: 14
+    $signature: 17
   };
   A.promiseToFuture_closure0.prototype = {
     call$1(e) {
@@ -10534,7 +10789,7 @@
         return this.completer.completeError$1(new A.NullRejectionException(e === undefined));
       return this.completer.completeError$1(e);
     },
-    $signature: 14
+    $signature: 17
   };
   A.dartify_convert.prototype = {
     call$1(o) {
@@ -10586,7 +10841,7 @@
       }
       return o;
     },
-    $signature: 10
+    $signature: 12
   };
   A.NullRejectionException.prototype = {
     toString$0(_) {
@@ -10647,7 +10902,7 @@
     call$1(byte) {
       return B.JSString_methods.padLeft$2(B.JSInt_methods.toRadixString$1(A._asInt(byte), 16), 2, "0");
     },
-    $signature: 43
+    $signature: 52
   };
   A.MRTNativePluginException.prototype = {
     toString$0(_) {
@@ -10663,20 +10918,20 @@
     call$1(e) {
       return type$.WalletEventTypes._as(e)._name === this.name;
     },
-    $signature: 37
+    $signature: 73
   };
   A.WalletEventTypes_fromName_closure0.prototype = {
     call$0() {
       return A.throwExpression(new A.MRTNativePluginException("Invalid wallet event type " + this.name));
     },
-    $signature: 7
+    $signature: 9
   };
   A.WalletEvent.prototype = {};
   A.MRTJsObject_keys__closure.prototype = {
     call$1(e) {
       return A._asString(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.Equatable.prototype = {
     $eq(_, other) {
@@ -10861,7 +11116,61 @@
       t1 = this.name;
       return e.name === t1 || B.JSArray_methods.contains$1(e.methodsName, t1);
     },
-    $signature: 35
+    $signature: 48
+  };
+  A.JSAptosAccountChanged_toWalletEvent_closure.prototype = {
+    call$1(e) {
+      return A._asString(type$.JSObject._as(e).address);
+    },
+    $signature: 16
+  };
+  A.JSAptosSerializableObject_get__toString_closure.prototype = {
+    call$0() {
+      return A._asString(this._this.dataHex);
+    },
+    $signature: 2
+  };
+  A.JSAptosSerializableObject_get__toStringWithoutPrefix_closure.prototype = {
+    call$0() {
+      return B.JSString_methods.substring$1(A._asString(this._this.dataHex), 2);
+    },
+    $signature: 2
+  };
+  A.JSAptosSerializableObject_buildSerializable_closure.prototype = {
+    call$0() {
+      return type$.Object._as(this._this.data);
+    },
+    $signature: 1
+  };
+  A.JSAptosSerializableObject_buildSerializable_closure0.prototype = {
+    call$1(serializer) {
+      var t1 = type$.Object;
+      t1._as(serializer).serializeFixedBytes(t1._as(this._this.data));
+    },
+    $signature: 10
+  };
+  A.JSAptosSerializableObject_buildSerializable_closure1.prototype = {
+    call$0() {
+      return A._asString(this._this.dataHex);
+    },
+    $signature: 2
+  };
+  A.JSAptosWalletStandardUserResponseStatus.prototype = {
+    _enumToString$0() {
+      return "JSAptosWalletStandardUserResponseStatus." + this._name;
+    }
+  };
+  A.JSAptosWalletStandardUserResponseStatus_fromName_closure.prototype = {
+    call$1(e) {
+      return type$.JSAptosWalletStandardUserResponseStatus._as(e).name === this.name;
+    },
+    $signature: 64
+  };
+  A.JSAptosWalletStandardUserResponseStatus_fromName_closure0.prototype = {
+    call$0() {
+      return A.throwExpression(B.Web3RequestException_chs);
+    },
+    $signature: 9
   };
   A.PageRequestCompleter.prototype = {};
   A.ProxyMethodHandler.prototype = {
@@ -10870,14 +11179,20 @@
       return false;
     },
     $get$3(object, prop, receiver) {
-      var t1, t2;
+      var t1, t2, r;
       type$.Object._as(object);
       t1 = prop == null;
       t2 = !t1 || null;
       if (t2 === true)
-        if (!t1 && typeof prop === "string")
-          if (B.JSString_methods.startsWith$1(A._asString(prop), "is"))
+        if (!t1 && typeof prop === "string") {
+          A._asString(prop);
+          if (B.JSString_methods.startsWith$1(prop, "is")) {
+            r = self.Reflect.get(object, prop, receiver);
+            if (r != null)
+              return r;
             return true;
+          }
+        }
       return self.Reflect.get(object, prop, receiver);
     }
   };
@@ -10890,7 +11205,7 @@
       t1._as(t2.window).dispatchEvent(this.event);
       t1._as(t2.window).removeEventListener("eip6963:requestProvider", A._functionToJS1(this));
     },
-    $signature: 12
+    $signature: 11
   };
   A.EthereumAccountsChanged.prototype = {
     toString$0(_) {
@@ -10963,7 +11278,7 @@
         onError = A._registerErrorHandler(onError, t3);
       t1._addListener$1(new A._FutureListener(new A._Future(t3, t2), 2, null, onError, t2._eval$1("_FutureListener<1,1>")));
     },
-    $signature: 32
+    $signature: 25
   };
   A.WalletPromise_get_toPromise__closure.prototype = {
     call$1(value) {
@@ -10971,7 +11286,7 @@
       t1.call(t1, value);
       return value;
     },
-    $signature: 10
+    $signature: 12
   };
   A.WalletPromise_get_toPromise__closure0.prototype = {
     call$2(error, stackTrace) {
@@ -10982,7 +11297,7 @@
       t1.call(t1, error);
       return error;
     },
-    $signature: 33
+    $signature: 37
   };
   A.WalletPromise_get_toPromise__closure1.prototype = {
     call$1(e) {
@@ -10995,13 +11310,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.QuickJS_toProxy__closure0.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.QuickJS_toProxy_closure.prototype = {
     call$0() {
@@ -11036,20 +11351,20 @@
     call$1(e) {
       return type$.JSWalletMessageType._as(e)._name === this.name;
     },
-    $signature: 36
+    $signature: 40
   };
   A.JSWalletMessageType_fromName_closure0.prototype = {
     call$0() {
       return A.throwExpression(B.Web3RequestException_chs);
     },
-    $signature: 7
+    $signature: 9
   };
   A.WalletMessageData__convertMap_closure.prototype = {
     call$2(key, value) {
       if (value instanceof A.MapBase)
         this.map.$indexSet(0, key, A.WalletMessageData__convertMap(this._this, value));
     },
-    $signature: 28
+    $signature: 29
   };
   A.JSEventType.prototype = {
     _enumToString$0() {
@@ -11060,19 +11375,19 @@
     call$1(e) {
       return type$.JSEventType._as(e)._name === this.name;
     },
-    $signature: 25
+    $signature: 30
   };
   A.JSEventType_name_closure0.prototype = {
     call$0() {
       return A.throwExpression(B.Web3RequestException_chs);
     },
-    $signature: 7
+    $signature: 9
   };
   A.JSEventType_fromName_closure.prototype = {
     call$1(e) {
       return type$.JSEventType._as(e)._name === this.name;
     },
-    $signature: 25
+    $signature: 30
   };
   A.JSWalletResponseType.prototype = {
     _enumToString$0() {
@@ -11083,13 +11398,13 @@
     call$1(e) {
       return type$.JSWalletResponseType._as(e)._name === this.name;
     },
-    $signature: 38
+    $signature: 42
   };
   A.JSWalletResponseType_fromName_closure0.prototype = {
     call$0() {
       return A.throwExpression(B.Web3RequestException_chs);
     },
-    $signature: 7
+    $signature: 9
   };
   A.JSClientType.prototype = {
     _enumToString$0() {
@@ -11100,13 +11415,13 @@
     call$1(e) {
       return type$.JSClientType._as(e)._name === this.name;
     },
-    $signature: 39
+    $signature: 43
   };
   A.JSClientType_fromName_closure0.prototype = {
     call$0() {
       return A.throwExpression(B.Web3RequestException_chs);
     },
-    $signature: 7
+    $signature: 9
   };
   A.JSWorkerType.prototype = {
     _enumToString$0() {
@@ -11117,7 +11432,7 @@
     call$1(e) {
       return type$.JSWorkerType._as(e)._name === this.name;
     },
-    $signature: 40
+    $signature: 44
   };
   A.JSBasePageController.prototype = {
     _waitForActivation$0() {
@@ -11217,6 +11532,31 @@
       }
       return value;
     },
+    get$aptosPageController() {
+      var t1, t2, t3, t4, _this = this,
+        value = _this.__JSBasePageController_aptosPageController_FI;
+      if (value === $) {
+        t1 = type$.JSArray_JavaScriptFunction;
+        t2 = type$.JSEventType;
+        t3 = type$.List_JavaScriptFunction;
+        t4 = A.LinkedHashMap_LinkedHashMap$_literal([B.JSEventType_accountsChanged, A._setArrayType([], t1), B.JSEventType_chainChanged, A._setArrayType([], t1)], t2, t3);
+        t3 = A.LinkedHashMap_LinkedHashMap$_literal([B.JSEventType_accountsChanged, A._setArrayType([], t1), B.JSEventType_chainChanged, A._setArrayType([], t1), B.JSEventType_connect, A._setArrayType([], t1), B.JSEventType_message, A._setArrayType([], t1), B.JSEventType_disconnect, A._setArrayType([], t1), B.JSEventType_change, A._setArrayType([], t1)], t2, t3);
+        _this.__JSBasePageController_aptosPageController_FI !== $ && A.throwLateFieldADI("aptosPageController");
+        value = _this.__JSBasePageController_aptosPageController_FI = new A.AptosPageController(t4, _this.get$postMessage(), t3);
+      }
+      return value;
+    },
+    get$suiPageController() {
+      var t1, _this = this,
+        value = _this.__JSBasePageController_suiPageController_FI;
+      if (value === $) {
+        t1 = type$.JSArray_JavaScriptFunction;
+        t1 = A.LinkedHashMap_LinkedHashMap$_literal([B.JSEventType_accountsChanged, A._setArrayType([], t1), B.JSEventType_chainChanged, A._setArrayType([], t1), B.JSEventType_connect, A._setArrayType([], t1), B.JSEventType_message, A._setArrayType([], t1), B.JSEventType_disconnect, A._setArrayType([], t1), B.JSEventType_change, A._setArrayType([], t1)], type$.JSEventType, type$.List_JavaScriptFunction);
+        _this.__JSBasePageController_suiPageController_FI !== $ && A.throwLateFieldADI("suiPageController");
+        value = _this.__JSBasePageController_suiPageController_FI = new A.SuiPageController(_this.get$postMessage(), t1);
+      }
+      return value;
+    },
     _initControllers$0() {
       var e, exception, t1, _this = this;
       try {
@@ -11226,6 +11566,8 @@
         _this.get$tonPageController()._initController$0();
         _this.get$stellarPageController()._initController$0();
         _this.get$substratePageController()._initController$0();
+        _this.get$aptosPageController()._initController$0();
+        _this.get$suiPageController()._initController$0();
       } catch (exception) {
         e = A.unwrapException(exception);
         t1 = self;
@@ -11233,7 +11575,7 @@
       }
     },
     handleWalletMessage$1(walletResponse) {
-      var $event, t1, t2, exception, _this = this;
+      var $event, e, t1, t2, exception, _this = this;
       try {
         t1 = type$.JSObject;
         if (A.JSWalletMessageType_fromName(A._asString(t1._as(walletResponse.data).type)) === B.JSWalletMessageType_response) {
@@ -11264,10 +11606,18 @@
           case B.JSClientType_substrate:
             _this.get$substratePageController().onEvent$1($event);
             break;
+          case B.JSClientType_aptos:
+            _this.get$aptosPageController().onEvent$1($event);
+            break;
+          case B.JSClientType_sui:
+            _this.get$suiPageController().onEvent$1($event);
+            break;
           default:
             break;
         }
       } catch (exception) {
+        e = A.unwrapException(exception);
+        A.print("\x1b[31m" + ("got error " + A.S(e)) + "\x1b[0m");
         throw exception;
       }
     }
@@ -11326,7 +11676,7 @@
       });
       return A._asyncStartSync($async$call$0, $async$completer);
     },
-    $signature: 41
+    $signature: 45
   };
   A.JSWithWorkerPageController.prototype = {
     postMessage$1(message) {
@@ -11373,9 +11723,8 @@
       t4 = A._asStringQ(params.id);
       return A.WalletPromise_get_toPromise(this._postWalletRequestMessage$1(A.PageMessageRequest_constructor_create(t4 == null ? B.JSInt_methods.toString$0(this._id++) : t4, t2, t3)), t1);
     },
-    _postNetworkRequest$1(params) {
-      var t1 = type$.nullable_Object;
-      return A.WalletPromise_get_toPromise(this._postNetworkRequestMessage$1$1(A.PageMessageRequest_constructor_create(null, A._asString(params.method), type$.nullable_JSArray_nullable_Object._as(params.params)), t1), t1);
+    _postNetworkRequest$1$1(params, $T) {
+      return A.WalletPromise_get_toPromise(this._postNetworkRequestMessage$1$1(A.PageMessageRequest_constructor_create(null, A._asString(params.method), type$.nullable_JSArray_nullable_Object._as(params.params)), $T), $T);
     },
     _disconnectChain$0() {
       return A.WalletPromise_get_toPromise(this._postWalletRequestMessage$1(A.PageMessageRequest_constructor_create(B.JSInt_methods.toString$0(this._id++), "disconnect", null)), type$.JSObject);
@@ -11484,6 +11833,42 @@
       });
       return A._asyncStartSync($async$_postNetworkRequestMessage$1$1, $async$completer);
     },
+    _createAndPostNetworkRequestMessage$1$1(params, $T) {
+      return this._createAndPostNetworkRequestMessage$body$PageNetworkController(params, $T, $T);
+    },
+    _createAndPostNetworkRequestMessage$body$PageNetworkController(params, $T, $async$type) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter($async$type),
+        $async$returnValue, $async$self = this, response;
+      var $async$_createAndPostNetworkRequestMessage$1$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          $async$outer:
+            switch ($async$goto) {
+              case 0:
+                // Function start
+                $async$goto = 3;
+                return A._asyncAwait($async$self._getWalleResponse$1(A.PageMessageRequest_constructor_create(null, A._asString(params.method), type$.nullable_JSArray_nullable_Object._as(params.params))), $async$_createAndPostNetworkRequestMessage$1$1);
+              case 3:
+                // returning from await.
+                response = $async$result;
+                switch (A.JSWalletResponseType_fromName(A._asString(response.status))) {
+                  case B.JSWalletResponseType_success:
+                    $async$returnValue = $T._as(response.data);
+                    // goto return
+                    $async$goto = 1;
+                    break $async$outer;
+                  case B.JSWalletResponseType_failed:
+                    throw A.wrapException(A.JSWalletError_constructor_fromJson(A.WalletMessageData_asMap(response)));
+                }
+              case 1:
+                // return
+                return A._asyncReturn($async$returnValue, $async$completer);
+            }
+      });
+      return A._asyncStartSync($async$_createAndPostNetworkRequestMessage$1$1, $async$completer);
+    },
     _postWalletRequestMessage$1(message) {
       var $async$goto = 0,
         $async$completer = A._makeAsyncAwaitCompleter(type$.JSObject),
@@ -11521,6 +11906,389 @@
       return A._asyncStartSync($async$_postWalletRequestMessage$1, $async$completer);
     }
   };
+  A.AptosPageController.prototype = {
+    _createAdapter$0() {
+      var t2, t3, t4, $event, _this = this, _this0 = {},
+        listener = A._functionToJS2(_this.get$_scripts$_addListener()),
+        signTransaction = A._functionToJS1(_this.get$_signTransaction()),
+        _this1 = {},
+        t1 = _this.get$_requestAccount(),
+        _this2 = {};
+      _this2.connect = A._functionToJS0(t1);
+      _this2.version = "1.0.0";
+      _this1["aptos:connect"] = _this2;
+      _this2 = {};
+      _this2.signTransaction = signTransaction;
+      _this2.version = "1.0.0";
+      _this1["aptos:signTransaction"] = _this2;
+      _this2 = {};
+      _this2.signMessage = A._functionToJS1(_this.get$_signMessage());
+      _this2.version = "1.0.0";
+      _this1["aptos:signMessage"] = _this2;
+      _this2 = {};
+      _this2.account = A._functionToJS0(t1);
+      _this2.version = "1.0.0";
+      _this1["aptos:account"] = _this2;
+      _this2 = {};
+      _this2.onNetworkChange = A._functionToJS1(_this.get$_onNetworkChange());
+      _this2.version = "1.0.0";
+      _this1["aptos:onNetworkChange"] = _this2;
+      _this2 = {};
+      _this2.network = A._functionToJS0(_this.get$_network());
+      _this2.version = "1.0.0";
+      _this1["aptos:network"] = _this2;
+      _this2 = {};
+      _this2.onAccountChange = A._functionToJS1(_this.get$_onAccountChange());
+      _this2.version = "1.0.0";
+      _this1["aptos:onAccountChange"] = _this2;
+      t1 = _this.get$_disconnectChain();
+      _this2 = {};
+      _this2.disconnect = A._functionToJS0(t1);
+      _this2.version = "1.0.0";
+      _this1["aptos:disconnect"] = _this2;
+      _this2 = {};
+      _this2.changeNetwork = A._functionToJS1(_this.get$_changeNetwork());
+      _this2.version = "1.0.0";
+      _this1["aptos:changeNetwork"] = _this2;
+      t2 = _this.get$_removeListener();
+      _this0.removeListener = A._functionToJS2(t2);
+      _this0.connect = A._functionToJS0(_this.get$_connect());
+      _this0.isConnected = false;
+      _this0.on = listener;
+      _this0.cancelListener = A._functionToJS2(t2);
+      _this0.sendWalletRequest = A._functionToJS1(_this.get$_buildWalletRequest());
+      _this0.features = A.QuickJS_toProxy(_this1, null, type$.Object);
+      _this0.name = "MRT";
+      _this0.version = "1.0.0";
+      _this0.icon = string$.data_i;
+      t2 = A._setArrayType([], type$.JSArray_JSObject);
+      t3 = type$.JSArray_nullable_Object;
+      t4 = self;
+      _this0.accounts = t3._as(t4.Object.freeze(t2));
+      t2 = $.$get$AptosJSConstant_supportedChains();
+      _this0.chains = t3._as(t4.Object.freeze(t2));
+      _this0.disconnect = A._functionToJS0(t1);
+      t1 = type$.JSObject;
+      $event = t1._as(new t4.CustomEvent("wallet-standard:register-wallet", {bubbles: false, cancelable: false, detail: A._functionToJS1(new A.AptosPageController__createAdapter_closure(_this0))}));
+      t1._as(t4.window).addEventListener("wallet-standard:app-ready", A._functionToJS1(new A.AptosPageController__createAdapter_closure0($event)));
+      t1._as(t4.window).dispatchEvent($event);
+      return new A.ProxyMethodHandler(null, _this0, type$.ProxyMethodHandler_JSObject);
+    },
+    _initController$0() {
+      var t1, _this = this;
+      if (_this._aptos == null)
+        _this.set$_aptos(_this._createAdapter$0());
+      t1 = self;
+      t1.aptos = A.callConstructor(t1.Proxy, [_this._aptos.object, new A.AptosPageController__initController_closure(_this).call$0()], type$.JSObject);
+    },
+    _changeNetwork$1(message) {
+      var t1 = type$.Object;
+      return this._postNetworkRequest$1$1({method: "wallet_switchAptosChain", params: A._setArrayType([t1._as(message)], type$.JSArray_Object)}, t1);
+    },
+    _signMessage$1(message) {
+      var t1 = type$.Object;
+      return A.WalletPromise_get_toPromise(this._signMessageRequest$1({method: "aptos_signMessage", params: A._setArrayType([t1._as(message)], type$.JSArray_Object)}), t1);
+    },
+    _signTransactionRequest$1(params) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.Object),
+        $async$returnValue, $async$self = this, t1, signingResponse, promise, r;
+      var $async$_signTransactionRequest$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              $async$goto = 3;
+              return A._asyncAwait($async$self._postNetworkRequestMessage$1$1(A.PageMessageRequest_constructor_create(null, A._asString(params.method), type$.nullable_JSArray_nullable_Object._as(params.params)), type$.nullable_Object), $async$_signTransactionRequest$1);
+            case 3:
+              // returning from await.
+              promise = $async$result;
+              r = promise == null ? type$.Object._as(promise) : promise;
+              if (A.JSAptosWalletStandardUserResponseStatus_fromName(A._asString(r.status)) === B.JSAptosWalletStandardUserResponseStatus_Rejected_rejected) {
+                $async$returnValue = r;
+                // goto return
+                $async$goto = 1;
+                break;
+              }
+              t1 = type$.Object;
+              signingResponse = t1._as(r.args);
+              A.JSAptosSerializableObject_buildSerializable(signingResponse);
+              $async$returnValue = A.JSAptosWalletStandardUserResponse_constructor_approved(signingResponse, t1);
+              // goto return
+              $async$goto = 1;
+              break;
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_signTransactionRequest$1, $async$completer);
+    },
+    _connect$0() {
+      return A.WalletPromise_get_toPromise(this._requestAccount_$1({method: "aptos_requestAccounts"}), type$.Object);
+    },
+    _signMessageRequest$1(params) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.Object),
+        $async$returnValue, $async$self = this, t1, signingResponse, promise, r;
+      var $async$_signMessageRequest$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              $async$goto = 3;
+              return A._asyncAwait($async$self._postNetworkRequestMessage$1$1(A.PageMessageRequest_constructor_create(null, A._asString(params.method), type$.nullable_JSArray_nullable_Object._as(params.params)), type$.nullable_Object), $async$_signMessageRequest$1);
+            case 3:
+              // returning from await.
+              promise = $async$result;
+              r = promise == null ? type$.Object._as(promise) : promise;
+              if (A.JSAptosWalletStandardUserResponseStatus_fromName(A._asString(r.status)) === B.JSAptosWalletStandardUserResponseStatus_Rejected_rejected) {
+                $async$returnValue = r;
+                // goto return
+                $async$goto = 1;
+                break;
+              }
+              t1 = type$.Object;
+              signingResponse = t1._as(r.args);
+              A.JSAptosSerializableObject_buildSerializable(signingResponse);
+              $async$returnValue = A.JSAptosWalletStandardUserResponse_constructor_approved(signingResponse, t1);
+              // goto return
+              $async$goto = 1;
+              break;
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_signMessageRequest$1, $async$completer);
+    },
+    _signTransaction$1(transaction) {
+      var t1 = type$.Object;
+      return A.WalletPromise_get_toPromise(this._signTransactionRequest$1({method: "aptos_signTransaction", params: A._setArrayType([A.JSAptosSignTransactionParams_toRequest(t1._as(transaction))], type$.JSArray_Object)}), t1);
+    },
+    _buildWalletRequest$1(request) {
+      type$.JSObject._as(request);
+      throw A.wrapException(A.UnimplementedError$("Qweqwe "));
+    },
+    _requestAccount_$1(params) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.Object),
+        $async$returnValue, $async$self = this, t1, t2, signingResponse, promise, r;
+      var $async$_requestAccount_$1 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              $async$goto = 3;
+              return A._asyncAwait($async$self._postNetworkRequestMessage$1$1(A.PageMessageRequest_constructor_create(null, A._asString(params.method), type$.nullable_JSArray_nullable_Object._as(params.params)), type$.nullable_Object), $async$_requestAccount_$1);
+            case 3:
+              // returning from await.
+              promise = $async$result;
+              r = promise == null ? type$.Object._as(promise) : promise;
+              if (A.JSAptosWalletStandardUserResponseStatus_fromName(A._asString(r.status)) === B.JSAptosWalletStandardUserResponseStatus_Rejected_rejected) {
+                $async$returnValue = r;
+                // goto return
+                $async$goto = 1;
+                break;
+              }
+              t1 = type$.Object;
+              t2 = type$.JSObject;
+              signingResponse = t2._as(t1._as(r.args));
+              A.JSAptosSerializableObject_buildSerializable(t2._as(signingResponse.publicKey));
+              signingResponse.publicKey = A.QuickJS_toProxy(t2._as(signingResponse.publicKey), null, t2);
+              $async$returnValue = A.JSAptosWalletStandardUserResponse_constructor_approved(signingResponse, t1);
+              // goto return
+              $async$goto = 1;
+              break;
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_requestAccount_$1, $async$completer);
+    },
+    _requestAccount$0() {
+      return A.WalletPromise_get_toPromise(this._requestAccount_$1({method: "aptos_requestAccounts"}), type$.Object);
+    },
+    onEvent$1(message) {
+      var chainChange, t1, t2, _this = this,
+        eventData = message.data;
+      switch (A.JSEventType_name(A._asString(message.event))) {
+        case B.JSEventType_connect:
+          chainChange = message.data;
+          if (chainChange == null)
+            chainChange = type$.Object._as(chainChange);
+          _this._eventListeners$2(B.JSEventType_connect, chainChange);
+          _this._eventAptosListeners$2(B.JSEventType_chainChanged, chainChange);
+          break;
+        case B.JSEventType_chainChanged:
+          chainChange = message.data;
+          if (chainChange == null)
+            chainChange = type$.Object._as(chainChange);
+          _this._eventListeners$2(B.JSEventType_chainChanged, chainChange);
+          _this._eventAptosListeners$2(B.JSEventType_chainChanged, chainChange);
+          break;
+        case B.JSEventType_accountsChanged:
+          chainChange = message.data;
+          if (chainChange == null)
+            chainChange = type$.Object._as(chainChange);
+          t1 = _this._aptos;
+          if (t1 != null) {
+            t1 = t1.object;
+            t2 = type$.nullable_JSObject._as(chainChange.defaultAddress);
+            t2 = t2 == null ? null : A._asString(t2.address);
+            t1.selectedAddress = t2;
+          }
+          _this._eventListeners$2(B.JSEventType_accountsChanged, A.JSAptosAccountChanged_toWalletEvent(chainChange));
+          t1 = type$.nullable_JSObject;
+          if (t1._as(chainChange.defaultAddress) != null) {
+            t1 = t1._as(chainChange.defaultAddress);
+            t1.toString;
+            _this._eventAptosListeners$2(B.JSEventType_accountsChanged, t1);
+          }
+          return;
+        case B.JSEventType_disconnect:
+          t1 = _this._aptos;
+          if (t1 != null)
+            t1.object.selectedAddress = null;
+          _this._eventListeners$2(A.JSEventType_name(A._asString(message.event)), eventData);
+          break;
+        case B.JSEventType_disable:
+          A.WalletMessageData_asString(message);
+          self.stellar = null;
+          return;
+        case B.JSEventType_active:
+          _this._initController$0();
+          return;
+        default:
+          return;
+      }
+    },
+    _onNetworkChange$1(callBack) {
+      var t1;
+      type$.JavaScriptFunction._as(callBack);
+      t1 = this._aptosLiteners.$index(0, B.JSEventType_chainChanged);
+      t1.toString;
+      B.JSArray_methods.add$1(t1, callBack);
+      this._emitEvent$1(A.PageMessageEvent_constructor_build(B.JSEventType_chainChanged));
+    },
+    _network$0() {
+      return this._postNetworkRequest$1$1({method: "aptos_network"}, type$.Object);
+    },
+    _onAccountChange$1(callBack) {
+      var t1;
+      type$.JavaScriptFunction._as(callBack);
+      t1 = this._aptosLiteners.$index(0, B.JSEventType_accountsChanged);
+      t1.toString;
+      B.JSArray_methods.add$1(t1, callBack);
+      this._emitEvent$1(A.PageMessageEvent_constructor_build(B.JSEventType_accountsChanged));
+    },
+    _eventAptosListeners$2(type, $event) {
+      var t1 = this._aptosLiteners;
+      if (!t1.containsKey$1(type))
+        return;
+      t1 = t1.$index(0, type);
+      t1.toString;
+      this._emit$2(t1, $event);
+    },
+    _emit$2(listeners, message) {
+      var t2, _i,
+        t1 = A.List_List$of(type$.List_JavaScriptFunction._as(listeners), true, type$.JavaScriptFunction);
+      for (t2 = t1.length, _i = 0; _i < t2; ++_i)
+        t1[_i].call(null, message);
+    },
+    _eventListeners$2(type, message) {
+      var t1 = this._listeners;
+      if (!t1.containsKey$1(type))
+        return;
+      t1 = t1.$index(0, type);
+      t1.toString;
+      this._emit$2(t1, message);
+    },
+    _scripts$_addListener$2(type, listener) {
+      var $event, t1;
+      A._asString(type);
+      type$.JavaScriptFunction._as(listener);
+      $event = A.JSEventType_fromName(type);
+      if ($event == null || !this._listeners.containsKey$1($event))
+        return;
+      t1 = this._listeners.$index(0, $event);
+      if (t1 != null)
+        J.add$1$ax(t1, listener);
+      this._emitEvent$1(A.PageMessageEvent_constructor_build($event));
+    },
+    _removeListener$2(type, listener) {
+      var t1;
+      A._asString(type);
+      type$.JavaScriptFunction._as(listener);
+      t1 = this._listeners.$index(0, A.JSEventType_fromName(type));
+      if (t1 != null)
+        J.remove$1$ax(t1, listener);
+    },
+    get$_client() {
+      return B.JSClientType_aptos;
+    },
+    set$_aptos(_aptos) {
+      this._aptos = type$.nullable_ProxyMethodHandler_JSObject._as(_aptos);
+    }
+  };
+  A.AptosPageController__createAdapter_closure.prototype = {
+    call$1($event) {
+      var t1 = type$.Object;
+      t1._as(t1._as($event).register(this.adapter));
+    },
+    $signature: 10
+  };
+  A.AptosPageController__createAdapter_closure0.prototype = {
+    call$1(_) {
+      type$.Object._as(_);
+      type$.JSObject._as(self.window).dispatchEvent(this.event);
+    },
+    $signature: 10
+  };
+  A.AptosPageController__initController__closure.prototype = {
+    call$0() {
+      return this._dartInstance.debugKey;
+    },
+    $signature: 6
+  };
+  A.AptosPageController__initController__closure0.prototype = {
+    call$0() {
+      return this._dartInstance.object;
+    },
+    $signature: 7
+  };
+  A.AptosPageController__initController_closure.prototype = {
+    call$0() {
+      var t2, t3, t4, _jsExporter, _debugKeyMapping, _objectMapping,
+        t1 = this.$this._aptos;
+      t1.toString;
+      t2 = type$.JSObject;
+      t3 = t2._as(self);
+      t4 = t2._as(t3.Object);
+      _jsExporter = t2._as(t4.create.apply(t4, [null]));
+      _jsExporter.set = A._functionToJS4(t1.get$set());
+      _jsExporter.get = A._functionToJS3(t1.get$get());
+      t4 = t2._as(t3.Object);
+      _debugKeyMapping = t2._as(t4.create.apply(t4, [null]));
+      _debugKeyMapping.get = A._functionToJS0(new A.AptosPageController__initController__closure(t1));
+      t4 = t2._as(t3.Object);
+      t4.defineProperty.apply(t4, [_jsExporter, "debugKey", _debugKeyMapping]);
+      t4 = t2._as(t3.Object);
+      _objectMapping = t2._as(t4.create.apply(t4, [null]));
+      _objectMapping.get = A._functionToJS0(new A.AptosPageController__initController__closure0(t1));
+      t3 = t2._as(t3.Object);
+      t3.defineProperty.apply(t3, [_jsExporter, "object", _objectMapping]);
+      return _jsExporter;
+    },
+    $signature: 1
+  };
   A.EthereumPageController.prototype = {
     _initController$0() {
       var t1, t2, t3, t4, t5, t6, _this0, proxy, _this = this;
@@ -11547,11 +12315,6 @@
       proxy = A.callConstructor(t1.Proxy, [_this._ethereum.object, new A.EthereumPageController__initController_closure(_this).call$0()], type$.JSObject);
       t1.ethereum = proxy;
       A.EIP6963ProviderDetail_setup(proxy);
-    },
-    _disable$1$message(message) {
-      var t1 = self;
-      t1.ethereum = null;
-      type$.JSObject._as(t1.console).error(message);
     },
     onEvent$1(message) {
       var t1, t2, t3, _this = this,
@@ -11606,7 +12369,8 @@
           }
           break;
         case B.JSEventType_disable:
-          _this._disable$1$message(A.WalletMessageData_asString(message));
+          A.WalletMessageData_asString(message);
+          self.ethereum = null;
           break;
         case B.JSEventType_active:
           _this._initController$0();
@@ -11674,13 +12438,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.EthereumPageController__initController__closure0.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.EthereumPageController__initController_closure.prototype = {
     call$0() {
@@ -11774,11 +12538,6 @@
         _this.set$_solana(_this._createAdapter$0());
       t1 = self;
       t1.solana = A.callConstructor(t1.Proxy, [_this._solana.object, new A.SolanaPageController__initController_closure(_this).call$0()], type$.JSObject);
-    },
-    _disable$1$message(message) {
-      var t1 = self;
-      t1.solana = null;
-      type$.JSObject._as(t1.console).error(message);
     },
     _signMessage$1(message) {
       var message0 = A.MRTJsObject_as(A._setArrayType(["account", "message"], type$.JSArray_String), message, type$.JSObject),
@@ -11993,9 +12752,35 @@
           return null;
       }
     },
+    _connect_$0() {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter(type$.JSArray_nullable_Object),
+        $async$returnValue, $async$self = this, t1;
+      var $async$_connect_$0 = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              t1 = type$.JSArray_nullable_Object;
+              $async$goto = 3;
+              return A._asyncAwait($async$self._postNetworkRequestMessage$1$1(A.PageMessageRequest_constructor_create(null, "solana_requestAccounts", null), t1).then$1$1(new A.SolanaPageController__connect__closure(), t1), $async$_connect_$0);
+            case 3:
+              // returning from await.
+              $async$returnValue = $async$result;
+              // goto return
+              $async$goto = 1;
+              break;
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_connect_$0, $async$completer);
+    },
     _connect$0() {
-      var t1 = type$.JSArray_nullable_Object;
-      return A.WalletPromise_get_toPromise(this._postNetworkRequestMessage$1$1(A.PageMessageRequest_constructor_create(null, "solana_requestAccounts", null), t1).then$1$1(new A.SolanaPageController__connect_closure(), t1), t1);
+      return A.WalletPromise_get_toPromise(this._connect_$0(), type$.JSArray_nullable_Object);
     },
     onEvent$1(message) {
       var changeInfo, t1, t2, t3, _this = this, _null = null,
@@ -12036,7 +12821,8 @@
             t1.object.isConnected = false;
           break;
         case B.JSEventType_disable:
-          _this._disable$1$message(A.WalletMessageData_asString(message));
+          A.WalletMessageData_asString(message);
+          self.solana = null;
           return;
         case B.JSEventType_active:
           _this._initController$0();
@@ -12091,26 +12877,26 @@
       var t1 = type$.Object;
       t1._as(t1._as($event).register(this.adapter));
     },
-    $signature: 21
+    $signature: 10
   };
   A.SolanaPageController__createAdapter_closure0.prototype = {
     call$1(_) {
       type$.Object._as(_);
       type$.JSObject._as(self.window).dispatchEvent(this.event);
     },
-    $signature: 21
+    $signature: 10
   };
   A.SolanaPageController__initController__closure.prototype = {
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.SolanaPageController__initController__closure0.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.SolanaPageController__initController_closure.prototype = {
     call$0() {
@@ -12144,19 +12930,19 @@
         return A._setArrayType([result], type$.JSArray_JSObject);
       return result;
     },
-    $signature: 50
+    $signature: 54
   };
   A.SolanaPageController__buildTransaction_closure.prototype = {
     call$1(e) {
       return type$.JSObject._as(e);
     },
-    $signature: 6
+    $signature: 4
   };
   A.SolanaPageController__buildTransaction_closure0.prototype = {
     call$1(e) {
       return this.$this._onTransactionResponse$3$method$result$transactions(this.method, e, this.transactions);
     },
-    $signature: 10
+    $signature: 12
   };
   A.SolanaPageController__buildWalletRequest_closure.prototype = {
     call$1(e) {
@@ -12167,13 +12953,13 @@
       t1 = A.JSSolanaSignMessageResponse_constructor_fromJson(type$.Map_dynamic_dynamic._as(A.dartify(e.result)).cast$2$0(0, type$.String, type$.dynamic));
       return {id: A._asString(e.id), result: t1};
     },
-    $signature: 6
+    $signature: 4
   };
   A.SolanaPageController__toWalletRequest_closure.prototype = {
     call$1(e) {
       return this.$this._toSolanaTransaction$1(e);
     },
-    $signature: 9
+    $signature: 14
   };
   A.SolanaPageController__toWalletRequest_closure0.prototype = {
     call$1(e) {
@@ -12182,7 +12968,7 @@
         return e;
       return {id: A._asString(e.id), result: this.$this._onTransactionResponse$3$method$result$transactions(A._asString(this.request.method), e.result, this.transactions)};
     },
-    $signature: 6
+    $signature: 4
   };
   A.SolanaPageController__onTransactionResponse_closure.prototype = {
     call$1(e) {
@@ -12205,28 +12991,28 @@
       A.BytesUtils_validateListOfBytes(t2);
       return new A.JSSolanaSignTransactionResponse(t5, t6, A.List_List$unmodifiable(t2, t4), t7);
     },
-    $signature: 51
-  };
-  A.SolanaPageController__connect_closure.prototype = {
-    call$1(e) {
-      var t1;
-      type$.JSArray_nullable_Object._as(e);
-      t1 = B.JSArray_methods.map$1$1(e, new A.SolanaPageController__connect__closure(), type$.JSObject);
-      return A.List_List$of(t1, true, t1.$ti._eval$1("ListIterable.E"));
-    },
-    $signature: 52
+    $signature: 55
   };
   A.SolanaPageController__connect__closure.prototype = {
     call$1(e) {
+      var t1;
+      type$.JSArray_nullable_Object._as(e);
+      t1 = B.JSArray_methods.map$1$1(e, new A.SolanaPageController__connect___closure(), type$.JSObject);
+      return A.List_List$of(t1, true, t1.$ti._eval$1("ListIterable.E"));
+    },
+    $signature: 56
+  };
+  A.SolanaPageController__connect___closure.prototype = {
+    call$1(e) {
       return A.SolanaWalletAccount_SolanaWalletAccount$fromJson(type$.Map_dynamic_dynamic._as(A.dartify(e)).cast$2$0(0, type$.String, type$.dynamic)).get$toJS();
     },
-    $signature: 9
+    $signature: 14
   };
   A.SolanaPageController_onEvent_closure.prototype = {
     call$1(e) {
       return type$.SolanaWalletAccount._as(e).base58;
     },
-    $signature: 53
+    $signature: 57
   };
   A.StellarPageController.prototype = {
     _initController$0() {
@@ -12250,11 +13036,6 @@
     },
     _requestAccount$0() {
       return this._postWalletRequest$1({method: "stellar_requestAccounts"});
-    },
-    _disable$1$message(message) {
-      var t1 = self;
-      t1.stellar = null;
-      type$.JSObject._as(t1.console).error(message);
     },
     onEvent$1(message) {
       var t1, t2, t3, t4, _this = this,
@@ -12287,7 +13068,8 @@
             t1.object.selectedAddress = null;
           break;
         case B.JSEventType_disable:
-          _this._disable$1$message(A.WalletMessageData_asString(message));
+          A.WalletMessageData_asString(message);
+          self.stellar = null;
           return;
         case B.JSEventType_active:
           _this._initController$0();
@@ -12347,13 +13129,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.StellarPageController__initController__closure0.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.StellarPageController__initController_closure.prototype = {
     call$0() {
@@ -12382,23 +13164,23 @@
   };
   A.SubstratePageController.prototype = {
     sign$1(_, transaction) {
-      return this._postNetworkRequest$1({method: "substrate_signTransaction", params: A._setArrayType([type$.JSObject._as(transaction)], type$.JSArray_JSObject)});
+      return this._postNetworkRequest$1$1({method: "substrate_signTransaction", params: A._setArrayType([type$.JSObject._as(transaction)], type$.JSArray_JSObject)}, type$.nullable_Object);
     },
     signRaw$1(message) {
-      return this._postNetworkRequest$1({method: "substrate_signMessage", params: A._setArrayType([type$.JSObject._as(message)], type$.JSArray_JSObject)});
+      return this._postNetworkRequest$1$1({method: "substrate_signMessage", params: A._setArrayType([type$.JSObject._as(message)], type$.JSArray_JSObject)}, type$.nullable_Object);
     },
     update$1(params) {
       throw A.wrapException($.$get$JSWalletConstant_methodDisabled());
     },
     _metadataGet$1(any) {
       A._asBoolQ(any);
-      return this._postNetworkRequest$1($.$get$_SubstratePageControllerConst_knownMetadata());
+      return this._postNetworkRequest$1$1($.$get$_SubstratePageControllerConst_knownMetadata(), type$.nullable_Object);
     },
     _metadataGet$0() {
       return this._metadataGet$1(null);
     },
     _metadataProvide$1(data) {
-      return this._postNetworkRequest$1({method: "wallet_addSubstrateChain", params: A._setArrayType([type$.JSObject._as(data)], type$.JSArray_JSObject)});
+      return this._postNetworkRequest$1$1({method: "wallet_addSubstrateChain", params: A._setArrayType([type$.JSObject._as(data)], type$.JSArray_JSObject)}, type$.nullable_Object);
     },
     _listenAccount$1(cb) {
       var t1;
@@ -12435,7 +13217,7 @@
       return A.WalletPromise_get_toPromise(this._connect$0(), type$.nullable_JSObject);
     },
     _initController$0() {
-      var _this0, _this1, _this2, _this3, t1, _this = this;
+      var _this0, _this1, _this2, _this3, t1, _this = this, _null = null;
       if (_this._substrate == null) {
         _this0 = {};
         _this1 = {};
@@ -12456,15 +13238,15 @@
         _this3.sendWalletRequest = A._functionToJS1(_this.get$_postWalletRequest());
         _this3.cancelAllListener = A._functionToJS0(_this.get$_cancelAllListeners());
         t1 = type$.JSObject;
-        _this3.metadata = A.QuickJS_toProxy(_this0, "Metadata: ", t1);
-        _this3.accounts = A.QuickJS_toProxy(_this1, "Accounts: ", t1);
-        _this3.signer = A.QuickJS_toProxy(_this2, "Signer: ", t1);
+        _this3.metadata = A.QuickJS_toProxy(_this0, _null, t1);
+        _this3.accounts = A.QuickJS_toProxy(_this1, _null, t1);
+        _this3.signer = A.QuickJS_toProxy(_this2, _null, t1);
         t1 = _this.get$_enable();
         _this3.connect = A._functionToJS1(t1);
         _this3.enable = A._functionToJS1(t1);
         _this3.name = "MRT";
         _this3.version = "0.4.0";
-        _this.set$_substrate(new A.ProxyMethodHandler("Substrate: ", _this3, type$.ProxyMethodHandler_JSObject));
+        _this.set$_substrate(new A.ProxyMethodHandler(_null, _this3, type$.ProxyMethodHandler_JSObject));
       }
       if (_this._proxy == null)
         _this.set$_proxy(A.callConstructor(self.Proxy, [_this._substrate.object, new A.SubstratePageController__initController_closure(_this).call$0()], type$.JSObject));
@@ -12475,15 +13257,10 @@
       t1.substrate = _this._proxy;
     },
     _requestAccount$1(data) {
-      return this._postNetworkRequest$1($.$get$_SubstratePageControllerConst_requestAccount());
+      return this._postNetworkRequest$1$1($.$get$_SubstratePageControllerConst_requestAccount(), type$.nullable_Object);
     },
     _requestAccount$0() {
       return this._requestAccount$1(null);
-    },
-    _disable$1$message(message) {
-      var t1 = self;
-      t1.substrate = null;
-      type$.JSObject._as(t1.console).error(message);
     },
     onEvent$1(message) {
       var _this0, chainChange, t1, t2, t3, _this = this,
@@ -12518,7 +13295,8 @@
             t1.object.selectedAddress = null;
           break;
         case B.JSEventType_disable:
-          _this._disable$1$message(A.WalletMessageData_asString(message));
+          A.WalletMessageData_asString(message);
+          self.substrate = null;
           return;
         case B.JSEventType_active:
           _this._initController$0();
@@ -12589,13 +13367,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.SubstratePageController__initController__closure0.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.SubstratePageController__initController_closure.prototype = {
     call$0() {
@@ -12626,7 +13404,246 @@
     call$1(e) {
       return A._asString(type$.JSObject._as(e).address);
     },
-    $signature: 58
+    $signature: 16
+  };
+  A.SuiPageController.prototype = {
+    _createAdapter$0() {
+      var t1, t2, t3, t4, proxy, $event, _this = this, _this0 = {}, _this1 = {}, _this2 = {};
+      _this2.connect = A._functionToJS0(_this.get$_requestAccount());
+      _this2.version = "1.0.0";
+      _this1["standard:connect"] = _this2;
+      _this2 = {};
+      _this2.signTransaction = A._functionToJS1(_this.get$_signTransaction());
+      _this2.version = "1.0.0";
+      _this1["sui:signTransaction"] = _this2;
+      _this2 = {};
+      _this2.signTransactionBlock = A._functionToJS1(_this.get$_signTransactionBlock());
+      _this2.version = "1.0.0";
+      _this1["sui:signTransactionBlock"] = _this2;
+      _this2 = {};
+      _this2.signAndExecuteTransactionBlock = A._functionToJS1(_this.get$_signAndExcuteTransactionBlock());
+      _this2.version = "1.0.0";
+      _this1["sui:signAndExecuteTransactionBlock"] = _this2;
+      _this2 = {};
+      _this2.signAndExecuteTransaction = A._functionToJS1(_this.get$_signAndExecuteTransaction());
+      _this2.version = "2.0.0";
+      _this1["sui:signAndExecuteTransaction"] = _this2;
+      _this2 = {};
+      _this2.signPersonalMessage = A._functionToJS1(_this.get$_signPersonalMessage());
+      _this2.version = "1.0.0";
+      _this1["sui:signPersonalMessage"] = _this2;
+      _this2 = {};
+      _this2.signMessage = A._functionToJS1(_this.get$_signMessage());
+      _this2.version = "1.0.0";
+      _this1["sui:signMessage"] = _this2;
+      _this2 = {};
+      _this2.reportTransactionEffects = A._functionToJS1(_this.get$_reportTransactionEffects());
+      _this2.version = "1.0.0";
+      _this1["sui:reportTransactionEffects"] = _this2;
+      t1 = _this.get$_disconnectChain();
+      _this2 = {};
+      _this2.disconnect = A._functionToJS0(t1);
+      _this2.version = "1.0.0";
+      _this1["sui:disconnect"] = _this2;
+      _this2 = {};
+      _this2.on = A._functionToJS2(_this.get$_onEvents());
+      _this2.version = "1.0.0";
+      _this1["standard:events"] = _this2;
+      _this0.isConnected = false;
+      _this0.sendWalletRequest = A._functionToJS1(_this.get$_buildWalletRequest());
+      _this0.features = A.QuickJS_toProxy(_this1, "features: ", type$.Object);
+      _this0.name = "MRT";
+      _this0.version = "1.0.0";
+      _this0.icon = string$.data_i;
+      t2 = A._setArrayType([], type$.JSArray_JSObject);
+      t3 = type$.JSArray_nullable_Object;
+      t4 = self;
+      _this0.accounts = t3._as(t4.Object.freeze(t2));
+      t2 = $.$get$SuiJSConstant_supportedChains();
+      _this0.chains = t3._as(t4.Object.freeze(t2));
+      _this0.disconnect = A._functionToJS0(t1);
+      t1 = type$.JSObject;
+      proxy = A.QuickJS_toProxy(_this0, "sui: ", t1);
+      $event = t1._as(new t4.CustomEvent("wallet-standard:register-wallet", {bubbles: false, cancelable: false, detail: A._functionToJS1(new A.SuiPageController__createAdapter_closure(proxy))}));
+      t1._as(t4.window).addEventListener("wallet-standard:app-ready", A._functionToJS1(new A.SuiPageController__createAdapter_closure0($event)));
+      t1._as(t4.window).dispatchEvent($event);
+      return new A._Record_2(proxy, _this0);
+    },
+    _initController$0() {
+      var adapter, _this = this;
+      if (_this._sui == null) {
+        adapter = _this._createAdapter$0();
+        _this._sui = adapter._1;
+        _this._suiProxy = adapter._0;
+      }
+      self.sui = _this._suiProxy;
+    },
+    _signMessage$1(params) {
+      var t1 = type$.Object;
+      return A.WalletPromise_get_toPromise(this._createAndPostNetworkRequestMessage$1$1({method: "sui_signMessage", params: A._setArrayType([t1._as(params)], type$.JSArray_Object)}, t1), t1);
+    },
+    _signPersonalMessage$1(params) {
+      var t1 = type$.Object;
+      return A.WalletPromise_get_toPromise(this._createAndPostNetworkRequestMessage$1$1({method: "sui_signPersonalMessage", params: A._setArrayType([t1._as(params)], type$.JSArray_Object)}, t1), t1);
+    },
+    _signTransction_$1$2$method$transaction(method, transaction, $T) {
+      A.checkTypeBound($T, type$.Object, "T", "_signTransction_");
+      return this._signTransction_$body$SuiPageController(method, transaction, $T, $T);
+    },
+    _signTransction_$body$SuiPageController(method, transaction, $T, $async$type) {
+      var $async$goto = 0,
+        $async$completer = A._makeAsyncAwaitCompleter($async$type),
+        $async$returnValue, $async$self = this, $async$temp1, $async$temp2;
+      var $async$_signTransction_$1$2$method$transaction = A._wrapJsFunctionForAsync(function($async$errorCode, $async$result) {
+        if ($async$errorCode === 1)
+          return A._asyncRethrow($async$result, $async$completer);
+        while (true)
+          switch ($async$goto) {
+            case 0:
+              // Function start
+              $async$temp1 = method;
+              $async$temp2 = A;
+              $async$goto = 4;
+              return A._asyncAwait(A.JSSuiSignTransactionParams_toRequest(transaction), $async$_signTransction_$1$2$method$transaction);
+            case 4:
+              // returning from await.
+              $async$goto = 3;
+              return A._asyncAwait($async$self._createAndPostNetworkRequestMessage$1$1({method: $async$temp1, params: $async$temp2._setArrayType([$async$result], type$.JSArray_Object)}, $T), $async$_signTransction_$1$2$method$transaction);
+            case 3:
+              // returning from await.
+              $async$returnValue = $async$result;
+              // goto return
+              $async$goto = 1;
+              break;
+            case 1:
+              // return
+              return A._asyncReturn($async$returnValue, $async$completer);
+          }
+      });
+      return A._asyncStartSync($async$_signTransction_$1$2$method$transaction, $async$completer);
+    },
+    _signTransaction$1(transaction) {
+      var t1 = type$.Object;
+      return A.WalletPromise_get_toPromise(this._signTransction_$1$2$method$transaction("sui_signTransaction", t1._as(transaction), t1), t1);
+    },
+    _signAndExecuteTransaction$1(transaction) {
+      var t1 = type$.Object;
+      return A.WalletPromise_get_toPromise(this._signTransction_$1$2$method$transaction("sui_signAndExecuteTransaction", t1._as(transaction), t1), t1);
+    },
+    _signAndExcuteTransactionBlock$1(transaction) {
+      var t1 = type$.Object;
+      return A.WalletPromise_get_toPromise(this._signTransction_$1$2$method$transaction("sui_signAndExecuteTransactionBlock", t1._as(transaction), t1), t1);
+    },
+    _signTransactionBlock$1(transaction) {
+      var t1 = type$.Object;
+      return A.WalletPromise_get_toPromise(this._signTransction_$1$2$method$transaction("sui_signTransactionBlock", t1._as(transaction), t1), t1);
+    },
+    _reportTransactionEffects$1(_) {
+      type$.Object._as(_);
+      return A.FutureOfVoidToJSPromise_get_toJS(A.Future_Future$delayed(B.C_Duration, type$.dynamic));
+    },
+    _buildWalletRequest$1(request) {
+      type$.JSObject._as(request);
+      throw A.wrapException(A.UnimplementedError$("Qweqwe "));
+    },
+    _requestAccount$0() {
+      return this._postNetworkRequest$1$1({method: "sui_requestAccounts"}, type$.JSObject);
+    },
+    onEvent$1(message) {
+      var chainChange, t1, t2, _this = this,
+        eventData = message.data;
+      switch (A.JSEventType_name(A._asString(message.event))) {
+        case B.JSEventType_connect:
+          chainChange = message.data;
+          if (chainChange == null)
+            chainChange = type$.Object._as(chainChange);
+          _this._eventListeners$2(B.JSEventType_connect, chainChange);
+          _this._eventListeners$2(B.JSEventType_chainChanged, chainChange);
+          break;
+        case B.JSEventType_chainChanged:
+          chainChange = message.data;
+          if (chainChange == null)
+            chainChange = type$.Object._as(chainChange);
+          _this._eventListeners$2(B.JSEventType_chainChanged, chainChange);
+          _this._eventListeners$2(B.JSEventType_change, chainChange);
+          break;
+        case B.JSEventType_accountsChanged:
+          chainChange = message.data;
+          if (chainChange == null)
+            chainChange = type$.Object._as(chainChange);
+          t1 = _this._sui;
+          if (t1 != null) {
+            t2 = type$.nullable_JSObject._as(chainChange.defaultAddress);
+            t2 = t2 == null ? null : A._asString(t2.address);
+            t1.selectedAddress = t2;
+          }
+          t1 = _this._sui;
+          if (t1 != null)
+            t1.accounts = type$.JSArray_nullable_Object._as(chainChange.accounts);
+          _this._eventListeners$2(B.JSEventType_accountsChanged, A.JSSuiAccountChanged_toWalletEvent(chainChange));
+          _this._eventListeners$2(B.JSEventType_change, chainChange);
+          return;
+        case B.JSEventType_disconnect:
+          t1 = _this._sui;
+          if (t1 != null)
+            t1.selectedAddress = null;
+          _this._eventListeners$2(A.JSEventType_name(A._asString(message.event)), eventData);
+          break;
+        case B.JSEventType_disable:
+          A.WalletMessageData_asString(message);
+          self.stellar = null;
+          return;
+        case B.JSEventType_active:
+          _this._initController$0();
+          return;
+        default:
+          return;
+      }
+    },
+    _onEvents$2(type, listener) {
+      var eventType, t1;
+      A._asString(type);
+      type$.JavaScriptFunction._as(listener);
+      eventType = A.JSEventType_fromName(type);
+      if (eventType != null) {
+        t1 = this._listeners.$index(0, eventType);
+        t1.toString;
+        J.add$1$ax(t1, listener);
+      }
+      eventType.toString;
+      this._emitEvent$1(A.PageMessageEvent_constructor_build(eventType));
+    },
+    _emit$2(listeners, message) {
+      var t2, _i,
+        t1 = A.List_List$of(type$.List_JavaScriptFunction._as(listeners), true, type$.JavaScriptFunction);
+      for (t2 = t1.length, _i = 0; _i < t2; ++_i)
+        t1[_i].call(null, message);
+    },
+    _eventListeners$2(type, message) {
+      var t1 = this._listeners;
+      if (!t1.containsKey$1(type))
+        return;
+      t1 = t1.$index(0, type);
+      t1.toString;
+      this._emit$2(t1, message);
+    },
+    get$_client() {
+      return B.JSClientType_sui;
+    }
+  };
+  A.SuiPageController__createAdapter_closure.prototype = {
+    call$1($event) {
+      var t1 = type$.Object;
+      t1._as(t1._as($event).register(this.proxy));
+    },
+    $signature: 10
+  };
+  A.SuiPageController__createAdapter_closure0.prototype = {
+    call$1(_) {
+      type$.Object._as(_);
+      type$.JSObject._as(self.window).dispatchEvent(this.event);
+    },
+    $signature: 10
   };
   A.TonPageController.prototype = {
     _initController$0() {
@@ -12650,11 +13667,6 @@
     },
     _requestAccount$0() {
       return this._postWalletRequest$1({method: "ton_requestAccounts"});
-    },
-    _disable$1$message(message) {
-      var t1 = self;
-      t1.ton = null;
-      type$.JSObject._as(t1.console).error(message);
     },
     onEvent$1(message) {
       var t1, t2, t3, _this = this,
@@ -12687,7 +13699,8 @@
             t1.object.selectedAddress = null;
           break;
         case B.JSEventType_disable:
-          _this._disable$1$message(A.WalletMessageData_asString(message));
+          A.WalletMessageData_asString(message);
+          self.ton = null;
           return;
         case B.JSEventType_active:
           _this._initController$0();
@@ -12747,13 +13760,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.TonPageController__initController__closure0.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.TonPageController__initController_closure.prototype = {
     call$0() {
@@ -12870,7 +13883,8 @@
       return this._initController$1$info(null);
     },
     _disabledFeature$1(args) {
-      throw A.wrapException($.$get$JSWalletConstant_methodDisabled());
+      A.print("\x1b[33mis error here \x1b[0m");
+      A.print("\x1b[33m" + ("is error here " + A.S(args == null ? null : A.dartify(args))) + "\x1b[0m");
     },
     _signMessageV2_$2(message, privateKey) {
       type$.Object._as(message);
@@ -12903,87 +13917,96 @@
     _multiSign$1(message) {
       return this._multiSign$2(message, null);
     },
-    _disable$1$message(message) {
-      var t1 = self;
-      t1.tron = null;
-      type$.JSObject._as(t1.console).error(message);
-    },
     onEvent$1(message) {
-      var connectionInfo, t1, t2, t3, t4, data, t5, t6, _this = this, _null = null,
-        _s14_ = "defaultAddress",
+      var eventData, connectionInfo, connectionInfo0, changeInfo, info, e, t1, t2, data, t3, t4, t5, exception, _this = this, _null = null,
+        _s14_ = "defaultAddress";
+      try {
         eventData = message.data;
-      switch (A.JSEventType_name(A._asString(message.event))) {
-        case B.JSEventType_connect:
-          connectionInfo = A.TronChainChanged_TronChainChanged$fromJson(A.WalletMessageData_asMap(message));
-          t1 = _this._tron;
-          if (t1 != null)
-            t1.object.chainId = connectionInfo.chainId;
-          t1 = _this._address;
-          if (t1 != null)
-            A.JSTronAddress_setAddress(t1.object, connectionInfo.address);
-          eventData = connectionInfo.get$toJSEvent();
-          type$.JSObject._as(self.window).postMessage(A.jsify(A._TronPageControllerConst_buildEventMessage("connect", _null)));
-          break;
-        case B.JSEventType_chainChanged:
-          connectionInfo = A.TronChainChanged_TronChainChanged$fromJson(A.WalletMessageData_asMap(message));
-          t1 = _this._tron;
-          if (t1 != null)
-            t1.object.chainId = connectionInfo.chainId;
-          t1 = connectionInfo.fullNode;
-          _this._setNode$1(t1);
-          t2 = connectionInfo.chainId;
-          eventData = A.jsify(t2);
-          t3 = type$.JSObject._as(self.window);
-          t4 = type$.String;
-          data = A.LinkedHashMap_LinkedHashMap$_literal(["chainId", t2, "fullNode", t1, "solidityNode", connectionInfo.solidityNode, "eventServer", t1], t4, t4);
-          t3.postMessage(A.jsify(A._TronPageControllerConst_buildEventMessage("setNode", data)));
-          break;
-        case B.JSEventType_disconnect:
-          t1 = _this._tron;
-          if (t1 != null)
-            t1.object.chainId = null;
-          t1 = _this._address;
-          if (t1 != null)
-            A.JSTronAddress_setAddress(t1.object, _null);
-          break;
-        case B.JSEventType_accountsChanged:
-          t1 = A.WalletMessageData_asMap(message);
-          t2 = type$.String;
-          t3 = J.cast$1$0$ax(type$.List_dynamic._as(t1.$index(0, "accounts")), t2);
-          t1 = t1.$index(0, _s14_) == null ? _null : A.JSTronDefaultAddress_JSTronDefaultAddress$fromJson(type$.Map_String_dynamic._as(t1.$index(0, _s14_)));
-          t3 = A.List_List$unmodifiable(t3, t2);
-          t4 = _this._address;
-          if (t4 != null)
-            A.JSTronAddress_setAddress(t4.object, t1);
-          t4 = t1 == null;
-          t5 = t4 ? _null : t1.base58.length === 0;
-          t6 = _this._tron;
-          if (t5 !== false) {
-            if (t6 != null)
-              t6.object.selectedAddress = null;
-          } else if (t6 != null) {
-            t5 = t6.object;
-            t6 = t4 ? _null : t1.base58;
-            t5.selectedAddress = t6;
-          }
-          eventData = A.jsify(t3);
-          t1 = t4 ? _null : t1.base58;
-          type$.JSObject._as(self.window).postMessage(A.jsify(A._TronPageControllerConst_buildEventMessage("accountsChanged", A.LinkedHashMap_LinkedHashMap$_literal(["address", t1], t2, type$.nullable_String))));
-          break;
-        case B.JSEventType_disable:
-          _this._disable$1$message(A.WalletMessageData_asString(message));
-          break;
-        case B.JSEventType_active:
-          t1 = A.WalletMessageData_asMap(message);
-          A._asString(t1.$index(0, "solidityNode"));
-          t2 = A._asString(t1.$index(0, "fullNode"));
-          A._asString(t1.$index(0, "chainId"));
-          A._asStringQ(t1.$index(0, "hex"));
-          A._asStringQ(t1.$index(0, "base58"));
-          _this._initController$1$info(new A.TronWebNodeInfo(t2, A._asStringQ(t1.$index(0, "eventServer"))));
-          break;
+        switch (A.JSEventType_name(A._asString(message.event))) {
+          case B.JSEventType_connect:
+            connectionInfo = A.TronChainChanged_TronChainChanged$fromJson(A.WalletMessageData_asMap(message));
+            t1 = _this._tron;
+            if (t1 != null)
+              t1.object.chainId = connectionInfo.chainId;
+            t1 = _this._address;
+            if (t1 != null)
+              A.JSTronAddress_setAddress(t1.object, connectionInfo.address);
+            eventData = connectionInfo.get$toJSEvent();
+            type$.JSObject._as(self.window).postMessage(A.jsify(A._TronPageControllerConst_buildEventMessage("connect", _null)));
+            break;
+          case B.JSEventType_chainChanged:
+            connectionInfo0 = A.TronChainChanged_TronChainChanged$fromJson(A.WalletMessageData_asMap(message));
+            t1 = _this._tron;
+            if (t1 != null)
+              t1.object.chainId = connectionInfo0.chainId;
+            _this._setNode$1(connectionInfo0.fullNode);
+            eventData = connectionInfo0.get$toJSEvent();
+            t1 = type$.nullable_TronChainChanged._as(connectionInfo0);
+            t2 = type$.JSObject._as(self.window);
+            if (t1 == null)
+              data = _null;
+            else {
+              t3 = t1.chainId;
+              t4 = t1.fullNode;
+              t5 = type$.String;
+              data = A.LinkedHashMap_LinkedHashMap$_literal(["chainId", t3, "fullNode", t4, "solidityNode", t1.solidityNode, "eventServer", t4], t5, t5);
+            }
+            t2.postMessage(A.jsify(A._TronPageControllerConst_buildEventMessage("setNode", data)));
+            break;
+          case B.JSEventType_disconnect:
+            t1 = _this._tron;
+            if (t1 != null)
+              t1.object.chainId = null;
+            t1 = _this._address;
+            if (t1 != null)
+              A.JSTronAddress_setAddress(t1.object, _null);
+            break;
+          case B.JSEventType_accountsChanged:
+            t1 = A.WalletMessageData_asMap(message);
+            t2 = type$.String;
+            t3 = J.cast$1$0$ax(type$.List_dynamic._as(t1.$index(0, "accounts")), t2);
+            t1 = t1.$index(0, _s14_) == null ? _null : A.JSTronDefaultAddress_JSTronDefaultAddress$fromJson(type$.Map_String_dynamic._as(t1.$index(0, _s14_)));
+            changeInfo = new A.TronAccountsChanged(A.List_List$unmodifiable(t3, t2), t1);
+            t1 = _this._address;
+            if (t1 != null)
+              A.JSTronAddress_setAddress(t1.object, changeInfo.defaultAddress);
+            t1 = changeInfo.defaultAddress;
+            t1 = t1 == null ? _null : t1.base58.length === 0;
+            t3 = _this._tron;
+            if (t1 !== false) {
+              if (t3 != null)
+                t3.object.selectedAddress = null;
+            } else if (t3 != null) {
+              t1 = t3.object;
+              t3 = changeInfo.defaultAddress;
+              t3 = t3 == null ? _null : t3.base58;
+              t1.selectedAddress = t3;
+            }
+            eventData = A.jsify(changeInfo.accounts);
+            t1 = changeInfo.defaultAddress;
+            t1 = t1 == null ? _null : t1.base58;
+            type$.JSObject._as(self.window).postMessage(A.jsify(A._TronPageControllerConst_buildEventMessage("accountsChanged", A.LinkedHashMap_LinkedHashMap$_literal(["address", t1], t2, type$.nullable_String))));
+            break;
+          case B.JSEventType_disable:
+            A.WalletMessageData_asString(message);
+            self.tron = null;
+            break;
+          case B.JSEventType_active:
+            t1 = A.WalletMessageData_asMap(message);
+            A._asString(t1.$index(0, "solidityNode"));
+            t2 = A._asString(t1.$index(0, "fullNode"));
+            A._asString(t1.$index(0, "chainId"));
+            A._asStringQ(t1.$index(0, "hex"));
+            A._asStringQ(t1.$index(0, "base58"));
+            info = new A.TronWebNodeInfo(t2, A._asStringQ(t1.$index(0, "eventServer")));
+            _this._initController$1$info(info);
+            break;
+        }
+        _this._eventListeners$2$jsObject(A.JSEventType_name(A._asString(message.event)), eventData);
+      } catch (exception) {
+        e = A.unwrapException(exception);
+        A.print("\x1b[33m" + ("got error " + A.S(e)) + "\x1b[0m");
       }
-      _this._eventListeners$2$jsObject(A.JSEventType_name(A._asString(message.event)), eventData);
     },
     _eventListeners$2$jsObject(type, jsObject) {
       var t1, t2, _i;
@@ -13058,13 +14081,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.TronPageController__initController__closure6.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.TronPageController__initController_closure.prototype = {
     call$0() {
@@ -13094,13 +14117,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.TronPageController__initController__closure4.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.TronPageController__initController_closure0.prototype = {
     call$0() {
@@ -13130,13 +14153,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.TronPageController__initController__closure2.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.TronPageController__initController_closure1.prototype = {
     call$0() {
@@ -13166,13 +14189,13 @@
     call$0() {
       return this._dartInstance.debugKey;
     },
-    $signature: 5
+    $signature: 6
   };
   A.TronPageController__initController__closure0.prototype = {
     call$0() {
       return this._dartInstance.object;
     },
-    $signature: 4
+    $signature: 7
   };
   A.TronPageController__initController_closure2.prototype = {
     call$0() {
@@ -13202,7 +14225,7 @@
     call$1(e) {
       return type$.SolanaWalletAccount._as(e).get$toJS();
     },
-    $signature: 19
+    $signature: 33
   };
   A.JSSolanaSignTransactionResponse.prototype = {};
   A.JSSolanalaTransactionType.prototype = {
@@ -13214,13 +14237,13 @@
     call$1(e) {
       return type$.JSSolanalaTransactionType._as(e)._name === this.name;
     },
-    $signature: 63
+    $signature: 65
   };
   A.JSSolanalaTransactionType_fromName_closure0.prototype = {
     call$0() {
       return A.throwExpression(B.Web3RequestException_chs);
     },
-    $signature: 7
+    $signature: 9
   };
   A.JSSolanaPublicKey.prototype = {
     equals$1(other) {
@@ -13298,7 +14321,7 @@
     call$1(e) {
       return A._asString(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.SolanaAccountsChanged.prototype = {
     toJson$0() {
@@ -13322,13 +14345,13 @@
     call$1(e) {
       return A.SolanaWalletAccount_SolanaWalletAccount$fromJson(type$.Map_dynamic_dynamic._as(e).cast$2$0(0, type$.String, type$.dynamic));
     },
-    $signature: 65
+    $signature: 67
   };
   A.SolanaAccountsChanged_toJson_closure.prototype = {
     call$1(e) {
       return type$.SolanaWalletAccount._as(e).toJson$0();
     },
-    $signature: 66
+    $signature: 68
   };
   A.SolanaProviderConnectInfo.prototype = {
     get$toJS() {
@@ -13392,13 +14415,13 @@
     call$1(e) {
       return A._asString(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.StandardEventsChangeProperties_toJS_closure0.prototype = {
     call$1(e) {
       return type$.SolanaWalletAccount._as(e).get$toJS();
     },
-    $signature: 19
+    $signature: 33
   };
   A.StellarAccountsChanged.prototype = {
     get$accountJS() {
@@ -13417,7 +14440,7 @@
     call$1(e) {
       return A._asString(e);
     },
-    $signature: 11
+    $signature: 13
   };
   A.StellarProviderConnectInfo.prototype = {
     get$toJS() {
@@ -13451,6 +14474,12 @@
     },
     $signature: 1
   };
+  A.JSSuiAccountChanged_toWalletEvent_closure.prototype = {
+    call$1(e) {
+      return A._asString(type$.JSObject._as(e).address);
+    },
+    $signature: 16
+  };
   A.TonAccountsChanged.prototype = {
     toString$0(_) {
       return "TonAccountsChanged" + A.LinkedHashMap_LinkedHashMap$_literal(["accounts", this.accounts, "defaultAddress", this.defaultAddress], type$.String, type$.dynamic).toString$0(0);
@@ -13468,7 +14497,7 @@
     call$0() {
       return this._dartInstance.workChain;
     },
-    $signature: 67
+    $signature: 69
   };
   A.TonChainChanged_toJS_closure.prototype = {
     call$0() {
@@ -13553,11 +14582,11 @@
     call$1(e) {
       return type$.JSWebviewTraget._as(e)._name === this.name;
     },
-    $signature: 68
+    $signature: 70
   };
   A.main_onActivation.prototype = {
     call$1(data) {
-      var walletEvent, target, workerModule, script, worker, onEvent, t2,
+      var walletEvent, target, t2, t3, script, worker,
         t1 = type$.JSObject;
       t1._as(data);
       walletEvent = A.JSWalletEvent_toEvent(data);
@@ -13572,29 +14601,27 @@
         return false;
       t2 = A._asStringQ(data.additional);
       t2.toString;
-      workerModule = t2;
-      t2 = self;
-      script = A._asString(t2.encodeURIComponent(workerModule));
-      worker = t1._as(new t2.Worker("data:text/javascript," + A.S(script), {type: "module", name: "js"}));
-      t2.errorListener_ = A._functionToJS1(new A.main_onActivation_closure());
-      onEvent = new A.main_onActivation_onEvent(data, worker, this.workerCompleter, target, this.pageController);
-      t2.workerListener_ = A._functionToJS1(onEvent);
+      t3 = self;
+      script = A._asString(t3.encodeURIComponent(t2));
+      worker = t1._as(new t3.Worker("data:text/javascript," + script, {type: "module", name: "js"}));
+      t3.errorListener_ = A._functionToJS1(new A.main_onActivation_closure());
+      t3.workerListener_ = A._functionToJS1(new A.main_onActivation_onEvent(data, worker, this.workerCompleter, target, this.pageController));
       t1 = type$.JavaScriptFunction;
-      worker.addEventListener("error", t1._as(t2.errorListener_));
-      worker.addEventListener("message", t1._as(t2.workerListener_));
+      worker.addEventListener("error", t1._as(t3.errorListener_));
+      worker.addEventListener("message", t1._as(t3.workerListener_));
       return true;
     },
-    $signature: 17
+    $signature: 21
   };
   A.main_onActivation_closure.prototype = {
     call$1($event) {
-      A.print("\x1b[33m" + ("error " + A.S(type$.JSObject._as($event))) + "\x1b[0m");
+      type$.JSObject._as($event);
     },
-    $signature: 16
+    $signature: 31
   };
   A.main_onActivation_onEvent.prototype = {
     call$1($event) {
-      var error, t2, t3, t4, t5, error0, _this = this,
+      var t2, t3, t4, t5, error, _this = this,
         t1 = type$.JSObject,
         workerEvent = t1._as(t1._as($event).data);
       switch (A.JSWorkerType_fronName(A._asStringQ(workerEvent.type))) {
@@ -13616,22 +14643,35 @@
           A.postToWallet(A.JSWorkerWalletData_constructor_(A.MRTWallet_get_clientId(t1._as(t4.MRT)), "", "", "activation"), t3);
           break;
         case B.JSWorkerType_2:
-          error0 = workerEvent.data;
-          error = error0 == null ? type$.Object._as(error0) : error0;
+          error = workerEvent.data;
+          if (error == null)
+            error = type$.Object._as(error);
           _this.worker.terminate();
           t2 = _this.pageController;
-          t3 = type$.Object._as(error);
-          t2.get$ethereumPageController()._disable$1$message(A._asStringQ(t3.message));
-          t2.get$tronPageController()._disable$1$message(A._asStringQ(t3.message));
-          t2.get$solanaPageController()._disable$1$message(A._asStringQ(t3.message));
-          t2.get$tonPageController()._disable$1$message(A._asStringQ(t3.message));
-          t2.get$stellarPageController()._disable$1$message(A._asStringQ(t3.message));
-          t2.get$substratePageController()._disable$1$message(A._asStringQ(t3.message));
+          if (A._asStringQ(error.message) != null)
+            t1._as(self.console).error(A._asStringQ(error.message));
+          t2.get$ethereumPageController();
+          t3 = self;
+          t3.ethereum = null;
+          t2.get$tronPageController();
+          t3.tron = null;
+          t2.get$solanaPageController();
+          t3.solana = null;
+          t2.get$tonPageController();
+          t3.ton = null;
+          t2.get$stellarPageController();
+          t3.stellar = null;
+          t2.get$substratePageController();
+          t3.substrate = null;
+          t2.get$aptosPageController();
+          t3.stellar = null;
+          t2.get$suiPageController();
+          t3.stellar = null;
           t2 = t2._wait;
           if (t2 != null)
-            t2.completeError$1(t3);
+            t2.completeError$1(error);
           _this.workerCompleter.completeError$1(error);
-          t1 = A.MRTWallet_get_clientId(t1._as(self.MRT));
+          t1 = A.MRTWallet_get_clientId(t1._as(t3.MRT));
           t2 = A._asStringQ(_this.data.request_id);
           t2.toString;
           t3 = A._asStringQ(error.message);
@@ -13643,38 +14683,35 @@
           throw A.wrapException(A.UnimplementedError$(null));
       }
     },
-    $signature: 12
+    $signature: 11
   };
   A.main_onWalletEvent.prototype = {
     call$1(jsRequest) {
       this.worker.postMessage(A.JSWorkerEvent_constructor_(type$.JSObject._as(jsRequest), B.JSWorkerType_1));
       return true;
     },
-    $signature: 17
+    $signature: 21
   };
   A.main_onWorkerWalletEvent.prototype = {
     call$1($event) {
-      var data, data0,
-        t1 = type$.JSObject,
+      var t1 = type$.JSObject,
         workerEvent = t1._as(t1._as($event).data);
       switch (A.JSWorkerType_fronName(A._asStringQ(workerEvent.type))) {
         case B.JSWorkerType_1:
-          data = t1._as(workerEvent.data);
-          A.postToWallet(data, this.target);
+          A.postToWallet(t1._as(workerEvent.data), this.target);
           break;
         case B.JSWorkerType_0:
-          data0 = t1._as(workerEvent.data);
-          this.pageController.handleWalletMessage$1(t1._as(data0));
+          this.pageController.handleWalletMessage$1(t1._as(workerEvent.data));
           break;
       }
     },
-    $signature: 12
+    $signature: 11
   };
   A.main_closure.prototype = {
     call$1($event) {
       type$.JSObject._as($event);
     },
-    $signature: 16
+    $signature: 31
   };
   (function aliases() {
     var _ = J.LegacyJavaScriptObject.prototype;
@@ -13689,27 +14726,38 @@
       _instance_0_u = hunkHelpers._instance_0u,
       _instance_2_u = hunkHelpers._instance_2u,
       _instance_1_i = hunkHelpers._instance_1i;
-    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 13);
-    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 13);
-    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 13);
+    _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 19);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 19);
+    _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 19);
     _static_0(A, "async___startMicrotaskLoop$closure", "_startMicrotaskLoop", 0);
     var _;
-    _instance(_ = A.ProxyMethodHandler.prototype, "get$set", 0, 4, null, ["call$4"], ["$set$4"], 34, 0, 0);
-    _instance(_, "get$get", 0, 3, null, ["call$3"], ["$get$3"], 30, 0, 0);
+    _instance(_ = A.ProxyMethodHandler.prototype, "get$set", 0, 4, null, ["call$4"], ["$set$4"], 71, 0, 0);
+    _instance(_, "get$get", 0, 3, null, ["call$3"], ["$get$3"], 35, 0, 0);
     _instance_0_i(A.ProviderConnectInfo.prototype, "get$toString", "toString$0", 2);
-    _instance_1_u(A.JSWithWorkerPageController.prototype, "get$postMessage", "postMessage$1", 12);
-    _instance_1_u(_ = A.PageNetworkController.prototype, "get$_postWalletRequest", "_postWalletRequest$1", 6);
+    _instance_1_u(A.JSWithWorkerPageController.prototype, "get$postMessage", "postMessage$1", 11);
+    _instance_1_u(_ = A.PageNetworkController.prototype, "get$_postWalletRequest", "_postWalletRequest$1", 4);
     _instance_0_u(_, "get$_disconnectChain", "_disconnectChain$0", 8);
+    _instance_1_u(_ = A.AptosPageController.prototype, "get$_changeNetwork", "_changeNetwork$1", 5);
+    _instance_1_u(_, "get$_signMessage", "_signMessage$1", 5);
+    _instance_0_u(_, "get$_connect", "_connect$0", 8);
+    _instance_1_u(_, "get$_signTransaction", "_signTransaction$1", 5);
+    _instance_1_u(_, "get$_buildWalletRequest", "_buildWalletRequest$1", 4);
+    _instance_0_u(_, "get$_requestAccount", "_requestAccount$0", 8);
+    _instance_1_u(_, "get$_onNetworkChange", "_onNetworkChange$1", 20);
+    _instance_0_u(_, "get$_network", "_network$0", 8);
+    _instance_1_u(_, "get$_onAccountChange", "_onAccountChange$1", 20);
+    _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 3);
+    _instance_2_u(_, "get$_removeListener", "_removeListener$2", 3);
     _instance_2_u(_ = A.EthereumPageController.prototype, "get$_scripts$_addListener", "_scripts$_addListener$2", 3);
     _instance_0_u(_, "get$_cancelAllListeners", "_cancelAllListeners$0", 0);
     _instance_2_u(_, "get$_removeListener", "_removeListener$2", 3);
     _instance_0_u(_, "get$_enable", "_enable$0", 8);
-    _instance_1_u(_, "get$_onRequest", "_onRequest$1", 6);
-    _instance_1_u(_ = A.SolanaPageController.prototype, "get$_signMessage", "_signMessage$1", 9);
-    _instance_1_u(_, "get$_signTranaction", "_signTranaction$1", 46);
-    _instance_1_u(_, "get$_signAllTransactions", "_signAllTransactions$1", 71);
-    _instance(_, "get$_signAndSendTransaction", 0, 1, null, ["call$2", "call$1"], ["_signAndSendTransaction$2", "_signAndSendTransaction$1"], 48, 0, 0);
-    _instance_1_u(_, "get$_buildWalletRequest", "_buildWalletRequest$1", 6);
+    _instance_1_u(_, "get$_onRequest", "_onRequest$1", 4);
+    _instance_1_u(_ = A.SolanaPageController.prototype, "get$_signMessage", "_signMessage$1", 14);
+    _instance_1_u(_, "get$_signTranaction", "_signTranaction$1", 5);
+    _instance_1_u(_, "get$_signAllTransactions", "_signAllTransactions$1", 72);
+    _instance(_, "get$_signAndSendTransaction", 0, 1, null, ["call$2", "call$1"], ["_signAndSendTransaction$2", "_signAndSendTransaction$1"], 53, 0, 0);
+    _instance_1_u(_, "get$_buildWalletRequest", "_buildWalletRequest$1", 4);
     _instance_0_u(_, "get$_connect", "_connect$0", 8);
     _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 3);
     _instance_2_u(_, "get$_removeListener", "_removeListener$2", 3);
@@ -13717,31 +14765,41 @@
     _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 3);
     _instance_2_u(_, "get$_removeListener", "_removeListener$2", 3);
     _instance_0_u(_, "get$_cancelAllListeners", "_cancelAllListeners$0", 0);
-    _instance_1_i(_ = A.SubstratePageController.prototype, "get$sign", "sign$1", 6);
-    _instance_1_u(_, "get$signRaw", "signRaw$1", 6);
-    _instance_1_u(_, "get$update", "update$1", 9);
-    _instance(_, "get$_metadataGet", 0, 0, null, ["call$1", "call$0"], ["_metadataGet$1", "_metadataGet$0"], 54, 0, 0);
-    _instance_1_u(_, "get$_metadataProvide", "_metadataProvide$1", 6);
-    _instance_1_u(_, "get$_listenAccount", "_listenAccount$1", 55);
-    _instance_1_u(_, "get$_enable", "_enable$1", 56);
-    _instance(_, "get$_requestAccount", 0, 0, null, ["call$1", "call$0"], ["_requestAccount$1", "_requestAccount$0"], 57, 0, 0);
+    _instance_1_i(_ = A.SubstratePageController.prototype, "get$sign", "sign$1", 4);
+    _instance_1_u(_, "get$signRaw", "signRaw$1", 4);
+    _instance_1_u(_, "get$update", "update$1", 14);
+    _instance(_, "get$_metadataGet", 0, 0, null, ["call$1", "call$0"], ["_metadataGet$1", "_metadataGet$0"], 58, 0, 0);
+    _instance_1_u(_, "get$_metadataProvide", "_metadataProvide$1", 4);
+    _instance_1_u(_, "get$_listenAccount", "_listenAccount$1", 20);
+    _instance_1_u(_, "get$_enable", "_enable$1", 59);
+    _instance(_, "get$_requestAccount", 0, 0, null, ["call$1", "call$0"], ["_requestAccount$1", "_requestAccount$0"], 60, 0, 0);
     _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 3);
     _instance_2_u(_, "get$_removeListener", "_removeListener$2", 3);
     _instance_0_u(_, "get$_cancelAllListeners", "_cancelAllListeners$0", 0);
+    _instance_1_u(_ = A.SuiPageController.prototype, "get$_signMessage", "_signMessage$1", 5);
+    _instance_1_u(_, "get$_signPersonalMessage", "_signPersonalMessage$1", 5);
+    _instance_1_u(_, "get$_signTransaction", "_signTransaction$1", 5);
+    _instance_1_u(_, "get$_signAndExecuteTransaction", "_signAndExecuteTransaction$1", 5);
+    _instance_1_u(_, "get$_signAndExcuteTransactionBlock", "_signAndExcuteTransactionBlock$1", 5);
+    _instance_1_u(_, "get$_signTransactionBlock", "_signTransactionBlock$1", 5);
+    _instance_1_u(_, "get$_reportTransactionEffects", "_reportTransactionEffects$1", 5);
+    _instance_1_u(_, "get$_buildWalletRequest", "_buildWalletRequest$1", 4);
+    _instance_0_u(_, "get$_requestAccount", "_requestAccount$0", 8);
+    _instance_2_u(_, "get$_onEvents", "_onEvents$2", 3);
     _instance_0_u(_ = A.TonPageController.prototype, "get$_requestAccount", "_requestAccount$0", 8);
     _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 3);
     _instance_2_u(_, "get$_removeListener", "_removeListener$2", 3);
     _instance_0_u(_, "get$_cancelAllListeners", "_cancelAllListeners$0", 0);
-    _instance_1_u(_ = A.TronPageController.prototype, "get$_disabledFeature", "_disabledFeature$1", 59);
-    _instance(_, "get$_signMessageV2_", 0, 1, null, ["call$2", "call$1"], ["_signMessageV2_$2", "_signMessageV2_$1"], 60, 0, 0);
-    _instance(_, "get$_signTransaction_", 0, 1, null, ["call$2", "call$1"], ["_signTransaction_$2", "_signTransaction_$1"], 20, 0, 0);
-    _instance(_, "get$_multiSign", 0, 1, null, ["call$2", "call$1"], ["_multiSign$2", "_multiSign$1"], 20, 0, 0);
+    _instance_1_u(_ = A.TronPageController.prototype, "get$_disabledFeature", "_disabledFeature$1", 61);
+    _instance(_, "get$_signMessageV2_", 0, 1, null, ["call$2", "call$1"], ["_signMessageV2_$2", "_signMessageV2_$1"], 62, 0, 0);
+    _instance(_, "get$_signTransaction_", 0, 1, null, ["call$2", "call$1"], ["_signTransaction_$2", "_signTransaction_$1"], 32, 0, 0);
+    _instance(_, "get$_multiSign", 0, 1, null, ["call$2", "call$1"], ["_multiSign$2", "_multiSign$1"], 32, 0, 0);
     _instance_2_u(_, "get$_scripts$_addListener", "_scripts$_addListener$2", 3);
     _instance_2_u(_, "get$_removeListener", "_removeListener$2", 3);
     _instance_0_u(_, "get$_cancelAllListeners", "_cancelAllListeners$0", 0);
     _instance_0_u(_, "get$_enable", "_enable$0", 8);
-    _instance_1_u(_, "get$_onRequest", "_onRequest$1", 6);
-    _instance_1_u(_ = A.JSSolanaPublicKey.prototype, "get$equals", "equals$1", 64);
+    _instance_1_u(_, "get$_onRequest", "_onRequest$1", 4);
+    _instance_1_u(_ = A.JSSolanaPublicKey.prototype, "get$equals", "equals$1", 66);
     _instance_0_u(_, "get$toBase58", "toBase58$0", 2);
     _instance_0_u(_, "get$toJSON", "toJSON$0", 2);
     _instance_0_i(_, "get$toString", "toString$0", 2);
@@ -13768,8 +14826,8 @@
     _inherit(A._CastListBase, A.__CastListBase__CastIterableBase_ListMixin);
     _inherit(A.CastList, A._CastListBase);
     _inheritMany(A.MapBase, [A.CastMap, A.JsLinkedHashMap, A._HashMap]);
-    _inheritMany(A.Closure, [A.Closure2Args, A.Closure0Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._awaitOnObject_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A._Future_timeout_closure0, A._BigIntImpl_hashCode_finish, A._createTables_setChars, A._createTables_setRange, A.jsify__convert, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.dartify_convert, A.UUID_generateUUIDv4_closure, A.UUID_generateUUIDv4_closure0, A.WalletEventTypes_fromName_closure, A.MRTJsObject_keys__closure, A.SynchronizedLock_synchronized_closure, A.Web3SolanaRequestMethods_fromName_closure, A.EIP6963ProviderDetail_setup_onRequestProvider, A.WalletPromise_get_toPromise__closure, A.WalletPromise_get_toPromise__closure1, A.JSWalletMessageType_fromName_closure, A.JSEventType_name_closure, A.JSEventType_fromName_closure, A.JSWalletResponseType_fromName_closure, A.JSClientType_fromName_closure, A.JSWorkerType_fronName_closure, A.SolanaPageController__createAdapter_closure, A.SolanaPageController__createAdapter_closure0, A.SolanaPageController__signMessage_closure, A.SolanaPageController__buildTransaction_closure, A.SolanaPageController__buildTransaction_closure0, A.SolanaPageController__buildWalletRequest_closure, A.SolanaPageController__toWalletRequest_closure, A.SolanaPageController__toWalletRequest_closure0, A.SolanaPageController__onTransactionResponse_closure, A.SolanaPageController__connect_closure, A.SolanaPageController__connect__closure, A.SolanaPageController_onEvent_closure, A.SubstratePageController_onEvent_closure, A.SolanaWalletAdapter_update_closure, A.JSSolanalaTransactionType_fromName_closure, A.SolanaWalletAccount_toJS_closure, A.SolanaAccountsChanged_SolanaAccountsChanged$fromJson_closure, A.SolanaAccountsChanged_toJson_closure, A.StandardEventsChangeProperties_toJS_closure, A.StandardEventsChangeProperties_toJS_closure0, A.StellarAccountsChanged_accountJS_closure, A.JSWebviewTraget_fromName_closure, A.main_onActivation, A.main_onActivation_closure, A.main_onActivation_onEvent, A.main_onWalletEvent, A.main_onWorkerWalletEvent, A.main_closure]);
-    _inheritMany(A.Closure2Args, [A.CastMap_forEach_closure, A.initHooks_closure0, A._awaitOnObject_closure0, A._wrapJsFunctionForAsync_closure, A._Future__chainForeignFuture_closure0, A._Future_timeout_closure1, A.LinkedHashMap_LinkedHashMap$from_closure, A.MapBase_mapToString_closure, A._BigIntImpl_hashCode_combine, A.Uri__parseIPv4Address_error, A.Uri_parseIPv6Address_error, A.Uri_parseIPv6Address_parseHex, A._createTables_build, A.Web3ExceptionMessage_toJson_closure, A.JSWalletError_constructor_fromJson_closure, A.WalletPromise_get_toPromise_closure, A.WalletPromise_get_toPromise__closure0, A.WalletMessageData__convertMap_closure]);
+    _inheritMany(A.Closure, [A.Closure2Args, A.Closure0Args, A.TearOffClosure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._awaitOnObject_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A._Future_timeout_closure0, A._BigIntImpl_hashCode_finish, A._createTables_setChars, A._createTables_setRange, A.FutureOfVoidToJSPromise_get_toJS__closure, A.jsify__convert, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.dartify_convert, A.UUID_generateUUIDv4_closure, A.UUID_generateUUIDv4_closure0, A.WalletEventTypes_fromName_closure, A.MRTJsObject_keys__closure, A.SynchronizedLock_synchronized_closure, A.Web3SolanaRequestMethods_fromName_closure, A.JSAptosAccountChanged_toWalletEvent_closure, A.JSAptosSerializableObject_buildSerializable_closure0, A.JSAptosWalletStandardUserResponseStatus_fromName_closure, A.EIP6963ProviderDetail_setup_onRequestProvider, A.WalletPromise_get_toPromise__closure, A.WalletPromise_get_toPromise__closure1, A.JSWalletMessageType_fromName_closure, A.JSEventType_name_closure, A.JSEventType_fromName_closure, A.JSWalletResponseType_fromName_closure, A.JSClientType_fromName_closure, A.JSWorkerType_fronName_closure, A.AptosPageController__createAdapter_closure, A.AptosPageController__createAdapter_closure0, A.SolanaPageController__createAdapter_closure, A.SolanaPageController__createAdapter_closure0, A.SolanaPageController__signMessage_closure, A.SolanaPageController__buildTransaction_closure, A.SolanaPageController__buildTransaction_closure0, A.SolanaPageController__buildWalletRequest_closure, A.SolanaPageController__toWalletRequest_closure, A.SolanaPageController__toWalletRequest_closure0, A.SolanaPageController__onTransactionResponse_closure, A.SolanaPageController__connect__closure, A.SolanaPageController__connect___closure, A.SolanaPageController_onEvent_closure, A.SubstratePageController_onEvent_closure, A.SuiPageController__createAdapter_closure, A.SuiPageController__createAdapter_closure0, A.SolanaWalletAdapter_update_closure, A.JSSolanalaTransactionType_fromName_closure, A.SolanaWalletAccount_toJS_closure, A.SolanaAccountsChanged_SolanaAccountsChanged$fromJson_closure, A.SolanaAccountsChanged_toJson_closure, A.StandardEventsChangeProperties_toJS_closure, A.StandardEventsChangeProperties_toJS_closure0, A.StellarAccountsChanged_accountJS_closure, A.JSSuiAccountChanged_toWalletEvent_closure, A.JSWebviewTraget_fromName_closure, A.main_onActivation, A.main_onActivation_closure, A.main_onActivation_onEvent, A.main_onWalletEvent, A.main_onWorkerWalletEvent, A.main_closure]);
+    _inheritMany(A.Closure2Args, [A.CastMap_forEach_closure, A.initHooks_closure0, A._awaitOnObject_closure0, A._wrapJsFunctionForAsync_closure, A._Future__chainForeignFuture_closure0, A._Future_timeout_closure1, A.LinkedHashMap_LinkedHashMap$from_closure, A.MapBase_mapToString_closure, A._BigIntImpl_hashCode_combine, A.Uri__parseIPv4Address_error, A.Uri_parseIPv6Address_error, A.Uri_parseIPv6Address_parseHex, A._createTables_build, A.FutureOfVoidToJSPromise_get_toJS_closure, A.FutureOfVoidToJSPromise_get_toJS__closure0, A.Web3ExceptionMessage_toJson_closure, A.JSWalletError_constructor_fromJson_closure, A.WalletPromise_get_toPromise_closure, A.WalletPromise_get_toPromise__closure0, A.WalletMessageData__convertMap_closure]);
     _inheritMany(A.Error, [A.LateError, A.TypeError, A.JsNoSuchMethodError, A.UnknownJsTypeError, A._CyclicInitializationError, A.RuntimeError, A.AssertionError, A._Error, A.ArgumentError, A.UnsupportedError, A.UnimplementedError, A.StateError, A.ConcurrentModificationError]);
     _inheritMany(A.EfficientLengthIterable, [A.ListIterable, A.LinkedHashMapKeyIterable, A._HashMapKeyIterable]);
     _inherit(A.EfficientLengthMappedIterable, A.MappedIterable);
@@ -13788,7 +14846,7 @@
     _inheritMany(A.NativeTypedArrayOfDouble, [A.NativeFloat32List, A.NativeFloat64List]);
     _inheritMany(A.NativeTypedArrayOfInt, [A.NativeInt16List, A.NativeInt32List, A.NativeInt8List, A.NativeUint16List, A.NativeUint32List, A.NativeUint8ClampedList, A.NativeUint8List]);
     _inherit(A._TypeError, A._Error);
-    _inheritMany(A.Closure0Args, [A._AsyncRun__scheduleImmediateJsOverride_internalCallback, A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback, A._TimerImpl_internalCallback, A._Future__addListener_closure, A._Future__prependListeners_closure, A._Future__chainForeignFuture_closure1, A._Future__chainCoreFutureAsync_closure, A._Future__asyncCompleteWithValue_closure, A._Future__asyncCompleteError_closure, A._Future__propagateToListeners_handleWhenCompleteCallback, A._Future__propagateToListeners_handleValueCallback, A._Future__propagateToListeners_handleError, A._Future_timeout_closure, A._rootHandleError_closure, A._RootZone_bindCallbackGuarded_closure, A.WalletEventTypes_fromName_closure0, A.SynchronizedLock_synchronized_complete, A.ProviderConnectInfo_toJSEvent__closure, A.ProviderConnectInfo_toJSEvent_closure, A.JSWalletError_constructor_fromMessage_toString, A.JSWalletError_constructor_fromJson_toString, A.QuickJS_toProxy__closure, A.QuickJS_toProxy__closure0, A.QuickJS_toProxy_closure, A.JSWalletMessageType_fromName_closure0, A.JSEventType_name_closure0, A.JSWalletResponseType_fromName_closure0, A.JSClientType_fromName_closure0, A.JSBasePageController__waitForActivation_closure, A.EthereumPageController__initController__closure, A.EthereumPageController__initController__closure0, A.EthereumPageController__initController_closure, A.SolanaPageController__initController__closure, A.SolanaPageController__initController__closure0, A.SolanaPageController__initController_closure, A.StellarPageController__initController__closure, A.StellarPageController__initController__closure0, A.StellarPageController__initController_closure, A.SubstratePageController__initController__closure, A.SubstratePageController__initController__closure0, A.SubstratePageController__initController_closure, A.TonPageController__initController__closure, A.TonPageController__initController__closure0, A.TonPageController__initController_closure, A.TronPageController__initController__closure5, A.TronPageController__initController__closure6, A.TronPageController__initController_closure, A.TronPageController__initController__closure3, A.TronPageController__initController__closure4, A.TronPageController__initController_closure0, A.TronPageController__initController__closure1, A.TronPageController__initController__closure2, A.TronPageController__initController_closure1, A.TronPageController__initController__closure, A.TronPageController__initController__closure0, A.TronPageController__initController_closure2, A.JSSolanalaTransactionType_fromName_closure0, A.JSSolanaPublicKey_toJS__closure, A.JSSolanaPublicKey_toJS_closure, A.SolanaProviderConnectInfo_toJS__closure, A.SolanaProviderConnectInfo_toJS_closure, A.StellarProviderConnectInfo_toJS__closure, A.StellarProviderConnectInfo_toJS_closure, A.TonChainChanged_toJS__closure, A.TonChainChanged_toJS_closure, A.TronChainChanged_toJSEvent__closure, A.TronChainChanged_toJSEvent_closure]);
+    _inheritMany(A.Closure0Args, [A._AsyncRun__scheduleImmediateJsOverride_internalCallback, A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback, A._TimerImpl_internalCallback, A.Future_Future$delayed_closure, A._Future__addListener_closure, A._Future__prependListeners_closure, A._Future__chainForeignFuture_closure1, A._Future__chainCoreFutureAsync_closure, A._Future__asyncCompleteWithValue_closure, A._Future__asyncCompleteError_closure, A._Future__propagateToListeners_handleWhenCompleteCallback, A._Future__propagateToListeners_handleValueCallback, A._Future__propagateToListeners_handleError, A._Future_timeout_closure, A._rootHandleError_closure, A._RootZone_bindCallbackGuarded_closure, A.WalletEventTypes_fromName_closure0, A.SynchronizedLock_synchronized_complete, A.JSAptosSerializableObject_get__toString_closure, A.JSAptosSerializableObject_get__toStringWithoutPrefix_closure, A.JSAptosSerializableObject_buildSerializable_closure, A.JSAptosSerializableObject_buildSerializable_closure1, A.JSAptosWalletStandardUserResponseStatus_fromName_closure0, A.ProviderConnectInfo_toJSEvent__closure, A.ProviderConnectInfo_toJSEvent_closure, A.JSWalletError_constructor_fromMessage_toString, A.JSWalletError_constructor_fromJson_toString, A.QuickJS_toProxy__closure, A.QuickJS_toProxy__closure0, A.QuickJS_toProxy_closure, A.JSWalletMessageType_fromName_closure0, A.JSEventType_name_closure0, A.JSWalletResponseType_fromName_closure0, A.JSClientType_fromName_closure0, A.JSBasePageController__waitForActivation_closure, A.AptosPageController__initController__closure, A.AptosPageController__initController__closure0, A.AptosPageController__initController_closure, A.EthereumPageController__initController__closure, A.EthereumPageController__initController__closure0, A.EthereumPageController__initController_closure, A.SolanaPageController__initController__closure, A.SolanaPageController__initController__closure0, A.SolanaPageController__initController_closure, A.StellarPageController__initController__closure, A.StellarPageController__initController__closure0, A.StellarPageController__initController_closure, A.SubstratePageController__initController__closure, A.SubstratePageController__initController__closure0, A.SubstratePageController__initController_closure, A.TonPageController__initController__closure, A.TonPageController__initController__closure0, A.TonPageController__initController_closure, A.TronPageController__initController__closure5, A.TronPageController__initController__closure6, A.TronPageController__initController_closure, A.TronPageController__initController__closure3, A.TronPageController__initController__closure4, A.TronPageController__initController_closure0, A.TronPageController__initController__closure1, A.TronPageController__initController__closure2, A.TronPageController__initController_closure1, A.TronPageController__initController__closure, A.TronPageController__initController__closure0, A.TronPageController__initController_closure2, A.JSSolanalaTransactionType_fromName_closure0, A.JSSolanaPublicKey_toJS__closure, A.JSSolanaPublicKey_toJS_closure, A.SolanaProviderConnectInfo_toJS__closure, A.SolanaProviderConnectInfo_toJS_closure, A.StellarProviderConnectInfo_toJS__closure, A.StellarProviderConnectInfo_toJS_closure, A.TonChainChanged_toJS__closure, A.TonChainChanged_toJS_closure, A.TronChainChanged_toJSEvent__closure, A.TronChainChanged_toJSEvent_closure]);
     _inheritMany(A._Completer, [A._AsyncCompleter, A._SyncCompleter]);
     _inherit(A._RootZone, A._Zone);
     _inherit(A._IdentityHashMap, A._HashMap);
@@ -13796,14 +14854,14 @@
     _inherit(A.Base64Encoder, A.Converter);
     _inheritMany(A.ArgumentError, [A.RangeError, A.IndexError]);
     _inherit(A._DataUri, A._Uri);
-    _inheritMany(A._Enum, [A.WalletEventTypes, A.JSWalletMessageType, A.JSEventType, A.JSWalletResponseType, A.JSClientType, A.JSWorkerType, A.JSSolanalaTransactionType, A.JSWebviewTraget]);
+    _inheritMany(A._Enum, [A.WalletEventTypes, A.JSAptosWalletStandardUserResponseStatus, A.JSWalletMessageType, A.JSEventType, A.JSWalletResponseType, A.JSClientType, A.JSWorkerType, A.JSSolanalaTransactionType, A.JSWebviewTraget]);
     _inherit(A.Web3RequestException, A._Web3RequestException_Object_Equatable);
     _inherit(A._Web3MessageCore_Object_CborSerializable_JsonSerialization, A._Web3MessageCore_Object_CborSerializable);
     _inherit(A.Web3MessageCore, A._Web3MessageCore_Object_CborSerializable_JsonSerialization);
     _inherit(A.Web3ExceptionMessage, A.Web3MessageCore);
     _inherit(A.Web3SolanaRequestMethods, A.Web3RequestMethods);
     _inherit(A.JSWithWorkerPageController, A.JSBasePageController);
-    _inheritMany(A.PageNetworkController, [A.EthereumPageController, A.SolanaPageController, A.StellarPageController, A.SubstratePageController, A.TonPageController, A.TronPageController]);
+    _inheritMany(A.PageNetworkController, [A.AptosPageController, A.EthereumPageController, A.SolanaPageController, A.StellarPageController, A.SubstratePageController, A.SuiPageController, A.TonPageController, A.TronPageController]);
     _mixin(A.__CastListBase__CastIterableBase_ListMixin, A.ListBase);
     _mixin(A._NativeTypedArrayOfDouble_NativeTypedArray_ListMixin, A.ListBase);
     _mixin(A._NativeTypedArrayOfDouble_NativeTypedArray_ListMixin_FixedLengthListMixin, A.FixedLengthListMixin);
@@ -13817,7 +14875,7 @@
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List", Object: "Object", Map: "Map"},
     mangledNames: {},
-    types: ["~()", "Object()", "String()", "~(String,JavaScriptFunction)", "Object?()", "String?()", "JSObject(JSObject)", "0&()", "JSObject()", "JSObject(Object?)", "Object?(Object?)", "String(String)", "~(JSObject)", "~(~())", "~(@)", "Null(@)", "Null(JSObject)", "bool(JSObject)", "Null(Object,StackTrace)", "JSObject(SolanaWalletAccount)", "JSObject(Object[Object?])", "Null(Object)", "int(int,int)", "int(int)", "~(Uint8List,String,int)", "bool(JSEventType)", "@(@)", "bool(String,@)", "~(@,@)", "Null()", "Object?(Object,Object?,Object?)", "Null(~())", "Null(JavaScriptFunction,JavaScriptFunction)", "Object(Object,StackTrace)", "bool(Object,Object?,Object?,Object?)", "bool(Web3SolanaRequestMethods)", "bool(JSWalletMessageType)", "bool(WalletEventTypes)", "bool(JSWalletResponseType)", "bool(JSClientType)", "bool(JSWorkerType)", "Future<~>()", "@(@,String)", "String(int)", "Uint8List(@,@)", "~(String,int?)", "JSObject(Object)", "~(String,int)", "JSObject(Object[JSObject?])", "~(Object?,Object?)", "Object(Object?)", "JSSolanaSignTransactionResponse?(@)", "JSArray<Object?>(JSArray<Object?>)", "String(SolanaWalletAccount)", "JSObject([bool?])", "~(JavaScriptFunction)", "JSObject(String)", "JSObject([Object?])", "String(JSObject)", "~(Object?)", "JSObject(Object[String?])", "@(String)", "_Future<@>(@)", "bool(JSSolanalaTransactionType)", "bool(JSObject?)", "SolanaWalletAccount(@)", "Map<String,@>(SolanaWalletAccount)", "int()", "bool(JSWebviewTraget)", "~(int,@)", "Null(@,StackTrace)", "JSObject(JSArray<Object?>)"],
+    types: ["~()", "Object()", "String()", "~(String,JavaScriptFunction)", "JSObject(JSObject)", "JSObject(Object)", "String?()", "Object?()", "JSObject()", "0&()", "Null(Object)", "~(JSObject)", "Object?(Object?)", "String(String)", "JSObject(Object?)", "Null(@)", "String(JSObject)", "~(@)", "Null(Object,StackTrace)", "~(~())", "~(JavaScriptFunction)", "bool(JSObject)", "int(int,int)", "int(int)", "~(Uint8List,String,int)", "Null(JavaScriptFunction,JavaScriptFunction)", "@(@)", "bool(String,@)", "Null()", "~(@,@)", "bool(JSEventType)", "Null(JSObject)", "JSObject(Object[Object?])", "JSObject(SolanaWalletAccount)", "@(@,String)", "Object?(Object,Object?,Object?)", "Uint8List(@,@)", "Object(Object,StackTrace)", "~(Object?,Object?)", "Null(@,StackTrace)", "bool(JSWalletMessageType)", "~(String,int)", "bool(JSWalletResponseType)", "bool(JSClientType)", "bool(JSWorkerType)", "Future<~>()", "~(int,@)", "Object?(~)", "bool(Web3SolanaRequestMethods)", "~(String,int?)", "_Future<@>(@)", "Null(~())", "String(int)", "JSObject(Object[JSObject?])", "Object(Object?)", "JSSolanaSignTransactionResponse?(@)", "JSArray<Object?>(JSArray<Object?>)", "String(SolanaWalletAccount)", "JSObject([bool?])", "JSObject(String)", "JSObject([Object?])", "~(Object?)", "JSObject(Object[String?])", "@(String)", "bool(JSAptosWalletStandardUserResponseStatus)", "bool(JSSolanalaTransactionType)", "bool(JSObject?)", "SolanaWalletAccount(@)", "Map<String,@>(SolanaWalletAccount)", "int()", "bool(JSWebviewTraget)", "bool(Object,Object?,Object?,Object?)", "JSObject(JSArray<Object?>)", "bool(WalletEventTypes)"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti"),
@@ -13825,7 +14883,7 @@
       "2;": (t1, t2) => o => o instanceof A._Record_2 && t1._is(o._0) && t2._is(o._1)
     }
   };
-  A._Universe_addRules(init.typeUniverse, JSON.parse('{"JavaScriptFunction":"LegacyJavaScriptObject","PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JSArray":{"List":["1"],"EfficientLengthIterable":["1"],"JSObject":[],"Iterable":["1"]},"JSBool":{"bool":[],"TrustedGetRuntimeType":[]},"JSNull":{"Null":[],"TrustedGetRuntimeType":[]},"JavaScriptObject":{"JSObject":[]},"LegacyJavaScriptObject":{"JSObject":[]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"EfficientLengthIterable":["1"],"JSObject":[],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"double":[],"num":[]},"JSInt":{"double":[],"int":[],"num":[],"TrustedGetRuntimeType":[]},"JSNumNotInt":{"double":[],"num":[],"TrustedGetRuntimeType":[]},"JSString":{"String":[],"Pattern":[],"TrustedGetRuntimeType":[]},"_CastIterableBase":{"Iterable":["2"]},"CastIterator":{"Iterator":["2"]},"CastIterable":{"_CastIterableBase":["1","2"],"Iterable":["2"],"Iterable.E":"2"},"_EfficientLengthCastIterable":{"CastIterable":["1","2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"_CastListBase":{"ListBase":["2"],"List":["2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"]},"CastList":{"_CastListBase":["1","2"],"ListBase":["2"],"List":["2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"ListBase.E":"2","Iterable.E":"2"},"CastMap":{"MapBase":["3","4"],"Map":["3","4"],"MapBase.K":"3","MapBase.V":"4"},"LateError":{"Error":[]},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"]},"ListIterator":{"Iterator":["1"]},"MappedIterable":{"Iterable":["2"],"Iterable.E":"2"},"EfficientLengthMappedIterable":{"MappedIterable":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"MappedIterator":{"Iterator":["2"]},"MappedListIterable":{"ListIterable":["2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"ListIterable.E":"2","Iterable.E":"2"},"ReversedListIterable":{"ListIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"ListIterable.E":"1","Iterable.E":"1"},"_Record_2":{"_Record2":[],"_Record":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"_CyclicInitializationError":{"Error":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"LinkedHashMapKeyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"_Record2":{"_Record":[]},"JSSyntaxRegExp":{"RegExp":[],"Pattern":[]},"NativeByteBuffer":{"JSObject":[],"ByteBuffer":[],"TrustedGetRuntimeType":[]},"NativeTypedData":{"JSObject":[]},"_UnmodifiableNativeByteBufferView":{"ByteBuffer":[]},"NativeByteData":{"ByteData":[],"JSObject":[],"TrustedGetRuntimeType":[]},"NativeTypedArray":{"JavaScriptIndexingBehavior":["1"],"JSObject":[]},"NativeTypedArrayOfDouble":{"ListBase":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"]},"NativeTypedArrayOfInt":{"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"]},"NativeFloat32List":{"Float32List":[],"ListBase":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"],"TrustedGetRuntimeType":[],"ListBase.E":"double","FixedLengthListMixin.E":"double"},"NativeFloat64List":{"Float64List":[],"ListBase":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"],"TrustedGetRuntimeType":[],"ListBase.E":"double","FixedLengthListMixin.E":"double"},"NativeInt16List":{"Int16List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeInt32List":{"Int32List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeInt8List":{"Int8List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint16List":{"Uint16List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint32List":{"Uint32List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint8ClampedList":{"Uint8ClampedList":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint8List":{"Uint8List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"_AsyncAwaitCompleter":{"Completer":["1"]},"AsyncError":{"Error":[]},"_Completer":{"Completer":["1"]},"_AsyncCompleter":{"_Completer":["1"],"Completer":["1"]},"_SyncCompleter":{"_Completer":["1"],"Completer":["1"]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_HashMap":{"MapBase":["1","2"],"Map":["1","2"]},"_IdentityHashMap":{"_HashMap":["1","2"],"MapBase":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"_HashMapKeyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"_HashMapKeyIterator":{"Iterator":["1"]},"MapBase":{"Map":["1","2"]},"Base64Codec":{"Codec":["List<int>","String"]},"double":{"num":[]},"int":{"num":[]},"List":{"EfficientLengthIterable":["1"],"Iterable":["1"]},"String":{"Pattern":[]},"_BigIntImpl":{"BigInt":[]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"IntegerDivisionByZeroException":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"StringBuffer":{"StringSink":[]},"_Uri":{"Uri":[]},"_SimpleUri":{"Uri":[]},"_DataUri":{"Uri":[]},"Int8List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint8List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint8ClampedList":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Int16List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint16List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Int32List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint32List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Float32List":{"List":["double"],"EfficientLengthIterable":["double"],"Iterable":["double"]},"Float64List":{"List":["double"],"EfficientLengthIterable":["double"],"Iterable":["double"]}}'));
+  A._Universe_addRules(init.typeUniverse, JSON.parse('{"JavaScriptFunction":"LegacyJavaScriptObject","PlainJavaScriptObject":"LegacyJavaScriptObject","UnknownJavaScriptObject":"LegacyJavaScriptObject","JSArray":{"List":["1"],"JavaScriptObject":[],"EfficientLengthIterable":["1"],"JSObject":[],"Iterable":["1"]},"JSBool":{"bool":[],"TrustedGetRuntimeType":[]},"JSNull":{"Null":[],"TrustedGetRuntimeType":[]},"JavaScriptObject":{"JSObject":[]},"LegacyJavaScriptObject":{"JavaScriptObject":[],"JSObject":[]},"JSUnmodifiableArray":{"JSArray":["1"],"List":["1"],"JavaScriptObject":[],"EfficientLengthIterable":["1"],"JSObject":[],"Iterable":["1"]},"ArrayIterator":{"Iterator":["1"]},"JSNumber":{"double":[],"num":[]},"JSInt":{"double":[],"int":[],"num":[],"TrustedGetRuntimeType":[]},"JSNumNotInt":{"double":[],"num":[],"TrustedGetRuntimeType":[]},"JSString":{"String":[],"Pattern":[],"TrustedGetRuntimeType":[]},"_CastIterableBase":{"Iterable":["2"]},"CastIterator":{"Iterator":["2"]},"CastIterable":{"_CastIterableBase":["1","2"],"Iterable":["2"],"Iterable.E":"2"},"_EfficientLengthCastIterable":{"CastIterable":["1","2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"_CastListBase":{"ListBase":["2"],"List":["2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"]},"CastList":{"_CastListBase":["1","2"],"ListBase":["2"],"List":["2"],"_CastIterableBase":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"ListBase.E":"2","Iterable.E":"2"},"CastMap":{"MapBase":["3","4"],"Map":["3","4"],"MapBase.K":"3","MapBase.V":"4"},"LateError":{"Error":[]},"EfficientLengthIterable":{"Iterable":["1"]},"ListIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"]},"ListIterator":{"Iterator":["1"]},"MappedIterable":{"Iterable":["2"],"Iterable.E":"2"},"EfficientLengthMappedIterable":{"MappedIterable":["1","2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"Iterable.E":"2"},"MappedIterator":{"Iterator":["2"]},"MappedListIterable":{"ListIterable":["2"],"EfficientLengthIterable":["2"],"Iterable":["2"],"ListIterable.E":"2","Iterable.E":"2"},"ReversedListIterable":{"ListIterable":["1"],"EfficientLengthIterable":["1"],"Iterable":["1"],"ListIterable.E":"1","Iterable.E":"1"},"_Record_2":{"_Record2":[],"_Record":[]},"NullError":{"TypeError":[],"Error":[]},"JsNoSuchMethodError":{"Error":[]},"UnknownJsTypeError":{"Error":[]},"_StackTrace":{"StackTrace":[]},"Closure":{"Function":[]},"Closure0Args":{"Function":[]},"Closure2Args":{"Function":[]},"TearOffClosure":{"Function":[]},"StaticClosure":{"Function":[]},"BoundClosure":{"Function":[]},"_CyclicInitializationError":{"Error":[]},"RuntimeError":{"Error":[]},"_AssertionError":{"Error":[]},"JsLinkedHashMap":{"MapBase":["1","2"],"LinkedHashMap":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"LinkedHashMapKeyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"LinkedHashMapKeyIterator":{"Iterator":["1"]},"_Record2":{"_Record":[]},"JSSyntaxRegExp":{"RegExp":[],"Pattern":[]},"NativeByteBuffer":{"JavaScriptObject":[],"JSObject":[],"ByteBuffer":[],"TrustedGetRuntimeType":[]},"NativeTypedData":{"JavaScriptObject":[],"JSObject":[]},"_UnmodifiableNativeByteBufferView":{"ByteBuffer":[]},"NativeByteData":{"JavaScriptObject":[],"ByteData":[],"JSObject":[],"TrustedGetRuntimeType":[]},"NativeTypedArray":{"JavaScriptIndexingBehavior":["1"],"JavaScriptObject":[],"JSObject":[]},"NativeTypedArrayOfDouble":{"ListBase":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"JavaScriptObject":[],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"]},"NativeTypedArrayOfInt":{"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"JavaScriptObject":[],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"]},"NativeFloat32List":{"Float32List":[],"ListBase":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"JavaScriptObject":[],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"],"TrustedGetRuntimeType":[],"ListBase.E":"double","FixedLengthListMixin.E":"double"},"NativeFloat64List":{"Float64List":[],"ListBase":["double"],"List":["double"],"JavaScriptIndexingBehavior":["double"],"JavaScriptObject":[],"EfficientLengthIterable":["double"],"JSObject":[],"Iterable":["double"],"FixedLengthListMixin":["double"],"TrustedGetRuntimeType":[],"ListBase.E":"double","FixedLengthListMixin.E":"double"},"NativeInt16List":{"Int16List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"JavaScriptObject":[],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeInt32List":{"Int32List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"JavaScriptObject":[],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeInt8List":{"Int8List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"JavaScriptObject":[],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint16List":{"Uint16List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"JavaScriptObject":[],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint32List":{"Uint32List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"JavaScriptObject":[],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint8ClampedList":{"Uint8ClampedList":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"JavaScriptObject":[],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"NativeUint8List":{"Uint8List":[],"ListBase":["int"],"List":["int"],"JavaScriptIndexingBehavior":["int"],"JavaScriptObject":[],"EfficientLengthIterable":["int"],"JSObject":[],"Iterable":["int"],"FixedLengthListMixin":["int"],"TrustedGetRuntimeType":[],"ListBase.E":"int","FixedLengthListMixin.E":"int"},"_Error":{"Error":[]},"_TypeError":{"TypeError":[],"Error":[]},"_Future":{"Future":["1"]},"_AsyncAwaitCompleter":{"Completer":["1"]},"AsyncError":{"Error":[]},"_Completer":{"Completer":["1"]},"_AsyncCompleter":{"_Completer":["1"],"Completer":["1"]},"_SyncCompleter":{"_Completer":["1"],"Completer":["1"]},"_Zone":{"Zone":[]},"_RootZone":{"_Zone":[],"Zone":[]},"_HashMap":{"MapBase":["1","2"],"Map":["1","2"]},"_IdentityHashMap":{"_HashMap":["1","2"],"MapBase":["1","2"],"Map":["1","2"],"MapBase.K":"1","MapBase.V":"2"},"_HashMapKeyIterable":{"EfficientLengthIterable":["1"],"Iterable":["1"],"Iterable.E":"1"},"_HashMapKeyIterator":{"Iterator":["1"]},"MapBase":{"Map":["1","2"]},"Base64Codec":{"Codec":["List<int>","String"]},"double":{"num":[]},"int":{"num":[]},"List":{"EfficientLengthIterable":["1"],"Iterable":["1"]},"String":{"Pattern":[]},"_BigIntImpl":{"BigInt":[]},"AssertionError":{"Error":[]},"TypeError":{"Error":[]},"ArgumentError":{"Error":[]},"RangeError":{"Error":[]},"IndexError":{"Error":[]},"UnsupportedError":{"Error":[]},"UnimplementedError":{"Error":[]},"StateError":{"Error":[]},"ConcurrentModificationError":{"Error":[]},"OutOfMemoryError":{"Error":[]},"StackOverflowError":{"Error":[]},"IntegerDivisionByZeroException":{"Error":[]},"_StringStackTrace":{"StackTrace":[]},"StringBuffer":{"StringSink":[]},"_Uri":{"Uri":[]},"_SimpleUri":{"Uri":[]},"_DataUri":{"Uri":[]},"Int8List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint8List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint8ClampedList":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Int16List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint16List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Int32List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Uint32List":{"List":["int"],"EfficientLengthIterable":["int"],"Iterable":["int"]},"Float32List":{"List":["double"],"EfficientLengthIterable":["double"],"Iterable":["double"]},"Float64List":{"List":["double"],"EfficientLengthIterable":["double"],"Iterable":["double"]}}'));
   A._Universe_addErasedTypes(init.typeUniverse, JSON.parse('{"__CastListBase__CastIterableBase_ListMixin":2,"NativeTypedArray":1,"Converter":2}'));
   var string$ = {
     Error_: "Error handler must accept one Object or one Object and a StackTrace as arguments, and return a value of the returned future's type",
@@ -13850,6 +14908,7 @@
       Int8List: findType("Int8List"),
       Iterable_dynamic: findType("Iterable<@>"),
       Iterable_nullable_Object: findType("Iterable<Object?>"),
+      JSAptosWalletStandardUserResponseStatus: findType("JSAptosWalletStandardUserResponseStatus"),
       JSArray_JSObject: findType("JSArray<JSObject>"),
       JSArray_JavaScriptFunction: findType("JSArray<JavaScriptFunction>"),
       JSArray_Object: findType("JSArray<Object>"),
@@ -13868,6 +14927,7 @@
       JSWorkerType: findType("JSWorkerType"),
       JavaScriptFunction: findType("JavaScriptFunction"),
       JavaScriptIndexingBehavior_dynamic: findType("JavaScriptIndexingBehavior<@>"),
+      JavaScriptObject: findType("JavaScriptObject"),
       List_JSObject: findType("List<JSObject>"),
       List_JavaScriptFunction: findType("List<JavaScriptFunction>"),
       List_Object: findType("List<Object>"),
@@ -13925,6 +14985,7 @@
       nullable_ProxyMethodHandler_JSObject: findType("ProxyMethodHandler<JSObject>?"),
       nullable_ProxyMethodHandler_Object: findType("ProxyMethodHandler<Object>?"),
       nullable_String: findType("String?"),
+      nullable_TronChainChanged: findType("TronChainChanged?"),
       nullable__FutureListener_dynamic_dynamic: findType("_FutureListener<@,@>?"),
       num: findType("num"),
       void: findType("~"),
@@ -14077,6 +15138,9 @@
     B.C_SentinelValue = new A.SentinelValue();
     B.C__RootZone = new A._RootZone();
     B.C__StringStackTrace = new A._StringStackTrace();
+    B.JSAptosWalletStandardUserResponseStatus_Rejected_rejected = new A.JSAptosWalletStandardUserResponseStatus("Rejected", "rejected");
+    B.List_157 = A._setArrayType(makeConstList([157]), type$.JSArray_int);
+    B.JSClientType_aptos = new A.JSClientType("aptos");
     B.List_151 = A._setArrayType(makeConstList([151]), type$.JSArray_int);
     B.JSClientType_ethereum = new A.JSClientType("ethereum");
     B.List_153 = A._setArrayType(makeConstList([153]), type$.JSArray_int);
@@ -14085,6 +15149,8 @@
     B.JSClientType_stellar = new A.JSClientType("stellar");
     B.List_156 = A._setArrayType(makeConstList([156]), type$.JSArray_int);
     B.JSClientType_substrate = new A.JSClientType("substrate");
+    B.List_158 = A._setArrayType(makeConstList([158]), type$.JSArray_int);
+    B.JSClientType_sui = new A.JSClientType("sui");
     B.List_154 = A._setArrayType(makeConstList([154]), type$.JSArray_int);
     B.JSClientType_ton = new A.JSClientType("ton");
     B.List_152 = A._setArrayType(makeConstList([152]), type$.JSArray_int);
@@ -14137,17 +15203,19 @@
     B.List_4m4 = A._setArrayType(makeConstList([B.JSWebviewTraget_0, B.JSWebviewTraget_1]), A.findType("JSArray<JSWebviewTraget>"));
     B.List_EA6 = A._setArrayType(makeConstList([B.JSSolanalaTransactionType_0, B.JSSolanalaTransactionType_1]), A.findType("JSArray<JSSolanalaTransactionType>"));
     B.List_GVy = A._setArrayType(makeConstList([0, 0, 26624, 1023, 65534, 2047, 65534, 2047]), type$.JSArray_int);
-    B.List_150 = A._setArrayType(makeConstList([150]), type$.JSArray_int);
-    B.JSClientType_global = new A.JSClientType("global");
-    B.List_HVt = A._setArrayType(makeConstList([B.JSClientType_global, B.JSClientType_ethereum, B.JSClientType_tron, B.JSClientType_solana, B.JSClientType_ton, B.JSClientType_stellar, B.JSClientType_substrate]), A.findType("JSArray<JSClientType>"));
     B.List_JEF = A._setArrayType(makeConstList([B.JSWalletResponseType_success, B.JSWalletResponseType_failed]), A.findType("JSArray<JSWalletResponseType>"));
     B.List_M2I = A._setArrayType(makeConstList([0, 0, 65490, 12287, 65535, 34815, 65534, 18431]), type$.JSArray_int);
+    B.List_150 = A._setArrayType(makeConstList([150]), type$.JSArray_int);
+    B.JSClientType_global = new A.JSClientType("global");
+    B.List_PwA = A._setArrayType(makeConstList([B.JSClientType_global, B.JSClientType_ethereum, B.JSClientType_tron, B.JSClientType_solana, B.JSClientType_ton, B.JSClientType_stellar, B.JSClientType_substrate, B.JSClientType_aptos, B.JSClientType_sui]), A.findType("JSArray<JSClientType>"));
     B.List_VOY = A._setArrayType(makeConstList([0, 0, 32776, 33792, 1, 10240, 0, 0]), type$.JSArray_int);
     B.List_kr3 = A._setArrayType(makeConstList([B.JSEventType_accountsChanged, B.JSEventType_chainChanged, B.JSEventType_message, B.JSEventType_connect, B.JSEventType_disconnect, B.JSEventType_active, B.JSEventType_disable, B.JSEventType_change]), A.findType("JSArray<JSEventType>"));
     B.List_piR = A._setArrayType(makeConstList([0, 0, 24576, 1023, 65534, 34815, 65534, 18431]), type$.JSArray_int);
     B.List_101 = A._setArrayType(makeConstList([101]), type$.JSArray_int);
     B.JSWalletMessageType_event = new A.JSWalletMessageType("event");
     B.List_soA = A._setArrayType(makeConstList([B.JSWalletMessageType_response, B.JSWalletMessageType_event]), A.findType("JSArray<JSWalletMessageType>"));
+    B.JSAptosWalletStandardUserResponseStatus_Approved_approved = new A.JSAptosWalletStandardUserResponseStatus("Approved", "approved");
+    B.List_xmd = A._setArrayType(makeConstList([B.JSAptosWalletStandardUserResponseStatus_Approved_approved, B.JSAptosWalletStandardUserResponseStatus_Rejected_rejected]), A.findType("JSArray<JSAptosWalletStandardUserResponseStatus>"));
     B.Type_ByteBuffer_EOZ = A.typeLiteral("ByteBuffer");
     B.Type_ByteData_mF8 = A.typeLiteral("ByteData");
     B.Type_Float32List_Ymk = A.typeLiteral("Float32List");
@@ -14257,11 +15325,13 @@
     _lazy($, "_BigIntImpl__parseRE", "$get$_BigIntImpl__parseRE", () => A.RegExp_RegExp("^\\s*([+-]?)((0x[a-f0-9]+)|(\\d+)|([a-z0-9]+))\\s*$", false));
     _lazyFinal($, "_hashSeed", "$get$_hashSeed", () => A.objectHashCode(B.Type_Object_QJv));
     _lazyFinal($, "_scannerTables", "$get$_scannerTables", () => A._createTables());
+    _lazyFinal($, "_jsBoxedDartObjectProperty", "$get$_jsBoxedDartObjectProperty", () => Symbol("jsBoxedDartObjectProperty"));
     _lazyFinal($, "Random__secureRandom", "$get$Random__secureRandom", () => {
       var t1 = new A._JSSecureRandom(new DataView(new ArrayBuffer(A._checkLength(8))));
       t1._JSSecureRandom$0();
       return t1;
     });
+    _lazyFinal($, "AptosJSConstant_supportedChains", "$get$AptosJSConstant_supportedChains", () => A.ListToJSArray_get_toJS(A._setArrayType(["aptos:devnet", "aptos:mainnet", "aptos:testnet"], type$.JSArray_String), type$.String));
     _lazyFinal($, "JSWalletConstant_methodDisabled", "$get$JSWalletConstant_methodDisabled", () => ({message: "this feature disabled by wallet provider."}));
     _lazyFinal($, "EIP6963ProviderInfo_providerInfo", "$get$EIP6963ProviderInfo_providerInfo", () => ({uuid: "466aef37-e077-42d1-b26b-801ff1af4a36", name: "MRT", icon: string$.data_i, rdns: "com.mrtnetwork.wallet"}));
     _lazyFinal($, "_SubstratePageControllerConst_knownMetadata", "$get$_SubstratePageControllerConst_knownMetadata", () => ({method: "substrate_knownMetadata"}));
@@ -14269,6 +15339,8 @@
     _lazyFinal($, "SolanaJSConstant_solanaTransactionVersion", "$get$SolanaJSConstant_solanaTransactionVersion", () => A.ListToJSArray_get_toJS(A._setArrayType(["legacy", A.NumToJSExtension_get_toJS(0)], type$.JSArray_Object), type$.Object));
     _lazyFinal($, "SolanaJSConstant_solanaDefaultAccountFeatures", "$get$SolanaJSConstant_solanaDefaultAccountFeatures", () => A.ListToJSArray_get_toJS(A._setArrayType(["solana:signAndSendTransaction", "solana:signTransaction", "solana:signMessage", "solana:signIn"], type$.JSArray_String), type$.String));
     _lazyFinal($, "SolanaJSConstant_supportedChains", "$get$SolanaJSConstant_supportedChains", () => A.ListToJSArray_get_toJS(A._setArrayType(["solana:mainnet", "solana:devnet", "solana:testnet"], type$.JSArray_String), type$.String));
+    _lazyFinal($, "SuiJSConstant_supportedChains", "$get$SuiJSConstant_supportedChains", () => A.ListToJSArray_get_toJS(A._setArrayType(["sui:devnet", "sui:mainnet", "sui:testnet"], type$.JSArray_String), type$.String));
+    _lazyFinal($, "SuiJSConstant_invalidTransaction", "$get$SuiJSConstant_invalidTransaction", () => ({message: "Invalid Sui transaction. The transaction must include transactionBlock with the blockData property for v1, or transaction with the toJSON property for v2."}));
   })();
   (function nativeSupport() {
     !function() {

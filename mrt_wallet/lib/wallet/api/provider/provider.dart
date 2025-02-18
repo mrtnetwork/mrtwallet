@@ -13,3 +13,5 @@ export 'networks/substrate.dart';
 export 'networks/stellar.dart';
 export 'networks/monero.dart';
 export 'models/services.dart';
+export 'networks/sui.dart';
+export 'networks/aptos.dart';

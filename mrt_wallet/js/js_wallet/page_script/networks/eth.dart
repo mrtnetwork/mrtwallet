@@ -27,7 +27,6 @@ class EthereumPageController extends PageNetworkController {
 
   void _disable({String? message}) {
     ethereum = null;
-    jsConsole.error(message);
   }
 
   void onEvent(WalletMessageEvent message) {

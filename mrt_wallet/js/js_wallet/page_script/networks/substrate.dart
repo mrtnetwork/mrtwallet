@@ -36,16 +36,15 @@ class SubstratePageController extends PageNetworkController {
     adapter.cancelListener = _removeListener.toJS;
     adapter.sendWalletRequest = _postWalletRequest.toJS;
     adapter.cancelAllListener = _cancelAllListeners.toJS;
-    adapter.metadata = metadata.toProxy(debugKey: "Metadata: ");
-    adapter.accounts = accounts.toProxy(debugKey: "Accounts: ");
-    adapter.signer = signer.toProxy(debugKey: "Signer: ");
+    adapter.metadata = metadata.toProxy();
+    adapter.accounts = accounts.toProxy();
+    adapter.signer = signer.toProxy();
     adapter.connect = _enable.toJS;
     adapter.enable = _enable.toJS;
     adapter.name = JSWalletConstant.name;
     adapter.version = JSWalletConstant.version;
 
-    return ProxyMethodHandler<SubstrateWalletAdapter>(adapter,
-        debugKey: "Substrate: ");
+    return ProxyMethodHandler<SubstrateWalletAdapter>(adapter);
   }
 
   JSPromise<JSAny?> sign(JSSubstrateTransaction transaction) {
@@ -107,7 +106,6 @@ class SubstratePageController extends PageNetworkController {
 
   void _disable({String? message}) {
     substrate = null;
-    jsConsole.error(message);
   }
 
   void onEvent(WalletMessageEvent message) {

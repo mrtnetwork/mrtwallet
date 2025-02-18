@@ -8,13 +8,12 @@ class Web3ClientInfo with Equatable {
   final String applicationId;
   final String name;
   final String clientId;
-  const Web3ClientInfo._({
-    required this.image,
-    required this.url,
-    required this.applicationId,
-    required this.clientId,
-    required this.name,
-  });
+  const Web3ClientInfo._(
+      {required this.image,
+      required this.url,
+      required this.applicationId,
+      required this.clientId,
+      required this.name});
   static Web3ClientInfo? info(
       {required String? clientId,
       required String? url,

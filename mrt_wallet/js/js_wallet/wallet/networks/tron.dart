@@ -106,8 +106,8 @@ class JSTronHandler extends JSNetworkHandler<TronWeb3State> {
   JSTronHandler({required super.sendMessageToClient});
 
   @override
-  void initChain(Web3APPData authenticated) {
-    lock.synchronized(() async {
+  Future<void> initChain(Web3APPData authenticated) async {
+    await lock.synchronized(() async {
       final currentState = state;
       state = TronWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {

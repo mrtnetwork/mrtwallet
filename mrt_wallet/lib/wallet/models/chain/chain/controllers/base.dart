@@ -173,20 +173,24 @@ mixin BaseChainController<
     });
   }
 
-  void setProvider(PROVIDER service, {Duration? requestTimeout}) {
+  Future<void> setProvider(ProviderIdentifier service,
+      {Duration? requestTimeout}) async {
+    if (service.network != network.type) return;
     final currentProvider = _client;
     _client = APIUtils.createApiClient<CLIENT>(network,
-        identifier: service.identifier, requestTimeut: requestTimeout);
+        identifier: service, requestTimeut: requestTimeout);
     currentProvider?.service.tracker.notify();
     currentProvider?.service.disposeService();
     initProvider();
+    await save();
   }
 
-  CLIENT? getWeb3Provider({PROVIDER? service, Duration? requestTimeout}) {
+  CLIENT? getWeb3Provider(
+      {ProviderIdentifier? service, Duration? requestTimeout}) {
     final cl = _client;
     if (cl?.service.provider.allowInWeb3 ?? false) return cl;
     return APIUtils.createApiClient<CLIENT>(network,
-        identifier: service?.identifier,
+        identifier: service,
         requestTimeut: requestTimeout,
         allowInWeb3: true,
         isolate: APPIsolate.current);
@@ -238,9 +242,10 @@ mixin BaseChainController<
           totalBalance.value.balance,
           _addressIndex,
           network.toCbor(),
-          _client?.service.provider.identifier,
+          const CborNullValue(),
           id,
-          config.toCbor()
+          config.toCbor(),
+          _client?.serviceIdentifier.toCbor()
         ]),
         CborTagsConst.iAccount);
   }

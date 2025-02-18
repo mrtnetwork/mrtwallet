@@ -134,7 +134,6 @@ class IXRPAddress
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -227,9 +226,6 @@ class IXRPAddress
     existNfts.removeWhere((element) => element == nft);
     _nfts = List.unmodifiable(_nfts);
   }
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override
@@ -385,11 +381,11 @@ class IXRPMultisigAddress extends IXRPAddress
   }
 
   @override
-  bool get multiSigAccount => true;
-
-  @override
   List<(String, Bip32AddressIndex)> get keyDetails =>
       multiSignatureAccount.signers
           .map((e) => (e.publicKey, e.keyIndex))
           .toList();
+
+  @override
+  IAdressType get iAddressType => IAdressType.multisigByAddress;
 }

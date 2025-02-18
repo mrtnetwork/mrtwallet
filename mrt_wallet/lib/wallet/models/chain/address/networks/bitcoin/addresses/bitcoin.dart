@@ -110,7 +110,6 @@ class IBitcoinAddress
       : publicKey = List.unmodifiable(publicKey),
         _accountName = accountName;
 
-  @override
   final CryptoCoins coin;
   final List<int> publicKey;
 
@@ -141,8 +140,6 @@ class IBitcoinAddress
 
   @override
   final AddressDerivationIndex keyIndex;
-  @override
-  bool get multiSigAccount => false;
 
   @override
   final int network;
@@ -219,10 +216,9 @@ class IBitcoinAddress
 class IBitcoinMultiSigAddress extends IBitcoinAddress
     with BitcoinMultiSigBase
     implements MultiSigCryptoAccountAddress {
-  factory IBitcoinMultiSigAddress.newAccount({
-    required WalletBitcoinNetwork network,
-    required BitcoinMultiSigNewAddressParams accountParam,
-  }) {
+  factory IBitcoinMultiSigAddress.newAccount(
+      {required WalletBitcoinNetwork network,
+      required BitcoinMultiSigNewAddressParams accountParam}) {
     try {
       final toBitcoinAddress = accountParam.multiSignatureAddress.fromType(
           network: network.coinParam.transacationNetwork,
@@ -324,8 +320,6 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
   }
 
   @override
-  bool get multiSigAccount => true;
-  @override
   List get variabels => [
         addressType,
         keyIndex,
@@ -355,4 +349,7 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
         bitcoinAddressType: addressType,
         coin: coin);
   }
+
+  @override
+  IAdressType get iAddressType => IAdressType.multisigByPublicKey;
 }

@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/solana.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
@@ -18,10 +19,9 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider>
   final SolanaProvider provider;
   @override
   final WalletSolanaNetwork network;
-  List<SolanaTokenInfo>? _tokenLists;
-
   @override
   SolanaHTTPService get service => provider.rpc as SolanaHTTPService;
+  List<SolanaTokenInfo>? _tokenLists;
 
   @override
   Future<void> updateBalance(
@@ -223,4 +223,7 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider>
     super.dispose();
     _tokenLists = null;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.solana;
 }

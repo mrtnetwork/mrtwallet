@@ -38,11 +38,12 @@ class Web3StellarRequestAccounts extends Web3StellarPermissionRequestParam {
   StellarAddress? get account => null;
 
   @override
-  Web3StellarRequest<Web3StellarChain, Web3StellarRequestAccounts> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required StellarChain chain,
-  }) {
+  Web3StellarRequest<Web3StellarChain, Web3StellarRequestAccounts> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final StellarChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3StellarRequest<Web3StellarChain, Web3StellarRequestAccounts>(
         params: this,
         authenticated: authenticated,

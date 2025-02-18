@@ -98,7 +98,6 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -179,9 +178,6 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
     existTokens = [token.updateToken(updatedToken), ...existTokens];
     _tokens = List.unmodifiable(existTokens);
   }
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override

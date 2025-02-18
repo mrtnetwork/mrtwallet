@@ -45,34 +45,28 @@ class GenerateMnemonicView extends StatelessWidget {
                       style: context.textTheme.titleMedium),
                   Text("choose_mnemonic_desc".tr),
                   WidgetConstant.height8,
-                  DropdownButtonFormField<int>(
-                    decoration: InputDecoration(
-                      label: Text("n_of_mnemonic_words".tr),
-                    ),
+                  AppDropDownBottom(
+                    items: {
+                      for (final i in Bip39WordsNum.values)
+                        i.value: Text(
+                            "count_words".tr.replaceOne(i.value.toString())),
+                    },
                     value: model.mnemonicWord,
-                    items: Bip39WordsNum.values.map((count) {
-                      return DropdownMenuItem<int>(
-                          value: count.value,
-                          child: Text("count_words"
-                              .tr
-                              .replaceOne(count.value.toString())));
-                    }).toList(),
+                    hint: "n_of_mnemonic_words".tr,
                     onChanged: model.updateMnemonicCount,
                   ),
                   WidgetConstant.height20,
                   Text("Language".tr, style: context.textTheme.titleMedium),
                   Text("choose_mnemonic_lang_desc".tr),
                   WidgetConstant.height8,
-                  DropdownButtonFormField<Bip39Languages>(
+                  AppDropDownBottom(
+                    items: {
+                      for (final i in Bip39Languages.values)
+                        i: Text(i.name.camelCase),
+                    },
                     value: model.language,
-                    decoration: InputDecoration(label: Text("Language".tr)),
-                    items: Bip39Languages.values.map((language) {
-                      return DropdownMenuItem<Bip39Languages>(
-                        value: language,
-                        child: Text(language.name.camelCase),
-                      );
-                    }).toList(),
                     onChanged: model.updateLanguage,
+                    hint: "Language".tr,
                   ),
                   WidgetConstant.height20,
                 ],

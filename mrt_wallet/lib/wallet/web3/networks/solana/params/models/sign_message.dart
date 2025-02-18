@@ -115,11 +115,12 @@ class Web3SolanaSignMessage
   SolAddress? get account => address;
   @override
   Web3SolanaRequest<Web3SolanaSignMessageResponse, Web3SolanaSignMessage>
-      toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required SolanaChain chain,
-  }) {
+      toRequest(
+          {required Web3RequestApplicationInformation request,
+          required Web3APPAuthentication authenticated,
+          required List<APPCHAIN> chains}) {
+    final SolanaChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3SolanaRequest<Web3SolanaSignMessageResponse,
         Web3SolanaSignMessage>(
       params: this,

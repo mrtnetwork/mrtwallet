@@ -2,15 +2,18 @@ import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/networks/aptos/permission/models/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/permission/models/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/permission/models/account.dart';
+import 'package:mrt_wallet/wallet/web3/networks/sui/permission/models/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/permission/models/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/permission/models/account.dart';
 
 abstract class Web3ChainAccount<NETWORKADDRESS>
     with CborSerializable, Equatable {
+  int get id;
   final AddressDerivationIndex keyIndex;
   final NETWORKADDRESS address;
   bool _defaultAddress;
@@ -46,6 +49,8 @@ abstract class Web3ChainAuthenticated with CborSerializable {
         Web3StellarChainAuthenticated.deserialize(object: tag),
       NetworkType.substrate =>
         Web3SubstrateChainAuthenticated.deserialize(object: tag),
+      NetworkType.aptos => Web3AptosChainAuthenticated.deserialize(object: tag),
+      NetworkType.sui => Web3SuiChainAuthenticated.deserialize(object: tag),
       _ => throw WalletExceptionConst.invalidData(
           messsage: "unsuported web3 network")
     };

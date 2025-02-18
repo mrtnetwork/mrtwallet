@@ -24,15 +24,12 @@ abstract class TronTransactionForm extends TransactionForm {
 }
 
 abstract class TronWeb3Form<PARAMS extends Web3TronRequestParam>
-    implements
-        Web3Form<TronAddress, TronChain, Web3TronChainAccount, Web3TronChain,
-            PARAMS> {
+    extends Web3Form<TronAddress, TronChain, Web3TronChainAccount,
+        Web3TronChain, PARAMS> {
   @override
   abstract final Web3TronRequest<dynamic, PARAMS> request;
 
   DynamicVoid? onStimateChanged;
-  @override
-  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;

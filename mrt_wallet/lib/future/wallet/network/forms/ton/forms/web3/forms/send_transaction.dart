@@ -1,5 +1,4 @@
 import 'package:mrt_wallet/app/utils/list/extension.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ton/forms/core/ton.dart';
 import 'package:mrt_wallet/wallet/api/client/client.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
@@ -8,8 +7,6 @@ import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:ton_dart/ton_dart.dart';
 
 class Web3TonSendTransactionForm extends TonWeb3Form<Web3TonSendTransaction> {
-  @override
-  OnChangeForm? onChanged;
   Web3TonSendTransactionForm({required this.request});
   late final List<TonWeb3TransactionMessageInfo> _messages;
   late final TonClient _client;

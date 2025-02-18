@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:js_interop';
 import 'package:mrt_native_support/models/events/models/wallet_event.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart';
 import 'js_wallet/js_wallet.dart';
@@ -110,7 +111,7 @@ void main(List<String> args) async {
 
   mrt.onMrtMessage = onActivation.toJS;
   final activation = await workerCompleter.future;
-  pageController.initClients('', worker: activation.$1);
+  // pageController.initClients('', worker: activation.$1);
 
   final worker = activation.$1;
   final target = activation.$2;
@@ -143,4 +144,6 @@ void main(List<String> args) async {
   worker.addEventListener("error", onWorkerErrorListener);
   worker.addEventListener("message", workerListener);
   mrt.onMrtMessage = onWalletEvent.toJS;
+  pageController.initClients('', worker: activation.$1);
+  WalletLogging.log("inited!");
 }

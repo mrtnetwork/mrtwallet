@@ -10,6 +10,7 @@ extension type MRTJsObject(JSObject _) implements JSObject {
   @JS("isFrozen")
   external static bool isFrozen(JSObject obj);
   external static JSArray<JSString>? keys(JSAny? val);
+
   external static JSAny entries(JSAny? val);
   external bool hasOwnProperty(String nameOrSymbol);
   external static bool hasOwn(JSAny? obj, String prop);

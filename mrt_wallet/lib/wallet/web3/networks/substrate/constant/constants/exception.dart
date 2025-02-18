@@ -9,6 +9,12 @@ class Web3SubstrateExceptionConstant {
   static Web3RequestException get invalidTransactionSpecVersion =>
       Web3RequestExceptionConst.invalidParameters(
           "Invalid spec version: The request contains a specVersion that differs from the current wallet network's specVersion.");
+  static Web3RequestException get invalidTransactionGenesisHash =>
+      Web3RequestExceptionConst.invalidParameters(
+          "Invalid spec version: The request contains a genesishash that differs from the current wallet network's genesishash.");
+  static Web3RequestException get transactionSerializationFailed =>
+      Web3RequestExceptionConst.failedRequest(
+          "Unknown error: Transaction serialization failed.");
 
   static Web3RequestException get invalidSignMessage =>
       Web3RequestExceptionConst.invalidParameters(

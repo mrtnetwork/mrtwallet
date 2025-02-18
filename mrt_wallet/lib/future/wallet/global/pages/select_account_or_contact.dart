@@ -333,12 +333,21 @@ class _ShowMultipleSelectedAddress<NETWORKADDRESS> extends StatefulWidget {
 }
 
 class _ShowMultipleSelectedAddressState<NETWORKADDRESS>
-    extends State<_ShowMultipleSelectedAddress<NETWORKADDRESS>> with SafeState {
+    extends State<_ShowMultipleSelectedAddress<NETWORKADDRESS>>
+    with SafeState<_ShowMultipleSelectedAddress<NETWORKADDRESS>> {
   late final List<ReceiptAddress<NETWORKADDRESS>> addresses =
       List.from(widget.state.multipleReceipments);
   void onTapAddress(ReceiptAddress<NETWORKADDRESS> addr) {
     widget.state.addReceipt(addr);
     updateState();
+  }
+
+  final GlobalKey submitAddress = GlobalKey();
+
+  @override
+  void onInitOnce() {
+    super.onInitOnce();
+    MethodUtils.after(() => submitAddress.ensureKeyVisible());
   }
 
   @override
@@ -369,6 +378,7 @@ class _ShowMultipleSelectedAddressState<NETWORKADDRESS>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             FixedElevatedButton(
+                key: submitAddress,
                 activePress: widget.state.multipleReceipments.isNotEmpty,
                 padding: WidgetConstant.paddingVertical40,
                 onPressed: () {
@@ -426,7 +436,8 @@ class _SelectFromAccounts extends StatelessWidget {
                   ),
                 );
               }),
-        )
+        ),
+        WidgetConstant.sliverPaddingVertial40,
       ],
     );
   }
@@ -449,41 +460,47 @@ class _SelectFromContacts extends StatelessWidget {
             Text("no_contacts_found".tr),
           ],
         ),
-      false => ConstraintsBoxView(
-          child: ListView.builder(
-              itemCount: state.contacts.length,
-              shrinkWrap: true,
-              primary: false,
-              itemBuilder: (context, index) {
-                return ContainerWithBorder(
-                  onRemoveWidget: ConditionalWidgets(
-                      enable: state.multipleSelect,
-                      widgets: {
-                        true: (context) => IgnorePointer(
-                              child: Checkbox(
-                                  value: state.selectedAccountContacts
-                                      .contains(state.contacts[index]),
-                                  onChanged: (v) {}),
-                            )
-                      }),
-                  onRemove: () {
-                    state.onAccountOrContact(state.contacts[index].address);
-                  },
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                            child: ContactAddressView(
-                                contact: state.contacts[index])),
+      false => Column(
+          children: [
+            ConstraintsBoxView(
+              padding: WidgetConstant.paddingHorizontal20,
+              child: ListView.builder(
+                  itemCount: state.contacts.length,
+                  shrinkWrap: true,
+                  primary: false,
+                  itemBuilder: (context, index) {
+                    return ContainerWithBorder(
+                      onRemoveWidget: ConditionalWidgets(
+                          enable: state.multipleSelect,
+                          widgets: {
+                            true: (context) => IgnorePointer(
+                                  child: Checkbox(
+                                      value: state.selectedAccountContacts
+                                          .contains(state.contacts[index]),
+                                      onChanged: (v) {}),
+                                )
+                          }),
+                      onRemove: () {
+                        state.onAccountOrContact(state.contacts[index].address);
+                      },
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                                child: ContactAddressView(
+                                    contact: state.contacts[index])),
+                          ),
+                          WidgetConstant.width8,
+                          CopyTextIcon(
+                              isSensitive: false,
+                              dataToCopy: state.contacts[index].address),
+                        ],
                       ),
-                      WidgetConstant.width8,
-                      CopyTextIcon(
-                          isSensitive: false,
-                          dataToCopy: state.contacts[index].address),
-                    ],
-                  ),
-                );
-              }),
+                    );
+                  }),
+            ),
+            Padding(padding: WidgetConstant.paddingVertical40),
+          ],
         )
     };
   }

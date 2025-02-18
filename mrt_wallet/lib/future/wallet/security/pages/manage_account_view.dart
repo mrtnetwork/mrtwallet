@@ -119,7 +119,7 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                             text: "inventory_keys".tr,
                             style: context.textTheme.titleMedium),
                         TextSpan(
-                            text: " (${"publick_key".tr}) ",
+                            text: " (${"public_key".tr}) ",
                             style: context.textTheme.bodySmall)
                       ])),
                       WidgetConstant.height8,

@@ -8,5 +8,7 @@ class Web3Const {
     NetworkType.ton,
     NetworkType.stellar,
     NetworkType.substrate,
+    NetworkType.aptos,
+    NetworkType.sui
   ];
 }

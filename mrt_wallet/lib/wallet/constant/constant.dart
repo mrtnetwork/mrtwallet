@@ -8,5 +8,7 @@ export 'networks/substrate.dart';
 export 'networks/stellar.dart';
 export 'networks/monero.dart';
 export 'networks/cardano.dart';
+export 'networks/aptos.dart';
+export 'networks/sui.dart';
 export 'tags/constant.dart';
 export 'chain/const.dart';

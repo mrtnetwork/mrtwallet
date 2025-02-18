@@ -33,10 +33,8 @@ class Web3ClientInfoView extends StatelessWidget {
                 children: [
                   Text(permission.applicationId,
                       style: context.onPrimaryTextTheme.labelLarge),
-                  OneLineTextWidget(
-                    info?.info.name ?? permission.name,
-                    style: context.onPrimaryTextTheme.bodySmall,
-                  ),
+                  OneLineTextWidget(info?.info.name ?? permission.name,
+                      style: context.onPrimaryTextTheme.bodySmall),
                 ],
               )),
             ],

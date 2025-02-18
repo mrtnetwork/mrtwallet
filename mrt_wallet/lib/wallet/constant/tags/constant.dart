@@ -121,6 +121,16 @@ class CborTagsConst {
   static const List<int> moneroSyncBlocksInfoRequest = [200, 202, 32];
   static const List<int> moneroSyncTrackBlocksRequest = [200, 202, 33];
   static const List<int> moneroSyncTrackersRequests = [200, 202, 34];
+
+  static const List<int> aptoAccount = [200, 203];
+  static const List<int> aptosMultisigAccount = [200, 203, 0];
+  static const List<int> aptosMultisigAccountInfo = [200, 203, 1];
+  static const List<int> aptosMultisigAccountPublicKey = [200, 203, 2];
+  static const List<int> suiAccount = [200, 204];
+  static const List<int> suiMultisigAccount = [200, 204, 0];
+  static const List<int> suiMultisigAccountInfo = [200, 204, 1];
+  static const List<int> suiMultisigAccountPublicKey = [200, 204, 2];
+
   // contacts
   static const List<int> bitcoinContact = [100, 0];
   static const List<int> rippleContact = [100, 1];
@@ -133,6 +143,8 @@ class CborTagsConst {
   static const List<int> substrateContact = [100, 8];
   static const List<int> stellarContact = [100, 9];
   static const List<int> moneroContact = [100, 10];
+  static const List<int> aptosContact = [100, 11];
+  static const List<int> suiContact = [100, 12];
 
   /// network tokens
   static const List<int> token = [110];
@@ -145,6 +157,8 @@ class CborTagsConst {
   static const List<int> jettonToken = [110, 33];
   static const List<int> stellarIssueToken = [110, 34];
   static const List<int> cw20 = [110, 35];
+  static const List<int> fats = [110, 36];
+  static const List<int> suiToken = [110, 37];
 
   /// network nfts
   static const List<int> nft = [120];
@@ -165,6 +179,8 @@ class CborTagsConst {
   static const List<int> substrateNetwork = [80, 0, 12];
   static const List<int> stellarNetwork = [80, 0, 14];
   static const List<int> moneroNetwork = [80, 0, 15];
+  static const List<int> aptosNetwork = [80, 0, 16];
+  static const List<int> suiNetwork = [80, 0, 17];
 
   static const List<int> bitconNetworkParam = [80, 1, 1];
   static const List<int> xrpNetworkParam = [80, 1, 2];
@@ -177,6 +193,8 @@ class CborTagsConst {
   static const List<int> substrateNetworkParams = [80, 1, 9];
   static const List<int> stellarNetworkParam = [80, 1, 10];
   static const List<int> moneroNetworkParams = [80, 1, 11];
+  static const List<int> aptosNetworkParams = [80, 1, 12];
+  static const List<int> suiNetworkParams = [80, 1, 13];
 
   ///
 
@@ -193,6 +211,8 @@ class CborTagsConst {
   static const List<int> substrateApiServiceProvider = [90, 10];
   static const List<int> stellarApiProvider = [90, 11];
   static const List<int> moneroApiServiceProvider = [90, 12];
+  static const List<int> aptosApiServiceProvider = [90, 13];
+  static const List<int> suiApiServiceProvider = [90, 14];
 
   /// web3 permission
   static const List<int> appPermission = [150, 1];
@@ -210,6 +230,8 @@ class CborTagsConst {
   static const List<int> web3StellarAccount = [161, 2, 4];
   static const List<int> web3SubstrateAccount = [161, 2, 5];
   static const List<int> web3SubstrateChainMetadata = [161, 2, 5, 0];
+  static const List<int> web3AptosAccount = [161, 2, 6];
+  static const List<int> web3SuiAccount = [161, 2, 7];
 
   /// address params
   static const List<int> bitcoinCashNewAddressParams = [12, 0];
@@ -229,6 +251,10 @@ class CborTagsConst {
   static const List<int> stellarNewAddressParams = [12, 15];
   static const List<int> stellarMultiSigNewAddressParams = [12, 16];
   static const List<int> moneroNewAddressParams = [12, 17];
+  static const List<int> aptosNewAddressParams = [12, 18];
+  static const List<int> aptosMultisigNewAddressParams = [12, 18, 1];
+  static const List<int> suiNewAddressParams = [12, 19];
+  static const List<int> suiMultisigNewAddressParams = [12, 19, 1];
 
   static const List<int> defaultChainConfig = [201, 0];
   static const List<int> moneroChainConfig = [201, 1];

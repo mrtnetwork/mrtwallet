@@ -1,6 +1,7 @@
 import 'package:monero_dart/monero_dart.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/app/isolate/types.dart';
+import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/client/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/provider.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
@@ -172,6 +173,30 @@ class APIUtils {
         network: network);
   }
 
+  static SuiClient buildSuiProvider(
+      {required SuiAPIProvider provider,
+      required WalletSuiNetwork network,
+      APPIsolate isolate = APPIsolate.separate}) {
+    return SuiClient(
+        provider:
+            SuiProvider(SuiHTTPService(provider: provider, isolate: isolate)),
+        network: network);
+  }
+
+  static AptosClient buildAptosProvider(
+      {required List<AptosAPIProvider> provider,
+      required WalletAptosNetwork network,
+      APPIsolate isolate = APPIsolate.separate}) {
+    final graphQl =
+        provider.firstWhere((e) => e.type == AptosAPIProviderType.graphQl);
+    final fullNode =
+        provider.firstWhere((e) => e.type == AptosAPIProviderType.fullnode);
+    return AptosClient(
+        provider: AptosProvider(AptosHTTPService(
+            provider: fullNode, isolate: isolate, graphQlProvider: graphQl)),
+        network: network);
+  }
+
   static StellarClient buildStellarClient(
       {required StellarAPIProvider provider,
       required WalletStellarNetwork network,
@@ -197,8 +222,44 @@ class APIUtils {
         network: network);
   }
 
+  static List<APIProvider> _findProviders(
+      {ProviderIdentifier? identifier,
+      required List<APIProvider> providers,
+      required NetworkType type}) {
+    if (providers.isEmpty) return [];
+    switch (type) {
+      case NetworkType.aptos:
+        final aptosProviders = providers.cast<AptosAPIProvider>();
+        final AptosProviderIdentifier? aptosProviderIdentifier =
+            identifier?.cast<AptosProviderIdentifier>();
+        final grapQl = MethodUtils.nullOnException(() {
+          final graphQlProviders = aptosProviders
+              .where((e) => e.type == AptosAPIProviderType.graphQl);
+          return graphQlProviders.firstWhere(
+              (e) => e.identifier == aptosProviderIdentifier?.graphQlIdentifier,
+              orElse: () => graphQlProviders.first);
+        });
+        final fullnode = MethodUtils.nullOnException(() {
+          final fullnodeProviders = aptosProviders
+              .where((e) => e.type == AptosAPIProviderType.fullnode);
+          return fullnodeProviders.firstWhere(
+              (e) =>
+                  e.identifier == aptosProviderIdentifier?.fullNodeIdentifier,
+              orElse: () => fullnodeProviders.first);
+        });
+        if (fullnode == null || grapQl == null) return [];
+        return [fullnode, grapQl];
+      default:
+        final defaultIdentifier = identifier?.cast<DefaultProviderIdentifier>();
+        final provider = providers.firstWhere(
+            (e) => e.identifier == defaultIdentifier?.identifier,
+            orElse: () => providers.first);
+        return [provider];
+    }
+  }
+
   static T? createApiClient<T extends NetworkClient>(WalletNetwork network,
-      {String? identifier,
+      {ProviderIdentifier? identifier,
       Duration? requestTimeut,
       bool allowInWeb3 = false,
       APPIsolate isolate = APPIsolate.separate}) {
@@ -206,79 +267,94 @@ class APIUtils {
     if (allowInWeb3) {
       providers = providers.where((e) => e.allowInWeb3).toList();
     }
-    APIProvider? serviceProvider;
-    if (providers.isNotEmpty) {
-      serviceProvider = providers.firstWhere((e) => e.identifier == identifier,
-          orElse: () => providers.first);
-    }
-    if (serviceProvider == null) return null;
+    assert(identifier == null || identifier.network == network.type,
+        "Invalid provider identifier network.");
+    List<APIProvider> serviceProvider = MethodUtils.nullOnException(() =>
+            _findProviders(
+                identifier: identifier,
+                providers: providers,
+                type: network.type)) ??
+        providers;
+    if (serviceProvider.isEmpty) return null;
     NetworkClient? client;
     switch (network.type) {
       case NetworkType.bitcoinAndForked:
       case NetworkType.bitcoinCash:
         client = buildBitcoinApiPorivder(
-            provider: serviceProvider,
+            provider: serviceProvider.first,
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.cardano:
         client = buildCardanoProvider(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.cosmos:
         client = buildTendermintProvider(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.ethereum:
         client = buildEthereumProvider(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
             network: network,
             requestTimeout: requestTimeut,
             isolate: isolate);
         break;
       case NetworkType.xrpl:
         client = buildRippleProvider(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.solana:
         client = buildSoalanaProvider(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.stellar:
         client = buildStellarClient(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.tron:
         client = buildTronProvider(
-            httpProviderService: serviceProvider.toProvider(),
+            httpProviderService: serviceProvider.first.toProvider(),
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.ton:
         client = buildTonApiProvider(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.monero:
         client = buildMoneroClient(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
             network: network.toNetwork(),
             isolate: isolate);
         break;
       case NetworkType.substrate:
         client = buildsubstrateClient(
-            provider: serviceProvider.toProvider(),
+            provider: serviceProvider.first.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
+        break;
+      case NetworkType.sui:
+        client = buildSuiProvider(
+            provider: serviceProvider.first.toProvider(),
+            network: network.toNetwork(),
+            isolate: isolate);
+        break;
+      case NetworkType.aptos:
+        client = buildAptosProvider(
+            provider: serviceProvider.cast(),
             network: network.toNetwork(),
             isolate: isolate);
         break;

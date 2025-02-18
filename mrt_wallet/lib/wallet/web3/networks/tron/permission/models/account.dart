@@ -1,30 +1,31 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
-import 'package:mrt_wallet/wallet/models/networks/tron/tron.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:on_chain/tron/tron.dart';
 
 class Web3TronChainAccount extends Web3ChainAccount<TronAddress> {
-  final TronChainType chain;
+  @override
+  final int id;
   Web3TronChainAccount({
     required super.keyIndex,
     required super.address,
     required super.defaultAddress,
-    required this.chain,
+    required this.id,
   });
   factory Web3TronChainAccount.fromChainAccount(
       {required ITronAddress address,
-      required TronChainType chain,
+      required int id,
       required bool isDefault}) {
     return Web3TronChainAccount(
         keyIndex: address.keyIndex,
         address: address.networkAddress,
-        chain: chain,
+        id: id,
         defaultAddress: isDefault);
   }
 
@@ -39,19 +40,15 @@ class Web3TronChainAccount extends Web3ChainAccount<TronAddress> {
         keyIndex: AddressDerivationIndex.fromCborBytesOrObject(
             obj: values.getCborTag(0)),
         address: TronAddress(values.elementAt(1)),
-        chain: TronChainType.fromName(values.elementAt(2)),
+        id: values.elementAt(2),
         defaultAddress: values.elementAt(3));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength([
-          keyIndex.toCbor(),
-          address.toAddress(),
-          chain.name,
-          defaultAddress
-        ]),
+        CborListValue.fixedLength(
+            [keyIndex.toCbor(), address.toAddress(), id, defaultAddress]),
         CborTagsConst.web3TronAccount);
   }
 
@@ -59,13 +56,13 @@ class Web3TronChainAccount extends Web3ChainAccount<TronAddress> {
   String get addressStr => address.toAddress();
 
   @override
-  List get variabels => [keyIndex, addressStr, chain];
+  List get variabels => [keyIndex, addressStr, id];
 }
 
 class Web3TronChainAuthenticated extends Web3ChainAuthenticated {
   final List<Web3TronChainAccount> accounts;
   final WalletTronNetwork network;
-  final String? serviceIdentifier;
+  final ProviderIdentifier? serviceIdentifier;
   final List<BigInt> chainIds;
   Web3TronChainAuthenticated(
       {required this.accounts,
@@ -84,7 +81,9 @@ class Web3TronChainAuthenticated extends Web3ChainAuthenticated {
             .toList(),
         network:
             WalletTronNetwork.fromCborBytesOrObject(obj: values.getCborTag(1)),
-        serviceIdentifier: values.elementAs(2),
+        serviceIdentifier:
+            values.elemetMybeAs<ProviderIdentifier, CborTagValue>(
+                2, (p0) => ProviderIdentifier.deserialize(cbor: p0)),
         chainIds: values
             .elementAsListOf<CborBigIntValue>(3)
             .map((e) => e.value)
@@ -97,7 +96,7 @@ class Web3TronChainAuthenticated extends Web3ChainAuthenticated {
         CborListValue.fixedLength([
           CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
           network.toCbor(),
-          serviceIdentifier,
+          serviceIdentifier?.toCbor(),
           CborListValue.fixedLength(chainIds.map((e) => e).toList()),
         ]),
         networkType.tag);

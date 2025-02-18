@@ -118,7 +118,6 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -202,9 +201,6 @@ class ITonAddress extends ChainAccount<TonAddress, TonJettonToken, NFTCore>
     existTokens = [token.updateToken(updatedToken), ...existTokens];
     _tokens = List.unmodifiable(existTokens);
   }
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override

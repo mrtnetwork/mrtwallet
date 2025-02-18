@@ -70,7 +70,7 @@ class Web3StellarTransactionRequestController
     });
 
     if (signedEnvlope.hasError) {
-      progressKey.error(text: signedEnvlope.error!.tr);
+      progressKey.error(error: signedEnvlope.exception, showBackButton: true);
       return;
     }
     final envlopeXdr = signedEnvlope.result.toVariantXDRBase64();
@@ -78,7 +78,7 @@ class Web3StellarTransactionRequestController
       final result = await MethodUtils.call(
           () async => await apiProvider.submitTx(envlopeXdr));
       if (result.hasError) {
-        progressKey.error(text: result.error!.tr, backToIdle: null);
+        progressKey.errorResponse(error: result.exception);
         request
             .error(Web3RequestExceptionConst.fromException(result.exception!));
         return;
@@ -109,11 +109,11 @@ class Web3StellarTransactionRequestController
       return (accountResponse, transactionInfo);
     });
     if (result.hasError) {
-      progressKey.error(text: result.error!.tr, backToIdle: null);
+      progressKey.errorResponse(error: result.exception);
       return;
     }
     if (result.result == null) {
-      progressKey.error(text: "account_not_found".tr, backToIdle: null);
+      progressKey.errorResponse(message: "account_not_found".tr);
       return;
     }
     accountInfo = result.result!.$1;

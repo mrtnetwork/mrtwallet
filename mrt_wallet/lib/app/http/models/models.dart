@@ -126,7 +126,6 @@ class HTTPCallerResponse {
           statusCode: statusCode,
           responseType: type);
     }
-
     Object body;
     try {
       if (platform == AppPlatform.web && type != HTTPResponseType.binary) {
@@ -153,7 +152,6 @@ class HTTPCallerResponse {
             break;
         }
       }
-
       return HTTPCallerResponse(
           result: body, statusCode: statusCode, responseType: type);
     } on ApiProviderException {

@@ -3,6 +3,7 @@ part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 abstract class _WalletController with CryptoWokerImpl {
   _WalletController(this._walletCore, this._wallet, this._appChains);
 
+  /// base wallet
   WalletCore? _walletCore;
   WalletCore get _core {
     if (_walletCore == null) {
@@ -11,21 +12,41 @@ abstract class _WalletController with CryptoWokerImpl {
     return _walletCore!;
   }
 
+  /// wallet key
   List<int>? _walletKey;
+
+  /// wallet encryption data
   EncryptedMasterKey? _massterKey;
 
+  /// wallet information like name, settings and etc.
   HDWallet _wallet;
+
+  /// wallet networks controller.
   final ChainsHandler _appChains;
+
+  /// current wallet account
   Chain get chain => _appChains.chain;
+
+  /// current wallet network
   WalletNetwork get network => chain.network;
 
+  /// current wallet status
   late HDWalletStatus _status =
       _wallet.requiredPassword ? HDWalletStatus.lock : HDWalletStatus.readOnly;
+
+  /// wallet is locked
   bool get isLock => _status == HDWalletStatus.lock;
+
+  /// wallet is read only
   bool get isReadOnly => _status == HDWalletStatus.readOnly;
+
+  /// wallet unlocked.
   bool get isUnlock => _status == HDWalletStatus.unlock;
+
+  /// wallet is read or unlocked.
   bool get isOpen => _status.isOpen;
 
+  /// update wallet storage.
   Future<void> _updateWallet(HDWallet wallet, {bool? asDefaultWallet}) async {
     if (wallet._checksum != _wallet._checksum) return;
     _wallet = wallet;
@@ -34,17 +55,11 @@ abstract class _WalletController with CryptoWokerImpl {
 }
 
 class WalletController extends _WalletController
-    with
-        WalletManager,
-        Web3SolanaImpl,
-        Web3EthereumImpl,
-        Web3TronImpl,
-        Web3TonImpl,
-        Web3SubstrateImpl,
-        Web3StellarImpl,
-        Web3Impl,
-        WalletMoneroImpl {
+    with WalletManager, Web3Impl, WalletMoneroImpl {
   WalletController._(WalletCore super.core, super.wallet, super.chains);
+
+  /// setup wallet.
+  /// retrive wallet storage and init wallet controller.
   static Future<(ChainsHandler, List<String>)> _setupNetwork(
       WalletCore core, HDWallet wallet) async {
     final List<Chain> chains = [];
@@ -65,6 +80,7 @@ class WalletController extends _WalletController
     return (chain, junkKeys);
   }
 
+  /// setup wallet.
   static Future<WalletController> _setup(
       WalletCore core, HDWallet wallet) async {
     final handler = await _setupNetwork(core, wallet);
@@ -83,6 +99,7 @@ class WalletController extends _WalletController
     return controller;
   }
 
+  /// dispose wallet.
   @override
   void _dispose() {
     _walletCore = null;

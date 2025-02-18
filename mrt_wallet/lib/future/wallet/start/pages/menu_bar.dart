@@ -125,6 +125,10 @@ class AccountAppbarPopupMenu extends StatelessWidget {
             case 3:
               context.to(PageRouter.removeAccount, argruments: chain);
               break;
+            case 8:
+              context.to(PageRouter.multisigAccountInfo(chain.network.type),
+                  argruments: chain);
+              break;
             case 4:
               final accountUrl = chain.network
                   .getAccountExplorer(chain.address.address.toAddress);
@@ -154,22 +158,33 @@ class AccountAppbarPopupMenu extends StatelessWidget {
               chain.network.getAccountExplorer(chain.address.address.toAddress);
           return [
             ..._chainCustomButton(chain: chain, context: context, value: 20),
-            PopupMenuItem<int>(
-              value: 0,
-              child: AppListTile(
-                trailing: const Icon(Icons.north_east_sharp),
-                title: Text("export_private_key".tr,
-                    style: context.textTheme.labelMedium),
+            if (!chain.address.multiSigAccount)
+              PopupMenuItem<int>(
+                value: 0,
+                child: AppListTile(
+                  trailing: const Icon(Icons.north_east_sharp),
+                  title: Text("export_private_key".tr,
+                      style: context.textTheme.labelMedium),
+                ),
               ),
-            ),
-            PopupMenuItem<int>(
-              value: 1,
-              child: AppListTile(
-                trailing: const Icon(Icons.north_east_sharp),
-                title: Text("export_public_key".tr,
-                    style: context.textTheme.labelMedium),
+            if (!chain.address.multiSigAccount)
+              PopupMenuItem<int>(
+                value: 1,
+                child: AppListTile(
+                  trailing: const Icon(Icons.north_east_sharp),
+                  title: Text("export_public_key".tr,
+                      style: context.textTheme.labelMedium),
+                ),
+              )
+            else if (chain.address.iAddressType.isMultisigByPublicKey)
+              PopupMenuItem<int>(
+                value: 8,
+                child: AppListTile(
+                  trailing: const Icon(Icons.north_east_sharp),
+                  title: Text("multisig_address_infos".tr,
+                      style: context.textTheme.labelMedium),
+                ),
               ),
-            ),
             PopupMenuItem<int>(
               value: 2,
               child: AppListTile(

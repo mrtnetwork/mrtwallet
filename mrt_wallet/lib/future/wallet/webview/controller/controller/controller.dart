@@ -198,7 +198,7 @@ class WebViewStateController extends StateController
   @override
   void onPageRequest(WebViewEvent event) async {
     if (event.request == null) return;
-    await _lock.synchronized(() async {
+    final bool isWalletRequest = await _lock.synchronized(() async {
       final requestType =
           MRTScriptWalletStatus.fromJSWalletEvent(event.request?.type);
       if (requestType != null) {
@@ -206,8 +206,11 @@ class WebViewStateController extends StateController
             status: requestType, clientId: event.request!.clientId);
         assert(requestType != MRTScriptWalletStatus.failed,
             'page script activation failed: ${StringUtils.tryDecode(event.request?.data)}');
+        return false;
       }
+      return true;
     });
+    if (!isWalletRequest) return;
     final client = await createClientInfos(
         clientId: event.viewId,
         url: event.url,

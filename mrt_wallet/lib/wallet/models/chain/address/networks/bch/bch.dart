@@ -254,8 +254,6 @@ class IBitcoinCashMultiSigAddress extends IBitcoinCashAddress
   }
 
   @override
-  bool get multiSigAccount => true;
-  @override
   List get variabels => [
         addressType,
         keyIndex,
@@ -288,4 +286,7 @@ class IBitcoinCashMultiSigAddress extends IBitcoinCashAddress
         bitcoinAddressType: addressType,
         coin: coin);
   }
+
+  @override
+  IAdressType get iAddressType => IAdressType.multisigByPublicKey;
 }

@@ -64,7 +64,9 @@ class Web3TronSendTransaction
   Web3TronRequest<Map<String, dynamic>, Web3TronSendTransaction> toRequest(
       {required Web3RequestApplicationInformation request,
       required Web3APPAuthentication authenticated,
-      required TronChain chain}) {
+      required List<APPCHAIN> chains}) {
+    final TronChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3TronRequest<Map<String, dynamic>, Web3TronSendTransaction>(
         params: this,
         authenticated: authenticated,

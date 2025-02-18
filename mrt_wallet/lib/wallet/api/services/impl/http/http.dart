@@ -86,12 +86,14 @@ abstract class HTTPService<P extends APIProvider>
       return response;
     } on ApiProviderException catch (e) {
       tracker.addRequest(
-          ApiRequest(uri: url, params: params?.toString(), error: e));
+          ApiRequest(uri: url, error: e, identifier: provider.identifier));
       rethrow;
     } finally {
       if (response != null) {
         tracker.addRequest(ApiRequest(
-            params: params?.toString(), response: response.result.toString()));
+          identifier: provider.identifier,
+          uri: url,
+        ));
       }
     }
   }
@@ -120,12 +122,13 @@ abstract class HTTPService<P extends APIProvider>
       }, allowStatus: allowStatus);
       return response;
     } on ApiProviderException catch (e) {
-      tracker.addRequest(ApiRequest(uri: url, params: null, error: e));
+      tracker.addRequest(
+          ApiRequest(uri: url, error: e, identifier: provider.identifier));
       rethrow;
     } finally {
       if (response != null) {
-        tracker.addRequest(ApiRequest(
-            uri: url, params: null, response: response.result.toString()));
+        tracker
+            .addRequest(ApiRequest(uri: url, identifier: provider.identifier));
       }
     }
   }
@@ -135,9 +138,12 @@ abstract class HTTPService<P extends APIProvider>
       {List<int> allowStatus = const [200],
       Uri? uri,
       Duration? timeout,
-      HTTPResponseType? responseType}) async {
+      HTTPResponseType? responseType,
+      P? currentProvider}) async {
     BaseServiceResponse<T>? response;
     final toUri = uri ?? request.toUri(provider.callUrl);
+    final ProviderAuthenticated? authenticated =
+        currentProvider?.auth ?? provider.auth;
     try {
       final Map<String, String> headers = {
         if (request.type == RequestServiceType.post)
@@ -155,7 +161,7 @@ abstract class HTTPService<P extends APIProvider>
               responseType: type,
               type: HTTPRequestType.get,
               isolate: isolate,
-              authenticated: provider.auth),
+              authenticated: authenticated),
           RequestServiceType.post => await serviceCaller.call(
               url: toUri,
               timeout: timeout ?? defaultTimeOut,
@@ -164,19 +170,22 @@ abstract class HTTPService<P extends APIProvider>
               body: request.body(),
               type: HTTPRequestType.post,
               isolate: isolate,
-              authenticated: provider.auth)
+              authenticated: authenticated)
         };
       }, allowStatus: allowStatus);
 
       return response;
     } on ApiProviderException catch (e) {
-      tracker.addRequest(
-          ApiRequest(uri: toUri.toString(), params: null, error: e));
+      tracker.addRequest(ApiRequest(
+          uri: toUri.toString(),
+          error: e,
+          identifier: currentProvider?.identifier ?? provider.identifier));
       rethrow;
     } finally {
       if (response != null) {
-        tracker.addRequest(
-            ApiRequest(uri: toUri.toString(), params: null, response: null));
+        tracker.addRequest(ApiRequest(
+            uri: toUri.toString(),
+            identifier: currentProvider?.identifier ?? provider.identifier));
       }
     }
   }
@@ -256,6 +265,7 @@ abstract class HTTPService<P extends APIProvider>
   HTTPResponseType _detectTemplateType<T>({HTTPResponseType? responseType}) {
     if (responseType != null) return responseType;
     if (dynamic is T) return HTTPResponseType.json;
+    if (<dynamic>[] is T) return HTTPResponseType.json;
     if (<String, dynamic>{} is T) return HTTPResponseType.map;
     if (<Map<String, dynamic>>[] is T) return HTTPResponseType.listOfMap;
     if (<int>[] is T) return HTTPResponseType.binary;

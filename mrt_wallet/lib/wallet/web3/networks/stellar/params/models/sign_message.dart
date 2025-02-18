@@ -80,11 +80,12 @@ class Web3StellarSignMessage extends Web3StellarRequestParam<List<int>> {
   @override
   StellarAddress? get account => address;
   @override
-  Web3StellarRequest<List<int>, Web3StellarSignMessage> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required StellarChain chain,
-  }) {
+  Web3StellarRequest<List<int>, Web3StellarSignMessage> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final StellarChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3StellarRequest<List<int>, Web3StellarSignMessage>(
       params: this,
       authenticated: authenticated,

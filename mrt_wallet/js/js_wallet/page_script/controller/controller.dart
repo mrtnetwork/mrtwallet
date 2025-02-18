@@ -30,6 +30,10 @@ abstract class JSBasePageController {
       StellarPageController(postMessage);
   late final SubstratePageController substratePageController =
       SubstratePageController(postMessage);
+  late final AptosPageController aptosPageController =
+      AptosPageController(postMessage);
+  late final SuiPageController suiPageController =
+      SuiPageController(postMessage);
 
   String? _walletId;
 
@@ -41,18 +45,25 @@ abstract class JSBasePageController {
       tonPageController._initController();
       stellarPageController._initController();
       substratePageController._initController();
+      aptosPageController._initController();
+      suiPageController._initController();
     } catch (e) {
       jsConsole.error("Initializing wallet failed: $e");
     }
   }
 
   void disable(JSWalletError err) {
-    ethereumPageController._disable(message: err.message);
-    tronPageController._disable(message: err.message);
-    solanaPageController._disable(message: err.message);
-    tonPageController._disable(message: err.message);
-    stellarPageController._disable(message: err.message);
-    substratePageController._disable(message: err.message);
+    if (err.message != null) {
+      jsConsole.error(err.message);
+    }
+    ethereumPageController._disable();
+    tronPageController._disable();
+    solanaPageController._disable();
+    tonPageController._disable();
+    stellarPageController._disable();
+    substratePageController._disable();
+    aptosPageController._disable();
+    suiPageController._disable();
     _wait?.completeError(err);
   }
 
@@ -86,10 +97,17 @@ abstract class JSBasePageController {
         case JSClientType.substrate:
           substratePageController.onEvent(event);
           break;
+        case JSClientType.aptos:
+          aptosPageController.onEvent(event);
+          break;
+        case JSClientType.sui:
+          suiPageController.onEvent(event);
+          break;
         default:
           break;
       }
     } catch (e) {
+      WalletLogging.error("got error $e");
       rethrow;
     }
   }

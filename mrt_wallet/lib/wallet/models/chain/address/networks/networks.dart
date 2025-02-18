@@ -10,3 +10,5 @@ export 'cardano/cardano.dart';
 export 'substrate/substrate.dart';
 export 'stellar/stellar.dart';
 export 'monero/monero.dart';
+export 'aptos/aptos/aptos.dart';
+export 'sui/sui/sui.dart';

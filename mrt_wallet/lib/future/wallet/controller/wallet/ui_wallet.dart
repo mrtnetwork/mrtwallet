@@ -36,7 +36,7 @@ abstract class UIWallet extends WalletCore {
   }
 
   Future<void> changeProvider<PROVIDER extends APIProvider>(
-      {required PROVIDER? provider,
+      {required ProviderIdentifier? provider,
       required APPCHAINNETWORKPROVIDER account}) async {
     if (provider == null) return;
     await changeCurrentNetworkProvider(account: account, provider: provider);

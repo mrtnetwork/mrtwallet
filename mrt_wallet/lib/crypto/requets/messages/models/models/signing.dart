@@ -52,7 +52,9 @@ enum SigningRequestNetwork {
   substrate([32, 108]),
   stellar([32, 109]),
   monero([32, 110]),
-  bitcoinCash([32, 111]);
+  bitcoinCash([32, 111]),
+  aptos([32, 112]),
+  sui([32, 113]);
 
   final List<int> tag;
   const SigningRequestNetwork(this.tag);
@@ -158,6 +160,20 @@ class GlobalSignRequest extends SignRequest {
   }) {
     return GlobalSignRequest._(
         digest: digest, network: SigningRequestNetwork.solana, index: index);
+  }
+  factory GlobalSignRequest.aptos({
+    required List<int> digest,
+    required Bip32AddressIndex index,
+  }) {
+    return GlobalSignRequest._(
+        digest: digest, network: SigningRequestNetwork.aptos, index: index);
+  }
+  factory GlobalSignRequest.sui({
+    required List<int> digest,
+    required Bip32AddressIndex index,
+  }) {
+    return GlobalSignRequest._(
+        digest: digest, network: SigningRequestNetwork.sui, index: index);
   }
   factory GlobalSignRequest.stellar(
       {required List<int> digest, required Bip32AddressIndex index}) {

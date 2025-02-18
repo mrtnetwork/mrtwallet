@@ -181,11 +181,12 @@ class Web3EthreumSendTransaction extends Web3EthereumRequestParam<String> {
   ETHAddress? get account => from;
 
   @override
-  Web3EthereumRequest<String, Web3EthreumSendTransaction> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required EthereumChain chain,
-  }) {
+  Web3EthereumRequest<String, Web3EthreumSendTransaction> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final EthereumChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3EthereumRequest<String, Web3EthreumSendTransaction>(
       params: this,
       authenticated: authenticated,

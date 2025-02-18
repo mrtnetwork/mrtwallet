@@ -50,7 +50,8 @@ class APPConst {
   static final APPImage kusama = APPImage.local("assets/image/ksm.png");
   static final APPImage stellar = APPImage.local("assets/image/xlm.png");
   static final APPImage monero = APPImage.local("assets/image/monero.png");
-
+  static final APPImage aptos = APPImage.local("assets/image/aptos.png");
+  static final APPImage sui = APPImage.local("assets/image/sui.png");
   static const String name = "MRT WALLET";
   static const Duration animationDuraion = Duration(milliseconds: 400);
   static const Duration milliseconds100 = Duration(milliseconds: 100);

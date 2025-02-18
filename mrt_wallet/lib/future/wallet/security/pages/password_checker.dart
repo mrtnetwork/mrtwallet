@@ -61,7 +61,7 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
   late WalletProvider wallet;
   List<CryptoKeyData>? credentials;
   String? error;
-  static const int reminingWalletTimeAlert = kDebugMode ? 100 : 15;
+  static const int reminingWalletTimeAlert = kDebugMode ? 50 : 15;
   final GlobalKey<ScaffoldMessengerState> scaffolKey = GlobalKey();
 
   ScaffoldFeatureController<MaterialBanner, MaterialBannerClosedReason>?

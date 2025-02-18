@@ -108,8 +108,8 @@ class JSSolanaHandler extends JSNetworkHandler<SolanaWeb3State> {
   }
 
   @override
-  void initChain(Web3APPData authenticated) {
-    lock.synchronized(() async {
+  Future<void> initChain(Web3APPData authenticated) async {
+    await lock.synchronized(() async {
       final currentState = state;
       state = SolanaWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {
@@ -146,10 +146,13 @@ class JSSolanaHandler extends JSNetworkHandler<SolanaWeb3State> {
   Future<Web3MessageCore> request(PageMessageRequest params) async {
     final state = this.state;
     final method = Web3SolanaRequestMethods.fromName(params.method);
+
     switch (method) {
       case Web3SolanaRequestMethods.requestAccounts:
         if (state.permissionAccounts.isNotEmpty) {
-          return buildResponse(state.permissionAccounts);
+          final accounts =
+              state.walletAccounts.map((e) => e.toJson()).toList().jsify();
+          return buildResponse(accounts);
         }
         return Web3SolanaRequestAccounts();
       case Web3SolanaRequestMethods.signTransaction:
@@ -299,16 +302,7 @@ class JSSolanaHandler extends JSNetworkHandler<SolanaWeb3State> {
   }
 
   @override
-  void onRequestDone(PageMessageRequest message) {
-    // final method = Web3SolanaRequestMethods.fromName(message.method);
-
-    // switch (method) {
-    //   case Web3SolanaRequestMethods.requestAccounts:
-    //     _connect(state);
-    //     break;
-    //   default:
-    // }
-  }
+  void onRequestDone(PageMessageRequest message) {}
 
   @override
   NetworkType get networkType => NetworkType.solana;

@@ -1,7 +1,8 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:monero_dart/monero_dart.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
+import 'package:mrt_wallet/app/serialization/serialization.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_data.dart';
 import 'package:mrt_wallet/crypto/keys/access/key_request.dart';
 import 'package:mrt_wallet/crypto/keys/access/monero_private_key.dart';
@@ -143,10 +144,44 @@ class WalletRequestSign
         final ethsigner = ETHSigner.fromKeyBytes(keyBytes);
         signature = ethsigner.sign(digest).toBytes();
         break;
+      case SigningRequestNetwork.aptos:
+        switch (key.coin) {
+          case Bip44Coins.aptos:
+          case Bip44Coins.aptosEd25519SingleKey:
+            final ed25519Signer = Ed25519Signer.fromKeyBytes(keyBytes);
+            signature = ed25519Signer.sign(digest);
+            break;
+          case Bip44Coins.aptosSecp256k1SingleKey:
+            final digestHash = QuickCrypto.sha3256Hash(digest);
+            final secp256k1Signer = Secp256k1Signer.fromKeyBytes(keyBytes);
+            signature = secp256k1Signer.sign(digestHash, hashMessage: false);
+            break;
+          default:
+            throw WalletExceptionConst.invalidCoin;
+        }
+        break;
+      case SigningRequestNetwork.sui:
+        switch (key.coin) {
+          case Bip44Coins.sui:
+            final ed25519signer = Ed25519Signer.fromKeyBytes(keyBytes);
+            signature = ed25519signer.sign(digest);
+            break;
+          case Bip44Coins.suiSecp256k1:
+            final secp256k1Signer = Secp256k1Signer.fromKeyBytes(keyBytes);
+            signature = secp256k1Signer.sign(digest);
+            break;
+          case Bip44Coins.suiSecp256r1:
+            final secp256r1Signer = Nist256p1Signer.fromKeyBytes(keyBytes);
+            signature = secp256r1Signer.sign(digest);
+            break;
+          default:
+            throw WalletExceptionConst.invalidCoin;
+        }
+        break;
       case SigningRequestNetwork.stellar:
       case SigningRequestNetwork.ton:
       case SigningRequestNetwork.solana:
-        final solanaSigner = SolanaSigner.fromKeyBytes(keyBytes);
+        final solanaSigner = Ed25519Signer.fromKeyBytes(keyBytes);
         signature = solanaSigner.sign(digest);
         break;
       case SigningRequestNetwork.cardano:

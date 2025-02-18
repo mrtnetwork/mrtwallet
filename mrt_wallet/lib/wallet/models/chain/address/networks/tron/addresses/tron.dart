@@ -125,7 +125,6 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -203,9 +202,6 @@ class ITronAddress extends ChainAccount<TronAddress, TronToken, NFTCore>
 
   @override
   void removeNFT(NFTCore nft) {}
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override
@@ -390,4 +386,7 @@ class ITronMultisigAddress extends ITronAddress
         masterAddress: networkAddress,
         multiSigAccount: multiSignatureAccount);
   }
+
+  @override
+  IAdressType get iAddressType => IAdressType.multisigByAddress;
 }

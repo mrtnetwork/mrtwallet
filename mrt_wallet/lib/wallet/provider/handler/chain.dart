@@ -170,29 +170,29 @@ class ChainsHandler with CborSerializable {
           return switch (e.network.type) {
             NetworkType.ethereum => Web3ChainNetworkData<WalletEthereumNetwork>(
                 network: e.network.toNetwork(),
-                serviceIdentifier:
-                    e.clientNullable?.service.provider.identifier),
+                serviceIdentifier: e.clientNullable?.serviceIdentifier),
             NetworkType.tron => Web3ChainNetworkData<WalletTronNetwork>(
                 network: e.network.toNetwork(),
-                serviceIdentifier:
-                    e.clientNullable?.service.provider.identifier),
+                serviceIdentifier: e.clientNullable?.serviceIdentifier),
             NetworkType.solana => Web3ChainNetworkData<WalletSolanaNetwork>(
                 network: e.network.toNetwork(),
-                serviceIdentifier:
-                    e.clientNullable?.service.provider.identifier),
+                serviceIdentifier: e.clientNullable?.serviceIdentifier),
             NetworkType.stellar => Web3ChainNetworkData<WalletStellarNetwork>(
                 network: e.network.toNetwork(),
-                serviceIdentifier:
-                    e.clientNullable?.service.provider.identifier),
+                serviceIdentifier: e.clientNullable?.serviceIdentifier),
             NetworkType.ton => Web3ChainNetworkData<WalletTonNetwork>(
                 network: e.network.toNetwork(),
-                serviceIdentifier:
-                    e.clientNullable?.service.provider.identifier),
+                serviceIdentifier: e.clientNullable?.serviceIdentifier),
             NetworkType.substrate =>
               Web3ChainNetworkData<WalletSubstrateNetwork>(
                   network: e.network.toNetwork(),
-                  serviceIdentifier:
-                      e.clientNullable?.service.provider.identifier),
+                  serviceIdentifier: e.clientNullable?.serviceIdentifier),
+            NetworkType.aptos => Web3ChainNetworkData<WalletAptosNetwork>(
+                network: e.network.toNetwork(),
+                serviceIdentifier: e.clientNullable?.serviceIdentifier),
+            NetworkType.sui => Web3ChainNetworkData<WalletSuiNetwork>(
+                network: e.network.toNetwork(),
+                serviceIdentifier: e.clientNullable?.serviceIdentifier),
             _ => throw UnimplementedError()
           };
         })

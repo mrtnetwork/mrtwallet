@@ -15,16 +15,16 @@ abstract class TonTransactionForm extends TransactionForm {
   List<ton_dart.MessageRelaxed> toMessages(ton_dart.TonAddress account);
 }
 
-abstract class TonWeb3Form<PARAMS extends Web3TonRequestParam>
-    implements
-        Web3Form<ton_dart.TonAddress, TheOpenNetworkChain, Web3TonChainAccount,
-            Web3TonChain, PARAMS> {
+abstract class TonWeb3Form<PARAMS extends Web3TonRequestParam> extends Web3Form<
+    ton_dart.TonAddress,
+    TheOpenNetworkChain,
+    Web3TonChainAccount,
+    Web3TonChain,
+    PARAMS> {
   @override
   abstract final Web3TonRequest<dynamic, PARAMS> request;
 
   DynamicVoid? onStimateChanged;
-  @override
-  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;

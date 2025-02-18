@@ -55,7 +55,7 @@ class JSExtentionWallet extends JSWalletHandler {
     final auth = _initializeAuthenticated;
     if (auth == null) return;
     _initializeAuthenticated = null;
-    _updateAuthenticated(auth, network: null);
+    _updateAuthenticated(auth);
   }
 
   void _onExtentionPortDiscounect(RuntimePort port) {
@@ -186,8 +186,6 @@ class JSExtentionWallet extends JSWalletHandler {
   @override
   Future<void> _sendMessageToWallet(
       {required Web3MessageCore message, required String requestId}) async {
-    // List<int> messageBytes;
-    // if(message.type == Web3MessageTypes.)
     final encryptedMessage = _encryptMessage(message);
     final event = WalletEvent(
         clientId: clientId,

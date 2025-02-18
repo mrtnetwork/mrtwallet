@@ -38,6 +38,8 @@ class CryptoKeyConst {
   static const List<int> substrateNetwork = [80, 0, 12];
   static const List<int> stellar = [80, 0, 14];
   static const List<int> monero = [80, 0, 15];
+  static const List<int> aptos = [80, 0, 16];
+  static const List<int> sui = [80, 0, 17];
 
   /// network tags
   static const List<int> generateToneMenemonic = [111, 1];

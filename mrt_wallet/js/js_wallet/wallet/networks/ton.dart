@@ -42,7 +42,7 @@ class TonWeb3State extends ChainWeb3State {
         return permissionAccounts.first;
       });
       final stateInit = defaultNetworkAddress
-          .toWalletContract()
+          .toWalletContract(authenticated.network.coinParam.chain)
           .state!
           .initialState()
           .serialize()
@@ -104,8 +104,8 @@ class JSTonHandler extends JSNetworkHandler<TonWeb3State> {
   JSTonHandler({required super.sendMessageToClient});
 
   @override
-  void initChain(Web3APPData authenticated) {
-    lock.synchronized(() async {
+  Future<void> initChain(Web3APPData authenticated) async {
+    await lock.synchronized(() async {
       final currentState = state;
       state = TonWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {

@@ -80,11 +80,12 @@ class Web3TonSignMessage extends Web3TonRequestParam<List<int>> {
   @override
   TonAddress? get account => address;
   @override
-  Web3TonRequest<List<int>, Web3TonSignMessage> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required TheOpenNetworkChain chain,
-  }) {
+  Web3TonRequest<List<int>, Web3TonSignMessage> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final TheOpenNetworkChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3TonRequest<List<int>, Web3TonSignMessage>(
       params: this,
       authenticated: authenticated,

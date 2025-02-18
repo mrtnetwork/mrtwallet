@@ -2,14 +2,18 @@ import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/core/core.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/aptos.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/cardano.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/monero.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/sui.dart';
 import 'package:mrt_wallet/wallet/models/networks/cardano/models/address_details.dart';
 import 'package:mrt_wallet/crypto/coins/custom_coins/coins.dart';
 import 'package:mrt_wallet/crypto/requets/argruments/argruments.dart';
 import 'package:mrt_wallet/crypto/requets/messages/core/message.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/derive_address_response.dart';
 import 'package:mrt_wallet/wallet/models/networks/monero/models/account_related.dart';
+import 'package:on_chain/aptos/src/address/address/address.dart';
+import 'package:on_chain/sui/src/address/address/address.dart';
 
 class WalletRequestDeriveAddress<NETWORKADDRESS> extends WalletRequest<
     CryptoDeriveAddressResponse<NETWORKADDRESS>, MessageArgsTwoBytes> {
@@ -116,6 +120,63 @@ class WalletRequestDeriveAddress<NETWORKADDRESS> extends WalletRequest<
   }
 
   static CryptoDeriveAddressResponse<NETWORKADDRESS>
+      _deriveAptosAddress<NETWORKADDRESS>(
+          AptosNewAddressParams addressParams, WalletMasterKeys wallet) {
+    if (addressParams.coin.conf.type != addressParams.keyScheme.curve) {
+      throw WalletExceptionConst.invalidData(
+          messsage: "Invalid aptos address derivation coin.");
+    }
+    final keyRequest =
+        AccessCryptoPrivateKeyRequest(index: addressParams.deriveIndex);
+    final publicKey = wallet.readPublicKeys([keyRequest]).first;
+    String address;
+    switch (addressParams.coin) {
+      case Bip44Coins.aptos:
+        address = AptosAddrEncoder().encodeKey(publicKey.keyBytes());
+        break;
+      case Bip44Coins.aptosEd25519SingleKey:
+      case Bip44Coins.aptosSecp256k1SingleKey:
+        final key = IPublicKey.fromBytes(
+            publicKey.keyBytes(), addressParams.coin.conf.type);
+        address = AptosAddrEncoder().encodeSingleKey(key);
+      default:
+        throw WalletExceptionConst.invalidData(
+            messsage: "Invalid aptos address derivation coin.");
+    }
+    addressParams = addressParams.updateAddress(AptosAddress(address));
+    return CryptoDeriveAddressResponse(
+        accountParams: addressParams as NewAccountParams<NETWORKADDRESS>,
+        publicKey: publicKey);
+  }
+
+  static CryptoDeriveAddressResponse<NETWORKADDRESS>
+      _deriveSuiAddress<NETWORKADDRESS>(
+          SuiNewAddressParams addressParams, WalletMasterKeys wallet) {
+    final keyRequest =
+        AccessCryptoPrivateKeyRequest(index: addressParams.deriveIndex);
+    final publicKey = wallet.readPublicKeys([keyRequest]).first;
+    String address;
+    switch (addressParams.coin.conf.type) {
+      case EllipticCurveTypes.ed25519:
+        address = SuiAddrEncoder().encodeKey(publicKey.keyBytes());
+        break;
+      case EllipticCurveTypes.secp256k1:
+        address = SuiSecp256k1AddrEncoder().encodeKey(publicKey.keyBytes());
+        break;
+      case EllipticCurveTypes.nist256p1Hybrid:
+        address = SuiSecp256r1AddrEncoder().encodeKey(publicKey.keyBytes());
+        break;
+      default:
+        throw WalletExceptionConst.invalidData(
+            messsage: "Invalid sui key algorithm.");
+    }
+    addressParams = addressParams.updateAddress(SuiAddress(address));
+    return CryptoDeriveAddressResponse(
+        accountParams: addressParams as NewAccountParams<NETWORKADDRESS>,
+        publicKey: publicKey);
+  }
+
+  static CryptoDeriveAddressResponse<NETWORKADDRESS>
       _deriveAddress<NETWORKADDRESS>(
           NewAccountParams<NETWORKADDRESS> addressParams,
           WalletMasterKeys wallet) {
@@ -137,6 +198,11 @@ class WalletRequestDeriveAddress<NETWORKADDRESS> extends WalletRequest<
       case NewAccountParamsType.moneroNewAddressParams:
         return _deriveMoneroAddress(
             addressParams as MoneroNewAddressParams, wallet);
+      case NewAccountParamsType.aptosNewAddressParams:
+        return _deriveAptosAddress(
+            addressParams as AptosNewAddressParams, wallet);
+      case NewAccountParamsType.suiNewAddressParams:
+        return _deriveSuiAddress(addressParams as SuiNewAddressParams, wallet);
       default:
         return _deriveAddress(addressParams, wallet);
     }

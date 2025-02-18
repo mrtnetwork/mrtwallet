@@ -865,6 +865,82 @@ class _DefaultAppCoins {
       chainType: ChainType.mainnet,
       network: MoneroNetwork.mainnet,
       rctHeight: 1220517);
+  static final AptosNetworkParams aptos = AptosNetworkParams(
+      token: Token(
+          name: "Aptos",
+          symbol: "APT",
+          decimal: AptosConst.decimal,
+          market: const CoingeckoCoin(
+              apiId: "aptos", coinName: "aptos", symbol: "APT"),
+          assetLogo: APPConst.aptos),
+      providers: const [],
+      chainType: ChainType.mainnet,
+      aptosChainType: AptosChainType.mainnet);
+  static final AptosNetworkParams aptosTestnet = AptosNetworkParams(
+      token: Token(
+          name: "Aptos Testnet",
+          symbol: "tAPT",
+          decimal: AptosConst.decimal,
+          market: const CoingeckoCoin(
+              apiId: "aptos", coinName: "aptos", symbol: "APT"),
+          assetLogo: APPConst.aptos),
+      providers: const [],
+      chainType: ChainType.testnet,
+      aptosChainType: AptosChainType.testnet,
+      bip32CoinType: 1);
+  static final AptosNetworkParams aptosDevnet = AptosNetworkParams(
+      token: Token(
+          name: "Aptos Devnet",
+          symbol: "tAPT",
+          decimal: AptosConst.decimal,
+          market: const CoingeckoCoin(
+              apiId: "aptos", coinName: "aptos", symbol: "APT"),
+          assetLogo: APPConst.aptos),
+      providers: const [],
+      chainType: ChainType.testnet,
+      aptosChainType: AptosChainType.devnet,
+      bip32CoinType: 1);
+
+  static final SuiNetworkParams sui = SuiNetworkParams(
+      token: Token(
+          name: "Sui",
+          symbol: "SUI",
+          decimal: SUIConst.decimal,
+          market:
+              const CoingeckoCoin(apiId: "sui", coinName: "sui", symbol: "SUI"),
+          assetLogo: APPConst.sui),
+      providers: const [],
+      chainType: ChainType.mainnet,
+      identifier: SUIConst.mainnetIdentifier,
+      suiChain: SuiChainType.mainnet);
+  static final SuiNetworkParams suiDevnet = SuiNetworkParams(
+      token: Token(
+        name: "Sui Devnet",
+        symbol: "tSUI",
+        decimal: SUIConst.decimal,
+        market:
+            const CoingeckoCoin(apiId: "sui", coinName: "sui", symbol: "SUI"),
+        assetLogo: APPConst.sui,
+      ),
+      providers: const [],
+      chainType: ChainType.testnet,
+      identifier: SUIConst.devnetIdentifier,
+      bip32CoinType: 1,
+      suiChain: SuiChainType.devnet);
+
+  static final SuiNetworkParams suiTestnet = SuiNetworkParams(
+      token: Token(
+          name: "Sui Testnet",
+          symbol: "tSUI",
+          decimal: SUIConst.decimal,
+          market:
+              const CoingeckoCoin(apiId: "sui", coinName: "sui", symbol: "SUI"),
+          assetLogo: APPConst.sui),
+      providers: const [],
+      chainType: ChainType.testnet,
+      identifier: SUIConst.testnetIdentifier,
+      bip32CoinType: 1,
+      suiChain: SuiChainType.testnet);
   static const Map<int, String> defaultChainGenesis = {
     0: "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
     1: "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943",
@@ -961,6 +1037,12 @@ class _DefaultAppCoins {
     460: "https://moonbeam.subscan.io/account/#address",
     600: "https://stellar.expert/explorer/public/account/#address",
     601: "https://stellar.expert/explorer/testnet/account/#address",
+    800: "https://suiscan.xyz/mainnet/account/#address",
+    801: "https://suiscan.xyz/devnet/account/#address",
+    802: "https://suiscan.xyz/testnet/account/#address",
+    810: "https://explorer.aptoslabs.com/account/#address?network=mainnet",
+    811: "https://explorer.aptoslabs.com/account/#address?network=testnet",
+    812: "https://explorer.aptoslabs.com/account/#address?network=devnet",
     1001: "https://tronscan.org/#/address/#address",
     1002: "https://shasta.tronscan.org/#/address/#address",
     1003: "https://nile.tronscan.org/#/address/#address"
@@ -1026,6 +1108,12 @@ class _DefaultAppCoins {
     601: "https://stellar.expert/explorer/testnet/tx/#txid",
     700: "https://xmrchain.net/tx/#txid",
     701: "https://stagenet.xmrchain.net/tx/#txid",
+    800: "https://suiscan.xyz/mainnet/tx/#txid",
+    801: "https://suiscan.xyz/devnet/tx/#txid",
+    802: "https://suiscan.xyz/testnet/tx/#txid",
+    811: "https://explorer.aptoslabs.com/txn/#txid?network=testnet",
+    810: "https://explorer.aptoslabs.com/txn/#txid?network=mainnet",
+    812: "https://explorer.aptoslabs.com/txn/#txid?network=devnet",
     1001: "https://tronscan.org/#/transaction/#txid",
     1002: "https://shasta.tronscan.org/#/transaction/#txid",
     1003: "https://nile.tronscan.org/#/transaction/#txid"
@@ -1033,7 +1121,17 @@ class _DefaultAppCoins {
 }
 
 class ChainConst {
+  static int suiMainnetId = 800;
+  static int aptosMainnetId = 810;
+  static int ethereumMainnetId = 100;
+  static int solanaMainnetId = 33;
+  static int stellarMainnetId = 600;
+  static int polkadotMainnetId = 400;
+  static int tonMainnetId = 300;
+  static int tronMainnetId = 1001;
+
   static const int importedNetworkStartId = 2000;
+  static const int maxAccountTokens = 1000;
   static final Map<int, WalletNetwork> defaultCoins =
       Map<int, WalletNetwork>.unmodifiable({
     0: WalletBitcoinNetwork(0, _DefaultAppCoins.bitcoinMainnet),
@@ -1100,6 +1198,15 @@ class ChainConst {
     /// monero
     700: WalletMoneroNetwork(700, _DefaultAppCoins.monero),
     701: WalletMoneroNetwork(701, _DefaultAppCoins.moneroTestnet),
+    // sui
+    800: WalletSuiNetwork(800, _DefaultAppCoins.sui),
+    801: WalletSuiNetwork(801, _DefaultAppCoins.suiDevnet),
+    802: WalletSuiNetwork(802, _DefaultAppCoins.suiTestnet),
+
+    /// aptos
+    810: WalletAptosNetwork(810, _DefaultAppCoins.aptos),
+    811: WalletAptosNetwork(811, _DefaultAppCoins.aptosTestnet),
+    812: WalletAptosNetwork(812, _DefaultAppCoins.aptosDevnet),
 
     ///
     TronChainType.mainnet.id:
@@ -1134,19 +1241,17 @@ class ChainConst {
   static List<String> services(WalletNetwork network) {
     switch (network.type) {
       case NetworkType.xrpl:
-        return ["services", "tokens"];
       case NetworkType.tron:
+      case NetworkType.solana:
+      case NetworkType.stellar:
+      case NetworkType.cosmos:
+      case NetworkType.aptos:
+      case NetworkType.sui:
         return ["services", "tokens"];
       case NetworkType.ethereum:
         return ["tokens"];
-      case NetworkType.solana:
-        return ["services", "tokens"];
       case NetworkType.ton:
         return ["services", "jettons"];
-      case NetworkType.stellar:
-        return ["services", "tokens"];
-      case NetworkType.cosmos:
-        return ["services", "tokens"];
       case NetworkType.monero:
         return ["services", "activity"];
       default:

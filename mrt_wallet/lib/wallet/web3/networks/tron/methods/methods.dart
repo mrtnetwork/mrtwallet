@@ -9,8 +9,8 @@ class Web3TronRequestMethods extends Web3RequestMethods {
   const Web3TronRequestMethods._({
     required super.id,
     required super.name,
-    this.needWalletOwnerAction = true,
     super.methodsName,
+    super.reloadAuthenticated,
   });
 
   static const Web3TronRequestMethods requestAccounts =
@@ -25,15 +25,14 @@ class Web3TronRequestMethods extends Web3RequestMethods {
       Web3TronRequestMethods._(
           id: Web3TronConst.switchChainTag,
           name: Web3TronConst.switchChain,
-          needWalletOwnerAction: false,
+          reloadAuthenticated: true,
           methodsName: [Web3EthereumConst.switchEthereumChain]);
 
   static const Web3TronRequestMethods signTransaction =
       Web3TronRequestMethods._(
           id: Web3TronConst.signTransactionTag,
           name: Web3TronConst.signTransaction);
-  @override
-  final bool needWalletOwnerAction;
+
   @override
   NetworkType get network => NetworkType.tron;
 

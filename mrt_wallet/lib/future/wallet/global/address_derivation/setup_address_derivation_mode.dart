@@ -75,6 +75,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     } else {
       bool canUseKey = false;
       coin = widget.coin;
+
       if (newSelected.coin.conf.type == coin.conf.type) {
         selectedCustomKey = newSelected;
         canUseKey = true;
@@ -90,15 +91,13 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
         }
       }
       if (canUseKey) {
-        allowDerivation = selectedCustomKey!.allowDerivation;
-        if (!allowDerivation) {
-          customKeyIndex = null;
-        }
+        allowDerivation = false;
+        customKeyIndex = null;
       } else {
         context.showAlert("unsuported_key".tr);
       }
     }
-    setState(() {});
+    updateState();
   }
 
   void onChangeDerivation(_OnGenerateDerivation onGenerateDerivation) async {
@@ -107,7 +106,7 @@ class _SetupDerivationModeView2State extends State<SetupDerivationModeView>
     } else {
       customKeyIndex = null;
     }
-    setState(() {});
+    updateState();
   }
 
   void onSubmit() {

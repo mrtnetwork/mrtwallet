@@ -37,11 +37,12 @@ class Web3TonRequestAccounts extends Web3TonPermissionRequestParam {
   TonAddress? get account => null;
 
   @override
-  Web3TonRequest<Web3TonChain, Web3TonRequestAccounts> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required TheOpenNetworkChain chain,
-  }) {
+  Web3TonRequest<Web3TonChain, Web3TonRequestAccounts> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final TheOpenNetworkChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3TonRequest<Web3TonChain, Web3TonRequestAccounts>(
         params: this,
         authenticated: authenticated,

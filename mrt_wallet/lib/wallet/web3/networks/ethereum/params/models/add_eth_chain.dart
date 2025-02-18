@@ -137,11 +137,12 @@ class Web3EthereumAddNewChain extends Web3EthereumRequestParam<String> {
   ETHAddress? get account => null;
 
   @override
-  Web3EthereumRequest<String, Web3EthereumAddNewChain> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required EthereumChain chain,
-  }) {
+  Web3EthereumRequest<String, Web3EthereumAddNewChain> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final EthereumChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3EthereumRequest<String, Web3EthereumAddNewChain>(
       params: this,
       authenticated: authenticated,

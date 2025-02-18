@@ -126,7 +126,8 @@ class Web3EthereumTransactionRequestController
         return await signTransaction(transaction);
       });
       if (signedTransaction.hasError) {
-        progressKey.error(text: signedTransaction.error!.tr);
+        progressKey.error(
+            error: signedTransaction.exception, showBackButton: true);
         return;
       }
 
@@ -135,7 +136,7 @@ class Web3EthereumTransactionRequestController
       });
       stopGasEstimate();
       if (result.hasError) {
-        progressKey.error(text: result.error!.tr, backToIdle: null);
+        progressKey.errorResponse(error: result.exception);
         final error =
             Web3RequestExceptionConst.fromException(result.exception!);
         request.error(error);
@@ -155,14 +156,15 @@ class Web3EthereumTransactionRequestController
         await apiProvider.getWeb3TransactionInfos(
             from: address, transaction: request.params, chain: account));
     if (result.hasError) {
-      progressKey.error(text: result.error?.tr ?? "", backToIdle: null);
+      progressKey.errorResponse(error: result.exception);
     } else {
       try {
         await apiProvider.estimateGasLimit(_toEstimateData());
       } catch (e) {
+        progressKey.errorResponse(error: e);
         final error = Web3RequestExceptionConst.fromException(e);
         request.error(error);
-        progressKey.error(text: error.message, backToIdle: null);
+
         return;
       }
       _transactionInfos = result.result;

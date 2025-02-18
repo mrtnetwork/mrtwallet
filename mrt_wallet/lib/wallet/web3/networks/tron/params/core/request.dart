@@ -34,11 +34,12 @@ abstract class Web3TronRequestParam<RESPONSE> extends Web3RequestParams<
   Web3TronRequestParam();
 
   @override
-  Web3TronRequest<RESPONSE, Web3TronRequestParam<RESPONSE>> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required TronChain chain,
-  }) {
+  Web3TronRequest<RESPONSE, Web3TronRequestParam<RESPONSE>> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final TronChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3TronRequest<RESPONSE, Web3TronRequestParam<RESPONSE>>(
       params: this,
       authenticated: authenticated,

@@ -43,15 +43,12 @@ abstract class SolanaTransactionForm extends TransactionForm {
 }
 
 abstract class SolanaWeb3Form<PARAMS extends Web3SolanaRequestParam>
-    implements
-        Web3Form<SolAddress, SolanaChain, Web3SolanaChainAccount,
-            Web3SolanaChain, PARAMS> {
+    extends Web3Form<SolAddress, SolanaChain, Web3SolanaChainAccount,
+        Web3SolanaChain, PARAMS> {
   @override
   abstract final Web3SolanaRequest<dynamic, PARAMS> request;
 
   DynamicVoid? onStimateChanged;
-  @override
-  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;

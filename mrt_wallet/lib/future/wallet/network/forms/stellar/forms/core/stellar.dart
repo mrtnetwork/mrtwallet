@@ -22,15 +22,12 @@ abstract class StellarTransactionForm extends TransactionForm {
 }
 
 abstract class StellarWeb3Form<PARAMS extends Web3StellarRequestParam>
-    implements
-        Web3Form<StellarAddress, StellarChain, Web3StellarChainAccount,
-            Web3StellarChain, PARAMS> {
+    extends Web3Form<StellarAddress, StellarChain, Web3StellarChainAccount,
+        Web3StellarChain, PARAMS> {
   @override
   abstract final Web3StellarRequest<dynamic, PARAMS> request;
 
   DynamicVoid? onStimateChanged;
-  @override
-  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;

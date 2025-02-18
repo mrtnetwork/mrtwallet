@@ -51,13 +51,12 @@ abstract class PageProgressBaseState<T extends StatefulWidget> extends State<T>
 }
 
 class PageProgress extends StatefulWidget {
-  const PageProgress({
-    super.key,
-    required this.child,
-    this.initialStatus = PageProgressStatus.idle,
-    this.backToIdle,
-    this.initialWidget,
-  });
+  const PageProgress(
+      {super.key,
+      required this.child,
+      this.initialStatus = PageProgressStatus.idle,
+      this.backToIdle,
+      this.initialWidget});
   final PageProgressStatus initialStatus;
   final FuncWidgetContext child;
   final Duration? backToIdle;
@@ -91,7 +90,7 @@ class PageProgressState extends PageProgressBaseState<PageProgress> {
               future: MethodUtils.after(() async => widget.child(c)),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return WidgetConstant.errorIcon;
+                  return Center(child: WidgetConstant.errorIconLarge);
                 }
                 if (snapshot.hasData) {
                   _child = snapshot.data!;

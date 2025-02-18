@@ -35,7 +35,9 @@ abstract class Web3TonRequestParam<RESPONSE> extends Web3RequestParams<RESPONSE,
   Web3TonRequest<RESPONSE, Web3TonRequestParam<RESPONSE>> toRequest(
       {required Web3RequestApplicationInformation request,
       required Web3APPAuthentication authenticated,
-      required TheOpenNetworkChain chain}) {
+      required List<APPCHAIN> chains}) {
+    final TheOpenNetworkChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3TonRequest<RESPONSE, Web3TonRequestParam<RESPONSE>>(
         params: this,
         authenticated: authenticated,

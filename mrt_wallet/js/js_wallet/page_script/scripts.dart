@@ -1,9 +1,11 @@
 import 'dart:js_interop';
-import 'package:mrt_wallet/app/synchronized/basic_lock.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import '../constant/constant.dart';
 import '../models/models.dart';
+import '../models/models/networks/aptos.dart';
 import '../models/models/networks/substrate.dart';
+import '../models/models/networks/sui.dart';
 import '../utils/utils.dart';
 import 'dart:async';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
@@ -16,3 +18,5 @@ part 'networks/solana.dart';
 part 'networks/ton.dart';
 part 'networks/stellar.dart';
 part 'networks/substrate.dart';
+part 'networks/aptos.dart';
+part 'networks/sui.dart';

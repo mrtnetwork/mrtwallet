@@ -114,7 +114,9 @@ class TronPageController extends PageNetworkController {
   }
 
   void _disabledFeature(JSAny? args) {
-    throw JSWalletConstant.methodDisabled;
+    WalletLogging.log("is error here ");
+    WalletLogging.log("is error here ${args?.dartify()}");
+    // throw JSWalletConstant.methodDisabled;
   }
 
   JSPromise<JSAny?> _signMessageV2_(JSAny message, [String? privateKey]) {
@@ -160,56 +162,59 @@ class TronPageController extends PageNetworkController {
 
   void _disable({String? message}) {
     tron = null;
-    jsConsole.error(message);
   }
 
   void onEvent(WalletMessageEvent message) {
-    JSAny? eventData = message.data;
-    switch (message.eventType) {
-      case JSEventType.connect:
-        final connectionInfo = TronChainChanged.fromJson(message.asMap());
-        _tron?.object.chainId = connectionInfo.chainId;
-        _address?.object.setAddress(connectionInfo.address);
+    try {
+      JSAny? eventData = message.data;
+      switch (message.eventType) {
+        case JSEventType.connect:
+          final connectionInfo = TronChainChanged.fromJson(message.asMap());
+          _tron?.object.chainId = connectionInfo.chainId;
+          _address?.object.setAddress(connectionInfo.address);
 
-        eventData = connectionInfo.toJSEvent;
+          eventData = connectionInfo.toJSEvent;
 
-        postConnect();
-        break;
-      case JSEventType.chainChanged:
-        final connectionInfo = TronChainChanged.fromJson(message.asMap());
-        _tron?.object.chainId = connectionInfo.chainId;
-        _setNode(connectionInfo.fullNode);
-        eventData = connectionInfo.chainId.jsify();
-        postChainChanged(connectionInfo);
+          postConnect();
+          break;
+        case JSEventType.chainChanged:
+          final connectionInfo = TronChainChanged.fromJson(message.asMap());
+          _tron?.object.chainId = connectionInfo.chainId;
+          _setNode(connectionInfo.fullNode);
+          eventData = connectionInfo.toJSEvent;
+          postChainChanged(connectionInfo);
 
-        break;
-      case JSEventType.disconnect:
-        _tron?.object.chainId = null;
-        _address?.object.setAddress(null);
-        break;
-      case JSEventType.accountsChanged:
-        final changeInfo = TronAccountsChanged.fromJson(message.asMap());
-        _address?.object.setAddress(changeInfo.defaultAddress);
+          break;
+        case JSEventType.disconnect:
+          _tron?.object.chainId = null;
+          _address?.object.setAddress(null);
+          break;
+        case JSEventType.accountsChanged:
+          final changeInfo = TronAccountsChanged.fromJson(message.asMap());
+          _address?.object.setAddress(changeInfo.defaultAddress);
 
-        if (changeInfo.defaultAddress?.base58.isEmpty ?? true) {
-          _tron?.object.selectedAddress = null;
-        } else {
-          _tron?.object.selectedAddress =
-              changeInfo.defaultAddress?.base58.toJS;
-        }
-        eventData = changeInfo.toJSEvent;
-        postAddress(changeInfo.defaultAddress?.base58);
-        break;
-      case JSEventType.disable:
-        _disable(message: message.asString());
-        break;
-      case JSEventType.active:
-        final info = TronWebNodeInfo.fromJson(message.asMap());
-        _initController(info: info);
-        break;
-      default:
+          if (changeInfo.defaultAddress?.base58.isEmpty ?? true) {
+            _tron?.object.selectedAddress = null;
+          } else {
+            _tron?.object.selectedAddress =
+                changeInfo.defaultAddress?.base58.toJS;
+          }
+          eventData = changeInfo.toJSEvent;
+          postAddress(changeInfo.defaultAddress?.base58);
+          break;
+        case JSEventType.disable:
+          _disable(message: message.asString());
+          break;
+        case JSEventType.active:
+          final info = TronWebNodeInfo.fromJson(message.asMap());
+          _initController(info: info);
+          break;
+        default:
+      }
+      _eventListeners(message.eventType, jsObject: eventData);
+    } catch (e) {
+      WalletLogging.log("got error $e");
     }
-    _eventListeners(message.eventType, jsObject: eventData);
   }
 
   void _eventListeners(JSEventType type, {JSAny? jsObject}) {

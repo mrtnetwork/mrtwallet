@@ -169,6 +169,7 @@ class SubstrateDefaultExtrinsic {
   final List<int>? metadataHash;
   final int? mode;
   final BigInt? tip;
+  final List<int>? assetId;
 
   static final SubstrateDefaultExtrinsic fake = SubstrateDefaultExtrinsic(
       era: MortalEra(index: 189, era: 1),
@@ -184,11 +185,13 @@ class SubstrateDefaultExtrinsic {
       required this.transactionVersion,
       required List<int> genesis,
       required List<int> mortality,
+      List<int>? assetId,
       this.metadataHash,
       this.mode,
       this.tip})
       : genesis = genesis.asImmutableBytes,
-        mortality = mortality.asImmutableBytes;
+        mortality = mortality.asImmutableBytes,
+        assetId = assetId?.asImmutableBytes;
 
   static bool hasField<E extends MetadataTypeInfo>(
       List<MetadataTypeInfo<dynamic>> ext, String name) {
@@ -308,12 +311,28 @@ class SubstrateDefaultExtrinsic {
 
               break;
             case "CheckMetadataHash":
+              if (metadataHash != null) {
+                buffer.add(metadataHash!);
+              } else {
+                _encodeField(
+                    lookupId: typeId,
+                    buffer: buffer,
+                    input: {"None": null},
+                    metadata: metadata);
+              }
+
+              break;
             case "asset_id":
-              _encodeField(
-                  lookupId: typeId,
-                  buffer: buffer,
-                  input: {"None": null},
-                  metadata: metadata);
+              if (assetId != null) {
+                buffer.add(assetId!);
+              } else {
+                _encodeField(
+                    lookupId: typeId,
+                    buffer: buffer,
+                    input: {"None": null},
+                    metadata: metadata);
+              }
+
               break;
             default:
               throw UnimplementedError("field not found ${i.name} $n");

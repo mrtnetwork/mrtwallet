@@ -37,11 +37,12 @@ class Web3TronRequestAccounts extends Web3TronPermissionRequestParam {
   TronAddress? get account => null;
 
   @override
-  Web3TronRequest<Web3TronChain, Web3TronRequestAccounts> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required TronChain chain,
-  }) {
+  Web3TronRequest<Web3TronChain, Web3TronRequestAccounts> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final TronChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3TronRequest<Web3TronChain, Web3TronRequestAccounts>(
         params: this,
         authenticated: authenticated,

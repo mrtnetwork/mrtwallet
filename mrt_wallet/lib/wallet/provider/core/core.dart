@@ -418,8 +418,8 @@ abstract class WalletCore extends _WalletCore
     );
   }
 
-  Future<void> changeCurrentNetworkProvider<PROVIDER extends APIProvider>(
-      {required PROVIDER provider,
+  Future<void> changeCurrentNetworkProvider(
+      {required ProviderIdentifier provider,
       required APPCHAINNETWORKPROVIDER account}) async {
     await _callSynchronized(
         () async => _controller._changeNetworkApiProvider(
@@ -546,8 +546,8 @@ abstract class WalletCore extends _WalletCore
       Duration? timeout}) async {
     final result = await _callSynchronized(
       () async {
-        late final Set<ChainAccount> addresses = request.addresses.toSet();
-        late final Set<AddressDerivationIndex> keys =
+        final Set<ChainAccount> addresses = request.addresses.toSet();
+        final Set<AddressDerivationIndex> keys =
             addresses.map((e) => e.signerKeyIndexes()).expand((e) => e).toSet();
         return await _controller._signTransaction(
             request: request,

@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/exception/exception/rpc_error.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ton/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ton.dart';
@@ -418,4 +419,7 @@ class TonClient extends NetworkClient<ITonAddress, TonAPIProvider>
     });
     return result.hasResult;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.ton;
 }

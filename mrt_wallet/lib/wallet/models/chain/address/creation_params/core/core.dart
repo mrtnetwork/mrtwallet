@@ -5,6 +5,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/aptos.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/bch.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/cardano.dart';
@@ -15,6 +16,7 @@ import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/solana.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/stellar.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/substrate.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/sui.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/ton.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/networks/tron.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
@@ -40,7 +42,12 @@ enum NewAccountParamsType {
   stellarNewAddressParams(CborTagsConst.stellarNewAddressParams),
   stellarMultiSigNewAddressParams(
       CborTagsConst.stellarMultiSigNewAddressParams),
-  moneroNewAddressParams(CborTagsConst.moneroNewAddressParams);
+  moneroNewAddressParams(CborTagsConst.moneroNewAddressParams),
+
+  suiNewAddressParams(CborTagsConst.suiNewAddressParams),
+  suiMultisigNewAddressParams(CborTagsConst.suiMultisigNewAddressParams),
+  aptosNewAddressParams(CborTagsConst.aptosNewAddressParams),
+  aptosMultisigNewAddressParams(CborTagsConst.aptosMultisigNewAddressParams);
 
   final List<int> tag;
   const NewAccountParamsType(this.tag);
@@ -118,6 +125,18 @@ abstract class NewAccountParams<NETWORKADDRESS> with CborSerializable {
         break;
       case NewAccountParamsType.moneroNewAddressParams:
         params = MoneroNewAddressParams.deserialize(object: decode);
+        break;
+      case NewAccountParamsType.aptosNewAddressParams:
+        params = AptosNewAddressParams.deserialize(object: decode);
+        break;
+      case NewAccountParamsType.suiNewAddressParams:
+        params = SuiNewAddressParams.deserialize(object: decode);
+        break;
+      case NewAccountParamsType.suiMultisigNewAddressParams:
+        params = SuiMultiSigNewAddressParams.deserialize(object: decode);
+        break;
+      case NewAccountParamsType.aptosMultisigNewAddressParams:
+        params = AptosMultiSigNewAddressParams.deserialize(object: decode);
         break;
     }
     if (params is! NewAccountParams<NETWORKADDRESS>) {

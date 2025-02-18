@@ -5,3 +5,5 @@ export 'ton/ton.dart';
 export 'stellar/stellar.dart';
 export 'global/global.dart';
 export 'substrate/substrate.dart';
+export 'aptos/aptos.dart';
+export 'sui/sui.dart';

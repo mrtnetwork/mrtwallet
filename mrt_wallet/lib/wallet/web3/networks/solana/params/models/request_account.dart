@@ -38,11 +38,12 @@ class Web3SolanaRequestAccounts extends Web3SolanaPermissionRequestParam {
   SolAddress? get account => null;
 
   @override
-  Web3SolanaRequest<Web3SolanaChain, Web3SolanaRequestAccounts> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required SolanaChain chain,
-  }) {
+  Web3SolanaRequest<Web3SolanaChain, Web3SolanaRequestAccounts> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final SolanaChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3SolanaRequest<Web3SolanaChain, Web3SolanaRequestAccounts>(
         params: this,
         authenticated: authenticated,

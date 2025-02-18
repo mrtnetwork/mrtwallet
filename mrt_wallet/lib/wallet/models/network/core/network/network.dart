@@ -97,6 +97,10 @@ abstract class WalletNetwork<PARAMS extends NetworkCoinParams>
         return WalletStellarNetwork.fromCborBytesOrObject(obj: toCborTag);
       case NetworkType.monero:
         return WalletMoneroNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.aptos:
+        return WalletAptosNetwork.fromCborBytesOrObject(obj: toCborTag);
+      case NetworkType.sui:
+        return WalletSuiNetwork.fromCborBytesOrObject(obj: toCborTag);
       default:
         throw UnimplementedError("network does not exist.");
     }
@@ -772,4 +776,102 @@ class WalletMoneroNetwork extends WalletNetwork<MoneroNetworkParams> {
   String get genesisBlock => ChainConst.getDefaultGenesisBlock(value);
   @override
   Object get identifier => genesisBlock;
+}
+
+class WalletAptosNetwork extends WalletNetwork<AptosNetworkParams> {
+  @override
+  final int value;
+  @override
+  final AptosNetworkParams coinParam;
+  @override
+  bool get supportWeb3 => true;
+  const WalletAptosNetwork(this.value, this.coinParam);
+  factory WalletAptosNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor =
+        CborSerializable.decodeCborTags(bytes, obj, CborTagsConst.aptosNetwork);
+    return WalletAptosNetwork(
+      cbor.elementAt(0),
+      AptosNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
+  }
+  @override
+  WalletAptosNetwork copyWith({int? value, AptosNetworkParams? coinParam}) {
+    return WalletAptosNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
+
+  @override
+  List<BipCoins> get coins {
+    return [
+      Bip44Coins.aptos,
+      Bip44Coins.aptosEd25519SingleKey,
+      Bip44Coins.aptosSecp256k1SingleKey,
+    ];
+  }
+
+  @override
+  List get variabels => [value];
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        CborTagsConst.aptosNetwork);
+  }
+
+  @override
+  bool get supportCustomNode => true;
+
+  @override
+  NetworkType get type => NetworkType.aptos;
+  @override
+  Object get identifier => coinParam.aptosChainType.chainId;
+}
+
+class WalletSuiNetwork extends WalletNetwork<SuiNetworkParams> {
+  @override
+  final int value;
+  @override
+  final SuiNetworkParams coinParam;
+  @override
+  bool get supportWeb3 => true;
+  const WalletSuiNetwork(this.value, this.coinParam);
+  factory WalletSuiNetwork.fromCborBytesOrObject(
+      {List<int>? bytes, CborObject? obj}) {
+    final CborListValue cbor =
+        CborSerializable.decodeCborTags(bytes, obj, CborTagsConst.suiNetwork);
+    return WalletSuiNetwork(
+      cbor.elementAt(0),
+      SuiNetworkParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
+    );
+  }
+  @override
+  WalletSuiNetwork copyWith({int? value, SuiNetworkParams? coinParam}) {
+    return WalletSuiNetwork(value ?? this.value, coinParam ?? this.coinParam);
+  }
+
+  @override
+  List<BipCoins> get coins {
+    return [
+      Bip44Coins.sui,
+      Bip44Coins.suiSecp256k1,
+      Bip44Coins.suiSecp256r1,
+    ];
+  }
+
+  @override
+  List get variabels => [value];
+
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(CborListValue.fixedLength([value, coinParam.toCbor()]),
+        CborTagsConst.suiNetwork);
+  }
+
+  @override
+  bool get supportCustomNode => true;
+
+  @override
+  NetworkType get type => NetworkType.sui;
+  @override
+  Object get identifier => coinParam.identifier;
 }

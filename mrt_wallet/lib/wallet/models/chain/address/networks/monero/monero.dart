@@ -94,7 +94,6 @@ class IMoneroAddress extends ChainAccount<MoneroAddress, TokenCore, NFTCore>
         CborTagsConst.moneroAccount);
   }
 
-  @override
   final CryptoCoins coin;
   final MoneroViewAccountDetails addrDetails;
 
@@ -109,9 +108,6 @@ class IMoneroAddress extends ChainAccount<MoneroAddress, TokenCore, NFTCore>
   final Bip32AddressIndex keyIndex;
   List<MoneroOutputDetails> _utxos;
   List<MoneroOutputDetails> get utxos => _utxos;
-  // final MoneroDefaultAccountChainTracker chainInfo;
-  @override
-  bool get multiSigAccount => false;
 
   @override
   final int network;

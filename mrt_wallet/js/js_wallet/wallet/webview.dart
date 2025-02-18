@@ -23,7 +23,7 @@ class JSWebviewWallet extends JSWalletHandler {
     final auth = _initializeAuthenticated;
     if (auth == null) return;
     _initializeAuthenticated = null;
-    _updateAuthenticated(auth, network: null);
+    _updateAuthenticated(auth);
   }
 
   void _inWorkerResponse(MessageEvent jsRequest) {

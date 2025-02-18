@@ -32,8 +32,7 @@ class Web3SolanaRequestMethods extends Web3RequestMethods {
       Web3SolanaRequestMethods._(
           id: Web3SolanaConst.sendTransactionTag,
           name: Web3SolanaConst.sendTransaction);
-  @override
-  final bool needWalletOwnerAction = true;
+
   @override
   NetworkType get network => NetworkType.solana;
 

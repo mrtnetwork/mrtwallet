@@ -1,9 +1,12 @@
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/crypto/requets/messages/wallet/requests/personal_sign.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
+import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/forms.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/controller/impl/impl.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
+import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 
 class Web3TronGlobalRequestController<RESPONSE,
@@ -16,6 +19,32 @@ class Web3TronGlobalRequestController<RESPONSE,
 
   @override
   bool get clientRequired => false;
+  LiveTransactionForm? _liveRequest;
+
+  TronWeb3Form<T> get form => _liveRequest!.value;
+
+  TronWeb3Form _init() {
+    switch (request.params.method) {
+      case Web3TronRequestMethods.requestAccounts:
+        final tronChains = walletProvider.wallet.getChains<TronChain>();
+        return TronRequestAccountForm(request: request, chains: tronChains);
+      case Web3TronRequestMethods.switchTronChain:
+        final switchChainRequest = request.params as Web3TronSwitchChain;
+        final tronChains = walletProvider.wallet.getChains<TronChain>();
+        final network = tronChains.firstWhereOrNull((e) =>
+            e.network.tronNetworkType.genesisBlockNumber ==
+            switchChainRequest.chainId.toInt());
+        if (network == null) {
+          throw Web3TronExceptionConstant.tronNetworkDoesNotExist;
+        }
+        return Web3TronSwitchTronChain(request: request, newChain: network);
+      case Web3TronRequestMethods.signMessageV2:
+        return Web3TronReadOnlyForm<T>(request: request);
+      default:
+        throw Web3RequestExceptionConst.internalError;
+    }
+  }
+
   void onChangeForm() {
     notify();
   }
@@ -24,6 +53,13 @@ class Web3TronGlobalRequestController<RESPONSE,
     progressKey.process(text: "processing_request".tr);
     Object? result = obj;
     switch (request.params.method) {
+      case Web3TronRequestMethods.switchTronChain:
+        final chain = (form as Web3TronSwitchTronChain).newChain;
+        final Web3TronChain? permission = request.currentPermission;
+        permission?.setActiveChain(chain.network);
+        request.authenticated.updateChainAccount(permission!);
+        result = chain.network.tronNetworkType.genesisBlockNumber.toRadix16;
+        break;
       case Web3TronRequestMethods.requestAccounts:
         final web3Chain = result as Web3TronChain;
         request.authenticated.updateChainAccount(web3Chain);
@@ -36,7 +72,7 @@ class Web3TronGlobalRequestController<RESPONSE,
                 index: address.keyIndex.cast(),
                 network: NetworkType.tron));
         if (sign.hasError) {
-          progressKey.error(text: sign.error!.tr);
+          progressKey.error(error: sign.exception, showBackButton: true);
           return;
         }
         result = sign.result.signatureHex;
@@ -51,16 +87,24 @@ class Web3TronGlobalRequestController<RESPONSE,
   @override
   Future<void> initWeb3() async {
     await MethodUtils.after(() async {
-      liveRequest.addListener(onChangeForm);
-      form.onCompleteForm = onCompleteForm;
-      progressKey.idle();
+      try {
+        final form = _init();
+        _liveRequest = LiveTransactionForm(validator: form);
+        _liveRequest?.addListener(onChangeForm);
+        form.onCompleteForm = onCompleteForm;
+        progressKey.idle();
+      } catch (e) {
+        progressKey.errorResponse(error: e);
+        final error = Web3RequestExceptionConst.fromException(e);
+        request.error(error);
+      }
     });
   }
 
   @override
   void close() {
     super.close();
-    liveRequest.removeListener(onChangeForm);
+    _liveRequest?.removeListener(onChangeForm);
     form.onCompleteForm = null;
   }
 }

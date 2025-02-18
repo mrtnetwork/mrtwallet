@@ -36,11 +36,12 @@ abstract class Web3EthereumRequestParam<RESPONSE> extends Web3RequestParams<
   Web3EthereumRequestParam();
 
   @override
-  Web3EthereumRequest<RESPONSE, Web3EthereumRequestParam<RESPONSE>> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required EthereumChain chain,
-  }) {
+  Web3EthereumRequest<RESPONSE, Web3EthereumRequestParam<RESPONSE>> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final EthereumChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3EthereumRequest<RESPONSE, Web3EthereumRequestParam<RESPONSE>>(
       params: this,
       authenticated: authenticated,

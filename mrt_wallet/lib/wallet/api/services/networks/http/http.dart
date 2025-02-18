@@ -10,3 +10,5 @@ export 'services/tron.dart';
 export 'services/substrate.dart';
 export 'services/stellar.dart';
 export 'services/monero.dart';
+export 'services/aptos.dart';
+export 'services/sui.dart';

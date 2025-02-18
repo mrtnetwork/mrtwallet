@@ -76,7 +76,8 @@ class StellarNetworkParams extends NetworkCoinParams<StellarAPIProvider> {
       {List<APIProvider>? updateProviders,
       Token? token,
       String? transactionExplorer,
-      String? addressExplorer}) {
+      String? addressExplorer,
+      int? bip32CoinType}) {
     return StellarNetworkParams(
         token: NetworkCoinParams.validateUpdateParams(
             token: this.token, updateToken: token),

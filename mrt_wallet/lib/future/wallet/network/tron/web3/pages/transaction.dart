@@ -6,7 +6,6 @@ import 'package:mrt_wallet/future/wallet/global/pages/receipt_address_view.dart'
 import 'package:mrt_wallet/future/wallet/global/pages/token_details_view.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/transaction_amount.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/web3/pages/transaction.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/tron/tron.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/transaction/pages/pages/tron_fee_details_view.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/controller/controller/transaction.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
@@ -29,11 +28,7 @@ class TronWeb3TransactionFieldsView extends StatelessWidget {
       controller: () => Web3TronTransactionRequestController(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
-        return [
-          _TransactionFieldsView(
-              form: controller.form as Web3TronReadOnlyForm,
-              controller: controller)
-        ];
+        return [_TransactionFieldsView(controller: controller)];
       },
       request: request,
     );
@@ -41,9 +36,8 @@ class TronWeb3TransactionFieldsView extends StatelessWidget {
 }
 
 class _TransactionFieldsView extends StatelessWidget {
-  const _TransactionFieldsView({required this.form, required this.controller});
+  const _TransactionFieldsView({required this.controller});
   final Web3TronTransactionRequestController controller;
-  final Web3TronReadOnlyForm form;
   Web3TronTransactionInfo get info => controller.info;
   @override
   Widget build(BuildContext context) {

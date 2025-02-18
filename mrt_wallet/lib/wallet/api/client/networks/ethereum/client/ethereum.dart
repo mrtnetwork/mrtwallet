@@ -348,4 +348,7 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
     }
     return false;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.ethereum;
 }

@@ -1,11 +1,13 @@
 import 'package:blockchain_utils/bip/bip/conf/core/coins.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
+import 'package:mrt_wallet/future/wallet/network/aptos/address/setup.dart';
 import 'package:mrt_wallet/future/wallet/network/cosmos/address/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/monero/address/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/ripple/address/pages/setup_address.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/stellar.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/address/setup_address.dart';
+import 'package:mrt_wallet/future/wallet/network/sui/address/setup.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/address/address.dart';
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
@@ -33,6 +35,11 @@ class SetupGenericAddressView extends StatelessWidget {
         return SetupMoneroAddressView(controller: controller);
       case NetworkType.substrate:
         return SetupSubstrateAddressView(controller: controller);
+      case NetworkType.aptos:
+        return SetupAptosAddressView(controller: controller);
+      case NetworkType.sui:
+        return SetupSuiAddressView(controller: controller);
+
       default:
         return _GenericNetworkAddressGenerationView(controller: controller);
     }

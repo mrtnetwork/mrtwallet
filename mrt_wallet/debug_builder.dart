@@ -117,7 +117,7 @@ Future<void> buildWebView({bool minify = false}) async {
 }
 
 Future<void> buildWebViewPage({bool minify = false}) async {
-  print("Building webview script. please wait...");
+  print("Building webview page script. please wait...");
   const String command = 'dart';
   final List<String> args = [
     'compile',
@@ -299,12 +299,12 @@ Future<void> _buildWeb(
     await buildCrypto();
   }
 
-  copyFiles();
   if (extension && scripts) {
     await buildBackground(minify: minify);
     await buildPage(minify: minify);
     await buildContent(minify: minify, isMozila: mozila);
   }
+  copyFiles();
   if (extension) {
     File file = File("extensions/tron_web.js");
     await file.copy("web/tron_web.js");
@@ -384,6 +384,9 @@ void main(List<String> args) async {
 
   if (fixedArgs.contains("w")) {
     await buildWebView();
+  }
+  if (fixedArgs.contains("wp")) {
+    await buildWebViewPage();
   }
   if (fixedArgs.contains("c")) {
     await buildContent();

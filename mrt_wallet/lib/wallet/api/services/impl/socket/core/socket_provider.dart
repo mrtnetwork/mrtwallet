@@ -20,12 +20,13 @@ abstract class BaseSocketService<T extends APIProvider>
       response = await _onException(t);
       return response;
     } on ApiProviderException catch (e) {
-      tracker.addRequest(ApiRequest(params: null, error: e));
+      tracker.addRequest(ApiRequest(
+          error: e, identifier: provider.identifier, uri: provider.callUrl));
       rethrow;
     } finally {
       if (response != null) {
         tracker.addRequest(
-            ApiRequest(params: null, response: response.toString()));
+            ApiRequest(identifier: provider.identifier, uri: provider.callUrl));
       }
     }
   }

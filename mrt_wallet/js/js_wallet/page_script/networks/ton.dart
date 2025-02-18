@@ -30,7 +30,6 @@ class TonPageController extends PageNetworkController {
 
   void _disable({String? message}) {
     ton = null;
-    jsConsole.error(message);
   }
 
   void onEvent(WalletMessageEvent message) {

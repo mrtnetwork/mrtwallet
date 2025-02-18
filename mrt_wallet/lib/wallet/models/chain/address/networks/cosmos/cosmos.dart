@@ -103,7 +103,6 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -190,9 +189,6 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
           CosmosPublicKey.fromBytes(keyBytes: publicKey, algorithm: algorithm),
       modeInfo: const ModeInfo(ModeInfoSignle(SignMode.signModeDirect)),
       sequence: BigInt.zero);
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override

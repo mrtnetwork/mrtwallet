@@ -45,4 +45,6 @@ abstract class Web3Form<
   abstract final Web3Request<dynamic, NETWORKADDRESS, CHAIN, CHAINACCOUNT,
       WEB3CHAIN, PARAMS> request;
   ObjectVoid? onCompleteForm;
+
+  void close() {}
 }

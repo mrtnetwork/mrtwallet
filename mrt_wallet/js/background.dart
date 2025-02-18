@@ -45,9 +45,14 @@ class _JSBackgroundHandler {
         WalletNetwork? network = MethodUtils.nullOnException(() {
           return WalletNetwork.fromCborBytesOrObject(obj: values.getCborTag(6));
         });
+        network = MethodUtils.nullOnException(() => ChainConst.updateNetwork(
+            networkId: values.elementAs(0), network: network));
         if (network == null || !network.supportWeb3) continue;
-        final String? serviceIdentifier = MethodUtils.nullOnException(() {
-          return values.elementAs(7);
+        final ProviderIdentifier? serviceIdentifier =
+            MethodUtils.nullOnException(() {
+          final CborTagValue? identifier = values.elementAs(10);
+          if (identifier == null) return null;
+          return ProviderIdentifier.deserialize(cbor: identifier);
         });
         final Web3ChainNetworkData n = switch (network.type) {
           NetworkType.ethereum => Web3ChainNetworkData<WalletEthereumNetwork>(
@@ -66,6 +71,12 @@ class _JSBackgroundHandler {
               network: network.toNetwork(),
               serviceIdentifier: serviceIdentifier),
           NetworkType.substrate => Web3ChainNetworkData<WalletSubstrateNetwork>(
+              network: network.toNetwork(),
+              serviceIdentifier: serviceIdentifier),
+          NetworkType.aptos => Web3ChainNetworkData<WalletAptosNetwork>(
+              network: network.toNetwork(),
+              serviceIdentifier: serviceIdentifier),
+          NetworkType.sui => Web3ChainNetworkData<WalletSuiNetwork>(
               network: network.toNetwork(),
               serviceIdentifier: serviceIdentifier),
           _ => throw UnimplementedError()
@@ -286,13 +297,15 @@ class _JSBackgroundHandler {
           data: authenticated.toCbor().encode(),
           requestId: event.requestId,
           type: WalletEventTypes.activation);
-    } on Web3RequestException catch (e) {
+    } on Web3RequestException catch (e, s) {
+      WalletLogging.error("tab failed2 $e $s");
       return WalletEvent(
           clientId: "${tab.id ?? -1}",
           data: e.toResponseMessage().toCbor().encode(),
           requestId: event.requestId,
           type: WalletEventTypes.exception);
-    } catch (_) {
+    } catch (e, s) {
+      WalletLogging.error("tab failed $e $s");
       return WalletEvent(
           clientId: "${tab.id ?? -1}",
           data: Web3RequestExceptionConst.internalError

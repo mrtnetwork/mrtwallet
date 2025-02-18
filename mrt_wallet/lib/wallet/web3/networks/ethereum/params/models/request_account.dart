@@ -38,14 +38,13 @@ class Web3EthreumRequestAccounts extends Web3EthereumPermissionRequestParam {
   ETHAddress? get account => null;
 
   @override
-  Web3EthereumRequest<Web3EthereumChain, Web3EthreumRequestAccounts> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required EthereumChain chain,
-  }) {
+  Web3EthereumRequest<Web3EthereumChain, Web3EthreumRequestAccounts> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final EthereumChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3EthereumRequest<Web3EthereumChain, Web3EthreumRequestAccounts>(
-      // permission: authenticated.getChain(address: account, chain: chain) ??
-      //     Web3EthereumChain.create(chainId: chain.network.coinParam.chainId),
       params: this,
       authenticated: authenticated,
       chain: chain,

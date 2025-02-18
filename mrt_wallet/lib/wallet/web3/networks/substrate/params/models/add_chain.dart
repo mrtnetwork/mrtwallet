@@ -97,11 +97,12 @@ class Web3SubstrateAddNewChain extends Web3SubstrateRequestParam<bool> {
   BaseSubstrateAddress? get account => null;
 
   @override
-  Web3SubstrateRequest<bool, Web3SubstrateAddNewChain> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required SubstrateChain chain,
-  }) {
+  Web3SubstrateRequest<bool, Web3SubstrateAddNewChain> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final SubstrateChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3SubstrateRequest<bool, Web3SubstrateAddNewChain>(
       params: this,
       authenticated: authenticated,

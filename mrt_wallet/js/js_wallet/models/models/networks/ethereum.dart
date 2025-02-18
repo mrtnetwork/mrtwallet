@@ -21,6 +21,7 @@ class ProxyMethodHandler<T> {
       if (prop.isA<JSString>()) {
         // ignore: invalid_runtime_check_with_js_interop_types
         final pr = prop as String;
+        // WalletLogging.log("$debugKey  $pr ");
         if (pr.startsWith("is")) {
           final r = Reflect.get(object, prop, receiver);
           if (r.isDefinedAndNotNull) return r;

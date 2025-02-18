@@ -186,7 +186,9 @@ class Web3SolanaSendTransaction
       toRequest(
           {required Web3RequestApplicationInformation request,
           required Web3APPAuthentication authenticated,
-          required SolanaChain chain}) {
+          required List<APPCHAIN> chains}) {
+    final SolanaChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3SolanaRequest<List<Map<String, dynamic>>,
             Web3SolanaSendTransaction>(
         params: this,

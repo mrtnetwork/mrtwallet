@@ -1,3 +1,4 @@
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/cardano/methods/utxos.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/cardano.dart';
@@ -65,4 +66,7 @@ class CardanoClient extends NetworkClient<ICardanoAddress, CardanoAPIProvider> {
     final magic = await getNetworkGenesisParameters();
     return magic.networkMagic == network.coinParam.magic;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.cardano;
 }

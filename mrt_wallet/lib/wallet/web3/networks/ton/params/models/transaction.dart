@@ -3,9 +3,7 @@ import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
-import 'package:mrt_wallet/wallet/web3/networks/ton/constant/constants/constant.dart';
-import 'package:mrt_wallet/wallet/web3/networks/ton/methods/methods.dart';
-import 'package:mrt_wallet/wallet/web3/networks/ton/params/core/request.dart';
+import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
 import 'package:ton_dart/ton_dart.dart';
 
@@ -28,8 +26,14 @@ class Web3TonTransactionMessage with CborSerializable {
             json: json,
             key: "address",
             method: method,
-            onParse: (address) =>
-                TonAddress(address, forceWorkchain: workchain),
+            onParse: (address) {
+              final addr = TonAddress(address);
+              if (workchain != null && addr.workChain != workchain) {
+                throw Web3TonExceptionConstant
+                    .incrorectTransactionWorkchainAddress;
+              }
+              return addr;
+            },
             addressName: Web3TonConst.addressName),
         amount: Web3ValidatorUtils.parseBigInt(
             key: "amount", method: method, json: json),
@@ -168,7 +172,9 @@ class Web3TonSendTransaction
       toRequest(
           {required Web3RequestApplicationInformation request,
           required Web3APPAuthentication authenticated,
-          required TheOpenNetworkChain chain}) {
+          required List<APPCHAIN> chains}) {
+    final TheOpenNetworkChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3TonRequest<Web3TonSendTransactionResponse,
             Web3TonSendTransaction>(
         params: this,

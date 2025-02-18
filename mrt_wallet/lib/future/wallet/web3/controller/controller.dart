@@ -5,7 +5,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
-import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
+import 'package:mrt_wallet/wallet/web3/web3.dart';
 
 abstract class Web3StateContoller extends StateController
     with Web3RequestControllerState {}
@@ -42,8 +42,9 @@ mixin Web3RequestControllerState on StateController {
         progressKey.process(text: 'node_connectiong_please_wait'.tr);
         final init = await web3Request.chain.client.init();
         if (!init) {
-          progressKey.error(
-              backToIdle: null, text: "web3_client_connection_failed".tr);
+          progressKey.errorResponse(
+              message: "web3_client_connection_failed".tr);
+          web3Request.error(Web3RequestExceptionConst.disconnectedChain);
           return false;
         }
       }

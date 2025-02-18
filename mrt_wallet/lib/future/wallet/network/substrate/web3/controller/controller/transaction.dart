@@ -33,33 +33,42 @@ class Web3SubstrateTransactionRequestController extends Web3SubstrateImpl<
       liveRequest.validator as Web3SubstrateSendTransactionForm;
 
   Future<ExtrinsicPayloadInfo> _init() async {
-    if (transaction.specVersion != metadata.specVersion ||
-        !BytesUtils.bytesEqual(
-            transaction.genesisHash, metadata.genesisBytes())) {
-      throw Web3SubstrateExceptionConstant.invalidTransactionSpecVersion;
+    try {
+      if (transaction.specVersion != metadata.specVersion) {
+        throw Web3SubstrateExceptionConstant.invalidTransactionSpecVersion;
+      }
+      if (!BytesUtils.bytesEqual(
+          transaction.genesisHash, metadata.genesisBytes())) {
+        throw Web3SubstrateExceptionConstant.invalidTransactionGenesisHash;
+      }
+      final decode =
+          metadata.metadata.decodeCall<Map<String, dynamic>>(transaction.call);
+      final era = MortalEra(index: transaction.era[0], era: transaction.era[1]);
+      final extrinsic = SubstrateDefaultExtrinsic(
+          era: era,
+          nonce: transaction.nonce,
+          specVersion: metadata.runtimeVersion.specVersion,
+          transactionVersion: metadata.runtimeVersion.transactionVersion,
+          genesis: transaction.genesisHash,
+          mortality: transaction.blockHash,
+          tip: transaction.tip,
+          metadataHash: transaction.metadataHash,
+          assetId: transaction.assetId);
+      final extraFields = extrinsic.encode(
+          fields: metadata.extrinsic.extrinsicPayloadValidators,
+          metadata: metadata.metadata);
+      final List<int> serializedExtrinsic =
+          [...transaction.call, ...extraFields].asImmutableBytes;
+      return ExtrinsicPayloadInfo(
+          serializedExtrinsic: serializedExtrinsic,
+          method: transaction.call,
+          payloadInfo: decode,
+          extrinsic: extrinsic);
+    } on Web3RequestExceptionConst {
+      rethrow;
+    } catch (e) {
+      throw Web3SubstrateExceptionConstant.transactionSerializationFailed;
     }
-    final decode =
-        metadata.metadata.decodeCall<Map<String, dynamic>>(transaction.call);
-    final era = MortalEra(index: transaction.era[0], era: transaction.era[1]);
-    final extrinsic = SubstrateDefaultExtrinsic(
-        era: era,
-        nonce: transaction.nonce,
-        specVersion: metadata.runtimeVersion.specVersion,
-        transactionVersion: metadata.runtimeVersion.transactionVersion,
-        genesis: transaction.genesisHash,
-        mortality: transaction.blockHash,
-        tip: transaction.tip,
-        metadataHash: transaction.metadataHash);
-    final extraFields = extrinsic.encode(
-        fields: metadata.extrinsic.extrinsicPayloadValidators,
-        metadata: metadata.metadata);
-    final List<int> serializedExtrinsic =
-        [...transaction.call, ...extraFields].asImmutableBytes;
-    return ExtrinsicPayloadInfo(
-        serializedExtrinsic: serializedExtrinsic,
-        method: transaction.call,
-        payloadInfo: decode,
-        extrinsic: extrinsic);
   }
 
   @override
@@ -67,7 +76,7 @@ class Web3SubstrateTransactionRequestController extends Web3SubstrateImpl<
     progressKey.process(text: "transaction_retrieval_requirment".tr);
     final r = await MethodUtils.call(() => _init());
     if (r.hasError) {
-      progressKey.error(text: r.error!.tr, backToIdle: null);
+      progressKey.errorResponse(error: r.exception);
       request.error(Web3RequestExceptionConst.fromException(r.exception!));
       return;
     }
@@ -117,7 +126,7 @@ class Web3SubstrateTransactionRequestController extends Web3SubstrateImpl<
     });
 
     if (result.hasError) {
-      progressKey.error(text: result.error!.tr);
+      progressKey.error(error: result.exception, showBackButton: true);
     } else {
       request.completeResponse(Web3SubstrateSendTransactionResponse(
               signature: result.result.signature!,

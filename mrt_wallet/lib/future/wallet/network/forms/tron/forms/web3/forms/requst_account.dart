@@ -1,6 +1,5 @@
 import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/core/tron.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
@@ -46,11 +45,9 @@ class TronRequestAccountForm extends TronWeb3Form {
         request: request,
         chains: chains,
         permissions: fields,
-        newPermission: Web3TronChain.create(
-            chain: request.currentPermission?.currentChain));
+        newPermission:
+            Web3TronChain.create(id: request.currentPermission?.currentChain));
   }
-  @override
-  OnChangeForm? onChanged;
   @override
   String get name => request.params.method.name;
   final Map<TronChain, TransactionListFormField<Web3TronChainAccount>>
@@ -69,9 +66,7 @@ class TronRequestAccountForm extends TronWeb3Form {
       permissions[chain]?.removeValue(exists);
     } else {
       permissions[chain]?.addValue(Web3TronChainAccount.fromChainAccount(
-          address: address,
-          chain: chain.network.tronNetworkType,
-          isDefault: false));
+          address: address, id: chain.network.value, isDefault: false));
     }
     if (permissions[chain]!.isNotEmpty &&
         !permissions[chain]!.value.any((e) => e.defaultAddress)) {

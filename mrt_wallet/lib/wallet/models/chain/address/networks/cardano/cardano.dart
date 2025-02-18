@@ -104,7 +104,6 @@ class ICardanoAddress extends ChainAccount<ADAAddress, TokenCore, NFTCore>
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -176,9 +175,6 @@ class ICardanoAddress extends ChainAccount<ADAAddress, TokenCore, NFTCore>
 
   @override
   void removeNFT(NFTCore nft) {}
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override

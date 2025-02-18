@@ -6,8 +6,10 @@ mixin WalletManager on _WalletController {
   final Cancelable _balanceUpdaterCancelable = Cancelable();
   StreamSubscription<void>? _balanceUpdaterStream;
 
+  /// emit unlocking walllet
   void _onUnlock() {}
 
+  /// wallet lock timeout handler
   late final WalletTimeoutListener _timeout = WalletTimeoutListener(() {
     _core.lock();
   }, () {
@@ -17,6 +19,7 @@ mixin WalletManager on _WalletController {
     return null;
   });
 
+  /// update wallet status
   void _setDefaultPageStatus() {
     _massterKey = null;
     _walletKey = null;
@@ -32,6 +35,7 @@ mixin WalletManager on _WalletController {
     _setDefaultPageStatus();
   }
 
+  /// unlock wallet
   Future<void> _login(String password) async {
     final storageKey = await crypto.cryptoIsolateRequest(
         CryptoRequestGenerateMasterKey.fromStorageWithStringKey(
@@ -45,6 +49,9 @@ mixin WalletManager on _WalletController {
     _onUnlock();
   }
 
+  /// dervie new address for chain
+  /// - [newAccountParams] New account parameters.
+  /// - [chain] chain for derive new address
   Future<NETWORKCHAINACCOUNT<NETWORKADDRESS>> _deriveNewAccount<NETWORKADDRESS>(
       {required NewAccountParams<NETWORKADDRESS> newAccountParams,
       required APPCHAINNETWORK<NETWORKADDRESS> chain}) async {
@@ -70,6 +77,9 @@ mixin WalletManager on _WalletController {
     return account;
   }
 
+  /// import private key to current wallet
+  /// -[newKey]: new private key for import to current wallet.
+  /// =[password]: wallet password
   Future<void> _importNewKey(ImportedKeyStorage newKey, String password) async {
     final keyBytes = await _validatePassword(password);
     final encrypt = await crypto.walletArgs(
@@ -80,6 +90,8 @@ mixin WalletManager on _WalletController {
     await _updateWallet(_wallet._updateData(encrypt.storageData));
   }
 
+  /// - [removeKey]: private key from current wallet
+  /// - [password]: wallet password
   Future<void> _removeKey(EncryptedCustomKey removeKey, String password) async {
     final keyBytes = await _validatePassword(password);
     if (!_massterKey!.customKeys.contains(removeKey)) {
@@ -94,6 +106,8 @@ mixin WalletManager on _WalletController {
     await _updateWallet(_wallet._updateData(encrypt.storageData));
   }
 
+  /// confirm the current wallet password
+  /// - [password]: current wallet password.
   Future<List<int>> _validatePassword(String password) async {
     if (!isUnlock) {
       throw WalletExceptionConst.walletIsLocked;
@@ -106,6 +120,9 @@ mixin WalletManager on _WalletController {
     return keyBytes;
   }
 
+  /// change current wallet password.
+  /// - [password]: current password
+  /// - [newPassword]: new wallet password.
   Future<void> _changePassword(String password, String newPassword) async {
     if (!StrUtils.isStrongPassword(newPassword)) {
       throw WalletExceptionConst.incorrectPassword;
@@ -123,6 +140,9 @@ mixin WalletManager on _WalletController {
     _setDefaultPageStatus();
   }
 
+  /// generate wallet backup
+  /// - [type]: backup type (private keys, mnemonic or fully wallet backup)
+  /// - [password]: current wallet password
   Future<String> _generateMrtBackup(
       {required String data,
       required MrtBackupTypes type,
@@ -138,6 +158,8 @@ mixin WalletManager on _WalletController {
     return mrtBackup.toCbor().toCborHex();
   }
 
+  /// generate fully wallet backup
+  /// -[password]: current wallet password
   Future<String> _generateMrtWalletBackup(String password) async {
     final key = await _validatePassword(password);
     final encrypt = await crypto.walletArgs(
@@ -163,6 +185,12 @@ mixin WalletManager on _WalletController {
     return mrtBackup.toCbor().toCborHex();
   }
 
+  /// get access key
+  /// some operation required access key and need password like show private keys,
+  /// remove wallet, read mnemonic and ....
+  /// - [accsessType]: type of key to read.
+  /// - [account]: read account private key if provided.
+  /// - [keyId]: read imported private key if provided.
   Future<List<CryptoKeyData>> _accsess(WalletAccsessType accsessType,
       {ChainAccount? account, String? keyId}) async {
     if (accsessType.isUnlock && isUnlock) {
@@ -200,6 +228,9 @@ mixin WalletManager on _WalletController {
     }
   }
 
+  /// get address public key.
+  /// does not work for multisig account.
+  /// - [account]: account for retrive public key.
   Future<List<CryptoPublicKeyData>> _getAccountPubKys(
       {required ChainAccount account}) async {
     final indexes = account.accessKeysIndexes();
@@ -213,6 +244,10 @@ mixin WalletManager on _WalletController {
     return pubKeys;
   }
 
+  /// signing request
+  /// -[password]: required for protected wallet
+  /// -[signers]: the key information for read.
+  /// -[request]: callback method for provide message for signing
   Future<T> _signTransaction<T>(
       {required String? password,
       required Set<AddressDerivationIndex> signers,
@@ -238,6 +273,8 @@ mixin WalletManager on _WalletController {
     return sign;
   }
 
+  /// find related imported key for coin
+  /// -[derivationCoin]: find related imported key for this coin.
   List<EncryptedCustomKey> _getCustomKeysForCoin(CryptoCoins derivationCoin) {
     final List<EncryptedCustomKey> coins = [];
     final customKeys = _massterKey!.customKeys;
@@ -249,11 +286,16 @@ mixin WalletManager on _WalletController {
     return coins.toSet().toImutableList;
   }
 
+  /// get imported key private key
+  /// -[password]: current wallet password.
   Future<List<EncryptedCustomKey>> _getImportedAccounts(String password) async {
     await _validatePassword(password);
     return List<EncryptedCustomKey>.from(_massterKey!.customKeys);
   }
 
+  /// update wallet settings. like name, unlock time and security options
+  /// -[walletInfos]: updated wallet information
+  /// -[password]: current wallet password
   Future<void> _updateWalletInfos(
       {required WalletUpdateInfosData walletInfos,
       required String password}) async {
@@ -272,11 +314,16 @@ mixin WalletManager on _WalletController {
     }
   }
 
+  /// update or import new network to wallet
+  /// -[network]: new or updated network
   Future<void> _updateImportNetwork(WalletNetwork network) async {
     final newChain = _appChains.updateImportNetwork(network);
     await _saveAccount(newChain);
   }
 
+  /// switch account address.
+  /// -[account]: Chain account.
+  /// -[address]: new Chain account addresss for switching
   Future<void> _switchAccount<CHAINTOKEN extends ChainAccount>(
       {required APPCHAINACCOUNT<CHAINTOKEN> account,
       required CHAINTOKEN address}) async {
@@ -285,6 +332,9 @@ mixin WalletManager on _WalletController {
     _updateAddressBalance(account: account, address: address);
   }
 
+  /// remove address from account
+  /// -[account]: Chain account
+  /// -[address]: address of chain for removing from account.
   Future<bool> _removeAccount<CHAINTOKEN extends ChainAccount>(
       {required APPCHAINACCOUNT<CHAINTOKEN> account,
       required CHAINTOKEN address}) async {
@@ -295,6 +345,9 @@ mixin WalletManager on _WalletController {
     return remove;
   }
 
+  /// add new contant to account
+  /// -[newContact]: contant for importing
+  /// -[account]: Chain account related to contact
   Future<void> _addNewContact<NETWORKADDRESS>(
       {required ContactCore<NETWORKADDRESS> newContact,
       required APPCHAINNETWORK<NETWORKADDRESS> account}) async {
@@ -302,6 +355,9 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// add new token to address
+  /// -[account]: chain account
+  /// -[address]: address for importing token
   Future<void> _addNewToken<NETWORKADDRESS, TOKEN extends TokenCore,
           CHAINACCOUNT extends NETWORKCHAINACCOUNT<NETWORKADDRESS>>(
       {required TOKEN token,
@@ -314,6 +370,10 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// remove token from address
+  /// -[token]: token for remove
+  /// -[address]: owner address of token
+  /// -[account]: related chain
   Future<void> _removeToken<NETWORKADDRESS, TOKEN extends TokenCore,
           CHAINACCOUNT extends NETWORKCHAINACCOUNT<NETWORKADDRESS>>(
       {required TOKEN token,
@@ -326,6 +386,11 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// update address token information like name, decimal and etc ...
+  /// -[updatedToken]: updated token
+  /// -[token]: token form update
+  /// -[address]: owner address of token
+  /// -[account]: related chain
   Future<void> _updateToken<NETWORKADDRESS, TOKEN extends TokenCore,
           CHAINACCOUNT extends NETWORKCHAINACCOUNT<NETWORKADDRESS>>(
       {required Token updatedToken,
@@ -339,12 +404,15 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// import NFT token to address
+  /// -[account]: related chain
+  /// -[address]: owner address of token
+  /// -[nft]: Token for importing
   Future<void>
-      _addNewNFT<NFT extends NFTCore, APPCHAIN extends APPCHAINNFT<NFT>>({
-    required NFT nft,
-    required APPCHAIN account,
-    required NFTCHAINACCOUNT<NFT> address,
-  }) async {
+      _addNewNFT<NFT extends NFTCore, APPCHAIN extends APPCHAINNFT<NFT>>(
+          {required NFT nft,
+          required APPCHAIN account,
+          required NFTCHAINACCOUNT<NFT> address}) async {
     if (!account.addresses.contains(address)) {
       throw WalletExceptionConst.accountDoesNotFound;
     }
@@ -352,6 +420,10 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// remove NFT token from address
+  /// -[nft]: token for remove
+  /// -[account]: related chain
+  /// -[address]: owner address of token
   Future<void>
       _removeNFT<NFT extends NFTCore, APPCHAIN extends APPCHAINNFT<NFT>>({
     required NFT nft,
@@ -365,11 +437,17 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// remove network from wallet
+  /// -[chain]: network for remove
   Future<void> _removeChain(Chain chain) async {
     await _appChains.removeChain(chain);
     await _core._removeAccount(chain);
   }
 
+  /// set or update address name.
+  /// -[name]: for update or remove if null.
+  /// -[account]: related chain
+  /// -[address]: address for updating name.
   Future<void> _setAccountName<CHAINTOKEN extends ChainAccount>(
       {String? name,
       required APPCHAINACCOUNT<CHAINTOKEN> account,
@@ -381,6 +459,9 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// update address balance
+  /// -[account]: related chain
+  /// -[address]: address for retrive and update balance
   Future<void> _updateAddressBalance<CHAINTOKEN extends ChainAccount>(
       {required APPCHAINACCOUNT<CHAINTOKEN> account,
       required CHAINTOKEN address}) async {
@@ -390,6 +471,10 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// update chain addresses balance.
+  /// update all address of chain
+  /// -[account]: chain for update account
+  /// -[address]: update only address if provided.
   Future<void> _updateAccountBalance<CHAINACCOUNT extends ChainAccount>(
       APPCHAINACCOUNT<CHAINACCOUNT> account,
       {CHAINACCOUNT? address}) async {
@@ -412,6 +497,7 @@ mixin WalletManager on _WalletController {
     await _saveAccount(account);
   }
 
+  /// switch current wallet network
   Future<void> _switchNetwork(int changeNetwork) async {
     final change = await _appChains.switchNetwork(changeNetwork);
     if (change) {
@@ -419,18 +505,18 @@ mixin WalletManager on _WalletController {
     }
   }
 
-  Future<void> _changeNetworkApiProvider<PROVIDER extends APIProvider>(
-      {required PROVIDER provider,
+  /// update current wallet network provider.
+  Future<void> _changeNetworkApiProvider(
+      {required ProviderIdentifier provider,
       required APPCHAINNETWORKPROVIDER account}) async {
-    account.setProvider(provider);
-    await _saveAccount(account);
+    await account.setProvider(provider);
   }
 
+  /// internal wallet call, to safty get wallet keys and process
   Future<T?> _callWalletInternal<T>(
-      Future<T> Function({
-        required List<int> masterKey,
-        required List<int> wKey,
-      }) t) async {
+      Future<T> Function(
+              {required List<int> masterKey, required List<int> wKey})
+          t) async {
     final masterKey = _massterKey?.masterKey;
     final wKey = _walletKey;
     if (masterKey == null || wKey == null) {
@@ -439,6 +525,8 @@ mixin WalletManager on _WalletController {
     return t(masterKey: masterKey, wKey: wKey);
   }
 
+  /// internal wallet request
+  /// this method get wallet keys and run the wallet request message.
   Future<T> _walletRequest<T, A extends CborMessageArgs>(
       {required WalletArgsCompleter<T, A> message,
       List<int>? masterkey,
@@ -449,6 +537,9 @@ mixin WalletManager on _WalletController {
         key: walletKey ?? _walletKey!);
   }
 
+  /// clear account when removing imported key
+  /// retrive all addresses create with current key and remove from wallet.
+  /// -[removedKey]: imported key
   Future<void> _cleanUpdateRemovedKeyAccounts(String removedKey) async {
     final List<ChainAccount> removeList = [];
     final List<ChainAccount> accs = _appChains.accounts;
@@ -480,10 +571,12 @@ mixin WalletManager on _WalletController {
     }
   }
 
+  /// save account to storage.
   Future<void> _saveAccount(Chain account) async {
     await account.save();
   }
 
+  /// init the wallet
   Future<void> _onInitController() async {
     await chain.init();
     if (_core.isJsWallet) return;
@@ -506,6 +599,7 @@ mixin WalletManager on _WalletController {
         .listen((s) {});
   }
 
+  /// dispose wallet before switching wallet.
   void _dispose() {
     MethodUtils.nullOnException(() {
       _balanceUpdaterStream?.cancel();

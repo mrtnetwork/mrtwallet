@@ -34,15 +34,12 @@ abstract class SubstrateTransactionForm extends TransactionForm {
 }
 
 abstract class SubstrateWeb3Form<PARAMS extends Web3SubstrateRequestParam>
-    implements
-        Web3Form<BaseSubstrateAddress, SubstrateChain,
-            Web3SubstrateChainAccount, Web3SubstrateChain, PARAMS> {
+    extends Web3Form<BaseSubstrateAddress, SubstrateChain,
+        Web3SubstrateChainAccount, Web3SubstrateChain, PARAMS> {
   @override
   abstract final Web3SubstrateRequest<dynamic, PARAMS> request;
 
   DynamicVoid? onStimateChanged;
-  @override
-  ObjectVoid? onCompleteForm;
 
   @override
   String get name => request.params.method.name;

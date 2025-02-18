@@ -41,7 +41,9 @@ abstract class Web3SubstrateRequestParam<RESPONSE> extends Web3RequestParams<
   Web3SubstrateRequest<RESPONSE, Web3SubstrateRequestParam<RESPONSE>> toRequest(
       {required Web3RequestApplicationInformation request,
       required Web3APPAuthentication authenticated,
-      required SubstrateChain chain}) {
+      required List<APPCHAIN> chains}) {
+    final SubstrateChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3SubstrateRequest<RESPONSE, Web3SubstrateRequestParam<RESPONSE>>(
         params: this,
         authenticated: authenticated,

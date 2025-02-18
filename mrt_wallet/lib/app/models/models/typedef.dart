@@ -19,6 +19,8 @@ typedef BigIntRationalVoid = void Function(BigRational);
 typedef FuncBoolString = bool Function(String);
 typedef FuncFutureBoolString = Future<bool> Function(String);
 typedef FuncFutureNullableBoold = Future<bool?> Function();
+typedef FuncFutureNullableBoolString = Future<bool?> Function(String);
+
 typedef IntVoid = void Function(int);
 typedef BigIntVoid = void Function(BigInt);
 

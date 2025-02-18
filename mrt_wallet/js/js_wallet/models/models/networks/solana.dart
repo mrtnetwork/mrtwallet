@@ -455,6 +455,8 @@ extension type JSSolanaWalletAccount._(JSObject _) implements JSAny {
   external set publicKey(APPJSUint8Array bytes);
   external set chains(JSArray<JSString>? chains);
   external set features(JSArray<JSString>? features);
+  external set label(String? _);
+  external set icon(String? _);
 
   Map<String, dynamic> toJson() {
     return {

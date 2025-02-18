@@ -12,7 +12,7 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 void main() async {
   runZonedGuarded(_runApplication, (error, stack) {
-    WalletLogging.log("zoon error: $error");
+    // WalletLogging.log("zoon error: $error");
   });
 }
 

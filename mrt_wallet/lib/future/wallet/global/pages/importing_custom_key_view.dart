@@ -16,6 +16,7 @@ class ImportCustomKeyToWalletView extends StatefulWidget {
 class ImportCustomKeyToWalletViewState
     extends State<ImportCustomKeyToWalletView> with SafeState {
   bool showKeys = false;
+  late final String keyType = widget.keypair.coin.conf.type.name.camelCase;
 
   void onChangeShowKeys() {
     showKeys = !showKeys;
@@ -35,6 +36,7 @@ class ImportCustomKeyToWalletViewState
                 "export_private_key_desc".tr,
               ])),
           Text("private_key".tr, style: context.textTheme.titleMedium),
+          Text(keyType),
           WidgetConstant.height8,
           Stack(
             children: [
@@ -62,10 +64,8 @@ class ImportCustomKeyToWalletViewState
                       error: "image_store_alert_keys".tr),
                   dataToCopy: widget.keypair.privateKey,
                   barcodeTitle: "private_key".tr,
-                  widget: Text(
-                    widget.keypair.privateKey,
-                    style: context.onPrimaryTextTheme.bodyMedium,
-                  ),
+                  widget: Text(widget.keypair.privateKey,
+                      style: context.onPrimaryTextTheme.bodyMedium),
                 )),
               ),
               Positioned.fill(
@@ -80,7 +80,7 @@ class ImportCustomKeyToWalletViewState
             ],
           ),
           WidgetConstant.height20,
-          Text("publick_key".tr, style: context.textTheme.titleMedium),
+          Text("public_key".tr, style: context.textTheme.titleMedium),
           WidgetConstant.height8,
           ContainerWithBorder(
               child: CopyTextWithBarcode(
@@ -96,7 +96,7 @@ class ImportCustomKeyToWalletViewState
                       style: context.onPrimaryTextTheme.bodyMedium,
                     ))),
             dataToCopy: widget.keypair.publicKey,
-            barcodeTitle: "publick_key".tr,
+            barcodeTitle: "public_key".tr,
             widget: SelectableText(widget.keypair.publicKey,
                 style: context.onPrimaryTextTheme.bodyMedium),
           )),

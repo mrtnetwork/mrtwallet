@@ -1,6 +1,7 @@
 import 'dart:js_interop';
 import 'package:mrt_native_support/models/events/models/wallet_event.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/models/models/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart';
@@ -18,6 +19,7 @@ void main() async {
       await JSExtentionWallet.sendBackgroudMessage(JSWalletConstant.tabIdEvent);
   WalletMessageResponse message;
   if (backgroundEvent.type == WalletEventTypes.exception) {
+    WalletLogging.log("background event ${backgroundEvent.data}");
     final exception =
         Web3ExceptionMessage.deserialize(bytes: backgroundEvent.data);
     message = WalletMessageResponse.fail(exception.toJson().jsify());

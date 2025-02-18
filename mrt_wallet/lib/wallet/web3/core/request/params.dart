@@ -4,6 +4,7 @@ import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/messages.dart';
 import 'package:mrt_wallet/wallet/web3/core/methods/methods.dart';
+import 'package:mrt_wallet/wallet/web3/networks/aptos/params/core/request.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/params/core/request.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/global.dart';
@@ -11,6 +12,7 @@ import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/params/core/request.dart';
+import 'package:mrt_wallet/wallet/web3/networks/sui/params/core/request.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'web_request.dart';
@@ -72,7 +74,19 @@ abstract class Web3RequestParams<
   Web3Request toRequest(
       {required Web3RequestApplicationInformation request,
       required Web3APPAuthentication authenticated,
-      required CHAIN chain});
+      required List<APPCHAIN> chains});
+  CHAIN findRequestChain(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final web3Chain =
+        authenticated.getChainFromNetworkType<WEB3ChAIN>(method.network);
+    if (web3Chain == null) {
+      throw Web3RequestExceptionConst.bannedHost;
+    }
+    final networkChains = chains.whereType<CHAIN>().toList();
+    return web3Chain.getCurrentPermissionChain(networkChains);
+  }
 
   factory Web3RequestParams.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -106,6 +120,14 @@ abstract class Web3RequestParams<
         break;
       case NetworkType.substrate:
         param = Web3SubstrateRequestParam.deserialize(
+            bytes: bytes, object: object, hex: hex);
+        break;
+      case NetworkType.aptos:
+        param = Web3AptosRequestParam.deserialize(
+            bytes: bytes, object: object, hex: hex);
+        break;
+      case NetworkType.sui:
+        param = Web3SuiRequestParam.deserialize(
             bytes: bytes, object: object, hex: hex);
         break;
       default:

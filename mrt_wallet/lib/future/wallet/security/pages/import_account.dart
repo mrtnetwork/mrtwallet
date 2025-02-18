@@ -97,6 +97,8 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
   String? keyName;
   String _key = "";
 
+  Map<CryptoCoins, Widget> coinItems = {};
+
   void setKeyName(String? name) {
     setState(() {
       keyName = name;
@@ -157,6 +159,16 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
 
   void _init() {
     network = context.watch<WalletProvider>(StateConst.main).wallet.network;
+    coinItems = {
+      for (final i in coins)
+        i: RichText(
+            text: TextSpan(style: context.textTheme.bodyMedium, children: [
+          TextSpan(text: i.coinName.camelCase),
+          TextSpan(
+              text: " (${i.conf.type.name.camelCase}) ",
+              style: context.textTheme.labelSmall)
+        ]))
+    };
     if (!needSelectCoins) {
       coin = coins.first;
       keyTypes = _buildKeyTypes();
@@ -260,21 +272,9 @@ class _ImportAccountState extends State<_ImportAccount> with SafeState {
                           Text("choose_key_coin_desc".tr),
                           WidgetConstant.height8,
                           AppDropDownBottom(
-                              items: {
-                                for (final i in coins)
-                                  i: RichText(
-                                      text: TextSpan(
-                                          style: context.textTheme.bodyMedium,
-                                          children: [
-                                        TextSpan(text: i.coinName.camelCase),
-                                        TextSpan(
-                                            text:
-                                                " (${i.proposal.specName.camelCase}) ",
-                                            style: context.textTheme.labelSmall)
-                                      ]))
-                              },
+                              items: coinItems,
                               value: coin,
-                              label: "coin_type".tr,
+                              hint: "coin_type".tr,
                               onChanged: onChangeKeyAlogrithm),
                           WidgetConstant.height20,
                         ],

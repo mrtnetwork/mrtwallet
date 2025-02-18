@@ -49,7 +49,7 @@ class Web3SolanaGlobalRequestController<RESPONSE,
           return signature.result;
         });
         if (signMessage.hasError) {
-          progressKey.error(text: signMessage.error!.tr);
+          progressKey.error(error: signMessage.exception, showBackButton: true);
           return;
         }
         result = Web3SolanaSignMessageResponse(

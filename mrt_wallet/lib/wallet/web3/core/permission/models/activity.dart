@@ -5,12 +5,14 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 class Web3AccountAcitvity with CborSerializable {
   final String method;
   final DateTime date;
-  final String? url;
+  final String? path;
   final String? address;
+  final int id;
   Web3AccountAcitvity({
     required this.method,
     DateTime? date,
-    required this.url,
+    required this.path,
+    required this.id,
     this.address,
   }) : date = date ?? DateTime.now();
   factory Web3AccountAcitvity.deserialize(
@@ -23,19 +25,16 @@ class Web3AccountAcitvity with CborSerializable {
     return Web3AccountAcitvity(
         method: values.elementAt(0),
         date: values.elementAt(1),
-        url: values.elementAt(2),
-        address: values.elementAt(3));
+        path: values.elementAt(2),
+        address: values.elementAt(3),
+        id: values.elementAs(4));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength([
-          method,
-          CborEpochFloatValue(date),
-          url,
-          address,
-        ]),
+        CborListValue.fixedLength(
+            [method, CborEpochFloatValue(date), path, address, id]),
         CborTagsConst.permissionActivityTag);
   }
 }

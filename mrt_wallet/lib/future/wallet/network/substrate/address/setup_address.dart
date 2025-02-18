@@ -106,7 +106,7 @@ class _SetupSubstrateAddressViewState extends State<SetupSubstrateAddressView>
         WidgetConstant.height20,
         Text("keypair_type".tr, style: context.textTheme.titleMedium),
         TextAndLinkView(
-          text: "choose_substrate_key_algorithm_desc".tr,
+          text: "choose_key_algorithm_desc2".tr,
           url: LinkConst.reviewSubstrateSignatureSchame,
           linkDesc: "read_more".tr,
         ),

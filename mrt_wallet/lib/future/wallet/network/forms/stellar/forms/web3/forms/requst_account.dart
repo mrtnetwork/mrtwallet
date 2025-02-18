@@ -1,7 +1,6 @@
 import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/stellar/forms/core/stellar.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
@@ -49,10 +48,8 @@ class StellarRequestAccountForm extends StellarWeb3Form {
         chains: chains,
         permissions: fields,
         newPermission: Web3StellarChain.create(
-            passphrase: request.currentPermission?.currentChain));
+            id: request.currentPermission?.currentChain));
   }
-  @override
-  OnChangeForm? onChanged;
   @override
   String get name => request.params.method.name;
   final Map<StellarChain, TransactionListFormField<Web3StellarChainAccount>>
@@ -73,9 +70,7 @@ class StellarRequestAccountForm extends StellarWeb3Form {
       permissions[chain]?.removeValue(exists);
     } else {
       permissions[chain]?.addValue(Web3StellarChainAccount.fromChainAccount(
-          address: address,
-          passphrase: chain.network.coinParam.passphrase,
-          isDefault: false));
+          address: address, id: chain.network.value, isDefault: false));
     }
     if (permissions[chain]!.isNotEmpty &&
         !permissions[chain]!.value.any((e) => e.defaultAddress)) {

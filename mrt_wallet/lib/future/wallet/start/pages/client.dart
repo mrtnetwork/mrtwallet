@@ -69,7 +69,7 @@ class _AppbarProviderStatus extends StatelessWidget {
   WalletNetwork get network => chain.network;
   void onSwitchNetwork(BuildContext context) {
     context
-        .openSliverDialog<APIProvider>(
+        .openSliverDialog<ProviderIdentifier>(
             (ctx) => SelectProviderView(chain: chain), "service_provider".tr)
         .then(
       (value) {

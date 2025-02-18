@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/wallet/web3/constant/constant.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message_types.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart';
@@ -56,4 +57,9 @@ class Web3ExceptionMessage extends Web3MessageCore {
 
   @override
   Web3MessageTypes get type => Web3MessageTypes.error;
+
+  bool get isAuthenticatedError {
+    return code == Web3RequestExceptionConst.missingPermission.code ||
+        code == Web3RequestExceptionConst.bannedHost.code;
+  }
 }

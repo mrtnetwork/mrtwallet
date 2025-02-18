@@ -26,8 +26,7 @@ class Web3StellarRequestMethods extends Web3RequestMethods {
       Web3StellarRequestMethods._(
           id: Web3StellarConst.signTransactionTag,
           name: Web3StellarConst.signTransaction);
-  @override
-  final bool needWalletOwnerAction = true;
+
   @override
   NetworkType get network => NetworkType.stellar;
 

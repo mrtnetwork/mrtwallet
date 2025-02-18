@@ -5,14 +5,12 @@ import 'package:mrt_wallet/wallet/web3/networks/global/constant/constant.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 
 class Web3GlobalRequestMethods extends Web3RequestMethods {
-  const Web3GlobalRequestMethods._(
-      {required super.id,
-      required super.name,
-      this.needWalletOwnerAction = true});
+  const Web3GlobalRequestMethods._({
+    required super.id,
+    required super.name,
+  });
   static const Web3GlobalRequestMethods disconnect = Web3GlobalRequestMethods._(
-      id: Web3GlobalConst.disconnectTag,
-      name: "disconnect",
-      needWalletOwnerAction: false);
+      id: Web3GlobalConst.disconnectTag, name: "disconnect");
 
   static const List<Web3GlobalRequestMethods> values = [disconnect];
   static Web3GlobalRequestMethods fromId(int? id) {
@@ -27,7 +25,4 @@ class Web3GlobalRequestMethods extends Web3RequestMethods {
 
   @override
   NetworkType get network => throw UnimplementedError();
-
-  @override
-  final bool needWalletOwnerAction;
 }

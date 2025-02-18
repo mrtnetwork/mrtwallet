@@ -59,9 +59,7 @@ class SwitchOrSelectAccountView<CHAINACCOUNT extends ChainAccount>
             );
           }
           final currentAccount = account.address;
-          List<CHAINACCOUNT> addresses =
-              List<CHAINACCOUNT>.from(account.addresses)
-                ..sort((a, b) => a == currentAccount ? 0 : 1);
+          List<CHAINACCOUNT> addresses = account.addresses;
           if (!showMultiSig) {
             addresses = addresses.where((e) => !e.multiSigAccount).toList();
           }
@@ -105,12 +103,11 @@ class SwitchOrSelectAccountView<CHAINACCOUNT extends ChainAccount>
                       ),
                       WidgetConstant.width8,
                       CopyTextIcon(
-                        isSensitive: false,
-                        dataToCopy: addr.address.toAddress,
-                        color: isSelected
-                            ? context.colors.onSecondary
-                            : context.colors.onPrimaryContainer,
-                      ),
+                          isSensitive: false,
+                          dataToCopy: addr.address.toAddress,
+                          color: isSelected
+                              ? context.colors.onSecondary
+                              : context.colors.onPrimaryContainer),
                     ],
                   ),
                 );

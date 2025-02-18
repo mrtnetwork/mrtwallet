@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:mrt_wallet/future/wallet/network/aptos/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/web3/permission/permission.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/web3/permission/permission.dart';
+import 'package:mrt_wallet/future/wallet/network/sui/web3/permission/permission.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/web3/permission/permission.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
@@ -14,6 +16,19 @@ import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+
+class Web3ActivityViewItem {
+  final String name;
+  final Web3AccountAcitvity activity;
+  final ReceiptAddress? address;
+  final String? url;
+  const Web3ActivityViewItem({
+    required this.name,
+    required this.activity,
+    required this.url,
+    this.address,
+  });
+}
 
 mixin Web3PermissionState<
     T extends StatefulWidget,
@@ -51,6 +66,28 @@ mixin Web3PermissionState<
   Map<CHAIN, List<CHAINACCOUT>> permissions = {};
   late CHAIN chain;
   List<CHAINACCOUT> get chainPermission => permissions[chain]!;
+  List<Web3ActivityViewItem> activities = [];
+  Web3APPAuthentication get application;
+
+  void updateActivities() {
+    activities = permission.activities
+        .where((e) => e.id == chain.network.value)
+        .map((e) {
+      return Web3ActivityViewItem(
+          activity: e,
+          address: e.address == null
+              ? null
+              : chain.getReceiptAddress(e.address!) ??
+                  ReceiptAddress(view: e.address!, networkAddress: e),
+          name: e.method.camelCase,
+          url: (e.path == null)
+              ? null
+              : Uri.tryParse(application.applicationId)
+                  ?.replace(path: e.path)
+                  .normalizePath()
+                  .toString());
+    }).toList();
+  }
 
   void onChangeDefaultPermission(CHAINACCOUT? address) {
     if (address == null) return;
@@ -84,6 +121,7 @@ mixin Web3PermissionState<
 
   void onChangeChain(CHAIN? updateChain) {
     chain = updateChain ?? chain;
+    updateActivities();
     updateState();
   }
 }
@@ -101,7 +139,10 @@ class Web3PermissionUpdateView extends StatelessWidget {
       child: ClipRRect(
           borderRadius: WidgetConstant.border25,
           child: PasswordCheckerView(
-              title: 'web3_permission'.tr,
+              appbar: AppBar(
+                title: Text('web3_permission'.tr,
+                    style: context.textTheme.titleMedium),
+              ),
               accsess: WalletAccsessType.unlock,
               onAccsess: (credential, password, network) =>
                   _Web3APPPermissionView(controller: controller))),
@@ -122,7 +163,7 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
   Web3RequestControllerImpl get controller => widget.controller;
   final GlobalKey<FormState> formKey = GlobalKey();
   Web3APPAuthentication? application;
-
+  List<Web3AccountAcitvity> activities = [];
   String applicationName = "";
 
   bool active = true;
@@ -202,6 +243,29 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     updateState();
   }
 
+  Future<void> clearActivities() async {
+    final application = this.application;
+    if (application == null) return;
+    final r = await context.openSliverDialog<bool>(
+        (context) => DialogTextView(
+              text: "delete_all_activities_desc2".tr,
+              buttonWidget: DialogDoubleButtonView(),
+            ),
+        'remove_activities'.tr);
+    if (r != true) return;
+
+    progressKey.progressText("updating_permission".tr);
+    updateState();
+    application.clearActivities();
+    final update =
+        (await controller.walletCore.updateWeb3Application(application));
+    if (update.hasError) {
+      progressKey.errorText(update.error!.tr);
+    } else {
+      progressKey.success();
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -222,7 +286,9 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
     5: GlobalKey<Web3PermissionState>(
         debugLabel: "Web3PermissionState_stellar"),
     6: GlobalKey<Web3PermissionState>(
-        debugLabel: "Web3PermissionState_substrate")
+        debugLabel: "Web3PermissionState_substrate"),
+    7: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_aptos"),
+    8: GlobalKey<Web3PermissionState>(debugLabel: "Web3PermissionState_sui")
   };
 
   @override
@@ -286,6 +352,14 @@ class __Web3APPPermissionViewState extends State<_Web3APPPermissionView>
                                 icon: CircleAssetsImageView(APPConst.polkadot,
                                     radius: 15),
                                 label: WidgetConstant.sizedBox),
+                            NavigationRailDestination(
+                                icon: CircleAssetsImageView(APPConst.aptos,
+                                    radius: 15),
+                                label: WidgetConstant.sizedBox),
+                            NavigationRailDestination(
+                                icon: CircleAssetsImageView(APPConst.sui,
+                                    radius: 15),
+                                label: WidgetConstant.sizedBox),
                           ],
                           selectedIndex: _selectedIndex,
                         ),
@@ -330,37 +404,58 @@ class _APPPermissionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        APPSliverAnimatedSwitcher<int>(enable: state._selectedIndex, widgets: {
-          0: (context) => _APPSettingView(state),
-          1: (context) => EthereumWeb3PermissionView(
-              key: state.permissionState[1],
-              permission: state.application
-                  ?.getChainFromNetworkType(NetworkType.ethereum)),
-          2: (context) => TronWeb3PermissionView(
-              key: state.permissionState[2],
-              permission:
-                  state.application?.getChainFromNetworkType(NetworkType.tron)),
-          3: (context) => SolanaWeb3PermissionView(
-              key: state.permissionState[3],
-              permission: state.application
-                  ?.getChainFromNetworkType(NetworkType.solana)),
-          4: (context) => TonWeb3PermissionView(
-              key: state.permissionState[4],
-              permission:
-                  state.application?.getChainFromNetworkType(NetworkType.ton)),
-          5: (context) => StellarWeb3PermissionView(
-              key: state.permissionState[5],
-              permission: state.application
-                  ?.getChainFromNetworkType(NetworkType.stellar)),
-          6: (context) => SubstrateWeb3PermissionView(
-              key: state.permissionState[6],
-              permission: state.application
-                  ?.getChainFromNetworkType(NetworkType.substrate)),
-        }),
-        WidgetConstant.sliverPaddingVertial40,
-      ],
+    final application = state.application!;
+    return DefaultTabController(
+      length: 2,
+      child: CustomScrollView(
+        slivers: [
+          APPSliverAnimatedSwitcher<
+              int>(enable: state._selectedIndex, widgets: {
+            0: (context) => _APPSettingView(state),
+            1: (context) => EthereumWeb3PermissionView(
+                key: state.permissionState[1],
+                application: application,
+                permission:
+                    application.getChainFromNetworkType(NetworkType.ethereum)),
+            2: (context) => TronWeb3PermissionView(
+                key: state.permissionState[2],
+                application: application,
+                permission:
+                    application.getChainFromNetworkType(NetworkType.tron)),
+            3: (context) => SolanaWeb3PermissionView(
+                key: state.permissionState[3],
+                application: application,
+                permission:
+                    application.getChainFromNetworkType(NetworkType.solana)),
+            4: (context) => TonWeb3PermissionView(
+                key: state.permissionState[4],
+                application: application,
+                permission:
+                    application.getChainFromNetworkType(NetworkType.ton)),
+            5: (context) => StellarWeb3PermissionView(
+                key: state.permissionState[5],
+                application: application,
+                permission:
+                    application.getChainFromNetworkType(NetworkType.stellar)),
+            6: (context) => SubstrateWeb3PermissionView(
+                key: state.permissionState[6],
+                application: application,
+                permission:
+                    application.getChainFromNetworkType(NetworkType.substrate)),
+            7: (context) => AptosWeb3PermissionView(
+                key: state.permissionState[7],
+                application: application,
+                permission:
+                    application.getChainFromNetworkType(NetworkType.aptos)),
+            8: (context) => SuiWeb3PermissionView(
+                key: state.permissionState[8],
+                application: application,
+                permission:
+                    application.getChainFromNetworkType(NetworkType.sui)),
+          }),
+          WidgetConstant.sliverPaddingVertial40,
+        ],
+      ),
     );
   }
 }
@@ -396,6 +491,14 @@ class _APPSettingView extends StatelessWidget {
                 maxLine: 3,
                 value: state.active,
                 onChanged: state.onChangeActivation),
+            AppListTile(
+              contentPadding: EdgeInsets.zero,
+              onTap: state.clearActivities,
+              title: Text("remove_activities".tr,
+                  style: context.textTheme.titleMedium),
+              subtitle: Text("delete_all_activities_desc".tr),
+              trailing: Icon(Icons.delete_forever, color: context.colors.error),
+            )
           ],
         ),
       ),

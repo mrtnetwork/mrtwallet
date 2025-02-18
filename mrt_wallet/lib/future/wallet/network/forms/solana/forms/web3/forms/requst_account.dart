@@ -1,7 +1,6 @@
 import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/solana/forms/core/solana.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/solana.dart';
@@ -47,10 +46,9 @@ class SolanaRequestAccountForm extends SolanaWeb3Form {
         chains: chains,
         permissions: fields,
         newPermission: Web3SolanaChain.create(
-            genesisBlock: request.currentPermission?.currentChain));
+            id: request.currentPermission?.currentChain));
   }
-  @override
-  OnChangeForm? onChanged;
+
   @override
   String get name => request.params.method.name;
   final Map<SolanaChain, TransactionListFormField<Web3SolanaChainAccount>>
@@ -71,9 +69,7 @@ class SolanaRequestAccountForm extends SolanaWeb3Form {
       permissions[chain]?.removeValue(exists);
     } else {
       permissions[chain]?.addValue(Web3SolanaChainAccount.fromChainAccount(
-          address: address,
-          genesis: chain.network.coinParam.type,
-          isDefault: false));
+          address: address, id: chain.network.value, isDefault: false));
     }
     if (permissions[chain]!.isNotEmpty &&
         !permissions[chain]!.value.any((e) => e.defaultAddress)) {

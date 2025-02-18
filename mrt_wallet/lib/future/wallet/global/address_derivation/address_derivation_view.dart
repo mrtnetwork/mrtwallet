@@ -59,6 +59,12 @@ class NetworkGenericAddressDerivationView extends StatelessWidget {
             case NetworkType.monero:
               return _NetworkGenericAddressDerivationView<MoneroAddress,
                   IMoneroAddress>(chain.cast());
+            case NetworkType.aptos:
+              return _NetworkGenericAddressDerivationView<AptosAddress,
+                  IAptosAddress>(chain.cast());
+            case NetworkType.sui:
+              return _NetworkGenericAddressDerivationView<SuiAddress,
+                  ISuiAddress>(chain.cast());
             default:
               throw UnimplementedError();
           }

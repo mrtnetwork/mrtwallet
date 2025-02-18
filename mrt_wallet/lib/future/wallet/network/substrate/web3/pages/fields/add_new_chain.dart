@@ -73,7 +73,7 @@ class _SubstrateWeb3AddNewChainRequestViewState
         false: (context) => SubstrateAddChainFieldsView(state: this),
         true: (context) => SliverMainAxisGroup(slivers: [
               SliverToBoxAdapter(
-                  child: AlarmTextContainer(
+                  child: AlertTextContainer(
                       message: "network_enable_web3_desc".tr)),
               SubstrateAddChainInfoView(
                   onAddChain: addOrUpdateChain,

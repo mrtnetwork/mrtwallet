@@ -96,7 +96,6 @@ class ISolanaAddress extends ChainAccount<SolAddress, SolanaSPLToken, NFTCore>
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -172,9 +171,6 @@ class ISolanaAddress extends ChainAccount<SolAddress, SolanaSPLToken, NFTCore>
 
   @override
   void removeNFT(NFTCore nft) {}
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override

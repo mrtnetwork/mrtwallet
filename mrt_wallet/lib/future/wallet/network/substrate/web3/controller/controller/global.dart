@@ -52,9 +52,10 @@ class Web3SubstrateGlobalRequestController<RESPONSE,
     final client = APIUtils.buildsubstrateClient(provider: provider);
     final init = await MethodUtils.call(() async => client.loadApi());
     if (init.hasError) {
-      progressKey.error(text: init.error!.tr);
+      progressKey.error(error: init.exception, showBackButton: true);
     } else if (init.result == null) {
-      progressKey.error(text: "unsuported_network_metadata".tr);
+      progressKey.error(
+          message: "unsuported_network_metadata".tr, showBackButton: true);
     } else {
       final chainInfo = init.result!;
       _metadata = chainInfo;
@@ -103,11 +104,11 @@ class Web3SubstrateGlobalRequestController<RESPONSE,
     });
     if (r.hasError) {
       if (r.errorISA<Web3RequestException>()) {
-        progressKey.error(text: r.error!.tr, backToIdle: null);
+        progressKey.errorResponse(error: r.exception);
         request.error(Web3RequestExceptionConst.fromException(r.exception!));
         return;
       }
-      progressKey.error(text: r.error!.tr);
+      progressKey.error(error: r.exception, showBackButton: true);
     } else {
       request.completeResponse(true);
       progressKey.response(text: 'request_completed_success'.tr);
@@ -139,11 +140,11 @@ class Web3SubstrateGlobalRequestController<RESPONSE,
     });
     if (r.hasError) {
       if (r.errorISA<Web3RequestException>()) {
-        progressKey.error(text: r.error!.tr, backToIdle: null);
+        progressKey.errorResponse(error: r.exception);
         request.error(Web3RequestExceptionConst.fromException(r.exception!));
         return;
       }
-      progressKey.error(text: r.error!.tr);
+      progressKey.error(error: r.exception, showBackButton: true);
     } else {
       request.completeResponse(true);
       progressKey.response(text: 'request_completed_success'.tr);
@@ -182,7 +183,7 @@ class Web3SubstrateGlobalRequestController<RESPONSE,
           return signature.result;
         });
         if (signMessage.hasError) {
-          progressKey.error(text: signMessage.error!.tr);
+          progressKey.error(error: signMessage.exception, showBackButton: true);
           return;
         }
         result = signMessage.result;

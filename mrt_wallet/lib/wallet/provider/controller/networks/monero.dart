@@ -1,12 +1,19 @@
 part of 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 
 mixin WalletMoneroImpl on WalletManager {
+  /// Synchronized call generator
   final _lock = SynchronizedLock();
+
+  /// background monero account tracker streams.
   SyncRequestController<MoneroSyncBlocksResponse, MoneroSyncBlocksRequest>?
       _syncAccountRequestSubscription;
   SyncRequestController<MoneroSyncBlocksResponse, MoneroSyncBlocksRequest>?
       _syncRequestSubscription;
 
+  /// send request to background for tracking block and retrive account informations
+  /// -[account]: monero chain
+  /// -[tracker]: account track information
+  /// -[onDone]: called when request compelete.
   Future<
       SyncRequestController<MoneroSyncBlocksResponse,
           MoneroSyncBlocksRequest>?> _hanleStreamRequests(
@@ -54,6 +61,10 @@ mixin WalletMoneroImpl on WalletManager {
     return r;
   }
 
+  /// update monero address balance
+  /// get current height, create background request for syncing
+  /// -[account]: related monero chain
+  /// -[address]: address for syncing
   Future<void> _updateMoneroAddressBalance(
       {required MoneroChain account, required IMoneroAddress address}) async {
     await _lock.synchronized(() async {
@@ -73,6 +84,10 @@ mixin WalletMoneroImpl on WalletManager {
     });
   }
 
+  /// update monero address balance
+  /// get current height, create background request for syncing
+  /// -[account]: related monero chain
+  /// -[address]: address for syncing
   @override
   Future<void> _updateAddressBalance<
           CHAINTOKEN extends ChainAccount<dynamic, TokenCore, NFTCore>>(
@@ -85,6 +100,10 @@ mixin WalletMoneroImpl on WalletManager {
     return super._updateAddressBalance(account: account, address: address);
   }
 
+  /// add new syncing request for monero chain
+  /// -[account]: related chain account.
+  /// -[address]: address for update
+  /// -[request]: request for syncing
   Future<void> _moneroAddSyncRequest(
       {required MoneroChain account,
       required IMoneroAddress address,
@@ -98,8 +117,9 @@ mixin WalletMoneroImpl on WalletManager {
     _startSync();
   }
 
-  // final _updatePaymentUtxosSync = SynchronizedLock();
-
+  /// import monero pending transactions to account
+  /// -[account]: related monero account.
+  /// -[txIds]: transaction ids for importing.
   Future<List<MoneroUnlockedPaymentRequestDetails>> _moneroUpdatePendingTxes(
       {required MoneroChain account,
       List<MoneroAccountPendingTxes>? txIds}) async {
@@ -122,6 +142,7 @@ mixin WalletMoneroImpl on WalletManager {
     return r?.map((e) => e.responses).expand((e) => e).toList() ?? [];
   }
 
+  /// internal method for runing monero sync requests.
   void _startSync() {
     _lock.synchronized(() async {
       if (_syncRequestSubscription != null) return;
@@ -150,6 +171,10 @@ mixin WalletMoneroImpl on WalletManager {
     });
   }
 
+  /// update account sync status
+  /// -[tracker]: account sync for updating
+  /// -[account]: related monero chain
+  /// -[status]: new sync status.
   Future<void> _moneroUpdateTrackerStatus(
       {required MoneroAccountBlocksTracker tracker,
       required MoneroChain account,

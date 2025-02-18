@@ -16,7 +16,7 @@ class WalletException implements AppException {
       return "invalid_request";
     }
     // if (_argruments != null) {
-    //   return "invalid data excepted: ${_argruments[0]} got ${_argruments[1]}";
+    //   return "invalid data expected: ${_argruments[0]} got ${_argruments[1]}";
     // }
     return message;
   }
@@ -46,6 +46,8 @@ class WalletExceptionConst {
   static const WalletException invalidSerializationData =
       WalletException("invalid_serialization_data");
   static const WalletException invalidAccountDetails =
+      WalletException("invalid_account_details");
+  static WalletException invalidAccountDetails_({String? messsage}) =>
       WalletException("invalid_account_details");
   static const WalletException invalidBitcoinAddressType =
       WalletException("invalid_bitcoin_address_type");

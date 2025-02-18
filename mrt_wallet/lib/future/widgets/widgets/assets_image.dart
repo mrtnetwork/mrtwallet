@@ -105,8 +105,7 @@ class CircleTokenImageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String symbol =
-        (token.name.isEmpty ? "" : token.name[0]).toUpperCase();
+    String symbol = (token.symbol.isEmpty ? "" : token.symbol[0]).toUpperCase();
     return CircleAPPImageView(token.assetLogo, onNull: symbol, radius: radius);
   }
 }

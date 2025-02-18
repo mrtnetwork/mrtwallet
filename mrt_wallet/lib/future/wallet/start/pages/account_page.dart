@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/global/global.dart';
+import 'package:mrt_wallet/future/wallet/network/aptos/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/bch/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/bitcoin/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/cardano/account/account.dart';
@@ -11,6 +12,7 @@ import 'package:mrt_wallet/future/wallet/network/ripple/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/substrate.dart';
+import 'package:mrt_wallet/future/wallet/network/sui/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/account/account.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/account/account.dart';
 import 'package:mrt_wallet/future/wallet/security/pages/password_checker.dart';
@@ -100,6 +102,10 @@ class _AccountPageView extends StatelessWidget {
         return SubstrateAccountPageView(chainAccount: chainAccount.cast());
       case NetworkType.cosmos:
         return CosmosAccountPageView(chainAccount: chainAccount.cast());
+      case NetworkType.sui:
+        return SuiAccountPageView(chainAccount: chainAccount.cast());
+      case NetworkType.aptos:
+        return AptosAccountPageView(chainAccount: chainAccount.cast());
       default:
         return const TabBarView(
             physics: WidgetConstant.noScrollPhysics, children: []);

@@ -38,11 +38,12 @@ abstract class Web3SolanaRequestParam<RESPONSE> extends Web3RequestParams<
   Web3SolanaRequestParam();
 
   @override
-  Web3SolanaRequest<RESPONSE, Web3SolanaRequestParam<RESPONSE>> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required SolanaChain chain,
-  }) {
+  Web3SolanaRequest<RESPONSE, Web3SolanaRequestParam<RESPONSE>> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final SolanaChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3SolanaRequest<RESPONSE, Web3SolanaRequestParam<RESPONSE>>(
       params: this,
       authenticated: authenticated,

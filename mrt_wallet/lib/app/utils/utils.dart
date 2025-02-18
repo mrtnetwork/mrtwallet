@@ -7,4 +7,5 @@ export 'string/utils.dart';
 export 'platform/utils.dart';
 export 'numbers/numbers.dart';
 export 'list/extension.dart';
+export 'list/utils.dart';
 export 'map/extension.dart';

@@ -12,10 +12,11 @@ packages:
   blockchain_utils:
     dependency: transitive
     description:
-      path: "../../../blockchain_utils"
-      relative: true
-    source: path
-    version: "4.0.0"
+      name: blockchain_utils
+      sha256: b6cb335397685e7625bb74bbd4ff4f0dd0f6ce3e3f65a40da4aa5a3c54eaa78c
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
   boolean_selector:
     dependency: transitive
     description:

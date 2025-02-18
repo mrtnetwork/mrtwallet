@@ -6,13 +6,15 @@ import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/chain.dart';
-import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 import 'package:mrt_wallet/wallet/web3/models/models/network.dart';
+import 'package:mrt_wallet/wallet/web3/networks/aptos/aptos.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/substrate.dart';
+import 'package:mrt_wallet/wallet/web3/networks/sui/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/permission/models/permission.dart';
 
@@ -58,10 +60,19 @@ class Web3APPAuthentication with CborSerializable {
           auths.add(web3Chain.createAuthenticated(relatedChains
               .cast<Web3ChainNetworkData<WalletSubstrateNetwork>>()));
           break;
+        case NetworkType.aptos:
+          auths.add(web3Chain.createAuthenticated(
+              relatedChains.cast<Web3ChainNetworkData<WalletAptosNetwork>>()));
+          break;
+        case NetworkType.sui:
+          auths.add(web3Chain.createAuthenticated(
+              relatedChains.cast<Web3ChainNetworkData<WalletSuiNetwork>>()));
+          break;
         default:
       }
     }
-    return Web3APPData(token: token, active: active, chains: auths);
+    return Web3APPData(
+        token: token, active: active, chains: auths, networks: web3Networks);
   }
 
   static String? toApplicationId(String? url) {
@@ -180,6 +191,12 @@ class Web3APPAuthentication with CborSerializable {
       case NetworkType.substrate:
         chain ??= Web3SubstrateChain.create();
         break;
+      case NetworkType.aptos:
+        chain ??= Web3AptosChain.create();
+        break;
+      case NetworkType.sui:
+        chain ??= Web3SuiChain.create();
+        break;
       default:
         throw Web3RequestExceptionConst.networkNotSupported;
     }
@@ -195,18 +212,29 @@ class Web3APPAuthentication with CborSerializable {
     _chains = chains.imutable;
   }
 
-  void addActivity({required Web3RequestParams param, String? url}) {
-    final chain = _chains[param.method.network];
+  void addActivity({required Web3Request request, String? url}) {
+    final chain = _chains[request.params.method.network];
     if (chain == null) {
       throw Web3RequestExceptionConst.internalError;
     }
-    chain.addActivity(param: param, url: url);
+    String? path = url == null ? null : Uri.tryParse(url)?.path;
+    if (path?.isEmpty ?? false) {
+      path = null;
+    }
+    chain.addActivity(request: request, path: path);
+  }
+
+  void clearActivities() {
+    for (final i in _chains.values) {
+      i.clearActivities();
+    }
   }
 }
 
 class Web3APPData with CborSerializable {
   final bool active;
   final List<int> token;
+  final List<NetworkType> networks;
   List<Web3ChainAuthenticated> _chains;
   List<Web3ChainAuthenticated> get chains => _chains;
 
@@ -218,16 +246,20 @@ class Web3APPData with CborSerializable {
 
   Web3APPData._({
     required List<int> token,
+    required List<NetworkType> networks,
     this.active = true,
     List<Web3ChainAuthenticated> chains = const [],
   })  : _chains = chains.imutable,
-        token = token.asImmutableBytes;
+        token = token.asImmutableBytes,
+        networks = networks.immutable;
 
   factory Web3APPData(
       {required List<int> token,
+      required List<NetworkType> networks,
       List<Web3ChainAuthenticated> chains = const [],
       bool active = true}) {
-    return Web3APPData._(active: active, token: token, chains: chains);
+    return Web3APPData._(
+        active: active, token: token, chains: chains, networks: networks);
   }
   factory Web3APPData.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -236,15 +268,17 @@ class Web3APPData with CborSerializable {
         hex: hex,
         object: object,
         tags: CborTagsConst.web3App);
-
     return Web3APPData._(
-      chains: values
-          .elementAsListOf<CborTagValue>(0)
-          .map((e) => Web3ChainAuthenticated.deserialize(object: e))
-          .toList(),
-      active: values.elementAt(1),
-      token: values.elementAt(2),
-    );
+        chains: values
+            .elementAsListOf<CborTagValue>(0)
+            .map((e) => Web3ChainAuthenticated.deserialize(object: e))
+            .toList(),
+        active: values.elementAt(1),
+        token: values.elementAt(2),
+        networks: values
+            .elementAsListOf<CborBytesValue>(3)
+            .map((e) => NetworkType.fromTag(e.value))
+            .toList());
   }
   @override
   CborTagValue toCbor() {
@@ -253,6 +287,8 @@ class Web3APPData with CborSerializable {
           CborListValue.fixedLength(_chains.map((e) => e.toCbor()).toList()),
           active,
           CborBytesValue(token),
+          CborListValue.fixedLength(
+              networks.map((e) => CborBytesValue(e.tag)).toList()),
         ]),
         CborTagsConst.web3App);
   }

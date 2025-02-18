@@ -5,8 +5,8 @@ import 'container_with_border.dart';
 import 'widget_constant.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
-class AlarmTextContainer extends StatelessWidget {
-  const AlarmTextContainer(
+class AlertTextContainer extends StatelessWidget {
+  const AlertTextContainer(
       {super.key,
       required this.message,
       this.icon,

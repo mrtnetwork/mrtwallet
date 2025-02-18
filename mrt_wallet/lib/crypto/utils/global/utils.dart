@@ -153,7 +153,7 @@ class BlockchainUtils {
   static Bip32Base privteKeyToBip32(
       {required String privateKey, required CryptoCoins coin}) {
     try {
-      if (coin.conf is! BipCoins) {
+      if (coin is! BipCoins) {
         throw WalletExceptionConst.invalidCoin;
       }
       final privateKeyBytes = BytesUtils.fromHexString(privateKey);
@@ -175,6 +175,8 @@ class BlockchainUtils {
           return Bip32Slip10Ed25519Blake2b.fromPrivateKey(privateKeyBytes);
         case EllipticCurveTypes.nist256p1:
           return Bip32Slip10Nist256p1.fromPrivateKey(privateKeyBytes);
+        case EllipticCurveTypes.nist256p1Hybrid:
+          return Bip32Slip10Nist256p1Hybrid.fromPrivateKey(privateKeyBytes);
         default:
           throw WalletExceptionConst.invalidPrivateKey;
       }
@@ -213,6 +215,9 @@ class BlockchainUtils {
               extendedKey, conf.keyNetVer);
         case EllipticCurveTypes.nist256p1:
           return Bip32Slip10Nist256p1.fromExtendedKey(
+              extendedKey, conf.keyNetVer);
+        case EllipticCurveTypes.nist256p1Hybrid:
+          return Bip32Slip10Nist256p1Hybrid.fromExtendedKey(
               extendedKey, conf.keyNetVer);
         default:
           throw WalletExceptionConst.invalidExtendedKey;
@@ -298,6 +303,9 @@ class BlockchainUtils {
       case EllipticCurveTypes.nist256p1:
         bip = Bip32Slip10Nist256p1.fromSeed(seedBytes, keyNetVar);
         break;
+      case EllipticCurveTypes.nist256p1Hybrid:
+        bip = Bip32Slip10Nist256p1Hybrid.fromSeed(seedBytes, keyNetVar);
+        break;
       default:
         throw const ArgumentException("invaid type");
     }
@@ -360,5 +368,28 @@ class BlockchainUtils {
 
   static String generateStringIndentifier(String str) {
     return BytesUtils.toHexString(MD4.hash(StringUtils.encode(str)));
+  }
+
+  static String toPublicKeyHex(List<int> keyBytes, CryptoCoins coin) {
+    final publicKey = IPublicKey.fromBytes(keyBytes, coin.conf.type);
+    List<int> bytes = publicKey.compressed;
+    switch (coin.conf.type) {
+      case EllipticCurveTypes.ed25519:
+        bytes = bytes.sublist(1);
+        break;
+      default:
+    }
+    return BytesUtils.toHexString(bytes, prefix: "0x");
+  }
+
+  static List<int> toPublicBytes(IPublicKey publicKey) {
+    List<int> bytes = publicKey.compressed;
+    switch (publicKey.curve) {
+      case EllipticCurveTypes.ed25519:
+        bytes = bytes.sublist(1);
+        break;
+      default:
+    }
+    return bytes;
   }
 }

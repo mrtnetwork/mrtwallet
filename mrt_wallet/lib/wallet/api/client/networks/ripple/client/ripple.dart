@@ -1,6 +1,7 @@
 import 'package:blockchain_utils/exception/exceptions.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/ripple/methods/methods.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ripple.dart';
@@ -113,4 +114,7 @@ class RippleClient extends NetworkClient<IXRPAddress, RippleAPIProvider> {
     return result.hasResult &&
         result.result.info.networkId == network.coinParam.networkId;
   }
+
+  @override
+  NetworkType get networkType => NetworkType.xrpl;
 }

@@ -45,10 +45,31 @@ class PageRouter {
   /// cardano
   static const String cardanoTransaction = "/cardano/transaction";
   static const String cosmosTransaction = "/cosmos/transaction";
+
   static const String importCosmosNetwork = "/cosmos/networks/import";
   static const String setupGenericAddress = "/networks/setup_address";
 
+  /// aotos
+  static const String aptosTransfer = "/aptos/transfer";
+  static const String importAptosToken = "Aptos/import_fats_tokens";
+  static const String aptosMultisigAddress = "/aptos/setup_multisig_address";
+  static const String aptosMultisigAccountInfo = "/aptos/multisig_account_info";
+  static const String aptosSettingPage = "setting/aptos";
+  static const String aptosKeyConversion = "setting/aptos/key_conversion";
+
+  /// sui
+  static const String suiTransfer = "/sui/transfer";
+  static const String importSuiToken = "/sui/import_tokens";
+  static const String suiMultisigAddress = "/sui/setup_multisig_address";
+  static const String suiMultisigAccountInfo = "/sui/multisig_account_info";
+  static const String suiSettingPage = "setting/sui";
+  static const String suiKeyConversion = "setting/sui/key_conversion";
   static const String setupBitcoinMultsig = "/bitcoin/setup_multisig_address";
+
+  static const String bitcoinMultisigAccountInfo =
+      "/bitcoin/multisig_account_info";
+  static const String bitcoinCashMultisigAccountInfo =
+      "/bitcoinCash/multisig_account_info";
   static const String createWallet = "/create_wallet";
   static const String setup = "/setup";
   static const String home = "/";
@@ -85,6 +106,8 @@ class PageRouter {
   static const String updateMoneroProviders = "/networks/monero/providers";
   static const String updateStellarProviders = "/networks/stellar/providers";
   static const String updateTronProviders = "/networks/tron/providers";
+  static const String updateSuiProviders = "/networks/sui/providers";
+  static const String updateAptosProviders = "/networks/aptos/providers";
 
   static const String updateNetwork = "/networks/update";
 
@@ -116,6 +139,8 @@ class PageRouter {
   static const String web3Ton = "web3/ton";
   static const String web3Stellar = "web3/stellar";
   static const String web3Substrate = "web3/substrate";
+  static const String web3Aptos = "web3/aptos";
+  static const String web3Sui = "web3/sui";
 
   static const String webview = "web/";
 
@@ -125,6 +150,12 @@ class PageRouter {
         return const SetupWallet();
       case solanaTransfer:
         return const SolanaTransferTransactionView();
+      case aptosTransfer:
+        return const AptosTransferTransactionView();
+      case suiTransfer:
+        return const SuiTransferTransactionView();
+      case suiMultisigAddress:
+        return const SetupSuiMultisigAddress();
       case tonTransfer:
         return const TonTransferTransactionView();
       case bitcoinTransaction:
@@ -194,6 +225,10 @@ class PageRouter {
         return const UpdateRippleProviderView();
       case importSPLTokens:
         return const SolanaImportSPLTokensView();
+      case importAptosToken:
+        return const AptosImportFATTokensView();
+      case importSuiToken:
+        return const SuiImportTokensView();
       case importCosmosTokens:
         return const CosmosImportTokenView();
       case importCosmosNetwork:
@@ -208,6 +243,10 @@ class PageRouter {
         return const SolanaTransactionFieldsView();
       case updateSolanaProviders:
         return const UpdateSolanaProvider();
+      case updateSuiProviders:
+        return const UpdateSuiProvider();
+      case updateAptosProviders:
+        return const UpdateAptosProvider();
       case updateCosmosProviders:
         return const UpdateCosmosProvider();
       case updateSubstrateProviders:
@@ -226,12 +265,20 @@ class PageRouter {
         return const StellarFeaturePageView();
       case solanaSettingPage:
         return const SolanaFeaturePageView();
+      case suiSettingPage:
+        return const SuiFeaturePageView();
+      case aptosSettingPage:
+        return const AptosFeaturePageView();
       case rippleKeyConversion:
         return const RippleKeyConversionView();
       case stellarKeyConversion:
         return const StellarKeyConversionView();
       case solanaKeyConversion:
         return const SolanaKeyConversionView();
+      case suiKeyConversion:
+        return const SuiKeyConversionView();
+      case aptosKeyConversion:
+        return const AptosKeyConversionView();
       case showPublicKey:
         return const AccountPublicKeyView();
       case createWallet:
@@ -252,6 +299,10 @@ class PageRouter {
         return const StellarWeb3FieldsView();
       case web3Substrate:
         return const SubstrateWeb3FieldsView();
+      case web3Aptos:
+        return const AptosWeb3FieldsView();
+      case web3Sui:
+        return const SuiWeb3FieldsView();
       case web3Solana:
         return const SolanaWeb3FieldsView();
       case updateEthereumProvider:
@@ -281,6 +332,17 @@ class PageRouter {
         return const SubstrateImportChainView();
       case updateNetwork:
         return const UpdateNetworkView();
+
+      case bitcoinMultisigAccountInfo:
+      case bitcoinCashMultisigAccountInfo:
+        return const BitcoinMultisigAccountInfoView();
+      case suiMultisigAccountInfo:
+        return const SuiMultisigAccountInfoView();
+      case aptosMultisigAccountInfo:
+        return const AptosMultisigAccountInfoView();
+      case aptosMultisigAddress:
+        return const SetupAptosMultisigAddress();
+
       default:
         return const HomeScreen();
     }
@@ -302,7 +364,7 @@ class PageRouter {
         opaque: false);
   }
 
-  static String providerDetails(WalletNetwork network) {
+  static String updateProvider(WalletNetwork network) {
     switch (network.type) {
       case NetworkType.ethereum:
         return updateEthereumProvider;
@@ -327,6 +389,11 @@ class PageRouter {
       case NetworkType.bitcoinAndForked:
       case NetworkType.bitcoinCash:
         return updateElectrumProviders;
+      case NetworkType.sui:
+        return updateSuiProviders;
+
+      case NetworkType.aptos:
+        return updateAptosProviders;
 
       default:
         throw UnsupportedError("edit provider unsuported.");
@@ -344,6 +411,11 @@ class PageRouter {
         return tronTransfer;
       case NetworkType.solana:
         return solanaTransfer;
+      case NetworkType.aptos:
+        return aptosTransfer;
+      case NetworkType.sui:
+        return suiTransfer;
+
       case NetworkType.ton:
         return tonTransfer;
       case NetworkType.cardano:
@@ -378,6 +450,10 @@ class PageRouter {
         return web3Stellar;
       case NetworkType.substrate:
         return web3Substrate;
+      case NetworkType.aptos:
+        return web3Aptos;
+      case NetworkType.sui:
+        return web3Sui;
       default:
         return null;
     }
@@ -396,6 +472,21 @@ class PageRouter {
     }
   }
 
+  static String? multisigAccountInfo(NetworkType type) {
+    switch (type) {
+      case NetworkType.bitcoinAndForked:
+        return bitcoinMultisigAccountInfo;
+      case NetworkType.bitcoinCash:
+        return bitcoinCashMultisigAccountInfo;
+      case NetworkType.sui:
+        return suiMultisigAccountInfo;
+      case NetworkType.aptos:
+        return aptosMultisigAccountInfo;
+      default:
+        return null;
+    }
+  }
+
   static String? networkSettings(WalletNetwork network) {
     switch (network.type) {
       case NetworkType.ton:
@@ -408,6 +499,10 @@ class PageRouter {
         return stellarSettingPage;
       case NetworkType.solana:
         return solanaSettingPage;
+      case NetworkType.sui:
+        return suiSettingPage;
+      case NetworkType.aptos:
+        return aptosSettingPage;
       default:
         return null;
     }

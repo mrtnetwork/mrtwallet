@@ -58,7 +58,8 @@ class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
       {List<APIProvider>? updateProviders,
       Token? token,
       String? transactionExplorer,
-      String? addressExplorer}) {
+      String? addressExplorer,
+      int? bip32CoinType}) {
     return BitcoinParams(
         providers: updateProviders?.cast<BaseBitcoinAPIProvider>() ?? providers,
         token: NetworkCoinParams.validateUpdateParams(

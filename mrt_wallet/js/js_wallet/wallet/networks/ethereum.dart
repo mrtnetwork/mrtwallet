@@ -98,8 +98,8 @@ class JSEthereumHandler extends JSNetworkHandler<EthereumWeb3State> {
   }
 
   @override
-  void initChain(Web3APPData authenticated) {
-    lock.synchronized(() async {
+  Future<void> initChain(Web3APPData authenticated) async {
+    await lock.synchronized(() async {
       final currentState = state;
       state = EthereumWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {
@@ -144,6 +144,7 @@ class JSEthereumHandler extends JSNetworkHandler<EthereumWeb3State> {
   }
 
   void _accountChanged(EthereumWeb3State state) async {
+    WalletLogging.log("account changed! sent");
     _sendEvent(
         event: JSEventType.accountsChanged,
         data: state.accountsChange.toJson());
@@ -382,6 +383,7 @@ class JSEthereumHandler extends JSNetworkHandler<EthereumWeb3State> {
 
   @override
   void event(PageMessageEvent event) {
+    WalletLogging.log("i got change!");
     switch (event.eventType) {
       case JSEventType.accountsChanged:
         _accountChanged(state);

@@ -7,5 +7,7 @@ export 'chains_tokens/trc10.dart';
 export 'chains_tokens/trc20.dart';
 export 'chains_tokens/stellar_issue.dart';
 export 'chains_tokens/cw20.dart';
+export 'chains_tokens/aptos.dart';
+export 'chains_tokens/sui.dart';
 export 'token/token.dart';
 export 'coingecko/coin.dart';

@@ -122,7 +122,8 @@ abstract class CryptoPrivateKeyData
       wif: wif,
       curve: coin.conf.type,
       keyName: keyName,
-      keyType: type);
+      keyType: type,
+      inNetworkStyle: null);
   factory CryptoPrivateKeyData.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborTagValue cbor =

@@ -288,7 +288,8 @@ class _HDWalletDerivationDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("hd_wallet".tr, style: context.onPrimaryTextTheme.labelLarge),
+        Text(keyIndex.currencyCoin.conf.type.name.camelCase,
+            style: context.onPrimaryTextTheme.labelLarge),
         AddressDrivationInfo(keyIndex, color: context.onPrimaryContainer),
       ],
     );

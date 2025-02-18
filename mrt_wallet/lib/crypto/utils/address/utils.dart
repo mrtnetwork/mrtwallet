@@ -179,6 +179,18 @@ class BlockchainAddressUtils {
     });
   }
 
+  static AptosAddress? validateAptosAddress(String address) {
+    return MethodUtils.nullOnException(() {
+      return AptosAddress(address);
+    });
+  }
+
+  static SuiAddress? validateSuiAddress(String address) {
+    return MethodUtils.nullOnException(() {
+      return SuiAddress(address);
+    });
+  }
+
   static MoneroAddress? validateMoneroAddress(
       String address, WalletMoneroNetwork network) {
     return MethodUtils.nullOnException(() {
@@ -281,6 +293,10 @@ class BlockchainAddressUtils {
         return validateXRPAddress(address, network.toNetwork());
       case NetworkType.ethereum:
         return validatorEthereumAccount(address);
+      case NetworkType.sui:
+        return validateSuiAddress(address);
+      case NetworkType.aptos:
+        return validateAptosAddress(address);
       case NetworkType.tron:
         return validatorTronAccount(address);
       case NetworkType.solana:

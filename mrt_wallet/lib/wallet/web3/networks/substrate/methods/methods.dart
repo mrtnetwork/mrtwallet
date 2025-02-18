@@ -31,8 +31,7 @@ class Web3SubstrateRequestMethods extends Web3RequestMethods {
       Web3SubstrateRequestMethods._(
           id: Web3SubstrateConst.signTransactionTag,
           name: Web3SubstrateConst.signTransaction);
-  @override
-  final bool needWalletOwnerAction = true;
+
   @override
   NetworkType get network => NetworkType.substrate;
 

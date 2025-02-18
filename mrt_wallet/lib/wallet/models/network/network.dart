@@ -11,3 +11,5 @@ export 'params/ton.dart';
 export 'params/substrate.dart';
 export 'params/stellar.dart';
 export 'params/monero.dart';
+export 'params/aptos.dart';
+export 'params/sui.dart';

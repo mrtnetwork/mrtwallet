@@ -3,6 +3,7 @@ import 'package:blockchain_utils/utils/numbers/utils/int_utils.dart';
 import 'package:monero_dart/monero_dart.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/impl/worker_impl.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/monero.dart';
 import 'package:mrt_wallet/wallet/api/services/service.dart';
@@ -348,6 +349,9 @@ class MoneroClient extends NetworkClient<IMoneroAddress, MoneroAPIProvider>
     await getHeight();
     return validateNetworkGenesis();
   }
+
+  @override
+  NetworkType get networkType => NetworkType.monero;
 }
 
 class MoneroWalletClient
@@ -432,4 +436,7 @@ class MoneroWalletClient
     _walletAccounts = await readMoneroWalletAdresses();
     return super.onInit();
   }
+
+  @override
+  NetworkType get networkType => NetworkType.monero;
 }

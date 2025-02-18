@@ -2,13 +2,15 @@ import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
-import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
+import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 import 'package:mrt_wallet/wallet/web3/models/models/network.dart';
+import 'package:mrt_wallet/wallet/web3/networks/aptos/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/permission/models/permission.dart';
+import 'package:mrt_wallet/wallet/web3/networks/sui/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'account.dart';
@@ -25,6 +27,7 @@ abstract class Web3Chain<
     CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
     CHAINACCOUT extends Web3ChainAccount<NETWORKADDRESS>,
     NETWORK extends WalletNetwork> with CborSerializable {
+  int get currentChain;
   List<CHAINACCOUT> _accounts;
   List<CHAINACCOUT> get activeAccounts => _accounts;
   List<CHAINACCOUT> chainAccounts(CHAIN chain);
@@ -66,6 +69,12 @@ abstract class Web3Chain<
       case NetworkType.substrate:
         chain = Web3SubstrateChain.deserialize(object: decode);
         break;
+      case NetworkType.aptos:
+        chain = Web3AptosChain.deserialize(object: decode);
+        break;
+      case NetworkType.sui:
+        chain = Web3SuiChain.deserialize(object: decode);
+        break;
       default:
         throw WalletExceptionConst.unsuportedFeature;
     }
@@ -85,21 +94,30 @@ abstract class Web3Chain<
 
   Web3Chain disconnect();
 
-  void addActivity({required Web3RequestParams param, String? url}) {
+  void addActivity({required Web3Request request, String? path}) {
     String? address;
-    if (param.account != null) {
-      address = getPermission(param.account)?.addressStr;
+    if (request.params.account != null) {
+      address = getPermission(request.params.account)?.addressStr;
       if (address == null) {
         throw Web3RequestExceptionConst.internalError;
       }
     }
     final newAcctivity = Web3AccountAcitvity(
-        method: param.method.name, url: url, address: address);
-    _activities = [newAcctivity, ..._activities].imutable;
+        method: request.params.method.name,
+        path: path,
+        address: address,
+        id: request.chain.network.value);
+    final activities = [newAcctivity, ..._activities]
+      ..sort((a, b) => b.date.compareTo(a.date));
+    _activities = activities.imutable;
   }
 
   void updateChainAccount(List<CHAINACCOUT> updatedAccounts) {
     _accounts = updatedAccounts.imutable;
+  }
+
+  void clearActivities() {
+    _activities = <Web3AccountAcitvity>[].imutable;
   }
 
   void setActiveChain(NETWORK network);

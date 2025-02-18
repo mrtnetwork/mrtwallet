@@ -97,8 +97,8 @@ class JSStellarHandler extends JSNetworkHandler<StellarWeb3State> {
   }
 
   @override
-  void initChain(Web3APPData authenticated) {
-    lock.synchronized(() async {
+  Future<void> initChain(Web3APPData authenticated) async {
+    await lock.synchronized(() async {
       final currentState = state;
       state = StellarWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {

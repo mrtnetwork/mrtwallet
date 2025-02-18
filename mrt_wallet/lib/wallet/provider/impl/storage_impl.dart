@@ -20,7 +20,7 @@ mixin WalletsStoragesManger on WalletStorageWriter, CryptoWokerImpl {
         .where((element) => element.startsWith(wallet.networkKey))
         .toList();
     final permissionKeys = keys.keys
-        .where((element) => element.startsWith(wallet._permissionKey))
+        .where((element) => element.startsWith(wallet._web3StorageKey))
         .toList();
     final repositoriesKey = keys.keys
         .where((element) => element.startsWith(wallet._repositoriesKeys))

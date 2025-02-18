@@ -64,12 +64,11 @@ class _RippleServicesView extends StatelessWidget {
               ),
               WidgetConstant.divider,
               AppListTile(
-                onTap: () {
-                  context.to(PageRouter.rippleAddNfts);
-                },
-                title: Text("manage_nfts".tr),
-                subtitle: Text("manage_nfts_desc".tr),
-              ),
+                  onTap: () {
+                    context.to(PageRouter.rippleAddNfts);
+                  },
+                  title: Text("manage_nfts".tr),
+                  subtitle: Text("manage_nfts_desc".tr)),
               AppListTile(
                 title: const Text("NFTokenMint"),
                 subtitle: Text("ripple_mint_nftoken_desc".tr),
@@ -165,7 +164,6 @@ class _RippleServicesView extends StatelessWidget {
               ),
               WidgetConstant.divider,
               AppListTile(
-                leading: const Icon(Icons.password),
                 title: Text("ripple_key_conversion".tr),
                 subtitle: Text("ripple_key_conversion_desc".tr),
                 onTap: () {

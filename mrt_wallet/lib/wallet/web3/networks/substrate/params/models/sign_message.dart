@@ -86,7 +86,9 @@ class Web3SubstrateSignMessage
       toRequest(
           {required Web3RequestApplicationInformation request,
           required Web3APPAuthentication authenticated,
-          required SubstrateChain chain}) {
+          required List<APPCHAIN> chains}) {
+    final SubstrateChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3SubstrateRequest<Map<String, dynamic>, Web3SubstrateSignMessage>(
       params: this,
       authenticated: authenticated,

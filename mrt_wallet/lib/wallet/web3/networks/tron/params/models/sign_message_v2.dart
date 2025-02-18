@@ -80,11 +80,12 @@ class Web3TronSignMessageV2 extends Web3TronRequestParam<String> {
   @override
   TronAddress? get account => address;
   @override
-  Web3TronRequest<String, Web3TronSignMessageV2> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required TronChain chain,
-  }) {
+  Web3TronRequest<String, Web3TronSignMessageV2> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final TronChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3TronRequest<String, Web3TronSignMessageV2>(
       params: this,
       authenticated: authenticated,

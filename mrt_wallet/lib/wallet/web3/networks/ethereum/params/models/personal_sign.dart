@@ -81,11 +81,12 @@ class Web3EthreumPersonalSign extends Web3EthereumRequestParam<String> {
   @override
   ETHAddress? get account => address;
   @override
-  Web3EthereumRequest<String, Web3EthreumPersonalSign> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required EthereumChain chain,
-  }) {
+  Web3EthereumRequest<String, Web3EthreumPersonalSign> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final EthereumChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3EthereumRequest<String, Web3EthreumPersonalSign>(
       params: this,
       authenticated: authenticated,

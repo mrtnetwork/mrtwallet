@@ -1,7 +1,6 @@
 import 'package:mrt_wallet/app/utils/list/extension.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/field.dart';
-import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ton/forms/core/ton.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
@@ -48,11 +47,9 @@ class TonRequestAccountForm extends TonWeb3Form {
         request: request,
         chains: chains,
         permissions: fields,
-        newPermission: Web3TonChain.create(
-            workChain: request.currentPermission?.currentChain));
+        newPermission:
+            Web3TonChain.create(id: request.currentPermission?.currentChain));
   }
-  @override
-  OnChangeForm? onChanged;
   @override
   String get name => request.params.method.name;
   final Map<TheOpenNetworkChain, TransactionListFormField<Web3TonChainAccount>>
@@ -72,9 +69,7 @@ class TonRequestAccountForm extends TonWeb3Form {
       permissions[chain]?.removeValue(exists);
     } else {
       permissions[chain]?.addValue(Web3TonChainAccount.fromChainAccount(
-          address: address,
-          workChain: chain.network.coinParam.workchain,
-          isDefault: false));
+          address: address, id: chain.network.value, isDefault: false));
     }
     if (permissions[chain]!.isNotEmpty &&
         !permissions[chain]!.value.any((e) => e.defaultAddress)) {

@@ -85,14 +85,13 @@ class Web3EthreumTypdedData extends Web3EthereumRequestParam<String> {
   late String content = StringUtils.fromJson(typedData.toJson());
 
   @override
-  Web3EthereumRequest<String, Web3EthreumTypdedData> toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required EthereumChain chain,
-  }) {
+  Web3EthereumRequest<String, Web3EthreumTypdedData> toRequest(
+      {required Web3RequestApplicationInformation request,
+      required Web3APPAuthentication authenticated,
+      required List<APPCHAIN> chains}) {
+    final EthereumChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3EthereumRequest<String, Web3EthreumTypdedData>(
-      // permission: authenticated.getChain(address: account, chain: chain) ??
-      //     Web3EthereumChain.create(chainId: chain.network.coinParam.chainId),
       params: this,
       authenticated: authenticated,
       chain: chain,

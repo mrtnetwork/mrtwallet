@@ -385,7 +385,7 @@ class _SetupBitcoinMultiSigAddressViewState
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Text("publick_key".tr,
+                                              Text("public_key".tr,
                                                   style: context
                                                       .colors.onPrimaryContainer
                                                       .lableLarge(context)),
@@ -624,9 +624,15 @@ class _SetupBitcoinMultiSigAddressViewState
                                     children:
                                         List.generate(signers.length, (index) {
                                       return ContainerWithBorder(
-                                          onRemove: () {
-                                            onRemoveAcc(signers[index]);
-                                          },
+                                          enableTap: false,
+                                          onRemoveIcon: IconButton(
+                                              onPressed: () {
+                                                onRemoveAcc(signers[index]);
+                                              },
+                                              icon: Icon(Icons.remove_circle,
+                                                  color: context
+                                                      .onPrimaryContainer)),
+                                          onRemove: () {},
                                           child: Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,

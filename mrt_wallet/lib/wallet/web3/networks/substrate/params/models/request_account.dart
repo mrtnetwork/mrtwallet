@@ -39,11 +39,12 @@ class Web3SubstrateRequestAccounts extends Web3SubstratePermissionRequestParam {
 
   @override
   Web3SubstrateRequest<Web3SubstrateChain, Web3SubstrateRequestAccounts>
-      toRequest({
-    required Web3RequestApplicationInformation request,
-    required Web3APPAuthentication authenticated,
-    required SubstrateChain chain,
-  }) {
+      toRequest(
+          {required Web3RequestApplicationInformation request,
+          required Web3APPAuthentication authenticated,
+          required List<APPCHAIN> chains}) {
+    final SubstrateChain chain = super.findRequestChain(
+        request: request, authenticated: authenticated, chains: chains);
     return Web3SubstrateRequest<Web3SubstrateChain,
             Web3SubstrateRequestAccounts>(
         params: this,

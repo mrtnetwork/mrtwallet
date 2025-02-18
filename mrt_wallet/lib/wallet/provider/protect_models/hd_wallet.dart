@@ -292,10 +292,10 @@ class HDWallet {
   List<int> get checkSumBytes => BytesUtils.fromHexString(_checksum);
   String get networkKey => "${StorageConst.walletStorageKey}${_checksum}_";
   String get _repositoriesKeys => "${StorageConst.chainSorageKey}${_checksum}_";
-  String get _permissionKey =>
-      "${StorageConst.walletStorageKey}$_checksum#permission_";
+  String get _web3StorageKey =>
+      "${StorageConst.walletStorageKey}$_checksum#web6_";
 
   String toPermissionKey(String key) {
-    return "$_permissionKey$key";
+    return "$_web3StorageKey$key";
   }
 }

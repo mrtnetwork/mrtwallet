@@ -33,10 +33,11 @@ abstract class PageNetworkController {
     return promise;
   }
 
-  JSPromise<JSAny?> _postNetworkRequest(Web3JSRequestParams params) {
+  JSPromise<T> _postNetworkRequest<T extends JSAny?>(
+      Web3JSRequestParams params) {
     final message =
         PageMessageRequest.create(method: params.method, params: params.params);
-    final promise = _postNetworkRequestMessage(message).toPromise;
+    final promise = _postNetworkRequestMessage<T>(message).toPromise;
     return promise;
   }
 
@@ -70,6 +71,19 @@ abstract class PageNetworkController {
 
   Future<T> _postNetworkRequestMessage<T extends JSAny?>(
       PageMessageRequest message) async {
+    final response = await _getWalleResponse(message);
+    switch (response.statusType) {
+      case JSWalletResponseType.success:
+        return response.data as T;
+      case JSWalletResponseType.failed:
+        throw JSWalletError.fromJson(message: response.asMap());
+    }
+  }
+
+  Future<T> _createAndPostNetworkRequestMessage<T extends JSAny?>(
+      Web3JSRequestParams params) async {
+    final message =
+        PageMessageRequest.create(method: params.method, params: params.params);
     final response = await _getWalleResponse(message);
     switch (response.statusType) {
       case JSWalletResponseType.success:

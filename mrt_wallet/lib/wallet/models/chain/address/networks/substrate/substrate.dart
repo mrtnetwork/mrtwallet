@@ -93,7 +93,6 @@ class ISubstrateAddress
   @override
   final AccountBalance address;
 
-  @override
   final CryptoCoins coin;
 
   @override
@@ -161,9 +160,6 @@ class ISubstrateAddress
   void removeNFT(NFTCore nft) {}
   @override
   void updateToken(TokenCore token, Token updatedToken) {}
-
-  @override
-  bool get multiSigAccount => false;
 
   String? _accountName;
   @override

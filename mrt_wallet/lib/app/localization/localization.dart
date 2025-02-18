@@ -305,7 +305,7 @@ class Localization {
           "public_key_already_exist": "Public key already exist",
           "threshold_configuration": "Threshold configuration",
           "threshhold_desc":
-              "Specify the transaction signature threshold. This threshold indicates the number of signatures required to confirm the transaction. For example, setting it to 5 means that the transaction requires 5 signatures. Maximum 16 thresholds",
+              "Specify the transaction signature threshold. This threshold indicates the number of signatures required to confirm the transaction. For example, setting it to 5 means that the transaction requires 5 signatures.",
           "threshold": "Threshold",
           "signers_weight_configuration": "Configuration for Signers Weight",
           "signer_wight_desc1":
@@ -320,7 +320,7 @@ class Localization {
               "Please ensure that important and critical information about the multi-signature account, including the public key and order used, the weight assigned to the added public key, as well as the script details, is in a safe and accessible place. This is vital to protect your funds.",
           "public_keys_and_weight_of_each":
               "Public keys and their respective weights",
-          "publick_key": "Public key",
+          "public_key": "Public key",
           "multi_sig_script": "Multi-signature script",
           "address_script": "Address script",
           "type_of_address": "Type of address",
@@ -1519,7 +1519,7 @@ class Localization {
           "setup_supply": "Setup supply",
           "tap_to_input_total_supply": "Tap to input total supply",
           "owner_of_token": "The owner of token",
-          "tap_to_select_owner": "Tap to select accout",
+          "tap_to_select_account": "Tap to select account",
           "setup_mint": "Setup mint",
           "byron_reward_does_not_support_minting_token":
               "The Byron and Reward address does not support the initialization of minting tokens.",
@@ -1563,8 +1563,8 @@ class Localization {
           "base_key": "Base key",
           "switch_between_keys":
               "Please switch between keys to view information about each one.",
-          "retrieve_the_public":
-              "Please wait while we retrieve the public key of the account.",
+          "retrieve_account_informations":
+              "Please wait while we retrieve the account informations.",
           "public_keys": "Public keys",
           "Invalid_coin_default_path": "Invalid coin default path",
           "invalid_hd_wallet_derivation_path":
@@ -1872,7 +1872,7 @@ class Localization {
           "coin_not_found":
               "Unable to locate a proposal with the given coin name.",
           "keypair_type": "Keypair type",
-          "choose_substrate_key_algorithm_desc":
+          "choose_key_algorithm_desc2":
               "Which type of algorithm would you like to use to create the address?",
           "disable_standard_derivation_desc":
               "You can manually setup a derivation path.",
@@ -2463,7 +2463,7 @@ class Localization {
               "Select the accounts you want to sync.",
           "primary_account": "Primary account.",
           "addresses": "Addresses",
-          "at_least_one_account_required": "At least one account is required.",
+          "at_least_one_account_required": "At least one address is required.",
           "only_on_request_can_be_processed":
               "Only one request can be processed at a time.",
           "monero_invalid_end_block_height_validator":
@@ -2800,6 +2800,78 @@ class Localization {
           "another_instance_already_active":
               "Another instance is already active.",
           "web3_permission": "Web3 Application Permission",
+          "transaction_simulate_not_ready_desc":
+              "Transaction simulation is not ready. Do you still want to proceed with sending the transaction?",
+          "transaction_simulate_failed_desc":
+              "Transaction simulation failed. Do you still want to proceed with sending the transaction?",
+          "aptos_select_provider_desc":
+              "Choose a network service for Full Node and GraphQL interaction.",
+          "full_node": "Full Node",
+          "graphql": "GraphQL",
+          "token_balance_frozen_desc": "Token balance marked as frozen.",
+          "leak_of_gas_token_desc":
+              "Your account doesn't have enough Gas tokens to cover the fee.",
+          "threshold_validator":
+              "The threshold value must range between ___1__ and ___2__.",
+          "setup_multisig_address": "Setup multisig address",
+          "multisig_address": "Multisig address",
+          "multisig_address_desc":
+              "Multisig addresses enhance security by requiring multiple approvals for transactions, reducing the risk of unauthorized access.",
+          "mutlisig_address_alert":
+              "All options on this page are crucial. Missing any details or altering the account order may pose risks. Please fill them out carefully.",
+          "multisig_address_weight_desc":
+              "Address weight in a multi-sig determines its voting power for transaction approvals",
+          "address_weight_validator":
+              "Invalid address weight. It must be between ___1__ and ___2__ ",
+          "invalid_signature": "Invalid signature.",
+          "insufficient_signatures": "Insufficient signatures.",
+          "exceeded_multisig_maximum_publickey":
+              "Exceeded the maximum allowed public keys for a multisig account.",
+          "multisig_address_infos": "Multisig address info",
+          "invalid_account": "Invalid account.",
+          "locking_script": "Locking Script",
+          "at_least_n_account_required": "At least ___1__ address is required.",
+          "aptos_required_signature_validator":
+              "The required signature value must range between ___1__ and ___2__.",
+          "aptos_required_signature_validator2":
+              "The number of accounts must meet the specified required signature.",
+          "required_signature": "Required signature",
+          "required_signature_desc":
+              "the number of signatures required to confirm the transaction",
+          "aptos_mutli_ed25519_key_type_validator":
+              "A MultiED25519 account can only be generated using an ED25519 public key.",
+          "key_scheme": "Key scheme",
+          "invalid_key_scheme": "Invalid key scheme.",
+          "aptos_networks": "Aptos networks.",
+          "transaction_content": "Transaction content",
+          "transaction_owner": "Transaction owner",
+          "transaction_fee_payer": "Transaction fee payer",
+          "secondary_signer_addresses": "Secondary signer addresses",
+          "simulate_content": "Simulate content",
+          "sui_networks": "Sui networks.",
+          "no_web3_activities": "No Web3 activities available.",
+          "remove_activities": "Remove activities.",
+          "delete_all_activities_desc": "Delete all application activities.",
+          "delete_all_activities_desc2":
+              "Delete all application activities? This action cannot be undone",
+          "web3_applications": "Web3 applications",
+          "update_dapp_permissions": "Update DApp permissions",
+          "balance_changes": "Balance changes",
+          "client_closed_durning_request":
+              "The connection between the client and wallet was lost during the request.",
+          "sui_key_conversion": "Sui key conversion",
+          "sui_key_conversion_desc":
+              "Convert a Sui Bech32 secret key into an private key for secure cryptographic operations on the Sui network.",
+          "invalid_sui_secret_key": "Invalid Sui secret key.",
+          "sui_bech32_secret_key_desc2":
+              "Please enter a valid Sui Bech32 secret key. The key must start with 'suiprivkey'.",
+          "n_style": "___1__ style",
+          "aptos_key_conversion": "Aptos key conversion",
+          "Aptos_key_conversion_desc":
+              "Convert a Aptos AIP-80 private key style into an private key for secure cryptographic operations on the Aptos network.",
+          "aptos_aip80_private_key_desc2":
+              "Please enter a valid Aptos AIP-80 private key.  The key must start with 'ed25519-priv-' or 'secp256k1-priv-'",
+          "invalid_aptos_private_key": "Invalid Aptos private key.",
         }
       };
 }

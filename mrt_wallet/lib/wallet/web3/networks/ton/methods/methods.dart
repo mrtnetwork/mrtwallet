@@ -16,8 +16,7 @@ class Web3TonRequestMethods extends Web3RequestMethods {
 
   static const Web3TonRequestMethods sendTransaction = Web3TonRequestMethods._(
       id: Web3TonConst.sendTransactionTag, name: Web3TonConst.sendTransaction);
-  @override
-  final bool needWalletOwnerAction = true;
+
   @override
   NetworkType get network => NetworkType.ton;
 

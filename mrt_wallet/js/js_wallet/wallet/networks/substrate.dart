@@ -59,7 +59,8 @@ class SubstrateWeb3State extends ChainWeb3State {
         permissionAccounts: permissionAccounts
             .map((e) => JSSubstrateAddress(
                 address: e.addressStr,
-                genesisHash: StringUtils.add0x(e.genesis)))
+                genesisHash:
+                    StringUtils.add0x(authenticated.network.genesisBlock)))
             .toList(),
         state: JSNetworkState.init,
         network: authenticated.network,
@@ -67,7 +68,8 @@ class SubstrateWeb3State extends ChainWeb3State {
             ? null
             : JSSubstrateAddress(
                 address: defaultAddress.addressStr,
-                genesisHash: StringUtils.add0x(defaultAddress.genesis)),
+                genesisHash:
+                    StringUtils.add0x(authenticated.network.genesisBlock)),
         client: APIUtils.createApiClient(authenticated.network,
             allowInWeb3: true,
             identifier: authenticated.serviceIdentifier,
@@ -113,8 +115,8 @@ class JSSubstrateHandler extends JSNetworkHandler<SubstrateWeb3State> {
   }
 
   @override
-  void initChain(Web3APPData authenticated) {
-    lock.synchronized(() async {
+  Future<void> initChain(Web3APPData authenticated) async {
+    await lock.synchronized(() async {
       final currentState = state;
       state = SubstrateWeb3State(authenticated.getAuth(networkType));
       if (state.needToggle(currentState)) {

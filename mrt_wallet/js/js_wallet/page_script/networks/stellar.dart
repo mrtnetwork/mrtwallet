@@ -30,7 +30,6 @@ class StellarPageController extends PageNetworkController {
 
   void _disable({String? message}) {
     stellar = null;
-    jsConsole.error(message);
   }
 
   void onEvent(WalletMessageEvent message) {

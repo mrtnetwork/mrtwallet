@@ -22,15 +22,14 @@ class ProgressWithTextView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _ProgressWithTextView(
-      text: Column(
-        children: [
-          LargeTextView([text],
-              maxLine: 3, textAligen: TextAlign.center, style: style),
-          if (bottomWidget != null) bottomWidget!
-        ],
-      ),
-      icon: icon,
-    );
+        text: Column(
+          children: [
+            LargeTextView([text],
+                maxLine: 3, textAligen: TextAlign.center, style: style),
+            if (bottomWidget != null) bottomWidget!
+          ],
+        ),
+        icon: icon);
   }
 }
 
@@ -290,47 +289,129 @@ class ProgressMultipleTextView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Widget successTrText = Column(
-      children: [
-        CircleAPPImageView(logo, radius: APPConst.double80),
-        if (title != null) Text(title!, style: context.textTheme.labelLarge),
-        WidgetConstant.height20,
-        ListView.separated(
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final txt = texts[index];
-              return ContainerWithBorder(
-                  enableTap: false,
-                  onRemove: () {},
-                  onRemoveIcon: txt.isSuccess
-                      ? IconButton(
-                          icon: txt.openUrl != null
-                              ? const Icon(Icons.open_in_new)
-                              : const Icon(Icons.check_circle),
-                          color: context.colors.onPrimaryContainer,
-                          onPressed: () {
-                            if (txt.openUrl != null) {
-                              UriUtils.lunch(txt.openUrl);
-                            }
-                          },
-                        )
-                      : Icon(
-                          Icons.error,
-                          color: context.colors.error,
+    return Center(
+      child: SingleChildScrollView(
+        child: ConstraintsBoxView(
+          padding: WidgetConstant.paddingHorizontal20,
+          child: Column(
+            children: [
+              CircleAPPImageView(logo, radius: APPConst.double80),
+              if (title != null)
+                Text(title!, style: context.textTheme.labelLarge),
+              WidgetConstant.height20,
+              ListView.separated(
+                  physics: WidgetConstant.noScrollPhysics,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    final txt = texts[index];
+                    return ContainerWithBorder(
+                        enableTap: false,
+                        onRemove: () {},
+                        onRemoveIcon: txt.isSuccess
+                            ? IconButton(
+                                icon: txt.openUrl != null
+                                    ? Icon(Icons.open_in_new,
+                                        color:
+                                            context.colors.onPrimaryContainer)
+                                    : Icon(Icons.check_circle,
+                                        color:
+                                            context.colors.onPrimaryContainer),
+                                color: context.colors.onPrimaryContainer,
+                                onPressed: () {
+                                  if (txt.openUrl != null) {
+                                    UriUtils.lunch(txt.openUrl);
+                                  }
+                                },
+                              )
+                            : Icon(Icons.error, color: context.colors.error),
+                        child: txt.enableCopy
+                            ? CopyTextIcon(
+                                isSensitive: false,
+                                dataToCopy: txt.text,
+                                widget: Text(
+                                  txt.text,
+                                  maxLines: 2,
+                                  style: context.onPrimaryTextTheme.bodyMedium,
+                                ))
+                            : Text(
+                                txt.text,
+                                maxLines: 2,
+                                style: context.onPrimaryTextTheme.bodyMedium,
+                              ));
+                  },
+                  separatorBuilder: (context, index) => WidgetConstant.divider,
+                  itemCount: texts.length),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Web3SuccessTransactionTextView extends StatelessWidget {
+  const Web3SuccessTransactionTextView(
+      {super.key,
+      required this.txIds,
+      required this.network,
+      this.additionalWidget,
+      this.error});
+  final List<String> txIds;
+  final WalletNetwork network;
+  final WidgetContext? additionalWidget;
+  final String? error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SingleChildScrollView(
+        child: ConstraintsBoxView(
+          padding: WidgetConstant.paddingHorizontal20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircleTokenImageView(network.coinParam.token,
+                  radius: APPConst.double80),
+              Text(network.coinParam.token.name,
+                  style: context.textTheme.labelLarge),
+              WidgetConstant.height20,
+              ListView.separated(
+                  shrinkWrap: true,
+                  physics: WidgetConstant.noScrollPhysics,
+                  itemBuilder: (context, index) {
+                    final id = txIds[index];
+                    final txUrl = network.getTransactionExplorer(id);
+                    return ContainerWithBorder(
+                        child: Row(
+                      children: [
+                        Expanded(
+                          child: CopyableTextWidget(
+                              isSensitive: false,
+                              text: txIds[index],
+                              color: context.onPrimaryContainer),
                         ),
-                  child: txt.enableCopy
-                      ? CopyTextIcon(
-                          isSensitive: false,
-                          dataToCopy: txt.text,
-                          widget: Text(txt.text, maxLines: 2))
-                      : Text(txt.text, maxLines: 2));
-            },
-            separatorBuilder: (context, index) => WidgetConstant.divider,
-            itemCount: texts.length),
-      ],
+                        if (txUrl != null)
+                          IconButton(
+                              onPressed: () {
+                                UriUtils.lunch(txUrl);
+                              },
+                              icon: Icon(Icons.open_in_new,
+                                  color: context.colors.onPrimaryContainer))
+                      ],
+                    ));
+                  },
+                  separatorBuilder: (context, index) => WidgetConstant.divider,
+                  itemCount: txIds.length),
+              WidgetConstant.height20,
+              if (additionalWidget != null) additionalWidget!(context),
+              ErrorTextContainer(error: error),
+            ],
+          ),
+        ),
+      ),
     );
 
-    return _ProgressWithTextView(
-        text: successTrText, icon: WidgetConstant.sizedBox);
+    // return _ProgressWithTextView(
+    //     text: successTrText, icon: WidgetConstant.sizedBox);
   }
 }

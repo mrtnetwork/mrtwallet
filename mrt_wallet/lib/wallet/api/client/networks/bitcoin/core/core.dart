@@ -1,6 +1,7 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/http/impl/impl.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/api/client/core/client.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
@@ -23,4 +24,7 @@ abstract class BitcoinClient<T extends IBitcoinAddress>
     final genesisHash = await genesis();
     return genesisHash == network.genesisBlock;
   }
+
+  @override
+  NetworkType get networkType => network.type;
 }

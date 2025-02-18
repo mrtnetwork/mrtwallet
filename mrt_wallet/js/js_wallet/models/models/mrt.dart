@@ -67,6 +67,7 @@ extension type MRTNetworkAdapter(JSObject _) implements MRTJsObject {
       Web3JSRequestParams params);
   @JS("selectedAddress")
   external set selectedAddress(JSString? selectedAddress);
+
   external set on(JSFunction f);
   external set removeListener(JSFunction f);
   external set cancelListener(JSFunction f);

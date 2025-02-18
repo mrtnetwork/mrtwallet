@@ -183,7 +183,8 @@ class CosmosNetworkParams extends NetworkCoinParams<CosmosAPIProvider> {
       {List<APIProvider>? updateProviders,
       Token? token,
       String? transactionExplorer,
-      String? addressExplorer}) {
+      String? addressExplorer,
+      int? bip32CoinType}) {
     return CosmosNetworkParams(
         transactionExplorer: transactionExplorer,
         addressExplorer: addressExplorer,

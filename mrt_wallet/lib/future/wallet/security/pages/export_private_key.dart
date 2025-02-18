@@ -11,6 +11,8 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/crypto/keys/keys.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
+import 'package:on_chain/sui/sui.dart';
+import 'package:on_chain/aptos/aptos.dart';
 
 class AccountPrivteKeyView extends StatelessWidget {
   const AccountPrivteKeyView({super.key});
@@ -77,6 +79,7 @@ class _AccountPrivateKeyView extends StatefulWidget {
 class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
     with SafeState<_AccountPrivateKeyView>, SecureState {
   List<PrivateKeysView> keys = [];
+  WalletNetwork get network => widget.network;
   late PrivateKeysView key;
   bool hasMultipleKey = false;
   String? get keyName => widget.customKey?.name;
@@ -95,11 +98,21 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
   }
 
   PrivateKeysView toNetworkKeyFormat(PrivateKeysView key) {
-    switch (widget.network.type) {
+    switch (network.type) {
       case NetworkType.xrpl:
         return key.copyWith(
-            privateKey: MethodUtils.nullOnException(() =>
+            inNetworkStyle: MethodUtils.nullOnException(() =>
                 RippleUtils.toRipplePrivateKey(key.privateKey, key.curve)));
+      case NetworkType.sui:
+        return key.copyWith(
+            inNetworkStyle: MethodUtils.nullOnException(() =>
+                SuiCryptoUtils.encodeSuiSecretKey(key.privateKeyBytes(),
+                    type: key.curve)));
+      case NetworkType.aptos:
+        return key.copyWith(
+            inNetworkStyle: MethodUtils.nullOnException(() =>
+                AptosCryptoUtils.encodeAptosPrivateKey(key.privateKeyBytes(),
+                    type: key.curve)));
       default:
         return key;
     }
@@ -141,7 +154,7 @@ class _AccountPrivateKeyViewState extends State<_AccountPrivateKeyView>
                   AppDropDownBottom(
                       onChanged: onChangeKey,
                       items: {for (final i in keys) i: Text(i.keyName.tr)},
-                      label: "key_name".tr,
+                      hint: "key_name".tr,
                       value: key),
                   WidgetConstant.height20,
                 ],
@@ -240,11 +253,18 @@ class _KeysView extends StatelessWidget {
               },
               onTapShowKey: state.onChangeShowPrivateKey),
         ],
+        if (privateKey.inNetworkStyle != null) ...[
+          WidgetConstant.height20,
+          _HiddenKeyView(
+              title: "n_style".tr.replaceOne(state.network.type.name),
+              keyData: privateKey.inNetworkStyle!,
+              showKey: state.showKeys,
+              onTapShowKey: state.onChangeShowPrivateKey),
+        ],
         ConditionalWidget(
-          onActive: (context) =>
-              _MoneroKeysView(privateKey: privateKey.cast(), state: state),
-          enable: privateKey.keyType == CryptoPrivateKeyDataType.monero,
-        )
+            onActive: (context) =>
+                _MoneroKeysView(privateKey: privateKey.cast(), state: state),
+            enable: privateKey.keyType == CryptoPrivateKeyDataType.monero)
       ],
     );
   }
@@ -298,14 +318,14 @@ class _HiddenKeyView extends StatelessWidget {
   final String keyData;
   final String? subtitle;
   final bool showKey;
-  final DynamicVoid onTapBackup;
+  final DynamicVoid? onTapBackup;
   final DynamicVoid onTapShowKey;
   const _HiddenKeyView(
       {required this.title,
       required this.keyData,
       this.subtitle,
       required this.showKey,
-      required this.onTapBackup,
+      this.onTapBackup,
       required this.onTapShowKey});
 
   @override
@@ -344,12 +364,13 @@ class _HiddenKeyView extends StatelessWidget {
                   barcodeTitle: title,
                   color: context.onPrimaryContainer,
                   buttons: [
-                    IconButton(
-                        onPressed: () {
-                          onTapBackup();
-                        },
-                        icon: Icon(Icons.backup,
-                            color: context.onPrimaryContainer)),
+                    if (onTapBackup != null)
+                      IconButton(
+                          onPressed: () {
+                            onTapBackup?.call();
+                          },
+                          icon: Icon(Icons.backup,
+                              color: context.onPrimaryContainer)),
                   ],
                   widget: SelectableText(keyData,
                       style: context.onPrimaryTextTheme.bodyMedium),
