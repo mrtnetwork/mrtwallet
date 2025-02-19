@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/theme/theme.dart';
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
@@ -240,8 +239,9 @@ extension QuickContextAccsess on BuildContext {
   }
 
   void popToHome() {
-    Navigator.of(this)
-        .popUntil((route) => route.settings.name == PageRouter.home);
+    Navigator.of(this).popUntil((route) {
+      return route.isFirst;
+    });
   }
 
   BuildContext? get scaffoldContext =>

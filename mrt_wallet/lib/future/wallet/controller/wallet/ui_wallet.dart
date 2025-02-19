@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
-import 'package:mrt_wallet/app/models/models/typedef.dart';
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/global/pages/wallet_signing_password.dart';
@@ -98,6 +96,7 @@ abstract class UIWallet extends WalletCore {
 
   @override
   void onChangeStatus(WalletPageStatus status, {String? message}) {
+    WalletLogging.error("got status $status");
     switch (status) {
       case WalletPageStatus.refesh:
         navigatorKey.currentContext?.popToHome();

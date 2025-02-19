@@ -11,8 +11,10 @@ import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 void main() async {
+  WalletLogging.error("state1d");
   runZonedGuarded(_runApplication, (error, stack) {
     // WalletLogging.log("zoon error: $error");
+    WalletLogging.error("got error here ?! $error");
   });
 }
 
@@ -68,6 +70,7 @@ class MyBTC extends StatelessWidget {
       stateId: StateConst.main,
       repositoryId: StateConst.main,
       builder: (m) {
+        WalletLogging.log("is update222d!");
         return MaterialApp(
             scaffoldMessengerKey: StateRepository.messengerKey(context),
             title: APPConst.name,
