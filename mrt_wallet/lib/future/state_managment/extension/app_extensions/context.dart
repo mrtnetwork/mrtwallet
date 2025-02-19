@@ -254,13 +254,4 @@ extension QuickContextAccsess on BuildContext {
   ModalRoute? route() {
     return ModalRoute.of(this);
   }
-
-  String? path() {
-    String? currentPath;
-    navigatorKey.currentState?.popUntil((route) {
-      currentPath = route.settings.name;
-      return true;
-    });
-    return currentPath;
-  }
 }
