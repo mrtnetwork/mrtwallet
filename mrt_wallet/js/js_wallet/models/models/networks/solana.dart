@@ -81,6 +81,8 @@ extension type SolanaWalletAdapter(JSObject _) implements MRTNetworkAdapter {
 @JS("Uint8Array")
 extension type APPJSUint8Array(JSAny _) implements JSAny {
   external static APPJSUint8Array from(JSAny? v);
+  @JS("from")
+  external static JSFunction? get from_;
   external APPJSUint8Array slice();
   factory APPJSUint8Array.fromList(List<int> bytes) {
     return APPJSUint8Array.from(bytes.jsify());

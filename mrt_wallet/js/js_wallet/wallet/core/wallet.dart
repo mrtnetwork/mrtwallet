@@ -60,28 +60,24 @@ abstract class JSWalletHandler {
   JSWalletHandler._(this._crypto);
 
   void handleClientMessage(PageMessage request) {
-    try {
-      switch (request.data.messageType) {
-        case PageMessageType.event:
-          _networks[request.clientType]?.event(request.data.asEvent());
-          break;
-        case PageMessageType.request:
-          final result = _completeJsRequest(request);
-          result.then(_sendMessageToClient);
-          result.catchError((e) {
-            final message = WalletMessage.response(
-                client: request.clientType,
-                requestId: request.id,
-                id: request.data.asRequest().id,
-                data: WalletMessageResponse.fail(
-                    Web3RequestExceptionConst.internalError.toJson().jsify()));
-            _sendMessageToClient(message);
-            return message;
-          });
-          break;
-      }
-    } catch (e) {
-      WalletLogging.error("client error $e");
+    switch (request.data.messageType) {
+      case PageMessageType.event:
+        _networks[request.clientType]?.event(request.data.asEvent());
+        break;
+      case PageMessageType.request:
+        final result = _completeJsRequest(request);
+        result.then(_sendMessageToClient);
+        result.catchError((e) {
+          final message = WalletMessage.response(
+              client: request.clientType,
+              requestId: request.id,
+              id: request.data.asRequest().id,
+              data: WalletMessageResponse.fail(
+                  Web3RequestExceptionConst.internalError.toJson().jsify()));
+          _sendMessageToClient(message);
+          return message;
+        });
+        break;
     }
   }
 
@@ -244,12 +240,10 @@ abstract class JSWalletHandler {
           break;
         default:
       }
-    } on Web3RequestException catch (e, s) {
-      WalletLogging.log("got errosr $e $s ");
+    } on Web3RequestException catch (e) {
       final toMessage = e.toResponseMessage(requestId: request.requestId);
       completer.complete(response: toMessage, requestId: request.requestId);
-    } catch (e, s) {
-      WalletLogging.log("got error $e $s");
+    } catch (e) {
       final toMessage = Web3RequestExceptionConst.internalError
           .toResponseMessage(requestId: request.requestId);
       completer.complete(response: toMessage, requestId: request.requestId);

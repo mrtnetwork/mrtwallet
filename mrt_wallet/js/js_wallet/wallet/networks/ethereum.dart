@@ -144,7 +144,6 @@ class JSEthereumHandler extends JSNetworkHandler<EthereumWeb3State> {
   }
 
   void _accountChanged(EthereumWeb3State state) async {
-    WalletLogging.log("account changed! sent");
     _sendEvent(
         event: JSEventType.accountsChanged,
         data: state.accountsChange.toJson());
@@ -383,7 +382,6 @@ class JSEthereumHandler extends JSNetworkHandler<EthereumWeb3State> {
 
   @override
   void event(PageMessageEvent event) {
-    WalletLogging.log("i got change!");
     switch (event.eventType) {
       case JSEventType.accountsChanged:
         _accountChanged(state);

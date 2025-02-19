@@ -32,6 +32,7 @@ topics:
   - substrate
   - sui
   - aptos
+  - monero
   - wallet
 
 
@@ -153,4 +154,3 @@ msix_config:
     logo_path: D:\mrt_wallet\mrt_wallet\assets\image\mrt_wallet.png
     publish_folder_path: D:\mrt_wallet\mrt_wallet\build\msix\
     store: false
-

@@ -114,9 +114,7 @@ class TronPageController extends PageNetworkController {
   }
 
   void _disabledFeature(JSAny? args) {
-    WalletLogging.log("is error here ");
-    WalletLogging.log("is error here ${args?.dartify()}");
-    // throw JSWalletConstant.methodDisabled;
+    throw JSWalletConstant.methodDisabled;
   }
 
   JSPromise<JSAny?> _signMessageV2_(JSAny message, [String? privateKey]) {
@@ -212,9 +210,7 @@ class TronPageController extends PageNetworkController {
         default:
       }
       _eventListeners(message.eventType, jsObject: eventData);
-    } catch (e) {
-      WalletLogging.log("got error $e");
-    }
+    } catch (e) {}
   }
 
   void _eventListeners(JSEventType type, {JSAny? jsObject}) {

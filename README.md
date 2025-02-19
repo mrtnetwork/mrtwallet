@@ -113,6 +113,20 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 
 - **Features:** Seamless support for Monero transactions, Generate and verify proof.
 
+### SUI
+
+- **Features:** Seamless support for Sui transactions.
+- **Highlights:** Coin management, Multisig.
+- **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, Microsoft Edge, Android and macos platforms.
+
+### Aptos
+
+- **Features:** Seamless support for Aptos transactions.
+- **Highlights:** Coin management, Multikey, MultiED25519.
+- **Web3 Support** Added support for interacting with Web3 on Chrome, Brave, Mozilla Firefox, Microsoft Edge, Android and macos platforms.
+
+
+
 ## Web3
 
 Added Web3 support for select networks. Check [mrt_wallet_web3_js_examples](https://github.com/mrtnetwork/mrt_wallet_web3_js_examples) repository for instructions on sending Web3 transactions to the wallet.
@@ -155,7 +169,7 @@ Clone the repository and build using Flutter:
 ```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
-dart run debug_builder.dart -web --wasm --crypto --release --clean
+dart run web_builder.dart -web --wasm --crypto --release --clean
 ```
 
 - **Chrome, Edge, Brave extention**
@@ -163,7 +177,7 @@ dart run debug_builder.dart -web --wasm --crypto --release --clean
 ```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
-dart run debug_builder.dart -extension --wasm --scripts --crypto --release --clean
+dart run web_builder.dart -extension --wasm --scripts --crypto --release --clean
 ```
 
 - **Firefox extention**
@@ -171,7 +185,7 @@ dart run debug_builder.dart -extension --wasm --scripts --crypto --release --cle
 ```shell
 gh repo clone mrtnetwork/mrtwallet
 cd mrt_wallet
-dart run debug_builder.dart -extension --wasm --scripts --crypto --release --clean --mozila
+dart run web_builder.dart -extension --wasm --scripts --crypto --release --clean --mozila
 ```
 
 

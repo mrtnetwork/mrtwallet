@@ -13,10 +13,10 @@ packages:
     dependency: transitive
     description:
       name: blockchain_utils
-      sha256: b6cb335397685e7625bb74bbd4ff4f0dd0f6ce3e3f65a40da4aa5a3c54eaa78c
+      sha256: "8633ec5db6200807286500f060a39a281f1b5468ecfbd88c4390ff358999e720"
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.0"
+    version: "4.2.0"
   boolean_selector:
     dependency: transitive
     description:

@@ -136,6 +136,7 @@ class AptosPageController extends PageNetworkController {
     final promise = await _postNetworkRequestMessage(message);
     final r = promise as JSAptosWalletStandardUserResponse;
     if (r.type.isRejected) return r;
+
     final signingResponse = r.args as JSAptosWalletAccount;
     signingResponse.publicKey.buildSerializable();
     signingResponse.publicKey = signingResponse.publicKey.toProxy();

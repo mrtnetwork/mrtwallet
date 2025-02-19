@@ -149,6 +149,7 @@ class _TransactionView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               FixedElevatedButton(
+                  padding: WidgetConstant.paddingVertical40,
                   onPressed: () {
                     form.sendTransaction(
                       (s) {

@@ -3,6 +3,8 @@ import 'js_wallet/constant/constant.dart';
 import 'js_wallet/js_wallet.dart';
 import 'dart:js_interop';
 
+@JS("Uint8Array")
+external APPJSUint8Array? get arr;
 void main(List<String> args) async {
   final pageController = JSPageController.setup();
   mrt = MRTWallet(JSObject());

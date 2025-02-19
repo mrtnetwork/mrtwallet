@@ -70,45 +70,40 @@ abstract class JSBasePageController {
   void initClients(String clientId);
 
   void handleWalletMessage(WalletMessage walletResponse) {
-    try {
-      if (walletResponse.data.messageType == JSWalletMessageType.response) {
-        PageNetworkController._completeRequest(
-            requestId: walletResponse.requestId,
-            walletResponse: walletResponse.data as WalletMessageResponse);
-        return;
-      }
-      final event = walletResponse.data as WalletMessageEvent;
-      switch (walletResponse.clientType) {
-        case JSClientType.ethereum:
-          ethereumPageController.onEvent(event);
-          break;
-        case JSClientType.tron:
-          tronPageController.onEvent(event);
-          break;
-        case JSClientType.solana:
-          solanaPageController.onEvent(event);
-          break;
-        case JSClientType.ton:
-          tonPageController.onEvent(event);
-          break;
-        case JSClientType.stellar:
-          stellarPageController.onEvent(event);
-          break;
-        case JSClientType.substrate:
-          substratePageController.onEvent(event);
-          break;
-        case JSClientType.aptos:
-          aptosPageController.onEvent(event);
-          break;
-        case JSClientType.sui:
-          suiPageController.onEvent(event);
-          break;
-        default:
-          break;
-      }
-    } catch (e) {
-      WalletLogging.error("got error $e");
-      rethrow;
+    if (walletResponse.data.messageType == JSWalletMessageType.response) {
+      PageNetworkController._completeRequest(
+          requestId: walletResponse.requestId,
+          walletResponse: walletResponse.data as WalletMessageResponse);
+      return;
+    }
+    final event = walletResponse.data as WalletMessageEvent;
+    switch (walletResponse.clientType) {
+      case JSClientType.ethereum:
+        ethereumPageController.onEvent(event);
+        break;
+      case JSClientType.tron:
+        tronPageController.onEvent(event);
+        break;
+      case JSClientType.solana:
+        solanaPageController.onEvent(event);
+        break;
+      case JSClientType.ton:
+        tonPageController.onEvent(event);
+        break;
+      case JSClientType.stellar:
+        stellarPageController.onEvent(event);
+        break;
+      case JSClientType.substrate:
+        substratePageController.onEvent(event);
+        break;
+      case JSClientType.aptos:
+        aptosPageController.onEvent(event);
+        break;
+      case JSClientType.sui:
+        suiPageController.onEvent(event);
+        break;
+      default:
+        break;
     }
   }
 }

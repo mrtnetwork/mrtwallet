@@ -136,7 +136,8 @@ Future<void> buildWebViewPage({bool minify = false}) async {
 }
 
 Future<void> buildContent({bool minify = false, bool isMozila = false}) async {
-  print("Building content. please wait...");
+  print(
+      "Building content ${isMozila ? 'Mozila extension' : 'chrome based extension'}. please wait...");
   const String command = 'dart';
   final List<String> args = [
     'compile',
@@ -154,12 +155,13 @@ Future<void> buildContent({bool minify = false, bool isMozila = false}) async {
     String data = file.readAsStringSync();
     if (minify) {
       data = data.replaceFirst("(function dartProgram(){",
-          r'''(function dartProgram(){if(self.browser === undefined){self.browser = browser;self.cloneInto = cloneInto;}''');
+          r'''(function dartProgram(){if(self.browser === undefined){self.browser = browser;self.cloneInto = cloneInto; self.Uint8Array = Uint8Array;}''');
     } else {
       data = data.replaceFirst("main() {", r'''    main() {
       if(self.browser === undefined){
         self.browser = browser
         self.cloneInto = cloneInto
+        self.Uint8Array = Uint8Array;
       }''');
     }
     await file.writeAsString(data);
@@ -298,13 +300,13 @@ Future<void> _buildWeb(
   if (crypto) {
     await buildCrypto();
   }
-
+  copyFiles();
   if (extension && scripts) {
     await buildBackground(minify: minify);
     await buildPage(minify: minify);
     await buildContent(minify: minify, isMozila: mozila);
   }
-  copyFiles();
+
   if (extension) {
     File file = File("extensions/tron_web.js");
     await file.copy("web/tron_web.js");
@@ -383,18 +385,18 @@ void main(List<String> args) async {
   }
 
   if (fixedArgs.contains("w")) {
-    await buildWebView();
+    await buildWebView(minify: minify);
   }
   if (fixedArgs.contains("wp")) {
-    await buildWebViewPage();
+    await buildWebViewPage(minify: minify);
   }
   if (fixedArgs.contains("c")) {
-    await buildContent();
+    await buildContent(isMozila: mozila, minify: minify);
   }
   if (fixedArgs.contains("b")) {
-    await buildBackground();
+    await buildBackground(minify: minify);
   }
   if (fixedArgs.contains("p")) {
-    await buildPage();
+    await buildPage(minify: minify);
   }
 }

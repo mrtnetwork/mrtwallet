@@ -137,6 +137,8 @@ class JSExtentionWallet extends JSWalletHandler {
         return null;
       });
       return await completer.future;
+    } catch (e) {
+      rethrow;
     } finally {
       if (hasListener) {
         extension.runtime.onMessage.removeListener(_OnBackgroundListener);

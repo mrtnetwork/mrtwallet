@@ -297,15 +297,13 @@ class _JSBackgroundHandler {
           data: authenticated.toCbor().encode(),
           requestId: event.requestId,
           type: WalletEventTypes.activation);
-    } on Web3RequestException catch (e, s) {
-      WalletLogging.error("tab failed2 $e $s");
+    } on Web3RequestException catch (e) {
       return WalletEvent(
           clientId: "${tab.id ?? -1}",
           data: e.toResponseMessage().toCbor().encode(),
           requestId: event.requestId,
           type: WalletEventTypes.exception);
-    } catch (e, s) {
-      WalletLogging.error("tab failed $e $s");
+    } catch (e) {
       return WalletEvent(
           clientId: "${tab.id ?? -1}",
           data: Web3RequestExceptionConst.internalError

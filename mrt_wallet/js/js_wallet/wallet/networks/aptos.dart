@@ -159,37 +159,30 @@ class JSAptosHandler extends JSNetworkHandler<AptosWeb3State> {
   Future<Web3MessageCore> request(PageMessageRequest params) async {
     final state = this.state;
     final method = Web3AptosRequestMethods.fromName(params.method);
-    WalletLogging.error("got mettod ${method?.name}");
-    try {
-      switch (method) {
-        case Web3AptosRequestMethods.requestAccounts:
-          if (state.permissionAccounts.isNotEmpty) {
-            if (params.pageRequestType.isNetworkRequest) {
-              final message = JSAptosWalletStandardUserResponse.approved(
-                  state.defaultAddress!);
-              return buildResponse(message);
-            }
-            return buildResponse(state.defaultAddress);
+    switch (method) {
+      case Web3AptosRequestMethods.requestAccounts:
+        if (state.permissionAccounts.isNotEmpty) {
+          if (params.pageRequestType.isNetworkRequest) {
+            final message = JSAptosWalletStandardUserResponse.approved(
+                state.defaultAddress!);
+            return buildResponse(message);
           }
-          return Web3AptosRequestAccounts();
-        case Web3AptosRequestMethods.getNetwork:
-          if (state.isConnect) {
-            return buildResponse(state.chainChangedEvent);
-          }
-          throw Web3RequestExceptionConst.missingPermission;
-        case Web3AptosRequestMethods.signTransaction:
-          return _parseTransaction(
-              params: params, state: state, method: method!);
-        case Web3AptosRequestMethods.signMessage:
-          return _signMessage(params: params, state: state);
-        case Web3AptosRequestMethods.switchNetwork:
-          return _parseSwitchChain(params: params, state: state);
-        default:
-          throw Web3RequestExceptionConst.methodDoesNotExist;
-      }
-    } catch (e) {
-      WalletLogging.error("got error $e");
-      rethrow;
+          return buildResponse(state.defaultAddress);
+        }
+        return Web3AptosRequestAccounts();
+      case Web3AptosRequestMethods.getNetwork:
+        if (state.isConnect) {
+          return buildResponse(state.chainChangedEvent);
+        }
+        throw Web3RequestExceptionConst.missingPermission;
+      case Web3AptosRequestMethods.signTransaction:
+        return _parseTransaction(params: params, state: state, method: method!);
+      case Web3AptosRequestMethods.signMessage:
+        return _signMessage(params: params, state: state);
+      case Web3AptosRequestMethods.switchNetwork:
+        return _parseSwitchChain(params: params, state: state);
+      default:
+        throw Web3RequestExceptionConst.methodDoesNotExist;
     }
   }
 
@@ -360,7 +353,6 @@ class JSAptosHandler extends JSNetworkHandler<AptosWeb3State> {
     final method = Web3AptosRequestMethods.fromName(message.method);
     switch (method) {
       case Web3AptosRequestMethods.requestAccounts:
-        WalletLogging.error("request ${message.pageRequestType}");
         switch (message.pageRequestType) {
           case PageRequestType.wallet:
             if (state.permissionAccounts.isNotEmpty) {
