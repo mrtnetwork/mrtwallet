@@ -603,13 +603,10 @@ class _SetupBitcoinMultiSigAddressViewState
                                           .openSliverBottomSheet<
                                               IBitcoinAddress>(
                                             "select_account".tr,
-                                            minExtent: 0.5,
                                             child: SwitchOrSelectAccountView(
                                               account: chainAccount,
                                               showMultiSig: false,
                                             ),
-                                            maxExtend: 0.9,
-                                            initialExtend: 0.7,
                                             centerContent: false,
                                           )
                                           .then(onAddSigner);

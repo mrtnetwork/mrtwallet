@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/constant/constant.dart';
+import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/wallet/global/global.dart';
-
-import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
 class CosmosAccountPageView extends StatelessWidget {
@@ -24,9 +22,20 @@ class _CosmosAccountPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AccountTabbarScrollWidget(slivers: [
+    return AccountTabbarScrollWidget(slivers: [
       SliverToBoxAdapter(
-        child: Column(children: []),
+        child: Column(children: [
+          AppListTile(
+            title: Text("ibc_transfer".tr),
+            subtitle: Text("ibc_desc".tr),
+            trailing: const Icon(Icons.arrow_forward),
+            onTap: () {
+              context.to(PageRouter.cosmosTransaction,
+                  argruments:
+                      LiveTransactionForm(validator: CosmosIbcTransferForm()));
+            },
+          )
+        ]),
       )
     ]);
   }
@@ -89,7 +98,7 @@ class _CosmosTokenView extends StatelessWidget {
                       address: address,
                       account: account,
                       transferArgruments: account,
-                      transferPath: PageRouter.cosmosTransaction));
+                      transferPath: PageRouter.cosmosTransfer));
             },
             token: token,
           );

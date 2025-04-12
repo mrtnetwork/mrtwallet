@@ -266,13 +266,10 @@ class _PickAssetIssuer extends StatelessWidget {
           onRemove: () {
             context
                 .openSliverBottomSheet<ReceiptAddress<StellarAddress>>(
-                    "issuer".tr,
-                    bodyBuilder: (c) =>
-                        SelectRecipientAccountView<StellarAddress>(
-                            account: state.widget.chain, scrollController: c),
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9)
+              "issuer".tr,
+              bodyBuilder: (c) => SelectRecipientAccountView<StellarAddress>(
+                  account: state.widget.chain, scrollController: c),
+            )
                 .then(
               (value) {
                 state.onSetIssueAddress(value);

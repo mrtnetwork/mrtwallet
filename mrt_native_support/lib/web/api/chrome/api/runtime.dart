@@ -42,12 +42,6 @@ extension type Runtime._(JSObject _) {
     return result.toEvent();
   }
 
-  // Future<WalletEvent?> sendMessage2_({required WalletEvent message}) async {
-  //   final future = sendMessageAsync2(message.toJsEvent()).toDart;
-  //   final result = await future;
-  //   return result.toEvent();
-  // }
-
   Future<JSAny?> openOptionsPage_() async {
     final future = openOptionsPage().toDart;
     return await future;

@@ -32,7 +32,7 @@ abstract class TonAccountContext with CborSerializable, Equatable {
       required TonChain chain,
       int? timeOut}) {
     return TonSerializationUtils.serializeMessage(
-        actions: actions, state: state, seqno: seqno, timeOut: timeOut);
+        actions: actions, state: state, seqno: seqno, timeout: timeOut);
   }
 
   Message toExternalMessage(

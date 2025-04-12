@@ -36,6 +36,12 @@ class StateRepository<T extends StateController> extends InheritedWidget {
     return repository!.controller.messengerKey;
   }
 
+  static WalletRouteObserver walletObserver(BuildContext context) {
+    final repository =
+        context.dependOnInheritedWidgetOfExactType<StateRepository>();
+    return repository!.controller.obs;
+  }
+
   static GlobalKey<NavigatorState> navigatorKey(BuildContext context) {
     final repository =
         context.dependOnInheritedWidgetOfExactType<StateRepository>();

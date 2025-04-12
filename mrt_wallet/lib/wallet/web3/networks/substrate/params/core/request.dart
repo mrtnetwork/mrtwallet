@@ -5,24 +5,10 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/params/models/add_chain.dart';
-import 'package:mrt_wallet/wallet/web3/networks/substrate/params/models/request_account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/params/models/sign_message.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/params/models/transaction.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/permission/permission.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
-
-abstract class Web3SubstratePermissionRequestParam
-    extends Web3SubstrateRequestParam<Web3SubstrateChain>
-    implements
-        Web3PermissionRequest<BaseSubstrateAddress, SubstrateChain,
-            Web3SubstrateChainAccount, Web3SubstrateChain> {
-  @override
-  bool get isPermissionRequest => true;
-  @override
-  Object? toJsWalletResponse(Web3SubstrateChain response) {
-    return null;
-  }
-}
 
 abstract class Web3SubstrateRequestParam<RESPONSE> extends Web3RequestParams<
     RESPONSE,
@@ -33,7 +19,7 @@ abstract class Web3SubstrateRequestParam<RESPONSE> extends Web3RequestParams<
   @override
   abstract final Web3SubstrateRequestMethods method;
   @override
-  abstract final BaseSubstrateAddress? account;
+  Web3SubstrateChainAccount? get account => null;
 
   Web3SubstrateRequestParam();
 
@@ -58,12 +44,9 @@ abstract class Web3SubstrateRequestParam<RESPONSE> extends Web3RequestParams<
         object: object,
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
-    final method = Web3RequestMethods.fromTag(values.elementAt(0));
+    final method = Web3NetworkRequestMethods.fromTag(values.elementAt(0));
     final Web3SubstrateRequestParam param;
     switch (method) {
-      case Web3SubstrateRequestMethods.requestAccounts:
-        param = Web3SubstrateRequestAccounts.deserialize(
-            bytes: bytes, object: object, hex: hex);
       case Web3SubstrateRequestMethods.signTransaction:
         param = Web3SubstrateSendTransaction.deserialize(
             bytes: bytes, object: object, hex: hex);
@@ -86,7 +69,7 @@ abstract class Web3SubstrateRequestParam<RESPONSE> extends Web3RequestParams<
 
 class Web3SubstrateRequest<RESPONSE,
         PARAMS extends Web3SubstrateRequestParam<RESPONSE>>
-    extends Web3Request<RESPONSE, BaseSubstrateAddress, SubstrateChain,
+    extends Web3NetworkRequest<RESPONSE, BaseSubstrateAddress, SubstrateChain,
         Web3SubstrateChainAccount, Web3SubstrateChain, PARAMS> {
   Web3SubstrateRequest(
       {required super.params,
@@ -96,21 +79,5 @@ class Web3SubstrateRequest<RESPONSE,
 
   Web3SubstrateRequest<R, P> cast<R, P extends Web3SubstrateRequestParam<R>>() {
     return this as Web3SubstrateRequest<R, P>;
-  }
-
-  @override
-  Web3SubstrateChain? get currentPermission =>
-      authenticated.getChainFromNetworkType(chain.network.type);
-
-  @override
-  ISubstrateAddress? accountPermission() {
-    if (params.account == null) {
-      return null;
-    }
-    if (currentPermission == null) {
-      throw Web3RequestExceptionConst.missingPermission;
-    }
-    return currentPermission!
-        .getAccountPermission(address: params.account!, chain: chain);
   }
 }

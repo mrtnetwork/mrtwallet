@@ -7,19 +7,28 @@ import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
+typedef ONUPDATETOKEN = void Function(BuildContext context, Token updatedToken);
+
 class UpdateTokenDetailsView<NETWORKADDRESS, TOKEN extends TokenCore,
         CHAINACCOUNT extends ChainAccount<NETWORKADDRESS, TOKEN, NFTCore>>
     extends StatefulWidget {
-  const UpdateTokenDetailsView(
-      {super.key,
-      required this.token,
-      required this.account,
-      required this.address,
-      required this.scrollController});
-  final TOKEN token;
+  const UpdateTokenDetailsView({
+    super.key,
+    this.accountToken,
+    required this.token,
+    required this.account,
+    required this.address,
+    required this.scrollController,
+    this.title,
+    this.onUpdateToken,
+  });
+  final TOKEN? accountToken;
+  final Token token;
   final APPCHAINACCOUNT<CHAINACCOUNT> account;
   final CHAINACCOUNT address;
   final ScrollController? scrollController;
+  final ONUPDATETOKEN? onUpdateToken;
+  final Widget? title;
 
   @override
   State<UpdateTokenDetailsView> createState() => _UpdateTokenDetailsViewState();
@@ -38,7 +47,7 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
       GlobalKey(debugLabel: "_UpdateTokenDetailsViewState");
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey<PageProgressState>();
-  Token get token => widget.token.token;
+  Token get token => widget.token;
   late String tokenName = token.name;
   late String tokenSymbol = token.symbol;
   late String apiId = token.market?.apiId ?? "";
@@ -125,7 +134,7 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
     }
     CoingeckoCoin? market = token.market;
     if (apiId.isNotEmpty) {
-      if (apiId != widget.token.token.market?.apiId) {
+      if (apiId != token.market?.apiId) {
         progressKey.progressText("retrieving_token_price".tr);
         final result = await MethodUtils.call(() async {
           return await wallet.getCoinPrice(apiId);
@@ -140,20 +149,25 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
     } else {
       market = null;
     }
-    progressKey.progressText("updating_token".tr);
-    final update = await wallet.wallet.updateToken(
-        token: widget.token,
-        updatedToken: Token(
-            name: tokenName,
-            symbol: tokenSymbol,
-            decimal: currectDecimal,
-            market: market,
-            assetLogo: token.assetLogo),
-        address: widget.address,
-        account: widget.account);
-    if (update.hasError) {
-      progressKey.errorText(update.error!);
-      return;
+    final updateToken = Token(
+        name: tokenName,
+        symbol: tokenSymbol,
+        decimal: currectDecimal,
+        market: market,
+        assetLogo: token.assetLogo);
+    if (widget.accountToken == null) {
+      widget.onUpdateToken?.call(context, updateToken);
+    } else {
+      progressKey.progressText("updating_token".tr);
+      final update = await wallet.wallet.updateToken(
+          token: widget.accountToken!,
+          updatedToken: updateToken,
+          address: widget.address,
+          account: widget.account);
+      if (update.hasError) {
+        progressKey.errorText(update.error!);
+        return;
+      }
     }
     progressKey.successText("token_updated_successfully".tr, backToIdle: false);
   }
@@ -196,9 +210,10 @@ class _UpdateTokenDetailsViewState extends State<UpdateTokenDetailsView>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      PageTitleSubtitle(
-                          title: "update_token_information".tr,
-                          body: Text("update_token_desc".tr)),
+                      widget.title ??
+                          PageTitleSubtitle(
+                              title: "update_token_information".tr,
+                              body: Text("update_token_desc".tr)),
                       WidgetConstant.height20,
                       AppTextField(
                           label: "name".tr,

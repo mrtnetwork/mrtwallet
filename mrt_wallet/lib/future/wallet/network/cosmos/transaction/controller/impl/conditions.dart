@@ -1,23 +1,23 @@
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/widgets/widgets/progress_bar/widgets/progress.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 import 'transaction.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 mixin CosmosTransactionConditions on CosmosTransactiomImpl {
   late final BaseAccount _ownerAccount;
-  late final GetLatestBlockResponse _latestBlock;
-  Future<void> initializeFee(
-      {required List<Coin> feeTokens, BigInt? nativeTransactionFee});
+  Future<void> initializeFee(CosmosTransactionRequirment txRequirment);
   @override
   BaseAccount get ownerAccount => _ownerAccount;
-  @override
-  GetLatestBlockResponse get latestBlock => _latestBlock;
   Future<void> _init() async {
     progressKey.progressText("retrieving_network_condition".tr);
     final result = await MethodUtils.call(() async {
-      return apiProvider.getTransactionRequirment(
+      final txRequirment = await apiProvider.getTransactionRequirment(
           address: address, account: account);
+      await validator.validator.initForm(
+          account: account, address: address, provider: walletProvider);
+      return txRequirment;
     });
     if (result.hasError) {
       progressKey.errorText(result.error!.tr, backToIdle: false);
@@ -28,10 +28,7 @@ mixin CosmosTransactionConditions on CosmosTransactiomImpl {
         return;
       }
       _ownerAccount = txRequirment.account!;
-      _latestBlock = txRequirment.block!;
-      await initializeFee(
-          feeTokens: txRequirment.accountCoins,
-          nativeTransactionFee: txRequirment.fixedNativeGas);
+      await initializeFee(txRequirment);
       onCalculateAmount();
       progressKey.success();
     }

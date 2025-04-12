@@ -4,8 +4,7 @@ import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/params/core/request.dart';
-import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
-import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:mrt_wallet/wallet/web3/utils/web3_validator_utils.dart';
 
 class Web3SubstrateAddNewChain extends Web3SubstrateRequestParam<bool> {
   final String chain;
@@ -79,22 +78,6 @@ class Web3SubstrateAddNewChain extends Web3SubstrateRequestParam<bool> {
         ]),
         type.tag);
   }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      "chain": chain,
-      "chainType": chainType,
-      "genesisHash": genesisHash,
-      "specVersion": specVersion,
-      "ss58Format": ss58Format,
-      "tokenDecimals": tokenDecimals,
-      "tokenSymbol": tokenSymbol
-    };
-  }
-
-  @override
-  BaseSubstrateAddress? get account => null;
 
   @override
   Web3SubstrateRequest<bool, Web3SubstrateAddNewChain> toRequest(

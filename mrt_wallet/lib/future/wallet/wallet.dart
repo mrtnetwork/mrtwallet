@@ -5,3 +5,4 @@ export 'network/network.dart';
 export 'security/security.dart';
 export 'setting/setting.dart';
 export 'start/start.dart';
+export 'web3/web3.dart';

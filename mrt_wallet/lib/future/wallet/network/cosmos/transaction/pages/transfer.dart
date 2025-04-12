@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
-import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
-
 import 'transaction.dart';
 
 class CosmosTransferTransactionView extends StatelessWidget {
@@ -10,9 +7,7 @@ class CosmosTransferTransactionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CosmosChain? account = context.getNullArgruments();
     return CosmosTransactionFieldsView(
-        field: LiveTransactionForm(
-            validator: CosmosTransferForm(network: account!.network)));
+        form: LiveTransactionForm(validator: CosmosTransferForm()));
   }
 }

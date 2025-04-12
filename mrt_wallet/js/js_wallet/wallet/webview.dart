@@ -40,6 +40,11 @@ class JSWebviewWallet extends JSWalletHandler {
     }
   }
 
+  bool _onMainResponse(JSWalletEvent jsEvnt) {
+    final event = jsEvnt.toEvent();
+    return _onResponse(event);
+  }
+
   @override
   void _listenOnClients({bool isWorker = false}) {
     if (!isWorker) return super._listenOnClients();
@@ -56,7 +61,8 @@ class JSWebviewWallet extends JSWalletHandler {
   factory JSWebviewWallet.initialize(
       {required WalletEvent request,
       required String clientId,
-      required JSWebviewTraget target}) {
+      required JSWebviewTraget target,
+      bool isWorker = true}) {
     final chacha =
         ChaCha20Poly1305(QuickCrypto.sha256Hash(StringUtils.encode(clientId)));
     final data = List<int>.from(request.data);
@@ -68,10 +74,15 @@ class JSWebviewWallet extends JSWalletHandler {
         crypto: ChaCha20Poly1305(message.authenticated.token),
         clientId: clientId,
         target: target,
-        isWorker: true,
+        isWorker: isWorker,
         initializeAuthenticated: message.authenticated);
-    onMessage = handler._inWorkerResponse.toJS;
-    handler._listenOnClients(isWorker: true);
+    if (isWorker) {
+      onMessage = handler._inWorkerResponse.toJS;
+    } else {
+      mrt.onMrtMessage = handler._onMainResponse.toJS;
+    }
+
+    handler._listenOnClients(isWorker: isWorker);
     return handler;
   }
 

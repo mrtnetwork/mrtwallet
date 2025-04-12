@@ -7,7 +7,8 @@ import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:mrt_wallet/crypto/worker.dart';
 
 mixin Web3RequestControllerImpl on CryptoWokerImpl {
-  Future<void> updatePermission(Web3APPAuthentication updatePermission);
+  Future<void> sendMessageToClient(
+      Web3EncryptedMessage message, String applicationId);
   Future<void> sendToClient(WalletEvent event);
   Future<Web3ClientInfo?> currentApllicationId();
 

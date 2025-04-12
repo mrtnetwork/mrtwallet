@@ -23,9 +23,9 @@ class EthereumWeb3PersonalSignRequestView extends StatelessWidget {
           ContainerWithBorder(
               onRemove: () {},
               onRemoveWidget:
-                  CopyTextIcon(dataToCopy: param.challeng, isSensitive: false),
+                  CopyTextIcon(dataToCopy: param.message, isSensitive: false),
               enableTap: false,
-              child: Text(param.challeng,
+              child: Text(param.message,
                   style:
                       context.colors.onPrimaryContainer.bodyMedium(context))),
           if (param.content != null) ...[

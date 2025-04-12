@@ -17,16 +17,18 @@ class PlatformMethods {
         bytes: bytes, fileName: fileName, validate: validate);
   }
 
-  static Future<List<int>> loadAssets(String assetPath) async {
-    return await loadAssetBuffer(assetPath);
+  static Future<List<int>> loadAssets(String assetPath,
+      {String? package}) async {
+    return await loadAssetBuffer(assetPath, package: package);
   }
 
-  static Future<String> loadAssetsText(String assetPath) async {
-    return await loadAssetText(assetPath);
+  static Future<String> loadAssetsText(String assetPath,
+      {String? package}) async {
+    return await loadAssetText(assetPath, package: package);
   }
 
-  static String assetPath(String assetPath) {
-    return toAssetPath(assetPath);
+  static String assetPath(String assetPath, {String? package}) {
+    return toAssetPath(assetPath, package: package);
   }
 
   static Future<bool> writeClipboard(String text) async {

@@ -262,7 +262,6 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
                             context
                                 .openSliverBottomSheet<BigInt>(
                               "setup_output_amount".tr,
-                              initialExtend: 1,
                               child: SetupNetworkAmount(
                                 token: widget.network.coinParam.token,
                                 max: remindAmount.balance +
@@ -329,7 +328,6 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
                                     operation.isBurnable
                                         ? "burn_amount".tr
                                         : "setup_output_amount".tr,
-                                    initialExtend: 1,
                                     child: SetupNetworkAmount(
                                       token: widget.token.token,
                                       max: remindTokenAmount.balance +
@@ -483,18 +481,15 @@ class _TokenCashOperationViewState extends State<TokenCashOperationView>
                         onRemove: () {
                           context
                               .openSliverBottomSheet<
-                                      List<ReceiptAddress<BitcoinBaseAddress>>>(
-                                  "receiver_address".tr,
-                                  bodyBuilder: (c) =>
-                                      SelectRecipientAccountView<
-                                          BitcoinBaseAddress>(
-                                        account: widget.account,
-                                        scrollController: c,
-                                        multipleSelect: true,
-                                      ),
-                                  maxExtend: 1,
-                                  minExtent: 0.8,
-                                  initialExtend: 0.9)
+                                  List<ReceiptAddress<BitcoinBaseAddress>>>(
+                                "receiver_address".tr,
+                                bodyBuilder: (c) => SelectRecipientAccountView<
+                                    BitcoinBaseAddress>(
+                                  account: widget.account,
+                                  scrollController: c,
+                                  multipleSelect: true,
+                                ),
+                              )
                               .then(onAddRecever);
                         },
                         onRemoveIcon: Icon(Icons.add_box,

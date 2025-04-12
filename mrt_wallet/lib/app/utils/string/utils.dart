@@ -10,6 +10,13 @@ class StrUtils {
     return regExp.hasMatch(password);
   }
 
+  static bool isHtml(String error) {
+    return RegExp(
+            r'<(html|head|body|title|h1|h2|h3|h4|h5|h6|p|div|span|a|form|table|img)[^>]*>',
+            caseSensitive: false)
+        .hasMatch(error);
+  }
+
   static const String _rtlChars = r'\u0591-\u07FF\uFB1D-\uFDFD\uFE70-\uFEFC';
 
   /// Practical patterns to identify strong LTR and RTL characters,

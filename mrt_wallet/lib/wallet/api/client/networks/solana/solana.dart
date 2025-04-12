@@ -64,7 +64,9 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider>
       {required SolanaTransaction transaction,
       SolAddress? account,
       bool replaceRecentBlockhash = true,
-      bool sigVerify = false}) async {
+      bool sigVerify = false,
+      Commitment? commitment = Commitment.processed,
+      MinContextSlot? minContextSlot}) async {
     return await provider.request(
       SolanaRequestSimulateTransaction(
           encodedTransaction: transaction.serializeString(
@@ -73,6 +75,7 @@ class SolanaClient extends NetworkClient<ISolanaAddress, SolanaAPIProvider>
           replaceRecentBlockhash: replaceRecentBlockhash,
           encoding: SolanaRequestEncoding.base64,
           commitment: Commitment.processed,
+          minContextSlot: minContextSlot,
           accounts: account == null
               ? null
               : RPCAccountConfig(

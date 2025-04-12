@@ -13,9 +13,9 @@ enum SolanaNetworkType {
   testnet('solana:testnet', 1),
   devnet('solana:devnet', 2);
 
-  final String walletStandardChainName;
+  final String identifier;
   final int value;
-  const SolanaNetworkType(this.walletStandardChainName, this.value);
+  const SolanaNetworkType(this.identifier, this.value);
   static SolanaNetworkType fromValue(int? value) {
     return values.firstWhere((e) => e.value == value,
         orElse: () => throw WalletExceptionConst.invalidData(

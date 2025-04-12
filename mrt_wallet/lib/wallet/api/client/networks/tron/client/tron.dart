@@ -195,8 +195,7 @@ class TronClient extends NetworkClient<ITronAddress, TronAPIProvider>
     final destinationAddress = contract.toAddress.toAddress();
     final TronTRC10Token? token = await getIssueById(contract.assestId);
     if (token == null) {
-      throw Web3RequestExceptionConst.invalidParameters(
-          Web3TronExceptionConstant.trc10TokenNotFound);
+      throw Web3RequestExceptionConst.invalidTransaction;
     }
     await updateIssueBalance(token, contract.ownerAddress);
     return Web3TronTransferAssetInfo(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
@@ -8,10 +8,8 @@ import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:on_chain/tron/src/address/tron_address.dart';
 
 class TronWeb3PermissionView extends StatefulWidget {
-  const TronWeb3PermissionView(
-      {required this.permission, required this.application, super.key});
+  const TronWeb3PermissionView({required this.application, super.key});
   final Web3APPAuthentication application;
-  final Web3TronChain? permission;
 
   @override
   State<TronWeb3PermissionView> createState() => _TronWeb3PermissionViewState();
@@ -25,9 +23,10 @@ class _TronWeb3PermissionViewState extends State<TronWeb3PermissionView>
   @override
   Web3APPAuthentication get application => widget.application;
   @override
-  Web3TronChainAccount createNewAccountPermission(ITronAddress address) {
+  Web3TronChainAccount createNewAccountPermission(
+      ITronAddress address, bool isDefault) {
     return Web3TronChainAccount.fromChainAccount(
-        address: address, id: chain.network.value, isDefault: false);
+        address: address, id: chain.network.value, isDefault: isDefault);
   }
 
   @override
@@ -36,17 +35,7 @@ class _TronWeb3PermissionViewState extends State<TronWeb3PermissionView>
   }
 
   @override
-  void onInitOnce() {
-    super.onInitOnce();
-    permission = widget.permission ?? Web3TronChain.create();
-    final wallet = context.watch<WalletProvider>(StateConst.main);
-    chains = wallet.wallet.getChains().whereType<TronChain>().toList();
-    chain = permission.getCurrentPermissionChain(chains);
-    for (final i in chains) {
-      permissions[i] = permission.chainAccounts(i);
-    }
-    updateActivities();
-  }
+  NetworkType get type => NetworkType.tron;
 
   @override
   Widget build(BuildContext context) {

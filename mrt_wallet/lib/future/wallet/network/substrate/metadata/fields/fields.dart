@@ -305,17 +305,15 @@ class _BytesFieldValidatorView extends StatelessWidget {
                         case _QuickAccessOptions.accounts:
                           context
                               .openSliverBottomSheet<
-                                      ReceiptAddress<BaseSubstrateAddress>>(
-                                  validator.info.name ?? "address".tr,
-                                  bodyBuilder: (scrollController) =>
-                                      SelectRecipientAccountView<
-                                              BaseSubstrateAddress>(
-                                          account: metadata.account,
-                                          scrollController: scrollController,
-                                          multipleSelect: false),
-                                  maxExtend: 1,
-                                  minExtent: 0.8,
-                                  initialExtend: 0.9)
+                                  ReceiptAddress<BaseSubstrateAddress>>(
+                                validator.info.name ?? "address".tr,
+                                bodyBuilder: (scrollController) =>
+                                    SelectRecipientAccountView<
+                                            BaseSubstrateAddress>(
+                                        account: metadata.account,
+                                        scrollController: scrollController,
+                                        multipleSelect: false),
+                              )
                               .then(validator.setAddress);
                           break;
                         case _QuickAccessOptions.addressDecoder:

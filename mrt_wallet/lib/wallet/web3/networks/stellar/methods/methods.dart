@@ -4,7 +4,7 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/constant/constant.dart';
 
-class Web3StellarRequestMethods extends Web3RequestMethods {
+class Web3StellarRequestMethods extends Web3NetworkRequestMethods {
   const Web3StellarRequestMethods._({required super.id, required super.name});
 
   static const Web3StellarRequestMethods requestAccounts =

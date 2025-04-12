@@ -47,4 +47,9 @@ class BitcoinExplorerApiProvider extends BitcoinClient<IBitcoinAddress> {
   Future<String> genesis() async {
     return await provider.genesis();
   }
+
+  @override
+  Future<BtcTransaction> getTx(String txId) async {
+    return await provider.getRawTransaction(txId);
+  }
 }

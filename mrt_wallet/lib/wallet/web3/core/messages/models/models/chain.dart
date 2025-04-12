@@ -9,10 +9,7 @@ class Web3ChainMessage extends Web3MessageCore {
   final Web3MessageTypes type;
   final Web3APPData authenticated;
 
-  Web3ChainMessage({
-    required this.type,
-    required this.authenticated,
-  });
+  Web3ChainMessage({required this.type, required this.authenticated});
   factory Web3ChainMessage.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborTagValue tag =
@@ -28,10 +25,5 @@ class Web3ChainMessage extends Web3MessageCore {
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([authenticated.toCbor()]), type.tag);
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {"type": type.name};
   }
 }

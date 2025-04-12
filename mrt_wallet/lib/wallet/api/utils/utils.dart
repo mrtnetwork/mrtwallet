@@ -258,6 +258,24 @@ class APIUtils {
     }
   }
 
+  static T? findNetworkProvider<T extends APIProvider>(WalletNetwork network,
+      {ProviderIdentifier? identifier, bool allowInWeb3 = false}) {
+    List<APIProvider> providers = network.getAllProviders();
+    if (allowInWeb3) {
+      providers = providers.where((e) => e.allowInWeb3).toList();
+    }
+    assert(identifier == null || identifier.network == network.type,
+        "Invalid provider identifier network.");
+    List<APIProvider> serviceProvider = MethodUtils.nullOnException(() =>
+            _findProviders(
+                identifier: identifier,
+                providers: providers,
+                type: network.type)) ??
+        providers;
+    if (serviceProvider.isEmpty) return null;
+    return serviceProvider.first.toProvider();
+  }
+
   static T? createApiClient<T extends NetworkClient>(WalletNetwork network,
       {ProviderIdentifier? identifier,
       Duration? requestTimeut,

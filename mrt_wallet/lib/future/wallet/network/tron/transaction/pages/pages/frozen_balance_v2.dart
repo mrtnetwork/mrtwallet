@@ -44,7 +44,6 @@ class TronFreezBalanceV2FieldsView extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
               "frozen_balance".tr,
-              initialExtend: 1,
               child: SetupNetworkAmount(
                 token: account.network.coinParam.token,
                 max: account.address.address.currencyBalance,

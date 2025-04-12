@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/sui/web3/controller/controller/transaction.dart';
-import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/models/networks/sui/models/types.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 
@@ -15,7 +14,7 @@ class SuiWeb3TransactionFieldsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       showRequestAccount: true,
       controller: () => Web3SuiTransactionRequestController(
           walletProvider: wallet, request: request),
@@ -142,7 +141,9 @@ class _TransactionView extends StatelessWidget {
                       },
                     );
                   },
-                  child: Text("sign_transaction".tr))
+                  child: form.isExecute
+                      ? Text("send_transaction".tr)
+                      : Text("sign_transaction".tr))
             ],
           )
         ],

@@ -102,7 +102,7 @@ class BitcoinTransactionUtxoView extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    OneLineTextWidget(accoutUtxo.utxo.txHash,
+                                    OneLineTextWidget(accoutUtxo.txHash,
                                         style: context
                                             .primaryTextTheme.bodyMedium),
                                     CoinPriceView(

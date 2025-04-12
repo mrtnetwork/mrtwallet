@@ -1,22 +1,39 @@
-import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/params/core/request.dart';
-import 'package:stellar_dart/stellar_dart.dart';
+import 'package:mrt_wallet/wallet/web3/networks/stellar/permission/models/account.dart';
 
-class Web3StellarSendTransaction extends Web3StellarRequestParam<String> {
-  final Envelope transaction;
+class Web3StellarSendTransactionResponse {
+  final String envlope;
+  final String? txHash;
+  const Web3StellarSendTransactionResponse(
+      {required this.envlope, this.txHash});
+  Map<String, dynamic> toJson() {
+    return {"envlope": envlope, "tx_hash": txHash};
+  }
+
+  factory Web3StellarSendTransactionResponse.fromJson(
+      Map<String, dynamic> json) {
+    return Web3StellarSendTransactionResponse(
+        envlope: json["envlope"], txHash: json["tx_hash"]);
+  }
+}
+
+class Web3StellarSendTransaction
+    extends Web3StellarRequestParam<Web3StellarSendTransactionResponse> {
+  final List<int> transaction;
   Web3StellarSendTransaction._({
     required this.account,
-    required this.transaction,
+    required List<int> transaction,
     required this.method,
-  });
+  }) : transaction = transaction.asImmutableBytes;
   factory Web3StellarSendTransaction({
-    required StellarAddress account,
-    required Envelope transaction,
+    required Web3StellarChainAccount account,
+    required List<int> transaction,
     required Web3StellarRequestMethods method,
   }) {
     switch (method) {
@@ -38,8 +55,9 @@ class Web3StellarSendTransaction extends Web3StellarRequestParam<String> {
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
     return Web3StellarSendTransaction(
-        account: StellarAddress.fromBase32Addr(values.elementAt(1)),
-        transaction: Envelope.fromXdr(values.elementAt(2)),
+        account: Web3StellarChainAccount.deserialize(
+            object: values.elementAs<CborTagValue>(1)),
+        transaction: values.elementAt(2),
         method: Web3StellarRequestMethods.fromId(
             values.elementAt<List<int>>(0).last));
   }
@@ -50,27 +68,22 @@ class Web3StellarSendTransaction extends Web3StellarRequestParam<String> {
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength([
-          method.tag,
-          account.toString(),
-          CborBytesValue(transaction.toVariantXDR()),
-        ]),
+        CborListValue.fixedLength(
+            [method.tag, account.toCbor(), CborBytesValue(transaction)]),
         type.tag);
   }
 
   @override
-  Map<String, String?> toJson() {
-    return {};
-  }
-
-  @override
-  Web3StellarRequest<String, Web3StellarSendTransaction> toRequest(
-      {required Web3RequestApplicationInformation request,
-      required Web3APPAuthentication authenticated,
-      required List<APPCHAIN> chains}) {
+  Web3StellarRequest<Web3StellarSendTransactionResponse,
+          Web3StellarSendTransaction>
+      toRequest(
+          {required Web3RequestApplicationInformation request,
+          required Web3APPAuthentication authenticated,
+          required List<APPCHAIN> chains}) {
     final StellarChain chain = super.findRequestChain(
         request: request, authenticated: authenticated, chains: chains);
-    return Web3StellarRequest<String, Web3StellarSendTransaction>(
+    return Web3StellarRequest<Web3StellarSendTransactionResponse,
+            Web3StellarSendTransaction>(
         params: this,
         authenticated: authenticated,
         chain: chain,
@@ -78,5 +91,10 @@ class Web3StellarSendTransaction extends Web3StellarRequestParam<String> {
   }
 
   @override
-  final StellarAddress account;
+  Object? toJsWalletResponse(Web3StellarSendTransactionResponse response) {
+    return response.toJson();
+  }
+
+  @override
+  final Web3StellarChainAccount account;
 }

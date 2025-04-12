@@ -4,7 +4,6 @@ import 'package:mrt_wallet/future/wallet/network/forms/tron/forms/forms.dart';
 import 'package:mrt_wallet/future/wallet/network/tron/web3/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'fields/request_account.dart';
 import 'fields/sign_message_v2.dart';
 import 'fields/switch_chain.dart';
 
@@ -17,7 +16,7 @@ class TronWeb3GlobalFieldsView<RESPONSE,
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3TronGlobalRequestController<RESPONSE, T>(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
@@ -37,11 +36,6 @@ class _GlobalFieldsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (form.request.params.method) {
-      case Web3TronRequestMethods.requestAccounts:
-        return TronWeb3RequestAccountsView(
-          controller: controller,
-          field: form as TronRequestAccountForm,
-        );
       case Web3TronRequestMethods.signMessageV2:
         return TronWeb3SignMessageV2RequestView(
           request: form as TronWeb3Form<Web3TronSignMessageV2>,

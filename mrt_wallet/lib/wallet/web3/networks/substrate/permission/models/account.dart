@@ -1,11 +1,10 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/helper/helper.dart';
+import 'package:blockchain_utils/utils/string/string.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
-import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
-import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
@@ -13,11 +12,30 @@ import 'package:polkadot_dart/polkadot_dart.dart';
 class Web3SubstrateChainAccount extends Web3ChainAccount<BaseSubstrateAddress> {
   @override
   final int id;
+  final List<int> publicKey;
   Web3SubstrateChainAccount(
       {required super.keyIndex,
       required super.address,
       required super.defaultAddress,
-      required this.id});
+      required this.id,
+      required List<int> publicKey})
+      : publicKey = publicKey.asImmutableBytes;
+  @override
+  Web3SubstrateChainAccount clone({
+    AddressDerivationIndex? keyIndex,
+    BaseSubstrateAddress? address,
+    bool? defaultAddress,
+    int? id,
+    List<int>? publicKey,
+  }) {
+    return Web3SubstrateChainAccount(
+        keyIndex: keyIndex ?? this.keyIndex,
+        address: address ?? this.address,
+        defaultAddress: defaultAddress ?? this.defaultAddress,
+        id: id ?? this.id,
+        publicKey: publicKey ?? this.publicKey);
+  }
+
   factory Web3SubstrateChainAccount.fromChainAccount(
       {required ISubstrateAddress address,
       required int id,
@@ -26,7 +44,8 @@ class Web3SubstrateChainAccount extends Web3ChainAccount<BaseSubstrateAddress> {
         keyIndex: address.keyIndex,
         address: address.networkAddress,
         id: id,
-        defaultAddress: isDefault);
+        defaultAddress: isDefault,
+        publicKey: address.publicKey);
   }
 
   factory Web3SubstrateChainAccount.deserialize(
@@ -41,59 +60,70 @@ class Web3SubstrateChainAccount extends Web3ChainAccount<BaseSubstrateAddress> {
             obj: values.getCborTag(0)),
         address: BaseSubstrateAddress(values.elementAt(1)),
         id: values.elementAt(2),
-        defaultAddress: values.elementAt(3));
+        defaultAddress: values.elementAt(3),
+        publicKey: values.elementAs(4));
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength(
-            [keyIndex.toCbor(), address.address, id, defaultAddress]),
+        CborListValue.fixedLength([
+          keyIndex.toCbor(),
+          address.address,
+          id,
+          defaultAddress,
+          publicKey
+        ]),
         CborTagsConst.web3SubstrateAccount);
   }
 
   @override
   String get addressStr => address.toString();
-
-  @override
-  List get variabels => [keyIndex, addressStr, id];
 }
 
-class Web3SubstrateChainMetadata with CborSerializable {
+class Web3SubstrateChainIdnetifier extends Web3ChainIdnetifier {
   final String genesisHash;
   final int specVersion;
-  const Web3SubstrateChainMetadata(
-      {required this.genesisHash, required this.specVersion});
-  factory Web3SubstrateChainMetadata.deserialize(
+  @override
+  String get identifier => "substrate:$genesisHash";
+  Web3SubstrateChainIdnetifier(
+      {required String genesisHash,
+      required this.specVersion,
+      required super.id})
+      : genesisHash = StringUtils.add0x(genesisHash);
+  factory Web3SubstrateChainIdnetifier.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final CborListValue values = CborSerializable.cborTagValue(
         object: object,
         cborBytes: bytes,
         hex: hex,
-        tags: CborTagsConst.web3SubstrateChainMetadata);
-    return Web3SubstrateChainMetadata(
-        genesisHash: values.elementAs(0), specVersion: values.elementAs(1));
+        tags: CborTagsConst.web3SubstrateChainIdentifier);
+    return Web3SubstrateChainIdnetifier(
+        genesisHash: values.elementAs(0),
+        specVersion: values.elementAs(1),
+        id: values.elementAs(2));
   }
 
   @override
   CborTagValue toCbor() {
-    return CborTagValue(CborListValue.fixedLength([genesisHash, specVersion]),
-        CborTagsConst.web3SubstrateChainMetadata);
+    return CborTagValue(
+        CborListValue.fixedLength([genesisHash, specVersion, id]),
+        CborTagsConst.web3SubstrateChainIdentifier);
   }
 }
 
-class Web3SubstrateChainAuthenticated extends Web3ChainAuthenticated {
-  final List<Web3SubstrateChainAccount> accounts;
-  final List<Web3SubstrateChainMetadata> knownMetadata;
-  final WalletSubstrateNetwork network;
-  final ProviderIdentifier? serviceIdentifier;
-  Web3SubstrateChainAuthenticated(
-      {required List<Web3SubstrateChainAccount> accounts,
-      required this.network,
-      required this.serviceIdentifier,
-      required List<Web3SubstrateChainMetadata> knownMetadata})
-      : accounts = accounts.immutable,
-        knownMetadata = knownMetadata.immutable;
+class Web3SubstrateChainAuthenticated
+    extends Web3ChainAuthenticated<Web3SubstrateChainAccount> {
+  @override
+  final List<Web3SubstrateChainIdnetifier> networks;
+  @override
+  final Web3SubstrateChainIdnetifier currentNetwork;
+  Web3SubstrateChainAuthenticated({
+    required super.accounts,
+    required this.currentNetwork,
+    required List<Web3SubstrateChainIdnetifier> networks,
+  })  : networks = networks.immutable,
+        super(networkType: NetworkType.substrate);
 
   factory Web3SubstrateChainAuthenticated.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -107,30 +137,12 @@ class Web3SubstrateChainAuthenticated extends Web3ChainAuthenticated {
           .elementAsListOf<CborTagValue>(0)
           .map((e) => Web3SubstrateChainAccount.deserialize(object: e))
           .toList(),
-      network: WalletSubstrateNetwork.fromCborBytesOrObject(
-          obj: values.getCborTag(1)),
-      serviceIdentifier: values.elemetMybeAs<ProviderIdentifier, CborTagValue>(
-          2, (p0) => ProviderIdentifier.deserialize(cbor: p0)),
-      knownMetadata: values
-          .elementAsListOf<CborTagValue>(3)
-          .map((e) => Web3SubstrateChainMetadata.deserialize(object: e))
+      networks: values
+          .elementAsListOf<CborTagValue>(1)
+          .map((e) => Web3SubstrateChainIdnetifier.deserialize(object: e))
           .toList(),
+      currentNetwork: Web3SubstrateChainIdnetifier.deserialize(
+          object: values.elementAs<CborTagValue>(2)),
     );
   }
-
-  @override
-  CborTagValue toCbor() {
-    return CborTagValue(
-        CborListValue.fixedLength([
-          CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
-          network.toCbor(),
-          serviceIdentifier?.toCbor(),
-          CborListValue.fixedLength(
-              knownMetadata.map((e) => e.toCbor()).toList()),
-        ]),
-        networkType.tag);
-  }
-
-  @override
-  NetworkType get networkType => NetworkType.substrate;
 }

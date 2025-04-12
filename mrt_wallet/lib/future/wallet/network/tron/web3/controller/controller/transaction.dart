@@ -16,7 +16,7 @@ import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:on_chain/tron/tron.dart';
 
 class Web3TronTransactionRequestController
-    extends Web3TronImpl<Map<String, dynamic>, Web3TronSendTransaction> {
+    extends Web3TronImpl<String, Web3TronSendTransaction> {
   TronFee? _consumedFee;
   TronFee? get consumedFee => _consumedFee;
 
@@ -151,13 +151,13 @@ class Web3TronTransactionRequestController
     progressKey.process(text: "transaction_retrieval_requirment".tr);
     final tx = await MethodUtils.call(() async {
       final transaction = MethodUtils.nullOnException(
-          () => Transaction.fromJson(request.params.transaction));
+          () => Transaction.deserialize(request.params.transaction));
       if (transaction == null) {
-        throw Web3TronExceptionConstant.invalidTransactionParams;
+        throw Web3RequestExceptionConst.invalidTransaction;
       }
       if (request.params.txId != null &&
           request.params.txId != transaction.rawData.txID) {
-        throw Web3TronExceptionConstant.invalidTransactionTxId;
+        throw Web3RequestExceptionConst.invalidTransaction;
       }
       return transaction;
     });
@@ -264,16 +264,23 @@ class Web3TronTransactionRequestController
       if (signature.hasError) {
         throw signature.exception!;
       }
-      return signature.result.map((e) => BytesUtils.toHexString(e)).toList();
+      return signature.result.map((e) => e).toList();
     });
 
     if (result.hasError) {
       progressKey.error(error: result.exception, showBackButton: true);
     } else {
-      final json = Map<String, dynamic>.from(request.params.transaction);
-      final signatures = List<String>.from(json["signature"] ?? []);
-      json["signature"] = <String>[...signatures, ...result.result];
-      request.completeResponse(json);
+      final signedTx = Transaction(
+          rawData: transaction.rawData,
+          signature: [...transaction.signature, ...result.result]);
+
+      // final respone = Web3TronSendTransactionResponse(
+      //     signatures: <String>[...signatures, ...result.result],
+      //     signedTransaction: signedTransaction);
+      // final json = Map<String, dynamic>.from(request.params.transaction);
+      // final signatures = List<String>.from(json["signature"] ?? []);
+      // json["signature"] = <String>[...signatures, ...result.result];
+      request.completeResponse(signedTx.toHex);
       progressKey.response(text: "transaction_signed".tr);
     }
   }

@@ -66,7 +66,7 @@ class BitcoinMultiSigSignerDetais
   List get variabels => [publicKey, weight, keyIndex];
 
   @override
-  PubKeyModes get keyType => BtcUtils.isCompressedPubKey(publicKey);
+  PubKeyModes get keyType => BtcUtils.determinatePubKeyModeHex(publicKey);
 }
 
 class BitcoinMultiSignatureAddress

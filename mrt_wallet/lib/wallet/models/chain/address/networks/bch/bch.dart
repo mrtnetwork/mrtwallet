@@ -3,8 +3,7 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/networks/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
-import 'package:bitcoin_base/bitcoin_base.dart'
-    show BitcoinAddressType, BitcoinCashAddress, BitcoinCashNetwork;
+import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/creation_params/new_address.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
@@ -236,6 +235,34 @@ class IBitcoinCashMultiSigAddress extends IBitcoinCashAddress
 
   @override
   final BitcoinMultiSignatureAddress multiSignatureAddress;
+  @override
+  Script? witnessScript() {
+    return null;
+  }
+
+  @override
+  Script? redeemScript() {
+    if (!addressType.isP2sh) return null;
+    switch (addressType) {
+      case P2shAddressType.p2pkInP2sh:
+      case P2shAddressType.p2pkInP2sh32:
+      case P2shAddressType.p2pkInP2shwt:
+      case P2shAddressType.p2pkInP2sh32wt:
+      case P2shAddressType.p2pkhInP2sh:
+      case P2shAddressType.p2pkhInP2sh32:
+      case P2shAddressType.p2pkhInP2shwt:
+      case P2shAddressType.p2pkhInP2sh32wt:
+        return multiSignatureAddress.multiSigScript;
+      default:
+        return null;
+    }
+  }
+
+  @override
+  UtxoAddressDetails toUtxoRequest() {
+    return UtxoAddressDetails.multiSigAddress(
+        multiSigAddress: multiSignatureAddress, address: networkAddress);
+  }
 
   @override
   CborTagValue toCbor() {

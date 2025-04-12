@@ -53,10 +53,17 @@ class Web3PageProgress extends StatefulWidget {
 class Web3PageProgressState extends State<Web3PageProgress>
     with SafeState<Web3PageProgress> {
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? controller;
-  late final Live<Web3ProgressStatus> _statusLive = Live(widget.initialStatus);
-  Web3ProgressStatus get _status => _statusLive.value;
+  Live<Web3ProgressStatus> _statusLive = Live(Web3ProgressStatus.idle);
+  Web3ProgressStatus get status => _statusLive.value;
   Widget? _responseWidget;
   Widget? _child;
+
+  @override
+  void onInitOnce() {
+    super.onInitOnce();
+    _statusLive = Live(widget.initialStatus);
+    _responseWidget = widget.initialWidget;
+  }
 
   void _shwoRequestStatus() async {
     final key = ScaffoldMessenger.maybeOf(context);
@@ -72,6 +79,7 @@ class Web3PageProgressState extends State<Web3PageProgress>
 
   void _updateStream(Web3ProgressStatus status) {
     _statusLive.value = status;
+
     updateState();
     if (!status.canUpdate) {
       _shwoRequestStatus();
@@ -79,7 +87,7 @@ class Web3PageProgressState extends State<Web3PageProgress>
   }
 
   void _update({required Web3ProgressStatus status, Widget? widget}) {
-    if (_status.canUpdate) {
+    if (this.status.canUpdate) {
       _responseWidget = widget;
       _updateStream(status);
     }
@@ -117,7 +125,7 @@ class Web3PageProgressState extends State<Web3PageProgress>
   }
 
   void closedRequest() {
-    if (_responseWidget == null || _status == Web3ProgressStatus.progress) {
+    if (_responseWidget == null || status == Web3ProgressStatus.progress) {
       _responseWidget = PageProgressChildWidget(ProgressWithTextView(
           text: "client_closed_durning_request".tr,
           icon: WidgetConstant.errorIconLarge));
@@ -127,7 +135,7 @@ class Web3PageProgressState extends State<Web3PageProgress>
   }
 
   void successRequest() {
-    if (_responseWidget == null || _status == Web3ProgressStatus.progress) {
+    if (_responseWidget == null || status == Web3ProgressStatus.progress) {
       _responseWidget = PageProgressChildWidget(ProgressWithTextView(
           text: "web3_response_successfully_desc".tr,
           icon: WidgetConstant.checkCircleLarge));
@@ -156,7 +164,7 @@ class Web3PageProgressState extends State<Web3PageProgress>
   Widget build(BuildContext context) {
     return APPAnimatedSwitcher<Web3ProgressStatus>(
       duration: APPConst.animationDuraion,
-      enable: _status,
+      enable: status,
       widgets: {
         Web3ProgressStatus.idle: (c) => FutureBuilder(
               future: MethodUtils.after(() async => widget.child(c)),
@@ -280,7 +288,8 @@ extension QuickAccsessWeb3PageProgressState
     _errorResponseFromException(
         status: Web3ProgressStatus.errorResponse,
         error: error,
-        message: message);
+        message: message,
+        backToIdle: null);
   }
 
   void _errorResponseFromException(
@@ -297,6 +306,10 @@ extension QuickAccsessWeb3PageProgressState
     if (showBackButton) {
       backToIdle = null;
     }
+    if (!status.canUpdate) {
+      backToIdle = null;
+      showBackButton = false;
+    }
     final key = showBackButton ? this : null;
     if (error is WalletException) {
       currentState?._error(
@@ -311,7 +324,7 @@ extension QuickAccsessWeb3PageProgressState
     } else if (error is ApiProviderException) {
       currentState?._error(
           backToIdle: backToIdle,
-          widget: _Web3ErrorMessageView(error.message.toString(), key),
+          widget: _Web3ErrorMessageView(error.message?.toString().tr, key),
           status: status);
     } else if (error is BlockchainUtilsException) {
       currentState?._error(
@@ -375,7 +388,7 @@ class _Web3ProgressWithTextView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canUpdate = progressKey?.currentState?._status.canUpdate ?? false;
+    final canUpdate = progressKey?.currentState?.status.canUpdate ?? false;
     return _ProgressWithTextView(
         text: Column(
           children: [

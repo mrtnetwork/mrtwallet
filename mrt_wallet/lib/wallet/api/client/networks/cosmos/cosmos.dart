@@ -13,25 +13,81 @@ import 'package:mrt_wallet/wallet/models/networks/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 
 mixin CosmosCustomRequest on HttpImpl {
-  static List<RegisteryPingPubItem>? _testnetChains;
-  static List<RegisteryPingPubItem>? _mainnetChains;
-  Future<List<RegisteryPingPubItem>> _getChains(String uri,
+  static final _lock = SynchronizedLock();
+
+  static final Map<ChainType, List<CCRChainData>> _chains = {
+    ChainType.mainnet: [],
+    ChainType.testnet: [],
+  };
+  static List<PingPubChain>? _testnetChains;
+  static List<PingPubChain>? _mainnetChains;
+
+  static List<CosmosDirectoryChain>? _testnetCosmosDirectoryChains;
+  static List<CosmosDirectoryChain>? _mainnetCosmosDirectoryChains;
+
+  static CCRChainData? _getLocalChain(
+      {required ChainType chainType, required String name}) {
+    return _chains[chainType]
+        ?.firstWhereOrNull((e) => e.chain.chainName == name);
+  }
+
+  Future<List<PingPubChain>> _getChains(String uri,
       {Duration timeout = const Duration(seconds: 60)}) async {
     final r = await httpGet<List<Map<String, dynamic>>>(uri,
         responseType: HTTPResponseType.listOfMap, timeout: timeout);
     return CCRUtilities.readChainDirectories(r.result);
   }
 
-  Future<List<RegisteryPingPubItem>> getCosmosChains(
+  Future<List<CosmosDirectoryChain>> _getCosmsmosChains(String uri,
+      {Duration timeout = const Duration(seconds: 60)}) async {
+    final r = await httpGet<Map<String, dynamic>>(uri,
+        responseType: HTTPResponseType.map, timeout: timeout);
+    final chains = (r.result["chains"] as List)
+        .map((e) => CosmosDirectoryChain.fromJson(e))
+        .toList();
+    return chains;
+  }
+
+  Future<List<CosmosDirectoryChain>> _getCosmosDirectoryChains(
+      {ChainType chain = ChainType.mainnet,
+      Duration timeout = const Duration(seconds: 60)}) async {
+    switch (chain) {
+      case ChainType.mainnet:
+        return _mainnetCosmosDirectoryChains ??= await _getCosmsmosChains(
+            CCRConst.cosmosDirectoryUri,
+            timeout: timeout);
+      case ChainType.testnet:
+        return _testnetCosmosDirectoryChains ??= await _getCosmsmosChains(
+            CCRConst.cosmosTestnetDirectoryUri,
+            timeout: timeout);
+    }
+  }
+
+  Future<CosmosDirectoryChain?> _getCosmosDirectoryChain(
+      {required String? chainId,
+      ChainType chain = ChainType.mainnet,
+      Duration timeout = const Duration(seconds: 60)}) async {
+    try {
+      final data =
+          await _getCosmosDirectoryChains(chain: chain, timeout: timeout);
+      return data.firstWhereNullable((e) => e.chainId == chainId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<List<PingPubChain>> getCosmosChains(
       {ChainType chain = ChainType.mainnet,
       Duration timeout = const Duration(seconds: 60)}) async {
     final baseUrl = _getChainUrl(chain);
-    switch (chain) {
-      case ChainType.mainnet:
-        return _mainnetChains ??= await _getChains(baseUrl);
-      case ChainType.testnet:
-        return _testnetChains ??= await _getChains(baseUrl);
-    }
+    return _lock.synchronized(() async {
+      switch (chain) {
+        case ChainType.mainnet:
+          return _mainnetChains ??= await _getChains(baseUrl);
+        case ChainType.testnet:
+          return _testnetChains ??= await _getChains(baseUrl);
+      }
+    });
   }
 
   String _getChainUrl(ChainType chain) {
@@ -41,25 +97,34 @@ mixin CosmosCustomRequest on HttpImpl {
     return CCRConst.chainRegisteryUriTestnets;
   }
 
-  Future<CCRChainData> getChainData(RegisteryPingPubItem chainName,
+  Future<(CCRChainData, CosmosDirectoryChain?)> getChainData(String chainName,
       {ChainType chainType = ChainType.mainnet,
       Duration timeout = const Duration(seconds: 60)}) async {
-    final baseUrl = _getChainUrl(chainType);
-    Uri uri = CCRUtilities.getChainUri(
-        baseUrl: baseUrl, chain: chainName.name, schema: CCRSchemaType.chain);
-    MethodResult<Map<String, dynamic>> r = await httpGet<Map<String, dynamic>>(
-        uri.toString(),
-        responseType: HTTPResponseType.map,
-        timeout: timeout);
-    final chain = CCRChain.fromJson(r.result);
-    uri = CCRUtilities.getChainUri(
-        baseUrl: baseUrl,
-        chain: chainName.name,
-        schema: CCRSchemaType.assetlist);
-    r = await httpGet<Map<String, dynamic>>(uri.toString(),
-        responseType: HTTPResponseType.map, timeout: timeout);
-    final asset = CCRAssetList.fromJson(r.result);
-    return CCRChainData(chain: chain, assetList: asset);
+    return _lock.synchronized(() async {
+      final localChain = _getLocalChain(chainType: chainType, name: chainName);
+      if (localChain != null) {
+        final cosmosDirectoryChain =
+            await _getCosmosDirectoryChain(chainId: localChain.chain.chainId);
+        return (localChain, cosmosDirectoryChain);
+      }
+      final baseUrl = _getChainUrl(chainType);
+      Uri uri = CCRUtilities.getChainUri(
+          baseUrl: baseUrl, chain: chainName, schema: CCRSchemaType.chain);
+      MethodResult<Map<String, dynamic>> r =
+          await httpGet<Map<String, dynamic>>(uri.toString(),
+              responseType: HTTPResponseType.map, timeout: timeout);
+      final chain = CCRChain.fromJson(r.result);
+      uri = CCRUtilities.getChainUri(
+          baseUrl: baseUrl, chain: chainName, schema: CCRSchemaType.assetlist);
+      r = await httpGet<Map<String, dynamic>>(uri.toString(),
+          responseType: HTTPResponseType.map, timeout: timeout);
+      final asset = CCRAssetList.fromJson(r.result);
+      final chainData = CCRChainData(chain: chain, assetList: asset);
+      _chains[chainType]?.add(chainData);
+      final cosmosDirectoryChain =
+          await _getCosmosDirectoryChain(chainId: chainData.chain.chainId);
+      return (chainData, cosmosDirectoryChain);
+    });
   }
 
   Future<CosmosNetworkParams> buildNetwork(
@@ -81,10 +146,12 @@ mixin CosmosCustomRequest on HttpImpl {
       }
       hrp = bech32.result;
     }
-    await MethodUtils.call(() => service.provider.requestDynamic(
+    final nativeToken = await MethodUtils.call(() => service.provider.request(
         TendermintRequestAbciQuery(
             request: QueryDenomMetadataRequest(denom: param.denom))));
-
+    if (!nativeToken.hasResult) {
+      await service.totalSupply(param.denom);
+    }
     await service.totalSupply(param.denom);
     for (final i in param.feeTokens) {
       if (i.denom == param.denom) continue;
@@ -96,16 +163,33 @@ mixin CosmosCustomRequest on HttpImpl {
     if (isEthermint) {
       networkTypes = CosmosNetworkTypes.ethermint;
     }
-    return param.copyWith(
+    param = param.copyWith(
         chainId: chainId,
         hrp: hrp,
         providers: [provider],
         networkType: networkTypes);
+    return param;
+  }
+
+  Future<CCRAsset?> findAsset(
+      {required String denom,
+      required String? chainName,
+      ChainType chainType = ChainType.mainnet,
+      Duration timeout = const Duration(seconds: 60)}) async {
+    if (chainName == null) return null;
+    final chain = await MethodUtils.call(
+        () => getChainData(chainName, timeout: timeout, chainType: chainType));
+    assert(!chain.hasError, "fetching asset failed. Error: ${chain.error}");
+    if (chain.hasResult) {
+      return chain.result.$1.assetList.assets
+          .firstWhereOrNull((e) => e.base == denom);
+    }
+    return null;
   }
 }
 
 class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider>
-    with HttpImpl {
+    with HttpImpl, CosmosCustomRequest {
   CosmosClient({required this.provider, required this.network});
   final TendermintProvider provider;
   @override
@@ -128,15 +212,50 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider>
     return balances;
   }
 
+  Future<IbcChannelChannel?> getTransferChannel(String channelName) async {
+    try {
+      final channel = await provider.request(TendermintRequestAbciQuery(
+          request: QueryChannelRequest(
+              portId: CosmosConst.transferIbcPort, channelId: channelName)));
+
+      return channel.channel;
+    } on RPCError catch (e) {
+      if (e.errorCode == CosmosConst.accountNotFoundErrorCode) {
+        return null;
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> updateAccountTokenBalances({
+    required ICosmosAddress address,
+    required APPCHAINACCOUNT<ICosmosAddress> chain,
+    required List<CW20Token> tokens,
+  }) async {
+    final balances = await getAccountCoins(address);
+    final nativeToken =
+        balances.firstWhere((e) => e.denom == network.coinParam.denom);
+    chain.updateAddressBalance(
+        address: address, updateBalance: nativeToken.amount);
+    for (final i in address.tokens) {
+      final balance = balances.firstWhereOrNull((e) => e.denom == i.denom);
+      i.updateBalance(balance?.amount ?? BigInt.zero);
+    }
+    for (final i in tokens) {
+      final balance = balances.firstWhereOrNull((e) => e.denom == i.denom);
+      i.updateBalance(balance?.amount ?? BigInt.zero);
+    }
+  }
+
   @override
   Future<void> updateBalance(
       ICosmosAddress address, APPCHAINACCOUNT<ICosmosAddress> chain,
       {List<Coin>? balances}) async {
     balances ??= await getAccountCoins(address);
     final nativeToken =
-        balances.firstWhere((e) => e.denom == network.coinParam.denom);
+        balances.firstWhereOrNull((e) => e.denom == network.coinParam.denom);
     chain.updateAddressBalance(
-        address: address, updateBalance: nativeToken.amount);
+        address: address, updateBalance: nativeToken?.amount ?? BigInt.zero);
     for (final i in address.tokens) {
       final balance = balances.firstWhereOrNull((e) => e.denom == i.denom);
       i.updateBalance(balance?.amount ?? BigInt.zero);
@@ -149,7 +268,6 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider>
         await provider.request(TendermintRequestAbciQuery(request: request));
     final denomUnit = result.metadata.denomUnits
         .firstWhere((e) => e.denom == result.metadata.display);
-    // CosmosUtils.accountNotFoundErrorCode
     return CW20Token.create(
       balance: BigInt.zero,
       token: Token(
@@ -163,21 +281,32 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider>
     );
   }
 
-  Future<List<CW20Token>> getAddressTokens(ICosmosAddress address) async {
+  Future<List<CosmosChainAsset>> getAddressTokens(
+      ICosmosAddress address) async {
     List<Coin> balances = await getAccountCoins(address);
     balances =
         balances.where((e) => e.denom != network.coinParam.denom).toList();
-    final List<CW20Token> tokens = [];
+    final List<CosmosChainAsset> tokens = [];
 
     for (final i in balances) {
       final exists = address.tokens.any((e) => e.denom == i.denom);
       if (exists) continue;
       final token =
           await MethodUtils.call(() async => await getTokenMetadata(i.denom));
-      assert(!token.hasError, "should not be failed.");
       if (token.hasResult) {
         token.result.updateBalance(i.amount);
-        tokens.add(token.result);
+        tokens.add(CosmosChainAsset.cw20Token(token.result));
+      } else {
+        final asset = await findAsset(
+            denom: i.denom,
+            chainName: network.coinParam.chainRegisteryName,
+            chainType: network.coinParam.chainType);
+        if (asset != null) {
+          tokens.add(CosmosChainAsset.ccrAsset(
+              asset: asset, coin: i, balance: i.amount));
+        } else {
+          tokens.add(CosmosChainAsset.unknown(coin: i, balance: i.amount));
+        }
       }
     }
     return tokens;
@@ -198,8 +327,8 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider>
 
   Future<bool> isEthermint() async {
     try {
-      await provider.request(
-          TendermintRequestAbciQuery(request: EVMV1QueryParamsRequest()));
+      await provider.request(TendermintRequestAbciQuery(
+          request: EvmosEthermintEVMV1QueryParamsRequest()));
       return true;
     } on RPCError catch (e) {
       if (e.errorCode == CosmosConst.pathNotFoundErrorCode) return false;
@@ -227,15 +356,17 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider>
         TendermintRequestAbciQuery(request: const GetLatestBlockRequest()));
   }
 
-  Future<SimulateResponse> simulateTransaction(List<int> txBytes) async {
-    return await provider
+  Future<CosmosWeb3SimulateInfos> simulateTransaction(List<int> txBytes,
+      {List<CosmosMessage> txMessages = const []}) async {
+    final r = await provider
         .request(TendermintRequestAbciQuery(request: SimulateRequest(txBytes)));
+    return CosmosWeb3SimulateInfos(simulate: r, txMessages: txMessages);
   }
 
   Future<BigRational> getEthermintBaseFee() async {
-    final chainStatus = await provider.request(
-        TendermintRequestAbciQuery(request: FeeMarketV1QueryBaseFeeRequest()));
-    return BigRational(chainStatus.baseFee);
+    final chainStatus = await provider.request(TendermintRequestAbciQuery(
+        request: EvmosEthermintEVMV1QueryBaseFeeRequest()));
+    return BigRational(BigintUtils.parse(chainStatus.baseFee));
   }
 
   Future<String> broadcastTransaction(List<int> txRaw) async {
@@ -251,27 +382,60 @@ class CosmosClient extends NetworkClient<ICosmosAddress, CosmosAPIProvider>
     return result.hash;
   }
 
-  Future<CosmosTransactionRequirment> getTransactionRequirment({
-    required ICosmosAddress address,
-    required CosmosChain account,
-  }) async {
+  Future<CosmosTransactionRequirment> getTransactionRequirment(
+      {required ICosmosAddress address, required CosmosChain account}) async {
+    List<Coin> balances = [];
     final cosmosAccount = await getBaseAccount(address.networkAddress);
-    if (cosmosAccount == null) {
-      return CosmosTransactionRequirment.accountNotFound();
-    }
     BigInt? fixedFee;
     if (network.coinParam.networkType == CosmosNetworkTypes.thorAndForked) {
-      final networkConst = await getThorNodeConstants();
-      fixedFee = BigInt.from(networkConst.nativeTransactionFee);
+      final fee = await MethodUtils.call(() async {
+        final networkConst = await getThorNodeConstants();
+        return BigInt.from(networkConst.nativeTransactionFee);
+      });
+      assert(fee.hasResult,
+          "failed to fetch ${network.networkName} native trasaction fee: ${fee.error}");
+      if (fee.hasResult) {
+        fixedFee = fee.result;
+      } else {
+        fixedFee = network.coinParam.getFeeToken().averageGasPrice.balance;
+      }
     }
-    final block = await getLatestBlock();
-    final balances = await updateAndGetAccountBalances(address, account);
-
+    BigRational? ethermintTxFee;
+    if (network.coinParam.networkType.isEthermint) {
+      final fee = await MethodUtils.call(() {
+        return getEthermintBaseFee();
+      });
+      assert(fee.hasResult,
+          "failed to fetch ${network.networkName} base gas fee: ${fee.error}");
+      if (fee.hasResult) {
+        ethermintTxFee = fee.result;
+      } else {
+        ethermintTxFee = BigRational.parseDecimal(
+            network.coinParam.getFeeToken().averageGasPrice.price);
+      }
+    }
+    if (cosmosAccount != null) {
+      balances = await updateAndGetAccountBalances(address, account);
+    }
+    final List<CW20Token> feeTokens =
+        List.generate(network.coinParam.feeTokens.length, (i) {
+      final token = network.coinParam.feeTokens[i];
+      return address.tokens.firstWhere(
+        (e) => e.denom == token.denom,
+        orElse: () => CW20Token.create(
+            balance: balances
+                    .firstWhereNullable((e) => e.denom == token.denom)
+                    ?.amount ??
+                BigInt.zero,
+            token: token.token,
+            denom: token.denom),
+      );
+    });
     return CosmosTransactionRequirment(
         account: cosmosAccount,
-        block: block,
-        accountCoins: balances,
-        fixedNativeGas: fixedFee);
+        feeTokens: feeTokens,
+        fixedNativeGas: fixedFee,
+        ethermintTxFee: ethermintTxFee);
   }
 
   Future<ThorNodeNetworkConstants> getThorNodeConstants() async {

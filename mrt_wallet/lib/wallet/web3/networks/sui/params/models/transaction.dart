@@ -6,7 +6,8 @@ import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/sui/constant/constants/exception.dart';
 import 'package:mrt_wallet/wallet/web3/networks/sui/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/sui/params/core/request.dart';
-import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
+import 'package:mrt_wallet/wallet/web3/networks/sui/permission/models/account.dart';
+import 'package:mrt_wallet/wallet/web3/utils/web3_validator_utils.dart';
 import 'package:on_chain/sui/src/address/address/address.dart';
 import 'package:on_chain/sui/src/rpc/models/types/types.dart';
 import 'package:on_chain/sui/src/transaction/types/types.dart';
@@ -53,8 +54,7 @@ abstract class Web3SuiTransactionCallArg {
   }
   factory Web3SuiTransactionCallArg.fromJsonV1(Map<String, dynamic> json) {
     if (json["kind"] != "Input") {
-      throw Web3RequestExceptionConst.invalidParametersParsingObjectFailed(
-          "Transaction V1 Inputs");
+      throw Web3RequestExceptionConst.failedToParse("kind");
     }
     return Web3ValidatorUtils.parse<Web3SuiTransactionCallArg,
         Map<String, dynamic>>(
@@ -85,9 +85,7 @@ abstract class Web3SuiTransactionCallArg {
             return null;
         }
       },
-      onFailed: () =>
-          throw Web3RequestExceptionConst.invalidParametersParsingObjectFailed(
-              "Transaction V1 Inputs"),
+      onFailed: () => throw Web3RequestExceptionConst.failedToParse("kind"),
     );
   }
 
@@ -96,7 +94,7 @@ abstract class Web3SuiTransactionCallArg {
   Map<String, dynamic> toJson();
   T cast<T extends Web3SuiTransactionCallArg>() {
     if (this is! T) {
-      throw Web3RequestExceptionConst.internalErrorParsingTransactionFailed;
+      throw Web3RequestExceptionConst.internalError;
     }
     return this as T;
   }
@@ -146,9 +144,7 @@ class Web3SuiTransactionObject extends Web3SuiTransactionCallArg {
         }
         return null;
       },
-      onFailed: () =>
-          Web3RequestExceptionConst.invalidParametersParsingObjectFailed(
-              "Transaction Input Objects"),
+      onFailed: () => throw Web3RequestExceptionConst.failedToParse("input"),
     );
     return Web3SuiTransactionObject(objectArg);
   }
@@ -235,7 +231,8 @@ class Web3SuiTransactionImmOrOwnedObject extends Web3SuiTransactionObjectArg {
           version: version,
           digest: SuiObjectDigest.fromBase58(digest));
     } catch (_) {
-      throw Web3SuiExceptionConstant.invalidObject(objectId.address);
+      throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
+          objectId.address);
     }
   }
 
@@ -340,7 +337,8 @@ class Web3SuiTransactionReceiving extends Web3SuiTransactionObjectArg {
           version: version,
           digest: SuiObjectDigest.fromBase58(digest))));
     } catch (_) {
-      throw Web3SuiExceptionConstant.invalidObject(objectId.address);
+      throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
+          objectId.address);
     }
   }
 }
@@ -369,12 +367,8 @@ class Web3SuiTransactionPureArg extends Web3SuiTransactionCallArg {
 
   @override
   SuiCallArg toTransactionCallArguments() {
-    try {
-      return SuiCallArgPure(
-          StringUtils.encode(bytes, type: StringEncoding.base64));
-    } catch (_) {
-      throw Web3SuiExceptionConstant.invalidBase64Pure;
-    }
+    return SuiCallArgPure(
+        StringUtils.encode(bytes, type: StringEncoding.base64));
   }
 
   List<int> deserialize() {
@@ -404,7 +398,8 @@ class Web3SuiTransactionUnresolvedPurePureArg
 
   @override
   SuiCallArg toTransactionCallArguments() {
-    throw Web3SuiExceptionConstant.failedToResolvePureArgs();
+    throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
+        value.toString());
   }
 }
 
@@ -459,7 +454,8 @@ class Web3SuiTransactionUnresolvedObject extends Web3SuiTransactionCallArg {
 
   @override
   SuiCallArg toTransactionCallArguments() {
-    throw Web3SuiExceptionConstant.failedToResolveObject(objectId.address);
+    throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
+        objectId.address);
   }
 }
 
@@ -515,7 +511,7 @@ abstract class Web3SuiTransactionArgument {
 
   T cast<T extends Web3SuiTransactionArgument>() {
     if (this is! T) {
-      throw Web3RequestExceptionConst.internalErrorParsingTransactionFailed;
+      throw Web3RequestExceptionConst.internalError;
     }
     return this as T;
   }
@@ -711,7 +707,9 @@ class Web3SuiTransactionCommandMoveCall extends Web3SuiTransactionCommand {
           onParse: (address) => SuiAddress(address),
           method: Web3SuiRequestMethods.signTransaction,
           value: target[0],
-          onFailed: () => Web3SuiExceptionConstant.invalidObject(target[0])),
+          onFailed: () =>
+              Web3SuiExceptionConstant.fialedToParseTransactionObject(
+                  target[0])),
       module: target[1],
       function: target[2],
       typeArguments: Web3ValidatorUtils.parseList<List<String>, String>(
@@ -866,8 +864,7 @@ class Web3SuiTransactionDataV2 {
         value: json["expiration"],
         method: Web3SuiRequestMethods.signTransaction,
         onFailed: () {
-          throw Web3RequestExceptionConst.invalidParametersParsingObjectFailed(
-              "expiration");
+          throw Web3RequestExceptionConst.failedToParse("expiration");
         },
       ),
       gasData: Web3SuiTransactionGasData.fromJson(Web3ValidatorUtils.parseMap(
@@ -915,8 +912,7 @@ class Web3SuiTransactionDataV2 {
         value: json["expiration"],
         method: Web3SuiRequestMethods.signTransaction,
         onFailed: () {
-          throw Web3RequestExceptionConst.invalidParametersParsingObjectFailed(
-              "expiration");
+          throw Web3RequestExceptionConst.failedToParse("expiration");
         },
       ),
       gasData: Web3SuiTransactionGasData.fromJson(Web3ValidatorUtils.parseMap(
@@ -1254,7 +1250,8 @@ class Web3SuiTransactionCommandPublish extends Web3SuiTransactionCommand {
               .toList();
         },
         onFailed: () =>
-            throw Web3SuiExceptionConstant.invalidCommandParameters("publish"),
+            throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
+                "publish"),
       ),
       dependencies: Web3ValidatorUtils.parseList<List<String>, String>(
               key: "dependencies",
@@ -1321,12 +1318,13 @@ class Web3SuiTransactionCommandMakeMoveVec extends Web3SuiTransactionCommand {
         onParse: (value) {
           if (value.containsKey("None")) return null;
           if (value.containsKey("Some")) return value["Some"];
-          throw Web3SuiExceptionConstant.invalidCommandParameters(
+          throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
               "MakeMoveVec");
         },
         method: Web3SuiRequestMethods.signTransaction,
-        onFailed: () => throw Web3SuiExceptionConstant.invalidCommandParameters(
-            "MakeMoveVec"),
+        onFailed: () =>
+            throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
+                "MakeMoveVec"),
       ),
       elements: Web3ValidatorUtils.parseList<List<Map<String, dynamic>>,
                   Map<String, dynamic>>(
@@ -1411,7 +1409,8 @@ class Web3SuiTransactionCommandUpgrade extends Web3SuiTransactionCommand {
               .toList();
         },
         onFailed: () =>
-            throw Web3SuiExceptionConstant.invalidCommandParameters("upgrade"),
+            throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
+                "upgrade"),
       ),
       dependencies: Web3ValidatorUtils.parseList<List<String>, String>(
               key: "dependencies",
@@ -1509,7 +1508,8 @@ abstract class Web3SuiTransactionCommand {
       method: Web3SuiRequestMethods.signTransaction,
       value: json["kind"],
       onParse: (value) => Web3SuiTransactionCommands.fromName(value),
-      onFailed: () => Web3SuiExceptionConstant.parsingTransactionFailed,
+      onFailed: () =>
+          Web3SuiExceptionConstant.fialedToParseTransactionObject("kind"),
     );
     return switch (type) {
       Web3SuiTransactionCommands.moveCall =>
@@ -1533,7 +1533,7 @@ abstract class Web3SuiTransactionCommand {
 
   T cast<T extends Web3SuiTransactionCommand>() {
     if (this is! T) {
-      throw Web3RequestExceptionConst.internalErrorParsingTransactionFailed;
+      throw Web3RequestExceptionConst.internalError;
     }
     return this as T;
   }
@@ -1588,7 +1588,7 @@ class Web3SuiSignOrExecuteTransaction
   final SuiApiExecuteTransactionRequestType? executeType;
   final Web3SuiTransactionDataV2 transaction;
   @override
-  final SuiAddress account;
+  final Web3SuiChainAccount account;
 
   Web3SuiSignOrExecuteTransaction._(
       {required this.account,
@@ -1598,8 +1598,8 @@ class Web3SuiSignOrExecuteTransaction
       required this.executeType});
   factory Web3SuiSignOrExecuteTransaction(
       {required Web3SuiTransactionDataV2 transaction,
-      required SuiAddress account,
-      required Web3RequestMethods method,
+      required Web3SuiChainAccount account,
+      required Web3NetworkRequestMethods method,
       required SuiApiTransactionBlockResponseOptions? executeOptions,
       required SuiApiExecuteTransactionRequestType? executeType}) {
     switch (method) {
@@ -1628,9 +1628,10 @@ class Web3SuiSignOrExecuteTransaction
         tags: Web3MessageTypes.walletRequest.tag);
     final Map<String, dynamic> transaction =
         StringUtils.toJson(values.elementAs<String>(2));
-    final method = Web3RequestMethods.fromTag(values.elementAt(0));
+    final method = Web3NetworkRequestMethods.fromTag(values.elementAt(0));
     return Web3SuiSignOrExecuteTransaction(
-        account: SuiAddress(values.elementAs(1)),
+        account: Web3SuiChainAccount.deserialize(
+            object: values.elementAs<CborTagValue>(1)),
         transaction: Web3SuiTransactionDataV2.fromJson(transaction),
         method: method,
         executeOptions: values.elemetMybeAs<
@@ -1656,17 +1657,12 @@ class Web3SuiSignOrExecuteTransaction
     return CborTagValue(
         CborListValue.fixedLength([
           method.tag,
-          account.address,
+          account.toCbor(),
           CborStringValue(StringUtils.fromJson(transaction.toJson())),
           StringUtils.tryFromJson(executeOptions?.toJson()),
           executeType?.name
         ]),
         type.tag);
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {"account": account.address, "transaction": transaction.toJson()};
   }
 
   @override

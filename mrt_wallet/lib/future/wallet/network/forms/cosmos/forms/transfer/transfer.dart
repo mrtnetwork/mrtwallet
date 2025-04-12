@@ -5,7 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/cosmos/forms/core/cosmos.
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 class CosmosTransferForm extends CosmosTransactionForm {
-  CosmosTransferForm({required this.network});
+  CosmosTransferForm();
   BigInt _callValue = BigInt.zero;
   Map<CW20Token, IntegerBalance> remindTokenAmounts = {};
   CosmosTransactionFeeInfo? _feeInfo;
@@ -32,7 +32,6 @@ class CosmosTransferForm extends CosmosTransactionForm {
     }
   }
 
-  final WalletCosmosNetwork network;
   final TransactionListFormField<CosmosOutputWithBalance> destinations =
       TransactionListFormField(
           name: "destination",
@@ -40,9 +39,6 @@ class CosmosTransferForm extends CosmosTransactionForm {
           onChangeForm: (p0) {
             return p0;
           });
-
-  @override
-  String get name => "transfer";
 
   void _setReceiver(
       {required ReceiptAddress<CosmosBaseAddress> address,
@@ -61,15 +57,6 @@ class CosmosTransferForm extends CosmosTransactionForm {
     onChanged?.call();
   }
 
-  void setToken(CosmosOutputWithBalance destination, CW20Token? token) {
-    destination.setToken(token, network);
-    if (token != null) {
-      remindTokenAmounts[token] ??= IntegerBalance.zero(token.token.decimal!);
-    }
-    _checkValue();
-    onChanged?.call();
-  }
-
   void onRemoveReceiver(CosmosOutputWithBalance? address) {
     final r = destinations.removeValue(address);
     if (!r) return;
@@ -80,6 +67,20 @@ class CosmosTransferForm extends CosmosTransactionForm {
   void setBalance(CosmosOutputWithBalance destination, BigInt? balance) {
     if (balance == null || !destinations.value.contains(destination)) return;
     destination.updateBalance(balance);
+    _checkValue();
+    onChanged?.call();
+  }
+
+  @override
+  String get name => "transfer";
+
+  void setToken(CosmosOutputWithBalance destination, CW20Token? token) {
+    if (token == null) return;
+    destination.setToken(token, network);
+    if (destination.isTokenTransfer) {
+      remindTokenAmounts[destination.token!] ??=
+          IntegerBalance.zero(token.token.decimal!);
+    }
     _checkValue();
     onChanged?.call();
   }

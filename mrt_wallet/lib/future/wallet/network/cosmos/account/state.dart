@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/helper/extensions/extensions.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/future.dart';
@@ -13,4 +14,18 @@ abstract class CosmosAccountState<W extends StatefulWidget>
         ICosmosAddress,
         CosmosClient,
         CosmosChain,
-        WalletTransaction<CosmosBaseAddress>> {}
+        WalletTransaction<CosmosBaseAddress>> {
+  List<CosmosIBCChannelId> accountChannelIds = [];
+
+  Future<List<CosmosIBCChannelId>> getAccountIbcChannels() async {
+    final channels = await account.loadChannelIds();
+    accountChannelIds = channels.immutable;
+    return accountChannelIds;
+  }
+
+  @override
+  void safeDispose() {
+    super.safeDispose();
+    accountChannelIds = [];
+  }
+}

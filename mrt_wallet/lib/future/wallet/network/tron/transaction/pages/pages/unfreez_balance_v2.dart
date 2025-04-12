@@ -62,7 +62,6 @@ class TronUnFreezBalanceV2FieldsView extends StatelessWidget {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "unfreeze_balance".tr,
-                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: account.network.coinParam.token,
                             max: validator.stackedBalance.balance,

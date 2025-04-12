@@ -1,5 +1,4 @@
 import 'package:mrt_wallet/wallet/web3/networks/solana/methods/methods.dart';
-import 'package:mrt_wallet/wallet/web3/networks/solana/params/models/request_account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/params/models/sign_message.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/params/models/transaction.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/account.dart';
@@ -11,19 +10,6 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:on_chain/solana/solana.dart';
 
-abstract class Web3SolanaPermissionRequestParam
-    extends Web3SolanaRequestParam<Web3SolanaChain>
-    implements
-        Web3PermissionRequest<SolAddress, SolanaChain, Web3SolanaChainAccount,
-            Web3SolanaChain> {
-  @override
-  bool get isPermissionRequest => true;
-  @override
-  Object? toJsWalletResponse(Web3SolanaChain response) {
-    return null;
-  }
-}
-
 abstract class Web3SolanaRequestParam<RESPONSE> extends Web3RequestParams<
     RESPONSE,
     SolAddress,
@@ -33,7 +19,7 @@ abstract class Web3SolanaRequestParam<RESPONSE> extends Web3RequestParams<
   @override
   abstract final Web3SolanaRequestMethods method;
   @override
-  abstract final SolAddress? account;
+  Web3SolanaChainAccount? get account => null;
 
   Web3SolanaRequestParam();
 
@@ -59,17 +45,15 @@ abstract class Web3SolanaRequestParam<RESPONSE> extends Web3RequestParams<
         object: object,
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
-    final method = Web3RequestMethods.fromTag(values.elementAt(0));
+    final method = Web3NetworkRequestMethods.fromTag(values.elementAt(0));
     final Web3SolanaRequestParam param;
     switch (method) {
-      case Web3SolanaRequestMethods.requestAccounts:
-        param = Web3SolanaRequestAccounts.deserialize(
-            bytes: bytes, object: object, hex: hex);
       case Web3SolanaRequestMethods.signTransaction:
-      case Web3SolanaRequestMethods.signAllTransactions:
+      case Web3SolanaRequestMethods.signAndSendAllTransactions:
       case Web3SolanaRequestMethods.sendTransaction:
         param = Web3SolanaSendTransaction.deserialize(
             bytes: bytes, object: object, hex: hex);
+      case Web3SolanaRequestMethods.signIn:
       case Web3SolanaRequestMethods.signMessage:
         param = Web3SolanaSignMessage.deserialize(
             bytes: bytes, object: object, hex: hex);
@@ -85,7 +69,7 @@ abstract class Web3SolanaRequestParam<RESPONSE> extends Web3RequestParams<
 
 class Web3SolanaRequest<RESPONSE,
         PARAMS extends Web3SolanaRequestParam<RESPONSE>>
-    extends Web3Request<RESPONSE, SolAddress, SolanaChain,
+    extends Web3NetworkRequest<RESPONSE, SolAddress, SolanaChain,
         Web3SolanaChainAccount, Web3SolanaChain, PARAMS> {
   Web3SolanaRequest(
       {required super.params,
@@ -95,21 +79,5 @@ class Web3SolanaRequest<RESPONSE,
 
   Web3SolanaRequest<R, P> cast<R, P extends Web3SolanaRequestParam<R>>() {
     return this as Web3SolanaRequest<R, P>;
-  }
-
-  @override
-  Web3SolanaChain? get currentPermission =>
-      authenticated.getChainFromNetworkType(chain.network.type);
-
-  @override
-  ISolanaAddress? accountPermission() {
-    if (params.account == null) {
-      return null;
-    }
-    if (currentPermission == null) {
-      throw Web3RequestExceptionConst.missingPermission;
-    }
-    return currentPermission!
-        .getAccountPermission(address: params.account!, chain: chain);
   }
 }

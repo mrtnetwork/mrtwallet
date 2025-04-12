@@ -165,7 +165,6 @@ class _CardanoTransactionAssetSelectorViewState
                                 return await context
                                     .openSliverBottomSheet<BigInt>(
                                   "setup_output_amount".tr,
-                                  initialExtend: 1,
                                   child: SetupNetworkAmount(
                                     token: asset.token,
                                     max: max,

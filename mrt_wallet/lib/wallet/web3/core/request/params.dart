@@ -5,6 +5,8 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/messages.dart';
 import 'package:mrt_wallet/wallet/web3/core/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/params/core/request.dart';
+import 'package:mrt_wallet/wallet/web3/networks/bitcoin/params/core/request.dart';
+import 'package:mrt_wallet/wallet/web3/networks/cosmos/params/core/request.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/params/core/request.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/global.dart';
@@ -17,11 +19,25 @@ import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'web_request.dart';
 
-abstract class Web3GlobalRequestParams<RESPONSE> extends Web3MessageCore
-    with JsonSerialization {
+abstract class Web3WalletRequestParams<RESPONSE> extends Web3MessageCore {
+  abstract final Web3RequestMethods method;
+  const Web3WalletRequestParams();
+
+  Object? toJsWalletResponse(RESPONSE response) {
+    return response;
+  }
+
+  Object? toPageResponse(RESPONSE response) {
+    return response;
+  }
+}
+
+abstract class Web3GlobalRequestParams<RESPONSE>
+    extends Web3WalletRequestParams<RESPONSE> {
   @override
   Web3MessageTypes get type => Web3MessageTypes.walletGlobalRequest;
   const Web3GlobalRequestParams();
+  @override
   abstract final Web3GlobalRequestMethods method;
 
   factory Web3GlobalRequestParams.deserialize(
@@ -36,6 +52,10 @@ abstract class Web3GlobalRequestParams<RESPONSE> extends Web3MessageCore
     switch (network) {
       case Web3GlobalRequestMethods.disconnect:
         param = Web3DisconnectApplication.deserialize(
+            bytes: bytes, object: object, hex: hex);
+        break;
+      case Web3GlobalRequestMethods.connect:
+        param = Web3ConnectApplication.deserialize(
             bytes: bytes, object: object, hex: hex);
         break;
       default:
@@ -54,24 +74,16 @@ abstract class Web3RequestParams<
     CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
     CHAINACCOUNT extends Web3ChainAccount<NETWORKADDRESS>,
     WEB3ChAIN extends Web3Chain<NETWORKADDRESS, CHAIN, CHAINACCOUNT,
-        WalletNetwork>> extends Web3MessageCore {
-  bool get isPermissionRequest => false;
-  abstract final Web3RequestMethods method;
-  abstract final NETWORKADDRESS? account;
+        WalletNetwork>> extends Web3WalletRequestParams<RESPONSE> {
+  @override
+  abstract final Web3NetworkRequestMethods method;
+  abstract final CHAINACCOUNT? account;
 
   Web3RequestParams();
 
-  Object? toJsWalletResponse(RESPONSE response) {
-    return response;
-  }
-
-  Object? toPageResponse(RESPONSE response) {
-    return response;
-  }
-
   @override
   Web3MessageTypes get type => Web3MessageTypes.walletRequest;
-  Web3Request toRequest(
+  Web3NetworkRequest toRequest(
       {required Web3RequestApplicationInformation request,
       required Web3APPAuthentication authenticated,
       required List<APPCHAIN> chains});
@@ -85,7 +97,7 @@ abstract class Web3RequestParams<
       throw Web3RequestExceptionConst.bannedHost;
     }
     final networkChains = chains.whereType<CHAIN>().toList();
-    return web3Chain.getCurrentPermissionChain(networkChains);
+    return web3Chain.getCurrentPermissionChain(networkChains, account);
   }
 
   factory Web3RequestParams.deserialize(
@@ -95,7 +107,8 @@ abstract class Web3RequestParams<
         object: object,
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
-    final network = Web3RequestMethods.fromTag(values.elementAt(0)).network;
+    final network =
+        Web3NetworkRequestMethods.fromTag(values.elementAt(0)).network;
     final Web3RequestParams param;
     switch (network) {
       case NetworkType.ethereum:
@@ -128,6 +141,14 @@ abstract class Web3RequestParams<
         break;
       case NetworkType.sui:
         param = Web3SuiRequestParam.deserialize(
+            bytes: bytes, object: object, hex: hex);
+        break;
+      case NetworkType.cosmos:
+        param = Web3CosmosRequestParam.deserialize(
+            bytes: bytes, object: object, hex: hex);
+        break;
+      case NetworkType.bitcoinAndForked:
+        param = Web3BitcoinRequestParam.deserialize(
             bytes: bytes, object: object, hex: hex);
         break;
       default:

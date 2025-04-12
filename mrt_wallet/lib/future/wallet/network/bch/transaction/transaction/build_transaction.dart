@@ -171,7 +171,6 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "setup_output_amount".tr,
-                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: controller.network.coinParam.token,
                             max: controller.remindAmount.balance +
@@ -208,17 +207,15 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
             onRemove: () {
               context
                   .openSliverBottomSheet<
-                          List<ReceiptAddress<BitcoinBaseAddress>>>(
-                      "receiver_address".tr,
-                      bodyBuilder: (c) =>
-                          SelectRecipientAccountView<BitcoinBaseAddress>(
-                            account: controller.chainAccount,
-                            scrollController: c,
-                            multipleSelect: true,
-                          ),
-                      maxExtend: 1,
-                      minExtent: 0.8,
-                      initialExtend: 0.9)
+                      List<ReceiptAddress<BitcoinBaseAddress>>>(
+                "receiver_address".tr,
+                bodyBuilder: (c) =>
+                    SelectRecipientAccountView<BitcoinBaseAddress>(
+                  account: controller.chainAccount,
+                  scrollController: c,
+                  multipleSelect: true,
+                ),
+              )
                   .then(
                 (value) {
                   controller.onAddRecever(
@@ -265,9 +262,6 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
                           account: controller.chainAccount,
                           showMultiSig: true,
                         ),
-                        minExtent: 0.5,
-                        maxExtend: 0.9,
-                        initialExtend: 0.7,
                         centerContent: false,
                       )
                       .then(controller.changeAccount);
@@ -378,15 +372,14 @@ class BitcoinCashBuildTransactionView extends StatelessWidget {
             value: controller.ordering,
             onChanged: (p0) {
               controller.onChangeOrdering(p0, (p0, p1) async {
-                return context.openSliverBottomSheet("transaction_ordering".tr,
-                    bodyBuilder: (c) => TransactionOrderingView(
-                          inputs: p0,
-                          outputs: p1,
-                          network: controller.network,
-                        ),
-                    minExtent: 0.9,
-                    maxExtend: 1,
-                    initialExtend: 0.9);
+                return context.openSliverBottomSheet(
+                  "transaction_ordering".tr,
+                  bodyBuilder: (c) => TransactionOrderingView(
+                    inputs: p0,
+                    outputs: p1,
+                    network: controller.network,
+                  ),
+                );
               });
             },
           )),

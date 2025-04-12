@@ -144,7 +144,7 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
 
   void onChangeTokenId(String? v) {
     if (v == null || v == categoryId) return;
-    final exists = widget.utxos.any((element) => element.utxo.txHash == v);
+    final exists = widget.utxos.any((element) => element.txHash == v);
     if (!exists) return;
     categoryId = v;
     updateState();
@@ -153,7 +153,7 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
   @override
   void initState() {
     if (widget.utxos.isNotEmpty) {
-      categoryId = widget.utxos.first.utxo.txHash;
+      categoryId = widget.utxos.first.txHash;
     }
     super.initState();
   }
@@ -176,11 +176,11 @@ class __BchCashTokenBuilderViewState extends State<BchCashTokenBuilderView>
                 isExpanded: true,
                 items: {
                   for (final i in widget.utxos)
-                    i.utxo.txHash: OneLineTextWidget(i.utxo.txHash)
+                    i.txHash: OneLineTextWidget(i.txHash)
                 },
                 itemBuilder: {
                   for (final i in widget.utxos)
-                    i.utxo.txHash: OneLineTextWidget(i.utxo.txHash)
+                    i.txHash: OneLineTextWidget(i.txHash)
                 },
                 hint: "token_id".tr,
                 value: categoryId,

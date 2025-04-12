@@ -32,7 +32,7 @@ mixin StellarTransactionSignerImpl on StellarTransactionImpl {
     final transaction = _createTransaction();
     final payload = TransactionSignaturePayload(
         taggedTransaction: transaction,
-        networkId: network.coinParam.passphraseHash());
+        networkId: network.coinParam.stellarChainType.passphraseHash);
 
     final List<int> digest = payload.txHash().asImmutableBytes;
     final request = WalletSigningRequest(
@@ -72,7 +72,7 @@ mixin StellarTransactionSignerImpl on StellarTransactionImpl {
     }
     if (submissionResult.result?.successful ?? true) {
       final String txId = submissionResult.result?.id ??
-          result.result.txId(network.coinParam.passphraseHash());
+          result.result.txId(network.coinParam.stellarChainType.passphraseHash);
       progressKey.success(
         progressWidget: SuccessTransactionTextView(
           network: network,

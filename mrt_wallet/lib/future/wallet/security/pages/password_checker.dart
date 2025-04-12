@@ -171,11 +171,13 @@ class _PasswordCheckerViewState extends State<PasswordCheckerView>
       credentials = null;
       _entredPassword = "";
       _correctPassword = "";
+      context.backToCurrent();
     } else {
       if (access.isUnlock && widget.onWalletAccess == null) {
         credentials = [FakeKeyData()];
       }
     }
+
     updateState();
   }
 

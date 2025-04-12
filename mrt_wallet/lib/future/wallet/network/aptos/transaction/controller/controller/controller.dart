@@ -78,7 +78,8 @@ class AptosTransactionStateController extends AptosTransactionImpl
   }
 
   Future<void> _init() async {
-    await walletProvider.wallet.updateAccountBalance(account, address: address);
+    await walletProvider.wallet
+        .updateAccountBalance(account, addresses: [address]);
     form.initForm(account: account, address: address);
     final r = await MethodUtils.call(() => initFee());
     if (r.hasError) {

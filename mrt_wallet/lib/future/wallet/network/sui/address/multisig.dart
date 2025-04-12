@@ -137,11 +137,8 @@ class __SetupSuiMultisigAddressState
   Future<void> addAddress() async {
     final address = await context.openSliverBottomSheet<ISuiAddress>(
         "select_account".tr,
-        minExtent: 0.5,
         child: SwitchOrSelectAccountView(
             account: account, showMultiSig: false, filter: filterAccount),
-        maxExtend: 0.9,
-        initialExtend: 0.7,
         centerContent: false);
     if (address == null) return;
     selectedAccounts[address] = _SelectedAccount(address);

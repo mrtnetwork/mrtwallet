@@ -6,33 +6,25 @@ import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/params/core/request.dart';
-import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
-import 'package:on_chain/ethereum/ethereum.dart';
+import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/account.dart';
 
 class Web3EthreumPersonalSign extends Web3EthereumRequestParam<String> {
-  final ETHAddress address;
-  final String challeng;
+  @override
+  final Web3EthereumChainAccount account;
+  final String message;
   final String? content;
 
-  Web3EthreumPersonalSign(
-      {required this.address, required this.challeng, this.content});
+  Web3EthreumPersonalSign._(
+      {required this.account, required this.message, this.content});
 
-  factory Web3EthreumPersonalSign.fromJson(Map<String, dynamic> json) {
-    const method = Web3EthereumRequestMethods.sendTransaction;
-    String? content =
-        StringUtils.tryDecode(BytesUtils.fromHexString(json["challeng"]));
+  factory Web3EthreumPersonalSign(
+      String message, Web3EthereumChainAccount account) {
+    String? content = StringUtils.tryDecode(BytesUtils.fromHexString(message));
     if (content != null) {
       content = StrUtils.toRawString(content);
     }
-    return Web3EthreumPersonalSign(
-        address: Web3ValidatorUtils.parseAddress<ETHAddress>(
-            onParse: (obj) => ETHAddress(obj),
-            key: "address",
-            method: method,
-            json: json),
-        challeng: Web3ValidatorUtils.parseHex<String>(
-            key: "challeng", method: method, json: json),
-        content: content);
+    return Web3EthreumPersonalSign._(
+        account: account, message: message, content: content);
   }
 
   factory Web3EthreumPersonalSign.deserialize({
@@ -46,11 +38,12 @@ class Web3EthreumPersonalSign extends Web3EthereumRequestParam<String> {
       hex: hex,
       tags: Web3MessageTypes.walletRequest.tag,
     );
-    final List<int> challeng = values.elementAt(2);
-    return Web3EthreumPersonalSign(
-        address: ETHAddress(values.elementAt(1)),
-        challeng: BytesUtils.toHexString(challeng, prefix: "0x"),
-        content: values.elementAt(3));
+    final List<int> challeng = values.elementAs(2);
+    return Web3EthreumPersonalSign._(
+        account: Web3EthereumChainAccount.deserialize(
+            object: values.elementAs<CborTagValue>(1)),
+        message: BytesUtils.toHexString(challeng, prefix: "0x"),
+        content: values.elementAs(3));
   }
 
   @override
@@ -62,24 +55,17 @@ class Web3EthreumPersonalSign extends Web3EthereumRequestParam<String> {
     return CborTagValue(
         CborListValue.fixedLength([
           method.tag,
-          address.address,
-          CborBytesValue(BytesUtils.fromHexString(challeng)),
+          account.toCbor(),
+          CborBytesValue(BytesUtils.fromHexString(message)),
           content
         ]),
         type.tag);
   }
 
-  @override
-  Map<String, dynamic> toJson() {
-    return {"address": address.address, "challeng": challeng};
-  }
-
   List<int> chalengBytes() {
-    return BytesUtils.fromHexString(challeng);
+    return BytesUtils.fromHexString(message);
   }
 
-  @override
-  ETHAddress? get account => address;
   @override
   Web3EthereumRequest<String, Web3EthreumPersonalSign> toRequest(
       {required Web3RequestApplicationInformation request,

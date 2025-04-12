@@ -97,7 +97,6 @@ class _TronTransactionFeeView extends StatelessWidget {
                             transaction.setCustomFeeLimit(() async {
                               return context.openSliverBottomSheet<BigInt>(
                                 "fee_limit".tr,
-                                initialExtend: 1,
                                 child: SetupNetworkAmount(
                                     token: transaction.network.coinParam.token,
                                     max: transaction

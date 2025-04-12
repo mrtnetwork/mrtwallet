@@ -22,10 +22,12 @@ class StellarWeb3TransactionDetails {
   final StellarWeb3TransactionType type;
   final List<StellarTransactionOperationDetails> operations;
   final String contentStr;
+  final Envelope envelope;
   StellarWeb3TransactionDetails(
       {required this.memo,
       required this.fee,
       required this.source,
+      required this.envelope,
       required this.type,
       required this.soroban,
       required this.contentStr,

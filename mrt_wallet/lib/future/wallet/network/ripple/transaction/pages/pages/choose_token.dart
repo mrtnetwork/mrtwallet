@@ -157,9 +157,6 @@ class _SetupNewToken extends StatelessWidget {
                     context
                         .openSliverBottomSheet<ReceiptAddress<XRPAddress>>(
                             "token_amount".tr,
-                            maxExtend: 1,
-                            minExtent: 0.8,
-                            initialExtend: 0.9,
                             bodyBuilder: (c) =>
                                 SelectRecipientAccountView<XRPAddress>(
                                   account: state.account,

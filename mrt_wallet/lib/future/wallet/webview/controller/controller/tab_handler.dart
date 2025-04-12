@@ -6,6 +6,8 @@ import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/mrt_native_support.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/router/page_router.dart';
+import 'package:mrt_wallet/future/state_managment/core/observer.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/webview/controller/controller/tab_controller.dart';
 import 'package:mrt_wallet/future/wallet/webview/view/native_view.dart';
@@ -27,7 +29,8 @@ enum WebViewTabPage {
   browser,
   tabs,
   history,
-  bookmarks;
+  bookmarks,
+  hide;
 }
 
 class WebviewLastPageEvent {
@@ -42,6 +45,7 @@ class WebviewLastPageEvent {
 }
 
 mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
+  WalletRouteObserver get obs;
   bool _inited = false;
   bool get inited => _inited;
   String get _website {
@@ -87,6 +91,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   bool get inBrowser => _page == WebViewTabPage.browser;
   bool _inBokmark = false;
   bool get inBokmark => _inBokmark;
+  bool get isHide => _page == WebViewTabPage.hide;
 
   void updatePageScriptStatus(
       {required MRTScriptWalletStatus status, required String clientId}) {
@@ -171,6 +176,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   Future<void> goBack() async {
     if (viewType == null) return;
     webViewController.goBack(viewType!);
+    // webViewController.c
   }
 
   Future<void> goForward() async {
@@ -180,6 +186,9 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
 
   Future<void> reload() async {
     if (viewType == null) return;
+    if (kDebugMode) {
+      await webViewController.clearCache(viewType!);
+    }
     webViewController.reload(viewType!);
   }
 
@@ -391,11 +400,34 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   }
 
   void _dipose() async {
+    obs.removePopListener(_onPopListener);
+    obs.removePushListener(_onPushListener);
     _event.dispose();
     liveNotifier.dispose();
     _progress.dispose();
     for (final i in tabsAuthenticated.values) {
       i.dispose();
+    }
+  }
+
+  void _onPushListener(Route route, Route? previousRoute) {
+    if (isHide) return;
+    final name = route.settings.name;
+    if (name == null) return;
+    if (name.startsWith(PageRouter.web3)) {
+      _page = WebViewTabPage.hide;
+      notify();
+    }
+  }
+
+  void _onPopListener(Route route, Route? previousRoute) {
+    if (!isHide) return;
+    final name = route.settings.name;
+    final current = previousRoute?.settings.name;
+    if (name == null || current == null) return;
+    if (current == PageRouter.webview) {
+      _page = WebViewTabPage.browser;
+      notify();
     }
   }
 
@@ -409,5 +441,7 @@ mixin WebViewTabImpl on StateController, CryptoWokerImpl, WebViewListener {
   void ready() {
     super.ready();
     _initWebView();
+    obs.addPopListener(_onPopListener);
+    obs.addPushListener(_onPushListener);
   }
 }

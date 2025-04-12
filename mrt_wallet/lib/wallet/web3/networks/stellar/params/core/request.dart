@@ -4,24 +4,10 @@ import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/methods/methods.dart';
-import 'package:mrt_wallet/wallet/web3/networks/stellar/params/models/request_account.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/params/models/sign_message.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/params/models/transaction.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/permission/permission.dart';
 import 'package:stellar_dart/stellar_dart.dart';
-
-abstract class Web3StellarPermissionRequestParam
-    extends Web3StellarRequestParam<Web3StellarChain>
-    implements
-        Web3PermissionRequest<StellarAddress, StellarChain,
-            Web3StellarChainAccount, Web3StellarChain> {
-  @override
-  bool get isPermissionRequest => true;
-  @override
-  Object? toJsWalletResponse(Web3StellarChain response) {
-    return null;
-  }
-}
 
 abstract class Web3StellarRequestParam<RESPONSE> extends Web3RequestParams<
     RESPONSE,
@@ -32,7 +18,7 @@ abstract class Web3StellarRequestParam<RESPONSE> extends Web3RequestParams<
   @override
   abstract final Web3StellarRequestMethods method;
   @override
-  abstract final StellarAddress? account;
+  Web3StellarChainAccount? get account => null;
 
   Web3StellarRequestParam();
 
@@ -57,12 +43,9 @@ abstract class Web3StellarRequestParam<RESPONSE> extends Web3RequestParams<
         object: object,
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
-    final method = Web3RequestMethods.fromTag(values.elementAt(0));
+    final method = Web3NetworkRequestMethods.fromTag(values.elementAt(0));
     final Web3StellarRequestParam param;
     switch (method) {
-      case Web3StellarRequestMethods.requestAccounts:
-        param = Web3StellarRequestAccounts.deserialize(
-            bytes: bytes, object: object, hex: hex);
       case Web3StellarRequestMethods.signTransaction:
       case Web3StellarRequestMethods.sendTransaction:
         param = Web3StellarSendTransaction.deserialize(
@@ -82,7 +65,7 @@ abstract class Web3StellarRequestParam<RESPONSE> extends Web3RequestParams<
 
 class Web3StellarRequest<RESPONSE,
         PARAMS extends Web3StellarRequestParam<RESPONSE>>
-    extends Web3Request<RESPONSE, StellarAddress, StellarChain,
+    extends Web3NetworkRequest<RESPONSE, StellarAddress, StellarChain,
         Web3StellarChainAccount, Web3StellarChain, PARAMS> {
   Web3StellarRequest(
       {required super.params,
@@ -92,21 +75,5 @@ class Web3StellarRequest<RESPONSE,
 
   Web3StellarRequest<R, P> cast<R, P extends Web3StellarRequestParam<R>>() {
     return this as Web3StellarRequest<R, P>;
-  }
-
-  @override
-  Web3StellarChain? get currentPermission =>
-      authenticated.getChainFromNetworkType(chain.network.type);
-
-  @override
-  IStellarAddress? accountPermission() {
-    if (params.account == null) {
-      return null;
-    }
-    if (currentPermission == null) {
-      throw Web3RequestExceptionConst.missingPermission;
-    }
-    return currentPermission!
-        .getAccountPermission(address: params.account!, chain: chain);
   }
 }

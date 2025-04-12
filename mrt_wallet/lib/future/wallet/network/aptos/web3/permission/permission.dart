@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/wallet/web3/web3.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/permission/permission.dart';
 import 'package:on_chain/aptos/aptos.dart';
 
 class AptosWeb3PermissionView extends StatefulWidget {
-  const AptosWeb3PermissionView(
-      {required this.permission, required this.application, super.key});
-  final Web3AptosChain? permission;
+  const AptosWeb3PermissionView({required this.application, super.key});
   final Web3APPAuthentication application;
 
   @override
@@ -27,9 +24,13 @@ class _AptosWeb3PermissionViewState extends State<AptosWeb3PermissionView>
   @override
   Web3APPAuthentication get application => widget.application;
   @override
-  Web3AptosChainAccount createNewAccountPermission(IAptosAddress address) {
+  Web3AptosChainAccount createNewAccountPermission(
+      IAptosAddress address, bool isDefault) {
     return Web3AptosChainAccount.fromChainAccount(
-        address: address, id: chain.network.value, isDefault: false);
+        address: address,
+        id: chain.network.value,
+        isDefault: isDefault,
+        network: chain.network.coinParam.aptosChainType);
   }
 
   @override
@@ -38,17 +39,7 @@ class _AptosWeb3PermissionViewState extends State<AptosWeb3PermissionView>
   }
 
   @override
-  void onInitOnce() {
-    super.onInitOnce();
-    permission = widget.permission ?? Web3AptosChain.create();
-    final wallet = context.watch<WalletProvider>(StateConst.main);
-    chains = wallet.wallet.getChains().whereType<AptosChain>().toList();
-    chain = permission.getCurrentPermissionChain(chains);
-    for (final i in chains) {
-      permissions[i] = permission.chainAccounts(i);
-    }
-    updateActivities();
-  }
+  NetworkType get type => NetworkType.aptos;
 
   @override
   Widget build(BuildContext context) {

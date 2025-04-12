@@ -6,7 +6,6 @@ import 'package:mrt_wallet/future/wallet/network/substrate/web3/pages/fields/upd
 import 'package:mrt_wallet/future/wallet/network/substrate/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/substrate.dart';
-import 'fields/request_account.dart';
 import 'fields/sign_message.dart';
 
 class SubstrateWeb3GlobalFieldsView<RESPONSE,
@@ -18,7 +17,7 @@ class SubstrateWeb3GlobalFieldsView<RESPONSE,
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3SubstrateGlobalRequestController<RESPONSE, T>(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
@@ -38,9 +37,6 @@ class _GlobalFieldsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (form.request.params.method) {
-      case Web3SubstrateRequestMethods.requestAccounts:
-        return SubstrateWeb3RequestAccountsView(
-            controller: controller, field: form as SubstrateRequestAccountForm);
       case Web3SubstrateRequestMethods.signMessage:
         return SubstrateWeb3SignMessageRequestView(
             request:

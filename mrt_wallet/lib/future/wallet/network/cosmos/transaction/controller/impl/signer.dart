@@ -17,7 +17,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
     final SignDoc signDoc = SignDoc(
         bodyBytes: txbody.toBuffer(),
         authInfoBytes: authInfo.toBuffer(),
-        chainId: latestBlock.block!.header.chainId,
+        chainId: network.coinParam.chainId,
         accountNumber: ownerAccount.accountNumber);
     final List<String> signersAddr = messages
         .map((e) => e.signers)
@@ -53,6 +53,7 @@ mixin CosmosSignerImpl on CosmosTransactiomImpl {
     if (signatures.hasError) {
       throw signatures.exception!;
     }
+
     final txRaw = TxRaw(
         bodyBytes: txbody.toBuffer(),
         authInfoBytes: authInfo.toBuffer(),

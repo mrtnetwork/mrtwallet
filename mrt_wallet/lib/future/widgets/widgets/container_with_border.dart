@@ -47,6 +47,7 @@ class ContainerWithBorder extends StatelessWidget {
         InkWell(
           borderRadius: borderRadius ?? WidgetConstant.border8,
           onTap: enableTap ? onRemove : null,
+          mouseCursor: enableTap ? SystemMouseCursors.click : null,
           child: Container(
             padding: padding,
             margin: margin,

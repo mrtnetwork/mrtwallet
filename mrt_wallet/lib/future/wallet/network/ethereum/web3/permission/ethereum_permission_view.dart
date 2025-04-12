@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
@@ -11,9 +11,7 @@ import 'package:on_chain/ethereum/src/address/evm_address.dart';
 import '../../../../../../wallet/web3/core/permission/models/authenticated.dart';
 
 class EthereumWeb3PermissionView extends StatefulWidget {
-  const EthereumWeb3PermissionView(
-      {required this.permission, required this.application, super.key});
-  final Web3EthereumChain? permission;
+  const EthereumWeb3PermissionView({required this.application, super.key});
   final Web3APPAuthentication application;
 
   @override
@@ -39,23 +37,14 @@ class _EthereumWeb3PermissionViewState extends State<EthereumWeb3PermissionView>
   }
 
   @override
-  Web3EthereumChainAccount createNewAccountPermission(IEthAddress address) {
+  Web3EthereumChainAccount createNewAccountPermission(
+      IEthAddress address, bool isDefault) {
     return Web3EthereumChainAccount.fromChainAccount(
-        address: address, id: chain.network.value, defaultAddress: false);
+        address: address, id: chain.network.value, defaultAddress: isDefault);
   }
 
   @override
-  void onInitOnce() {
-    super.onInitOnce();
-    permission = widget.permission ?? Web3EthereumChain.create();
-    final wallet = context.watch<WalletProvider>(StateConst.main);
-    chains = wallet.wallet.getChains().whereType<EthereumChain>().toList();
-    chain = permission.getCurrentPermissionChain(chains);
-    for (final i in chains) {
-      permissions[i] = permission.chainAccounts(i);
-    }
-    updateActivities();
-  }
+  NetworkType get type => NetworkType.ethereum;
 
   @override
   Widget build(BuildContext context) {

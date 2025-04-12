@@ -4,7 +4,6 @@ import 'package:mrt_wallet/future/wallet/network/forms/ton/ton.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/web3/controller/controller/global.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
-import 'fields/request_account.dart';
 import 'fields/sign_message.dart';
 
 class TonWeb3GlobalFieldsView<RESPONSE, T extends Web3TonRequestParam<RESPONSE>>
@@ -16,7 +15,7 @@ class TonWeb3GlobalFieldsView<RESPONSE, T extends Web3TonRequestParam<RESPONSE>>
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3TonGlobalRequestController<RESPONSE, T>(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
@@ -36,9 +35,6 @@ class _GlobalFieldsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (form.request.params.method) {
-      case Web3TonRequestMethods.requestAccounts:
-        return TonWeb3RequestAccountsView(
-            controller: controller, field: form as TonRequestAccountForm);
       case Web3TonRequestMethods.signMessage:
         return TonWeb3SignMessageRequestView(
             request: form as Web3TonSignMessageForm<Web3TonSignMessage>);

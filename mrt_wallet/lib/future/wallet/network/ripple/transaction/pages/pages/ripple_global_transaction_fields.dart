@@ -78,9 +78,6 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<XRPAddress>>(
                   validator.validatorName.tr,
-                  maxExtend: 1,
-                  minExtent: 0.8,
-                  initialExtend: 0.9,
                   bodyBuilder: (c) => SelectRecipientAccountView<XRPAddress>(
                     account: account,
                     scrollController: c,
@@ -314,15 +311,15 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
           onRemove: () {
             context
                 .openSliverBottomSheet<XRPCurrencyAmount>(
-                    "setup_currency_amount".tr,
-                    bodyBuilder: (controller) => BuildRippleCurrencyAmountView(
-                          account: account,
-                          scrollController: controller,
-                          title: validator.validatorName.tr,
-                          acceptZero: true,
-                          supportXRP: field.id != "trust_set_limit_amount",
-                        ),
-                    initialExtend: 1)
+                  "setup_currency_amount".tr,
+                  bodyBuilder: (controller) => BuildRippleCurrencyAmountView(
+                    account: account,
+                    scrollController: controller,
+                    title: validator.validatorName.tr,
+                    acceptZero: true,
+                    supportXRP: field.id != "trust_set_limit_amount",
+                  ),
+                )
                 .then((value) => validator.setValue(field, value));
           },
           child: value == null
@@ -436,7 +433,6 @@ class RippleGlobalTransactionFieldsView extends StatelessWidget {
               context
                   .openSliverBottomSheet<BigInt>(
                 validator.validatorName.tr,
-                initialExtend: 1,
                 child: SetupNetworkAmount(
                   token: account.network.coinParam.token,
                   max: account.address.address.currencyBalance,

@@ -51,8 +51,9 @@ abstract class BitcoinTransactionImpl extends StateController
   late IBitcoinAddress _onChangeAddress = chainAccount.address;
   String get onChangeAddressView => _onChangeAddress.address.toAddress;
   BitcoinBaseAddress get onChangeAddress => _onChangeAddress.networkAddress;
-  BigInt get minimumOutput =>
-      isBCHTransaction ? BCHUtils.minimumOutput : BigInt.zero;
+  bool get isForked => network.coinParam.isForked;
+  bool get isBCH => network.coinParam.isBCH;
+  BigInt get minimumOutput => isBCH ? BCHUtils.minimumOutput : BigInt.zero;
   String? _txHash;
   Future<void> estimateFee(
       {required List<BitcoinBaseOutput> outPuts,
@@ -74,9 +75,7 @@ abstract class BitcoinTransactionImpl extends StateController
 
   List<UtxoWithAddress> inputs = [];
   void buildInputs() {
-    inputs = List.unmodifiable(selectedUtxo
-        .map((e) => UtxoWithAddress(utxo: e.utxo, ownerDetails: e.address))
-        .toList());
+    inputs = List.unmodifiable(selectedUtxo.map((e) => e.utxo).toList());
   }
 
   List<BitcoinBaseOutput> outputs = [];
@@ -154,21 +153,15 @@ abstract class BitcoinTransactionImpl extends StateController
 
   void onSetupUtxo();
   List<IBitcoinAddress> get addresses => chainAccount.addresses;
-  // Bip32NetworkAccount get account => chainAccount.account;
-  BitcoinClient get apiProvider => chainAccount.client;
-
-  void setFee(String? feeType, {BigInt? customFee}) {
-    onCalculateAmount();
-    notify();
-  }
+  BitcoinClient get client => chainAccount.client;
 
   void onCalculateAmount();
 
   IntegerBalance get transactionFee;
   final GlobalKey<PageProgressState> progressKey =
       GlobalKey(debugLabel: "BitcoinTransactionPages");
-  late final bool isBCHTransaction =
-      chainAccount.network is WalletBitcoinCashNetwork;
+  // late final bool isBCHTransaction =
+  //     chainAccount.network is WalletBitcoinCashNetwork;
   late final IntegerBalance sumOfSelectedUtxo =
       IntegerBalance.zero(network.coinParam.decimal);
   bool _rbf = false;
@@ -262,7 +255,7 @@ abstract class BitcoinTransactionImpl extends StateController
         continue;
       }
       final result = await MethodUtils.call(() async {
-        return await apiProvider.readUtxos(_addresses[i]!, includeTokenUtxos);
+        return await client.readUtxos(_addresses[i]!, includeTokenUtxos);
       }, cancelable: _cancelable);
       if (result.hasError) {
         if (result.isCancel) return;
@@ -399,13 +392,13 @@ abstract class BitcoinTransactionImpl extends StateController
   }
 
   BasedBitcoinTransacationBuilder _buildTransaction() {
-    if (isBCHTransaction) {
+    if (isForked) {
       return ForkedTransactionBuilder(
           outPuts: outputs,
           fee: transactionFee.balance,
           inputOrdering: ordering.ordering,
           outputOrdering: ordering.ordering,
-          network: network.coinParam.transacationNetwork as BitcoinCashNetwork,
+          network: network.coinParam.transacationNetwork,
           utxos: inputs,
           enableRBF: rbf);
     }
@@ -428,7 +421,7 @@ abstract class BitcoinTransactionImpl extends StateController
         try {
           final IBitcoinAddress utxosAcount = addresses.firstWhere((element) =>
               element.networkAddress.addressProgram ==
-              i.address.address.addressProgram);
+              i.utxo.ownerDetails.address.addressProgram);
           signers.add(utxosAcount);
         } catch (e) {
           rethrow;
@@ -457,7 +450,8 @@ abstract class BitcoinTransactionImpl extends StateController
                 index: keyIndex.cast(),
                 useTaproot: utxo.utxo.isP2tr,
                 sighash: sighash,
-                network: isBCHTransaction
+                useBchSchnorr: !account.multiSigAccount,
+                network: isBCH
                     ? SigningRequestNetwork.bitcoinCash
                     : SigningRequestNetwork.bitcoin);
             final sig = await generateSignature(bitcoinSigning);
@@ -465,6 +459,7 @@ abstract class BitcoinTransactionImpl extends StateController
           });
         },
       );
+
       final signedTr =
           await walletProvider.wallet.signTransaction(request: request);
       if (signedTr.hasError) {
@@ -473,7 +468,7 @@ abstract class BitcoinTransactionImpl extends StateController
       assert(signedTr.result.getVSize() <= transactionSize,
           "should be equal or greather few bytes.");
       final ser = signedTr.result.serialize();
-      return await apiProvider.sendTransacation(ser);
+      return await client.sendTransacation(ser);
     });
 
     if (result.hasError) {

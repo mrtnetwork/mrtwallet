@@ -65,8 +65,8 @@ abstract class AptosWeb3Form<PARAMS extends Web3AptosRequestParam>
   AptosChain? _account;
   WalletAptosNetwork get network => _account!.network;
 
-  void initForm(
-      {required AptosChain account, required IAptosAddress? address}) {
+  Future<void> initForm(
+      {required AptosChain account, required IAptosAddress? address}) async {
     _account = account;
     _client = account.clientNullable;
   }

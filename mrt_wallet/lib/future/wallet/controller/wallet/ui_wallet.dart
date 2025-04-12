@@ -11,6 +11,7 @@ import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 import 'package:mrt_wallet/crypto/derivation/core/derivation.dart';
+import 'package:mrt_wallet/wallet/web3/networks/global/params/core/core.dart';
 
 abstract class UIWallet extends WalletCore {
   UIWallet({
@@ -46,7 +47,6 @@ abstract class UIWallet extends WalletCore {
       required Set<ChainAccount> addresses}) async {
     final pw = await navigatorKey.currentContext?.openSliverBottomSheet<String>(
       "sign_transaction".tr,
-      initialExtend: 1,
       bodyBuilder: (controller) => WalletSigningPassword(
         addresses: addresses,
         keys: keys,
@@ -96,7 +96,6 @@ abstract class UIWallet extends WalletCore {
 
   @override
   void onChangeStatus(WalletPageStatus status, {String? message}) {
-    WalletLogging.error("got status $status");
     switch (status) {
       case WalletPageStatus.refesh:
         navigatorKey.currentContext?.popToHome();
@@ -126,7 +125,12 @@ abstract class UIWallet extends WalletCore {
 
   @override
   bool onWeb3Request(Web3Request request) {
-    final page = PageRouter.web3Page(request.chain.network);
+    String? page;
+    if (request is Web3NetworkRequest) {
+      page = PageRouter.web3Page(request.chain.network);
+    } else if (request is Web3GlobalRequest) {
+      page = PageRouter.web3Global;
+    }
     if (page == null) return false;
     return navigatorKey.currentContext?.toSync(page, argruments: request) ??
         false;

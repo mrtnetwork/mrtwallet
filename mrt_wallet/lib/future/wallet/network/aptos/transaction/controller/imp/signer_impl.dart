@@ -13,6 +13,7 @@ mixin AptosSignerImpl on AptosTransactionImpl {
   BigInt? _accountSequenceNumber;
   AptosTransactionPayload createTransactionPayload();
   final Cancelable _cancelable = Cancelable();
+  int? _chainId;
   @override
   Future<AptosSignedTransaction> createTransaction(
       {BigInt? maxGasAmount,
@@ -26,6 +27,7 @@ mixin AptosSignerImpl on AptosTransactionImpl {
         await apiProvider.getAccountSequence(address.networkAddress);
     maxGasAmount ??= AptosConstants.defaultMinGasAmount;
     gasUnitPrice ??= await apiProvider.getGasUnitPrice();
+    _chainId ??= await apiProvider.getCurrenctChainId();
     final rawTransaction = AptosRawTransaction(
         sender: address.networkAddress,
         sequenceNumber: _accountSequenceNumber!,
@@ -33,7 +35,7 @@ mixin AptosSignerImpl on AptosTransactionImpl {
         maxGasAmount: maxGasAmount,
         gasUnitPrice: gasUnitPrice,
         expirationTimestampSecs: expire,
-        chainId: network.coinParam.aptosChainType.chainId);
+        chainId: _chainId!);
     final signingDigest = rawTransaction.signingSerialize();
     if (simulateTx) {
       return AptosSignedTransaction(

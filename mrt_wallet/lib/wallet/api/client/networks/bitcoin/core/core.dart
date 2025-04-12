@@ -19,6 +19,8 @@ abstract class BitcoinClient<T extends IBitcoinAddress>
   Future<BitcoinFeeRate?> getFeeRate();
   Future<String> genesis();
 
+  Future<BtcTransaction> getTx(String txId);
+
   @override
   Future<bool> onInit() async {
     final genesisHash = await genesis();

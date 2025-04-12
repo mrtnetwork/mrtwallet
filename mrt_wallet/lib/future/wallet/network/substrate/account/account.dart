@@ -31,30 +31,33 @@ class _SubstrateServices extends StatelessWidget {
             title: Text("constants".tr),
             subtitle: Text("access_network_constants".tr),
             onTap: () {
-              context.openSliverBottomSheet('constants'.tr,
-                  bodyBuilder: (controller) => SubstrateMetadataConstantsView(
-                      scrollController: controller, account: account),
-                  initialExtend: 1);
+              context.openSliverBottomSheet(
+                'constants'.tr,
+                bodyBuilder: (controller) => SubstrateMetadataConstantsView(
+                    scrollController: controller, account: account),
+              );
             },
           ),
           AppListTile(
             title: Text("storages".tr),
             subtitle: Text("query_network_storages".tr),
             onTap: () {
-              context.openSliverBottomSheet('storages'.tr,
-                  bodyBuilder: (controller) => SubstrateMetadataStoragesView(
-                      scrollController: controller, account: account),
-                  initialExtend: 1);
+              context.openSliverBottomSheet(
+                'storages'.tr,
+                bodyBuilder: (controller) => SubstrateMetadataStoragesView(
+                    scrollController: controller, account: account),
+              );
             },
           ),
           AppListTile(
             title: Text("runtime_apis".tr),
             subtitle: Text("interact_with_substrate_network_run_time_api".tr),
             onTap: () {
-              context.openSliverBottomSheet('runtime_apis'.tr,
-                  bodyBuilder: (controller) => SubstrateMetadataRuntimeApiView(
-                      scrollController: controller, account: account),
-                  initialExtend: 1);
+              context.openSliverBottomSheet(
+                'runtime_apis'.tr,
+                bodyBuilder: (controller) => SubstrateMetadataRuntimeApiView(
+                    scrollController: controller, account: account),
+              );
             },
           ),
           AppListTile(

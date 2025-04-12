@@ -314,9 +314,6 @@ class _TRC20TokenViewState extends State<_TRC20TokenView>
                               .openSliverBottomSheet<
                                       ReceiptAddress<TronAddress>>(
                                   "contract_address".tr,
-                                  maxExtend: 1,
-                                  minExtent: 0.8,
-                                  initialExtend: 0.9,
                                   bodyBuilder: (c) =>
                                       SelectRecipientAccountView<TronAddress>(
                                           account: widget.state.account,

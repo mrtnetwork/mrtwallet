@@ -1428,7 +1428,7 @@ class Localization {
           "setup_recipient_assets": "Setup recipient assets",
           "a_minimum_a_ada_required": "A minimum of 1 ADA output is required.",
           "unsuported_feature": "Unsuported feature",
-          "cosmos_networks": "Cosmos and forked",
+          "cosmos_networks": "Cosmos networks",
           "ton_networks": "Ton networks",
           "add_least_one_receipt": "Add at least one recipient",
           "the_amount_is_unspecified": "The amount is unspecified.",
@@ -2534,7 +2534,7 @@ class Localization {
               "The current version of the wallet does not support or validate asset metadata, and the balance only accepts whole numbers (no decimals).",
           "pick_token": "Pick token",
           "cosmos_pick_token_transfer_desc":
-              "Select the token you want to transfer, or close the page to switch to the native chain token.",
+              "Select the token you want to transfer or paying for gas.",
           "cosmos_transfer_import_token_desc":
               "If your token isn't listed here, you can import it on the account page.",
           "insufficient_token_balance": "Insufficient token balance",
@@ -2561,7 +2561,7 @@ class Localization {
           "cosmos_key_alg_desc":
               "Algorithm used for key generation and transaction signing",
           "cosmos_key_alg_desc2":
-              "Ensure your network supports this key algorithm; otherwise, you may risk losing funds.",
+              "Unknown network key algorithm. Ensure you are selecting the correct key algorithm; otherwise, you may risk losing funds",
           "native_token": "Native token",
           "enter_tendermint_rpc_desc":
               "Enter the Tendermint RPC URL of the chain for interaction.",
@@ -2872,6 +2872,94 @@ class Localization {
           "aptos_aip80_private_key_desc2":
               "Please enter a valid Aptos AIP-80 private key.  The key must start with 'ed25519-priv-' or 'secp256k1-priv-'",
           "invalid_aptos_private_key": "Invalid Aptos private key.",
+          "messages": "Messages",
+          "message_bytes": "Message bytes",
+          "message_content": "Message content",
+          "cosmos_gas_limit_desc":
+              "The maximum amount of computational units the transaction can consume before it fails.",
+          "fee_amount": "Fee amount",
+          "log": "Log",
+          "events": "Events",
+          "key": "Key",
+          "value": "Value",
+          "tap_to_show_events": "Tap to show events.",
+          "messages_response": "Messages response",
+          "tap_to_show_response": "Tap to response.",
+          "ibc_transfer": "IBC Transfer",
+          "destination_chain": "Destination chain",
+          "cosmos_destination_chain_dest":
+              "Please select the destination chain. If the specified network doesn't exist, import the chain into the wallet first.",
+          "destination_chain_required": "Destination chain is required.",
+          "transfer_token_required": "Transfer token is required.",
+          "select_token_for_transfer": "Select a token for transfer",
+          "ibc_desc":
+              "IBC enables secure communication and token transfers between blockchains",
+          "transfer_token": "Transfer token",
+          "tap_to_select_token": "Tap to select token",
+          "update_unknown_token_metadata_desc":
+              "Unknown token metadata. Please update all token details, including decimals, name, and symbol, before adding it to your wallet.",
+          "channel_id_required": "Channel id is required.",
+          "ibc_channel_desc":
+              "An IBC channel ID identifies a communication channel between two Cosmos blockchains.",
+          "channel_id": "Channel ID",
+          "ibc_channel_validator":
+              "Invalid IBC channel ID. It should be in the format 'channel-{number}'",
+          "select_ibc_channel_id": "Select IBC Channel ID",
+          "cosmos_chains": "Cosmos chains",
+          "ibc_retrieval_requirements": "IBC Retrieval Requirements",
+          "source_chain": "Source chain",
+          "save_channel_id": "Save channel ID",
+          "channel_name": "Channel name",
+          "channel_id_saved": "Channel ID has been saved.",
+          "channel_name_desc":
+              "Enter the channel name to retrieve its ID easily",
+          "pick_channel": "Pick channel",
+          "saved_channels": "Saved channels",
+          "check_channel_connection": "Check channel connection",
+          "check_channel_connection_desc":
+              "Verify the connection between the source and destination chain",
+          "channel_not_found_in": "Channel not found in ___1__",
+          "ibc_channel_incorrect_state":
+              "Connection failed: Source channel is not in an open state.",
+          "checking_chain_channel_id_connection":
+              "Checking ___1__ Ibc channel connection. please wait.",
+          "ibc_source_destination_version_mismatch":
+              "Version mismatch between source and destination channels.",
+          "transaction_timeout": "Transaction timeout",
+          "list_of_transfers": "List of transfers",
+          "fill_in_all_fields": "Fill in all fields carefully",
+          "receipt_address_is_required": "Receipt address is required",
+          "tap_to_add_new_transfer": "Tap to add new transfer",
+          "invalid_transaction_output_index": "Invalid output index.",
+          "your_account_inputs": "Your accounts inputs",
+          "total_input_amounts": "Total input amounts",
+          "script": "Script",
+          "bitcoin_modifiable_sighash_warning":
+              "A modifiable SIGHASH type detected! Your transaction outputs can be altered, potentially allowing all your UTXO balance to be spent.",
+          "inputs_from_your_accounts": "Inputs from your accounts",
+          "amount_will_be_returned_back_to_account":
+              "The amount will be returned to your account",
+          "select_unspent_utxos_desc":
+              "Please select the unspent transactions you want to use in this transaction",
+          "tap_to_choose_utxos": "Tap to choose UTXOs.",
+          "choose_utxos": "Choose UTXOs",
+          "total_selected_utxos": "Total selected UTXOs",
+          "setup_utxos": "Setup UTXOs",
+          "toggle_all": "Toggle all",
+          'issued_at': "Issued at",
+          "nonce": "Nonce",
+          "not_before": "Not before",
+          "request_id": "Request ID",
+          "statement": "Statement",
+          "resources": "Resources",
+          'sign_in_data': "Sig-In Data",
+          'support_by_application': "Support by application",
+          "unsupported_by_application": "Unsupported by application",
+          "some_required_field_not_filled":
+              "Some required fields are not filled",
+          "back_to_previous_page": "Back to previous page",
+          "all_entered_information_will_be_lost":
+              "All entered information will be lost."
         }
       };
 }

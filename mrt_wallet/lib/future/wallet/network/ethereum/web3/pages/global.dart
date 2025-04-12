@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/web3/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/web3/pages/fields/personal_sign.dart';
-import 'package:mrt_wallet/future/wallet/network/ethereum/web3/pages/fields/request_accounts.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/web3/pages/fields/typded_data_sign.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ethereum/ethereum.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
@@ -19,7 +18,7 @@ class EthereumWeb3GlobalFieldsView<RESPONSE,
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3EthereumGlobalRequestController<RESPONSE, T>(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
@@ -45,11 +44,6 @@ class _GlobalFieldsView extends StatelessWidget {
       case Web3EthereumRequestMethods.persoalSign:
         return EthereumWeb3PersonalSignRequestView(
             request: form as EthereumWeb3Form<Web3EthreumPersonalSign>);
-      case Web3EthereumRequestMethods.requestAccounts:
-        return EthereumWeb3RequestAccountsView(
-          controller: controller,
-          field: form as EthereumRequestAccountForm,
-        );
       case Web3EthereumRequestMethods.switchEthereumChain:
         return EthereumWeb3SwitchEthereumChainView(
           request: form as Web3EthereumSwitchEthereumChain,

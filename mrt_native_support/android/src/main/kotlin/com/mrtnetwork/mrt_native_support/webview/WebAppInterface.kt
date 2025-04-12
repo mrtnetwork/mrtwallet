@@ -19,7 +19,6 @@ class WebAppInterface(private val channel: MethodChannel,  val viewType: String,
         Handler(Looper.getMainLooper()).post {
             val toJson = WebViewUtils.toJson(viewType, WebViewConst.request,webView, request = request)
             channel.invokeMethod(WebViewConst.webView, toJson.toJson())
-            MrtCore.logging("send request to main ${toJson.toJson()}", "WebView")
         }
     }
     @JavascriptInterface

@@ -191,7 +191,6 @@ class __SetupAptosMultisigAddressState
         "select_account".tr,
         child: SwitchOrSelectAccountView<IAptosAddress>(
             account: account, showMultiSig: false, filter: filterAccount),
-        initialExtend: 0.9,
         centerContent: false);
     if (address == null) return;
     final error = filterAccount(address);

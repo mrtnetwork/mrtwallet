@@ -1,10 +1,12 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
+import 'package:blockchain_utils/helper/extensions/extensions.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
-import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 import 'package:mrt_wallet/wallet/web3/models/models/network.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/permission/models/permission.dart';
+import 'package:mrt_wallet/wallet/web3/networks/bitcoin/permission/models/permission.dart';
+import 'package:mrt_wallet/wallet/web3/networks/cosmos/permission/models/permission.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/permission/models/permission.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/permission.dart';
@@ -14,7 +16,6 @@ import 'package:mrt_wallet/wallet/web3/networks/sui/permission/models/permission
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/tron.dart';
 import 'account.dart';
-import '../models/activity.dart';
 
 typedef Web3ChainNetwork<NETWORKADDRESS> = Web3Chain<
     NETWORKADDRESS,
@@ -26,23 +27,13 @@ abstract class Web3Chain<
     NETWORKADDRESS,
     CHAIN extends APPCHAINNETWORK<NETWORKADDRESS>,
     CHAINACCOUT extends Web3ChainAccount<NETWORKADDRESS>,
-    NETWORK extends WalletNetwork> with CborSerializable {
-  int get currentChain;
-  List<CHAINACCOUT> _accounts;
-  List<CHAINACCOUT> get activeAccounts => _accounts;
-  List<CHAINACCOUT> chainAccounts(CHAIN chain);
-  List<Web3AccountAcitvity> _activities;
-  List<Web3AccountAcitvity> get activities => _activities;
-  Web3ChainAuthenticated createAuthenticated(
-      List<Web3ChainNetworkData<NETWORK>> networks);
-  NETWORK getCurrentPermissionNetwork(List<NETWORK> networks);
-  abstract final NetworkType network;
-  bool chainHasPermission(CHAIN chain) => chainAccounts(chain).isNotEmpty;
+    NETWORK extends WalletNetwork> with CborSerializable, Equatable {
   Web3Chain(
       {required List<CHAINACCOUT> accounts,
-      required List<Web3AccountAcitvity> activities})
+      required this.network,
+      required int id})
       : _accounts = accounts.imutable,
-        _activities = activities.imutable;
+        _id = id;
 
   factory Web3Chain.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -75,6 +66,12 @@ abstract class Web3Chain<
       case NetworkType.sui:
         chain = Web3SuiChain.deserialize(object: decode);
         break;
+      case NetworkType.cosmos:
+        chain = Web3CosmosChain.deserialize(object: decode);
+        break;
+      case NetworkType.bitcoinAndForked:
+        chain = Web3BitcoinChain.deserialize(object: decode);
+        break;
       default:
         throw WalletExceptionConst.unsuportedFeature;
     }
@@ -83,42 +80,104 @@ abstract class Web3Chain<
     }
     return chain;
   }
-  NETWORKCHAINACCOUNT<NETWORKADDRESS> getAccountPermission(
-      {required NETWORKADDRESS address, required CHAIN chain});
 
-  CHAIN getCurrentPermissionChain(List<CHAIN> chain);
-
-  CHAINACCOUT? getPermission(NETWORKADDRESS address);
-
+  Web3ChainAuthenticated createAuthenticated(
+      List<Web3ChainNetworkData<NETWORK>> networks);
   Web3Chain clone();
-
   Web3Chain disconnect();
+  final NetworkType network;
+  int _id;
+  int get currentChain => _id;
+  List<CHAINACCOUT> _accounts;
+  List<CHAINACCOUT> get activeAccounts => _accounts.cast();
 
-  void addActivity({required Web3Request request, String? path}) {
-    String? address;
-    if (request.params.account != null) {
-      address = getPermission(request.params.account)?.addressStr;
-      if (address == null) {
-        throw Web3RequestExceptionConst.internalError;
+  bool get hasAccount => _accounts.isNotEmpty;
+
+  List<CHAINACCOUT> chainAccounts(CHAIN chain) {
+    final currentAccounts =
+        activeAccounts.where((e) => e.id == chain.network.value).toList();
+    final List<CHAINACCOUT> existsAccounts = [];
+    for (final i in chain.addresses) {
+      final chainAccount = currentAccounts.firstWhereOrNull(
+          (e) => e.addressStr == i.address.address && e.keyIndex == i.keyIndex);
+      if (chainAccount != null) {
+        existsAccounts.add(chainAccount);
       }
     }
-    final newAcctivity = Web3AccountAcitvity(
-        method: request.params.method.name,
-        path: path,
-        address: address,
-        id: request.chain.network.value);
-    final activities = [newAcctivity, ..._activities]
-      ..sort((a, b) => b.date.compareTo(a.date));
-    _activities = activities.imutable;
+    return existsAccounts;
+  }
+
+  CHAIN getCurrentPermissionChain(List<CHAIN> chain, CHAINACCOUT? account) {
+    final currentNetwork = getCurrentPermissionNetwork(
+        chain.map((e) => e.network).toList().cast<NETWORK>(), account);
+    if (account != null && currentNetwork.value != account.id) {
+      throw Web3RequestExceptionConst.missingPermission;
+    }
+    return chain.firstWhere((e) => e.network.value == currentNetwork.value,
+        orElse: () => throw Web3RequestExceptionConst.networkDoesNotExists);
+  }
+
+  NETWORK getCurrentPermissionNetwork(List<NETWORK> networks,
+      [CHAINACCOUT? account]) {
+    final existsNetworks = networks.map((e) => e.value);
+    final validAccoutnts =
+        _accounts.where((e) => existsNetworks.contains(e.id)).toList();
+    updateChainAccount(validAccoutnts);
+    NETWORK? network;
+    if (account != null && existsNetworks.contains(account.id)) {
+      network = networks.firstWhere((e) => e.value == account.id);
+    } else if (existsNetworks.contains(this.currentChain)) {
+      network = networks.firstWhere((e) => e.value == currentChain);
+    }
+    if (network != null) {
+      return network;
+    }
+    final mainNetwork =
+        networks.firstWhere((e) => e.value == this.network.mainNetworkId);
+    setActiveChain(mainNetwork);
+    return mainNetwork;
+  }
+
+  bool chainHasPermission(CHAIN chain) => chainAccounts(chain).isNotEmpty;
+
+  NETWORKACCOUNT getAccountPermission<
+          NETWORKACCOUNT extends NETWORKCHAINACCOUNT<NETWORKADDRESS>>(
+      {required CHAINACCOUT account, required CHAIN chain}) {
+    if (!_accounts.contains(account)) {
+      throw Web3RequestExceptionConst.missingPermission;
+    }
+    final chainAccount = chain.getAddress(account.addressStr);
+    if (chainAccount == null) {
+      throw Web3RequestExceptionConst.missingPermission;
+    }
+    return chainAccount.cast();
+  }
+
+  CHAINACCOUT? getAddressPermission(NETWORKADDRESS address) {
+    return _accounts.firstWhereNullable((e) => e.address == address);
   }
 
   void updateChainAccount(List<CHAINACCOUT> updatedAccounts) {
-    _accounts = updatedAccounts.imutable;
+    final sortedAccounts = updatedAccounts.clone();
+    sortedAccounts.sort((a, b) => a.addressStr.compareTo(b.addressStr));
+    _accounts = sortedAccounts.imutable;
   }
 
-  void clearActivities() {
-    _activities = <Web3AccountAcitvity>[].imutable;
+  void setActiveChain(NETWORK network) {
+    _id = network.value;
   }
 
-  void setActiveChain(NETWORK network);
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(
+        CborListValue.fixedLength([
+          CborListValue.fixedLength(
+              activeAccounts.map((e) => e.toCbor()).toList()),
+          currentChain
+        ]),
+        network.tag);
+  }
+
+  @override
+  List get variabels => [_accounts, currentChain, network];
 }

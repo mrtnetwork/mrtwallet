@@ -1,3 +1,4 @@
+import 'package:bitcoin_base/bitcoin_base.dart' show TaprootUtils;
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:monero_dart/monero_dart.dart';
@@ -107,23 +108,30 @@ class WalletRequestSign
     switch (request.network) {
       case SigningRequestNetwork.bitcoinCash:
         final BitcoinSigning bitcoinRequest = request.cast();
-        final btcSigner = BitcoinSigner.fromKeyBytes(key.privateKeyBytes());
-        final sig = btcSigner.signBcHTransaction(digest);
+        final btcSigner = BitcoinKeySigner.fromKeyBytes(key.privateKeyBytes());
+        List<int> sig;
+        if (bitcoinRequest.useBchSchnorr) {
+          sig = btcSigner.signSchnorr(digest);
+        } else {
+          sig = btcSigner.signECDSADer(digest);
+        }
         signature = [...sig, bitcoinRequest.sighash];
         return GlobalSignResponse(
             signature: signature, index: index, signerPubKey: key.publicKey);
       case SigningRequestNetwork.bitcoin:
         final BitcoinSigning bitcoinRequest = request.cast();
-        final btcSigner = BitcoinSigner.fromKeyBytes(key.privateKeyBytes());
+        final btcSigner = BitcoinKeySigner.fromKeyBytes(key.privateKeyBytes());
         if (bitcoinRequest.useTaproot) {
-          List<int> sig = btcSigner.signSchnorrTransaction(digest,
-              tapScripts: [], tweak: true);
+          final taptweak = TaprootUtils.calculateTweek(
+              btcSigner.verifierKey.publicKeyPoint().toXonly());
+          List<int> schnorrSignature =
+              btcSigner.signBip340(digest: digest, tapTweakHash: taptweak);
           if (bitcoinRequest.sighash != 0x00) {
-            sig = <int>[...sig, bitcoinRequest.sighash];
+            schnorrSignature = [...schnorrSignature, bitcoinRequest.sighash];
           }
-          signature = sig;
+          signature = schnorrSignature;
         } else {
-          final sig = btcSigner.signTransaction(digest);
+          final sig = btcSigner.signECDSADer(digest);
           signature = [...sig, bitcoinRequest.sighash];
         }
         return GlobalSignResponse(
@@ -131,13 +139,11 @@ class WalletRequestSign
       case SigningRequestNetwork.tron:
         final signer = TronSigner.fromKeyBytes(keyBytes);
         signature = signer.sign(digest);
-
         break;
       case SigningRequestNetwork.ripple:
         final signer = XrpSigner.fromKeyBytes(
             keyBytes, request.index.currencyCoin.conf.type);
         signature = signer.sign(digest);
-
         break;
 
       case SigningRequestNetwork.eth:

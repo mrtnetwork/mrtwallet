@@ -3,12 +3,15 @@ import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/stellar/addresses/stellar.dart';
 import 'package:mrt_wallet/wallet/models/signing/signing.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 
 class Web3StellarGlobalRequestController<RESPONSE,
         T extends Web3StellarRequestParam<RESPONSE>>
     extends Web3StellarImpl<RESPONSE, T> {
+  IStellarAddress get address => request.accountPermission()!;
+
   Web3StellarGlobalRequestController({
     required super.walletProvider,
     required super.request,

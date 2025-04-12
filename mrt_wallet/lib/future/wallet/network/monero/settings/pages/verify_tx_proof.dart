@@ -167,9 +167,6 @@ class _MoneroVerifyTxProofViewState
                                         .openSliverBottomSheet<
                                                 ReceiptAddress<MoneroAddress>>(
                                             "recipient".tr,
-                                            maxExtend: 1,
-                                            minExtent: 0.8,
-                                            initialExtend: 0.9,
                                             bodyBuilder: (c) =>
                                                 SelectRecipientAccountView<
                                                         MoneroAddress>(

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mrt_wallet/app/constant/constant.dart';
+import 'package:mrt_wallet/future/state_managment/core/observer.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/theme/theme.dart';
+import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 
 import 'package:mrt_wallet/future/widgets/custom_widgets.dart';
 
@@ -49,6 +52,10 @@ extension QuickColor on Color {
 extension QuickContextAccsess on BuildContext {
   T watch<T extends StateController>(String stateId) {
     return StateRepository.stateOf(this, stateId)!;
+  }
+
+  WalletProvider get wallet {
+    return StateRepository.stateOf(this, StateConst.main)!;
   }
 
   T watchOrCreate<T extends StateController>(
@@ -136,17 +143,17 @@ extension QuickContextAccsess on BuildContext {
   }
 
   Future<T?> openSliverBottomSheet<T>(String label,
-      {double minExtent = 0.7,
-      double maxExtend = 1,
+      {
+      // double maxExtend = 1,
       Widget? child,
-      double? initialExtend,
+      // double? initialExtend,
       BodyBuilder? bodyBuilder,
       List<Widget> Function(BuildContext context)? appbarActions,
       List<Widget> slivers = const [],
       bool centerContent = true}) async {
-    if (minExtent > maxExtend) {
-      minExtent = maxExtend;
-    }
+    // if (minExtent > maxExtend) {
+    //   minExtent = maxExtend;
+    // }
     if (!mounted) return null;
     return await showModalBottomSheet<T>(
       context: this,
@@ -155,11 +162,11 @@ extension QuickContextAccsess on BuildContext {
         label: label,
         body: bodyBuilder,
         actions: appbarActions?.call(context) ?? [],
-        minExtent: minExtent,
-        maxExtend: maxExtend,
+        minExtent: 0.8,
+        maxExtend: 1.0,
         centerContent: centerContent,
         slivers: slivers,
-        initiaalExtend: initialExtend,
+        initiaalExtend: 0.9,
         child: child,
       ),
       useSafeArea: true,
@@ -185,16 +192,16 @@ extension QuickContextAccsess on BuildContext {
     );
   }
 
-  Future<T?> openDialogPage<T>(
-    String label, {
-    WidgetContext? child,
-    List<Widget> Function(BuildContext)? content,
-    Widget? fullWidget,
-  }) async {
+  Future<T?> openDialogPage<T>(String label,
+      {WidgetContext? child,
+      List<Widget> Function(BuildContext)? content,
+      Widget? fullWidget,
+      String? routeName}) async {
     return await showAdaptiveDialog(
       context: this,
       useRootNavigator: true,
       barrierDismissible: true,
+      routeSettings: routeName == null ? null : RouteSettings(name: routeName),
       builder: (context) {
         return fullWidget ??
             DialogView(
@@ -244,6 +251,14 @@ extension QuickContextAccsess on BuildContext {
     });
   }
 
+  void backToCurrent() {
+    final name = route()?.settings.name;
+    if (name == null) return;
+    Navigator.of(this).popUntil((route) {
+      return route.settings.name == name || route.isFirst;
+    });
+  }
+
   BuildContext? get scaffoldContext =>
       StateRepository.scaffoldKey(this).currentContext;
 
@@ -254,4 +269,6 @@ extension QuickContextAccsess on BuildContext {
   ModalRoute? route() {
     return ModalRoute.of(this);
   }
+
+  WalletRouteObserver get observer => StateRepository.walletObserver(this);
 }

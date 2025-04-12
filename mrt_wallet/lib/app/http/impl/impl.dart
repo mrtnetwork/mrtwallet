@@ -1,9 +1,6 @@
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/http/isolate/core/service.dart';
 import 'package:mrt_wallet/app/http/isolate/models/message.dart';
-import 'package:mrt_wallet/app/http/models/auth.dart';
-import 'package:mrt_wallet/app/http/models/models.dart';
-import 'package:mrt_wallet/app/isolate/types.dart';
-import 'package:mrt_wallet/app/utils/method/utiils.dart';
 
 mixin HttpImpl {
   static final HTTPServiceWorker _serviceCaller = HTTPServiceWorker.instance;
@@ -41,7 +38,7 @@ mixin HttpImpl {
           responseType: rType,
           authenticated: authenticated,
           isolate: isolate);
-      return r.bodyAs<T>();
+      return r.successResult<T>();
     });
   }
 

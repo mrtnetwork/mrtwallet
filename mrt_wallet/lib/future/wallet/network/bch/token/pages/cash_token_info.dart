@@ -21,26 +21,6 @@ class BCHCashTokenDetailsView extends StatelessWidget {
         Text(cashToken.hasNFT ? "nft".tr : "ft".tr,
             style: color.lableLarge(context)),
         OneLineTextWidget(cashToken.category, style: color.bodyMedium(context)),
-        // Row(
-        //   crossAxisAlignment: CrossAxisAlignment.start,
-        //   children: [
-        //     Expanded(
-        //         child: ),
-        //     WidgetConstant.width8,
-        //     RichText(
-        //         text: TextSpan(style: color.lableLarge(context), children: [
-        //       TextSpan(text: cashToken.hasNFT ? "nft".tr : "ft".tr),
-        //       if (cashToken.hasNFT) ...[
-        //         const TextSpan(text: "-"),
-        //         TextSpan(text: cashToken.capability!.name.tr),
-        //       ]
-        //     ])),
-        //   ],
-        // ),
-        // if (cashToken.hasCommitment) ...[
-        //   OneLineTextWidget(cashToken.commitmentInHex ?? "",
-        //       style: color.bodyMedium(context))
-        // ],
         if (cashToken.hasAmount)
           CoinPriceView(
               token: token.token,

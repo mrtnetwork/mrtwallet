@@ -26,10 +26,7 @@ class EthereumGasFeeView extends StatelessWidget {
                                 )>("transaction_fee".tr,
                             child: ETHEip1559GasViewSelectView(
                               transaction: transaction,
-                            ),
-                            maxExtend: 0.7,
-                            minExtent: 0.5,
-                            initialExtend: 0.6)
+                            ))
                         .then((value) {
                       if (value == null) return;
                       transaction.setFee(value.$1, customFee: value.$2);

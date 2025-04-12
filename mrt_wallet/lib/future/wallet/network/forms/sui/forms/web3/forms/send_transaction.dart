@@ -293,7 +293,7 @@ class Web3SuiSendTransactionForm
           final address =
               MethodUtils.nullOnException(() => SuiAddress(pure.value));
           if (address == null) {
-            throw Web3SuiExceptionConstant.invalidObjectId(
+            throw Web3SuiExceptionConstant.fialedToParseTransactionObject(
                 pure.value?.toString() ?? 'null');
           }
           _inputs[inputIndex] =
@@ -507,6 +507,7 @@ class Web3SuiSendTransactionForm
         duration: APPConst.oneSecoundDuration);
   }
 
+  bool get isExecute => request.params.isExecute;
   Future<void> sendTransaction(FuncFutureNullableBoolString onSubmit) async {
     if (!_simulateSuccess) {
       final submit = await onSubmit(vmStatus != null

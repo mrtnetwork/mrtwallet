@@ -48,7 +48,6 @@ class RippleSetSignerListFieldsView extends StatelessWidget {
               context
                   .openSliverBottomSheet<XRPSignerEntries>(
                     validator.validatorName.tr,
-                    initialExtend: 1,
                     child: _SetupRippleSignerEntries(account: account),
                   )
                   .then((value) =>
@@ -204,9 +203,6 @@ class _SetupRippleSignerEntriesState extends State<_SetupRippleSignerEntries>
             context
                 .openSliverBottomSheet<ReceiptAddress<XRPAddress>>(
                   "ripple_signer_enteris_fields".tr,
-                  maxExtend: 1,
-                  minExtent: 0.8,
-                  initialExtend: 0.9,
                   bodyBuilder: (c) => SelectRecipientAccountView<XRPAddress>(
                     account: widget.account,
                     scrollController: c,

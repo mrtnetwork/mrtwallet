@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/sui/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/sui/params/core/request.dart';
-import 'package:on_chain/sui/src/address/address/address.dart';
+import 'package:mrt_wallet/wallet/web3/networks/sui/permission/models/account.dart';
 
 class Web3SuiSignMessageResponse {
   final String messageBytes;
@@ -31,9 +31,9 @@ class Web3SuiSignMessage extends Web3SuiRequestParam<Map<String, dynamic>> {
     required this.method,
   });
   factory Web3SuiSignMessage({
-    required SuiAddress account,
+    required Web3SuiChainAccount account,
     required String challeng,
-    required Web3RequestMethods method,
+    required Web3NetworkRequestMethods method,
     String? content,
   }) {
     switch (method) {
@@ -58,10 +58,11 @@ class Web3SuiSignMessage extends Web3SuiRequestParam<Map<String, dynamic>> {
       hex: hex,
       tags: Web3MessageTypes.walletRequest.tag,
     );
-    final method = Web3RequestMethods.fromTag(values.elementAt(0));
+    final method = Web3NetworkRequestMethods.fromTag(values.elementAt(0));
 
     return Web3SuiSignMessage(
-        account: SuiAddress(values.elementAt(1)),
+        account: Web3SuiChainAccount.deserialize(
+            object: values.elementAs<CborTagValue>(1)),
         challeng: values.elementAs(2),
         content: values.elementAs(3),
         method: method);
@@ -74,21 +75,12 @@ class Web3SuiSignMessage extends Web3SuiRequestParam<Map<String, dynamic>> {
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength(
-            [method.tag, account.address, challeng, content]),
+            [method.tag, account.toCbor(), challeng, content]),
         type.tag);
   }
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      "account": account.address,
-      "challeng": challeng,
-      "content": content
-    };
-  }
-
-  @override
-  final SuiAddress account;
+  final Web3SuiChainAccount account;
   @override
   Web3SuiRequest<Map<String, dynamic>, Web3SuiSignMessage> toRequest(
       {required Web3RequestApplicationInformation request,

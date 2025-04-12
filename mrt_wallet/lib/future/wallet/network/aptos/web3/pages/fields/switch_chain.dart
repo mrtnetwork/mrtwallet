@@ -26,17 +26,8 @@ class AptosWeb3SwitchChainView extends StatelessWidget {
                     radius: APPConst.circleRadius25),
                 WidgetConstant.width8,
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(request.request.chain.network.networkName,
-                          style: context.onPrimaryTextTheme.bodyMedium),
-                      Text(
-                          request.request.chain.network.coinParam.aptosChainType
-                              .chainId.toRadix16,
-                          style: context.onPrimaryTextTheme.bodySmall)
-                    ],
-                  ),
+                  child: Text(request.request.chain.network.networkName,
+                      style: context.onPrimaryTextTheme.bodyMedium),
                 ),
               ],
             ),
@@ -51,17 +42,8 @@ class AptosWeb3SwitchChainView extends StatelessWidget {
                     radius: APPConst.circleRadius25),
                 WidgetConstant.width8,
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(request.newChain.network.networkName,
-                          style: context.onPrimaryTextTheme.bodyMedium),
-                      Text(
-                          request.newChain.network.coinParam.aptosChainType
-                              .chainId.toRadix16,
-                          style: context.onPrimaryTextTheme.bodySmall)
-                    ],
-                  ),
+                  child: Text(request.newChain.network.networkName,
+                      style: context.onPrimaryTextTheme.bodyMedium),
                 ),
               ],
             ),

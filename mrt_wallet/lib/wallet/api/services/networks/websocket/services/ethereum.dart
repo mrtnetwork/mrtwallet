@@ -1,3 +1,4 @@
+import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
 import 'package:mrt_wallet/wallet/api/provider/networks/ethereum.dart';
 import 'package:mrt_wallet/wallet/api/services/impl/socket/protocols/websocket.dart';

@@ -2,7 +2,7 @@ import 'dart:js_interop';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/aptos.dart';
-
+import 'wallet_standard.dart';
 import '../../models.dart';
 
 class AptosJSConstant {
@@ -19,36 +19,13 @@ class AptosJSConstant {
   ].toJS;
   static const String getNetworkRequestName = "aptos_network";
   static const String requestAccountRequestName = "aptos_requestAccounts";
+  static const String signTransaction = "aptos_signTransaction";
   static const String signMessageRequestName = "aptos_signMessage";
   static const String secondarySignerAddressesRequiredKeys =
       "secondarySignerAddresses";
   static const String changeNetworkRequestName = "wallet_switchAptosChain";
 }
 
-@JS("aptos")
-external set aptos(Proxy<AptosWalletAdapter>? aptos);
-extension type AptosWalletAdapter(JSObject _) implements MRTNetworkAdapter {
-  external set publicKey(JSObject? publicKey);
-  external JSObject? get publicKey;
-  external JSArray<JSAptosWalletAccount> get accounts;
-  external set accounts(JSArray<JSAptosWalletAccount> accounts);
-  external bool get isConnected;
-  external set isConnected(bool isConnected);
-  external set connect(JSFunction f);
-
-  @JS("features")
-  external Proxy<AptosWalletAdapterFeatures> get features;
-  @JS("features")
-  external set features(Proxy<AptosWalletAdapterFeatures> features);
-  external set chains(JSArray<JSString> _);
-  external set on(JSFunction f);
-  external set removeListener(JSFunction f);
-
-  factory AptosWalletAdapter.setup() {
-    return AptosWalletAdapter(JSObject());
-  }
-  void update(SolanaAccountsChanged account) {}
-}
 extension type JSAptosChangeNetworkOutput(JSAny _) implements JSAny {
   external set reason(String? _);
   external set success(bool? _);
@@ -56,17 +33,17 @@ extension type JSAptosChangeNetworkOutput(JSAny _) implements JSAny {
 
 extension type JSAptosNetworkInfo(JSAny _) implements JSAny {
   external String get name;
-  external int get chainId;
+  external int? get chainId;
   external String? get url;
   factory JSAptosNetworkInfo.setup(
-      {required String name, required int chainId, String? url}) {
+      {required String name, required int? chainId, String? url}) {
     return JSAptosNetworkInfo(JSObject())
       ..name = name
       ..chainId = chainId
       ..url = url;
   }
   external set name(String _);
-  external set chainId(int _);
+  external set chainId(int? _);
   external set url(String? _);
 }
 @JS()
@@ -220,32 +197,25 @@ extension type JSAptosPublicKey._(JSObject _)
       ..dataHex = publicKeyHex;
   }
 }
-extension type JSAptosWalletAccount._(JSObject _) implements JSAny {
+extension type JSAptosWalletAccount._(JSObject _)
+    implements JSWalletStandardAccount {
   factory JSAptosWalletAccount.setup(
       {required String address,
       required JSAptosPublicKey publicKey,
-      required int signingScheme}) {
+      required int signingScheme,
+      required String chain}) {
     return JSAptosWalletAccount._(JSObject())
       ..address = address
       ..publicKey = publicKey
       ..signingScheme = signingScheme
-      ..chains = AptosJSConstant.supportedChains
+      ..chains = [chain.toJS].toJS
       ..features = AptosJSConstant.aptosDefaultAccountFeatures
       ..ansName = null;
   }
-  external set address(String address);
   external set signingScheme(int _);
-  external String get address;
   external String? get ansName;
   external set ansName(String? _);
   external JSAptosPublicKey get publicKey;
-  external JSArray<JSString>? get chains;
-  external JSArray<JSString>? get features;
-  external set publicKey(JSAny _);
-  external set chains(JSArray<JSString>? chains);
-  external set features(JSArray<JSString>? features);
-  external set label(String? _);
-  external set icon(String? _);
 }
 extension type JSAptosAccountChanged(JSAny _) implements JSAny {
   factory JSAptosAccountChanged.setup(
@@ -266,6 +236,7 @@ extension type JSAptosAccountChanged(JSAny _) implements JSAny {
 
 extension type JSAptosSignTransactionParams(JSAny _) implements JSAny {
   external APPJSUint8Array bcsToBytes();
+  external JSAptosSignTransactionParams? get rawTransaction;
   JSAptosSignTransactionRequest toRequest() {
     try {
       final isMultiAgnet = MRTJsObject.keys_(this)?.contains(

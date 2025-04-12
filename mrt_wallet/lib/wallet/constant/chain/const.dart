@@ -1,5 +1,6 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:blockchain_utils/bip/bip.dart';
+import 'package:blockchain_utils/utils/numbers/rational/big_rational.dart';
 import 'package:cosmos_sdk/cosmos_sdk.dart';
 import 'package:monero_dart/monero_dart.dart';
 import 'package:mrt_wallet/app/core.dart';
@@ -7,7 +8,6 @@ import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/wallet/constant/constant.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
-import 'package:stellar_dart/stellar_dart.dart';
 
 class _DefaultAppCoins {
   static final BitcoinParams bitcoinCashMainnet = BitcoinParams(
@@ -51,7 +51,7 @@ class _DefaultAppCoins {
           assetLogo: APPConst.btc),
       providers: []);
   static final BitcoinParams bitcoinTestnet4 = BitcoinParams(
-      transacationNetwork: BitcoinNetwork.testnet,
+      transacationNetwork: BitcoinNetwork.testnet4,
       token: Token(
           name: "Bitcoin testnet4",
           symbol: "tBTC",
@@ -375,10 +375,14 @@ class _DefaultAppCoins {
       networkType: CosmosNetworkTypes.main,
       chainType: ChainType.testnet,
       hrp: CosmosAddrConst.accHRP,
+      chainRegisteryName: "cosmosicsprovidertestnet",
       denom: "uatom",
       chainId: "provider",
       feeTokens: [
         CosmosFeeToken(
+            averageGasPrice: BigRational.parseDecimal("0.025"),
+            highGasPrice: BigRational.parseDecimal("0.03"),
+            lowGasPrice: BigRational.parseDecimal("0.01"),
             token: Token(
                 name: "ICS Provider Testnet",
                 symbol: "tATOM",
@@ -402,10 +406,14 @@ class _DefaultAppCoins {
       networkType: CosmosNetworkTypes.main,
       chainType: ChainType.mainnet,
       hrp: CosmosAddrConst.accHRP,
+      chainRegisteryName: "cosmoshub",
       chainId: "cosmoshub-4",
       denom: "uatom",
       feeTokens: [
         CosmosFeeToken(
+            averageGasPrice: BigRational.parseDecimal("0.025"),
+            highGasPrice: BigRational.parseDecimal("0.03"),
+            lowGasPrice: BigRational.parseDecimal("0.01"),
             token: Token(
               name: "Cosmos hub",
               symbol: "ATOM",
@@ -430,9 +438,11 @@ class _DefaultAppCoins {
   static final CosmosNetworkParams maya = CosmosNetworkParams(
       chainType: ChainType.mainnet,
       hrp: CosmosAddrConst.mayaProtocol,
+      chainRegisteryName: "mayachain",
       denom: "cacao",
       feeTokens: [
         CosmosFeeToken(
+            averageGasPrice: BigRational.from(2000000000),
             token: Token(
               name: "Maya Protocol",
               symbol: "Cacao",
@@ -461,9 +471,11 @@ class _DefaultAppCoins {
   static final CosmosNetworkParams thorchain = CosmosNetworkParams(
       chainType: ChainType.mainnet,
       hrp: CosmosAddrConst.thor,
+      chainRegisteryName: "thorchain",
       denom: "rune",
       feeTokens: [
         CosmosFeeToken(
+            averageGasPrice: BigRational.from(2000000),
             token: Token(
                 name: "THORChain",
                 symbol: "Rune",
@@ -485,15 +497,17 @@ class _DefaultAppCoins {
       providers: [],
       chainId: "thorchain-1",
       networkConstantUri: "https://thornode.ninerealms.com/thorchain/constants",
-      keysAlgs: [
-        CosmosKeysAlgs.secp256k1,
-      ]);
+      keysAlgs: [CosmosKeysAlgs.secp256k1]);
   static final CosmosNetworkParams kujiraTestnet = CosmosNetworkParams(
       chainType: ChainType.testnet,
       hrp: CosmosAddrConst.kujira,
+      chainRegisteryName: "kujiratestnet",
       denom: "ukuji",
       feeTokens: [
         CosmosFeeToken(
+            averageGasPrice: BigRational.parseDecimal("0.0051"),
+            highGasPrice: BigRational.parseDecimal("0.00681"),
+            lowGasPrice: BigRational.parseDecimal("0.0034"),
             token: Token(
                 name: "Kujira Testnet",
                 symbol: "tKuji",
@@ -519,8 +533,12 @@ class _DefaultAppCoins {
       chainType: ChainType.mainnet,
       hrp: CosmosAddrConst.kujira,
       denom: "ukuji",
+      chainRegisteryName: "kujira",
       feeTokens: [
         CosmosFeeToken(
+            averageGasPrice: BigRational.parseDecimal("0.0051"),
+            highGasPrice: BigRational.parseDecimal("0.00681"),
+            lowGasPrice: BigRational.parseDecimal("0.0034"),
             token: Token(
                 name: "Kujira",
                 symbol: "Kuji",
@@ -547,8 +565,12 @@ class _DefaultAppCoins {
       networkType: CosmosNetworkTypes.main,
       chainType: ChainType.testnet,
       hrp: CosmosConst.osmoHrp,
+      chainRegisteryName: "osmosistestnet",
       feeTokens: [
         CosmosFeeToken(
+            averageGasPrice: BigRational.parseDecimal("0.025"),
+            highGasPrice: BigRational.parseDecimal("0.04"),
+            lowGasPrice: BigRational.parseDecimal("0.0025"),
             token: Token(
               name: "Osmo testnet",
               symbol: "tOsmo",
@@ -572,11 +594,15 @@ class _DefaultAppCoins {
       keysAlgs: [CosmosKeysAlgs.secp256k1]);
   static final CosmosNetworkParams osmosis = CosmosNetworkParams(
       networkType: CosmosNetworkTypes.main,
+      chainRegisteryName: "osmosis",
       chainType: ChainType.mainnet,
       hrp: CosmosConst.osmoHrp,
       denom: "uosmo",
       feeTokens: [
         CosmosFeeToken(
+            averageGasPrice: BigRational.parseDecimal("0.025"),
+            highGasPrice: BigRational.parseDecimal("0.04"),
+            lowGasPrice: BigRational.parseDecimal("0.0025"),
             token: Token(
               name: "Osmosis",
               symbol: "Osmo",
@@ -828,7 +854,7 @@ class _DefaultAppCoins {
           assetLogo: APPConst.stellar),
       providers: const [],
       chainType: ChainType.mainnet,
-      passphrase: StellarNetwork.mainnet.passphrase);
+      stellarChainType: StellarChainType.mainnet);
   static final StellarNetworkParams stellarTestnet = StellarNetworkParams(
       token: Token(
           name: "Stellar testnet",
@@ -839,7 +865,7 @@ class _DefaultAppCoins {
           assetLogo: APPConst.stellar),
       providers: const [],
       chainType: ChainType.testnet,
-      passphrase: StellarNetwork.testnet.passphrase);
+      stellarChainType: StellarChainType.testnet);
 
   static final MoneroNetworkParams moneroTestnet = MoneroNetworkParams(
       token: Token(
@@ -1121,14 +1147,16 @@ class _DefaultAppCoins {
 }
 
 class ChainConst {
-  static int suiMainnetId = 800;
-  static int aptosMainnetId = 810;
-  static int ethereumMainnetId = 100;
-  static int solanaMainnetId = 33;
-  static int stellarMainnetId = 600;
-  static int polkadotMainnetId = 400;
-  static int tonMainnetId = 300;
-  static int tronMainnetId = 1001;
+  // static int suiMainnetId = 800;
+  // static int aptosMainnetId = 810;
+  // static int ethereumMainnetId = 100;
+  // static int solanaMainnetId = 33;
+  // static int stellarMainnetId = 600;
+  // static int polkadotMainnetId = 400;
+  // static int tonMainnetId = 300;
+  // static int tronMainnetId = 1001;
+  // static int cosmosHubMainnetId = 200;
+  // static int bitcoinMainnetId = 0;
 
   static const int importedNetworkStartId = 2000;
   static const int maxAccountTokens = 1000;
@@ -1155,6 +1183,7 @@ class ChainConst {
 
     50: WalletCardanoNetwork(50, _DefaultAppCoins.cardano),
     51: WalletCardanoNetwork(51, _DefaultAppCoins.cardanoPreprod),
+
     100: WalletEthereumNetwork(100, _DefaultAppCoins.ethreumMainnet),
     101: WalletEthereumNetwork(101, _DefaultAppCoins.ethreumTestnet),
     102: WalletEthereumNetwork(102, _DefaultAppCoins.polygon),

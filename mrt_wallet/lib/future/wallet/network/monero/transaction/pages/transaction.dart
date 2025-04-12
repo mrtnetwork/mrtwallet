@@ -54,9 +54,6 @@ class MoneroTransferTransactionView extends StatelessWidget {
                                           child: SwitchOrSelectAccountView(
                                               account: controller.account,
                                               showMultiSig: true),
-                                          minExtent: 0.5,
-                                          maxExtend: 0.9,
-                                          initialExtend: 0.7,
                                           centerContent: false,
                                         )
                                         .then(switchAccount);
@@ -136,7 +133,6 @@ class _SendTransaction extends StatelessWidget {
                           context
                               .openSliverBottomSheet<BigInt>(
                             "setup_output_amount".tr,
-                            initialExtend: 1,
                             child: SetupNetworkAmount(
                               token: controller.network.coinParam.token,
                               max: controller.remindAmount.balance +
@@ -172,16 +168,14 @@ class _SendTransaction extends StatelessWidget {
                 onRemove: () {
                   context
                       .openSliverBottomSheet<
-                              List<ReceiptAddress<MoneroAddress>>>(
-                          "receiver_address".tr,
-                          bodyBuilder: (scrollController) =>
-                              SelectRecipientAccountView<MoneroAddress>(
-                                  account: controller.account,
-                                  scrollController: scrollController,
-                                  multipleSelect: true),
-                          maxExtend: 1,
-                          minExtent: 0.8,
-                          initialExtend: 0.9)
+                          List<ReceiptAddress<MoneroAddress>>>(
+                    "receiver_address".tr,
+                    bodyBuilder: (scrollController) =>
+                        SelectRecipientAccountView<MoneroAddress>(
+                            account: controller.account,
+                            scrollController: scrollController,
+                            multipleSelect: true),
+                  )
                       .then(
                     (value) {
                       controller.onAddRecever(value, (bool multipleintegrated) {
@@ -228,9 +222,6 @@ class _SendTransaction extends StatelessWidget {
                         account: controller.account,
                         showMultiSig: true,
                       ),
-                      minExtent: 0.5,
-                      maxExtend: 0.9,
-                      initialExtend: 0.7,
                       centerContent: false,
                     )
                         .then(

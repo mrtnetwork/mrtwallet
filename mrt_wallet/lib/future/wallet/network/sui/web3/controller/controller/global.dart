@@ -24,10 +24,6 @@ class Web3SuiGlobalRequestController<RESPONSE,
 
   SuiWeb3Form<T> _init() {
     switch (request.params.method) {
-      case Web3SuiRequestMethods.requestAccounts:
-        final chains = walletProvider.wallet.getChains<SuiChain>();
-        return SuiRequestAccountForm(request: request, chains: chains)
-            as SuiWeb3Form<T>;
       case Web3SuiRequestMethods.signMessage:
       case Web3SuiRequestMethods.signPersonalMessage:
         return Web3SuiSignMessageForm(
@@ -35,16 +31,6 @@ class Web3SuiGlobalRequestController<RESPONSE,
                     as Web3SuiRequest<Map<String, dynamic>, Web3SuiSignMessage>)
             as SuiWeb3Form<T>;
 
-      case Web3SuiRequestMethods.switchNetwork:
-        final switchChainRequest = request.params as Web3SuiSwitchChain;
-        final suiChains = walletProvider.wallet.getChains<SuiChain>();
-        final chain = suiChains.firstWhereOrNull((e) =>
-            e.network.coinParam.suiChain == switchChainRequest.chainType);
-        if (chain == null) {
-          throw Web3SuiExceptionConstant.suiNetworkDoesNotExist;
-        }
-        return Web3SuiSwitchSuiChain(request: request, newChain: chain)
-            as SuiWeb3Form<T>;
       default:
         throw Web3RequestExceptionConst.internalError;
     }
@@ -110,13 +96,6 @@ class Web3SuiGlobalRequestController<RESPONSE,
       case Web3SuiRequestMethods.requestAccounts:
         final web3Chain = result as Web3SuiChain;
         request.authenticated.updateChainAccount(web3Chain);
-        break;
-      case Web3SuiRequestMethods.switchNetwork:
-        final network = (form as Web3SuiSwitchSuiChain).newChain;
-        final Web3SuiChain? permission = request.currentPermission;
-        permission?.setActiveChain(network.network);
-        request.authenticated.updateChainAccount(permission!);
-        result = true;
         break;
       case Web3SuiRequestMethods.signMessage:
       case Web3SuiRequestMethods.signPersonalMessage:

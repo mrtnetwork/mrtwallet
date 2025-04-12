@@ -103,4 +103,9 @@ class BitcoinElectrumClient extends BitcoinClient<IBitcoinAddress> {
   Future<String> genesis() async {
     return genesisHash();
   }
+
+  @override
+  Future<BtcTransaction> getTx(String txId) async {
+    return await provider.request(ElectrumRequestGetRawTransaction(txId));
+  }
 }

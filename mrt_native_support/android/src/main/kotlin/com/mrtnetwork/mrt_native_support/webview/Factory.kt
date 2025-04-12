@@ -52,6 +52,10 @@ class WebViewFactory(private val view: WebViewPlatformView) :
         view.reload()
     }
 
+    fun clearCache() {
+        view.clearCache()
+    }
+
 }
 
 
@@ -84,7 +88,6 @@ class WebViewHandlers() {
             if(jsInterface!= null){
                 platformView.addMrtJsInterface( jsInterface)
             }
-            MrtCore.logging("addjs interface:${jsInterface} ")
             webViewFactories[id] = webViewFactory
             return true
         }

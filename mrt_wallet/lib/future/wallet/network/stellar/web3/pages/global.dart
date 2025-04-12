@@ -4,7 +4,6 @@ import 'package:mrt_wallet/future/wallet/network/forms/stellar/stellar.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/web3/controller/controller/global.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
-import 'fields/request_account.dart';
 import 'fields/sign_message.dart';
 
 class StellarWeb3GlobalFieldsView<RESPONSE,
@@ -16,7 +15,7 @@ class StellarWeb3GlobalFieldsView<RESPONSE,
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3StellarGlobalRequestController<RESPONSE, T>(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
@@ -36,9 +35,6 @@ class _GlobalFieldsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (form.request.params.method) {
-      case Web3StellarRequestMethods.requestAccounts:
-        return StellarWeb3RequestAccountsView(
-            controller: controller, field: form as StellarRequestAccountForm);
       case Web3StellarRequestMethods.signMessage:
         return StellarWeb3SignMessageRequestView(
             request:

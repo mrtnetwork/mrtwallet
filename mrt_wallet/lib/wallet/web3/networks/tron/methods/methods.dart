@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/constant/constant.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/constant/constants/constant.dart';
 
-class Web3TronRequestMethods extends Web3RequestMethods {
+class Web3TronRequestMethods extends Web3NetworkRequestMethods {
   const Web3TronRequestMethods._({
     required super.id,
     required super.name,

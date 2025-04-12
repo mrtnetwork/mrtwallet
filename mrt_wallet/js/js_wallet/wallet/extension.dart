@@ -87,6 +87,14 @@ class JSExtentionWallet extends JSWalletHandler {
     }
   }
 
+  Future<RuntimePort?> _getPort() async {
+    return _portLock.synchronized(() async {
+      final RuntimePort? port = await _pingPort(_port);
+      if (port != null) return port;
+      return null;
+    });
+  }
+
   Future<RuntimePort> _openPort() async {
     return _portLock.synchronized(() async {
       final RuntimePort? port = await _pingPort(_port);
@@ -96,7 +104,7 @@ class JSExtentionWallet extends JSWalletHandler {
       final newPort = await _pingPort(extension.runtime
           .connect(extension.runtime.id, ConnectConnectionInf(name: clientId)));
       if (newPort == null) {
-        throw UnimplementedError();
+        throw UnimplementedError('port not found');
       }
       _port = newPort;
       _port!.onDisconnect.addListener(_onExtentionPortDiscounect.toJS);
@@ -126,19 +134,14 @@ class JSExtentionWallet extends JSWalletHandler {
         return true;
       }
 
-      final result = extension.runtime.sendMessage_(message: message);
-      result.then((e) {
-        completer.complete(e);
-      });
-      result.catchError((e) {
+      try {
+        return (await extension.runtime.sendMessage_(message: message))!;
+      } catch (e) {
         _OnBackgroundListener = onMessage.toJS;
         extension.runtime.onMessage.addListener(_OnBackgroundListener);
         hasListener = true;
-        return null;
-      });
-      return await completer.future;
-    } catch (e) {
-      rethrow;
+        return await completer.future;
+      }
     } finally {
       if (hasListener) {
         extension.runtime.onMessage.removeListener(_OnBackgroundListener);
@@ -146,28 +149,18 @@ class JSExtentionWallet extends JSWalletHandler {
     }
   }
 
-  @override
-  Future<void> _sendDisconnect({
-    required Web3MessageCore message,
-    required String requestId,
-    required NetworkType network,
-  }) async {
-    final event = WalletEvent(
-        clientId: clientId,
-        data: network.tag,
-        requestId: requestId,
-        type: WalletEventTypes.background);
-    final r = await sendBackgroudMessage(event);
-    _onResponse(r);
-  }
-
   Future<void> _sendMessageToExtention(
       {required WalletEvent message, required String requestId}) async {
-    final openWallet = await sendBackgroudMessage(JSWalletConstant.openEvent);
-    if (openWallet.type != WalletEventTypes.popup) {
-      throw Exception("Open popup failed");
+    RuntimePort? port = await _getPort();
+    if (port == null) {
+      final openWallet = await sendBackgroudMessage(JSWalletConstant.openEvent)
+          .timeout(const Duration(seconds: 5))
+          .catchError((e) => throw Web3RequestExceptionConst.internalError);
+      if (openWallet.type != WalletEventTypes.popup) {
+        throw Exception("Open popup failed");
+      }
     }
-    final port = await _openPort();
+    port ??= await _openPort();
     void onDisconnect(RuntimePort port) {
       completer.complete(
           response: Web3RequestExceptionConst.rejectedByUser
@@ -187,7 +180,19 @@ class JSExtentionWallet extends JSWalletHandler {
 
   @override
   Future<void> _sendMessageToWallet(
-      {required Web3MessageCore message, required String requestId}) async {
+      {required Web3WalletRequestParams message,
+      required String requestId}) async {
+    if (message.method == Web3GlobalRequestMethods.disconnect) {
+      final globalMessage = message.cast<Web3DisconnectApplication>();
+      final event = WalletEvent(
+          clientId: clientId,
+          data: globalMessage.chain.tag,
+          requestId: requestId,
+          type: WalletEventTypes.background);
+      final r = await sendBackgroudMessage(event);
+      _onResponse(r);
+      return;
+    }
     final encryptedMessage = _encryptMessage(message);
     final event = WalletEvent(
         clientId: clientId,

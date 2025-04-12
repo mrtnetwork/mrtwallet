@@ -51,9 +51,6 @@ class EthereumTransactionFieldsView extends StatelessWidget {
                                             account: controller.account,
                                             showMultiSig: true,
                                           ),
-                                          minExtent: 0.5,
-                                          maxExtend: 0.9,
-                                          initialExtend: 0.7,
                                           centerContent: false,
                                         )
                                         .then(switchAccount);
@@ -198,9 +195,6 @@ class _ETHTransactionTransferFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<ETHAddress>>(
                     "recipient".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (c) => SelectRecipientAccountView<ETHAddress>(
                         account: account, scrollController: c))
                 .then(
@@ -219,7 +213,6 @@ class _ETHTransactionTransferFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
               "setup_output_amount".tr,
-              initialExtend: 1,
               child: SetupNetworkAmount(
                 token: field.token,
                 max: field.erc20Token?.balance.value.balance ??

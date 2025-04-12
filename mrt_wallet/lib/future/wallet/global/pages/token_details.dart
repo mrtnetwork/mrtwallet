@@ -45,7 +45,8 @@ class TokenDetailsModalView<NETWORKADDRESS, TOKEN extends TokenCore,
                       .openSliverBottomSheet<bool>("update_token".tr,
                           bodyBuilder: (scrollController) =>
                               UpdateTokenDetailsView(
-                                  token: token,
+                                  token: token.token,
+                                  accountToken: token,
                                   account: account,
                                   address: address,
                                   scrollController: scrollController),

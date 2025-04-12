@@ -86,22 +86,10 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
             itemCount: widget.fees.length),
         WidgetConstant.divider,
         Column(children: [
-          AppRadioListTile(
-            value: null,
-            groupValue: type,
-            title: Text("custom_fee".tr),
-            subtitle: type == null
-                ? CoinPriceView(
-                    disableTooltip: true,
-                    balance: feeRate,
-                    token: widget.network.coinParam.token,
-                    style: context.textTheme.titleLarge,
-                  )
-                : null,
-            onChanged: (value) {
+          AppListTile(
+            onTap: () {
               context
                   .openSliverBottomSheet<BigInt>("setup_custom_fee".tr,
-                      initialExtend: 1,
                       child: SetupNetworkAmount(
                         token: widget.network.coinParam.token,
                         max: widget.max,
@@ -115,6 +103,16 @@ class _SetupTransactionFeeState extends State<SetupTransactionFee>
                 onChange(null, customPrice: value);
               });
             },
+            title: Text("custom_fee".tr),
+            leading: Radio(value: null, groupValue: type, onChanged: (_) {}),
+            subtitle: type == null
+                ? CoinPriceView(
+                    disableTooltip: true,
+                    balance: feeRate,
+                    token: widget.network.coinParam.token,
+                    style: context.textTheme.titleMedium,
+                  )
+                : null,
           ),
         ]),
         WidgetConstant.height40

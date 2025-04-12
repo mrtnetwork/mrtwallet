@@ -8,6 +8,7 @@ import 'package:mrt_wallet/wallet/models/backup/backup.dart';
 import 'package:mrt_wallet/wallet/models/chain/address/address.dart';
 import 'package:mrt_wallet/wallet/models/contact/contact.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
+import 'package:mrt_wallet/wallet/models/networks/cosmos/cosmos.dart';
 import 'package:mrt_wallet/wallet/models/networks/monero/models/account_related.dart';
 import 'package:mrt_wallet/wallet/models/nfts/core/core.dart';
 import 'package:mrt_wallet/wallet/models/nfts/networks/ripple.dart';
@@ -44,8 +45,9 @@ part 'neworks/aptos.dart';
 part 'neworks/sui.dart';
 part 'types/types.dart';
 part 'types/monero.dart';
-
+part 'types/cosmos.dart';
 part 'controllers/base.dart';
 part 'controllers/monero.dart';
 
 part 'repository/monero.dart';
+part 'repository/cosmos.dart';

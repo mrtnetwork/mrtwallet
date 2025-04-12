@@ -24,16 +24,12 @@ abstract class CosmosTransactiomImpl extends StateController {
       IntegerBalance.zero(network.coinParam.decimal);
 
   BaseAccount get ownerAccount;
-  GetLatestBlockResponse get latestBlock;
   CosmosTransactionFeeInfo? get fee;
   String? get memo;
   bool get isThorChain =>
       network.coinParam.networkType == CosmosNetworkTypes.thorAndForked;
   Token get feeToken;
   List<CW20Token> get feeTokens;
-  bool get useNativeTokenAsFee => network.coinParam.useNativeTokenAsFee;
 
   void onCalculateAmount();
-
-  // 8050
 }

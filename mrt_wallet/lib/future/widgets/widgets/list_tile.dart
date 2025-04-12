@@ -175,6 +175,9 @@ class APPExpansionListTile extends StatelessWidget {
       this.children = const <Widget>[],
       this.tilePadding,
       this.onExpansionChanged,
+      this.color,
+      this.reverse,
+      this.initiallyExpanded = false,
       super.key});
   final Widget title;
   final Widget? subtitle;
@@ -182,6 +185,9 @@ class APPExpansionListTile extends StatelessWidget {
   final List<Widget> children;
   final EdgeInsetsGeometry? tilePadding;
   final BoolVoid? onExpansionChanged;
+  final Color? color;
+  final Color? reverse;
+  final bool initiallyExpanded;
   @override
   Widget build(BuildContext context) {
     return ExpansionTile(
@@ -193,6 +199,7 @@ class APPExpansionListTile extends StatelessWidget {
         tilePadding: tilePadding,
         collapsedIconColor: context.onPrimaryContainer,
         iconColor: context.onPrimaryContainer,
+        initiallyExpanded: initiallyExpanded,
         title: title,
         subtitle: subtitle,
         trailing: trailing,

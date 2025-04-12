@@ -1,109 +1,179 @@
 part of '../scripts.dart';
 
-class EthereumPageController extends PageNetworkController {
-  int _requestId = 0;
-  ProxyMethodHandler<EIP1193>? _ethereum;
-
+class EthereumPageController extends WalletStandardPageController {
+  EIP1193? _ethereum;
   EthereumPageController(super.postMessage);
 
-  ProxyMethodHandler<EIP1193> _setupEIP() {
-    final eip = EIP1193.setup(
+  final Map<JSEventType, List<JSFunction>> _eipListeners = {
+    JSEventType.accountsChanged: [],
+    JSEventType.chainChanged: [],
+    JSEventType.connect: [],
+    JSEventType.message: [],
+    JSEventType.disconnect: [],
+  };
+
+  EIP1193 _createEIP1193() {
+    return EIP1193.setup(
+        enable: _connectEip.toJS,
         request: _onRequest.toJS,
-        on: _addListener.toJS,
-        removeListener: _removeListener.toJS,
-        disconnect: _disconnectChain.toJS,
-        enable: _enable.toJS,
-        cancelAllListener: _cancelAllListeners.toJS,
-        onWalletRequest: _postWalletRequest.toJS);
-    return ProxyMethodHandler(eip);
+        on: _addEIPListener.toJS,
+        removeListener: _removeEIPListener.toJS,
+        disconnect: _disconnectChain.toJS);
+  }
+
+  JSPromise<JSAny?> _onRequest(EthereumRequestParams params) {
+    return waitForSuccessResponsePromise<JSAny?>(
+        method: params.method,
+        params: params.params,
+        provider: PageRequestType.eip1993);
   }
 
   void _initController() {
-    _ethereum ??= _setupEIP();
-    final proxy = Proxy(_ethereum!.object, createJSInteropWrapper(_ethereum!));
+    _ethereum ??= _createEIP1193();
+    final proxy = _ethereum?.toProxy();
     ethereum = proxy;
-    EIP6963ProviderDetail.setup(proxy);
+    EIP6963.setup(proxy);
   }
 
-  void _disable({String? message}) {
-    ethereum = null;
+  JSPromise<JSArray<JSString>> _connectEip() {
+    return waitForSuccessResponsePromise<JSArray<JSString>>(
+        method: JSEthereumConst.requestAccounts,
+        provider: PageRequestType.eip1993);
   }
 
-  void onEvent(WalletMessageEvent message) {
-    JSAny? eventData = message.data;
-    switch (message.eventType) {
-      case JSEventType.connect:
-        final connectionInfo = ProviderConnectInfo.fromJson(message.asMap());
-        eventData = connectionInfo.toJSEvent;
-        _ethereum?.object.chainId = connectionInfo.chainId;
-        _ethereum?.object.networkVersion = connectionInfo.netVersion.toString();
-        break;
-      case JSEventType.chainChanged:
-        final connectionInfo = ProviderConnectInfo.fromJson(message.asMap());
-        eventData = connectionInfo.chainId.jsify();
-        _ethereum?.object.chainId = connectionInfo.chainId;
-        _ethereum?.object.networkVersion = connectionInfo.netVersion.toString();
-        break;
-      case JSEventType.disconnect:
-        _ethereum?.object.chainId = null;
-        _ethereum?.object.networkVersion = null;
-        _ethereum?.object.selectedAddress = null;
-        break;
-      case JSEventType.accountsChanged:
-        final changeInfo = EthereumAccountsChanged.fromJson(message.asMap());
+  JSPromise<JSEthereumWalletStandardConnect> _connect() {
+    return waitForSuccessResponsePromise<JSEthereumWalletStandardConnect>(
+        method: JSEthereumConst.requestAccounts);
+  }
 
-        eventData = changeInfo.toJSEvent;
-        _ethereum?.object.selectedAddress = changeInfo.defaultAddress?.toJS;
-        break;
-      case JSEventType.disable:
-        _disable(message: message.asString());
-        break;
-      case JSEventType.active:
-        _initController();
-        break;
-      default:
+  JSPromise<JSString> _addNewChain(JSEthereumAddNewChainParams params) {
+    return waitForSuccessResponsePromise<JSString>(
+      method: JSEthereumConst.addChain,
+      params: [params].toJS,
+    );
+  }
+
+  JSPromise<JSEthereumSignatureResponse> _signTypesData(
+      JSEthereumSignTypedDataParams params) {
+    return waitForSuccessResponsePromise<JSEthereumSignatureResponse>(
+      method: JSEthereumConst.typedData,
+      params: [params].toJS,
+    );
+  }
+
+  JSPromise<JSEthereumSignatureResponse> _signTypesDataV3(
+      JSEthereumSignTypedDataParams params) {
+    return waitForSuccessResponsePromise<JSEthereumSignatureResponse>(
+      method: JSEthereumConst.typedDataV3,
+      params: [params].toJS,
+    );
+  }
+
+  JSPromise<JSEthereumSignatureResponse> _signTypesDataV4(
+      JSEthereumSignTypedDataParams params) {
+    return waitForSuccessResponsePromise<JSEthereumSignatureResponse>(
+      method: JSEthereumConst.typedDataV4,
+      params: [params].toJS,
+    );
+  }
+
+  JSPromise<JSEthereumSignatureResponse> _personalSign(
+      JSEthereumSignMessageParams params) {
+    return waitForSuccessResponsePromise<JSEthereumSignatureResponse>(
+        method: JSEthereumConst.personalSign, params: [params].toJS);
+  }
+
+  JSPromise<JSEthereumSendTransactionResponse> _sendTransaction(
+      JSEthereumWalletStandardTransactionParams params) {
+    return waitForSuccessResponsePromise<JSEthereumSendTransactionResponse>(
+        method: JSEthereumConst.sendTransaction, params: [params].toJS);
+  }
+
+  @override
+  void _initNetworkFeatures(JSWalletStandardFeature feature) {
+    _initController();
+    feature.ethereumConnect =
+        EthereumWalletAdapterConnectFeature.setup(connect: _connect.toJS);
+    feature.ethereumAddNewChain = EthereumWalletAdapterAddNewChainFeature.setup(
+        addNewChain: _addNewChain.toJS);
+    feature.ethereumsignTypedData =
+        EthereumWalletAdapterSignTypedDataFeature.setup(
+            signTypedData: _signTypesData.toJS);
+    feature.ethereumsignTypedDataV3 =
+        EthereumWalletAdapterSignTypedDataV3Feature.setup(
+            signTypedDataV3: _signTypesDataV3.toJS);
+    feature.ethereumsignTypedDataV4 =
+        EthereumWalletAdapterSignTypedDataV4Feature.setup(
+            signTypedDataV4: _signTypesDataV4.toJS);
+    feature.ethereumPersonalSign =
+        EthereumWalletAdapterPersonalSignFeature.setup(
+            personalSign: _personalSign.toJS);
+    feature.ethereumSendTransaction =
+        EthereumWalletAdapterSendTransactionFeature.setup(
+            sendTransaction: _sendTransaction.toJS);
+    feature.ethereumRequest =
+        EthereumWalletAdapteRequestFeature.setup(request: _onRequest.toJS);
+    feature.ethereumEvents =
+        JSWalletStandardEventsFeature.setup(on: _onEvents.toJS);
+  }
+
+  @override
+  void onWalletEvent(WalletMessageEvent message) {
+    super.onWalletEvent(message);
+    final data = message.data as JSWalletNetworkEvent;
+    final events = data.eventTypes;
+    for (final event in events) {
+      switch (event) {
+        case JSNetworkEventType.defaultAccountChanged:
+          _ethereum?.selectedAddress = data.account?.address;
+          break;
+        case JSNetworkEventType.message:
+          _eventEIPListeners(JSEventType.message, jsObject: data.message);
+          break;
+        case JSNetworkEventType.networkAccountsChanged:
+          _eventEIPListeners(JSEventType.accountsChanged,
+              jsObject: data.networkAccounts?.jsAddresses);
+          break;
+        case JSNetworkEventType.defaultChainChanged:
+          final chainChanged = data.chainChanged as JSEthereumEIPChainChanged?;
+          _ethereum?.chainId = chainChanged?.chainId;
+          _ethereum?.networkVersion = chainChanged?.netVersion;
+          if (data.disconnect != null) {
+            _eventEIPListeners(JSEventType.disconnect,
+                jsObject: data.disconnect);
+          }
+          if (chainChanged != null) {
+            if (data.disconnect == null) {
+              _eventEIPListeners(JSEventType.connect, jsObject: chainChanged);
+            }
+            _eventEIPListeners(JSEventType.chainChanged,
+                jsObject: chainChanged.chainId.toJS);
+          }
+
+          break;
+        default:
+      }
     }
-    _eventListeners(message.eventType, jsObject: eventData);
   }
 
-  void _eventListeners(JSEventType type, {JSAny? jsObject}) {
-    if (jsObject == null || !_listeners.containsKey(type)) return;
-    final listeners = <JSFunction>[..._listeners[type]!];
+  void _eventEIPListeners(JSEventType type, {JSAny? jsObject}) {
+    if (jsObject == null || !_eipListeners.containsKey(type)) return;
+    final listeners = <JSFunction>[..._eipListeners[type]!];
     for (final i in listeners) {
       i.callAsFunction(null, jsObject);
     }
   }
 
-  void _addListener(String type, JSFunction listener) {
+  void _addEIPListener(String type, JSFunction listener) {
     final event = JSEventType.fromName(type);
     if (event == null) return;
-    _listeners[event]?.add(listener);
+    _eipListeners[event]?.add(listener);
     _emitEvent(PageMessageEvent.build(event: event));
   }
 
-  void _cancelAllListeners() {
-    for (final i in _listeners.keys.toList()) {
-      _listeners[i]!.clear();
-    }
-  }
-
-  void _removeListener(String type, JSFunction listener) {
+  void _removeEIPListener(String type, JSFunction listener) {
     final event = JSEventType.fromName(type);
-    _listeners[event]?.remove(listener);
-  }
-
-  JSPromise<JSAny?> _enable() {
-    final params = EthereumRequestParams(method: "eth_requestAccounts");
-    return _onRequest(params);
-  }
-
-  JSPromise<JSAny?> _onRequest(EthereumRequestParams params) {
-    final message = PageMessageRequest.create(
-        method: params.method,
-        params: params.params,
-        id: (_requestId++).toString());
-    final promise = _postNetworkRequestMessage(message).toPromise;
-    return promise;
+    _eipListeners[event]?.remove(listener);
   }
 
   @override

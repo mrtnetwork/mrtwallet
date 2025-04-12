@@ -18,11 +18,12 @@ abstract class SolanaTransactionForm extends TransactionForm {
   SolanaTransactionType get mode;
   SolanaChain? _account;
   ISolanaAddress? _address;
+  SolanaChain get account => _account!;
+  ISolanaAddress get address => _address!;
   DynamicVoid? onStimateChanged;
   SolanaClient? _apiProvider;
   SolanaClient? get provider => _apiProvider;
-  SolanaChain get account => _account!;
-  ISolanaAddress get address => _address!;
+
   @override
   String? validateError({ISolanaAddress? account});
 
@@ -55,5 +56,16 @@ abstract class SolanaWeb3Form<PARAMS extends Web3SolanaRequestParam>
 
   void confirmRequest({Object? response}) {
     onCompleteForm?.call(response);
+  }
+
+  SolanaChain? _account;
+  ISolanaAddress? _address;
+  SolanaChain get account => _account!;
+  ISolanaAddress get address => _address!;
+
+  Future<void> initForm(
+      {required SolanaChain account, ISolanaAddress? address}) async {
+    _account = account;
+    _address = address;
   }
 }

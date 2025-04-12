@@ -120,15 +120,15 @@ class WalletBitcoinNetwork extends WalletNetwork<BitcoinParams> {
   final int value;
   @override
   final BitcoinParams coinParam;
+  @override
+  bool get supportWeb3 => true;
 
   factory WalletBitcoinNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
     final CborListValue cbor = CborSerializable.decodeCborTags(
         bytes, obj, CborTagsConst.bitconNetwork);
-    return WalletBitcoinNetwork(
-      cbor.elementAt(0),
-      BitcoinParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)),
-    );
+    return WalletBitcoinNetwork(cbor.elementAt(0),
+        BitcoinParams.fromCborBytesOrObject(obj: cbor.getCborTag(1)));
   }
 
   const WalletBitcoinNetwork(this.value, this.coinParam);
@@ -511,6 +511,8 @@ class WalletCosmosNetwork extends WalletNetwork<CosmosNetworkParams> {
   final int value;
   @override
   final CosmosNetworkParams coinParam;
+  @override
+  bool get supportWeb3 => true;
   const WalletCosmosNetwork(this.value, this.coinParam);
   factory WalletCosmosNetwork.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {
@@ -824,7 +826,7 @@ class WalletAptosNetwork extends WalletNetwork<AptosNetworkParams> {
   @override
   NetworkType get type => NetworkType.aptos;
   @override
-  Object get identifier => coinParam.aptosChainType.chainId;
+  Object get identifier => coinParam.aptosChainType;
 }
 
 class WalletSuiNetwork extends WalletNetwork<SuiNetworkParams> {

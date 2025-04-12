@@ -277,6 +277,7 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
             indent: '  ', toStringEncodable: true),
         type: type,
         operations: baseOperation,
+        envelope: envlope,
         soroban: soroban);
   }
 
@@ -308,7 +309,8 @@ class StellarClient extends NetworkClient<IStellarAddress, StellarAPIProvider> {
   @override
   Future<bool> onInit() async {
     final result = await MethodUtils.call(() async => await passphrase());
-    return result.hasResult && result.result == network.coinParam.passphrase;
+    return result.hasResult &&
+        result.result == network.coinParam.stellarChainType.passphrase;
   }
 
   @override

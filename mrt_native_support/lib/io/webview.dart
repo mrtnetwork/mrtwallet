@@ -19,14 +19,19 @@ class _WebViewConst {
   static const String createWebView = "createWebView";
   static const String addInterface = "addJsInterface";
   static const String removeInterface = "removeInterface";
+  static const String clearCache = "clearCache";
 }
 
 class WebViewIoInterface implements PlatformWebView {
   final Map<String?, WebViewListener> _listeners = {};
 
   Future<void> _methodCallHandler(Map<String, dynamic> args) async {
-    if (args['type'] == "log") {
-      print('console: \x1B[33m${args['data']}\x1B[0m');
+    if (args['type'] == "log" && Platform.isMacOS) {
+      String message = (args['data'] as String)
+          .replaceFirst(r'"\u001b[33m', '')
+          .replaceFirst(r'\u001b[0m"', "");
+      print('console: \x1B[38;5;33m$message\x1B[0m');
+
       return;
     }
     if (args["eventName"] == null) return;
@@ -63,28 +68,32 @@ class WebViewIoInterface implements PlatformWebView {
     required String viewType,
     Map<String, dynamic> args = const {},
   }) async {
-    final result =
-        await IoPlatformInterface._channel.invokeMethod(_WebViewConst.webView, {
-      "type": type,
-      "id": viewType,
-      ...args,
-    });
+    final result = await IoPlatformInterface._channel.invokeMethod(
+      _WebViewConst.webView,
+      {"type": type, "id": viewType, ...args},
+    );
     return result;
   }
 
   @override
-  Future<Object?> loadScript(
-      {required String viewType, required String script}) {
+  Future<Object?> loadScript({
+    required String viewType,
+    required String script,
+  }) {
     return _call(
-        type: _WebViewConst.injectJavaScript,
-        viewType: viewType,
-        args: {"script": script});
+      type: _WebViewConst.injectJavaScript,
+      viewType: viewType,
+      args: {"script": script},
+    );
   }
 
   @override
   Future<void> openUrl({required String viewType, required String url}) {
     return _call(
-        type: _WebViewConst.openPage, viewType: viewType, args: {"url": url});
+      type: _WebViewConst.openPage,
+      viewType: viewType,
+      args: {"url": url},
+    );
   }
 
   @override
@@ -126,43 +135,63 @@ class WebViewIoInterface implements PlatformWebView {
   }
 
   @override
-  Future<void> init(String viewType,
-      {String url = "https://google.com", String? jsInterface}) async {
+  Future<void> init(
+    String viewType, {
+    String url = "https://google.com",
+    String? jsInterface,
+  }) async {
     await _call(
-        viewType: viewType,
-        type: _WebViewConst.createWebView,
-        args: {"url": url, "jsInterface": jsInterface});
+      viewType: viewType,
+      type: _WebViewConst.createWebView,
+      args: {"url": url, "jsInterface": jsInterface},
+    );
   }
 
   @override
-  Future<void> addJsInterface(
-      {required String viewType, required String name}) async {
+  Future<void> addJsInterface({
+    required String viewType,
+    required String name,
+  }) async {
     await _call(
-        viewType: viewType,
-        type: _WebViewConst.addInterface,
-        args: {"name": name});
+      viewType: viewType,
+      type: _WebViewConst.addInterface,
+      args: {"name": name},
+    );
   }
 
   @override
-  Future<void> removeJsInterface(
-      {required String viewType, required String name}) async {
+  Future<void> removeJsInterface({
+    required String viewType,
+    required String name,
+  }) async {
     await _call(
-        viewType: viewType,
-        type: _WebViewConst.removeInterface,
-        args: {"name": name});
+      viewType: viewType,
+      type: _WebViewConst.removeInterface,
+      args: {"name": name},
+    );
   }
 
   @override
-  Future<void> updateFrame(
-      {required String viewType, required WidgetSize size}) async {
+  Future<void> updateFrame({
+    required String viewType,
+    required WidgetSize size,
+  }) async {
     await _call(
-        viewType: viewType,
-        type: _WebViewConst.updateFrame,
-        args: {"width": size.width, "height": size.height});
+      viewType: viewType,
+      type: _WebViewConst.updateFrame,
+      args: {"width": size.width, "height": size.height},
+    );
   }
 
   @override
   Future<void> dispose(String viewType) async {
     await _call(viewType: viewType, type: _WebViewConst.dispose);
+  }
+
+  @override
+  Future<void> clearCache(String viewType) async {
+    // assert(!Platform.isMacOS, "clearCache not implements");
+    if (Platform.isMacOS) return;
+    await _call(viewType: viewType, type: _WebViewConst.clearCache);
   }
 }

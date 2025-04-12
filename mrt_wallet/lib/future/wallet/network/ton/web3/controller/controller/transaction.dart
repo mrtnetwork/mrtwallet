@@ -30,6 +30,8 @@ class Web3TonTransactionRequestController
   late final IntegerBalance remindAmount =
       IntegerBalance.zero(network.coinParam.decimal);
 
+  bool get isExcute => request.params.isExcute;
+
   @override
   Future<void> initWeb3() async {
     progressKey.process(text: "transaction_retrieval_requirment".tr);
@@ -58,11 +60,15 @@ class Web3TonTransactionRequestController
   }
 
   Future<void> sendTransaction() async {
-    progressKey.process(
-        text: "create_send_transaction"
-            .tr
-            .replaceOne(network.coinParam.token.name));
-
+    // final isExcute = request.params.isExcute;
+    if (isExcute) {
+      progressKey.process(
+          text: "create_send_transaction"
+              .tr
+              .replaceOne(network.coinParam.token.name));
+    } else {
+      progressKey.process(text: "signing_transaction_please_wait".tr);
+    }
     final externalMessage = await MethodUtils.call(() async {
       final messageBody = await form.createMessageBody();
       final signature = await walletProvider.wallet.signTransaction(
@@ -88,6 +94,13 @@ class Web3TonTransactionRequestController
       progressKey.error(error: externalMessage.exception, showBackButton: true);
       return;
     }
+    if (!isExcute) {
+      final response = Web3TonSendTransactionResponse(
+          message: externalMessage.result.toBase64());
+      request.completeResponse(response);
+      progressKey.response(text: 'transaction_signed'.tr);
+      return;
+    }
     final result = await MethodUtils.call(
         () async => await apiProvider.sendMessage(boc: externalMessage.result));
     if (result.hasError) {
@@ -97,7 +110,7 @@ class Web3TonTransactionRequestController
     }
     final String txHash = result.result.$1;
     final response = Web3TonSendTransactionResponse(
-        boc: externalMessage.result.toBase64(), txHash: txHash);
+        message: externalMessage.result.toBase64(), txHash: txHash);
     request.completeResponse(response);
     progressKey.responseTx(hash: txHash, network: network);
   }

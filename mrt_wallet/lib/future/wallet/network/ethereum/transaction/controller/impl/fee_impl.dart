@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/transaction_impl.dart';
+import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/crypto/utils/ethereum/utils.dart';
 import 'package:on_chain/on_chain.dart';
-import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 
 enum EIP1559FeeSpeed {
   slow("slow"),
@@ -16,7 +15,9 @@ enum EIP1559FeeSpeed {
   const EIP1559FeeSpeed(this.value);
 }
 
-mixin ETHTransactionFeeImpl on EthTransactionImpl {
+mixin ETHTransactionFeeImpl on StateController {
+  WalletEthereumNetwork get network;
+  EthereumClient get apiProvider;
   EthereumInitFee? _initFee;
   EthereumInitFee? get initFee => null;
   StreamSubscription<(BigInt?, FeeHistorical?)>? _perdiocFetch;

@@ -1,3 +1,4 @@
+import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/fee_impl.dart';
@@ -78,13 +79,20 @@ class Web3EthereumTransactionRequestController
 
   Map<String, dynamic> _toEstimateData() {
     final transaction = ETHTransaction(
-        type: ETHTransactionType.eip1559,
+        type: transactionInfos.type,
         from: address.networkAddress,
         to: request.params.to,
         nonce: 0,
         gasLimit: BigInt.one,
         data: request.params.data,
         value: BigInt.zero,
+        accessList: request.params.accessList
+            ?.map((e) => AccessListEntry(
+                address: e.address.address,
+                storageKeys: e.storageKeys
+                    .map((e) => BytesUtils.toHexString(e))
+                    .toList()))
+            .toList(),
         chainId: network.coinParam.chainId);
     return transaction.toEstimate();
   }
@@ -94,7 +102,7 @@ class Web3EthereumTransactionRequestController
     await super.estimateGasLimit(estimateDetails: _toEstimateData());
   }
 
-  void sedTransaction(ONInsufficientBalance onInsufficientBalance) async {
+  void sendTransaction(ONInsufficientBalance onInsufficientBalance) async {
     try {
       if (_insufficientBalance) {
         final accept = await onInsufficientBalance();
@@ -103,14 +111,18 @@ class Web3EthereumTransactionRequestController
       final fee = currentEIP1559Fee?.clone();
       if (fee == null || !trIsReady) return;
       final ETHTransaction transaction = ETHTransaction(
-          type: request.params.transactionType ??
-              (fee.isEIP1559
-                  ? ETHTransactionType.eip1559
-                  : ETHTransactionType.legacy),
+          type: transactionInfos.type,
           from: address.networkAddress,
           chainId: network.coinParam.chainId,
           data: request.params.data,
           nonce: 0,
+          accessList: request.params.accessList
+              ?.map((e) => AccessListEntry(
+                  address: e.address.address,
+                  storageKeys: e.storageKeys
+                      .map((e) => BytesUtils.toHexString(e))
+                      .toList()))
+              .toList(),
           gasPrice: fee.gasPrice,
           maxFeePerGas: fee.maxFeePerGas,
           maxPriorityFeePerGas: fee.maxPriorityFeePerGas,
@@ -155,19 +167,19 @@ class Web3EthereumTransactionRequestController
     final result = await MethodUtils.call(() async =>
         await apiProvider.getWeb3TransactionInfos(
             from: address, transaction: request.params, chain: account));
+
     if (result.hasError) {
       progressKey.errorResponse(error: result.exception);
     } else {
+      _transactionInfos = result.result;
       try {
         await apiProvider.estimateGasLimit(_toEstimateData());
       } catch (e) {
         progressKey.errorResponse(error: e);
         final error = Web3RequestExceptionConst.fromException(e);
         request.error(error);
-
         return;
       }
-      _transactionInfos = result.result;
       startGasListening();
       _init();
       progressKey.idle();

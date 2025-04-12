@@ -107,7 +107,6 @@ class _ChangeTrustOperationViewState extends State<ChangeTrustOperationView>
                                   .openSliverBottomSheet<
                                           StellarPickedIssueAsset>(
                                       "pick_an_asset".tr,
-                                      initialExtend: 1,
                                       child: StellarPickAssetView(chain: chain))
                                   .then(pickAssets);
                             },
@@ -157,7 +156,6 @@ class _ChangeTrustLimit extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "limit".tr,
-                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: state.asset!.token,

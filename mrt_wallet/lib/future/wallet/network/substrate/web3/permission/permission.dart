@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/crypto/models/networks.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
@@ -9,10 +9,8 @@ import 'package:mrt_wallet/wallet/web3/networks/substrate/substrate.dart';
 import 'package:polkadot_dart/polkadot_dart.dart';
 
 class SubstrateWeb3PermissionView extends StatefulWidget {
-  const SubstrateWeb3PermissionView(
-      {required this.permission, required this.application, super.key});
+  const SubstrateWeb3PermissionView({required this.application, super.key});
   final Web3APPAuthentication application;
-  final Web3SubstrateChain? permission;
 
   @override
   State<SubstrateWeb3PermissionView> createState() =>
@@ -34,9 +32,9 @@ class _SubstrateWeb3PermissionViewState
   Web3APPAuthentication get application => widget.application;
   @override
   Web3SubstrateChainAccount createNewAccountPermission(
-      ISubstrateAddress address) {
+      ISubstrateAddress address, bool isDefault) {
     return Web3SubstrateChainAccount.fromChainAccount(
-        address: address, id: chain.network.value, isDefault: false);
+        address: address, id: chain.network.value, isDefault: isDefault);
   }
 
   @override
@@ -45,17 +43,7 @@ class _SubstrateWeb3PermissionViewState
   }
 
   @override
-  void onInitOnce() {
-    super.onInitOnce();
-    permission = widget.permission ?? Web3SubstrateChain.create();
-    final wallet = context.watch<WalletProvider>(StateConst.main);
-    chains = wallet.wallet.getChains().whereType<SubstrateChain>().toList();
-    chain = permission.getCurrentPermissionChain(chains);
-    for (final i in chains) {
-      permissions[i] = permission.chainAccounts(i);
-    }
-    updateActivities();
-  }
+  NetworkType get type => NetworkType.substrate;
 
   @override
   Widget build(BuildContext context) {

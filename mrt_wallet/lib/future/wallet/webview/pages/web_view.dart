@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/permission_view.dart';
 import 'package:mrt_wallet/future/wallet/webview/controller/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/webview/controller/controller/tab_handler.dart';
@@ -18,7 +18,7 @@ class WebView extends StatelessWidget {
   Widget build(BuildContext context) {
     return MrtViewBuilder(
         controller: () => WebViewStateController(
-            context.watch<WalletProvider>(StateConst.main)),
+            walletProvider: context.wallet, obs: context.observer),
         repositoryId: StateConst.webview,
         builder: (model) {
           return PopScope<bool>(
@@ -79,6 +79,8 @@ class WebView extends StatelessWidget {
                                                   : () {
                                                       context.openDialogPage(
                                                         "update_permission".tr,
+                                                        routeName: PageRouter
+                                                            .web3Permission,
                                                         fullWidget:
                                                             Web3PermissionUpdateView(
                                                                 controller:
@@ -232,6 +234,14 @@ class WebView extends StatelessWidget {
                       body: APPAnimatedSwitcher(
                         enable: model.page,
                         widgets: {
+                          WebViewTabPage.hide: (c) => Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.travel_explore,
+                                      size: APPConst.double80)
+                                ],
+                              ),
                           WebViewTabPage.tabs: (c) => _TabsPage(model),
                           WebViewTabPage.browser: (c) => APPNativeView(
                                 controller: model.controller.controller,

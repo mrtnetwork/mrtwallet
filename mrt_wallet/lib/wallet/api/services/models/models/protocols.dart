@@ -35,6 +35,12 @@ enum ServiceProtocol {
         orElse: orElese == null ? null : () => orElese);
   }
 
+  static bool isValid(String url) {
+    final parse = Uri.tryParse(url);
+    if (parse == null) return false;
+    return parse.scheme.startsWith('http') || parse.scheme.startsWith('ws');
+  }
+
   static ServiceProtocol fromURI(String url) {
     final lower = url.toLowerCase();
     if (lower.startsWith("http")) {

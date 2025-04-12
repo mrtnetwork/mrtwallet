@@ -5,19 +5,14 @@ import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/constant/constant.dart';
 import 'package:mrt_wallet/wallet/web3/networks/sui/constant/constants/constant.dart';
 
-class Web3SuiRequestMethods extends Web3RequestMethods {
+class Web3SuiRequestMethods extends Web3NetworkRequestMethods {
   const Web3SuiRequestMethods._(
-      {required super.id,
-      required super.name,
-      super.methodsName,
-      super.reloadAuthenticated});
+      {required super.id, required super.name, super.methodsName});
 
   static const Web3SuiRequestMethods requestAccounts = Web3SuiRequestMethods._(
       id: Web3SuiConst.requestAccountTag,
       name: Web3SuiConst.requestAccounts,
       methodsName: [Web3EthereumConst.requestAccounts]);
-  static const Web3SuiRequestMethods getNetwork = Web3SuiRequestMethods._(
-      id: Web3SuiConst.getNetworkTag, name: Web3SuiConst.getNetwork);
 
   static const Web3SuiRequestMethods signMessage = Web3SuiRequestMethods._(
       id: Web3SuiConst.signMessagTag, name: Web3SuiConst.signMessage);
@@ -26,10 +21,6 @@ class Web3SuiRequestMethods extends Web3RequestMethods {
           id: Web3SuiConst.signPersonalMessagTag,
           name: Web3SuiConst.signPersonalMessage);
 
-  static const Web3SuiRequestMethods switchNetwork = Web3SuiRequestMethods._(
-      id: Web3SuiConst.changeNetworkTag,
-      name: Web3SuiConst.switchNetwork,
-      reloadAuthenticated: true);
   static const Web3SuiRequestMethods signTransaction = Web3SuiRequestMethods._(
       id: Web3SuiConst.signTransactionTag, name: Web3SuiConst.signTransaction);
 
@@ -59,8 +50,6 @@ class Web3SuiRequestMethods extends Web3RequestMethods {
     signTransaction,
     signAndExecuteTransaction,
     signMessage,
-    getNetwork,
-    switchNetwork,
     signTransactionBlock,
     signAndExecuteTransactionBlock,
     signPersonalMessage

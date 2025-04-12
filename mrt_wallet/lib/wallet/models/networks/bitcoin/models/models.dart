@@ -1,10 +1,15 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
+import 'package:blockchain_utils/utils/binary/utils.dart';
+import 'package:blockchain_utils/utils/string/string.dart';
 import 'package:mrt_wallet/crypto/utils/bitcoin/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/balance/balance.dart';
+import 'package:mrt_wallet/wallet/models/chain/address/networks/bitcoin/addresses/bitcoin.dart';
 import 'package:mrt_wallet/wallet/models/networks/bch/models/cash_token.dart';
 import 'package:mrt_wallet/wallet/models/others/models/receipt_address.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+
+// class
 
 class BitcoinAccountUtxos {
   BitcoinAccountUtxos._(
@@ -18,9 +23,8 @@ class BitcoinAccountUtxos {
       List<UtxoWithAddress>? utxos,
       required WalletBitcoinNetwork network}) {
     if (utxos != null) {
-      final List<BitcoinUtxoWithBalance> utxosWithBalance = utxos
-          .map((e) => BitcoinUtxoWithBalance(e.utxo, e.ownerDetails, network))
-          .toList();
+      final List<BitcoinUtxoWithBalance> utxosWithBalance =
+          utxos.map((e) => BitcoinUtxoWithBalance(e, network)).toList();
       final IntegerBalance sumOfUtxos = IntegerBalance(
           utxos.fold(BigInt.zero,
               (previousValue, element) => previousValue + element.utxo.value),
@@ -43,18 +47,91 @@ class BitcoinAccountUtxos {
   bool get hasUtxo => utxosWithBalance != null;
 }
 
+class BitcoinAccountWithUtxos {
+  BitcoinAccountWithUtxos._(
+      {required this.address,
+      required this.utxoAddressDetails,
+      required this.utxosWithBalance,
+      required this.sumOfUtxos});
+  factory BitcoinAccountWithUtxos(
+      {required IBitcoinAddress address,
+      required UtxoAddressDetails addressDetails,
+      required List<UtxoWithAddress> utxos,
+      required WalletBitcoinNetwork network}) {
+    final List<BitcoinUtxoWithBalance> utxosWithBalance =
+        utxos.map((e) => BitcoinUtxoWithBalance(e, network)).toList();
+    final IntegerBalance sumOfUtxos = IntegerBalance(
+        utxos.fold(BigInt.zero,
+            (previousValue, element) => previousValue + element.utxo.value),
+        network.coinParam.decimal);
+    return BitcoinAccountWithUtxos._(
+        address: address,
+        sumOfUtxos: sumOfUtxos,
+        // utxos: utxos,
+        utxosWithBalance: utxosWithBalance,
+        utxoAddressDetails: addressDetails);
+  }
+  final IBitcoinAddress address;
+  final UtxoAddressDetails utxoAddressDetails;
+  final List<BitcoinUtxoWithBalance> utxosWithBalance;
+  final IntegerBalance sumOfUtxos;
+}
+
+class BitcoinPsbtInputWithAccount {
+  final UtxoAddressDetails? owner;
+  final ReceiptAddress<BitcoinBaseAddress> address;
+  final IBitcoinAddress? ownerAddress;
+  final TxInput input;
+  final int index;
+  final IntegerBalance balance;
+  final int sighash;
+  final bool hasChangableOutput;
+  BitcoinPsbtInputWithAccount(
+      {required this.owner,
+      required this.input,
+      required this.index,
+      required this.address,
+      required this.sighash,
+      required this.ownerAddress,
+      BigInt? value})
+      : balance = IntegerBalance(value ?? BigInt.zero, BTCUtils.decimal,
+            allowNegative: false, imutable: true),
+        hasChangableOutput = PsbtUtils.canChangeOutput(sighash);
+  BitcoinPsbtInputWithAccount copyWith(
+      {UtxoAddressDetails? owner,
+      TxInput? input,
+      int? index,
+      ReceiptAddress<BitcoinBaseAddress>? address,
+      BigInt? value,
+      int? sighash,
+      IBitcoinAddress? ownerAddress,
+      bool? hasChangableOutput}) {
+    return BitcoinPsbtInputWithAccount(
+        owner: owner ?? this.owner,
+        input: input ?? this.input,
+        index: index ?? this.index,
+        address: address ?? this.address,
+        value: value ?? balance.balance,
+        sighash: sighash ?? this.sighash,
+        ownerAddress: ownerAddress ?? this.ownerAddress);
+  }
+}
+
 class BitcoinUtxoWithBalance {
   BitcoinUtxoWithBalance(
     this.utxo,
-    this.address,
     WalletBitcoinNetwork network,
-  )   : balance = IntegerBalance(utxo.value, network.coinParam.decimal),
-        cashToken =
-            utxo.token == null ? null : BCHCashToken(cashToken: utxo.token!);
+  )   : balance = IntegerBalance(utxo.utxo.value, network.coinParam.decimal,
+            allowNegative: false, imutable: true),
+        cashToken = utxo.utxo.token == null
+            ? null
+            : BCHCashToken(cashToken: utxo.utxo.token!);
 
-  final BitcoinUtxo utxo;
+  final UtxoWithAddress utxo;
   late final IntegerBalance balance;
-  final UtxoAddressDetails address;
+  String get txHash => utxo.utxo.txHash;
+  int get index => utxo.utxo.vout;
+  // final UtxoAddressDetails address;
   final BCHCashToken? cashToken;
 }
 
@@ -124,12 +201,72 @@ class BitcoinOutputWithBalance {
   }
 }
 
+class PsbtBitcoinOutputWithBalance {
+  PsbtBitcoinOutputWithBalance._(
+      {required this.balance,
+      required this.address,
+      required this.script,
+      required this.change,
+      required this.scriptPubKey,
+      this.opReturns});
+
+  factory PsbtBitcoinOutputWithBalance({
+    required Script scriptPubKey,
+    required BigInt balance,
+    required WalletBitcoinNetwork network,
+    ReceiptAddress<BitcoinBaseAddress>? address,
+  }) {
+    final scriptHex = scriptPubKey.toHex();
+    if (address != null) {
+      return PsbtBitcoinOutputWithBalance._(
+          balance: IntegerBalance(balance, network.coinDecimal,
+              allowNegative: false, imutable: true),
+          address: address,
+          script: scriptHex,
+          change: address.isAccount,
+          scriptPubKey: scriptPubKey);
+    }
+    final isOpReturn = BitcoinScriptUtils.isOpReturn(scriptPubKey);
+    List<String>? opReturns;
+    if (isOpReturn && scriptPubKey.script.length > 1) {
+      opReturns = scriptPubKey.script
+          .sublist(1)
+          .map((e) =>
+              StringUtils.tryDecode(
+                  BytesUtils.tryFromHexString(e.toString())) ??
+              e.toString())
+          .toList();
+    }
+    return PsbtBitcoinOutputWithBalance._(
+        balance: IntegerBalance(balance, network.coinDecimal,
+            allowNegative: false, imutable: true),
+        address: address,
+        script: scriptHex,
+        opReturns: opReturns?.join(", "),
+        change: false,
+        scriptPubKey: scriptPubKey);
+  }
+
+  final IntegerBalance balance;
+  final ReceiptAddress<BitcoinBaseAddress>? address;
+  final String script;
+  final Script scriptPubKey;
+  final String? opReturns;
+  final bool change;
+  BitcoinBaseOutput toOutput() {
+    if (address == null) {
+      return BitcoinScriptOutput(script: scriptPubKey, value: balance.balance);
+    }
+    return BitcoinOutput(
+        address: address!.networkAddress, value: balance.balance);
+  }
+}
+
 class BitcoinBurnableUtxoWithBalance implements BitcoinOutputWithBalance {
-  BitcoinBurnableUtxoWithBalance._({
-    required this.token,
-    required this.tokenBalance,
-    required this.categoryId,
-  });
+  BitcoinBurnableUtxoWithBalance._(
+      {required this.token,
+      required this.tokenBalance,
+      required this.categoryId});
   BitcoinBurnableUtxoWithBalance(
       {required this.token, required this.categoryId})
       : tokenBalance = !token.hasAmount ? null : IntegerBalance.zero(0);
@@ -212,4 +349,32 @@ class BitcoinMemo {
   final String memo;
   final BitcoinScriptOutput script;
   final bool removable;
+}
+
+typedef ONPSBTSIGNINGREQUEST = Future<List<int>> Function(
+    PsbtSigningInputDigest);
+
+class BitcoonPsbtSigner
+    extends PsbtBtcSigner<SignInputResponse, PsbtSigningInputDigest> {
+  final ONPSBTSIGNINGREQUEST signer;
+  BitcoonPsbtSigner._({required this.signer, required this.signerPublicKey});
+  factory BitcoonPsbtSigner(
+      {required ECPublic publicKey, required ONPSBTSIGNINGREQUEST signer}) {
+    return BitcoonPsbtSigner._(signer: signer, signerPublicKey: publicKey);
+  }
+  @override
+  SignInputResponse btcSignInput(PsbtSignInputDigest digest) {
+    throw UnimplementedError('use btcSignInputAsync for signing.');
+  }
+
+  @override
+  Future<SignInputResponse> btcSignInputAsync(
+      PsbtSigningInputDigest digest) async {
+    final signature = await signer(digest);
+    return SignInputResponse(
+        signature: signature, signerPublicKey: signerPublicKey);
+  }
+
+  @override
+  final ECPublic signerPublicKey;
 }

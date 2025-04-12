@@ -9,3 +9,4 @@ export 'substrate/substrate.dart';
 export 'stellar/stellar.dart';
 export 'aptos/aptos.dart';
 export 'sui/sui.dart';
+export 'bitcoin/bitcoin.dart';

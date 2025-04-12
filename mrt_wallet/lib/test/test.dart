@@ -1,8 +1,9 @@
+import 'dart:typed_data';
+
+import 'package:blockchain_utils/utils/binary/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/error/exception/wallet_ex.dart';
 import 'package:mrt_wallet/future/future.dart';
-import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/wallet/web3/pages/page_progress.dart';
 import 'package:on_chain/on_chain.dart';
 
 import '../wallet/models/access/wallet_access.dart';
@@ -26,6 +27,7 @@ class _Web3PermissionUpdateViewTestState extends State<TestWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final bytes = BytesUtils.fromHexString("");
     return PasswordCheckerView(
       appbar: AppBar(
         actions: [
@@ -59,12 +61,13 @@ class _Web3PermissionUpdateViewTestState extends State<TestWidget> {
         return Web3PageProgress(
           key: page,
           child: (context) {
-            return Column(children: [
-              SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: Container(color: context.colors.inverseSurface))
-            ]);
+            return SingleChildScrollView(
+              child: Column(children: [
+                Image.memory(
+                  Uint8List.fromList(bytes),
+                ),
+              ]),
+            );
           },
         );
       },

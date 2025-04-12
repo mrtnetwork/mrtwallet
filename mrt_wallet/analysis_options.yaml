@@ -12,6 +12,7 @@ analyzer:
     avoid_web_libraries_in_flutter: ignore
     empty_catches: ignore
     non_constant_identifier_names: ignore
+    overridden_fields: ignore
     use_build_context_synchronously: ignore
 include: package:flutter_lints/flutter.yaml
 

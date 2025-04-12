@@ -16,13 +16,11 @@ class SolanaWeb3FieldsView extends StatelessWidget {
       case Web3SolanaRequestMethods.requestAccounts:
         return SolanaWeb3GlobalFieldsView(request: request, wallet: wallet);
       case Web3SolanaRequestMethods.signMessage:
-        return SolanaWeb3GlobalFieldsView<Web3SolanaSignMessageResponse,
-                Web3SolanaSignMessage>(
-            request: request as Web3SolanaRequest<Web3SolanaSignMessageResponse,
-                Web3SolanaSignMessage>,
-            wallet: wallet);
+      case Web3SolanaRequestMethods.signIn:
+        return SolanaWeb3GlobalFieldsView<List<Web3SolanaSignMessageResponse>,
+            Web3SolanaSignMessage>(request: request.cast(), wallet: wallet);
       case Web3SolanaRequestMethods.signTransaction:
-      case Web3SolanaRequestMethods.signAllTransactions:
+      case Web3SolanaRequestMethods.signAndSendAllTransactions:
       case Web3SolanaRequestMethods.sendTransaction:
         return SolanaWeb3TransactionFieldsView(
             request: request.cast(), wallet: wallet);

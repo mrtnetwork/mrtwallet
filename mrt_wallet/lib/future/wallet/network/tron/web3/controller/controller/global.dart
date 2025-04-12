@@ -25,9 +25,6 @@ class Web3TronGlobalRequestController<RESPONSE,
 
   TronWeb3Form _init() {
     switch (request.params.method) {
-      case Web3TronRequestMethods.requestAccounts:
-        final tronChains = walletProvider.wallet.getChains<TronChain>();
-        return TronRequestAccountForm(request: request, chains: tronChains);
       case Web3TronRequestMethods.switchTronChain:
         final switchChainRequest = request.params as Web3TronSwitchChain;
         final tronChains = walletProvider.wallet.getChains<TronChain>();
@@ -35,7 +32,7 @@ class Web3TronGlobalRequestController<RESPONSE,
             e.network.tronNetworkType.genesisBlockNumber ==
             switchChainRequest.chainId.toInt());
         if (network == null) {
-          throw Web3TronExceptionConstant.tronNetworkDoesNotExist;
+          throw Web3RequestExceptionConst.networkDoesNotExists;
         }
         return Web3TronSwitchTronChain(request: request, newChain: network);
       case Web3TronRequestMethods.signMessageV2:

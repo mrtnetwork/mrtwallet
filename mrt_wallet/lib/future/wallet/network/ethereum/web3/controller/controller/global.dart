@@ -26,16 +26,13 @@ class Web3EthereumGlobalRequestController<RESPONSE,
 
   Future<EthereumWeb3Form> _init() async {
     switch (request.params.method) {
-      case Web3EthereumRequestMethods.requestAccounts:
-        final ethChains = walletProvider.wallet.getChains<EthereumChain>();
-        return EthereumRequestAccountForm(request: request, chains: ethChains);
       case Web3EthereumRequestMethods.switchEthereumChain:
         final switchChainRequest = request.params as Web3EthreumSwitchChain;
         final ethChains = walletProvider.wallet.getChains<EthereumChain>();
         final network = ethChains
             .firstWhereOrNull((e) => e.chainId == switchChainRequest.chainId);
         if (network == null) {
-          throw Web3RequestExceptionConst.ethereumNetworkDoesNotExist;
+          throw Web3RequestExceptionConst.networkDoesNotExists;
         }
         return Web3EthereumSwitchEthereumChain(
             request: request, newChain: network);
@@ -48,7 +45,7 @@ class Web3EthereumGlobalRequestController<RESPONSE,
     progressKey.process(text: "processing_request".tr);
     Object? result = response;
     switch (request.params.method) {
-      case Web3EthereumRequestMethods.addEthereumChain:
+      case Web3EthereumRequestMethods.switchEthereumChain:
         final chain = form.cast<Web3EthereumSwitchEthereumChain>().newChain;
         final Web3EthereumChain? permission = request.currentPermission;
         permission?.setActiveChain(chain.network);

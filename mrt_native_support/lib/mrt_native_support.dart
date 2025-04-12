@@ -68,6 +68,7 @@ abstract class PlatformWebView {
       {required String viewType, required WidgetSize size});
   Future<void> init(String viewType,
       {String url = "https://google.com", String? jsInterface = "MRT"});
+  Future<void> clearCache(String viewType);
   void addListener(WebViewListener listener);
   void removeListener(WebViewListener listener);
 }

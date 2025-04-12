@@ -43,7 +43,6 @@ class WebViewPlatformView(
     override fun dispose() {
         WebViewHandlers.dispose(id)
         webView.destroy()
-        MrtCore.logging("disppsed", "WebView")
     }
     fun addMrtJsInterface(name: String){
         webView.addJavascriptInterface(WebAppInterface(channel,id,webView), name)
@@ -90,6 +89,10 @@ class WebViewPlatformView(
 
     fun reload() {
         webView.reload()
+    }
+    
+    fun clearCache() {
+        webView.clearCache(true)
     }
 
 }

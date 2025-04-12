@@ -28,22 +28,37 @@ class Web3SolanaGlobalRequestController<RESPONSE,
         request.authenticated.updateChainAccount(web3Chain);
         break;
       case Web3SolanaRequestMethods.signMessage:
-        if (obj != true) {
+      case Web3SolanaRequestMethods.signIn:
+        final messages = obj;
+        if (messages is! List<Web3SolanaSignParams>) {
           progressKey.idle();
           return;
         }
-        final signingParams = request.params as Web3SolanaSignMessage;
-        final messageBytes = signingParams.chalengBytes();
+        final signers = messages
+            .map((e) => request.currentPermission!
+                .getAccountPermission(account: e.account, chain: account))
+            .toList();
         final signMessage = await MethodUtils.call(() async {
           final signature = await walletProvider.wallet.signTransaction(
               request: WalletSigningRequest(
-            addresses: [address],
+            addresses: signers,
             network: network,
             sign: (generateSignature) async {
-              final signRequest = GlobalSignRequest.solana(
-                  digest: messageBytes, index: address.keyIndex.cast());
-              final response = await generateSignature(signRequest);
-              return response.signature;
+              final List<Web3SolanaSignMessageResponse> signedMessages = [];
+              for (int i = 0; i < signers.length; i++) {
+                final msg = messages[i];
+                final signer = signers[i];
+                final signMessage = msg.dataBytes();
+                final signRequest = GlobalSignRequest.solana(
+                    digest: signMessage, index: signer.keyIndex.cast());
+                final response = await generateSignature(signRequest);
+                signedMessages.add(Web3SolanaSignMessageResponse(
+                    address: signer.networkAddress,
+                    signature: response.signature,
+                    signedMessage: signMessage));
+              }
+
+              return signedMessages;
             },
           ));
           return signature.result;
@@ -52,10 +67,7 @@ class Web3SolanaGlobalRequestController<RESPONSE,
           progressKey.error(error: signMessage.exception, showBackButton: true);
           return;
         }
-        result = Web3SolanaSignMessageResponse(
-            address: address.networkAddress,
-            signature: signMessage.result,
-            signedMessage: messageBytes);
+        result = signMessage.result;
         break;
       default:
         break;
@@ -66,11 +78,16 @@ class Web3SolanaGlobalRequestController<RESPONSE,
 
   @override
   Future<void> initWeb3() async {
-    await MethodUtils.after(() async {
-      liveRequest.addListener(onChangeForm);
-      form.onCompleteForm = onCompleteForm;
-      progressKey.idle();
-    });
+    liveRequest.addListener(onChangeForm);
+    form.onCompleteForm = onCompleteForm;
+    final init = await MethodUtils.call(
+        () => form.initForm(account: account, address: null));
+    if (init.hasError) {
+      progressKey.errorResponse(error: init.exception);
+      request.error(Web3RequestExceptionConst.fromException(init.exception!));
+      return;
+    }
+    progressKey.idle();
   }
 
   @override

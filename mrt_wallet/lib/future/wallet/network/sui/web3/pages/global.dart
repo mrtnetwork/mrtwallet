@@ -5,9 +5,7 @@ import 'package:mrt_wallet/future/wallet/network/forms/forms.dart';
 import 'package:mrt_wallet/future/wallet/network/sui/web3/web3.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'fields/request_account.dart';
 import 'fields/sign_message.dart';
-import 'fields/switch_chain.dart';
 
 class SuiWeb3GlobalFieldsView<RESPONSE, T extends Web3SuiRequestParam<RESPONSE>>
     extends StatelessWidget {
@@ -18,7 +16,7 @@ class SuiWeb3GlobalFieldsView<RESPONSE, T extends Web3SuiRequestParam<RESPONSE>>
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3SuiGlobalRequestController<RESPONSE, T>(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
@@ -38,18 +36,11 @@ class _GlobalFieldsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (form.request.params.method) {
-      case Web3SuiRequestMethods.requestAccounts:
-        return SuiWeb3RequestAccountsView(
-          controller: controller,
-          field: form as SuiRequestAccountForm,
-        );
       case Web3SuiRequestMethods.signMessage:
       case Web3SuiRequestMethods.signPersonalMessage:
         return SuiWeb3SignMessageRequestView(
           request: form as Web3SuiSignMessageForm,
         );
-      case Web3SuiRequestMethods.switchNetwork:
-        return SuiWeb3SwitchChainView(request: form as Web3SuiSwitchSuiChain);
       default:
         return const SliverPadding(padding: EdgeInsets.zero);
     }

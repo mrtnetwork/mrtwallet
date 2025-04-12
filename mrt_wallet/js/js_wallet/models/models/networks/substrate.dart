@@ -1,5 +1,7 @@
 import 'dart:js_interop';
+import '../../../utils/utils/extensions.dart';
 import '../../models.dart';
+import 'wallet_standard.dart';
 
 @JS("substrate")
 external set substrate(Proxy? substrate);
@@ -10,37 +12,101 @@ external JSInjectedWeb3? get injectedWeb3Nullable;
 @JS("injectedWeb3")
 external set injectedWeb3(JSInjectedWeb3 _);
 
-extension type SubstrateWalletAdapter(JSObject _) implements MRTNetworkAdapter {
-  external set connect(JSFunction f);
-  external set signMessage(JSFunction f);
-  @JS("signTransaction")
-  external set signTransaction(JSFunction f);
+class SubstrateJSConst {
+  static final JSArray<JSString> defaultAccountFeatures = [
+    "substrate:signTransaction".toJS,
+    "substrate:signMessage".toJS,
+  ].toJS;
+}
+
+// extension type SubstrateWalletAdapter(JSObject _) implements MRTNetworkAdapter {
+//   external set connect(JSFunction f);
+//   external set signMessage(JSFunction f);
+//   // @JS("signTransaction")
+//   // external set signTransaction(JSFunction f);
+//   external set metadata(Proxy<JSSubstrateWalletAdapterMetadata> _);
+//   external set accounts(Proxy<JSSubstrateWalletAdapterAccounts> _);
+//   external set signer(Proxy<JSSubstrateWalletAdapterSigner> _);
+// }
+
+@JS()
+extension type JSPolkadotJSWalletAdapter(JSAny _) implements JSWalletAdapter {
+  external set signer(Proxy<JSSubstrateWalletAdapterSigner> _);
   external set metadata(Proxy<JSSubstrateWalletAdapterMetadata> _);
   external set accounts(Proxy<JSSubstrateWalletAdapterAccounts> _);
-  external set signer(Proxy<JSSubstrateWalletAdapterSigner> _);
+  external set connect(JSFunction f);
+  external set enable(JSFunction f);
 }
 
-extension type JSSubstrateAddress._(JSObject _) implements JSAny {
-  external factory JSSubstrateAddress(
-      {String address, String? genesisHash, String? name});
-
-  external String get address;
+extension type JSSubstrateWalletAccount._(JSObject _)
+    implements JSWalletStandardAccount {
+  factory JSSubstrateWalletAccount.setup(
+      {required String address,
+      required String genesisHash,
+      required List<int> publicKey,
+      required String chain}) {
+    return JSSubstrateWalletAccount._(JSObject())
+      ..address = address
+      ..chains = [chain.toJS].toJS
+      ..genesisHash = genesisHash
+      ..features = SubstrateJSConst.defaultAccountFeatures.freez
+      ..publicKey = APPJSUint8Array.fromList(publicKey);
+  }
+  external set genesisHash(String? _);
   external String? get genesisHash;
-  external String? get name;
 }
-extension type JSSubstrateAccountsChanged._(JSObject _) implements JSAny {
-  external factory JSSubstrateAccountsChanged(
-      {JSArray<JSSubstrateAddress> accounts,
-      JSSubstrateAddress? defaultAddress});
+@JS()
+extension type JSSubstrateWalletStandardConnect._(JSObject _) implements JSAny {
+  factory JSSubstrateWalletStandardConnect.setup(
+      List<JSSubstrateWalletAccount> accounts) {
+    return JSSubstrateWalletStandardConnect._(JSObject())
+      ..accounts = accounts.toJS;
+  }
+  external JSArray<JSSubstrateWalletAccount> get accounts;
+  external set accounts(JSArray<JSSubstrateWalletAccount> _);
+}
 
-  external JSArray<JSSubstrateAddress> get accounts;
-  external JSSubstrateAddress? get defaultAddress;
+@JS()
+extension type SubstrateWalletAdapterSubstrateSignTransactionFeature(JSAny _)
+    implements JSAny {
+  factory SubstrateWalletAdapterSubstrateSignTransactionFeature.setup(
+      {required JSFunction signTransaction,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return SubstrateWalletAdapterSubstrateSignTransactionFeature(JSObject())
+      ..signTransaction = signTransaction
+      ..version = version;
+  }
+  external set version(String version);
+  external set signTransaction(JSFunction _);
 }
 
-extension type JSSubstrateProviderConnectInfo._(JSObject _) implements JSAny {
-  external factory JSSubstrateProviderConnectInfo({String genesis});
-  external String get genesis;
+@JS()
+extension type SubstrateWalletAdapterSubstrateSignMessageFeature(JSAny _)
+    implements JSAny {
+  factory SubstrateWalletAdapterSubstrateSignMessageFeature.setup(
+      {required JSFunction signMessage,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return SubstrateWalletAdapterSubstrateSignMessageFeature(JSObject())
+      ..signMessage = signMessage
+      ..version = version;
+  }
+  external set version(String version);
+  external set signMessage(JSFunction _);
 }
+
+// extension type JSSubstrateAccountsChanged._(JSObject _) implements JSAny {
+//   external factory JSSubstrateAccountsChanged(
+//       {JSArray<JSSubstrateWalletAccount> accounts,
+//       JSSubstrateWalletAccount? defaultAddress});
+
+//   external JSArray<JSSubstrateWalletAccount> get accounts;
+//   external JSSubstrateWalletAccount? get defaultAddress;
+// }
+
+// extension type JSSubstrateProviderConnectInfo._(JSObject _) implements JSAny {
+//   external factory JSSubstrateProviderConnectInfo({String genesis});
+//   external String get genesis;
+// }
 
 extension type JSSubstrateWalletAdapterMetadata(JSObject _) implements JSAny {
   external set get(JSFunction _);
@@ -140,7 +206,21 @@ extension type JSSubstrateMetadataProvide(JSObject _) implements JSAny {
 
 extension type JSSubstrateKownMetadata._(JSObject _) implements JSAny {
   external factory JSSubstrateKownMetadata(
-      {String genesisHash, int specVersion});
+      {String genesisHash, int specVersion, String identifier});
   external String get genesisHash;
   external int get specVersion;
+  external String get identifier;
+}
+@JS()
+extension type JSSubstrateWalletStandardConnectFeature(JSAny _)
+    implements JSAny {
+  factory JSSubstrateWalletStandardConnectFeature.setup(
+      {required JSFunction connect,
+      String version = SolanaJSConstant.version}) {
+    return JSSubstrateWalletStandardConnectFeature(JSObject())
+      ..connect = connect
+      ..version = version;
+  }
+  external set version(String version);
+  external set connect(JSFunction _);
 }

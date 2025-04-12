@@ -8,7 +8,7 @@ class EthereumHTTPService extends HTTPService<EthereumAPIProvider>
     implements EthereumServiceProvider {
   EthereumHTTPService({
     required this.provider,
-    required this.isolate,
+    this.isolate = APPIsolate.current,
     this.defaultTimeOut = const Duration(seconds: 30),
     this.requestTimeout,
   });

@@ -4,10 +4,11 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 enum Web3MessageTypes {
   chains([100, 11]),
   walletRequest([100, 12]),
-  response([100, 13]),
+  // response([100, 13]),
   walletResponse([100, 14]),
   error([100, 15]),
-  walletGlobalRequest([100, 17]);
+  walletGlobalRequest([100, 17]),
+  globalResponse([100, 18]);
 
   final List<int> tag;
   const Web3MessageTypes(this.tag);

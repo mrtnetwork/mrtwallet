@@ -109,7 +109,6 @@ class TronUnDelegatedResourceFieldsView extends StatelessWidget {
                             context
                                 .openSliverBottomSheet<BigInt>(
                               "undelegated_resource".tr,
-                              initialExtend: 1,
                               child: SetupNetworkAmount(
                                 token: account.network.coinParam.token,
                                 max:

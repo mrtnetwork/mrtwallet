@@ -4,7 +4,6 @@ import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/transaction/pages/fields.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/transaction/pages/operations/operations.dart';
 import 'package:mrt_wallet/future/wallet/network/stellar/web3/controller/controller/transaction.dart';
-import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:stellar_dart/stellar_dart.dart';
@@ -12,12 +11,13 @@ import 'package:stellar_dart/stellar_dart.dart';
 class StellarWeb3TransactionFieldsView extends StatelessWidget {
   const StellarWeb3TransactionFieldsView(
       {required this.wallet, super.key, required this.request});
-  final Web3StellarRequest<String, Web3StellarSendTransaction> request;
+  final Web3StellarRequest<Web3StellarSendTransactionResponse,
+      Web3StellarSendTransaction> request;
   final WalletProvider wallet;
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
         controller: () => Web3StellarTransactionRequestController(
             walletProvider: wallet, request: request),
         builder: (context, controller) {
@@ -204,7 +204,9 @@ class StellarWeb3TransactionFieldsView extends StatelessWidget {
                     children: [
                       FixedElevatedButton(
                           padding: WidgetConstant.paddingVertical40,
-                          child: Text("send_transaction".tr),
+                          child: controller.isSendTransaction
+                              ? Text("send_transaction".tr)
+                              : Text("sign_transaction".tr),
                           onPressed: () {
                             controller.sendTransaction();
                           }),

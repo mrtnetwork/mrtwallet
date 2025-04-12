@@ -2,58 +2,95 @@ part of '../scripts.dart';
 
 typedef PostWalletMessage = void Function(PageMessage);
 
-abstract class PageNetworkController {
-  final POSTPAGEMESSAGE postMessage;
-  PageNetworkController(this.postMessage);
-  int _id = 0;
+abstract class WalletStandardPageController {
+  final PageRequestController _requestController;
+  WalletStandardPageController(this._requestController);
   abstract final JSClientType _client;
 
-  // static late final String _walletId;
-  static final Map<String, PageRequestCompleter> _waitingRequest = {};
+  JSPromise<T> waitForSuccessResponsePromise<T extends JSAny?>(
+      {required String method,
+      PageRequestType provider = PageRequestType.walletStandard,
+      JSArray<JSAny>? params}) {
+    return _requestController.waitForSuccessResponsePromise<T>(
+        method: method, client: _client, params: params, provider: provider);
+  }
+
+  Future<T> waitForSuccessResponse<T extends JSAny?>(
+      {required String method,
+      PageRequestType provider = PageRequestType.walletStandard,
+      JSArray<JSAny>? params}) async {
+    return _requestController.waitForSuccessResponse<T>(
+        method: method, client: _client, params: params, provider: provider);
+  }
+
+  JSPromise _disconnectChain() {
+    return _requestController.waitForSuccessResponsePromise<JSAny?>(
+        method: 'disconnect', client: _client);
+  }
+
+  void _emitEvent(PageMessageEvent message) {
+    if (!message.eventType.needEmit) return;
+    final toWalletRequest = PageMessage.event(data: message, client: _client);
+    _requestController.postMessage(toWalletRequest);
+  }
+
+  void _initNetworkFeatures(JSWalletStandardFeature feature);
   final Map<JSEventType, List<JSFunction>> _listeners = {
     JSEventType.accountsChanged: [],
     JSEventType.chainChanged: [],
-    JSEventType.connect: [],
-    JSEventType.message: [],
-    JSEventType.disconnect: [],
     JSEventType.change: []
   };
-  static void _completeRequest(
-      {required WalletMessageResponse walletResponse,
-      required String requestId}) {
-    _waitingRequest[requestId]?.completeMessage(walletResponse);
+
+  void _onEvents(JSString type, JSFunction listener) {
+    final eventType = JSEventType.fromName(type.toDart);
+    if (eventType != null) {
+      _listeners[eventType]!.add(listener);
+      _emitEvent(PageMessageEvent.build(event: eventType));
+    }
   }
 
-  JSPromise<JSAny?> _postWalletRequest(Web3JSRequestParams params) {
-    final message = PageMessageRequest.create(
-        method: params.method,
-        params: params.params,
-        id: params.id ?? (_id++).toString());
-    final promise = _postWalletRequestMessage(message).toPromise;
-    return promise;
+  void _emit(List<JSFunction> listeners, JSAny? message) {
+    final clone = [...listeners];
+    for (final i in clone) {
+      i.callAsFunction(i, message);
+    }
   }
 
-  JSPromise<T> _postNetworkRequest<T extends JSAny?>(
-      Web3JSRequestParams params) {
-    final message =
-        PageMessageRequest.create(method: params.method, params: params.params);
-    final promise = _postNetworkRequestMessage<T>(message).toPromise;
-    return promise;
+  void _eventListeners(JSEventType type, JSAny? message) {
+    if (!_listeners.containsKey(type)) return;
+    _emit(_listeners[type]!, message);
   }
 
-  JSPromise<JSAny?> _disconnectChain() {
-    final message =
-        PageMessageRequest.create(method: 'disconnect', id: (_id++).toString());
-    final promise = _postWalletRequestMessage(message).toPromise;
-    return promise;
+  void onWalletEvent(WalletMessageEvent message) {
+    final data = message.data as JSWalletNetworkEvent;
+    final events = data.eventTypes;
+    for (final event in events) {
+      switch (event) {
+        case JSNetworkEventType.change:
+          _eventListeners(JSEventType.change, data.change);
+          break;
+        default:
+      }
+    }
+  }
+}
+
+class PageRequestController {
+  final POSTPAGEMESSAGE postMessage;
+  PageRequestController(this.postMessage);
+
+  final Map<String, PageRequestCompleter> _waitingRequest = {};
+  void _completeRequest(WalletMessage walletResponse) {
+    _waitingRequest[walletResponse.requestId]
+        ?.completeMessage(walletResponse.data as WalletMessageResponse);
   }
 
   Future<WalletMessageResponse> _getWalleResponse(
-      PageMessageRequest message) async {
+      {required PageMessageRequest message, JSClientType? client}) async {
     final request = PageRequestCompleter.nextRequest();
     try {
-      final toWalletRequest =
-          PageMessage.request(data: message, id: request.id, client: _client);
+      final toWalletRequest = PageMessage.request(
+          data: message, requestId: request.id, client: client);
       postMessage(toWalletRequest);
       _waitingRequest[request.id] ??= request;
       return await request.wait;
@@ -62,47 +99,30 @@ abstract class PageNetworkController {
     }
   }
 
-  void _emitEvent(PageMessageEvent message) {
-    if (!message.eventType.needEmit) return;
-    final toWalletRequest =
-        PageMessage.event(data: message, id: "", client: _client);
-    postMessage(toWalletRequest);
+  JSPromise<T> waitForSuccessResponsePromise<T extends JSAny?>(
+      {required String method,
+      PageRequestType provider = PageRequestType.walletStandard,
+      JSArray<JSAny>? params,
+      JSClientType? client}) {
+    return waitForSuccessResponse<T>(
+            method: method, client: client, params: params, provider: provider)
+        .toPromise;
   }
 
-  Future<T> _postNetworkRequestMessage<T extends JSAny?>(
-      PageMessageRequest message) async {
-    final response = await _getWalleResponse(message);
+  Future<T> waitForSuccessResponse<T extends JSAny?>({
+    required String method,
+    PageRequestType provider = PageRequestType.walletStandard,
+    JSArray<JSAny>? params,
+    JSClientType? client,
+  }) async {
+    final message = PageMessageRequest.create(
+        method: method, params: params, provider: provider);
+    final response = await _getWalleResponse(message: message, client: client);
     switch (response.statusType) {
       case JSWalletResponseType.success:
         return response.data as T;
       case JSWalletResponseType.failed:
         throw JSWalletError.fromJson(message: response.asMap());
-    }
-  }
-
-  Future<T> _createAndPostNetworkRequestMessage<T extends JSAny?>(
-      Web3JSRequestParams params) async {
-    final message =
-        PageMessageRequest.create(method: params.method, params: params.params);
-    final response = await _getWalleResponse(message);
-    switch (response.statusType) {
-      case JSWalletResponseType.success:
-        return response.data as T;
-      case JSWalletResponseType.failed:
-        throw JSWalletError.fromJson(message: response.asMap());
-    }
-  }
-
-  Future<WalletResponse> _postWalletRequestMessage(
-      PageMessageRequest message) async {
-    final response = await _getWalleResponse(message);
-    switch (response.statusType) {
-      case JSWalletResponseType.success:
-        return WalletResponseSuccess(id: message.id, result: response.data);
-      case JSWalletResponseType.failed:
-        return WalletResponseError(
-            id: message.id,
-            error: JSWalletError.fromJson(message: response.asMap()));
     }
   }
 }

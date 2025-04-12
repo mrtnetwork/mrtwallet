@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/aptos/web3/controller/controller/transaction.dart';
-import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 
 class AptosWeb3TransactionFieldsView extends StatelessWidget {
@@ -13,7 +12,7 @@ class AptosWeb3TransactionFieldsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       showRequestAccount: true,
       controller: () => Web3AptosTransactionRequestController(
           walletProvider: wallet, request: request),

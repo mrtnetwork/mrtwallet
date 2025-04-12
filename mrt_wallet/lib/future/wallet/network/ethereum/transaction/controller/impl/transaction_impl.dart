@@ -5,8 +5,8 @@ import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 abstract class EthTransactionImpl extends StateController {
   EthTransactionImpl({required this.walletProvider, required this.account});
   WalletProvider walletProvider;
-  final EthereumChain account;
   WalletEthereumNetwork get network => account.network;
   EthereumClient get apiProvider => account.client;
   IEthAddress get address => account.address;
+  final EthereumChain account;
 }

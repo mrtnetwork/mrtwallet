@@ -55,9 +55,6 @@ class AptosTransactionFieldsView extends StatelessWidget {
                                                         account:
                                                             controller.account,
                                                         showMultiSig: true),
-                                                minExtent: 0.5,
-                                                maxExtend: 0.9,
-                                                initialExtend: 0.7,
                                                 centerContent: false,
                                               )
                                               .then(switchAccount);
@@ -238,7 +235,6 @@ class _AptosTransferFields extends StatelessWidget {
                       context
                           .openSliverBottomSheet<BigInt>(
                         "setup_output_amount".tr,
-                        initialExtend: 1,
                         child: SetupNetworkAmount(
                           token: field.transferToken,
                           max: max,
@@ -295,17 +291,14 @@ class _TransferSelectReceiver extends StatelessWidget {
             validate: field.destination.isNotEmpty,
             onRemove: () {
               context
-                  .openSliverBottomSheet("receiver_address".tr,
-                      bodyBuilder: (c) =>
-                          SelectRecipientAccountView<AptosAddress>(
-                              account: controller.account,
-                              scrollController: c,
-                              onFilterAccount: field.filterAccount,
-                              multipleSelect:
-                                  !field.transactionType.isTokenTransfer),
-                      maxExtend: 1,
-                      minExtent: 0.9,
-                      initialExtend: 0.9)
+                  .openSliverBottomSheet(
+                "receiver_address".tr,
+                bodyBuilder: (c) => SelectRecipientAccountView<AptosAddress>(
+                    account: controller.account,
+                    scrollController: c,
+                    onFilterAccount: field.filterAccount,
+                    multipleSelect: !field.transactionType.isTokenTransfer),
+              )
                   .then(
                 (value) {
                   if (field.transactionType.isTokenTransfer) {

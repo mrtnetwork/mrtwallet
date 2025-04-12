@@ -50,9 +50,9 @@ class BitcoinCashStateController extends BitcoinTransactionImpl
       OnTapBuildNewToken onBuildToken, DynamicVoid onEmptyVout0) async {
     final List<BitcoinUtxoWithBalance> zeroUtxos = selectedUtxo
         .where((e) =>
-            e.utxo.vout == 0 &&
-            !_buildedTokens.any(
-                (element) => element.token.cashToken.category == e.utxo.txHash))
+            e.index == 0 &&
+            !_buildedTokens
+                .any((element) => element.token.cashToken.category == e.txHash))
         .toList();
     if (zeroUtxos.isEmpty) {
       onEmptyVout0();
@@ -117,8 +117,8 @@ class BitcoinCashStateController extends BitcoinTransactionImpl
     sumOfSelectedUtxo.updateBalance(sum);
     if (sum <= BigInt.zero) return;
     final List<(CashToken, String)> cashTokens = selectedUtxo
-        .where((element) => element.utxo.token != null)
-        .map((e) => (e.utxo.token, e.utxo.txHash))
+        .where((element) => element.cashToken != null)
+        .map((e) => (e.cashToken!.token, e.txHash))
         .toList()
         .cast();
     if (cashTokens.isNotEmpty) {
@@ -182,6 +182,12 @@ class BitcoinCashStateController extends BitcoinTransactionImpl
         !operationIsReady &&
         !remindAmount.isNegative &&
         (!setupAmount.isZero);
+  }
+
+  void setFee(String? feeType, {BigInt? customFee}) {
+    super.changeFee(feeType, customFee: customFee);
+    onCalculateAmount();
+    notify();
   }
 
   @override

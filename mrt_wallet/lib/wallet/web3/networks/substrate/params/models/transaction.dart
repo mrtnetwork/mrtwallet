@@ -5,8 +5,8 @@ import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/params/core/request.dart';
-import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
-import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:mrt_wallet/wallet/web3/networks/substrate/permission/models/account.dart';
+import 'package:mrt_wallet/wallet/web3/utils/web3_validator_utils.dart';
 
 class Web3SubstrateSendTransactionResponse {
   final int id;
@@ -74,7 +74,7 @@ class Web3SubstrateSendTransaction
       required this.signedExtensions});
   factory Web3SubstrateSendTransaction({
     required Map<String, dynamic> json,
-    required BaseSubstrateAddress address,
+    required Web3SubstrateChainAccount address,
   }) {
     final method = Web3SubstrateRequestMethods.signTransaction;
     return Web3SubstrateSendTransaction._(
@@ -119,7 +119,8 @@ class Web3SubstrateSendTransaction
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
     return Web3SubstrateSendTransaction._(
-      account: BaseSubstrateAddress(values.elementAs(1)),
+      account: Web3SubstrateChainAccount.deserialize(
+          object: values.elementAs<CborTagValue>(1)),
       assetId: values.elementAs(2),
       blockHash: values.elementAs(3),
       blockNumber: values.elementAs(4),
@@ -150,7 +151,7 @@ class Web3SubstrateSendTransaction
     return CborTagValue(
         CborListValue.fixedLength([
           method.tag,
-          account.address,
+          account.toCbor(),
           assetId == null ? null : CborBytesValue(assetId!),
           CborBytesValue(blockHash),
           blockNumber,
@@ -172,26 +173,6 @@ class Web3SubstrateSendTransaction
   }
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      "address": account.address,
-      "assetId": BytesUtils.tryToHexString(assetId),
-      "blockHash": BytesUtils.toHexString(blockHash),
-      "blockNumber": blockNumber,
-      "era": BytesUtils.toHexString(era),
-      "genesisHash": BytesUtils.toHexString(genesisHash),
-      "metadataHash": BytesUtils.tryToHexString(metadataHash),
-      "mode": mode,
-      "nonce": nonce,
-      "specVersion": specVersion,
-      "tip": tip,
-      "signedExtensions": signedExtensions,
-      "version": version,
-      "withSignedTransaction": withSignedTransaction
-    };
-  }
-
-  @override
   Web3SubstrateRequest<Map<String, dynamic>, Web3SubstrateSendTransaction>
       toRequest(
           {required Web3RequestApplicationInformation request,
@@ -208,5 +189,5 @@ class Web3SubstrateSendTransaction
   }
 
   @override
-  final BaseSubstrateAddress account;
+  final Web3SubstrateChainAccount account;
 }

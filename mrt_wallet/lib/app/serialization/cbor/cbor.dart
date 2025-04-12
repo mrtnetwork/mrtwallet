@@ -131,7 +131,11 @@ extension ExtractCborList on CborListValue {
     return v;
   }
 
-  List<T> elementAsListOf<T extends CborObject>(int index) {
+  List<T> elementAsListOf<T extends CborObject>(int index,
+      {bool emyptyOnNull = false}) {
+    if (emyptyOnNull && !hasIndex(index)) {
+      return [];
+    }
     try {
       return (value[index] as CborListValue).value.cast<T>();
     } catch (e) {
@@ -147,6 +151,10 @@ extension ExtractCborList on CborListValue {
     } catch (e) {
       throw WalletExceptionConst.invalidSerializationData;
     }
+  }
+
+  bool hasIndex(int index) {
+    return index < value.length;
   }
 
   T elementAs<T>(int index) {

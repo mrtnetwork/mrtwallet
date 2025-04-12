@@ -17,7 +17,7 @@ external MRTWallet get mrt;
 external set mrt(JSAny mrt);
 
 @JS("ethereum")
-external set ethereum(Proxy? ethereum);
+external set ethereum(JSAny? ethereum);
 
 @JS("ethereum")
 external Proxy get ethereum;
@@ -41,7 +41,6 @@ extension type MRTWallet(JSObject _) implements MRTJsObject {
   external JSAny get ethereum2;
 
   external EIP1193 get ethereum;
-  external set tonconnect(TonWalletAdapter tonconnect);
 
   @JS("onMrtMessage")
   external set onMrtMessage(JSFunction? f);
@@ -58,7 +57,13 @@ extension type MRTWallet(JSObject _) implements MRTJsObject {
     }
   }
 }
-
+@JS()
+extension type JSInt58(JSObject _) implements JSAny {
+  external int get low;
+  external int get high;
+  external bool get unsigned;
+  static const List<String> properties = ['low', 'high', 'unsigned'];
+}
 extension type MRTNetworkAdapter(JSObject _) implements MRTJsObject {
   @JS("sendWalletRequest")
   external set sendWalletRequest(JSFunction f);

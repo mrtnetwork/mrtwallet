@@ -5,7 +5,6 @@ class WalletLogging {
 
   static void log(Object? text) {
     print('\x1B[33m$text\x1B[0m');
-    // print(text);
   }
 
   static void error(String text) {
@@ -13,9 +12,6 @@ class WalletLogging {
   }
 
   static void webview(String text) {
-    // print('\x1B[32m$text\x1B[0m');
     print(text);
   }
 }
-
-///printWarning

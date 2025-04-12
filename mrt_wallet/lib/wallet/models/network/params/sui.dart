@@ -15,7 +15,7 @@ enum SuiChainType {
 
   const SuiChainType(this.value);
   final int value;
-  String get web3Name => "sui:$name";
+  String get identifier => "sui:$name";
   static SuiChainType fromValue(int? value) {
     return values.firstWhere(
       (e) => e.value == value,

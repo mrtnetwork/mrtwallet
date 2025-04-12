@@ -1,11 +1,14 @@
 import 'dart:js_interop';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
-import 'package:mrt_wallet/app/utils/list/extension.dart';
-import 'package:mrt_wallet/app/utils/numbers/numbers.dart';
+
 import 'ethereum.dart';
+import 'solana.dart';
+import 'wallet_standard.dart';
 
 class JSTronConst {
   static const String defaultTronWebEndpoint = 'https://api.shasta.trongrid.io';
+  static final JSArray<JSString> defaultAccountFeatures =
+      ["tron:signMessage".toJS, "tron:signTransaction".toJS].toJS;
 }
 
 @JS("tron")
@@ -14,33 +17,6 @@ external set tron(Proxy<TIP1193>? tron);
 external set tronWeb_(Proxy<TronWeb>? tronWeb);
 @JS("tronLink")
 external set tronLink(Proxy<TIP1193>? tronLink);
-
-class JSTronDefaultAddress {
-  final String base58;
-  final String hex;
-  const JSTronDefaultAddress({required this.base58, required this.hex});
-  factory JSTronDefaultAddress.fromJson(Map<String, dynamic> json) {
-    return JSTronDefaultAddress(base58: json["base58"], hex: json["hex"]);
-  }
-
-  Map<String, dynamic> toJson() {
-    return {"base58": base58, "hex": hex};
-  }
-
-  @override
-  String toString() {
-    return base58;
-  }
-
-  @override
-  bool operator ==(other) {
-    if (other is! JSTronDefaultAddress) return false;
-    return hex == other.hex;
-  }
-
-  @override
-  int get hashCode => hex.hashCode ^ base58.hashCode;
-}
 
 @JS()
 extension type TronLinkParams(JSAny _) implements JSAny {
@@ -106,8 +82,8 @@ extension type JSTronAddress._(JSAny _) implements JSAny {
   @JS("hex")
   external set hex(JSAny _);
 
-  void setAddress(JSTronDefaultAddress? address) {
-    base58 = address?.base58.toJS ?? false.toJS;
+  void setAddress(JSSTronWalletAccount? address) {
+    base58 = address?.address.toJS ?? false.toJS;
     hex = address?.hex.toJS ?? false.toJS;
   }
 }
@@ -125,23 +101,18 @@ extension type TIP1193(JSObject _) implements EIP1193 {
       required JSFunction on,
       required JSFunction removeListener,
       required JSFunction disconnect,
-      required JSFunction cancelAllListener,
       required Proxy tronWeb,
       required JSFunction enable,
-      required JSFunction sendWalletRequest,
       required TronLinkParams params}) {
     final tip = TIP1193(JSObject());
-    tip.sendWalletRequest = sendWalletRequest;
-    tip.cancelAllListener = cancelAllListener;
-    tip.cancelAllListener = removeListener;
     tip.config = params;
     tip.request = request;
     tip.on = on;
     tip.removeListener = removeListener;
     tip.tronWeb = tronWeb;
-    tip.providerInfo = EIP6963ProviderInfo.providerInfo;
-    tip.ready = true;
     tip.enable = enable;
+    tip.connect = enable;
+    tip.ready = true;
     final eth = MRTJsObject.freeze(tip);
     return eth;
   }
@@ -159,107 +130,119 @@ extension type TronWebTRX(JSObject _) implements MRTJsObject {
   external set signMessageV2__(JSFunction f);
 }
 
-class TronWebNodeInfo {
-  final String solidityNode;
-  final String fullNode;
-  final String chainId;
-  final String? base58;
-  final String? hex;
-  final String? eventServer;
-  const TronWebNodeInfo(
-      {required this.solidityNode,
-      required this.fullNode,
-      required this.chainId,
-      this.base58,
-      this.hex,
-      this.eventServer});
-  factory TronWebNodeInfo.fromJson(Map<String, dynamic> json) {
-    return TronWebNodeInfo(
-        solidityNode: json["solidityNode"],
-        fullNode: json["fullNode"],
-        chainId: json["chainId"],
-        hex: json["hex"],
-        base58: json["base58"],
-        eventServer: json["eventServer"]);
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      "solidityNode": solidityNode,
-      "fullNode": fullNode,
-      "chainId": chainId,
-      "hex": hex,
-      "eventServer": eventServer,
-      "base58": base58
-    };
-  }
-
-  TronWeb toTronWeb() {
-    final tronWeb = TronWeb(fullNode, fullNode, eventServer);
-    return tronWeb;
-  }
+@JS()
+extension type JSTronTIPChainChanged._(JSObject o) implements JSAny {
+  external String get chain;
+  external String get chainId;
+  external String get netVersion;
+  external String get solidityNode;
+  external String get fullNode;
+  external String get eventServer;
+  external factory JSTronTIPChainChanged(
+      {required String chainId,
+      required String netVersion,
+      required String solidityNode,
+      required String fullNode,
+      required String eventServer,
+      required String chain});
 }
 
-class TronAccountsChanged {
-  final List<String> accounts;
-  final JSTronDefaultAddress? defaultAddress;
-  TronAccountsChanged(
-      {required List<String> accounts, required this.defaultAddress})
-      : accounts = accounts.imutable;
-  factory TronAccountsChanged.fromJson(Map<String, dynamic> json) {
-    return TronAccountsChanged(
-        accounts: (json["accounts"] as List).cast(),
-        defaultAddress: json["defaultAddress"] == null
-            ? null
-            : JSTronDefaultAddress.fromJson(json["defaultAddress"]));
+extension type JSSTronWalletAccount._(JSObject _)
+    implements JSWalletStandardAccount {
+  factory JSSTronWalletAccount.setup(
+      {required String address,
+      required List<int>? publicKey,
+      required String chain,
+      required String hex}) {
+    return JSSTronWalletAccount._(JSObject())
+      ..address = address
+      ..publicKey =
+          publicKey == null ? null : APPJSUint8Array.fromList(publicKey)
+      ..chains = [chain.toJS].toJS
+      ..features = JSTronConst.defaultAccountFeatures
+      ..hex = hex;
   }
-  Map<String, dynamic> toJson() {
-    return {"accounts": accounts, "defaultAddress": defaultAddress?.toJson()};
-  }
-
-  JSAny? get toJSEvent => accounts.jsify();
-
-  @JSExport("toString")
-  @override
-  String toString() {
-    return "TronAccountsChanged${toJson()}";
-  }
+  external String get hex;
+  external set hex(String _);
 }
 
-class TronChainChanged {
-  @JSExport("chainId")
-  final String chainId;
-  final BigInt netVersion;
-  final String solidityNode;
-  final String fullNode;
-  final JSTronDefaultAddress? address;
-  TronChainChanged(
-      {required this.netVersion,
-      required this.fullNode,
-      required this.solidityNode,
-      required this.address})
-      : chainId = netVersion.toRadix16;
-  factory TronChainChanged.fromJson(Map<String, dynamic> json) {
-    return TronChainChanged(
-        netVersion: BigInt.parse(json["net_version"]),
-        fullNode: json["fullNode"],
-        solidityNode: json["solidityNode"],
-        address: json["address"] == null
-            ? null
-            : JSTronDefaultAddress.fromJson((json["address"] as Map).cast()));
+@JS()
+extension type TronWalletAdapterSignTransactionFeature(JSAny _)
+    implements JSAny {
+  factory TronWalletAdapterSignTransactionFeature.setup(
+      {required JSFunction signAndSendTransaction,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return TronWalletAdapterSignTransactionFeature(JSObject())
+      ..signTransaction = signAndSendTransaction
+      ..version = version;
   }
-  Map<String, dynamic> toJson() {
-    return {
-      "net_version": netVersion.toString(),
-      "fullNode": fullNode,
-      "solidityNode": solidityNode,
-      "address": address?.toJson()
-    };
-  }
+  external set version(String version);
+  external set signTransaction(JSFunction _);
+}
 
-  JSAny? get toJSEvent => createJSInteropWrapper(this);
-  @JSExport("toString")
-  @override
-  String toString() {
-    return "ProviderConnectInfo${{"chainId": chainId}}";
+@JS()
+extension type TronWalletAdapterSignMessageFeature(JSAny _) implements JSAny {
+  factory TronWalletAdapterSignMessageFeature.setup(
+      {required JSFunction signMessage,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return TronWalletAdapterSignMessageFeature(JSObject())
+      ..signMessage = signMessage
+      ..version = version;
   }
+  external set version(String version);
+  external set signMessage(JSFunction _);
+}
+@JS()
+extension type TronWalletAdapterConnectFeature(JSAny _) implements JSAny {
+  factory TronWalletAdapterConnectFeature.setup(
+      {required JSFunction connect,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return TronWalletAdapterConnectFeature(JSObject())
+      ..connect = connect
+      ..version = version;
+  }
+  external set version(String version);
+  external set connect(JSFunction _);
+}
+@JS()
+extension type JSTronWalletStandardConnect._(JSObject _) implements JSAny {
+  factory JSTronWalletStandardConnect.setup(
+      List<JSSTronWalletAccount> accounts) {
+    return JSTronWalletStandardConnect._(JSObject())..accounts = accounts.toJS;
+  }
+  external JSArray<JSSTronWalletAccount> get accounts;
+  external set accounts(JSArray<JSSTronWalletAccount> _);
+}
+@JS()
+extension type JSTronSignMessageParams._(JSObject o) implements JSAny {
+  external JSSTronWalletAccount? get account;
+  external APPJSUint8Array? get message;
+  static const List<String> peroperties = ['account', 'message'];
+}
+@JS()
+extension type JSTronSignatureResponse._(JSObject o) implements JSAny {
+  factory JSTronSignatureResponse.setup(List<int> signature) {
+    return JSTronSignatureResponse._(JSObject())
+      ..signature = APPJSUint8Array.fromList(signature);
+  }
+  external APPJSUint8Array get signature;
+  external set signature(APPJSUint8Array _);
+}
+@JS()
+extension type JSTronWalletStandardTransactionParams._(JSObject o)
+    implements JSAny {
+  external JSSTronWalletAccount get account;
+  external APPJSUint8Array get transaction;
+  static const List<String> properties = ['account', 'transaction'];
+}
+@JS()
+extension type JSTronWalletStandardTransactionResponse._(JSObject o)
+    implements JSAny {
+  factory JSTronWalletStandardTransactionResponse.setup(
+      List<int> signedTransaction) {
+    return JSTronWalletStandardTransactionResponse._(JSObject())
+      ..signedTransaction = APPJSUint8Array.fromList(signedTransaction);
+  }
+  external APPJSUint8Array get signedTransaction;
+  external set signedTransaction(APPJSUint8Array _);
 }

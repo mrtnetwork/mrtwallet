@@ -68,12 +68,14 @@ enum SigningRequestNetwork {
 class BitcoinSigning extends GlobalSignRequest {
   final int sighash;
   final bool useTaproot;
+  final bool useBchSchnorr;
   BitcoinSigning(
       {required super.digest,
       required this.sighash,
       required this.useTaproot,
       required Bip32AddressIndex super.index,
-      required super.network})
+      required super.network,
+      required this.useBchSchnorr})
       : assert(
             network == SigningRequestNetwork.bitcoin ||
                 network == SigningRequestNetwork.bitcoinCash,
@@ -99,13 +101,14 @@ class BitcoinSigning extends GlobalSignRequest {
         useTaproot: values.elementAt(3),
         index:
             Bip32AddressIndex.fromCborBytesOrObject(obj: values.getCborTag(0)),
-        network: network);
+        network: network,
+        useBchSchnorr: values.elementAs(4));
   }
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength(
-            [index.toCbor(), digest, sighash, useTaproot]),
+            [index.toCbor(), digest, sighash, useTaproot, useBchSchnorr]),
         network.tag);
   }
 }

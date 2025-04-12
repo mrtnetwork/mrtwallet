@@ -8,7 +8,6 @@ import 'package:mrt_wallet/app/live_listener/live.dart';
 import 'package:mrt_wallet/app/models/models/typedef.dart';
 import 'package:mrt_wallet/app/synchronized/basic_lock.dart';
 import 'package:mrt_wallet/app/utils/method/utiils.dart';
-// import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/controller/models/key.dart';
 import 'package:mrt_wallet/future/wallet/controller/models/login_history.dart';
@@ -41,11 +40,7 @@ class ExtentionSessionStorageConst {
       data: const [],
       requestId: "0",
       type: WalletEventTypes.windowId);
-  // static final create = WalletEvent(
-  //     clientId: "",
-  //     data: const [],
-  //     requestId: "1",
-  //     type: WalletEventTypes.popup);
+
   static final ping = WalletEvent(
       clientId: "",
       data: const [],
@@ -185,6 +180,16 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
       JSWalletEvent? message, MessageSender sender, JSFunction sendResponse) {
     final event = message?.toEvent();
     switch (event?.type) {
+      case WalletEventTypes.openExtension:
+        sendResponse.callAsFunction(
+            null,
+            WalletEvent(
+                    clientId: "",
+                    data: const [],
+                    requestId: "0",
+                    type: WalletEventTypes.popup)
+                .toJsEvent());
+        return true;
       case WalletEventTypes.popup:
         sendResponse.callAsFunction(null, message);
         return true;
@@ -315,19 +320,24 @@ mixin ExtentionWalletHandler on Web3RequestControllerImpl {
   }
 
   @override
-  Future<void> updatePermission(Web3APPAuthentication updatePermission) async {
-    final update =
-        (await walletCore.updateWeb3Application(updatePermission)).result;
-    final tabs =
-        await extension.tabs.query_(host: updatePermission.applicationId);
-    if (tabs.isNotEmpty) {
+  Future<void> sendMessageToClient(
+      Web3EncryptedMessage message, String applicationId) async {
+    List<ChromeWindow> windows = await extension.windows.getAll_(
+        populate: true,
+        windowTypes: [ExtentionSessionStorageConst.normalTabType]);
+    for (final w in windows) {
+      final tabs = w.tabs?.toDart ?? [];
       for (final i in tabs) {
+        if (!i.active) continue;
         if (i.id == null) continue;
-        final event = toResponseEvent(
-            id: "${i.id}",
-            type: WalletEventTypes.message,
-            data: update.toCbor().encode());
-        sendToClient(event);
+        final id = Web3APPAuthentication.toApplicationId(i.url);
+        if (id == applicationId) {
+          final event = toResponseEvent(
+              id: "${i.id}",
+              type: WalletEventTypes.message,
+              data: message.toCbor().encode());
+          sendToClient(event);
+        }
       }
     }
   }

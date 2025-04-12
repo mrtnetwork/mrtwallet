@@ -7,8 +7,7 @@ import 'package:mrt_wallet/wallet/models/balance/balance.dart';
 import 'package:mrt_wallet/wallet/models/network/network.dart';
 import 'package:mrt_wallet/wallet/models/nfts/nfts.dart';
 
-import 'package:bitcoin_base/bitcoin_base.dart'
-    show BitcoinBaseAddress, BitcoinAddressType;
+import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/token/token.dart';
 import 'package:mrt_wallet/crypto/utils/address/utils.dart';
@@ -143,6 +142,10 @@ class IBitcoinAddress
 
   @override
   final int network;
+  UtxoAddressDetails toUtxoRequest() {
+    return UtxoAddressDetails(
+        publicKey: BytesUtils.toHexString(publicKey), address: networkAddress);
+  }
 
   @override
   List get variabels => [addressType, keyIndex, network];
@@ -201,6 +204,44 @@ class IBitcoinAddress
   @override
   bool isEqual(ChainAccount other) {
     return network == other.network && orginalAddress == other.orginalAddress;
+  }
+
+  Script? witnessScript() {
+    switch (addressType) {
+      case SegwitAddressType.p2wsh:
+      case P2shAddressType.p2wshInP2sh:
+        final publicKey = ECPublic.fromBytes(this.publicKey);
+        return publicKey.toP2wshScript();
+      default:
+        return null;
+    }
+  }
+
+  Script? tapScript() {
+    return null;
+  }
+
+  Script? redeemScript() {
+    if (!addressType.isP2sh) return null;
+    final publicKey = ECPublic.fromBytes(this.publicKey);
+    switch (addressType) {
+      case P2shAddressType.p2wshInP2sh:
+        return publicKey.toP2wshAddress().toScriptPubKey();
+      case P2shAddressType.p2wpkhInP2sh:
+        return publicKey.toSegwitAddress().toScriptPubKey();
+      case P2shAddressType.p2pkInP2sh:
+      case P2shAddressType.p2pkInP2sh32:
+      case P2shAddressType.p2pkInP2shwt:
+      case P2shAddressType.p2pkInP2sh32wt:
+        return publicKey.toRedeemScript(mode: keyType);
+      case P2shAddressType.p2pkhInP2sh:
+      case P2shAddressType.p2pkhInP2sh32:
+      case P2shAddressType.p2pkhInP2shwt:
+      case P2shAddressType.p2pkhInP2sh32wt:
+        return publicKey.toAddress(mode: keyType).toScriptPubKey();
+      default:
+        return null;
+    }
   }
 
   @override
@@ -304,6 +345,12 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
   final BitcoinMultiSignatureAddress multiSignatureAddress;
 
   @override
+  UtxoAddressDetails toUtxoRequest() {
+    return UtxoAddressDetails.multiSigAddress(
+        multiSigAddress: multiSignatureAddress, address: networkAddress);
+  }
+
+  @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
@@ -352,4 +399,38 @@ class IBitcoinMultiSigAddress extends IBitcoinAddress
 
   @override
   IAdressType get iAddressType => IAdressType.multisigByPublicKey;
+
+  @override
+  Script? witnessScript() {
+    switch (addressType) {
+      case SegwitAddressType.p2wsh:
+      case P2shAddressType.p2wshInP2sh:
+        return multiSignatureAddress.multiSigScript;
+      default:
+        return null;
+    }
+  }
+
+  @override
+  Script? redeemScript() {
+    if (!addressType.isP2sh) return null;
+    switch (addressType) {
+      case P2shAddressType.p2wshInP2sh:
+        return P2wshAddress.fromScript(
+                script: multiSignatureAddress.multiSigScript)
+            .toScriptPubKey();
+      case P2shAddressType.p2pkInP2sh:
+      case P2shAddressType.p2pkInP2sh32:
+      case P2shAddressType.p2pkInP2shwt:
+      case P2shAddressType.p2pkInP2sh32wt:
+        return multiSignatureAddress.multiSigScript;
+      case P2shAddressType.p2pkhInP2sh:
+      case P2shAddressType.p2pkhInP2sh32:
+      case P2shAddressType.p2pkhInP2shwt:
+      case P2shAddressType.p2pkhInP2sh32wt:
+        return multiSignatureAddress.multiSigScript;
+      default:
+        return null;
+    }
+  }
 }

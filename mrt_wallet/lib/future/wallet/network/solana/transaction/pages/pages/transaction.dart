@@ -61,9 +61,6 @@ class SolanaTransactionFieldsView extends StatelessWidget {
                                                         account:
                                                             controller.account,
                                                         showMultiSig: true),
-                                                minExtent: 0.5,
-                                                maxExtend: 0.9,
-                                                initialExtend: 0.7,
                                                 centerContent: false,
                                               )
                                               .then(switchAccount);
@@ -279,7 +276,6 @@ class _SolanaTransferFields extends StatelessWidget {
                       context
                           .openSliverBottomSheet<BigInt>(
                         "setup_output_amount".tr,
-                        initialExtend: 1,
                         child: SetupNetworkAmount(
                           token: field.token,
                           max: max,
@@ -326,15 +322,12 @@ class _SolanaTransferFields extends StatelessWidget {
             onRemove: () {
               context
                   .openSliverBottomSheet<List<ReceiptAddress<SolAddress>>>(
-                      "receiver_address".tr,
-                      bodyBuilder: (c) =>
-                          SelectRecipientAccountView<SolAddress>(
-                              account: controller.account,
-                              scrollController: c,
-                              multipleSelect: true),
-                      maxExtend: 1,
-                      minExtent: 0.8,
-                      initialExtend: 0.9)
+                "receiver_address".tr,
+                bodyBuilder: (c) => SelectRecipientAccountView<SolAddress>(
+                    account: controller.account,
+                    scrollController: c,
+                    multipleSelect: true),
+              )
                   .then(
                 (value) {
                   field.onAddRecever(value, (s) {
@@ -368,9 +361,6 @@ class _CreateAssociatedTokenAccountFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "owner_address".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
@@ -394,9 +384,6 @@ class _CreateAssociatedTokenAccountFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "mint_address".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
@@ -420,9 +407,6 @@ class _CreateAssociatedTokenAccountFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "program_address".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
@@ -484,9 +468,6 @@ class _CreateAccountFields extends StatelessWidget {
                     account: controller.account,
                     showMultiSig: true,
                   ),
-                  minExtent: 0.5,
-                  maxExtend: 0.9,
-                  initialExtend: 0.7,
                   centerContent: false,
                 )
                 .then(field.changeAssetOutputAddress);
@@ -500,9 +481,6 @@ class _CreateAccountFields extends StatelessWidget {
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>("owner".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
@@ -565,7 +543,6 @@ class _CreateAccountFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "lamports".tr,
-                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     token: controller.network.coinParam.token,
                     max: controller.address.address.currencyBalance -
@@ -600,9 +577,6 @@ class _InitializeMintFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "program_id".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
@@ -621,9 +595,6 @@ class _InitializeMintFields extends StatelessWidget {
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>("mint".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
@@ -643,9 +614,6 @@ class _InitializeMintFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "mint_authority".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
@@ -666,9 +634,6 @@ class _InitializeMintFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "freeze_authority".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
@@ -737,9 +702,6 @@ class _MintToFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "program_id".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                         account: controller.account, scrollController: sc))
                 .then(
@@ -758,9 +720,6 @@ class _MintToFields extends StatelessWidget {
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>("mint".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
@@ -785,9 +744,6 @@ class _MintToFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "authority".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
@@ -813,9 +769,6 @@ class _MintToFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<SolAddress>>(
                     "destination".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (sc) => SelectRecipientAccountView<SolAddress>(
                           account: controller.account,
                           scrollController: sc,
@@ -873,7 +826,6 @@ class _MintToFields extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
               "amount".tr,
-              initialExtend: 1,
               child: SetupNetworkAmount(
                 token: field.token,
                 max: maxU64,

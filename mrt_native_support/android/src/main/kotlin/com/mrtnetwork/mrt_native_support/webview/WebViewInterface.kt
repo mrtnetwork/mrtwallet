@@ -83,7 +83,10 @@ interface MrtWebViewInterface : MrtCore {
                         webViewFactory.reload()
                         result.success(null)
                     }
-
+                    WebViewConst.clearCache -> {
+                        webViewFactory.clearCache()
+                        result.success(null)
+                    }
                     WebViewConst.injectJavaScript -> {
                         val script: String? = args["script"] as String?
                         if (script == null) {

@@ -28,8 +28,6 @@ class SuiWeb3FieldsView extends StatelessWidget {
       case Web3SuiRequestMethods.signAndExecuteTransactionBlock:
         return SuiWeb3TransactionFieldsView(
             request: request.cast(), wallet: wallet);
-      case Web3SuiRequestMethods.switchNetwork:
-        return SuiWeb3GlobalFieldsView(request: request, wallet: wallet);
       default:
     }
     return WidgetConstant.sizedBox;

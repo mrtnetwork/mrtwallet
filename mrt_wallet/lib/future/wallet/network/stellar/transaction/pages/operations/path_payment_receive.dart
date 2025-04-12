@@ -212,7 +212,6 @@ class _PathPaymentStrictReceiveOperationViewState
                                   .openSliverBottomSheet<
                                           StellarPickedIssueAsset>(
                                       "pick_an_asset".tr,
-                                      initialExtend: 1,
                                       child: StellarPickAssetView(chain: chain))
                                   .then(pickAssets);
                             },
@@ -253,7 +252,6 @@ class _Amount extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "send_max".tr,
-                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: state.asset!.token,
@@ -360,7 +358,6 @@ class _Amount extends StatelessWidget {
                                   .openSliverBottomSheet<
                                           StellarPickedIssueAsset>(
                                       "pick_an_asset".tr,
-                                      initialExtend: 1,
                                       child: StellarPickAssetView(
                                           chain: state.chain))
                                   .then(state.pickDestAssets);
@@ -384,7 +381,6 @@ class _Amount extends StatelessWidget {
                       context
                           .openSliverBottomSheet<BigInt>(
                             "destination_amount".tr,
-                            initialExtend: 1,
                             child: SetupNetworkAmount(
                               buttonText: "setup_amount".tr,
                               token: state.destAssets!.token,
@@ -443,7 +439,6 @@ class _Amount extends StatelessWidget {
                                                   .openSliverBottomSheet<
                                                           StellarPickedIssueAsset>(
                                                       "pick_an_asset".tr,
-                                                      initialExtend: 1,
                                                       child:
                                                           StellarPickAssetView(
                                                               chain:

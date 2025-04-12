@@ -187,7 +187,6 @@ class _PaymentOperationViewState extends State<PaymentOperationView>
                                   .openSliverBottomSheet<
                                           StellarPickedIssueAsset>(
                                       "pick_an_asset".tr,
-                                      initialExtend: 1,
                                       child: StellarPickAssetView(chain: chain))
                                   .then(pickAssets);
                             },
@@ -230,16 +229,13 @@ class _Amount extends StatelessWidget {
                         onPressed: () {
                           context
                               .openSliverBottomSheet<
-                                      ReceiptAddress<StellarAddress>>(
-                                  "receiver_address".tr,
-                                  bodyBuilder: (c) =>
-                                      SelectRecipientAccountView<
-                                              StellarAddress>(
-                                          account: state.chain,
-                                          scrollController: c),
-                                  maxExtend: 1,
-                                  minExtent: 0.8,
-                                  initialExtend: 0.9)
+                                  ReceiptAddress<StellarAddress>>(
+                                "receiver_address".tr,
+                                bodyBuilder: (c) =>
+                                    SelectRecipientAccountView<StellarAddress>(
+                                        account: state.chain,
+                                        scrollController: c),
+                              )
                               .then(state.setReceiver);
                         },
                         icon: Icon(Icons.edit,
@@ -263,13 +259,11 @@ class _Amount extends StatelessWidget {
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress<StellarAddress>>(
-                    "receiver_address".tr,
-                    bodyBuilder: (c) =>
-                        SelectRecipientAccountView<StellarAddress>(
-                            account: state.chain, scrollController: c),
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9)
+                  "receiver_address".tr,
+                  bodyBuilder: (c) =>
+                      SelectRecipientAccountView<StellarAddress>(
+                          account: state.chain, scrollController: c),
+                )
                 .then(state.setReceiver);
           },
         ),
@@ -281,7 +275,6 @@ class _Amount extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "setup_output_amount".tr,
-                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: state.asset!.token,

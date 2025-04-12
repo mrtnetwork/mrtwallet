@@ -81,7 +81,7 @@ class _UpdateCosmosTokenViewState extends State<UpdateCosmosTokenView>
           decimal: decimals,
         ),
         denom: tokenDenom,
-        averageGasPrice: avarageGasPrice,
+        averageGasPrice: avarageGasPrice ?? BigRational.zero,
         lowGasPrice: minGasPrice,
         highGasPrice: highGasPrice);
     context.pop(t);

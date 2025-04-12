@@ -4,7 +4,7 @@ import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/constant/constant.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 
-class Web3EthereumRequestMethods extends Web3RequestMethods {
+class Web3EthereumRequestMethods extends Web3NetworkRequestMethods {
   const Web3EthereumRequestMethods._(
       {required super.id,
       required super.name,

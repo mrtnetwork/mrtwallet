@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/provider/wallet_provider.dart';
+import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/web_request.dart';
 
 class TestWallet extends WalletCore {
@@ -14,12 +15,12 @@ class TestWallet extends WalletCore {
   void onChangeStatus(WalletPageStatus status, {String? message}) {}
 
   @override
-  bool onWeb3Request(Web3Request request) {
-    throw UnimplementedError();
-  }
+  int get storageVersion => 0;
 
   @override
-  int get storageVersion => 0;
+  bool onWeb3Request(Web3Request<dynamic, Web3WalletRequestParams> request) {
+    throw UnimplementedError();
+  }
 }
 
 void main() async {

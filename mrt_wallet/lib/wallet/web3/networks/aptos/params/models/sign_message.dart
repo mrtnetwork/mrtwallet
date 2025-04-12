@@ -5,7 +5,8 @@ import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/params/core/request.dart';
-import 'package:on_chain/aptos/src/aptos.dart';
+import 'package:mrt_wallet/wallet/web3/networks/aptos/permission/models/account.dart'
+    show Web3AptosChainAccount;
 
 class Web3AptosSignMessageResponse {
   final String? message;
@@ -92,7 +93,7 @@ class Web3AptosSignMessage
       this.application,
       this.messageBytes});
   factory Web3AptosSignMessage.aptos(
-      {required AptosAddress account,
+      {required Web3AptosChainAccount account,
       required String message,
       required String nonce,
       bool? chainId,
@@ -107,7 +108,7 @@ class Web3AptosSignMessage
         application: application);
   }
   factory Web3AptosSignMessage.wallet(
-      {required AptosAddress account, required String message}) {
+      {required Web3AptosChainAccount account, required String message}) {
     return Web3AptosSignMessage._(account: account, messageBytes: message);
   }
 
@@ -120,7 +121,8 @@ class Web3AptosSignMessage
       tags: Web3MessageTypes.walletRequest.tag,
     );
     return Web3AptosSignMessage._(
-        account: AptosAddress(values.elementAt(1)),
+        account: Web3AptosChainAccount.deserialize(
+            object: values.elementAs<CborTagValue>(1)),
         message: values.elementAs(2),
         address: values.elementAs(3),
         application: values.elementAs(4),
@@ -142,7 +144,7 @@ class Web3AptosSignMessage
     return CborTagValue(
         CborListValue.fixedLength([
           method.tag,
-          account.address,
+          account.toCbor(),
           message,
           address,
           application,
@@ -154,20 +156,7 @@ class Web3AptosSignMessage
   }
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      "account": account.address,
-      "message": message,
-      "address": address,
-      "application": application,
-      "chainId": chainId,
-      "nonce": nonce,
-      "messageBytes": messageBytes
-    };
-  }
-
-  @override
-  final AptosAddress account;
+  final Web3AptosChainAccount account;
   @override
   Web3AptosRequest<Web3AptosSignMessageResponse, Web3AptosSignMessage>
       toRequest(

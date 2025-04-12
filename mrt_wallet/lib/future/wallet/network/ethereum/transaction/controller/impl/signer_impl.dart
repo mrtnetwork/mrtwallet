@@ -1,11 +1,15 @@
-import 'package:blockchain_utils/signer/eth/eth_signature.dart';
+import 'package:blockchain_utils/signer/types/eth_signature.dart';
 import 'package:blockchain_utils/utils/binary/utils.dart';
-import 'package:mrt_wallet/future/wallet/network/ethereum/transaction/controller/impl/transaction_impl.dart';
-import 'package:mrt_wallet/wallet/models/signing/signing.dart';
+import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
+import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:on_chain/on_chain.dart';
 
-mixin ETHSignerImpl on EthTransactionImpl {
+mixin ETHSignerImpl {
+  WalletProvider get walletProvider;
+  WalletEthereumNetwork get network;
+  EthereumClient get apiProvider;
+  IEthAddress get address;
   void stopGasEstimate();
 
   Future<String> signTransaction(ETHTransaction transaction) async {
@@ -18,8 +22,8 @@ mixin ETHSignerImpl on EthTransactionImpl {
       sign: (generateSignature) async {
         final signRequest = GlobalSignRequest.eth(
             digest: tr.serialized, index: address.keyIndex.cast());
-        final sss = await generateSignature(signRequest);
-        return ETHSignature.fromBytes(sss.signature);
+        final ethSignature = await generateSignature(signRequest);
+        return ETHSignature.fromBytes(ethSignature.signature);
       },
     );
     final signature =

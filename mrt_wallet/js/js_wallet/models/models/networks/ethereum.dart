@@ -1,8 +1,24 @@
 import 'dart:js_interop';
-import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
+// import 'package:mrt_wallet/app/dev/logging.dart' show WalletLogging;
 import '../../../constant/constant.dart';
 import '../../models.dart';
+import 'wallet_standard.dart';
+
+class JSEthereumConst {
+  static final JSArray<JSString> defaultAccountFeatures =
+      ["ethereum:personalSign".toJS, "ethereum:sendTransaction".toJS].toJS;
+
+  static const String sendTransaction = "eth_sendTransaction";
+  static const String personalSign = "personal_sign";
+  static const String requestAccounts = "eth_requestAccounts";
+  static const String typedData = "eth_signTypedData";
+  static const String typedDataV3 = "eth_signTypedData_v3";
+  static const String typedDataV4 = "eth_signTypedData_v4";
+  static const String addChain = "wallet_addEthereumChain";
+  static const String eip6963Request = "eip6963:requestProvider";
+  static const String eip6963AnnounceProvider = "eip6963:announceProvider";
+}
 
 @JSExport()
 class ProxyMethodHandler<T> {
@@ -12,15 +28,23 @@ class ProxyMethodHandler<T> {
 
   @JSExport("set")
   bool set(JSAny object, JSAny? prop, JSAny? value, JSAny? receiver) {
-    return false;
+    try {
+      final r = Reflect.get(object, prop, receiver);
+      if (r.isUndefined) {
+        return Reflect.set(object, prop, value, receiver);
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 
   @JSExport("get")
   JSAny? get(JSAny object, JSAny? prop, JSAny? receiver) {
     if (prop?.isDefinedAndNotNull ?? false) {
       if (prop.isA<JSString>()) {
-        // ignore: invalid_runtime_check_with_js_interop_types
-        final pr = prop as String;
+        final pr = prop.dartify() as String;
+        // if (debugKey != null) WalletLogging.log("$debugKey: $pr");
         if (pr.startsWith("is")) {
           final r = Reflect.get(object, prop, receiver);
           if (r.isDefinedAndNotNull) return r;
@@ -36,10 +60,10 @@ class ProxyMethodHandler<T> {
 extension type Reflect._(JSObject _) implements JSAny {
   external factory Reflect();
   @JS("get")
-  external static JSAny? get(JSAny? object, JSAny? prob, JSAny? receiver);
+  external static JSAny? get(JSAny? object, JSAny? prop, JSAny? receiver);
   @JS("set")
   external static bool set(
-      JSAny? object, JSAny? prob, JSAny? value, JSAny? receiver);
+      JSAny? object, JSAny? prop, JSAny? value, JSAny? receiver);
 }
 
 @JS("Proxy")
@@ -47,7 +71,7 @@ extension type Proxy<T extends JSAny>._(JSObject _) implements JSAny {
   external factory Proxy(T target, JSObject handler);
 }
 
-extension type EIP1193(JSObject _) implements MRTNetworkAdapter {
+extension type EIP1193(JSObject _) implements JSAny {
   /// The request method is intended as a transport- and protocol-agnostic wrapper function for Remote Procedure Calls (RPCs).
   external set request(JSFunction f);
   @JS("request")
@@ -55,7 +79,8 @@ extension type EIP1193(JSObject _) implements MRTNetworkAdapter {
   external set on(JSFunction f);
   external set removeListener(JSFunction f);
   external set disconnect(JSFunction f);
-
+  external set enable(JSFunction f);
+  external set connect(JSFunction f);
   @JS("chainId")
   external set chainId(String? chainId);
   @JS("chainId")
@@ -65,33 +90,27 @@ extension type EIP1193(JSObject _) implements MRTNetworkAdapter {
   @JS("networkVersion")
   external String? get networkVersion;
   @JS("selectedAddress")
-  external set selectedAddress(JSString? selectedAddress);
+  external set selectedAddress(String? selectedAddress);
   @JS("selectedAddress")
-  external JSString? get selectedAddress;
+  external String? get selectedAddress;
 
   static EIP1193 setup(
       {required JSFunction request,
       required JSFunction on,
       required JSFunction removeListener,
       required JSFunction disconnect,
-      required JSFunction cancelAllListener,
-      required JSFunction onWalletRequest,
-      JSFunction? enable}) {
+      required JSFunction enable}) {
     final eip = EIP1193(JSObject());
-    eip.sendWalletRequest = onWalletRequest;
-    eip.cancelListener = removeListener;
-
     eip.request = request;
     eip.on = on;
     eip.removeListener = removeListener;
-    eip.providerInfo = EIP6963ProviderInfo.providerInfo;
-    eip.enable = enable;
-    eip.cancelAllListener = cancelAllListener;
     eip.disconnect = disconnect;
+    eip.enable = enable;
+    eip.connect = enable;
     return eip;
   }
 }
-@JS("EIP6963ProviderInfo")
+@JS()
 extension type EIP6963ProviderInfo._(JSObject _) implements MRTJsObject {
   external factory EIP6963ProviderInfo(
       {required String uuid,
@@ -108,85 +127,272 @@ extension type EIP6963ProviderInfo._(JSObject _) implements MRTJsObject {
       icon: JSWalletConstant.mrtPngBase64,
       rdns: JSWalletConstant.rdns);
 }
-@JS("EIP6963ProviderDetail")
-extension type EIP6963ProviderDetail._(JSObject _) implements MRTJsObject {
-  external factory EIP6963ProviderDetail(
-      {required EIP6963ProviderInfo info, required Proxy provider});
+@JS()
+extension type EIP6963._(JSObject _) implements MRTJsObject {
+  external factory EIP6963(
+      {required EIP6963ProviderInfo info, required JSAny? provider});
   external EIP6963ProviderInfo get info;
   external EIP1193 get provider;
 
-  static void setup(Proxy ethereum) {
+  static void setup(JSAny? ethereum) {
     final event = CustomEvent(
-        "eip6963:announceProvider",
+        JSEthereumConst.eip6963AnnounceProvider,
         EventInit(
             bubbles: true,
             cancelable: false,
-            detail: MRTJsObject.freeze(EIP6963ProviderDetail(
+            detail: MRTJsObject.freeze(EIP6963(
                 info: EIP6963ProviderInfo.providerInfo, provider: ethereum))));
     void onRequestProvider(CustomEvent r) {
       jsWindow.dispatchEvent(event);
       jsWindow.removeEventListener(
-          "eip6963:requestProvider", onRequestProvider.toJS);
+          JSEthereumConst.eip6963Request, onRequestProvider.toJS);
     }
 
     jsWindow.addEventListener(
-        "eip6963:requestProvider", onRequestProvider.toJS);
+        JSEthereumConst.eip6963Request, onRequestProvider.toJS);
     jsWindow.dispatchEvent(event);
   }
 }
 
-@JS("EthereumRequestInterface")
-extension type EthereumRequestParams._(JSObject o)
-    implements Web3JSRequestParams {
+@JS()
+extension type EthereumRequestParams._(JSObject o) implements JSAny {
   external factory EthereumRequestParams(
       {String? method, JSAny? params, int? id});
   external String get method;
   external set method(String? method);
   external JSArray<JSAny>? get params;
-  Map<String, dynamic> toJson() {
-    return {"method": method, "params": params == null ? [] : params.dartify()};
-  }
 }
 
-class EthereumAccountsChanged {
-  final List<String> accounts;
-  final String? defaultAddress;
-  EthereumAccountsChanged(
-      {required List<String> accounts, required this.defaultAddress})
-      : accounts = accounts.imutable;
-  factory EthereumAccountsChanged.fromJson(Map<String, dynamic> json) {
-    return EthereumAccountsChanged(
-        accounts: (json["accounts"] as List).cast(),
-        defaultAddress: json["defaultAddress"]);
-  }
-  Map<String, dynamic> toJson() {
-    return {"accounts": accounts, "defaultAddress": defaultAddress};
-  }
-
-  JSAny? get toJSEvent => accounts.jsify();
-  @JSExport("toString")
-  @override
-  String toString() {
-    return "EthereumAccountsChanged${toJson()}";
-  }
+@JS()
+extension type JSEthereumEIPChainChanged._(JSObject o) implements JSAny {
+  external String get chainId;
+  external String get netVersion;
+  external factory JSEthereumEIPChainChanged(
+      {required String chainId, required String netVersion});
 }
 
-class ProviderConnectInfo {
-  @JSExport("chainId")
-  final String chainId;
-  final BigInt netVersion;
-  ProviderConnectInfo(this.netVersion) : chainId = netVersion.toRadix16;
-  factory ProviderConnectInfo.fromJson(Map<String, dynamic> json) {
-    return ProviderConnectInfo(BigInt.parse(json["net_version"]));
-  }
-  Map<String, dynamic> toJson() {
-    return {"net_version": netVersion.toString()};
-  }
+@JS()
+extension type JSEthereumEIPProviderRpcError._(JSObject o) implements JSAny {
+  external String get message;
+  external int get code;
+  external JSAny? get data;
+  external factory JSEthereumEIPProviderRpcError(
+      {required String message, required int code, JSAny? data});
+}
 
-  JSAny? get toJSEvent => createJSInteropWrapper(this);
-  @JSExport("toString")
-  @override
-  String toString() {
-    return "ProviderConnectInfo${{"chainId": chainId}}";
+@JS()
+extension type JSEthereumTransactionAccessListParams._(JSObject o)
+    implements JSAny {
+  external String? get address;
+  external JSArray<JSString>? get storageKeys;
+}
+
+@JS()
+extension type JSEthereumTransactionParams._(JSObject o) implements JSAny {
+  external String? get nonce;
+  external String? get gasLimit;
+  external String? get maxPriorityFeePerGas;
+  external String? get maxFeePerGas;
+  external String? get gasPrice;
+  external String? get from;
+  external String? get to;
+  external String? get value;
+  external String? get data;
+  external String? get chainId;
+  external String? get type;
+  external JSArray<JSEthereumTransactionAccessListParams>? get accessList;
+  static const List<String> properties = [];
+}
+@JS()
+extension type JSEthereumWalletStandardTransactionParams._(JSObject o)
+    implements JSAny {
+  external JSSEthereumWalletAccount get account;
+  external JSEthereumTransactionParams get transaction;
+  static const List<String> properties = ['account', 'transaction'];
+}
+@JS()
+extension type JSEthereumSwitchChainParams._(JSObject o) implements JSAny {
+  external String get chainId;
+}
+
+@JS()
+extension type JSEthereumNativeCurrencyParams._(JSObject o) implements JSAny {
+  external int? get decimals;
+  external String? get name;
+  external String? get symbol;
+}
+@JS()
+extension type JSEthereumAddNewChainParams._(JSObject o) implements JSAny {
+  external String? get chainId;
+  external String? get chainName;
+  external JSArray<JSString>? get rpcUrls;
+  external JSArray<JSString>? get iconUrls;
+  external JSArray<JSString>? get blockExplorerUrls;
+  external JSEthereumNativeCurrencyParams? get nativeCurrency;
+}
+@JS()
+extension type JSSEthereumWalletAccount._(JSObject _)
+    implements JSWalletStandardAccount {
+  factory JSSEthereumWalletAccount.setup(
+      {required String address,
+      required List<int>? publicKey,
+      required String chain}) {
+    return JSSEthereumWalletAccount._(JSObject())
+      ..address = address
+      ..publicKey =
+          publicKey == null ? null : APPJSUint8Array.fromList(publicKey)
+      ..chains = [chain.toJS].toJS
+      ..features = JSEthereumConst.defaultAccountFeatures;
   }
+}
+@JS()
+extension type JSEthereumWalletStandardConnect._(JSObject _) implements JSAny {
+  factory JSEthereumWalletStandardConnect.setup(
+      List<JSSEthereumWalletAccount> accounts) {
+    return JSEthereumWalletStandardConnect._(JSObject())
+      ..accounts = accounts.toJS;
+  }
+  external JSArray<JSSEthereumWalletAccount> get accounts;
+  external set accounts(JSArray<JSSEthereumWalletAccount> _);
+}
+
+@JS()
+extension type EthereumWalletAdapterConnectFeature(JSAny _) implements JSAny {
+  factory EthereumWalletAdapterConnectFeature.setup(
+      {required JSFunction connect,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return EthereumWalletAdapterConnectFeature(JSObject())
+      ..connect = connect
+      ..version = version;
+  }
+  external set version(String version);
+  external set connect(JSFunction _);
+}
+@JS()
+extension type EthereumWalletAdapterPersonalSignFeature(JSAny _)
+    implements JSAny {
+  factory EthereumWalletAdapterPersonalSignFeature.setup(
+      {required JSFunction personalSign,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return EthereumWalletAdapterPersonalSignFeature(JSObject())
+      ..personalSign = personalSign
+      ..version = version;
+  }
+  external set version(String version);
+  external set personalSign(JSFunction _);
+}
+@JS()
+extension type EthereumWalletAdapterSendTransactionFeature(JSAny _)
+    implements JSAny {
+  factory EthereumWalletAdapterSendTransactionFeature.setup(
+      {required JSFunction sendTransaction,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return EthereumWalletAdapterSendTransactionFeature(JSObject())
+      ..sendTransaction = sendTransaction
+      ..version = version;
+  }
+  external set version(String version);
+  external set sendTransaction(JSFunction _);
+}
+@JS()
+extension type EthereumWalletAdapterSignTypedDataFeature(JSAny _)
+    implements JSAny {
+  factory EthereumWalletAdapterSignTypedDataFeature.setup(
+      {required JSFunction signTypedData,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return EthereumWalletAdapterSignTypedDataFeature(JSObject())
+      ..signTypedData = signTypedData
+      ..version = version;
+  }
+  external set version(String version);
+  external set signTypedData(JSFunction _);
+}
+@JS()
+extension type EthereumWalletAdapterSignTypedDataV4Feature(JSAny _)
+    implements JSAny {
+  factory EthereumWalletAdapterSignTypedDataV4Feature.setup(
+      {required JSFunction signTypedDataV4,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return EthereumWalletAdapterSignTypedDataV4Feature(JSObject())
+      ..signTypedDataV4 = signTypedDataV4
+      ..version = version;
+  }
+  external set version(String version);
+  external set signTypedDataV4(JSFunction _);
+}
+@JS()
+extension type EthereumWalletAdapterSignTypedDataV3Feature(JSAny _)
+    implements JSAny {
+  factory EthereumWalletAdapterSignTypedDataV3Feature.setup(
+      {required JSFunction signTypedDataV3,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return EthereumWalletAdapterSignTypedDataV3Feature(JSObject())
+      ..signTypedDataV3 = signTypedDataV3
+      ..version = version;
+  }
+  external set version(String version);
+  external set signTypedDataV3(JSFunction _);
+}
+@JS()
+extension type EthereumWalletAdapterAddNewChainFeature(JSAny _)
+    implements JSAny {
+  factory EthereumWalletAdapterAddNewChainFeature.setup(
+      {required JSFunction addNewChain,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return EthereumWalletAdapterAddNewChainFeature(JSObject())
+      ..addNewChain = addNewChain
+      ..version = version;
+  }
+  external set version(String version);
+  external set addNewChain(JSFunction _);
+}
+@JS()
+extension type EthereumWalletAdapteRequestFeature(JSAny _) implements JSAny {
+  factory EthereumWalletAdapteRequestFeature.setup(
+      {required JSFunction request,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return EthereumWalletAdapteRequestFeature(JSObject())
+      ..request = request
+      ..version = version;
+  }
+  external set version(String version);
+  external set request(JSFunction _);
+}
+@JS()
+extension type JSEthereumSignTypedDataParams._(JSObject o) implements JSAny {
+  external JSSEthereumWalletAccount? get account;
+  external JSAny? get typedData;
+  static const List<String> peroperties = ['account', 'typedData'];
+}
+@JS()
+extension type JSEthereumSignMessageParams._(JSObject o) implements JSAny {
+  external JSSEthereumWalletAccount? get account;
+  external APPJSUint8Array? get message;
+  static const List<String> peroperties = ['account', 'message'];
+}
+@JS()
+extension type JSEthereumSignatureResponse._(JSObject o) implements JSAny {
+  factory JSEthereumSignatureResponse.setup(List<int> signature) {
+    return JSEthereumSignatureResponse._(JSObject())
+      ..signature = APPJSUint8Array.fromList(signature);
+  }
+  external APPJSUint8Array get signature;
+  external set signature(APPJSUint8Array _);
+}
+@JS()
+extension type JSEthereumSendTransactionResponse._(JSObject o)
+    implements JSAny {
+  factory JSEthereumSendTransactionResponse.setup(String txId) {
+    return JSEthereumSendTransactionResponse._(JSObject())..txId = txId;
+  }
+  external String get txId;
+  external set txId(String _);
+}
+@JS()
+extension type JSEthereumSwitchChainResponse._(JSObject o) implements JSAny {
+  factory JSEthereumSwitchChainResponse.setup(String chainId) {
+    return JSEthereumSwitchChainResponse._(JSObject())..chainId = chainId;
+  }
+  external String get chainId;
+  external set chainId(String _);
 }

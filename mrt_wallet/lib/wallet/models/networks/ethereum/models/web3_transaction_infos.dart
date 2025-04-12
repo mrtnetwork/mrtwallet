@@ -14,6 +14,7 @@ class Web3EthereumTransactionRequestInfos {
   final String? data;
   final EthereumTransactionDataInfo? dataInfo;
   final ReceiptAddress<ETHAddress>? destination;
+  final ETHTransactionType type;
 
   final IntegerBalance value;
   final EthereumInitFee? initFee;
@@ -23,12 +24,13 @@ class Web3EthereumTransactionRequestInfos {
       this.data,
       this.dataInfo,
       required this.value,
+      required this.type,
       this.initFee});
-  factory Web3EthereumTransactionRequestInfos({
-    required Web3EthreumSendTransaction transaction,
-    required ReceiptAddress<ETHAddress>? destination,
-    required EthereumTransactionDataInfo? contractInfo,
-  }) {
+  factory Web3EthereumTransactionRequestInfos(
+      {required Web3EthreumSendTransaction transaction,
+      required ReceiptAddress<ETHAddress>? destination,
+      required EthereumTransactionDataInfo? contractInfo,
+      required ETHTransactionType type}) {
     EthereumInitFee? initFee;
     if (transaction.hasFee) {
       initFee = EthereumInitFee(
@@ -42,7 +44,8 @@ class Web3EthereumTransactionRequestInfos {
         data: BytesUtils.toHexString(transaction.data, prefix: "0x"),
         initFee: initFee,
         destination: destination,
-        dataInfo: contractInfo);
+        dataInfo: contractInfo,
+        type: type);
   }
 }
 

@@ -44,7 +44,10 @@ class PageRouter {
 
   /// cardano
   static const String cardanoTransaction = "/cardano/transaction";
+  static const String cosmosTransfer = "/cosmos/transfer";
   static const String cosmosTransaction = "/cosmos/transaction";
+
+  /// CosmosTransactionFieldsView
 
   static const String importCosmosNetwork = "/cosmos/networks/import";
   static const String setupGenericAddress = "/networks/setup_address";
@@ -133,6 +136,7 @@ class PageRouter {
   static const String moneroTransfer = "/monero/transfer";
 
   /// web3
+  static const String web3 = "web3/";
   static const String web3Ethereum = "web3/ethereum";
   static const String web3Tron = "web3/tron";
   static const String web3Solana = "web3/solana";
@@ -141,6 +145,10 @@ class PageRouter {
   static const String web3Substrate = "web3/substrate";
   static const String web3Aptos = "web3/aptos";
   static const String web3Sui = "web3/sui";
+  static const String web3Cosmos = "web3/cosmos";
+  static const String web3Bitcoin = "web3/bitcoin";
+  static const String web3Permission = "web3/permission";
+  static const String web3Global = "web3/connect";
 
   static const String webview = "web/";
 
@@ -237,8 +245,10 @@ class PageRouter {
         return const TonImportJettonsView();
       case cardanoTransaction:
         return const SendCardanoTransactionView();
-      case cosmosTransaction:
+      case cosmosTransfer:
         return const CosmosTransferTransactionView();
+      case cosmosTransaction:
+        return const CosmosTransactionFieldsView();
       case solanaTransaction:
         return const SolanaTransactionFieldsView();
       case updateSolanaProviders:
@@ -303,6 +313,10 @@ class PageRouter {
         return const AptosWeb3FieldsView();
       case web3Sui:
         return const SuiWeb3FieldsView();
+      case web3Cosmos:
+        return const CosmosWeb3FieldsView();
+      case web3Bitcoin:
+        return const BitcoinWeb3FieldsView();
       case web3Solana:
         return const SolanaWeb3FieldsView();
       case updateEthereumProvider:
@@ -342,6 +356,8 @@ class PageRouter {
         return const AptosMultisigAccountInfoView();
       case aptosMultisigAddress:
         return const SetupAptosMultisigAddress();
+      case web3Global:
+        return const GlobalWeb3FieldsView();
 
       default:
         return const HomeScreen();
@@ -421,7 +437,7 @@ class PageRouter {
       case NetworkType.cardano:
         return cardanoTransaction;
       case NetworkType.cosmos:
-        return cosmosTransaction;
+        return cosmosTransfer;
       case NetworkType.substrate:
         return substrateTransfer;
       case NetworkType.stellar:
@@ -454,6 +470,11 @@ class PageRouter {
         return web3Aptos;
       case NetworkType.sui:
         return web3Sui;
+      case NetworkType.cosmos:
+        return web3Cosmos;
+      case NetworkType.bitcoinCash:
+      case NetworkType.bitcoinAndForked:
+        return web3Bitcoin;
       default:
         return null;
     }

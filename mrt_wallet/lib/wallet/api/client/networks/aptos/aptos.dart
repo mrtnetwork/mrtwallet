@@ -214,14 +214,25 @@ class AptosClient extends NetworkClient<IAptosAddress, AptosAPIProvider> {
     return chainId.chainId;
   }
 
+  Future<int> getCurrenctChainId() async {
+    final currentChainId = network?.coinParam.aptosChainType.id;
+    if (currentChainId != null) {
+      return currentChainId;
+    }
+    final chainId = await provider.request(AptosRequestGetLedgerInfo());
+    return chainId.chainId;
+  }
+
   Future<bool> validateGraphQl() async {
     final chainId = await provider.request(AptosGraphQLRequestChainId());
-    return chainId == network?.coinParam.aptosChainType.chainId;
+    final aptosNetwork = AptosChainType.fromValue(chainId);
+    return aptosNetwork == network?.coinParam.aptosChainType;
   }
 
   Future<bool> validateFullNode() async {
     final chainId = await getChainId();
-    return chainId == network?.coinParam.aptosChainType.chainId;
+    final aptosNetwork = AptosChainType.fromValue(chainId);
+    return aptosNetwork == network?.coinParam.aptosChainType;
   }
 
   @override

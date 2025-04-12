@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:mrt_native_support/models/models.dart';
 import 'package:mrt_native_support/platform_interface.dart';
 import 'package:mrt_wallet/app/core.dart';
+import 'package:mrt_wallet/future/state_managment/core/observer.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/controller/wallet/ui_wallet.dart';
@@ -40,12 +41,14 @@ class WebViewStateController extends StateController
         WebViewListener,
         WebViewTabImpl,
         HttpImpl {
+  @override
+  final WalletRouteObserver obs;
   final WalletProvider walletProvider;
   final Cancelable _cancelable = Cancelable();
   final _lock = SynchronizedLock();
   @override
   UIWallet get walletCore => walletProvider.wallet;
-  WebViewStateController(this.walletProvider);
+  WebViewStateController({required this.walletProvider, required this.obs});
   String? _pageScript;
   String? _webviewWalletScript;
 
@@ -89,8 +92,6 @@ class WebViewStateController extends StateController
   Future<void> _runPageScripts(String viewId) async {
     final tronWeb = await PlatformUtils.loadAssetText(APPConst.assetsTronWeb);
     await _loadScript(viewType: viewId, script: tronWeb);
-    final solanaJs = await PlatformUtils.loadAssetText(APPConst.bnJs);
-    await _loadScript(viewType: viewId, script: solanaJs);
     final script = await _loadWebViewPageScript();
     await _loadScript(viewType: viewId, script: script);
   }
@@ -118,17 +119,14 @@ class WebViewStateController extends StateController
   }
 
   @override
-  Future<void> updatePermission(Web3APPAuthentication updatePermission) async {
-    final message =
-        (await walletCore.updateWeb3Application(updatePermission)).result;
+  Future<void> sendMessageToClient(
+      Web3EncryptedMessage message, String applicationId) async {
     await _lock.synchronized(() async {
       final lastEvent = this.lastEvent.value;
       final lastEventUri = lastEvent?.evnet.url;
       if (lastEventUri != null) {
-        final appLocationId =
-            Web3APPAuthentication.toApplicationId(lastEventUri);
-
-        if (appLocationId == updatePermission.applicationId) {
+        final id = Web3APPAuthentication.toApplicationId(lastEventUri);
+        if (id == applicationId) {
           final event = toResponseEvent(
               id: lastEvent!.evnet.viewId,
               type: WalletEventTypes.message,
@@ -145,6 +143,7 @@ class WebViewStateController extends StateController
     return result != null;
   }
 
+  static const bool isWorker = true;
   Future<MRTScriptWalletStatus?> _activeScript(WebViewEvent event) async {
     final applicationId =
         Web3APPAuthentication.toApplicationId(lastEvent.value?.evnet.url);
@@ -158,10 +157,25 @@ class WebViewStateController extends StateController
         faviIcon: event.favicon);
 
     await _runPageScripts(event.viewId);
-    final script = await _loadWebViewScript();
-    final responseEvent = await getPageAuthenticated(
-        clientId: auth.viewType, info: client, additional: script);
-    final result = await _postEvent(responseEvent);
+    bool result;
+    if (isWorker) {
+      final script = await _loadWebViewScript();
+      final responseEvent = await getPageAuthenticated(
+          clientId: auth.viewType, info: client, additional: script);
+      result = await _postEvent(responseEvent);
+    } else {
+      final responseEvent = await getPageAuthenticated(
+          clientId: auth.viewType, info: client, additional: null);
+      result = await _postEvent(responseEvent);
+      if (result) {
+        updatePageScriptStatus(
+            status: result
+                ? MRTScriptWalletStatus.active
+                : MRTScriptWalletStatus.failed,
+            clientId: event.viewId);
+      }
+    }
+    // final
     if (!result) {
       return MRTScriptWalletStatus.failed;
     }
@@ -198,19 +212,21 @@ class WebViewStateController extends StateController
   @override
   void onPageRequest(WebViewEvent event) async {
     if (event.request == null) return;
-    final bool isWalletRequest = await _lock.synchronized(() async {
-      final requestType =
-          MRTScriptWalletStatus.fromJSWalletEvent(event.request?.type);
-      if (requestType != null) {
-        updatePageScriptStatus(
-            status: requestType, clientId: event.request!.clientId);
-        assert(requestType != MRTScriptWalletStatus.failed,
-            'page script activation failed: ${StringUtils.tryDecode(event.request?.data)}');
-        return false;
-      }
-      return true;
-    });
-    if (!isWalletRequest) return;
+    if (isWorker) {
+      final bool isWalletRequest = await _lock.synchronized(() async {
+        final requestType =
+            MRTScriptWalletStatus.fromJSWalletEvent(event.request?.type);
+        if (requestType != null) {
+          updatePageScriptStatus(
+              status: requestType, clientId: event.request!.clientId);
+          assert(requestType != MRTScriptWalletStatus.failed,
+              'page script activation failed: ${StringUtils.tryDecode(event.request?.data)}');
+          return false;
+        }
+        return true;
+      });
+      if (!isWalletRequest) return;
+    }
     final client = await createClientInfos(
         clientId: event.viewId,
         url: event.url,
@@ -230,7 +246,6 @@ class WebViewStateController extends StateController
 
     final request = Web3RequestApplicationInformation(
         info: client, request: event.request!);
-
     onWalletEvent(request);
     try {
       final responseEvent = await request.onCompleteRequest;

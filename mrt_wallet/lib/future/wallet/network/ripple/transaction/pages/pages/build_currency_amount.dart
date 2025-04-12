@@ -180,7 +180,6 @@ class _BuildRippleCurrencyAmountViewState
                                     context
                                         .openSliverBottomSheet<BigInt>(
                                           "xrp_amount".tr,
-                                          initialExtend: 1,
                                           child: SetupNetworkAmount(
                                             min: BigInt.zero,
                                             token: widget.account.network
@@ -233,9 +232,6 @@ class _BuildRippleCurrencyAmountViewState
                                       .openSliverBottomSheet<
                                               ReceiptAddress<XRPAddress>>(
                                           "token_amount".tr,
-                                          maxExtend: 1,
-                                          minExtent: 0.8,
-                                          initialExtend: 0.9,
                                           bodyBuilder: (c) =>
                                               SelectRecipientAccountView<
                                                   XRPAddress>(

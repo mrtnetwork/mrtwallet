@@ -127,6 +127,10 @@ class ProvidersConst {
           identifier: "${defaultidentifierName}tbtc4_1",
           url: "testnet4-electrumx.wakiyamap.dev:51001",
           protocol: ServiceProtocol.tcp),
+      ElectrumAPIProvider(
+          identifier: "${defaultidentifierName}tbtc4_2",
+          url: "wss://blackie.c3-soft.com:57012",
+          protocol: ServiceProtocol.websocket),
     ],
     2: <APIProvider>[
       ElectrumAPIProvider(

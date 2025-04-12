@@ -68,6 +68,8 @@ class CborTagsConst {
 
   // cosmos address
   static const List<int> cosmosAccount = [200, 198];
+  static const List<int> cosmosIbcChannelId = [198, 0];
+  static const List<int> cosmosAccountChannelId = [200, 198, 0];
 
   ///
   static const List<int> tonAccount = [200, 199];
@@ -223,15 +225,28 @@ class CborTagsConst {
 
   ///
   static const List<int> web3App = [161, 0, 0];
+  static const List<int> web3ChainIdentifier = [161, 0, 1];
+  static const List<int> web3EthereumChainIdentifier = [161, 0, 2];
+  static const List<int> web3TronChainIdentifier = [161, 0, 4];
+  static const List<int> web3AptosChainIdentifier = [161, 0, 5];
+  static const List<int> web3SubstrateChainIdentifier = [161, 0, 3];
+  static const List<int> web3CosmosChainIdentifier = [161, 0, 6];
   static const List<int> web3EthereumAccount = [161, 1, 1];
+  static const List<int> web3EthereumTransactionAccessList = [161, 1, 1, 0];
+  // static const List<int> web3EthereumExistsChains = [161, 1, 1, 1];
   static const List<int> web3TronAccount = [161, 2, 1];
   static const List<int> web3SolanaAccount = [161, 2, 2];
+  static const List<int> web3SolanaSignInParams = [161, 2, 2, 0];
+  static const List<int> web3SolanaSignMessageParams = [161, 2, 2, 1];
   static const List<int> web3TonAccount = [161, 2, 3];
   static const List<int> web3StellarAccount = [161, 2, 4];
   static const List<int> web3SubstrateAccount = [161, 2, 5];
-  static const List<int> web3SubstrateChainMetadata = [161, 2, 5, 0];
+
   static const List<int> web3AptosAccount = [161, 2, 6];
   static const List<int> web3SuiAccount = [161, 2, 7];
+  static const List<int> web3CosmosAccount = [161, 2, 8];
+  static const List<int> web3BitcoinAccount = [161, 2, 9];
+  static const List<int> web3BitcoinSendTransactionParams = [161, 2, 9, 0];
 
   /// address params
   static const List<int> bitcoinCashNewAddressParams = [12, 0];
@@ -258,4 +273,5 @@ class CborTagsConst {
 
   static const List<int> defaultChainConfig = [201, 0];
   static const List<int> moneroChainConfig = [201, 1];
+  static const List<int> cosmosChainConfig = [201, 2];
 }

@@ -47,6 +47,12 @@ class BitcoinStateController extends BitcoinTransactionImpl
         !setupAmount.isZero;
   }
 
+  void setFee(String? feeType, {BigInt? customFee}) {
+    super.changeFee(feeType, customFee: customFee);
+    onCalculateAmount();
+    notify();
+  }
+
   @override
   void sendTransaction() {
     if (!trReady) return;

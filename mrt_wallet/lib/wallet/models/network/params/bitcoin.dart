@@ -10,6 +10,8 @@ import 'package:mrt_wallet/wallet/models/token/token/token.dart';
 
 class BitcoinParams extends NetworkCoinParams<BaseBitcoinAPIProvider> {
   final BasedUtxoNetwork transacationNetwork;
+  bool get isBCH => transacationNetwork is BitcoinCashNetwork;
+  bool get isForked => isBCH || transacationNetwork is BitcoinSVNetwork;
 
   factory BitcoinParams.fromCborBytesOrObject(
       {List<int>? bytes, CborObject? obj}) {

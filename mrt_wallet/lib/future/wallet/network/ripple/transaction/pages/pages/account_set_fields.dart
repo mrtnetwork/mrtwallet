@@ -176,9 +176,6 @@ class RippleAccountSetFieldsView extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<XRPAddress>>(
                     "account_set_fields".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (c) => SelectRecipientAccountView<XRPAddress>(
                         account: account,
                         scrollController: c,

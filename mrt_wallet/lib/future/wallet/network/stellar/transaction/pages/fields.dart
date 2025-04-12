@@ -90,7 +90,6 @@ class StellarTransactionFieldsView extends StatelessWidget {
                                         callback: (operation) {
                                           return context.openSliverBottomSheet<
                                                   StellarTransactionOperation>(
-                                              initialExtend: 1,
                                               child:
                                                   StellarCreateTransactionOperationsView(
                                                       controller: controller,
@@ -131,7 +130,6 @@ class StellarTransactionFieldsView extends StatelessWidget {
                               context
                                   .openSliverBottomSheet<
                                           StellarTransactionOperation>(
-                                      initialExtend: 1,
                                       child:
                                           StellarCreateTransactionOperationsView(
                                               controller: controller),

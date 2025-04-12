@@ -133,7 +133,8 @@ class Web3SuiTransactionRequestController
   Future<void> initWeb3() async {
     liveRequest.addListener(_onChangeForm);
     form.onCompleteForm = _onCompleteForm;
-    await walletProvider.wallet.updateAccountBalance(account, address: address);
+    await walletProvider.wallet
+        .updateAccountBalance(account, addresses: [address]);
     final init = await MethodUtils.call(
         () => form.initForm(account: account, address: address));
     if (init.hasError) {

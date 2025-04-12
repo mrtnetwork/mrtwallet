@@ -6,8 +6,7 @@ import 'package:mrt_wallet/wallet/api/client/networks/solana/solana.dart';
 import 'package:mrt_wallet/wallet/constant/networks/solana.dart';
 import 'package:mrt_wallet/wallet/models/balance/integer/integer.dart';
 import 'package:mrt_wallet/wallet/models/networks/solana/models/web3_transaction_info.dart';
-import 'package:on_chain/solana/src/address/sol_address.dart';
-import 'package:on_chain/solana/src/transaction/transaction/transaction.dart';
+import 'package:on_chain/solana/solana.dart';
 
 class Web3SolanaSendTransactionForm
     extends SolanaWeb3Form<Web3SolanaSendTransaction> {
@@ -21,9 +20,16 @@ class Web3SolanaSendTransactionForm
     if (transaction.status.canRetry) {
       transaction.setSimulatePending();
       onChanged?.call();
+      final preflightCommitment =
+          transaction.sendTransactionOptions?.preflightCommitment;
+      final slot = transaction.sendTransactionOptions?.minContextSlot;
       final result = await MethodUtils.call(() async => await _client.simulate(
           transaction: transaction.transaction,
-          account: transaction.signer.networkAddress));
+          account: transaction.signer.networkAddress,
+          minContextSlot: slot == null ? null : MinContextSlot(slot: slot),
+          commitment: preflightCommitment == null
+              ? Commitment.processed
+              : Commitment.fromName(preflightCommitment)));
       if (result.hasError) {
         transaction.setSimulateErr();
       } else {

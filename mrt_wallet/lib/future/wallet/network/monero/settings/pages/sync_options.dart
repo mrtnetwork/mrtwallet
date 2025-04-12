@@ -664,9 +664,6 @@ class _AtHeightSyncOpetion extends StatelessWidget {
                               "select_account".tr,
                               child: SwitchOrSelectAccountView(
                                   account: state.account, showMultiSig: true),
-                              minExtent: 0.5,
-                              maxExtend: 0.9,
-                              initialExtend: 0.7,
                               centerContent: false,
                             )
                             .then(state.addAddress);

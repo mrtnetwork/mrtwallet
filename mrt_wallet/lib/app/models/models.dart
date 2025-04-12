@@ -5,3 +5,4 @@ export 'models/currencies.dart';
 export 'models/typedef.dart';
 export 'models/webview_tab.dart';
 export 'models/webview_storage.dart';
+export 'models/asset.dart';

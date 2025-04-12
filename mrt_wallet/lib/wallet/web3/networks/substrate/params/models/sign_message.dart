@@ -1,40 +1,21 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
-import 'package:mrt_wallet/app/utils/utils.dart';
 import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/params/core/request.dart';
-import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
-import 'package:polkadot_dart/polkadot_dart.dart';
+import 'package:mrt_wallet/wallet/web3/networks/substrate/permission/models/account.dart';
 
 class Web3SubstrateSignMessage
     extends Web3SubstrateRequestParam<Map<String, dynamic>> {
-  final BaseSubstrateAddress address;
+  @override
+  final Web3SubstrateChainAccount account;
   final String challeng;
   final String? content;
 
   Web3SubstrateSignMessage(
-      {required this.address, required this.challeng, this.content});
-
-  factory Web3SubstrateSignMessage.fromJson(Map<String, dynamic> json) {
-    const method = Web3SubstrateRequestMethods.signMessage;
-    String? content =
-        StringUtils.tryDecode(BytesUtils.fromHexString(json["challeng"]));
-    if (content != null) {
-      content = StrUtils.toRawString(content);
-    }
-    return Web3SubstrateSignMessage(
-        address: Web3ValidatorUtils.parseAddress<BaseSubstrateAddress>(
-            onParse: (obj) => BaseSubstrateAddress(obj),
-            key: "address",
-            method: method,
-            json: json),
-        challeng: Web3ValidatorUtils.parseHex<String>(
-            key: "challeng", method: method, json: json),
-        content: content);
-  }
+      {required this.account, required this.challeng, this.content});
 
   factory Web3SubstrateSignMessage.deserialize({
     List<int>? bytes,
@@ -49,7 +30,8 @@ class Web3SubstrateSignMessage
     );
     final List<int> challeng = values.elementAt(2);
     return Web3SubstrateSignMessage(
-        address: BaseSubstrateAddress(values.elementAt(1)),
+        account: Web3SubstrateChainAccount.deserialize(
+            object: values.elementAs<CborTagValue>(1)),
         challeng: BytesUtils.toHexString(challeng, prefix: "0x"),
         content: values.elementAt(3));
   }
@@ -63,24 +45,17 @@ class Web3SubstrateSignMessage
     return CborTagValue(
         CborListValue.fixedLength([
           method.tag,
-          address.address,
+          account.toCbor(),
           CborBytesValue(BytesUtils.fromHexString(challeng)),
           content
         ]),
         type.tag);
   }
 
-  @override
-  Map<String, dynamic> toJson() {
-    return {"address": address.toString(), "challeng": challeng};
-  }
-
   List<int> chalengBytes() {
     return BytesUtils.fromHexString(challeng);
   }
 
-  @override
-  BaseSubstrateAddress? get account => address;
   @override
   Web3SubstrateRequest<Map<String, dynamic>, Web3SubstrateSignMessage>
       toRequest(

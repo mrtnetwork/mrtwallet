@@ -4,94 +4,39 @@ class _SubstratePageControllerConst {
   static const String signMesssage = 'substrate_signMessage';
   static const String addSubstrateChain = 'wallet_addSubstrateChain';
   static const String signTransaction = 'substrate_signTransaction';
-  static final Web3JSRequestParams knownMetadata =
-      Web3JSRequestParams(method: "substrate_knownMetadata");
-  static final requestAccount =
-      Web3JSRequestParams(method: "substrate_requestAccounts");
+  static const String knownMetadata = 'substrate_knownMetadata';
+  // static final Web3JSRequestParams knownMetadata =
+  //     Web3JSRequestParams(method: "substrate_knownMetadata");
+  static final requestAccount = 'substrate_requestAccounts';
 }
 
-class SubstratePageController extends PageNetworkController {
+class SubstratePageController extends WalletStandardPageController {
   SubstratePageController(super.postMessage);
 
   final Map<JSEventType, List<JSFunction>> _networkListener = {
-    JSEventType.accountsChanged: [],
+    JSEventType.accountsChanged: []
   };
-  ProxyMethodHandler<SubstrateWalletAdapter>? _substrate;
-  Proxy<SubstrateWalletAdapter>? _proxy;
-  ProxyMethodHandler<SubstrateWalletAdapter> _createAdapter() {
-    final metadata = JSSubstrateWalletAdapterMetadata(JSObject());
-    final accounts = JSSubstrateWalletAdapterAccounts(JSObject());
-    final signer = JSSubstrateWalletAdapterSigner(JSObject());
-    final adapter = SubstrateWalletAdapter(JSObject());
-    signer.signPayload = sign.toJS;
-    signer.signRaw = signRaw.toJS;
-    signer.update = update.toJS;
-    metadata.get = _metadataGet.toJS;
-    metadata.provide = _metadataProvide.toJS;
-    accounts.get = _requestAccount.toJS;
-    accounts.subscribe = _listenAccount.toJS;
-    adapter.on = _addListener.toJS;
-    adapter.disconnect = _disconnectChain.toJS;
-    adapter.removeListener = _removeListener.toJS;
-    adapter.cancelListener = _removeListener.toJS;
-    adapter.sendWalletRequest = _postWalletRequest.toJS;
-    adapter.cancelAllListener = _cancelAllListeners.toJS;
-    adapter.metadata = metadata.toProxy();
-    adapter.accounts = accounts.toProxy();
-    adapter.signer = signer.toProxy();
-    adapter.connect = _enable.toJS;
-    adapter.enable = _enable.toJS;
-    adapter.name = JSWalletConstant.name;
-    adapter.version = JSWalletConstant.version;
+  ProxyMethodHandler<JSPolkadotJSWalletAdapter>? _substrate;
+  Proxy<JSPolkadotJSWalletAdapter>? _proxy;
 
-    return ProxyMethodHandler<SubstrateWalletAdapter>(adapter);
+  @override
+  void _initNetworkFeatures(JSWalletStandardFeature feature) {
+    _initJsPolkadotAdapter();
+    feature.substrateSignTransaction =
+        SubstrateWalletAdapterSubstrateSignTransactionFeature.setup(
+            signTransaction: signTransaction.toJS);
+    feature.substrateSignMessage =
+        SubstrateWalletAdapterSubstrateSignMessageFeature.setup(
+            signMessage: signMessage.toJS);
+    feature.substrateConnect =
+        JSSubstrateWalletStandardConnectFeature.setup(connect: _connect.toJS);
+    feature.substrateEvents =
+        JSWalletStandardEventsFeature.setup(on: _onEvents.toJS);
   }
 
-  JSPromise<JSAny?> sign(JSSubstrateTransaction transaction) {
-    final params = Web3JSRequestParams(
-        method: _SubstratePageControllerConst.signTransaction,
-        params: [transaction].toJS);
-    return _postNetworkRequest(params);
-  }
-
-  JSPromise<JSAny?> signRaw(JSSubstrateSign message) {
-    final params = Web3JSRequestParams(
-        method: _SubstratePageControllerConst.signMesssage,
-        params: [message].toJS);
-    return _postNetworkRequest(params);
-  }
-
-  JSPromise<JSAny?> update(JSAny? params) {
-    throw JSWalletConstant.methodDisabled;
-  }
-
-  JSPromise<JSAny?> _metadataGet([bool? any]) {
-    return _postNetworkRequest(_SubstratePageControllerConst.knownMetadata);
-  }
-
-  JSPromise<JSAny?> _metadataProvide(JSSubstrateMetadataProvide data) {
-    final params = Web3JSRequestParams(
-        method: _SubstratePageControllerConst.addSubstrateChain,
-        params: [data].toJS);
-    return _postNetworkRequest(params);
-  }
-
-  void _listenAccount(JSFunction cb) {
-    _networkListener[JSEventType.accountsChanged]!.add(cb);
-    _emitEvent(PageMessageEvent.build(event: JSEventType.accountsChanged));
-  }
-
-  Future<Proxy?> _connect() async {
-    return _proxy;
-  }
-
-  JSPromise<Proxy?> _enable(String origin) {
-    return _connect().toPromise;
-  }
-
-  void _initController() {
+  void _initJsPolkadotAdapter() {
     _substrate ??= _createAdapter();
-    _proxy ??= Proxy<SubstrateWalletAdapter>(
+    _proxy ??= Proxy<JSPolkadotJSWalletAdapter>(
         _substrate!.object, createJSInteropWrapper(_substrate!));
     if (injectedWeb3Nullable == null) {
       injectedWeb3 = JSInjectedWeb3(JSObject());
@@ -100,83 +45,84 @@ class SubstratePageController extends PageNetworkController {
     substrate = _proxy;
   }
 
-  JSPromise<JSAny?> _requestAccount([JSAny? data]) {
-    return _postNetworkRequest(_SubstratePageControllerConst.requestAccount);
+  ProxyMethodHandler<JSPolkadotJSWalletAdapter> _createAdapter() {
+    final metadata = JSSubstrateWalletAdapterMetadata(JSObject());
+    final accounts = JSSubstrateWalletAdapterAccounts(JSObject());
+    final signer = JSSubstrateWalletAdapterSigner(JSObject());
+    final adapter = JSPolkadotJSWalletAdapter(JSObject());
+    signer.signPayload = signTransaction.toJS;
+    signer.signRaw = signMessage.toJS;
+    signer.update = update.toJS;
+    metadata.get = _knownMetadata.toJS;
+    metadata.provide = _metadataProvide.toJS;
+    accounts.get = _connectProvider.toJS;
+    accounts.subscribe = _listenAccount.toJS;
+    adapter.metadata = metadata.toProxy();
+    adapter.accounts = accounts.toProxy();
+    adapter.signer = signer.toProxy();
+    adapter.connect = _enable.toJS;
+    adapter.enable = _enable.toJS;
+    adapter.name = JSWalletConstant.name;
+    adapter.version = JSWalletConstant.version;
+
+    return ProxyMethodHandler<JSPolkadotJSWalletAdapter>(adapter);
   }
 
-  void _disable({String? message}) {
-    substrate = null;
+  JSPromise<JSSubstrateKownMetadata> _knownMetadata([bool? _]) {
+    return waitForSuccessResponsePromise(
+      method: _SubstratePageControllerConst.knownMetadata,
+    );
   }
 
-  void onEvent(WalletMessageEvent message) {
-    JSAny? eventData = message.data;
-    switch (message.eventType) {
-      case JSEventType.connect:
-        final chainChange = message.data as JSSubstrateProviderConnectInfo;
-        eventData = chainChange.genesis.toJS;
-        break;
-      case JSEventType.chainChanged:
-        eventData = message.data;
-        break;
-      case JSEventType.accountsChanged:
-        final chainChange = message.data as JSSubstrateAccountsChanged;
-        eventData = chainChange.accounts.toDart
-            .map((e) => e.address.toJS)
-            .toList()
-            .toJS;
-        _substrate?.object.selectedAddress =
-            chainChange.defaultAddress?.address.toJS;
-        _eventNetworkListeners(chainChange.accounts);
-        break;
-      case JSEventType.disconnect:
-        _substrate?.object.selectedAddress = null;
-        break;
-      case JSEventType.disable:
-        _disable(message: message.asString());
-        return;
-      case JSEventType.active:
-        _initController();
-        return;
-      default:
-        return;
+  JSPromise<JSBoolean> _metadataProvide(JSSubstrateMetadataProvide params) {
+    return waitForSuccessResponsePromise(
+      method: _SubstratePageControllerConst.addSubstrateChain,
+      params: [params].toJS,
+    );
+  }
+
+  JSPromise<JSSubstrateTxResponse> signTransaction(
+      JSSubstrateTransaction transaction) {
+    return waitForSuccessResponsePromise(
+      method: _SubstratePageControllerConst.signTransaction,
+      params: [transaction].toJS,
+    );
+  }
+
+  JSPromise<JSSubstrateTxResponse> signMessage(JSSubstrateSign params) {
+    return waitForSuccessResponsePromise(
+      method: _SubstratePageControllerConst.signMesssage,
+      params: [params].toJS,
+    );
+  }
+
+  JSPromise<JSSubstrateWalletStandardConnect> _connect([JSAny? _]) {
+    return waitForSuccessResponsePromise(
+      method: _SubstratePageControllerConst.requestAccount,
+    );
+  }
+
+  JSPromise<JSArray<JSSubstrateWalletAccount>> _connectProvider([JSAny? _]) {
+    return waitForSuccessResponse<JSSubstrateWalletStandardConnect>(
+      method: _SubstratePageControllerConst.requestAccount,
+    ).then((e) => e.accounts).toPromise;
+  }
+
+  JSPromise update([JSAny? _]) {
+    throw JSWalletConstant.methodDisabled;
+  }
+
+  JSPromise<Proxy<JSPolkadotJSWalletAdapter>?> _enable(String origin) {
+    Future<Proxy<JSPolkadotJSWalletAdapter>?> connect() async {
+      return _proxy;
     }
-    _eventListeners(message.eventType, jsObject: eventData);
+
+    return connect().toPromise;
   }
 
-  void _eventListeners(JSEventType type, {JSAny? jsObject}) {
-    if (!_listeners.containsKey(type)) return;
-    final listeners = <JSFunction>[..._listeners[type]!];
-    for (final i in listeners) {
-      i.callAsFunction(null, jsObject);
-    }
-  }
-
-  void _eventNetworkListeners(JSAny? jsObject) {
-    if (jsObject == null) return;
-    final listeners = <JSFunction>[
-      ..._networkListener[JSEventType.accountsChanged]!
-    ];
-    for (final i in listeners) {
-      i.callAsFunction(null, jsObject);
-    }
-  }
-
-  void _addListener(String type, JSFunction listener) {
-    final event = JSEventType.fromName(type);
-    if (event == null || !_listeners.containsKey(event)) return;
-    _listeners[event]?.add(listener);
-    _emitEvent(PageMessageEvent.build(event: event));
-  }
-
-  void _removeListener(String type, JSFunction listener) {
-    final event = JSEventType.fromName(type);
-    _listeners[event]?.remove(listener);
-  }
-
-  void _cancelAllListeners() {
-    for (final i in _listeners.keys.toList()) {
-      _listeners[i]!.clear();
-    }
+  void _listenAccount(JSFunction cb) {
+    _networkListener[JSEventType.accountsChanged]!.add(cb);
+    _emitEvent(PageMessageEvent.build(event: JSEventType.accountsChanged));
   }
 
   @override

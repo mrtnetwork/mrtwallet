@@ -1,4 +1,3 @@
-import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/web3/controller/controller.dart';
 import 'package:mrt_wallet/wallet/api/client/client.dart';
@@ -7,7 +6,8 @@ import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 
 abstract class Web3SuiImpl<RESPONSE, T extends Web3SuiRequestParam<RESPONSE>>
-    extends StateController with Web3RequestControllerState {
+    extends Web3StateContoller<Web3SuiRequest>
+    with Web3NetworkRequestControllerState<Web3SuiRequest> {
   Web3SuiImpl(
       {required this.walletProvider,
       required this.account,
@@ -21,5 +21,5 @@ abstract class Web3SuiImpl<RESPONSE, T extends Web3SuiRequestParam<RESPONSE>>
   bool get needPermission => request.needPermission;
 
   @override
-  Web3Request get web3Request => request;
+  Web3SuiRequest<RESPONSE, T> get web3Request => request;
 }

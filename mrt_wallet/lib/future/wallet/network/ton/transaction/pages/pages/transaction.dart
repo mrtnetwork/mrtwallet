@@ -64,9 +64,6 @@ class TonTransactionFieldsView extends StatelessWidget {
                                           child: SwitchOrSelectAccountView(
                                               account: controller.account,
                                               showMultiSig: true),
-                                          minExtent: 0.5,
-                                          maxExtend: 0.9,
-                                          initialExtend: 0.7,
                                           centerContent: false,
                                         )
                                         .then(switchAccount);
@@ -234,7 +231,6 @@ class _TonTransactionTransferFields extends StatelessWidget {
                         receiver.hasToken
                             ? "setup_total_amount".tr
                             : "setup_output_amount".tr,
-                        initialExtend: 1,
                         child: SetupNetworkAmount(
                           token: field.network.token,
                           max: controller.remindAmount.balance +
@@ -289,7 +285,6 @@ class _TonTransactionTransferFields extends StatelessWidget {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "setup_jetton_amount".tr,
-                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: receiver.jetton!.token,
                             max: field.getActiveTokenBalance(receiver),
@@ -332,7 +327,6 @@ class _TonTransactionTransferFields extends StatelessWidget {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "setup_forward_amount".tr,
-                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: field.network.token,
                             max: controller.remindAmount.balance +
@@ -431,24 +425,21 @@ class _TonTransactionTransferFields extends StatelessWidget {
             onRemove: () {
               context
                   .openSliverBottomSheet<List<ReceiptAddress<TonAddress>>>(
-                      "receiver_address".tr,
-                      bodyBuilder: (c) =>
-                          SelectRecipientAccountView<TonAddress>(
-                            account: controller.account,
-                            multipleSelect: true,
-                            scrollController: c,
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("jetton_destination_address_desc".tr),
-                                WidgetConstant.height8,
-                                Text("receiver_address_desc".tr),
-                              ],
-                            ),
-                          ),
-                      maxExtend: 1,
-                      minExtent: 0.8,
-                      initialExtend: 0.9)
+                "receiver_address".tr,
+                bodyBuilder: (c) => SelectRecipientAccountView<TonAddress>(
+                  account: controller.account,
+                  multipleSelect: true,
+                  scrollController: c,
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("jetton_destination_address_desc".tr),
+                      WidgetConstant.height8,
+                      Text("receiver_address_desc".tr),
+                    ],
+                  ),
+                ),
+              )
                   .then(
                 (value) {
                   field.setReceiver(

@@ -4,7 +4,6 @@ import 'package:mrt_wallet/crypto/requets/messages/models/models/signing.dart';
 import 'package:mrt_wallet/crypto/utils/aptos/aptos.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
-import 'package:mrt_wallet/future/wallet/web3/web3.dart';
 import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 import 'package:on_chain/aptos/src/account/authenticator/authenticator.dart';
@@ -24,10 +23,6 @@ class Web3AptosGlobalRequestController<RESPONSE,
 
   AptosWeb3Form<T> _init() {
     switch (request.params.method) {
-      case Web3AptosRequestMethods.requestAccounts:
-        final aptosChains = walletProvider.wallet.getChains<AptosChain>();
-        return AptosRequestAccountForm(request: request, chains: aptosChains)
-            as AptosWeb3Form<T>;
       case Web3AptosRequestMethods.signMessage:
         return Web3AptosSignMessageForm(
             request: request as Web3AptosRequest<Web3AptosSignMessageResponse,
@@ -37,10 +32,9 @@ class Web3AptosGlobalRequestController<RESPONSE,
         final switchChainRequest = request.params as Web3AptosSwitchChain;
         final aptosChains = walletProvider.wallet.getChains<AptosChain>();
         final chain = aptosChains.firstWhereOrNull((e) =>
-            e.network.coinParam.aptosChainType.chainId ==
-            switchChainRequest.chainId);
+            e.network.coinParam.aptosChainType == switchChainRequest.chainType);
         if (chain == null) {
-          throw Web3AptosExceptionConstant.aptosNetworkDoesNotExist;
+          throw Web3RequestExceptionConst.networkDoesNotExists;
         }
         return Web3AptosSwitchAptosChain(request: request, newChain: chain)
             as AptosWeb3Form<T>;
@@ -131,7 +125,8 @@ class Web3AptosGlobalRequestController<RESPONSE,
         _liveRequest = LiveTransactionForm(validator: form);
         _liveRequest?.addListener(onChangeForm);
         form.onCompleteForm = onCompleteForm;
-        form.initForm(account: account, address: request.accountPermission());
+        await form.initForm(
+            account: account, address: request.accountPermission());
         progressKey.idle();
       } catch (e) {
         progressKey.errorResponse(error: e);

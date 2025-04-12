@@ -65,9 +65,6 @@ class SubstrateTransactionFieldsView extends StatelessWidget {
                                                 account: controller.account,
                                                 showMultiSig: true,
                                               ),
-                                              minExtent: 0.5,
-                                              maxExtend: 0.9,
-                                              initialExtend: 0.7,
                                               centerContent: false,
                                             )
                                             .then(switchAccount);
@@ -260,6 +257,7 @@ class SubstrateShowPayloadInfoWidget extends StatelessWidget {
                 color: context.onPrimaryContainer,
                 widget: SelectableText(payload.payloadInfo!,
                     maxLines: 10,
+                    magnifierConfiguration: TextMagnifierConfiguration(),
                     minLines: 1,
                     style: context.onPrimaryTextTheme.bodyMedium),
                 maxLines: 10)),
@@ -271,9 +269,9 @@ class SubstrateShowPayloadInfoWidget extends StatelessWidget {
             child: CopyableTextWidget(
                 text: payload.method,
                 color: context.onPrimaryContainer,
-                widget: SelectableText(payload.method,
+                widget: Text(payload.method,
                     maxLines: 2,
-                    minLines: 1,
+                    // minLines: 1,
                     style: context.onPrimaryTextTheme.bodyMedium),
                 maxLines: 2)),
         WidgetConstant.height20,
@@ -302,9 +300,8 @@ class SubstrateShowPayloadInfoWidget extends StatelessWidget {
                       child: CopyableTextWidget(
                           text: payload.payload,
                           color: context.onPrimaryContainer,
-                          widget: SelectableText(payload.payload,
+                          widget: Text(payload.payload,
                               maxLines: 2,
-                              minLines: 1,
                               style: context.onPrimaryTextTheme.bodyMedium),
                           maxLines: 2)),
                   WidgetConstant.height20,
@@ -462,7 +459,6 @@ class _SubstrateTransactionTransferFields extends StatelessWidget {
                           context
                               .openSliverBottomSheet<BigInt>(
                             "setup_output_amount".tr,
-                            initialExtend: 1,
                             child: SetupNetworkAmount(
                               token: field.network.coinParam.token,
                               max: field.maxTransfer(
@@ -508,17 +504,14 @@ class _SubstrateTransactionTransferFields extends StatelessWidget {
                     validate: field.destination.hasValue,
                     onRemove: () {
                       context
-                          .openSliverBottomSheet("receiver_address".tr,
-                              bodyBuilder: (scrollController) =>
-                                  SelectRecipientAccountView<
-                                          BaseSubstrateAddress>(
-                                      account: controller.account,
-                                      scrollController: scrollController,
-                                      multipleSelect:
-                                          field.metadata.supportBatch),
-                              maxExtend: 1,
-                              minExtent: 0.8,
-                              initialExtend: 0.9)
+                          .openSliverBottomSheet(
+                        "receiver_address".tr,
+                        bodyBuilder: (scrollController) =>
+                            SelectRecipientAccountView<BaseSubstrateAddress>(
+                                account: controller.account,
+                                scrollController: scrollController,
+                                multipleSelect: field.metadata.supportBatch),
+                      )
                           .then(
                         (value) {
                           if (value == null) return;

@@ -247,9 +247,6 @@ class _EditPermissionView extends StatelessWidget {
               context
                   .openSliverBottomSheet<ReceiptAddress<TronAddress>>(
                       "update_account_permission".tr,
-                      maxExtend: 1,
-                      minExtent: 0.8,
-                      initialExtend: 0.9,
                       bodyBuilder: (c) =>
                           SelectRecipientAccountView<TronAddress>(
                               account: account,

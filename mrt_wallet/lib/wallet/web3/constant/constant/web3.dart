@@ -9,6 +9,8 @@ class Web3Const {
     NetworkType.stellar,
     NetworkType.substrate,
     NetworkType.aptos,
-    NetworkType.sui
+    NetworkType.sui,
+    NetworkType.cosmos,
+    NetworkType.bitcoinAndForked
   ];
 }

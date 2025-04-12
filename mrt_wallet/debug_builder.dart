@@ -113,7 +113,8 @@ Future<void> buildWebView({bool minify = false}) async {
   File file = File("assets/webview/script.js.deps");
   file.deleteSync(recursive: true);
   file = File("assets/webview/script.js");
-  file.copySync(r'D:\mrt_wallet_web3_js_examples\public\webview.js');
+  file.copySync(
+      r'/Users/macbookpro/Documents/projects/mrt_wallet_web3_js_examples/public/webview.js');
 }
 
 Future<void> buildWebViewPage({bool minify = false}) async {
@@ -132,7 +133,8 @@ Future<void> buildWebViewPage({bool minify = false}) async {
   File file = File("assets/webview/script_page.js.deps");
   file.deleteSync(recursive: true);
   file = File("assets/webview/script_page.js");
-  file.copySync(r'D:\mrt_wallet_web3_js_examples\public\webview_page.js');
+  file.copySync(
+      r'/Users/macbookpro/Documents/projects/mrt_wallet_web3_js_examples/public/webview_page.js');
 }
 
 Future<void> buildContent({bool minify = false, bool isMozila = false}) async {

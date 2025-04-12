@@ -28,7 +28,6 @@ class SolanaWeb3TransactionInfo {
   final SolAddress feePayer;
   final ISolanaAddress signer;
   final List<SolanaWeb3TransactionInstructionInfo> instructions;
-  final int id;
   SolanaWeb3SimulationStatus _status = SolanaWeb3SimulationStatus.idle;
   SolanaWeb3SimulationStatus get status => _status;
   SolanaWeb3FeeStatus _feeStatus = SolanaWeb3FeeStatus.idle;
@@ -96,14 +95,12 @@ class SolanaWeb3TransactionInfo {
     required this.feePayer,
     required List<SolanaWeb3TransactionInstructionInfo> instructions,
     required this.signer,
-    required this.id,
     this.sendTransactionOptions,
   })  : instructions = instructions.imutable,
         _transaction = transaction;
   factory SolanaWeb3TransactionInfo(
       {required SolanaTransaction transaction,
       required ISolanaAddress signer,
-      required int id,
       Web3SolanaSendTransactionOptions? sendTransactionOptions}) {
     final accounts = transaction.message.accountKeys;
     final List<SolanaWeb3TransactionInstructionInfo> instructions = [];
@@ -124,7 +121,6 @@ class SolanaWeb3TransactionInfo {
         feePayer: accounts[0],
         instructions: instructions,
         signer: signer,
-        id: id,
         sendTransactionOptions: sendTransactionOptions);
   }
 }

@@ -7,3 +7,5 @@ export 'global/global.dart';
 export 'substrate/substrate.dart';
 export 'aptos/aptos.dart';
 export 'sui/sui.dart';
+export 'cosmos/cosmos.dart';
+export 'bitcoin/bitcoin.dart';

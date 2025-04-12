@@ -9,25 +9,12 @@ import 'package:mrt_wallet/wallet/web3/networks/ton/permission/models/account.da
 import 'package:mrt_wallet/wallet/web3/networks/ton/permission/models/permission.dart';
 import 'package:ton_dart/ton_dart.dart';
 
-abstract class Web3TonPermissionRequestParam
-    extends Web3TonRequestParam<Web3TonChain>
-    implements
-        Web3PermissionRequest<TonAddress, TheOpenNetworkChain,
-            Web3TonChainAccount, Web3TonChain> {
-  @override
-  bool get isPermissionRequest => true;
-  @override
-  Object? toJsWalletResponse(Web3TonChain response) {
-    return null;
-  }
-}
-
 abstract class Web3TonRequestParam<RESPONSE> extends Web3RequestParams<RESPONSE,
     TonAddress, TheOpenNetworkChain, Web3TonChainAccount, Web3TonChain> {
   @override
   abstract final Web3TonRequestMethods method;
   @override
-  abstract final TonAddress? account;
+  Web3TonChainAccount? get account => null;
 
   Web3TonRequestParam();
 
@@ -52,13 +39,11 @@ abstract class Web3TonRequestParam<RESPONSE> extends Web3RequestParams<RESPONSE,
         object: object,
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
-    final method = Web3RequestMethods.fromTag(values.elementAt(0));
+    final method = Web3NetworkRequestMethods.fromTag(values.elementAt(0));
     final Web3TonRequestParam param;
     switch (method) {
-      case Web3TonRequestMethods.requestAccounts:
-        param = Web3TonRequestAccounts.deserialize(
-            bytes: bytes, object: object, hex: hex);
       case Web3TonRequestMethods.sendTransaction:
+      case Web3TonRequestMethods.signTransaction:
         param = Web3TonSendTransaction.deserialize(
             bytes: bytes, object: object, hex: hex);
       case Web3TonRequestMethods.signMessage:
@@ -75,7 +60,7 @@ abstract class Web3TonRequestParam<RESPONSE> extends Web3RequestParams<RESPONSE,
 }
 
 class Web3TonRequest<RESPONSE, PARAMS extends Web3TonRequestParam<RESPONSE>>
-    extends Web3Request<RESPONSE, TonAddress, TheOpenNetworkChain,
+    extends Web3NetworkRequest<RESPONSE, TonAddress, TheOpenNetworkChain,
         Web3TonChainAccount, Web3TonChain, PARAMS> {
   Web3TonRequest(
       {required super.params,
@@ -85,21 +70,5 @@ class Web3TonRequest<RESPONSE, PARAMS extends Web3TonRequestParam<RESPONSE>>
 
   Web3TonRequest<R, P> cast<R, P extends Web3TonRequestParam<R>>() {
     return this as Web3TonRequest<R, P>;
-  }
-
-  @override
-  Web3TonChain? get currentPermission =>
-      authenticated.getChainFromNetworkType(chain.network.type);
-
-  @override
-  ITonAddress? accountPermission() {
-    if (params.account == null) {
-      return null;
-    }
-    if (currentPermission == null) {
-      throw Web3RequestExceptionConst.missingPermission;
-    }
-    return currentPermission!
-        .getAccountPermission(address: params.account!, chain: chain);
   }
 }

@@ -79,6 +79,14 @@ class _JSBackgroundHandler {
           NetworkType.sui => Web3ChainNetworkData<WalletSuiNetwork>(
               network: network.toNetwork(),
               serviceIdentifier: serviceIdentifier),
+          NetworkType.cosmos => Web3ChainNetworkData<WalletCosmosNetwork>(
+              network: network.toNetwork(),
+              serviceIdentifier: serviceIdentifier),
+          NetworkType.bitcoinAndForked ||
+          NetworkType.bitcoinCash =>
+            Web3ChainNetworkData<WalletBitcoinNetwork>(
+                network: network.toNetwork(),
+                serviceIdentifier: serviceIdentifier),
           _ => throw UnimplementedError()
         };
         web3Chains.add(n);
@@ -105,7 +113,7 @@ class _JSBackgroundHandler {
     });
     if (toPermission == null) {
       final token = QuickCrypto.generateRandom();
-      final permission = Web3APPAuthentication(
+      final permission = Web3APPAuthentication.create(
           name: info.name,
           applicationKey: applicationKey,
           applicationId: info.applicationId,

@@ -1,4 +1,3 @@
-import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/web3/controller/controller.dart';
 import 'package:mrt_wallet/wallet/api/client/networks/tron/client/tron.dart';
@@ -7,7 +6,8 @@ import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 
 abstract class Web3TronImpl<RESPONSE, T extends Web3TronRequestParam<RESPONSE>>
-    extends StateController with Web3RequestControllerState {
+    extends Web3StateContoller<Web3TronRequest>
+    with Web3NetworkRequestControllerState<Web3TronRequest> {
   Web3TronImpl(
       {required this.walletProvider,
       required this.account,
@@ -22,5 +22,5 @@ abstract class Web3TronImpl<RESPONSE, T extends Web3TronRequestParam<RESPONSE>>
   bool get needPermission => request.needPermission;
 
   @override
-  Web3Request get web3Request => request;
+  Web3TronRequest<RESPONSE, T> get web3Request => request;
 }

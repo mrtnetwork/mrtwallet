@@ -2,145 +2,84 @@ import 'dart:js_interop';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
-import 'package:mrt_wallet/wallet/wallet.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/stellar/stellar.dart';
 import 'package:stellar_dart/stellar_dart.dart';
 import '../../models/models/networks/stellar.dart';
 import '../../models/models/requests.dart';
-import '../../utils/utils/utils.dart';
 import '../core/network_handler.dart';
 
-class StellarWeb3State extends ChainWeb3State {
-  final WalletStellarNetwork? network;
-  final StellarAddress? defaultAddress;
-  final StellarClient? client;
-  final List<String> permissionAccounts;
-
-  StellarWeb3State._(
-      {required super.state,
-      required List<String> permissionAccounts,
-      this.defaultAddress,
-      this.client,
-      this.network})
-      : permissionAccounts = permissionAccounts.imutable;
+class StellarWeb3State extends WalletStandardChainWeb3State<
+    StellarAddress,
+    Web3StellarChainAccount,
+    JSStellarWalletAccount,
+    Web3ChainDefaultIdnetifier> {
+  StellarWeb3State._({
+    required super.state,
+    required super.chains,
+    required super.accounts,
+    super.defaultAccount,
+    super.defaultChain,
+  });
   factory StellarWeb3State.init(
       {JSNetworkState state = JSNetworkState.disconnect}) {
-    return StellarWeb3State._(permissionAccounts: const [], state: state);
+    return StellarWeb3State._(accounts: const [], state: state, chains: []);
   }
   factory StellarWeb3State(Web3StellarChainAuthenticated? authenticated) {
-    // final permission = authenticated
-    //     .getChainFromNetworkType<Web3StellarChain>(NetworkType.stellar);
     if (authenticated == null) {
       return StellarWeb3State.init(state: JSNetworkState.block);
     }
-    // final chains = chainHandler.chains().whereType<StellarChain>().toList();
-    // final currentChain = chains.firstWhere(
-    //     (e) => e.network.coinParam.passphrase == permission.currentChain);
-    final permissionAccounts = authenticated.accounts;
-    final defaultAddress = permissionAccounts
-        .firstWhereOrNull((e) => e.defaultAddress, orElse: () {
-      if (permissionAccounts.isEmpty) return null;
-      return permissionAccounts.first;
-    });
+    final accounts = authenticated.accounts
+        .map((e) => JSWalletStateAccount<StellarAddress,
+                Web3StellarChainAccount, JSStellarWalletAccount>(
+            chainaccount: e,
+            jsAccount: JSStellarWalletAccount.setup(
+                address: e.addressStr,
+                publicKey: e.publicKey,
+                chain: e.network.identifier),
+            identifier: e.network.identifier))
+        .toList();
+    final defaultAddress = authenticated.accounts.firstWhereOrNull(
+        (e) => e.id == authenticated.currentNetwork.id && e.defaultAddress);
     return StellarWeb3State._(
-        permissionAccounts:
-            permissionAccounts.map((e) => e.address.toString()).toList()
-              ..sort((a, b) =>
-                  JsUtils.compareAddress(a, b, defaultAddress?.addressStr)),
+        accounts: accounts,
         state: JSNetworkState.init,
-        network: authenticated.network,
-        defaultAddress: defaultAddress?.address,
-        client: APIUtils.createApiClient(authenticated.network,
-            allowInWeb3: true,
-            identifier: authenticated.serviceIdentifier,
-            isolate: APPIsolate.current,
-            requestTimeut: ChainWeb3State.requestTimeout));
+        chains: authenticated.networks,
+        defaultChain: authenticated.currentNetwork,
+        defaultAccount: defaultAddress == null
+            ? null
+            : JSWalletStateAccount<StellarAddress, Web3StellarChainAccount,
+                JSStellarWalletAccount>(
+                chainaccount: defaultAddress,
+                identifier: authenticated.currentNetwork.identifier,
+                jsAccount: JSStellarWalletAccount.setup(
+                    address: defaultAddress.addressStr,
+                    publicKey: defaultAddress.publicKey,
+                    chain: defaultAddress.network.identifier),
+              ));
   }
-
-  bool accountChanged(StellarWeb3State other) {
-    return !(CompareUtils.iterableIsEqual(
-            permissionAccounts, other.permissionAccounts) &&
-        defaultAddress == other.defaultAddress);
-  }
-
-  bool chainChanged(StellarWeb3State other) {
-    return other.network?.coinParam.passphrase != network?.coinParam.passphrase;
-  }
-
-  bool needToggle(StellarWeb3State other) {
-    return other.state != state;
-  }
-
-  StellarAccountsChanged get accountsChange => StellarAccountsChanged(
-      accounts: permissionAccounts,
-      defaultAddress: defaultAddress?.toString(),
-      connectInfo: chainChangedEvent);
-  StellarProviderConnectInfo get chainChangedEvent =>
-      StellarProviderConnectInfo(network!.coinParam.passphrase);
-  bool hasPermission(StellarAddress address) {
-    return permissionAccounts.any((e) => e == address.baseAddress);
-  }
-
-  bool get isConnect => defaultAddress != null;
 }
 
-class JSStellarHandler extends JSNetworkHandler<StellarWeb3State> {
-  @override
-  StellarWeb3State state = StellarWeb3State.init();
-
-  JSStellarHandler({required super.sendMessageToClient});
-  void _sendEvent({required JSEventType event, Object? data}) {
-    sendMessageToClient(WalletMessageEvent.build(event: event, data: data),
-        JSClientType.stellar);
-  }
-
-  @override
-  Future<void> initChain(Web3APPData authenticated) async {
-    await lock.synchronized(() async {
-      final currentState = state;
-      state = StellarWeb3State(authenticated.getAuth(networkType));
-      if (state.needToggle(currentState)) {
-        _toggleStellar(state);
-        _disconnect();
-        if (state.isConnect) {
-          _connect(state);
-          _chainChanged(state);
-        }
-        _accountChanged(state);
-        return;
-      }
-      if (state.chainChanged(currentState)) {
-        _disconnect();
-        if (state.isConnect) {
-          _connect(state);
-        }
-        _chainChanged(state);
-      }
-      if (state.accountChanged(currentState)) {
-        if (!state.chainChanged(currentState)) {
-          if (state.isConnect) {
-            _connect(state);
-          } else {
-            _disconnect();
-          }
-        }
-        _accountChanged(state);
-      }
-    });
-  }
+class JSStellarHandler extends JSWalletStandardNetworkHandler<
+    StellarAddress,
+    Web3StellarChainAccount,
+    JSStellarWalletAccount,
+    Web3ChainDefaultIdnetifier,
+    StellarWeb3State> {
+  JSStellarHandler(
+      {required super.sendMessageToClient, required super.sendInternalMessage});
 
   @override
   Future<Web3MessageCore> request(PageMessageRequest params) async {
-    final state = this.state;
+    final state = await getState();
     final method = Web3StellarRequestMethods.fromName(params.method);
     switch (method) {
       case Web3StellarRequestMethods.requestAccounts:
-        if (state.permissionAccounts.isNotEmpty) {
-          return buildResponse(state.permissionAccounts);
+        if (state.hasAccount) {
+          return createResponse();
         }
-        return Web3StellarRequestAccounts();
+        return connect();
       case Web3StellarRequestMethods.signMessage:
         return _signMessage(params: params, state: state);
       case Web3StellarRequestMethods.signTransaction:
@@ -153,121 +92,83 @@ class JSStellarHandler extends JSNetworkHandler<StellarWeb3State> {
 
   Web3StellarSignMessage _signMessage(
       {required PageMessageRequest params, required StellarWeb3State state}) {
-    if (state.defaultAddress == null) {
-      throw Web3RequestExceptionConst.missingPermission;
-    }
-
-    final data = JsUtils.toList<int>(params.getFirstParam,
-        error: Web3RequestExceptionConst.invalidSignMessageData);
     try {
-      Envelope.fromXdr(data);
-      throw Web3StellarExceptionConstant.singTransactionInsteadMessage;
-    } catch (_) {}
-    return Web3StellarSignMessage(
-        address: state.defaultAddress!,
-        challeng: BytesUtils.toHexString(data),
-        content: StringUtils.tryDecode(data));
+      final data = params.elementAs<JSStellarSignMessageParams>(0,
+          peroperties: JSStellarSignMessageParams.properties);
+      final messageBytes =
+          MethodUtils.nullOnException(() => data?.message.toListInt());
+      if (messageBytes == null || data == null) {
+        throw Web3RequestExceptionConst.invalidWalletStandardSignMessage;
+      }
+      return Web3StellarSignMessage(
+          account: state.getJsAddressChainAccountOrThrow(data.account),
+          challeng: BytesUtils.toHexString(messageBytes),
+          content: StringUtils.tryDecode(messageBytes));
+    } on Web3RequestException {
+      rethrow;
+    } catch (e) {
+      throw Web3RequestExceptionConst.invalidWalletStandardSignMessage;
+    }
   }
 
   Web3StellarSendTransaction _parseTransaction(
       {required PageMessageRequest params,
       required StellarWeb3State state,
       required Web3StellarRequestMethods method}) {
-    if (state.defaultAddress == null) {
-      throw Web3RequestExceptionConst.missingPermission;
-    }
-
     try {
-      final data = params.getElementAt<JSString>(0);
+      final data = params.elementAs<JSStellarSendOrSignTransactionParams>(0,
+          peroperties: JSStellarSendOrSignTransactionParams.properties);
+
       final toBytes =
-          StringUtils.encode(data!.toDart, type: StringEncoding.base64);
-      final tx = Envelope.fromXdr(toBytes);
-      if (tx.type == EnvelopeType.txV0) {
-        throw Web3StellarExceptionConstant.unsuportedTxVersion;
-      }
-      final StellarAddress surceAccount;
-      StellarAddress account = state.defaultAddress!;
-      if (tx.tx.type == EnvelopeType.txFeeBump) {
-        final feeBumpTx = tx.tx.cast<StellarFeeBumpTransaction>();
-        surceAccount = feeBumpTx.feeSource.address;
-      } else {
-        final txV1 = tx.tx.cast<StellarTransactionV1>();
-        surceAccount = txV1.sourceAccount.address;
-      }
-      if (state.hasPermission(surceAccount)) {
-        account = surceAccount;
+          StringUtils.encode(data!.transaction, type: StringEncoding.base64);
+      if (data.account == null) {
+        throw Web3StellarExceptionConstant.invalidAccountOrTransaction;
       }
       return Web3StellarSendTransaction(
-          account: account, transaction: tx, method: method);
+          account: state.getJsAddressChainAccountOrThrow(data.account),
+          transaction: toBytes,
+          method: method);
     } on Web3RequestException {
       rethrow;
     } catch (e) {
-      throw Web3StellarExceptionConstant.invalidTransaction;
-    }
-  }
-
-  void _disconnect() async {
-    _sendEvent(
-        event: JSEventType.disconnect,
-        data: Web3RequestExceptionConst.disconnectedChain.toJson());
-  }
-
-  void _connect(StellarWeb3State state) async {
-    if (state.defaultAddress == null) return;
-    _sendEvent(
-        event: JSEventType.connect, data: state.chainChangedEvent.toJson());
-  }
-
-  void _accountChanged(StellarWeb3State state) async {
-    _sendEvent(
-        event: JSEventType.accountsChanged,
-        data: state.accountsChange.toJson());
-  }
-
-  void _chainChanged(StellarWeb3State state) async {
-    if (state.network == null) return;
-    _sendEvent(
-        event: JSEventType.chainChanged,
-        data: state.chainChangedEvent.toJson());
-  }
-
-  void _toggleStellar(StellarWeb3State state) {
-    final chain = state.network;
-    if (chain != null) {
-      _sendEvent(event: JSEventType.active);
-    } else {
-      _sendEvent(
-          event: JSEventType.disable,
-          data: Web3RequestExceptionConst.bannedHost.data);
+      throw Web3StellarExceptionConstant.invalidAccountOrTransaction;
     }
   }
 
   @override
-  void onRequestDone(PageMessageRequest message) {
-    // final method = Web3StellarRequestMethods.fromName(message.method);
-
-    // switch (method) {
-    //   case Web3StellarRequestMethods.requestAccounts:
-    //     _connect(state);
-    //     break;
-    //   default:
-    // }
-  }
+  void onRequestDone(PageMessageRequest message) {}
 
   @override
   NetworkType get networkType => NetworkType.stellar;
 
   @override
-  WalletMessageResponse finilizeWalletResponse(
+  Future<WalletMessageResponse> finalizeWalletResponse(
       {required PageMessageRequest message,
       required Web3RequestParams? params,
-      required Web3WalletResponseMessage response}) {
+      required Web3WalletResponseMessage response}) async {
+    final state = await getState();
+
     final method = Web3StellarRequestMethods.fromName(message.method);
     switch (method) {
-      case Web3StellarRequestMethods.requestAccounts:
-        if (state.permissionAccounts.isNotEmpty) {
+      case Web3StellarRequestMethods.signMessage:
+        return WalletMessageResponse.success(
+            JSStellarSignMessageResponse.setup(response.resultAsList()));
+      case Web3StellarRequestMethods.signTransaction:
+      case Web3StellarRequestMethods.sendTransaction:
+        final signedResponse =
+            Web3StellarSendTransactionResponse.fromJson(response.resultAsMap());
+        if (signedResponse.txHash != null) {
           return WalletMessageResponse.success(
-              state.permissionAccounts.jsify());
+              JSStellarSendTransactionResponse.setup(
+                  envlope: signedResponse.envlope,
+                  txId: signedResponse.txHash!));
+        }
+        return WalletMessageResponse.success(
+            JSStellarSignTransactionResponse.setup(signedResponse.envlope));
+      case Web3StellarRequestMethods.requestAccounts:
+        if (state.hasAccount) {
+          return WalletMessageResponse.success(
+              JSStellarWalletConnectResponse.setup(state.jsAccounts));
         }
         return WalletMessageResponse.fail(Web3RequestExceptionConst
             .rejectedByUser
@@ -277,24 +178,13 @@ class JSStellarHandler extends JSNetworkHandler<StellarWeb3State> {
       default:
         break;
     }
-    return super.finilizeWalletResponse(
+    return super.finalizeWalletResponse(
         message: message, params: params, response: response);
   }
 
   @override
-  void event(PageMessageEvent event) {
-    switch (event.eventType) {
-      case JSEventType.connect:
-        _connect(state);
-        break;
-      case JSEventType.accountsChanged:
-        _accountChanged(state);
-        break;
-      case JSEventType.chainChanged:
-        _chainChanged(state);
-        break;
-      default:
-        break;
-    }
+  StellarWeb3State createState(Web3APPData? authenticated) {
+    if (authenticated == null) return StellarWeb3State.init();
+    return StellarWeb3State(authenticated.getAuth(networkType));
   }
 }

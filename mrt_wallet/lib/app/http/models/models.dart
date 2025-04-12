@@ -101,13 +101,25 @@ class HTTPCallerResponse {
   }
 
   T successResult<T>() {
-    if (isSuccess) return bodyAs<T>();
-    throw ApiProviderException(statusCode: statusCode);
+    throwIfError();
+    return bodyAs<T>();
   }
 
   String? error() {
     if (isSuccess) return null;
     return result as String?;
+  }
+
+  void throwIfError() {
+    if (isSuccess) return;
+    final err = error();
+    if (err?.isEmpty ?? true) {
+      throw ApiProviderException(statusCode: statusCode);
+    } else if (StrUtils.isHtml(err!)) {
+      throw ApiProviderException(statusCode: statusCode);
+    } else {
+      throw ApiProviderException(statusCode: statusCode, message: err);
+    }
   }
 
   const HTTPCallerResponse({

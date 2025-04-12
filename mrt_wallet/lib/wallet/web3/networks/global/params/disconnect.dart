@@ -4,7 +4,8 @@ import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/global/methods/methods.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
 
-class Web3DisconnectApplication extends Web3GlobalRequestParams {
+class Web3DisconnectApplication
+    extends Web3GlobalRequestParams<List<NetworkType>> {
   final NetworkType chain;
   Web3DisconnectApplication({required this.chain});
 
@@ -16,20 +17,20 @@ class Web3DisconnectApplication extends Web3GlobalRequestParams {
         hex: hex,
         tags: Web3MessageTypes.walletGlobalRequest.tag);
     return Web3DisconnectApplication(
-        chain: NetworkType.fromTag(values.elementAt(1)));
+        chain: NetworkType.fromName(values.elementAt(1)));
   }
 
   @override
   Web3GlobalRequestMethods get method => Web3GlobalRequestMethods.disconnect;
 
   @override
-  CborTagValue toCbor() {
-    return CborTagValue(
-        CborListValue.fixedLength([method.tag, chain.name]), type.tag);
+  Object? toJsWalletResponse(response) {
+    return null;
   }
 
   @override
-  Map<String, dynamic> toJson() {
-    return {"chain": chain.name};
+  CborTagValue toCbor() {
+    return CborTagValue(
+        CborListValue.fixedLength([method.id, chain.name]), type.tag);
   }
 }

@@ -2,18 +2,21 @@ import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
+import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
+import 'package:mrt_wallet/wallet/web3/core/messages/types/message.dart';
 import 'package:mrt_wallet/wallet/web3/core/messages/types/message_types.dart';
 import 'package:mrt_wallet/wallet/web3/core/permission/models/authenticated.dart';
-import 'response.dart';
 
-class Web3WalletResponseMessage extends Web3ResponseMessage {
+class Web3WalletResponseMessage extends Web3MessageCore {
   final Web3APPData? authenticated;
+  final Object? result;
+  final NetworkType network;
   Web3WalletResponseMessage._(
-      {super.result, required super.network, required this.authenticated});
+      {this.result, required this.network, required this.authenticated});
   factory Web3WalletResponseMessage({
     Object? result,
     required NetworkType network,
-    required Web3APPData? authenticated,
+    Web3APPData? authenticated,
   }) {
     return Web3WalletResponseMessage._(
         result: result, authenticated: authenticated, network: network);
@@ -48,4 +51,30 @@ class Web3WalletResponseMessage extends Web3ResponseMessage {
 
   @override
   Web3MessageTypes get type => Web3MessageTypes.walletResponse;
+
+  List<T> resultAsList<T>({int? length}) {
+    try {
+      final list = (result as List).cast<T>();
+      if (length == null) return list;
+      return list.sublist(0, length);
+    } catch (e) {
+      throw Web3RequestExceptionConst.internalError;
+    }
+  }
+
+  Map<String, dynamic> resultAsMap() {
+    try {
+      return (result as Map).cast<String, dynamic>();
+    } catch (e) {
+      throw Web3RequestExceptionConst.internalError;
+    }
+  }
+
+  String resultAsString() {
+    try {
+      return result as String;
+    } catch (e) {
+      throw Web3RequestExceptionConst.internalError;
+    }
+  }
 }

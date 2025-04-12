@@ -12,7 +12,7 @@ class EthereumWeb3AddEthereumChainView extends StatelessWidget {
   final WalletProvider wallet;
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       width: null,
       request: request,
       controller: () =>

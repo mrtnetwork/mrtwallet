@@ -7,5 +7,6 @@ class Web3StellarSendTransactionForm
   Web3StellarSendTransactionForm(this.request);
   @override
   @override
-  Web3StellarRequest<String, Web3StellarSendTransaction> request;
+  Web3StellarRequest<Web3StellarSendTransactionResponse,
+      Web3StellarSendTransaction> request;
 }

@@ -4,7 +4,6 @@ import 'package:mrt_wallet/future/wallet/network/aptos/web3/controller/controlle
 import 'package:mrt_wallet/future/wallet/network/forms/aptos/aptos.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'fields/request_account.dart';
 import 'fields/sign_message.dart';
 import 'fields/switch_chain.dart';
 
@@ -17,7 +16,7 @@ class AptosWeb3GlobalFieldsView<RESPONSE,
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3AptosGlobalRequestController<RESPONSE, T>(
           walletProvider: wallet, request: request),
       builder: (context, controller) {
@@ -37,11 +36,6 @@ class _GlobalFieldsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (form.request.params.method) {
-      case Web3AptosRequestMethods.requestAccounts:
-        return AptosWeb3RequestAccountsView(
-          controller: controller,
-          field: form as AptosRequestAccountForm,
-        );
       case Web3AptosRequestMethods.signMessage:
         return AptosWeb3SignMessageRequestView(
           request: form as Web3AptosSignMessageForm,

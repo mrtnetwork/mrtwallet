@@ -3,7 +3,6 @@ import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/extension/extension.dart';
 import 'package:mrt_wallet/future/wallet/network/ton/web3/controller/controller/transaction.dart';
-import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/models/networks/networks.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ton/ton.dart';
 
@@ -16,7 +15,7 @@ class TonWeb3TransactionFieldsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
         controller: () => Web3TonTransactionRequestController(
             walletProvider: wallet, request: request),
         builder: (context, controller) {
@@ -76,7 +75,9 @@ class TonWeb3TransactionFieldsView extends StatelessWidget {
                           onPressed: () {
                             controller.sendTransaction();
                           },
-                          child: Text("send_transaction".tr))
+                          child: controller.isExcute
+                              ? Text("send_transaction".tr)
+                              : Text("sign_transaction".tr))
                     ],
                   )
                 ],

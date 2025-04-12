@@ -167,7 +167,9 @@ class MRTWalletBackupV2 implements MRTWalletBackup {
         key: values.elementAt(0),
         chains: values
             .elementAsListOf<CborTagValue>(1)
-            .map((e) => MRTWalletChainBackup.deserlize(obj: e))
+            .map((e) => MethodUtils.nullOnException(
+                () => MRTWalletChainBackup.deserlize(obj: e)))
+            .whereType<MRTWalletChainBackup>()
             .toList(),
         created: values.elementAt(2));
   }

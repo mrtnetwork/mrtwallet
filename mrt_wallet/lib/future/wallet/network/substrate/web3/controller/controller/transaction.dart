@@ -35,11 +35,11 @@ class Web3SubstrateTransactionRequestController extends Web3SubstrateImpl<
   Future<ExtrinsicPayloadInfo> _init() async {
     try {
       if (transaction.specVersion != metadata.specVersion) {
-        throw Web3SubstrateExceptionConstant.invalidTransactionSpecVersion;
+        throw Web3SubstrateExceptionConstant.differentRuntimeMetadata;
       }
       if (!BytesUtils.bytesEqual(
           transaction.genesisHash, metadata.genesisBytes())) {
-        throw Web3SubstrateExceptionConstant.invalidTransactionGenesisHash;
+        throw Web3SubstrateExceptionConstant.differentRuntimeMetadata;
       }
       final decode =
           metadata.metadata.decodeCall<Map<String, dynamic>>(transaction.call);
@@ -67,7 +67,7 @@ class Web3SubstrateTransactionRequestController extends Web3SubstrateImpl<
     } on Web3RequestExceptionConst {
       rethrow;
     } catch (e) {
-      throw Web3SubstrateExceptionConstant.transactionSerializationFailed;
+      throw Web3RequestExceptionConst.invalidTransaction;
     }
   }
 
@@ -124,13 +124,14 @@ class Web3SubstrateTransactionRequestController extends Web3SubstrateImpl<
     final result = await MethodUtils.call(() async {
       return await signTransaction(address: address, network: network);
     });
-
+    bool withSignedTx = request.params.withSignedTransaction ?? true;
     if (result.hasError) {
       progressKey.error(error: result.exception, showBackButton: true);
     } else {
       request.completeResponse(Web3SubstrateSendTransactionResponse(
               signature: result.result.signature!,
-              signedTransaction: result.result.serialize())
+              signedTransaction:
+                  withSignedTx ? result.result.serialize() : null)
           .toJson());
       progressKey.response(text: 'transaction_signed'.tr);
     }

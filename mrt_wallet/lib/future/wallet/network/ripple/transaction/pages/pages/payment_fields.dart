@@ -37,8 +37,6 @@ class RipplePaymentFieldsView extends StatelessWidget {
                       account: account,
                       scrollController: controller,
                     ),
-                    minExtent: 0.6,
-                    initialExtend: 1,
                   )
                   .then(validator.setToken);
             },
@@ -63,9 +61,6 @@ class RipplePaymentFieldsView extends StatelessWidget {
             context
                 .openSliverBottomSheet<ReceiptAddress<XRPAddress>>(
                     "recipient".tr,
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9,
                     bodyBuilder: (c) => SelectRecipientAccountView<XRPAddress>(
                         account: account, scrollController: c))
                 .then(
@@ -84,7 +79,6 @@ class RipplePaymentFieldsView extends StatelessWidget {
               context
                   .openSliverBottomSheet<BigInt>(
                 "setup_output_amount".tr,
-                initialExtend: 1,
                 child: SetupNetworkAmount(
                   token: account.network.coinParam.token,
                   max: address.address.currencyBalance,
@@ -109,7 +103,6 @@ class RipplePaymentFieldsView extends StatelessWidget {
               context
                   .openSliverBottomSheet<BigRational>(
                 "setup_output_amount".tr,
-                initialExtend: 1,
                 child: SetupDecimalTokenAmountView(
                   token: validator.token!,
                   max: validator.issueToken?.accountToken?.currencyBalance,

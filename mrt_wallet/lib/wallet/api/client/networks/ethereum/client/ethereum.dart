@@ -288,12 +288,23 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
                 view: transaction.to!.address, networkAddress: transaction.to!)
         : null;
     EthereumTransactionDataInfo? contractInfos;
+    ETHTransactionType? type = transaction.transactionType;
+    if (type == null) {
+      type = chain.network.coinParam.supportEIP1559
+          ? ETHTransactionType.eip1559
+          : ETHTransactionType.legacy;
+    } else if (type == ETHTransactionType.eip2930 &&
+        transaction.gasPrice == null &&
+        chain.network.coinParam.supportEIP1559) {
+      type = ETHTransactionType.eip1559;
+    }
     if (transaction.to != null) {
       final bool isSmartContract = await isContract(transaction.to!);
       if (!isSmartContract) {
         return Web3EthereumTransactionRequestInfos(
             transaction: transaction,
             destination: destination,
+            type: type,
             contractInfo: transaction.data.isEmpty
                 ? null
                 : UnknownTransactionData.fromBytes(transaction.data));
@@ -311,10 +322,10 @@ class EthereumClient extends NetworkClient<IEthAddress, EthereumAPIProvider> {
     }
 
     return Web3EthereumTransactionRequestInfos(
-      transaction: transaction,
-      destination: destination,
-      contractInfo: contractInfos,
-    );
+        transaction: transaction,
+        destination: destination,
+        type: type,
+        contractInfo: contractInfos);
   }
 
   Future<BigInt> getChainId() async {

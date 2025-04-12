@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'tooltip.dart';
 
 class TappedTooltipView extends StatefulWidget {
@@ -23,6 +22,9 @@ class _TappedTooltipViewState extends State<TappedTooltipView> {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: ensureVisible,
+      // onHover: (e) {
+      //   ensureVisible();
+      // },
       child: IgnorePointer(
           ignoring: widget.ignore,
           child: widget.tooltipWidget.setKey(tooltipKey)),

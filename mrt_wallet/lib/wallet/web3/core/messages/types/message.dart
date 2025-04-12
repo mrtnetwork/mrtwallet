@@ -6,7 +6,7 @@ import 'package:mrt_wallet/wallet/web3/core/messages/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/core/request/params.dart';
 import 'message_types.dart';
 
-abstract class Web3MessageCore with CborSerializable, JsonSerialization {
+abstract class Web3MessageCore with CborSerializable {
   abstract final Web3MessageTypes type;
 
   const Web3MessageCore();
@@ -19,14 +19,14 @@ abstract class Web3MessageCore with CborSerializable, JsonSerialization {
       switch (type) {
         case Web3MessageTypes.chains:
           return Web3ChainMessage.deserialize(object: cbor);
-        case Web3MessageTypes.response:
-          return Web3ResponseMessage.deserialize(object: cbor);
         case Web3MessageTypes.walletResponse:
           return Web3WalletResponseMessage.deserialize(object: cbor);
         case Web3MessageTypes.walletRequest:
           return Web3RequestParams.deserialize(object: cbor);
         case Web3MessageTypes.walletGlobalRequest:
           return Web3GlobalRequestParams.deserialize(object: cbor);
+        case Web3MessageTypes.globalResponse:
+          return Web3GlobalResponseMessage.deserialize(object: cbor);
         case Web3MessageTypes.error:
           return Web3ExceptionMessage.deserialize(object: cbor);
       }

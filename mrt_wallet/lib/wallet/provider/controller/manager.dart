@@ -474,18 +474,20 @@ mixin WalletManager on _WalletController {
   /// update chain addresses balance.
   /// update all address of chain
   /// -[account]: chain for update account
-  /// -[address]: update only address if provided.
+  /// -[addresses]: update only addresses if provided.
   Future<void> _updateAccountBalance<CHAINACCOUNT extends ChainAccount>(
       APPCHAINACCOUNT<CHAINACCOUNT> account,
-      {CHAINACCOUNT? address}) async {
+      {List<CHAINACCOUNT>? addresses}) async {
     final provider = account.clientNullable;
     if (provider == null) return;
     final init = await provider.init();
     if (!init) return;
-    if (address != null) {
-      await MethodUtils.call(() async {
-        await provider.updateBalance(address, account);
-      });
+    if (addresses != null) {
+      for (final i in addresses) {
+        await MethodUtils.call(() async {
+          await provider.updateBalance(i, account);
+        });
+      }
     } else {
       if (!account.haveAddress) return;
       for (final i in account.addresses) {

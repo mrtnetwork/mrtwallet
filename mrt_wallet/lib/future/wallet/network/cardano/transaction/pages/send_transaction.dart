@@ -71,9 +71,10 @@ class CardanoBuildTransactionView extends StatelessWidget {
                 style: context.onPrimaryTextTheme.bodyMedium),
             onRemove: () {
               context
-                  .openSliverBottomSheet<ADAMintInfo>("mint".tr,
-                      child: CardanoMintTokenView(controller.chainAccount),
-                      initialExtend: 1)
+                  .openSliverBottomSheet<ADAMintInfo>(
+                    "mint".tr,
+                    child: CardanoMintTokenView(controller.chainAccount),
+                  )
                   .then(controller.setupMint);
             },
           ),
@@ -112,10 +113,10 @@ class CardanoBuildTransactionView extends StatelessWidget {
             onRemove: () {
               context
                   .openSliverBottomSheet<ADATransactionCertificate>(
-                      "certificate".tr,
-                      child: CardanoTransactionCertificateView(
-                          controller.chainAccount),
-                      initialExtend: 1)
+                    "certificate".tr,
+                    child: CardanoTransactionCertificateView(
+                        controller.chainAccount),
+                  )
                   .then(controller.addCertificate);
             },
           ),
@@ -150,7 +151,6 @@ class CardanoBuildTransactionView extends StatelessWidget {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "setup_output_amount".tr,
-                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: controller.network.coinParam.token,
                             max: controller.remindAmount.balance +
@@ -205,7 +205,6 @@ class CardanoBuildTransactionView extends StatelessWidget {
                           context
                               .openSliverBottomSheet<UtxoMultiAsset>(
                             "setup_output_amount".tr,
-                            initialExtend: 1,
                             bodyBuilder: (scrollController) =>
                                 CardanoTransactionAssetSelectorView(
                                     remindAsset:
@@ -260,18 +259,16 @@ class CardanoBuildTransactionView extends StatelessWidget {
                     required selectedAddresses}) {
                   return context
                       .openSliverBottomSheet<List<ReceiptAddress<ADAAddress>>>(
-                          "receiver_address".tr,
-                          bodyBuilder: (scrollController) =>
-                              SelectRecipientAccountView<ADAAddress>(
-                                account: account,
-                                scrollController: scrollController,
-                                multipleSelect: true,
-                                onFilterAccount: onFilterAccount,
-                                selectedAddresses: selectedAddresses,
-                              ),
-                          maxExtend: 1,
-                          minExtent: 0.8,
-                          initialExtend: 0.9);
+                    "receiver_address".tr,
+                    bodyBuilder: (scrollController) =>
+                        SelectRecipientAccountView<ADAAddress>(
+                      account: account,
+                      scrollController: scrollController,
+                      multipleSelect: true,
+                      onFilterAccount: onFilterAccount,
+                      selectedAddresses: selectedAddresses,
+                    ),
+                  );
                 },
                 onAccountExists: (err) {
                   context.showAlert(err.tr);
@@ -308,9 +305,6 @@ class CardanoBuildTransactionView extends StatelessWidget {
                             account: controller.chainAccount,
                             showMultiSig: true,
                           ),
-                          minExtent: 0.5,
-                          maxExtend: 0.9,
-                          initialExtend: 0.7,
                           centerContent: false,
                         )
                         .then(controller.changeOutputAddress);
@@ -377,9 +371,6 @@ class CardanoBuildTransactionView extends StatelessWidget {
                                     account: controller.chainAccount,
                                     showMultiSig: true,
                                   ),
-                                  minExtent: 0.5,
-                                  maxExtend: 0.9,
-                                  initialExtend: 0.7,
                                   centerContent: false,
                                 )
                                 .then(controller.changeAssetOutputAddress);
@@ -397,7 +388,6 @@ class CardanoBuildTransactionView extends StatelessWidget {
                             context
                                 .openSliverBottomSheet<BigInt>(
                               "setup_output_amount".tr,
-                              initialExtend: 1,
                               child: SetupNetworkAmount(
                                 token: controller.network.coinParam.token,
                                 max: controller.remindAmount.balance +
@@ -578,7 +568,6 @@ class CardanoBuildTransactionView extends StatelessWidget {
               context
                   .openSliverBottomSheet<BigInt>(
                     "setup_custom_fee".tr,
-                    initialExtend: 1,
                     child: SetupNetworkAmount(
                       token: controller.network.coinParam.token,
                       max: controller.spendableAmount.balance,

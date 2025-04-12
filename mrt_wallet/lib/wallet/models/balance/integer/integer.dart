@@ -20,8 +20,10 @@ class IntegerBalance implements BalanceCore<BigInt> {
   IntegerBalance._(this.currencyDecimal, this.showDecimal, this.imutable,
       this.allowNegative);
 
-  IntegerBalance clone() {
-    return IntegerBalance(balance, currencyDecimal);
+  IntegerBalance clone({bool? imutable, bool? allowNegative}) {
+    return IntegerBalance(balance, currencyDecimal,
+        imutable: imutable ?? this.imutable,
+        allowNegative: allowNegative ?? this.allowNegative);
   }
 
   final bool allowNegative;
@@ -55,6 +57,32 @@ class IntegerBalance implements BalanceCore<BigInt> {
     if (updateBalance == null || imutable) return false;
     if (updateBalance == _balance) return false;
     _updateBalance(updateBalance);
+    return true;
+  }
+
+  BigInt _addAmount(BigInt amount) {
+    return balance + amount;
+  }
+
+  BigInt _minusAmount(BigInt amount) {
+    return balance - amount;
+  }
+
+  bool addAmount([BigInt? amount]) {
+    assert(!imutable, "Imutable balance");
+    if (amount == null || imutable) return false;
+    final newBalance = _addAmount(amount);
+    if (newBalance == _balance) return false;
+    _updateBalance(newBalance);
+    return true;
+  }
+
+  bool minusAmount([BigInt? amount]) {
+    assert(!imutable, "Imutable balance");
+    if (amount == null || imutable) return false;
+    final newBalance = _minusAmount(amount);
+    if (newBalance == _balance) return false;
+    _updateBalance(newBalance);
     return true;
   }
 

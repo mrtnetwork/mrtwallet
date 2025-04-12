@@ -1,4 +1,3 @@
-import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/core/validator/live.dart';
 import 'package:mrt_wallet/future/wallet/network/forms/ton/ton.dart';
@@ -9,7 +8,8 @@ import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 
 abstract class Web3TonImpl<RESPONSE, T extends Web3TonRequestParam<RESPONSE>>
-    extends StateController with Web3RequestControllerState {
+    extends Web3StateContoller<Web3TonRequest>
+    with Web3NetworkRequestControllerState<Web3TonRequest> {
   Web3TonImpl(
       {required this.walletProvider,
       required this.account,
@@ -25,14 +25,10 @@ abstract class Web3TonImpl<RESPONSE, T extends Web3TonRequestParam<RESPONSE>>
 
   TonWeb3Form<T> _buildForm() {
     switch (request.params.method) {
-      case Web3TonRequestMethods.requestAccounts:
-        final tonChains =
-            walletProvider.wallet.getChains<TheOpenNetworkChain>();
-        return TonRequestAccountForm(request: request, chains: tonChains)
-            as TonWeb3Form<T>;
       case Web3TonRequestMethods.signMessage:
         return Web3TonSignMessageForm<T>(request: request) as TonWeb3Form<T>;
       case Web3TonRequestMethods.sendTransaction:
+      case Web3TonRequestMethods.signTransaction:
         return Web3TonSendTransactionForm(
             request: request as Web3TonRequest<Web3TonSendTransactionResponse,
                 Web3TonSendTransaction>) as TonWeb3Form<T>;
@@ -45,5 +41,5 @@ abstract class Web3TonImpl<RESPONSE, T extends Web3TonRequestParam<RESPONSE>>
       LiveTransactionForm(validator: _buildForm());
   TonWeb3Form<T> get form => liveRequest.value;
   @override
-  Web3Request get web3Request => request;
+  Web3TonRequest<RESPONSE, T> get web3Request => request;
 }

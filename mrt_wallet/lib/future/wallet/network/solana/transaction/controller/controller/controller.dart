@@ -25,7 +25,8 @@ class SolanaTransactionStateController extends SolanaTransactionImpl
   bool get transactionIsReady => _trReady;
 
   Future<void> _init() async {
-    await walletProvider.wallet.updateAccountBalance(account, address: address);
+    await walletProvider.wallet
+        .updateAccountBalance(account, addresses: [address]);
     if (validator.validator.mode == SolanaTransactionType.spl) {
       final tokenTransferFiled = validator.validator as SolanaTransferForm;
       _remindTokenAmount =

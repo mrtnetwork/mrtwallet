@@ -4,8 +4,7 @@ import 'package:mrt_wallet/wallet/web3/networks/ethereum/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/tron/params/core/request.dart';
-import 'package:mrt_wallet/wallet/web3/validator/web3_validator_utils.dart';
-import 'package:on_chain/tron/tron.dart';
+import 'package:mrt_wallet/wallet/web3/utils/web3_validator_utils.dart';
 
 class Web3TronSwitchChain extends Web3TronRequestParam<String> {
   final BigInt chainId;
@@ -38,12 +37,4 @@ class Web3TronSwitchChain extends Web3TronRequestParam<String> {
     return CborTagValue(
         CborListValue.fixedLength([method.tag, chainId]), type.tag);
   }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {"chainId": chainId.toRadix16};
-  }
-
-  @override
-  TronAddress? get account => null;
 }

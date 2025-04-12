@@ -1,9 +1,12 @@
+import 'package:mrt_wallet/app/models/models/asset.dart';
 import 'package:mrt_wallet/app/models/models/image.dart';
 
 class APPConst {
   static const String assetErc20Abi = "assets/solidity/erc20.json";
   static const String assetErc721Abi = "assets/solidity/erc721.json";
   static const String assetErc1155Abi = "assets/solidity/erc1155.json";
+  static const APPAssetUri cosmosChains =
+      APPAssetUri(url: "assets/chains.json", package: 'cosmos_sdk');
   static const String assetWebviewScript = "assets/webview/script.js";
   static const String assetWebviewPageScript = "assets/webview/script_page.js";
   static const String assetsTronWeb = "assets/webview/tron_web.js";
@@ -71,6 +74,7 @@ class APPConst {
   static const double maxDialogHeight = 600;
   static const double maxTextFieldWidth = 400;
   static const double qrCodeWidth = 300;
+  static const int maxNameLength = 20;
   static final RegExp accountNameRegExp = RegExp(r'^[^\n]{0,20}$');
   static final RegExp keyNameRegex = RegExp(r'^[^\n]{0,20}$');
   static final RegExp hex32Bytes = RegExp(r'^(0x)?[0-9a-fA-F]{64}$');
@@ -94,7 +98,7 @@ class APPConst {
   static const String exampleAuthenticatedQueryValue = "api_key";
 
   static const String exampleAuthenticatedDigestAuthRealm = "monero-rpc";
-
+  static const String exampleChannelId = "channel-1441";
   static const int defaultDecimalPlaces = 8;
 
   static const int maximumHeaderValue = 400;

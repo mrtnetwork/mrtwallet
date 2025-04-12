@@ -20,6 +20,7 @@ interface WebViewConst {
         const val reload: String = "reload"
         const val request: String = "request"
         const val dispose: String = "dispose"
+        const val clearCache: String = "clearCache"
 
     }
 

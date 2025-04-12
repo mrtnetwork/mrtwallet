@@ -1,82 +1,141 @@
 import 'dart:js_interop';
-import 'package:mrt_wallet/app/core.dart';
+import '../../../utils/utils.dart';
 import '../../models.dart';
+import 'wallet_standard.dart';
 
-@JS("stellar")
-external set stellar(Proxy? stellar);
-extension type StellarWalletAdapter(JSObject _) implements MRTNetworkAdapter {
-  external set publicKey(JSObject? publicKey);
+class StellarJSConst {
+  static final JSArray<JSString> solanaDefaultAccountFeatures = [
+    "stellar:signTransaction".toJS,
+    "stellar:signAndSendTransaction".toJS,
+    "stellar:signMessage".toJS,
+  ].toJS;
 
-  external bool get isConnected;
-  external set isConnected(bool isConnected);
-  external set connect(JSFunction f);
+  static const String sendTransaction = "stellar_sendTransaction";
+  static const String signTransaction = "stellar_signTransaction";
+  static const String requestAccounts = "stellar_requestAccounts";
+  static const String signMessage = "stellar_signMessage";
+}
 
-  external set signMessage(JSFunction f);
-  @JS("signTransaction")
-  external set signTransaction(JSFunction f);
-  @JS("signAndSendTransaction")
-  external set signAndSendTransaction(JSFunction f);
-  @JS("signAllTransactions")
-  external set signAllTransactions(JSFunction f);
-  @JS("signAndSendAllTransactions")
-  external set signAndSendAllTransactions(JSFunction f);
-
-  external set on(JSFunction f);
-  external set removeListener(JSFunction f);
-
-  factory StellarWalletAdapter.setup() {
-    return StellarWalletAdapter(JSObject());
+extension type JSStellarWalletAccount._(JSObject _)
+    implements JSWalletStandardAccount {
+  factory JSStellarWalletAccount.setup(
+      {required String address,
+      required List<int> publicKey,
+      required String chain}) {
+    return JSStellarWalletAccount._(JSObject())
+      ..address = address
+      ..chains = [chain.toJS].toJS
+      ..features = StellarJSConst.solanaDefaultAccountFeatures.freez
+      ..publicKey = APPJSUint8Array.fromList(publicKey);
   }
 }
 
-class StellarAccountsChanged {
-  final List<String> accounts;
-  final String? defaultAddress;
-  final StellarProviderConnectInfo connectInfo;
-  StellarAccountsChanged({
-    required List<String> accounts,
-    required this.defaultAddress,
-    required this.connectInfo,
-  }) : accounts = accounts.imutable;
-  factory StellarAccountsChanged.fromJson(Map<String, dynamic> json) {
-    return StellarAccountsChanged(
-        accounts: (json["accounts"] as List).cast(),
-        defaultAddress: json["defaultAddress"],
-        connectInfo: StellarProviderConnectInfo.fromJson(json["connectInfo"]));
+extension type JSStellarWalletStandardConnect._(JSObject _) implements JSAny {
+  factory JSStellarWalletStandardConnect.setup(
+      List<JSStellarWalletAccount> accounts) {
+    return JSStellarWalletStandardConnect._(JSObject())
+      ..accounts = accounts.toJS;
   }
-  Map<String, dynamic> toJson() {
-    return {
-      "accounts": accounts,
-      "defaultAddress": defaultAddress,
-      "connectInfo": connectInfo.toJson()
-    };
+  external JSArray<JSStellarWalletAccount> get accounts;
+  external set accounts(JSArray<JSStellarWalletAccount> _);
+}
+extension type JSStellarWalletConnectResponse._(JSObject _) implements JSAny {
+  factory JSStellarWalletConnectResponse.setup(
+      List<JSStellarWalletAccount> accounts) {
+    return JSStellarWalletConnectResponse._(JSObject())
+      ..accounts = accounts.toJS;
   }
-
-  JSAny? get accountJS => accounts.map((e) => e.toJS).toList().toJS;
-
-  @JSExport("toString")
-  @override
-  String toString() {
-    return "StellarAccountsChanged${toJson()}";
+  external JSArray<JSStellarWalletAccount> get accounts;
+  external set accounts(JSArray<JSStellarWalletAccount> _);
+}
+@JS()
+extension type StellarWalletAdapterStellarSignAndSendTransactionFeature(JSAny _)
+    implements JSAny {
+  factory StellarWalletAdapterStellarSignAndSendTransactionFeature.setup(
+      {required JSFunction signAndSendTransaction,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return StellarWalletAdapterStellarSignAndSendTransactionFeature(JSObject())
+      ..signAndSendTransaction = signAndSendTransaction
+      ..version = version;
   }
+  external set version(String version);
+  external set signAndSendTransaction(JSFunction _);
+}
+@JS()
+extension type StellarWalletAdapterStellarSignTransactionFeature(JSAny _)
+    implements JSAny {
+  factory StellarWalletAdapterStellarSignTransactionFeature.setup(
+      {required JSFunction signTransaction,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return StellarWalletAdapterStellarSignTransactionFeature(JSObject())
+      ..signTransaction = signTransaction
+      ..version = version;
+  }
+  external set version(String version);
+  external set signTransaction(JSFunction _);
+}
+@JS()
+extension type StellarWalletAdapterStellarSignMessageFeature(JSAny _)
+    implements JSAny {
+  factory StellarWalletAdapterStellarSignMessageFeature.setup(
+      {required JSFunction signMessage,
+      String version = JSWalletStandardConst.defaultVersion}) {
+    return StellarWalletAdapterStellarSignMessageFeature(JSObject())
+      ..signMessage = signMessage
+      ..version = version;
+  }
+  external set version(String version);
+  external set signMessage(JSFunction _);
+}
+@JS()
+extension type JSStellarWalletStandardConnectFeature(JSAny _) implements JSAny {
+  factory JSStellarWalletStandardConnectFeature.setup(
+      {required JSFunction connect,
+      String version = SolanaJSConstant.version}) {
+    return JSStellarWalletStandardConnectFeature(JSObject())
+      ..connect = connect
+      ..version = version;
+  }
+  external set version(String version);
+  external set connect(JSFunction _);
 }
 
-class StellarProviderConnectInfo {
-  @JSExport("passphrase")
-  final String passphrase;
-
-  StellarProviderConnectInfo(this.passphrase);
-  factory StellarProviderConnectInfo.fromJson(Map<String, dynamic> json) {
-    return StellarProviderConnectInfo(json["passphrase"]);
+extension type JSStellarSendOrSignTransactionParams(JSAny _) implements JSAny {
+  external String get transaction;
+  external JSTonWalletAccount? account;
+  static const List<String> properties = ['account', 'transaction'];
+}
+extension type JSStellarSignTransactionResponse(JSAny _) implements JSAny {
+  factory JSStellarSignTransactionResponse.setup(String envlope) {
+    return JSStellarSignTransactionResponse(JSObject())..envlope = envlope;
   }
-  Map<String, dynamic> toJson() {
-    return {"passphrase": passphrase};
+  external String get envlope;
+  external set envlope(String _);
+}
+extension type JSStellarSendTransactionResponse(JSAny _) implements JSAny {
+  factory JSStellarSendTransactionResponse.setup(
+      {required String envlope, required String txId}) {
+    return JSStellarSendTransactionResponse(JSObject())
+      ..envlope = envlope
+      ..txId = txId;
   }
-
-  JSAny? get toJS => createJSInteropWrapper(this);
-  @JSExport("toString")
-  @override
-  String toString() {
-    return passphrase;
+  external String get envlope;
+  external set envlope(String _);
+  external String get txId;
+  external set txId(String _);
+}
+@JS()
+extension type JSStellarSignMessageResponse(JSAny _) implements JSAny {
+  factory JSStellarSignMessageResponse.setup(List<int> signature) {
+    return JSStellarSignMessageResponse(JSObject())
+      ..signature = APPJSUint8Array.fromList(signature);
   }
+  external APPJSUint8Array get signature;
+  external set signature(APPJSUint8Array _);
+}
+@JS()
+extension type JSStellarSignMessageParams._(JSObject _) implements JSAny {
+  external JSTonWalletAccount? account;
+  external APPJSUint8Array get message;
+  static const List<String> properties = ['message'];
 }

@@ -5,38 +5,46 @@ import 'package:mrt_wallet/crypto/constant/tags.dart';
 class NetworkType {
   final String name;
   final List<int> tag;
+  final int mainNetworkId;
   static const int tagLength = 3;
+  bool get isBitcoin =>
+      this == NetworkType.bitcoinAndForked || this == NetworkType.bitcoinCash;
 
-  const NetworkType._({required this.name, required this.tag});
-  static const NetworkType bitcoinAndForked =
-      NetworkType._(name: "Bitcoin", tag: CryptoKeyConst.bitconNetwork);
+  const NetworkType._(
+      {required this.name, required this.tag, required this.mainNetworkId});
+  static const NetworkType bitcoinAndForked = NetworkType._(
+      name: "Bitcoin", tag: CryptoKeyConst.bitconNetwork, mainNetworkId: 0);
   static const NetworkType bitcoinCash = NetworkType._(
-      name: "BitcoinCash", tag: CryptoKeyConst.bitcoinCashNetwork);
-  static const NetworkType xrpl =
-      NetworkType._(name: "XRPL", tag: CryptoKeyConst.xrpNetwork);
-  static const NetworkType ethereum =
-      NetworkType._(name: "Ethereum", tag: CryptoKeyConst.evmNetwork);
-  static const NetworkType tron =
-      NetworkType._(name: "Tron", tag: CryptoKeyConst.tvmNetwork);
-  static const NetworkType solana =
-      NetworkType._(name: "Solana", tag: CryptoKeyConst.solanaNetwork);
-  static const NetworkType cardano =
-      NetworkType._(name: "Cardano", tag: CryptoKeyConst.cardanoNetwork);
-  static const NetworkType cosmos =
-      NetworkType._(name: "Cosmos", tag: CryptoKeyConst.cosmosNetwork);
-  static const NetworkType ton =
-      NetworkType._(name: "TON", tag: CryptoKeyConst.tonNetwork);
-  static const NetworkType substrate =
-      NetworkType._(name: "Substrate", tag: CryptoKeyConst.substrateNetwork);
-  static const NetworkType stellar =
-      NetworkType._(name: "Stellar", tag: CryptoKeyConst.stellar);
-  static const NetworkType monero =
-      NetworkType._(name: "Monero", tag: CryptoKeyConst.monero);
-  static const NetworkType aptos =
-      NetworkType._(name: "Aptos", tag: CryptoKeyConst.aptos);
+      name: "BitcoinCash",
+      tag: CryptoKeyConst.bitcoinCashNetwork,
+      mainNetworkId: 0);
+  static const NetworkType xrpl = NetworkType._(
+      name: "XRPL", tag: CryptoKeyConst.xrpNetwork, mainNetworkId: 30);
+  static const NetworkType ethereum = NetworkType._(
+      name: "Ethereum", tag: CryptoKeyConst.evmNetwork, mainNetworkId: 100);
+  static const NetworkType tron = NetworkType._(
+      name: "Tron", tag: CryptoKeyConst.tvmNetwork, mainNetworkId: 1001);
+  static const NetworkType solana = NetworkType._(
+      name: "Solana", tag: CryptoKeyConst.solanaNetwork, mainNetworkId: 33);
+  static const NetworkType cardano = NetworkType._(
+      name: "Cardano", tag: CryptoKeyConst.cardanoNetwork, mainNetworkId: 50);
+  static const NetworkType cosmos = NetworkType._(
+      name: "Cosmos", tag: CryptoKeyConst.cosmosNetwork, mainNetworkId: 200);
+  static const NetworkType ton = NetworkType._(
+      name: "TON", tag: CryptoKeyConst.tonNetwork, mainNetworkId: 300);
+  static const NetworkType substrate = NetworkType._(
+      name: "Substrate",
+      tag: CryptoKeyConst.substrateNetwork,
+      mainNetworkId: 400);
+  static const NetworkType stellar = NetworkType._(
+      name: "Stellar", tag: CryptoKeyConst.stellar, mainNetworkId: 600);
+  static const NetworkType monero = NetworkType._(
+      name: "Monero", tag: CryptoKeyConst.monero, mainNetworkId: 700);
+  static const NetworkType aptos = NetworkType._(
+      name: "Aptos", tag: CryptoKeyConst.aptos, mainNetworkId: 810);
 
   static const NetworkType sui =
-      NetworkType._(name: "Sui", tag: CryptoKeyConst.sui);
+      NetworkType._(name: "Sui", tag: CryptoKeyConst.sui, mainNetworkId: 800);
 
   static const List<NetworkType> values = [
     bitcoinAndForked,

@@ -3,6 +3,11 @@ part of '../scripts.dart';
 typedef POSTPAGEMESSAGE = void Function(PageMessage message);
 
 abstract class JSBasePageController {
+  late final PageRequestController requestController =
+      PageRequestController(postMessage);
+  late final _walletStandardController =
+      JSPageWalletStandardController(requestController);
+
   SynchronizedLock? _lock = SynchronizedLock();
   Completer<void>? _wait = Completer();
 
@@ -17,36 +22,27 @@ abstract class JSBasePageController {
     });
   }
 
-  void postMessage(PageMessage message) {}
-  late final EthereumPageController ethereumPageController =
-      EthereumPageController(postMessage);
-  late final TronPageController tronPageController =
-      TronPageController(postMessage);
-  late final SolanaPageController solanaPageController =
-      SolanaPageController(postMessage);
-  late final TonPageController tonPageController =
-      TonPageController(postMessage);
-  late final StellarPageController stellarPageController =
-      StellarPageController(postMessage);
-  late final SubstratePageController substratePageController =
-      SubstratePageController(postMessage);
-  late final AptosPageController aptosPageController =
-      AptosPageController(postMessage);
-  late final SuiPageController suiPageController =
-      SuiPageController(postMessage);
-
+  late final Map<JSClientType, WalletStandardPageController> _networks = {
+    JSClientType.ethereum: EthereumPageController(requestController),
+    JSClientType.tron: TronPageController(requestController),
+    JSClientType.solana: SolanaPageController(requestController),
+    JSClientType.ton: TonPageController(requestController),
+    JSClientType.stellar: StellarPageController(requestController),
+    JSClientType.substrate: SubstratePageController(requestController),
+    JSClientType.aptos: AptosPageController(requestController),
+    JSClientType.sui: SuiPageController(requestController),
+    JSClientType.cosmos: CosmosPageController(requestController),
+    JSClientType.bitcoin: BitcoinPageController(requestController)
+  };
+  void postMessage(PageMessage message);
   String? _walletId;
-
   void _initControllers() {
     try {
-      ethereumPageController._initController();
-      tronPageController._initController();
-      solanaPageController._initController();
-      tonPageController._initController();
-      stellarPageController._initController();
-      substratePageController._initController();
-      aptosPageController._initController();
-      suiPageController._initController();
+      for (final i in _networks.entries) {
+        final page = i.value;
+        page._initNetworkFeatures(_walletStandardController._feature);
+      }
+      _walletStandardController._initController();
     } catch (e) {
       jsConsole.error("Initializing wallet failed: $e");
     }
@@ -56,55 +52,21 @@ abstract class JSBasePageController {
     if (err.message != null) {
       jsConsole.error(err.message);
     }
-    ethereumPageController._disable();
-    tronPageController._disable();
-    solanaPageController._disable();
-    tonPageController._disable();
-    stellarPageController._disable();
-    substratePageController._disable();
-    aptosPageController._disable();
-    suiPageController._disable();
     _wait?.completeError(err);
   }
 
   void initClients(String clientId);
-
   void handleWalletMessage(WalletMessage walletResponse) {
     if (walletResponse.data.messageType == JSWalletMessageType.response) {
-      PageNetworkController._completeRequest(
-          requestId: walletResponse.requestId,
-          walletResponse: walletResponse.data as WalletMessageResponse);
+      requestController._completeRequest(walletResponse);
       return;
     }
     final event = walletResponse.data as WalletMessageEvent;
-    switch (walletResponse.clientType) {
-      case JSClientType.ethereum:
-        ethereumPageController.onEvent(event);
-        break;
-      case JSClientType.tron:
-        tronPageController.onEvent(event);
-        break;
-      case JSClientType.solana:
-        solanaPageController.onEvent(event);
-        break;
-      case JSClientType.ton:
-        tonPageController.onEvent(event);
-        break;
-      case JSClientType.stellar:
-        stellarPageController.onEvent(event);
-        break;
-      case JSClientType.substrate:
-        substratePageController.onEvent(event);
-        break;
-      case JSClientType.aptos:
-        aptosPageController.onEvent(event);
-        break;
-      case JSClientType.sui:
-        suiPageController.onEvent(event);
-        break;
-      default:
-        break;
+    if (walletResponse.clientType == null) {
+      _walletStandardController._onGlobalEventEvent(event);
+      return;
     }
+    _networks[walletResponse.clientType]?.onWalletEvent(event);
   }
 }
 

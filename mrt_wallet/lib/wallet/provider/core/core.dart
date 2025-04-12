@@ -164,9 +164,11 @@ abstract class WalletCore extends _WalletCore
   }
 
   Future<MethodResult<Web3EncryptedMessage>> updateWeb3Application(
-      Web3APPAuthentication application) async {
+      Web3APPAuthentication application,
+      {List<NetworkType>? web3Networks}) async {
     return _callSynchronized(
-        () async => _controller._updateWeb3Application(application),
+        () async => _controller._updateWeb3Application(application,
+            web3Networks: web3Networks),
         update: false,
         refresh: false,
         conditionStatus: isUnlock);
@@ -619,10 +621,10 @@ abstract class WalletCore extends _WalletCore
 
   Future<void> updateAccountBalance<CHAINACCOUNT extends ChainAccount>(
       APPCHAINACCOUNT<CHAINACCOUNT> account,
-      {CHAINACCOUNT? address}) async {
+      {List<CHAINACCOUNT>? addresses}) async {
     if (!isOpen) return;
     await _walletAction(
-        () => _controller._updateAccountBalance(account, address: address));
+        () => _controller._updateAccountBalance(account, addresses: addresses));
   }
 
   Future<List<EncryptedCustomKey>> getCustomKeysForCoin(

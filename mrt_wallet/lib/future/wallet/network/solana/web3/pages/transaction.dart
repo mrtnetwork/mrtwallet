@@ -20,7 +20,7 @@ class SolanaWeb3TransactionFieldsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       showRequestAccount: false,
       controller: () => Web3SolanaTransactionRequestController(
           walletProvider: wallet, request: request),

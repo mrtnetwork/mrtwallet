@@ -1,6 +1,7 @@
 import 'dart:js_interop';
 import 'package:mrt_native_support/web/mrt_native_web.dart';
 import '../../models.dart';
+import 'wallet_standard.dart';
 
 class SuiJSConstant {
   static const String version = '1.0.0';
@@ -69,6 +70,10 @@ extension type SuiWalletAdapterFeatures(JSAny _) implements JSAny {
   }
   @JS("standard:connect")
   external set connect(SuiWalletAdapterStandardConnectFeature _);
+
+  @JS("standard:events")
+  external set events(SuiWalletAdapterStandardEventsFeature _);
+
   @JS("sui:disconnect")
   external set disconnect(SuiWalletAdapterStandardDisconnectFeature _);
   @JS("sui:reportTransactionEffects")
@@ -91,8 +96,6 @@ extension type SuiWalletAdapterFeatures(JSAny _) implements JSAny {
       SuiWalletAdapterStandardSignPersonalMessageFeature _);
   @JS("sui:signMessage")
   external set signMessage(SuiWalletAdapterStandardSignMessageFeature _);
-  @JS("standard:events")
-  external set events(SuiWalletAdapterStandardEventsFeature _);
 }
 
 @JS()
@@ -229,30 +232,21 @@ extension type SuiWalletAdapterStandardSignPersonalMessageFeature(JSAny _)
   external set signPersonalMessage(JSFunction _);
 }
 
-extension type JSSuiWalletAccount._(JSObject _) implements JSAny {
+extension type JSSuiWalletAccount._(JSObject _)
+    implements JSWalletStandardAccount {
   factory JSSuiWalletAccount.setup(
       {required String address,
-      required APPJSUint8Array publicKey,
+      required List<int> publicKey,
       required int signingScheme,
       required String chain}) {
     return JSSuiWalletAccount._(JSObject())
       ..address = address
-      ..publicKey = publicKey
+      ..publicKey = APPJSUint8Array.fromList(publicKey)
       ..signingScheme = signingScheme
       ..chains = [chain.toJS].toJS
       ..features = SuiJSConstant.suiDefaultAccountFeatures;
   }
-  external set address(String address);
   external set signingScheme(int _);
-  external String get address;
-  external APPJSUint8Array get publicKey;
-  external JSArray<JSString>? get chains;
-  external JSArray<JSString>? get features;
-  external set publicKey(JSAny _);
-  external set chains(JSArray<JSString>? chains);
-  external set features(JSArray<JSString>? features);
-  external set label(String? _);
-  external set icon(String? _);
 }
 extension type JSSuiWalletConnectResponse._(JSObject _) implements JSAny {
   factory JSSuiWalletConnectResponse.setup(List<JSSuiWalletAccount> accounts) {
@@ -313,7 +307,7 @@ extension type JSSuiTransactionBlockResponseParams(JSAny _) implements JSAny {
       ..showRawInput = showRawInput;
   }
 }
-extension type JSSuiSignTransactionParams(JSAny _) implements JSAny {
+extension type JSSuiSignOrExcuteTransactionParams(JSAny _) implements JSAny {
   external String get chain;
   external JSSuiWalletAccount get account;
   external JSSuiSignTransactionV2? get transaction;
@@ -401,6 +395,7 @@ extension type JSSuiSignAndExecuteTransactionBlockResponse(JSAny _)
 extension type JSSuiSignMessageParams(JSAny _) implements JSAny {
   external APPJSUint8Array get message;
   external JSSuiWalletAccount get account;
+  static List<String> properties = ['message', 'account'];
 }
 extension type JSSuiSignMessageResponse(JSAny _) implements JSAny {
   factory JSSuiSignMessageResponse.setup(
@@ -421,4 +416,16 @@ extension type JSSuiSignPrsonalMessageResponse(JSAny _) implements JSAny {
   }
   external set bytes(String _);
   external set signature(String _);
+}
+@JS()
+extension type JSSuiWalletStandardConnectFeature(JSAny _) implements JSAny {
+  factory JSSuiWalletStandardConnectFeature.setup(
+      {required JSFunction connect,
+      String version = SolanaJSConstant.version}) {
+    return JSSuiWalletStandardConnectFeature(JSObject())
+      ..connect = connect
+      ..version = version;
+  }
+  external set version(String version);
+  external set connect(JSFunction _);
 }

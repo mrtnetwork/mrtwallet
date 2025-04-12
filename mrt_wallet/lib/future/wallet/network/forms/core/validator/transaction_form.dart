@@ -28,6 +28,25 @@ abstract class TransactionForm implements ValidatorForm {
   }
 
   void close() {}
+
+  void notify() {
+    assert(onChanged != null, "form callback not set");
+    onChanged?.call();
+  }
+}
+
+abstract class CustomForm implements ValidatorForm {
+  @override
+  String get name;
+  @override
+  OnChangeForm? onChanged;
+
+  void close() {}
+
+  void notify() {
+    assert(onChanged != null, "form callback not set");
+    onChanged?.call();
+  }
 }
 
 abstract class Web3Form<
@@ -42,9 +61,13 @@ abstract class Web3Form<
   String get name;
   @override
   OnChangeForm? onChanged;
-  abstract final Web3Request<dynamic, NETWORKADDRESS, CHAIN, CHAINACCOUNT,
-      WEB3CHAIN, PARAMS> request;
+  abstract final Web3NetworkRequest<dynamic, NETWORKADDRESS, CHAIN,
+      CHAINACCOUNT, WEB3CHAIN, PARAMS> request;
   ObjectVoid? onCompleteForm;
+  void notify() {
+    assert(onChanged != null, "form callback not set");
+    onChanged?.call();
+  }
 
   void close() {}
 }

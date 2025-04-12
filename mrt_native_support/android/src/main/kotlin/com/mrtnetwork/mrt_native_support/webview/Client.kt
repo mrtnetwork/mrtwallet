@@ -14,7 +14,6 @@ class CustomWebViewClient(private val methodChannel: MethodChannel, val id: Stri
 
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
-        MrtCore.logging("onpage start","WEBVIEW: ") 
         view.evaluateJavascript(  "(function() {" +
                 "var links = document.getElementsByTagName('link');" +
                 "for (var i = 0; i < links.length; i++) {" +
@@ -43,7 +42,6 @@ class CustomWebViewClient(private val methodChannel: MethodChannel, val id: Stri
         super.onPageFinished(view, url)
         val data = WebViewUtils.toJson(id,WebViewConst.onPageFinished,view, url = url)
         methodChannel.invokeMethod(WebViewConst.webView, data.toJson())
-        MrtCore.logging("onpage finish","WEBVIEW: ")
     }
 
     override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
@@ -55,7 +53,6 @@ class CustomWebViewClient(private val methodChannel: MethodChannel, val id: Stri
         }
         val data = WebViewUtils.toJson(id,WebViewConst.onPageError,view, message = errorMessage)
         methodChannel.invokeMethod(WebViewConst.webView, data.toJson())
-        MrtCore.logging("onpage erroriyoya","WEBVIEW: ")
     }
 
 }
@@ -64,7 +61,6 @@ class CustomWebChromeClient(private val methodChannel: MethodChannel, val id: St
     override fun onProgressChanged(view: WebView?, newProgress: Int) {
         val data = WebViewUtils.toJson(id,WebViewConst.onPageProgress,view, progress = newProgress)
         methodChannel.invokeMethod(WebViewConst.webView, data.toJson())
-        MrtCore.logging("onProgressChanged $newProgress","WebView")
     }
 
 }

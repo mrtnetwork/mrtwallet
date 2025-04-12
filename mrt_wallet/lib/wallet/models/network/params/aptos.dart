@@ -9,18 +9,20 @@ import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:blockchain_utils/bip/bip.dart';
 
 enum AptosChainType {
-  devnet(173),
+  devnet(null),
   testnet(2),
   mainnet(1);
 
-  const AptosChainType(this.chainId);
-  final int chainId;
-  String get web3Name => "aptos:$name";
+  const AptosChainType(this.id);
+  final int? id;
+  bool get isDevnet => this == devnet;
+  String get identifier => "aptos:$name";
   static AptosChainType fromValue(int? value) {
+    if (value == null || value > 170) return AptosChainType.devnet;
     return values.firstWhere(
-      (e) => e.chainId == value,
+      (e) => e.id == value,
       orElse: () => throw WalletExceptionConst.invalidData(
-          messsage: "SuiChainType not found."),
+          messsage: "AptosChainType not found."),
     );
   }
 }
@@ -60,7 +62,7 @@ class AptosNetworkParams extends NetworkCoinParams<AptosAPIProvider> {
         CborListValue.fixedLength([
           token.toCbor(),
           CborListValue.fixedLength(providers.map((e) => e.toCbor()).toList()),
-          aptosChainType.chainId,
+          aptosChainType.id,
           chainType.name,
           addressExplorer,
           transactionExplorer,

@@ -66,9 +66,6 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                         context
                             .openSliverBottomSheet<ReceiptAddress<TronAddress>>(
                           "receiver_address".tr,
-                          maxExtend: 1,
-                          minExtent: 0.8,
-                          initialExtend: 0.9,
                           bodyBuilder: (c) =>
                               SelectRecipientAccountView<TronAddress>(
                                   account: account,
@@ -93,7 +90,6 @@ class TronDelegatedResourceFieldsView extends StatelessWidget {
                         context
                             .openSliverBottomSheet<BigInt>(
                           "delegated_resource".tr,
-                          initialExtend: 1,
                           child: SetupNetworkAmount(
                             token: account.network.coinParam.token,
                             max: validator.maxResourceBalance.amoumt.balance,

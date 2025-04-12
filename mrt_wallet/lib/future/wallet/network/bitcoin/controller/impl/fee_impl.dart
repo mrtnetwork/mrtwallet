@@ -1,32 +1,29 @@
 import 'package:bitcoin_base/bitcoin_base.dart';
 import 'package:mrt_wallet/app/core.dart';
-import 'package:mrt_wallet/future/wallet/network/bitcoin/controller/impl/transaction.dart';
 import 'package:mrt_wallet/wallet/wallet.dart';
 
-mixin BitcoinTransactionFeeImpl on BitcoinTransactionImpl {
+mixin BitcoinTransactionFeeImpl {
+  BitcoinClient get client;
+  WalletBitcoinNetwork get network;
   int? _trSize;
-  @override
   int get transactionSize => _trSize ?? 0;
+  bool get hasSegwit;
   BitcoinFeeRateType? _feeRateType = BitcoinFeeRateType.medium;
   BitcoinFeeRate? _networkFeeRate;
   BitcoinFeeRate? get feeRate => _networkFeeRate;
   String? _feePerByteDesc;
   String? get feePerByteDesc => _feePerByteDesc;
-  @override
   bool get hasFeeRate => _networkFeeRate != null;
   late final IntegerBalance _feeRate =
       IntegerBalance.zero(network.coinParam.decimal);
-  @override
   IntegerBalance get transactionFee => _feeRate;
   BitcoinFeeRateType? get feeRateType => _feeRateType;
 
   late Map<String, IntegerBalance> _fees;
   Map<String, IntegerBalance> get fees => _fees;
   String? _feeError;
-
   String? get feeError => _feeError;
   bool get hasFee => _feeRate.largerThanZero;
-
   bool get isFeeValid => hasFee && _feeError == null;
 
   Map<String, IntegerBalance> _buildFeeRate() {
@@ -45,8 +42,7 @@ mixin BitcoinTransactionFeeImpl on BitcoinTransactionImpl {
     };
   }
 
-  @override
-  void setFee(String? feeType, {BigInt? customFee}) {
+  void changeFee(String? feeType, {BigInt? customFee}) {
     if (feeType == null && customFee == null) return;
     _feeRateType = feeType == null
         ? null
@@ -59,23 +55,23 @@ mixin BitcoinTransactionFeeImpl on BitcoinTransactionImpl {
           _networkFeeRate!.getEstimate(_trSize!, feeRateType: _feeRateType!));
     }
     _checkFeeAlert();
-    super.setFee(feeType, customFee: customFee);
+    // super.setFee(feeType, customFee: customFee);
   }
 
   Future<BitcoinFeeRate?> _getFeeRate() async {
-    return apiProvider.getFeeRate();
+    return client.getFeeRate();
   }
 
   int _getTransactionSize(
       {required List<UtxoWithAddress> utxos,
       required List<BitcoinBaseOutput> outPuts}) {
     int transactionSize;
-    if (isBCHTransaction) {
+    if (network.coinParam.isForked) {
       transactionSize = ForkedTransactionBuilder.estimateTransactionSize(
           utxos: utxos,
           enableRBF: true,
           outputs: outPuts,
-          network: network.coinParam.transacationNetwork as BitcoinCashNetwork);
+          network: network.coinParam.transacationNetwork);
     } else {
       transactionSize = BitcoinTransactionBuilder.estimateTransactionSize(
           utxos: utxos,
@@ -86,12 +82,10 @@ mixin BitcoinTransactionFeeImpl on BitcoinTransactionImpl {
     return transactionSize;
   }
 
-  @override
-  Future<void> estimateFee({
-    required List<BitcoinBaseOutput> outPuts,
-    required List<UtxoWithAddress> inputs,
-    BCMR? bcmr,
-  }) async {
+  Future<void> estimateFee(
+      {required List<BitcoinBaseOutput> outPuts,
+      required List<UtxoWithAddress> inputs,
+      BCMR? bcmr}) async {
     _trSize = MethodUtils.nullOnException(
         () => _getTransactionSize(utxos: inputs, outPuts: outPuts));
     assert(_trSize != null, "should never failed to get transaction size.");
@@ -114,7 +108,8 @@ mixin BitcoinTransactionFeeImpl on BitcoinTransactionImpl {
 
   void _checkFeeAlert() {
     _feeError = null;
-    _feePerByteDesc = _calcFeePerByte();
+    _feePerByteDesc =
+        _calcFeePerByte(feeRate: _feeRate, size: _trSize, hasSegwit: hasSegwit);
     if (!hasFee) {
       _feeError = "setup_fee_manually";
     }
@@ -125,9 +120,13 @@ mixin BitcoinTransactionFeeImpl on BitcoinTransactionImpl {
     }
   }
 
-  String? _calcFeePerByte() {
-    if (!hasFee || _trSize == null) return null;
-    final f = _feeRate.balance ~/ BigInt.from(_trSize!);
+  static String? _calcFeePerByte({
+    required int? size,
+    required IntegerBalance feeRate,
+    required bool hasSegwit,
+  }) {
+    if (size == null || !feeRate.largerThanZero) return null;
+    final f = feeRate.balance ~/ BigInt.from(size);
     if (hasSegwit) {
       return "${f}sat/vB";
     }

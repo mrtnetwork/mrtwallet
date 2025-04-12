@@ -19,12 +19,12 @@ import 'package:on_chain/tron/src/models/contract/base_contract/transaction_type
 class TronWeb3TransactionFieldsView extends StatelessWidget {
   const TronWeb3TransactionFieldsView(
       {required this.wallet, super.key, required this.request});
-  final Web3TronRequest<Map<String, dynamic>, Web3TronSendTransaction> request;
+  final Web3TronRequest<String, Web3TronSendTransaction> request;
   final WalletProvider wallet;
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3TronTransactionRequestController(
           walletProvider: wallet, request: request),
       builder: (context, controller) {

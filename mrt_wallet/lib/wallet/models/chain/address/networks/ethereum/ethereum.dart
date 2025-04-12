@@ -23,10 +23,12 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
       required this.networkAddress,
       required List<ETHERC20Token> tokens,
       required List<NFTCore> nfts,
+      required List<int>? publicKey,
       String? accountName})
       : _tokens = List<ETHERC20Token>.unmodifiable(tokens),
         _nfts = List<NFTCore>.unmodifiable(nfts),
-        _accountName = accountName;
+        _accountName = accountName,
+        publicKey = publicKey?.asImmutableBytes;
 
   factory IEthAddress.newAccount(
       {required EthereumNewAddressParams accountParams,
@@ -37,14 +39,14 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
         address: ethAddress.address,
         balance: IntegerBalance.zero(network.coinParam.decimal));
     return IEthAddress._(
-      coin: accountParams.coin,
-      address: addressDetauls,
-      keyIndex: accountParams.deriveIndex,
-      networkAddress: ethAddress,
-      network: network.value,
-      tokens: const [],
-      nfts: const [],
-    );
+        coin: accountParams.coin,
+        address: addressDetauls,
+        keyIndex: accountParams.deriveIndex,
+        networkAddress: ethAddress,
+        network: network.value,
+        tokens: const [],
+        nfts: const [],
+        publicKey: publicKey);
   }
   factory IEthAddress.fromCbsorHex(String hex, WalletNetwork network) {
     return IEthAddress.fromCborBytesOrObject(network,
@@ -52,33 +54,28 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
   }
   factory IEthAddress.fromCborBytesOrObject(WalletNetwork network,
       {List<int>? bytes, CborObject? obj}) {
-    final toCborTag = (obj ?? CborObject.fromCbor(bytes!)) as CborTagValue;
-
-    final CborListValue cbor = CborSerializable.decodeCborTags(
-        null, toCborTag, CborTagsConst.ethAccount);
-    final CoinProposal proposal = CoinProposal.fromName(cbor.elementAt(0));
-    final CryptoCoins coin = CryptoCoins.getCoin(cbor.elementAt(1), proposal)!;
+    final CborListValue values = CborSerializable.cborTagValue(
+        cborBytes: bytes, object: obj, tags: CborTagsConst.ethAccount);
+    final CoinProposal proposal = CoinProposal.fromName(values.elementAs(0));
+    final CryptoCoins coin =
+        CryptoCoins.getCoin(values.elementAs(1), proposal)!;
     final keyIndex =
-        AddressDerivationIndex.fromCborBytesOrObject(obj: cbor.getCborTag(2));
-    final networkId = cbor.elementAt(6);
+        AddressDerivationIndex.fromCborBytesOrObject(obj: values.getCborTag(2));
+    final int networkId = values.elementAs(6);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
     final AccountBalance address = AccountBalance.fromCborBytesOrObject(
         network.coinParam.decimal,
-        obj: cbor.getCborTag(4));
+        obj: values.getCborTag(4));
 
-    final ETHAddress ethAddress = ETHAddress(cbor.elementAt(5));
+    final ETHAddress ethAddress = ETHAddress(values.elementAs(5));
 
-    final List<ETHERC20Token> erc20Tokens = [];
-    final List<dynamic>? tokens = cbor.elementAt(7);
-    if (tokens != null) {
-      for (final i in tokens) {
-        erc20Tokens.add(ETHERC20Token.fromCborBytesOrObject(obj: i));
-      }
-    }
-
-    final String? accountName = cbor.elementAt(9);
+    final List<ETHERC20Token> erc20Tokens = values
+        .elementAsListOf<CborTagValue>(7)
+        .map((e) => ETHERC20Token.fromCborBytesOrObject(obj: e))
+        .toList();
+    final String? accountName = values.elementAs(9);
     return IEthAddress._(
         coin: coin,
         address: address,
@@ -87,7 +84,8 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
         network: networkId,
         tokens: erc20Tokens,
         nfts: [],
-        accountName: accountName);
+        accountName: accountName,
+        publicKey: values.elementAs(10));
   }
 
   @override
@@ -106,6 +104,8 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
   @override
   final int network;
 
+  final List<int>? publicKey;
+
   @override
   CborTagValue toCbor() {
     return CborTagValue(
@@ -119,7 +119,8 @@ class IEthAddress extends ChainAccount<ETHAddress, ETHERC20Token, NFTCore>
           network,
           CborListValue.fixedLength(_tokens.map((e) => e.toCbor()).toList()),
           CborListValue.fixedLength(_nfts.map((e) => e.toCbor()).toList()),
-          accountName ?? const CborNullValue()
+          accountName ?? const CborNullValue(),
+          publicKey == null ? null : CborBytesValue(publicKey!)
         ]),
         CborTagsConst.ethAccount);
   }

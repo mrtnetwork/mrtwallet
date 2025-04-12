@@ -11,10 +11,8 @@ import 'package:mrt_wallet/future/router/page_router.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 
 void main() async {
-  WalletLogging.error("state1d");
   runZonedGuarded(_runApplication, (error, stack) {
-    // WalletLogging.log("zoon error: $error");
-    WalletLogging.error("got error here ?! $error");
+    WalletLogging.error("Guarded $error $stack");
   });
 }
 
@@ -62,6 +60,8 @@ class MyBTC extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // final ob = MyRouteObserver();
+    // ob.
     return MrtViewBuilder<WalletProvider>(
       controller: () => WalletProvider(
           appSetting: setting,
@@ -70,7 +70,6 @@ class MyBTC extends StatelessWidget {
       stateId: StateConst.main,
       repositoryId: StateConst.main,
       builder: (m) {
-        WalletLogging.log("is update222d!");
         return MaterialApp(
             scaffoldMessengerKey: StateRepository.messengerKey(context),
             title: APPConst.name,
@@ -101,7 +100,7 @@ class MyBTC extends StatelessWidget {
             locale: ThemeController.locale,
             onGenerateRoute: PageRouter.onGenerateRoute,
             initialRoute: PageRouter.home,
-            navigatorObservers: [MyRouteObserver()],
+            navigatorObservers: [StateRepository.walletObserver(context)],
             showSemanticsDebugger: false,
             debugShowCheckedModeBanner: false,
             color: ThemeController.appTheme.colorScheme.primary,
@@ -110,5 +109,3 @@ class MyBTC extends StatelessWidget {
     );
   }
 }
-
-class MyRouteObserver extends RouteObserver<PageRoute<dynamic>> {}

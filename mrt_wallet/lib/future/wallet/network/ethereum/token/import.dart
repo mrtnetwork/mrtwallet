@@ -124,9 +124,6 @@ class __ImportErc20TokenViewState extends State<_ImportErc20TokenView> {
                               .openSliverBottomSheet<
                                       ReceiptAddress<ETHAddress>>(
                                   "contract_address".tr,
-                                  maxExtend: 1,
-                                  minExtent: 0.8,
-                                  initialExtend: 0.9,
                                   bodyBuilder: (c) =>
                                       SelectRecipientAccountView<ETHAddress>(
                                         account: widget.account,

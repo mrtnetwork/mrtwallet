@@ -86,9 +86,9 @@ class Web3AptosSendTransactionForm
   }
 
   @override
-  void initForm(
-      {required AptosChain account, required IAptosAddress? address}) {
-    super.initForm(account: account, address: address);
+  Future<void> initForm(
+      {required AptosChain account, required IAptosAddress? address}) async {
+    await super.initForm(account: account, address: address);
     _transactionContent = StringUtils.fromJson(
         request.params.transaction.toJson(),
         indent: ' ',

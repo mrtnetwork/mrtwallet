@@ -4,7 +4,7 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/constant/constant.dart';
 
-class Web3SubstrateRequestMethods extends Web3RequestMethods {
+class Web3SubstrateRequestMethods extends Web3NetworkRequestMethods {
   const Web3SubstrateRequestMethods._(
       {required super.id, required super.name, super.reloadAuthenticated});
 

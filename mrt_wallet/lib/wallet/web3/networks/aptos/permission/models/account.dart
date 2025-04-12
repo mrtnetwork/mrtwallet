@@ -1,10 +1,10 @@
 import 'package:blockchain_utils/blockchain_utils.dart';
 import 'package:mrt_wallet/app/serialization/cbor/cbor.dart';
 import 'package:mrt_wallet/crypto/models/networks.dart';
-import 'package:mrt_wallet/wallet/api/provider/core/provider.dart';
 import 'package:mrt_wallet/wallet/constant/tags/constant.dart';
 import 'package:mrt_wallet/wallet/models/chain/account.dart';
-import 'package:mrt_wallet/wallet/models/network/core/network/network.dart';
+import 'package:mrt_wallet/wallet/models/network/params/aptos.dart'
+    show AptosChainType;
 import 'package:mrt_wallet/wallet/web3/core/permission/types/account.dart';
 import 'package:mrt_wallet/crypto/derivation/derivation.dart';
 import 'package:on_chain/aptos/src/address/address/address.dart';
@@ -14,23 +14,33 @@ class Web3AptosChainAccount extends Web3ChainAccount<AptosAddress> {
   final int id;
   final List<int> publicKey;
   final int signingScheme;
+  final AptosChainType network;
+
+  String get publicKeyHex {
+    return BytesUtils.toHexString(publicKey, prefix: '0x');
+  }
+
   Web3AptosChainAccount(
       {required super.keyIndex,
       required super.address,
       required super.defaultAddress,
       required this.id,
       required this.signingScheme,
+      required this.network,
       required List<int> publicKey})
       : publicKey = publicKey.asImmutableBytes;
-  factory Web3AptosChainAccount.fromChainAccount(
-      {required IAptosAddress address,
-      required int id,
-      required bool isDefault}) {
+  factory Web3AptosChainAccount.fromChainAccount({
+    required IAptosAddress address,
+    required int id,
+    required bool isDefault,
+    required AptosChainType network,
+  }) {
     return Web3AptosChainAccount(
         keyIndex: address.keyIndex,
         address: address.networkAddress,
         id: id,
         defaultAddress: isDefault,
+        network: network,
         publicKey: address.aptosPublicKey().toBytes(),
         signingScheme: address.keyScheme.toSigningScheme.value);
   }
@@ -49,7 +59,8 @@ class Web3AptosChainAccount extends Web3ChainAccount<AptosAddress> {
         id: values.elementAt(2),
         defaultAddress: values.elementAt(3),
         publicKey: values.elementAs(4),
-        signingScheme: values.elementAs(5));
+        signingScheme: values.elementAs(5),
+        network: AptosChainType.fromValue(values.elementAs(6)));
   }
 
   @override
@@ -61,7 +72,8 @@ class Web3AptosChainAccount extends Web3ChainAccount<AptosAddress> {
           id,
           defaultAddress,
           CborBytesValue(publicKey),
-          signingScheme
+          signingScheme,
+          network.id
         ]),
         CborTagsConst.web3AptosAccount);
   }
@@ -70,21 +82,66 @@ class Web3AptosChainAccount extends Web3ChainAccount<AptosAddress> {
   String get addressStr => address.address;
 
   @override
-  List get variabels => [keyIndex, addressStr, id];
+  Web3AptosChainAccount clone(
+      {AddressDerivationIndex? keyIndex,
+      AptosAddress? address,
+      bool? defaultAddress,
+      int? id,
+      int? signingScheme,
+      AptosChainType? network,
+      List<int>? publicKey}) {
+    return Web3AptosChainAccount(
+        keyIndex: keyIndex ?? this.keyIndex,
+        address: address ?? this.address,
+        defaultAddress: defaultAddress ?? this.defaultAddress,
+        id: id ?? this.id,
+        signingScheme: signingScheme ?? this.signingScheme,
+        network: network ?? this.network,
+        publicKey: publicKey ?? this.publicKey);
+  }
 }
 
-class Web3AptosChainAuthenticated extends Web3ChainAuthenticated {
-  final List<Web3AptosChainAccount> accounts;
-  final WalletAptosNetwork network;
-  final ProviderIdentifier? serviceIdentifier;
-  final List<int> chainIds;
-  Web3AptosChainAuthenticated(
-      {required List<Web3AptosChainAccount> accounts,
-      required this.network,
-      required this.serviceIdentifier,
-      required List<int> chainIds})
-      : accounts = accounts.immutable,
-        chainIds = chainIds.immutable;
+class Web3AptosChainIdnetifier extends Web3ChainIdnetifier {
+  final int? chainId;
+  @override
+  final String identifier;
+  late final AptosChainType aptosChain = AptosChainType.fromValue(chainId);
+
+  Web3AptosChainIdnetifier(
+      {required this.chainId, required this.identifier, required super.id});
+  factory Web3AptosChainIdnetifier.deserialize(
+      {List<int>? bytes, CborObject? object, String? hex}) {
+    final CborListValue values = CborSerializable.cborTagValue(
+        object: object,
+        cborBytes: bytes,
+        hex: hex,
+        tags: CborTagsConst.web3AptosChainIdentifier);
+    return Web3AptosChainIdnetifier(
+        chainId: values.elementAs(0),
+        id: values.elementAs(1),
+        identifier: values.elementAs(2));
+  }
+  @override
+  CborTagValue toCbor() {
+    return CborTagValue(
+      CborListValue.fixedLength([chainId, id, identifier]),
+      CborTagsConst.web3AptosChainIdentifier,
+    );
+  }
+}
+
+class Web3AptosChainAuthenticated
+    extends Web3ChainAuthenticated<Web3AptosChainAccount> {
+  @override
+  final List<Web3AptosChainIdnetifier> networks;
+  @override
+  final Web3AptosChainIdnetifier currentNetwork;
+  Web3AptosChainAuthenticated({
+    required super.accounts,
+    required this.currentNetwork,
+    required List<Web3AptosChainIdnetifier> networks,
+  })  : networks = networks.immutable,
+        super(networkType: NetworkType.aptos);
 
   factory Web3AptosChainAuthenticated.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
@@ -94,32 +151,17 @@ class Web3AptosChainAuthenticated extends Web3ChainAuthenticated {
         hex: hex,
         tags: NetworkType.aptos.tag);
     return Web3AptosChainAuthenticated(
-        accounts: values
-            .elementAsListOf<CborTagValue>(0)
-            .map((e) => Web3AptosChainAccount.deserialize(object: e))
-            .toList(),
-        network:
-            WalletAptosNetwork.fromCborBytesOrObject(obj: values.getCborTag(1)),
-        serviceIdentifier:
-            values.elemetMybeAs<ProviderIdentifier, CborTagValue>(
-                2, (p0) => ProviderIdentifier.deserialize(cbor: p0)),
-        chainIds: values
-            .elementAsListOf<CborIntValue>(3)
-            .map((e) => e.value)
-            .toList());
-  }
-
-  @override
-  CborTagValue toCbor() {
-    return CborTagValue(
-        CborListValue.fixedLength([
-          CborListValue.fixedLength(accounts.map((e) => e.toCbor()).toList()),
-          network.toCbor(),
-          serviceIdentifier?.toCbor(),
-          CborListValue.fixedLength(
-              chainIds.map((e) => CborIntValue(e)).toList()),
-        ]),
-        networkType.tag);
+      accounts: values
+          .elementAsListOf<CborTagValue>(0)
+          .map((e) => Web3AptosChainAccount.deserialize(object: e))
+          .toList(),
+      networks: values
+          .elementAsListOf<CborTagValue>(1)
+          .map((e) => Web3AptosChainIdnetifier.deserialize(object: e))
+          .toList(),
+      currentNetwork: Web3AptosChainIdnetifier.deserialize(
+          object: values.elementAs<CborTagValue>(2)),
+    );
   }
 
   @override

@@ -39,8 +39,7 @@ class __CosmosImportTokenViewState
   @override
   CosmosChain get account => widget.account;
 
-  List<CW20Token> tokens = [];
-  List<CW20Token> allTokens = [];
+  List<CosmosChainAsset> allTokens = [];
 
   void fetchTokens() async {
     if (progressKey.isSuccess || progressKey.inProgress) return;
@@ -51,9 +50,12 @@ class __CosmosImportTokenViewState
     if (result.hasError) {
       progressKey.errorText(result.error!, backToIdle: false);
     } else {
-      tokens.addAll(result.result);
-      allTokens = [...address.tokens, ...tokens];
-      if (tokens.isNotEmpty) {
+      // tokens.addAll(result.result);
+      allTokens = [
+        ...address.tokens.map((e) => CosmosChainAsset.cw20Token(e)),
+        ...result.result
+      ];
+      if (allTokens.isNotEmpty) {
         progressKey.success();
       } else {
         progressKey.success(
@@ -72,20 +74,16 @@ class __CosmosImportTokenViewState
   }
 
   Future<void> add(CW20Token token) async {
-    final result = await widget.wallet.wallet
+    await widget.wallet.wallet
         .addNewToken(token: token, address: address, account: widget.account);
-    if (result.hasError) throw result.error!;
-    return result.result;
   }
 
   Future<void> removeToken(CW20Token token) async {
-    final result = await widget.wallet.wallet.removeToken(
+    await widget.wallet.wallet.removeToken(
       token: token,
       address: address,
       account: widget.account,
     );
-    if (result.hasError) throw result.error!;
-    return result.result;
   }
 
   Future<void> onTap(CW20Token token, bool exist) async {
@@ -100,11 +98,25 @@ class __CosmosImportTokenViewState
     }
   }
 
+  void updateToken(CosmosChainAsset token, Token updatedToken) {
+    final index = allTokens.indexOf(token);
+    if (index.isNegative) return;
+    final newToken = CosmosChainAsset.cw20Token(CW20Token.create(
+        balance: token.balance.balance,
+        token: updatedToken,
+        denom: token.coin.denom));
+    allTokens[index] = newToken;
+    updateState();
+    onTap(newToken.cw20token!, false);
+  }
+
   @override
   void safeDispose() {
     super.safeDispose();
-    for (final i in tokens) {
-      i.balance.dispose();
+    for (final i in allTokens) {
+      if (!address.tokens.contains(i.cw20token)) {
+        i.cw20token?.balance.dispose();
+      }
     }
   }
 
@@ -136,25 +148,64 @@ class __CosmosImportTokenViewState
                         WidgetConstant.divider,
                     itemBuilder: (context, index) {
                       final token = allTokens.elementAt(index);
-                      final bool exist = addressTokens.contains(token);
-                      return TokenDetailsView(
-                          onSelect: () {
-                            context.openSliverDialog(
-                                (ctx) => DialogTextView(
-                                    buttonWidget: AsyncDialogDoubleButtonView(
-                                      firstButtonPressed: () =>
-                                          onTap(token, exist),
-                                    ),
-                                    text: exist
-                                        ? "remove_token_from_account".tr
-                                        : "add_token_to_your_account".tr),
-                                exist ? "remove_token".tr : "add_token".tr);
-                          },
-                          onSelectIcon: APPCheckBox(
-                              value: exist,
-                              ignoring: true,
-                              onChanged: (value) {}),
-                          token: token);
+                      final bool exist =
+                          addressTokens.contains(token.cw20token);
+                      final cw20Token = token.cw20token;
+                      if (cw20Token != null) {
+                        return TokenDetailsView(
+                            onSelect: () {
+                              context.openSliverDialog(
+                                  (ctx) => DialogTextView(
+                                      buttonWidget: AsyncDialogDoubleButtonView(
+                                        firstButtonPressed: () =>
+                                            onTap(cw20Token, exist),
+                                      ),
+                                      text: exist
+                                          ? "remove_token_from_account".tr
+                                          : "add_token_to_your_account".tr),
+                                  exist ? "remove_token".tr : "add_token".tr);
+                            },
+                            onSelectIcon: APPCheckBox(
+                                value: exist,
+                                ignoring: true,
+                                onChanged: (value) {}),
+                            token: token.cw20token!);
+                      }
+                      return ContainerWithBorder(
+                        onRemoveIcon: APPCheckBox(
+                            value: exist,
+                            ignoring: true,
+                            onChanged: (value) {}),
+                        onRemove: () {
+                          context.openSliverBottomSheet<bool>("update_token".tr,
+                              bodyBuilder: (scrollController) =>
+                                  UpdateTokenDetailsView(
+                                      token: token.token,
+                                      account: account,
+                                      title: PageTitleSubtitle(
+                                          title: "update_token_information".tr,
+                                          body: AlertTextContainer(
+                                              message:
+                                                  "update_unknown_token_metadata_desc"
+                                                      .tr,
+                                              enableTap: false)),
+                                      address: address,
+                                      onUpdateToken: (context, updatedToken) {
+                                        context.pop();
+                                        updateToken(token, updatedToken);
+                                      },
+                                      scrollController: scrollController),
+                              centerContent: false);
+                        },
+                        validate: false,
+                        validateText: "update_unknown_token_metadata_desc".tr,
+                        child: TokenDetailsWidget(
+                            token: token.token,
+                            tokenAddress: token.coin.denom,
+                            color: context.colors.onPrimaryContainer,
+                            radius: APPConst.double40,
+                            balance: token.balance),
+                      );
                     },
                     shrinkWrap: true,
                     addAutomaticKeepAlives: false,

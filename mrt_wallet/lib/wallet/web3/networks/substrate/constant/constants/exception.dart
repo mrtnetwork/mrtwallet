@@ -2,38 +2,18 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/exception/exception.dart';
 
 class Web3SubstrateExceptionConstant {
-  static Web3RequestException get invalidTransaction =>
-      Web3RequestExceptionConst.invalidParameters(
-          "Invalid transaction parameters. ");
-
-  static Web3RequestException get invalidTransactionSpecVersion =>
-      Web3RequestExceptionConst.invalidParameters(
-          "Invalid spec version: The request contains a specVersion that differs from the current wallet network's specVersion.");
-  static Web3RequestException get invalidTransactionGenesisHash =>
-      Web3RequestExceptionConst.invalidParameters(
-          "Invalid spec version: The request contains a genesishash that differs from the current wallet network's genesishash.");
-  static Web3RequestException get transactionSerializationFailed =>
-      Web3RequestExceptionConst.failedRequest(
-          "Unknown error: Transaction serialization failed.");
-
   static Web3RequestException get invalidSignMessage =>
       Web3RequestExceptionConst.invalidParameters(
-          "Invalid sign message request: The request must include an address, type, and data. The data must be valid hexadecimal bytes.");
+          "Invalid address, type or data. The parameters must contain both 'address', type and 'data' as hexadecimal for signing.");
   static Web3RequestException get invalidSignMessageType =>
-      Web3RequestExceptionConst.invalidParameters(
-          "Invalid sign message request type: Use `signPayload` for signing.");
-  static Web3RequestException get invalidProvideMetadataRequest =>
-      Web3RequestExceptionConst.invalidParameters(
-          "Invalid provide metadata request: The request must include the following parameters: chain, genesisHash, ss58Format, specVersion, tokenDecimals, and tokenSymbol.");
+      Web3RequestExceptionConst.message(
+          "Unsupported type. use 'bytes' for sign message.");
   static Web3RequestException get metadataParsingFailed =>
-      Web3RequestExceptionConst.invalidParameters(
-          "Invalid provide metadata request: Failed to parse metadata.");
-
+      Web3RequestExceptionConst.message(
+          "Invalid metadata: Failed to parse or validate the metadata parameters.");
   static Web3RequestException get unsuportedMetadataVersion =>
-      Web3RequestExceptionConst.unsuportedfeatures(
-          "Unsuported metadata version.");
-
+      Web3RequestExceptionConst.message("Unsuported metadata version.");
   static Web3RequestException get differentRuntimeMetadata =>
-      Web3RequestExceptionConst.invalidParameters(
-          "Invalid provide metadata request: The node returned a different genesis hash or a spec version that does not match your request.");
+      Web3RequestExceptionConst.message(
+          "Invalid runtime information: The node returned a different genesis hash or a spec version that does not match your request.");
 }

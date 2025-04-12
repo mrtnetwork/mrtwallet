@@ -4,7 +4,6 @@ import 'package:mrt_wallet/future/wallet/network/forms/solana/solana.dart';
 import 'package:mrt_wallet/future/wallet/network/solana/web3/controller/controller.dart';
 import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
-import 'fields/request_account.dart';
 import 'fields/sign_message.dart';
 
 class SolanaWeb3GlobalFieldsView<RESPONSE,
@@ -16,9 +15,10 @@ class SolanaWeb3GlobalFieldsView<RESPONSE,
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
       controller: () => Web3SolanaGlobalRequestController<RESPONSE, T>(
           walletProvider: wallet, request: request),
+      showRequestAccount: false,
       builder: (context, controller) {
         return [
           _GlobalFieldsView(form: controller.form, controller: controller)
@@ -36,15 +36,11 @@ class _GlobalFieldsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (form.request.params.method) {
-      case Web3SolanaRequestMethods.requestAccounts:
-        return SolanaWeb3RequestAccountsView(
-          controller: controller,
-          field: form as SolanaRequestAccountForm,
-        );
       case Web3SolanaRequestMethods.signMessage:
+      case Web3SolanaRequestMethods.signIn:
         return SolanaWeb3SignMessageRequestView(
-          request: form as Web3SolanaSignMessageForm<Web3SolanaSignMessage>,
-        );
+            request: form as Web3SolanaSignMessageForm);
+
       default:
         return const SliverPadding(padding: EdgeInsets.zero);
     }

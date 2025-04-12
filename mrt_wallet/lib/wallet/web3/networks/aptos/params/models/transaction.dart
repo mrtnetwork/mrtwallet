@@ -5,6 +5,7 @@ import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/params/core/request.dart';
+import 'package:mrt_wallet/wallet/web3/networks/aptos/permission/models/account.dart';
 import 'package:on_chain/aptos/src/aptos.dart';
 
 class Web3AptosSendTransaction extends Web3AptosRequestParam<List<int>> {
@@ -12,7 +13,7 @@ class Web3AptosSendTransaction extends Web3AptosRequestParam<List<int>> {
   final AptosAddress? feePayer;
   final List<AptosAddress>? secondarySignerAddresses;
   @override
-  final AptosAddress account;
+  final Web3AptosChainAccount account;
 
   Web3AptosSendTransaction._(
       {required this.transaction,
@@ -24,8 +25,8 @@ class Web3AptosSendTransaction extends Web3AptosRequestParam<List<int>> {
 
   factory Web3AptosSendTransaction(
       {required AptosRawTransaction transaction,
-      required Web3RequestMethods method,
-      required AptosAddress account,
+      required Web3NetworkRequestMethods method,
+      required Web3AptosChainAccount account,
       AptosAddress? feePayer,
       List<AptosAddress>? socondarySignerAddresses}) {
     switch (method) {
@@ -51,9 +52,10 @@ class Web3AptosSendTransaction extends Web3AptosRequestParam<List<int>> {
         object: object,
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
-    final method = Web3RequestMethods.fromTag(values.elementAt(0));
+    final method = Web3NetworkRequestMethods.fromTag(values.elementAt(0));
     return Web3AptosSendTransaction(
-        account: AptosAddress(values.elementAs(1)),
+        account: Web3AptosChainAccount.deserialize(
+            object: values.elementAs<CborTagValue>(1)),
         transaction: AptosRawTransaction.deserialize(values.elementAs(2)),
         feePayer: values.elemetMybeAs<AptosAddress, CborStringValue>(
             3, (e) => AptosAddress(e.value)),
@@ -77,7 +79,7 @@ class Web3AptosSendTransaction extends Web3AptosRequestParam<List<int>> {
     return CborTagValue(
         CborListValue.fixedLength([
           method.tag,
-          account.address,
+          account.toCbor(),
           CborBytesValue(transaction.toBcs()),
           feePayer?.address,
           secondarySignerAddresses == null
@@ -87,17 +89,6 @@ class Web3AptosSendTransaction extends Web3AptosRequestParam<List<int>> {
                   .toList())
         ]),
         type.tag);
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      "transaction": transaction.toLayoutStruct(),
-      "account": account.address,
-      "feePayer": feePayer?.address,
-      "secondarySignerAddresses":
-          secondarySignerAddresses?.map((e) => e.address).toList()
-    };
   }
 
   @override

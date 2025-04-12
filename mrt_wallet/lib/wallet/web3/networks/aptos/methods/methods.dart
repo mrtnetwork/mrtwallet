@@ -5,7 +5,7 @@ import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/aptos/constant/constants/constant.dart';
 import 'package:mrt_wallet/wallet/web3/networks/ethereum/constant/constant.dart';
 
-class Web3AptosRequestMethods extends Web3RequestMethods {
+class Web3AptosRequestMethods extends Web3NetworkRequestMethods {
   const Web3AptosRequestMethods._(
       {required super.id,
       required super.name,

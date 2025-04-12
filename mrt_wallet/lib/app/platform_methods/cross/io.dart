@@ -45,24 +45,29 @@ Future<void> _validate(String path, int checksum) async {
   }
 }
 
-Future<List<int>> loadAssetBuffer(String assetPath) async {
+Future<List<int>> loadAssetBuffer(String assetPath, {String? package}) async {
   try {
-    final buffer = await rootBundle.load(assetPath);
+    final buffer =
+        await rootBundle.load(toAssetPath(assetPath, package: package));
     return buffer.buffer.asUint8List();
   } catch (e) {
     throw const AppException("file_does_not_exist");
   }
 }
 
-Future<String> loadAssetText(String assetPath) async {
+Future<String> loadAssetText(String assetPath, {String? package}) async {
   try {
-    final data = await rootBundle.loadString(assetPath);
+    final data =
+        await rootBundle.loadString(toAssetPath(assetPath, package: package));
     return data;
   } catch (e) {
     throw const AppException("file_does_not_exist");
   }
 }
 
-String toAssetPath(String assetPath) {
+String toAssetPath(String assetPath, {String? package}) {
+  if (package != null) {
+    return 'packages/$package/$assetPath';
+  }
   return assetPath;
 }

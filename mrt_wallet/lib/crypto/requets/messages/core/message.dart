@@ -88,6 +88,7 @@ enum StreamIsolateMethod {
 
 enum WalletRequestMethod {
   signMessage(CryptoKeyConst.ethereumPersonalSign),
+  bitcoinSignMessage(CryptoKeyConst.bitcoinPersonalSign),
   ethereumTypedDataSign(CryptoKeyConst.ethereumTypedDataSign),
   deriveAddress(CryptoKeyConst.deriveAddress),
   readPublicKeys(CryptoKeyConst.readPublicKeys),
@@ -198,6 +199,9 @@ abstract class WalletRequest<T, A extends CborMessageArgs>
     switch (request) {
       case WalletRequestMethod.signMessage:
         args = WalletRequestSignMessage.deserialize(object: decode);
+        break;
+      case WalletRequestMethod.bitcoinSignMessage:
+        args = WalletRequestBitcoinSignMessage.deserialize(object: decode);
         break;
       case WalletRequestMethod.ethereumTypedDataSign:
         args = WalletRequestEthereumTypedDataSign.deserialize(object: decode);

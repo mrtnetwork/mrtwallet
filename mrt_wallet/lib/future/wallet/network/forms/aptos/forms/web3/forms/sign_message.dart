@@ -43,8 +43,9 @@ class Web3AptosSignMessageForm extends AptosWeb3Form<Web3AptosSignMessage> {
   }
 
   @override
-  void initForm(
-      {required AptosChain account, required IAptosAddress? address}) {
+  Future<void> initForm(
+      {required AptosChain account, required IAptosAddress? address}) async {
+    await super.initForm(account: account, address: address);
     final signingRequest = request.params;
 
     if (signingRequest.messageBytes != null) {
@@ -59,14 +60,14 @@ class Web3AptosSignMessageForm extends AptosWeb3Form<Web3AptosSignMessage> {
       _application = APPConst.name;
     }
     if (signingRequest.address ?? false) {
-      signingMessage += signingRequest.account.address;
-      _address = signingRequest.account.address;
+      signingMessage += signingRequest.account.addressStr;
+      _address = signingRequest.account.addressStr;
     }
     signingMessage += signingRequest.nonce!;
     if (signingRequest.chainId ?? false) {
-      signingMessage +=
-          account.network.coinParam.aptosChainType.chainId.toString();
-      _chainId = account.network.coinParam.aptosChainType.chainId;
+      final chainId = await client.getCurrenctChainId();
+      signingMessage += chainId.toString();
+      _chainId = chainId;
     }
     signingMessage += signingRequest.message!;
     message = signingMessage;

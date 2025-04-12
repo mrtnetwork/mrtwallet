@@ -134,7 +134,7 @@ class _SelectAccountUtxoState extends State<SelectAccountUtxo> with SafeState {
                     .tr
                     .replaceOne(widget.controller.network.coinParam.token.name),
                 body: Text("spend_multiple_account_desc".tr)),
-            if (widget.controller.isBCHTransaction)
+            if (widget.controller.isBCH)
               if (widget.includeTokenUtxos != null)
                 AppSwitchListTile(
                   value: widget.includeTokenUtxos!,

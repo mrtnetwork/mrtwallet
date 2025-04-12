@@ -8,6 +8,7 @@ class RepositoryController {
       GlobalKey<ScaffoldMessengerState>(debugLabel: "Repository_1");
   final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>(debugLabel: "Repository_2");
+  final WalletRouteObserver obs = WalletRouteObserver();
   void _add<T extends StateController>(
       BuildContext context, String repositoryId, T stateController) {
     if (_state.containsKey(repositoryId)) return;

@@ -329,15 +329,12 @@ class __SetupTronMultisigAddressViewState
                                                           .openSliverBottomSheet<
                                                               ITronAddress>(
                                                         "select_account".tr,
-                                                        minExtent: 0.5,
                                                         child:
                                                             SwitchOrSelectAccountView(
                                                                 account: widget
                                                                     .account,
                                                                 showMultiSig:
                                                                     false),
-                                                        maxExtend: 0.9,
-                                                        initialExtend: 0.7,
                                                         centerContent: false,
                                                       )
                                                           .then(
@@ -421,37 +418,32 @@ class __SetupTronMultisigAddressViewState
                                             onTap: () {
                                               context
                                                   .openSliverBottomSheet<
-                                                          ReceiptAddress<
-                                                              TronAddress>>(
-                                                      "multi_sig_addr".tr,
-                                                      bodyBuilder: (controller) =>
-                                                          SelectRecipientAccountView<
-                                                              TronAddress>(
-                                                            account:
-                                                                widget.account,
-                                                            scrollController:
-                                                                controller,
-                                                            subtitle:
-                                                                PageTitleSubtitle(
-                                                                    title:
-                                                                        "account"
-                                                                            .tr,
-                                                                    body:
-                                                                        Column(
-                                                                      crossAxisAlignment:
-                                                                          CrossAxisAlignment
-                                                                              .start,
-                                                                      children: [
-                                                                        Text(
-                                                                          "tron_multi_sig_desc2"
-                                                                              .tr,
-                                                                        )
-                                                                      ],
-                                                                    )),
-                                                          ),
-                                                      maxExtend: 1,
-                                                      minExtent: 0.8,
-                                                      initialExtend: 0.9)
+                                                      ReceiptAddress<
+                                                          TronAddress>>(
+                                                    "multi_sig_addr".tr,
+                                                    bodyBuilder: (controller) =>
+                                                        SelectRecipientAccountView<
+                                                            TronAddress>(
+                                                      account: widget.account,
+                                                      scrollController:
+                                                          controller,
+                                                      subtitle:
+                                                          PageTitleSubtitle(
+                                                              title:
+                                                                  "account".tr,
+                                                              body: Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Text(
+                                                                    "tron_multi_sig_desc2"
+                                                                        .tr,
+                                                                  )
+                                                                ],
+                                                              )),
+                                                    ),
+                                                  )
                                                   .then(onSelectAddress);
                                             },
                                             address: address,

@@ -18,8 +18,8 @@ class StringWriterView extends StatefulWidget {
       this.minLength,
       this.maxLength,
       this.regExp,
-      this.minLines,
-      this.maxLines});
+      this.minLines = 2,
+      this.maxLines = 5});
   final Widget title;
   final String label;
   final String buttonText;
@@ -94,8 +94,8 @@ class _StringWriterViewState extends State<StringWriterView> with SafeState {
           WidgetConstant.height20,
           AppTextField(
             label: widget.label,
-            minlines: widget.minLines ?? 2,
-            maxLines: widget.maxLines ?? 5,
+            minlines: widget.minLines,
+            maxLines: widget.maxLines,
             initialValue: text,
             validator: widget.customForm ?? validator,
             suffixIcon: PasteTextIcon(

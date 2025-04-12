@@ -9,7 +9,7 @@ class Web3SuiConst {
   static const String signPersonalMessage = "sui_signPersonalMessage";
 
   static const String requestAccounts = "sui_requestAccounts";
-  static const String getNetwork = "sui_network";
+  // static const String getNetwork = "sui_network";
   static const String switchNetwork = "wallet_switchSuiChain";
   static const int requestAccountTag = 100;
   static const int signTransactionTag = 101;
@@ -19,6 +19,6 @@ class Web3SuiConst {
 
   static const int signTransactionBlockTag = 104;
   static const int signAndExecuteTransactionBlockTag = 105;
-  static const int getNetworkTag = 106;
+  // static const int getNetworkTag = 106;
   static const int changeNetworkTag = 107;
 }

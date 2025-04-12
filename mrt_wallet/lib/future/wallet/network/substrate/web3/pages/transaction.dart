@@ -3,7 +3,6 @@ import 'package:mrt_wallet/future/future.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/transaction/pages/pages/fee_info.dart';
 import 'package:mrt_wallet/future/wallet/network/substrate/web3/controller/controller/transaction.dart';
-import 'package:mrt_wallet/future/wallet/web3/pages/view_controller.dart';
 import 'package:mrt_wallet/wallet/web3/networks/substrate/substrate.dart';
 
 class SubstrateWeb3TransactionFieldsView extends StatelessWidget {
@@ -15,7 +14,7 @@ class SubstrateWeb3TransactionFieldsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView(
+    return Web3NetworkPageRequestControllerView(
         controller: () => Web3SubstrateTransactionRequestController(
             walletProvider: wallet, request: request),
         builder: (context, controller) {

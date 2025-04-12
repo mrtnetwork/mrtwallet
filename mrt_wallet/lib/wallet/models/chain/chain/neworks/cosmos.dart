@@ -10,8 +10,8 @@ class CosmosChain extends Chain<
     WalletCosmosNetwork,
     CosmosClient,
     ChainStorageKey,
-    DefaultChainConfig,
-    WalletTransaction<CosmosBaseAddress>> {
+    CosmosChainConfig,
+    WalletTransaction<CosmosBaseAddress>> with CosmosChainRepository {
   CosmosChain._(
       {required super.network,
       required super.totalBalance,
@@ -32,7 +32,7 @@ class CosmosChain extends Chain<
       int? addressIndex,
       CosmosClient? client,
       String? id,
-      DefaultChainConfig? config,
+      CosmosChainConfig? config,
       WalletChainStatus? status}) {
     return CosmosChain._(
         network: network ?? this.network,
@@ -58,7 +58,7 @@ class CosmosChain extends Chain<
             Live(IntegerBalance.zero(network.coinParam.token.decimal!)),
         client: client,
         addresses: [],
-        config: DefaultChainConfig.none,
+        config: CosmosChainConfig(),
         contacts: [],
         status: WalletChainStatus.ready);
   }
@@ -66,11 +66,11 @@ class CosmosChain extends Chain<
       {required WalletCosmosNetwork network,
       required CborListValue cbor,
       CosmosClient? client}) {
-    final int networkId = cbor.elementAt(0);
+    final int networkId = cbor.elementAs(0);
     if (networkId != network.value) {
       throw WalletExceptionConst.incorrectNetwork;
     }
-    final List<CborObject> accounts = cbor.elementAt(1) ?? <CborObject>[];
+    final List<CborObject> accounts = cbor.elementAs(1) ?? <CborObject>[];
     final List<ICosmosAddress> toAccounts = [];
     for (final i in accounts) {
       final acc = MethodUtils.nullOnException(() {
@@ -80,21 +80,19 @@ class CosmosChain extends Chain<
         toAccounts.add(acc);
       }
     }
-    int addressIndex = (cbor.elementAt(5) ?? 0);
+    int addressIndex = cbor.elementAs(5);
     if (addressIndex >= toAccounts.length) {
       addressIndex = 0;
     }
-    List<ContactCore<CosmosBaseAddress>> contacts = [];
-    final List? cborContacts = cbor.elementAt(3);
-    if (cborContacts != null) {
-      contacts = cborContacts
-          .map((e) => ContactCore.fromCborBytesOrObject<CosmosBaseAddress>(
-              network,
-              obj: e))
-          .toList();
-    }
+    List<ContactCore<CosmosBaseAddress>> contacts = cbor
+        .elementAsListOf<CborTagValue>(3)
+        .map((e) => ContactCore.fromCborBytesOrObject<CosmosBaseAddress>(
+            network,
+            obj: e))
+        .toList();
     final BigInt? totalBalance = cbor.elementAt(4);
-
+    final CosmosChainConfig? config = MethodUtils.nullOnException(() =>
+        CosmosChainConfig.deserialize(object: cbor.elementAs<CborTagValue>(9)));
     return CosmosChain._(
         network: network,
         addresses: toAccounts,
@@ -104,7 +102,7 @@ class CosmosChain extends Chain<
             totalBalance ?? BigInt.zero, network.coinParam.token.decimal!)),
         client: client,
         id: cbor.elementAt<String>(8),
-        config: DefaultChainConfig.none,
+        config: config ?? CosmosChainConfig(),
         status: WalletChainStatus.ready);
   }
 }

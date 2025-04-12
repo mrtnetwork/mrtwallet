@@ -214,7 +214,6 @@ class _ManageSellOfferOperationViewState
                                   .openSliverBottomSheet<
                                           StellarPickedIssueAsset>(
                                       "pick_an_asset".tr,
-                                      initialExtend: 1,
                                       child: StellarPickAssetView(chain: chain))
                                   .then(pickAssets);
                             },
@@ -255,7 +254,6 @@ class _Amount extends StatelessWidget {
             context
                 .openSliverBottomSheet<BigInt>(
                   "amount".tr,
-                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: state.asset!.token,
@@ -303,7 +301,6 @@ class _Amount extends StatelessWidget {
                                   .openSliverBottomSheet<
                                           StellarPickedIssueAsset>(
                                       "pick_an_asset".tr,
-                                      initialExtend: 1,
                                       child: StellarPickAssetView(
                                           chain: state.chain))
                                   .then(state.pickDestAssets);

@@ -1,94 +1,46 @@
 part of '../scripts.dart';
 
-class StellarPageController extends PageNetworkController {
+class StellarPageController extends WalletStandardPageController {
   StellarPageController(super.postMessage);
-  ProxyMethodHandler<StellarWalletAdapter>? _stellar;
-  ProxyMethodHandler<StellarWalletAdapter> _createAdapter() {
-    final adapter = StellarWalletAdapter(JSObject());
-    adapter.enable = _requestAccount.toJS;
-    adapter.on = _addListener.toJS;
-    adapter.on = _addListener.toJS;
-    adapter.disconnect = _disconnectChain.toJS;
-
-    adapter.removeListener = _removeListener.toJS;
-    adapter.cancelListener = _removeListener.toJS;
-    adapter.sendWalletRequest = _postWalletRequest.toJS;
-    adapter.cancelAllListener = _cancelAllListeners.toJS;
-    return ProxyMethodHandler<StellarWalletAdapter>(adapter);
+  @override
+  void _initNetworkFeatures(JSWalletStandardFeature feature) {
+    feature.stellarSignAndSendTransaction =
+        StellarWalletAdapterStellarSignAndSendTransactionFeature.setup(
+            signAndSendTransaction: _sendTransaction.toJS);
+    feature.stellarSignTransaction =
+        StellarWalletAdapterStellarSignTransactionFeature.setup(
+            signTransaction: _signTransaction.toJS);
+    feature.stellarSignMessage =
+        StellarWalletAdapterStellarSignMessageFeature.setup(
+            signMessage: _signMessage.toJS);
+    feature.stellarConnect =
+        JSStellarWalletStandardConnectFeature.setup(connect: _connect.toJS);
+    feature.stellarEvents =
+        JSWalletStandardEventsFeature.setup(on: _onEvents.toJS);
   }
 
-  void _initController() {
-    _stellar ??= _createAdapter();
-    final proxy = Proxy(_stellar!.object, createJSInteropWrapper(_stellar!));
-    stellar = proxy;
+  JSPromise<JSStellarWalletStandardConnect> _connect() {
+    return waitForSuccessResponsePromise<JSStellarWalletStandardConnect>(
+      method: StellarJSConst.requestAccounts,
+    );
   }
 
-  JSPromise<JSAny?> _requestAccount() {
-    final params = Web3JSRequestParams(method: "stellar_requestAccounts");
-    return _postWalletRequest(params);
+  JSPromise<JSStellarSignTransactionResponse> _signTransaction(
+      JSStellarSendOrSignTransactionParams params) {
+    return waitForSuccessResponsePromise<JSStellarSignTransactionResponse>(
+        method: StellarJSConst.signTransaction, params: [params].toJS);
   }
 
-  void _disable({String? message}) {
-    stellar = null;
+  JSPromise<JSStellarSendTransactionResponse> _sendTransaction(
+      JSStellarSendOrSignTransactionParams params) {
+    return waitForSuccessResponsePromise<JSStellarSendTransactionResponse>(
+        method: StellarJSConst.sendTransaction, params: [params].toJS);
   }
 
-  void onEvent(WalletMessageEvent message) {
-    JSAny? eventData = message.data;
-    switch (message.eventType) {
-      case JSEventType.connect:
-        final chainChange =
-            StellarProviderConnectInfo.fromJson(message.asMap());
-        eventData = chainChange.passphrase.toJS;
-        break;
-      case JSEventType.chainChanged:
-        final chainChange =
-            StellarProviderConnectInfo.fromJson(message.asMap());
-        eventData = chainChange.toJS;
-        break;
-      case JSEventType.accountsChanged:
-        final chainChange = StellarAccountsChanged.fromJson(message.asMap());
-        eventData = chainChange.accountJS;
-        _stellar?.object.selectedAddress = chainChange.defaultAddress?.toJS;
-        break;
-      case JSEventType.disconnect:
-        _stellar?.object.selectedAddress = null;
-        break;
-      case JSEventType.disable:
-        _disable(message: message.asString());
-        return;
-      case JSEventType.active:
-        _initController();
-        return;
-      default:
-        return;
-    }
-    _eventListeners(message.eventType, jsObject: eventData);
-  }
-
-  void _eventListeners(JSEventType type, {JSAny? jsObject}) {
-    if (!_listeners.containsKey(type)) return;
-    final listeners = <JSFunction>[..._listeners[type]!];
-    for (final i in listeners) {
-      i.callAsFunction(null, jsObject);
-    }
-  }
-
-  void _addListener(String type, JSFunction listener) {
-    final event = JSEventType.fromName(type);
-    if (event == null || !_listeners.containsKey(event)) return;
-    _listeners[event]?.add(listener);
-    _emitEvent(PageMessageEvent.build(event: event));
-  }
-
-  void _removeListener(String type, JSFunction listener) {
-    final event = JSEventType.fromName(type);
-    _listeners[event]?.remove(listener);
-  }
-
-  void _cancelAllListeners() {
-    for (final i in _listeners.keys.toList()) {
-      _listeners[i]!.clear();
-    }
+  JSPromise<JSStellarSignMessageResponse> _signMessage(
+      JSStellarSignMessageParams params) {
+    return waitForSuccessResponsePromise<JSStellarSignMessageResponse>(
+        method: StellarJSConst.signMessage, params: [params].toJS);
   }
 
   @override

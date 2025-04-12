@@ -1,27 +1,27 @@
 import 'package:blockchain_utils/cbor/cbor.dart';
 import 'package:blockchain_utils/helper/helper.dart';
-import 'package:blockchain_utils/utils/utils.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/wallet/models/chain/chain/chain.dart';
 import 'package:mrt_wallet/wallet/web3/constant/constant/exception.dart';
 import 'package:mrt_wallet/wallet/web3/core/core.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/constant/constants/constant.dart';
+import 'package:mrt_wallet/wallet/web3/networks/solana/constant/constants/exception.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/methods/methods.dart';
 import 'package:mrt_wallet/wallet/web3/networks/solana/params/core/request.dart';
-import 'package:on_chain/solana/solana.dart';
+import 'package:mrt_wallet/wallet/web3/networks/solana/permission/models/account.dart';
 
 class Web3SolanaSendTransactionOptions with CborSerializable {
-  final int? maxRetries;
-  final bool skipPreflight;
-  final String? commitment;
+  final String? preflightCommitment;
   final int? minContextSlot;
-  final bool signers;
+  final bool? skipPreflight;
+  final String? commitment;
+  final int? maxRetries;
   const Web3SolanaSendTransactionOptions(
       {this.maxRetries,
       this.skipPreflight = false,
       this.commitment,
       this.minContextSlot,
-      this.signers = false});
+      this.preflightCommitment});
   factory Web3SolanaSendTransactionOptions.deserialize(
       {List<int>? bytes, CborObject? object, String? hex}) {
     final values = CborSerializable.cborTagValue<CborListValue>(
@@ -30,10 +30,11 @@ class Web3SolanaSendTransactionOptions with CborSerializable {
         object: object,
         tags: Web3SolanaConst.sendTransactionDataConfigTag);
     return Web3SolanaSendTransactionOptions(
-      maxRetries: values.elementAs(0),
-      skipPreflight: values.elementAs(1),
-      commitment: values.elementAs(2),
-      minContextSlot: values.elementAt(3),
+      preflightCommitment: values.elementAs(0),
+      maxRetries: values.elementAs(1),
+      skipPreflight: values.elementAs(2),
+      commitment: values.elementAs(3),
+      minContextSlot: values.elementAt(4),
     );
   }
   factory Web3SolanaSendTransactionOptions.fromJson(Map<String, dynamic> json) {
@@ -42,38 +43,31 @@ class Web3SolanaSendTransactionOptions with CborSerializable {
         skipPreflight: json["skipPreflight"] ?? false,
         maxRetries: json["maxRetries"],
         minContextSlot: json["minContextSlot"],
-        signers: json["signers"] ?? false);
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      "maxRetries": maxRetries,
-      "preflightCommitment": skipPreflight,
-      "commitment": commitment,
-      "minContextSlot": minContextSlot,
-    };
+        preflightCommitment: json["preflightCommitment"]);
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
-        CborListValue.fixedLength(
-            [maxRetries, skipPreflight, commitment, minContextSlot]),
+        CborListValue.fixedLength([
+          preflightCommitment,
+          maxRetries,
+          skipPreflight,
+          commitment,
+          minContextSlot
+        ]),
         Web3SolanaConst.sendTransactionDataConfigTag);
   }
-
-  ///  skipPreflight: false, maxRetries: 5
 }
 
 class Web3SolanaSendTransactionData with CborSerializable {
-  final SolAddress account;
-  final int id;
+  final Web3SolanaChainAccount account;
   final List<int> messageBytes;
   final Web3SolanaSendTransactionOptions? sendConfig;
 
   Web3SolanaSendTransactionData({
     required this.account,
     required List<int> messageByte,
-    required this.id,
     required this.sendConfig,
   }) : messageBytes = messageByte.asImmutableBytes;
   factory Web3SolanaSendTransactionData.deserialize(
@@ -84,59 +78,68 @@ class Web3SolanaSendTransactionData with CborSerializable {
         object: object,
         tags: Web3SolanaConst.sendTransactionDataTag);
     return Web3SolanaSendTransactionData(
-        account: SolAddress(values.elementAt(0)),
+        account: Web3SolanaChainAccount.deserialize(
+            object: values.elementAs<CborTagValue>(0)),
         messageByte: values.elementAt(1),
-        id: values.elementAt(2),
         sendConfig:
             values.elemetMybeAs<Web3SolanaSendTransactionOptions, CborTagValue>(
-                3,
+                2,
                 (e) =>
                     Web3SolanaSendTransactionOptions.deserialize(object: e)));
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "account": account.address,
-      "message": BytesUtils.toHexString(messageBytes)
-    };
   }
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
-          account.address,
+          account.toCbor(),
           CborBytesValue(messageBytes),
-          id,
           sendConfig?.toCbor()
         ]),
         Web3SolanaConst.sendTransactionDataTag);
   }
 }
 
+enum SolanaSignAndSendAllTransactionMode {
+  parallel,
+  serial;
+
+  factory SolanaSignAndSendAllTransactionMode.fromName(String? name) {
+    return values.firstWhere((e) => e.name == name,
+        orElse: () => throw Web3SolanaExceptionConstant.invalidModeOptions);
+  }
+}
+
 class Web3SolanaSendTransaction
     extends Web3SolanaRequestParam<List<Map<String, dynamic>>> {
   final List<Web3SolanaSendTransactionData> messages;
+  final SolanaSignAndSendAllTransactionMode? mode;
 
   @override
-  SolAddress get account => messages.first.account;
+  Web3SolanaChainAccount get account => messages.first.account;
 
-  Web3SolanaSendTransaction._({required this.messages, required this.method});
+  Web3SolanaSendTransaction._(
+      {required this.messages, required this.method, this.mode});
 
-  factory Web3SolanaSendTransaction({
-    required List<Web3SolanaSendTransactionData> messages,
-    required Web3RequestMethods method,
-  }) {
+  factory Web3SolanaSendTransaction(
+      {required List<Web3SolanaSendTransactionData> messages,
+      required Web3NetworkRequestMethods method,
+      SolanaSignAndSendAllTransactionMode? mode}) {
     switch (method) {
-      case Web3SolanaRequestMethods.signAllTransactions:
+      case Web3SolanaRequestMethods.signAndSendAllTransactions:
       case Web3SolanaRequestMethods.sendTransaction:
       case Web3SolanaRequestMethods.signTransaction:
         break;
       default:
         throw Web3RequestExceptionConst.internalError;
     }
+    if (messages.isEmpty) {
+      throw Web3RequestExceptionConst.invalidAccountOrTransaction;
+    }
     return Web3SolanaSendTransaction._(
-        messages: messages, method: method as Web3SolanaRequestMethods);
+        messages: messages,
+        method: method as Web3SolanaRequestMethods,
+        mode: mode);
   }
 
   factory Web3SolanaSendTransaction.deserialize(
@@ -146,39 +149,36 @@ class Web3SolanaSendTransaction
         object: object,
         hex: hex,
         tags: Web3MessageTypes.walletRequest.tag);
-    final method = Web3RequestMethods.fromTag(values.elementAt(0));
+    final method = Web3NetworkRequestMethods.fromTag(values.elementAt(0));
     return Web3SolanaSendTransaction(
         messages: values
             .elementAs<CborListValue>(1)
             .castValue<CborTagValue>()
             .map((e) => Web3SolanaSendTransactionData.deserialize(object: e))
             .toList(),
-        method: method);
+        method: method,
+        mode: values
+            .elemetMybeAs<SolanaSignAndSendAllTransactionMode, CborStringValue>(
+                2,
+                (e) => SolanaSignAndSendAllTransactionMode.fromName(e.value)));
   }
 
   @override
   final Web3SolanaRequestMethods method;
 
-  late final bool isSend = method == Web3SolanaRequestMethods.sendTransaction;
-  late final bool isBatchRequest =
-      method == Web3SolanaRequestMethods.signAllTransactions;
+  late final bool isSend = method == Web3SolanaRequestMethods.sendTransaction ||
+      method == Web3SolanaRequestMethods.signAndSendAllTransactions;
+  late final bool isBatchRequest = messages.length > 1;
 
   @override
   CborTagValue toCbor() {
     return CborTagValue(
         CborListValue.fixedLength([
           method.tag,
-          CborListValue.fixedLength(messages.map((e) => e.toCbor()).toList())
+          CborListValue.fixedLength(messages.map((e) => e.toCbor()).toList()),
+          mode?.name
         ]),
         type.tag);
-  }
-
-  @override
-  Map<String, String?> toJson() {
-    return {
-      "messages":
-          StringUtils.fromJson(messages.map((e) => e.toJson()).toList()),
-    };
   }
 
   @override

@@ -17,6 +17,7 @@ mixin BaseChainController<
             ADDRESS, NETWORK, CLIENT, STORAGE, CONFIG, TRANSACTION>,
         ChainStorageManager<NETWORK, STORAGE, CONFIG> {
   @override
+  // ignore: overridden_fields
   late final List<String> services = ChainConst.services(network);
   void updateConfig(CONFIG status) {
     _config.value = status;

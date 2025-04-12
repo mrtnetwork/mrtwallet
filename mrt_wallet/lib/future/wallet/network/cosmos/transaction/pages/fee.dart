@@ -28,8 +28,8 @@ class _CosmosSetTransferFeeViewState extends State<CosmosSetTransferFeeView>
     final isReady = fee.largerThanZero && !gasLimit.isNegative;
     if (isReady != this.isReady) {
       this.isReady = isReady;
-      updateState();
     }
+    updateState();
   }
 
   void onChangeMaxLimit(BigInt gasLimit) {
@@ -88,7 +88,6 @@ class _CosmosSetTransferFeeViewState extends State<CosmosSetTransferFeeView>
             context
                 .openSliverBottomSheet<BigInt>(
                   "setup_custom_fee".tr,
-                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     token: feeToken,
                     max: max,

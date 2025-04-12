@@ -16,7 +16,8 @@ class ErrorTextContainer extends StatelessWidget {
       this.verticalMargin = EdgeInsets.zero,
       this.showErrorIcon = true,
       this.oTapError,
-      this.enableTap = true});
+      this.enableTap = true,
+      this.maxLine});
   final EdgeInsets margin;
   final EdgeInsets padding;
   final String? error;
@@ -25,6 +26,7 @@ class ErrorTextContainer extends StatelessWidget {
   final DynamicVoid? oTapError;
   final IconData? errorIcon;
   final bool enableTap;
+  final int? maxLine;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,8 @@ class ErrorTextContainer extends StatelessWidget {
                 backgroundColor: context.colors.errorContainer,
                 child: Text(
                   error ?? "",
+                  maxLines: maxLine,
+                  overflow: maxLine == null ? null : TextOverflow.ellipsis,
                   style: context.textTheme.labelMedium
                       ?.copyWith(color: context.colors.onErrorContainer),
                 ),
@@ -81,8 +85,9 @@ class InsufficientBalanceErrorView extends StatelessWidget {
       child: ContainerWithBorder(
           onRemove: () {},
           margin: margin,
+          enableTap: false,
           padding: padding,
-          onRemoveIcon: const Icon(Icons.error),
+          onRemoveWidget: const Icon(Icons.error),
           backgroundColor: context.colors.errorContainer,
           child: Text(
             "insufficient_balance_error".tr.replaceOne(

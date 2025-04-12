@@ -184,9 +184,14 @@ class ICosmosAddress extends ChainAccount<CosmosBaseAddress, CW20Token, NFTCore>
   @override
   void removeNFT(NFTCore nft) {}
 
+  CosmosPublicKey toCosmosPublicKey() {
+    return CosmosPublicKey.fromBytes(keyBytes: publicKey, algorithm: algorithm);
+  }
+
   SignerInfo get signerInfo => SignerInfo(
       publicKey:
-          CosmosPublicKey.fromBytes(keyBytes: publicKey, algorithm: algorithm),
+          CosmosPublicKey.fromBytes(keyBytes: publicKey, algorithm: algorithm)
+              .toAny(),
       modeInfo: const ModeInfo(ModeInfoSignle(SignMode.signModeDirect)),
       sequence: BigInt.zero);
 

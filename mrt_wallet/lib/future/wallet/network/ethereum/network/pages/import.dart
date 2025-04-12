@@ -158,7 +158,23 @@ class __ImportEthereumNetworkState extends State<_ImportEthereumNetwork>
       network = WalletEthereumNetwork.create();
       page = _Page.chainId;
     } else {
-      final web3Network = widget.web3!.request.params.toNewNetwork();
+      final param = widget.web3!.request.params;
+      final web3Network = WalletEthereumNetwork(
+          -1,
+          EthereumNetworkParams(
+              transactionExplorer: param.blockExplorerUrls?.first,
+              addressExplorer: param.blockExplorerUrls?.first,
+              token: Token(
+                  name: param.name,
+                  symbol: param.symbol,
+                  decimal: ETHConst.decimals),
+              providers: param.rpcUrls
+                  .map((e) => EthereumAPIProvider(
+                      uri: e, identifier: APIUtils.getProviderIdentifier()))
+                  .toList(),
+              chainId: param.newChainId,
+              supportEIP1559: false,
+              chainType: ChainType.mainnet));
       final networkExist = evmNetworks
           .firstWhereOrNull((e) => e.chainId == web3Network.coinParam.chainId);
       network = networkExist?.network ?? web3Network;

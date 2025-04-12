@@ -145,16 +145,13 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
                         onPressed: () {
                           context
                               .openSliverBottomSheet<
-                                      ReceiptAddress<StellarAddress>>(
-                                  "receiver_address".tr,
-                                  bodyBuilder: (controller) =>
-                                      SelectRecipientAccountView<
-                                              StellarAddress>(
-                                          account: chain,
-                                          scrollController: controller),
-                                  maxExtend: 1,
-                                  minExtent: 0.8,
-                                  initialExtend: 0.9)
+                                  ReceiptAddress<StellarAddress>>(
+                                "receiver_address".tr,
+                                bodyBuilder: (controller) =>
+                                    SelectRecipientAccountView<StellarAddress>(
+                                        account: chain,
+                                        scrollController: controller),
+                              )
                               .then(setReceiver);
                         },
                         icon: Icon(Icons.edit,
@@ -178,13 +175,11 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
           onTap: () {
             context
                 .openSliverBottomSheet<ReceiptAddress<StellarAddress>>(
-                    "receiver_address".tr,
-                    bodyBuilder: (controller) =>
-                        SelectRecipientAccountView<StellarAddress>(
-                            account: chain, scrollController: controller),
-                    maxExtend: 1,
-                    minExtent: 0.8,
-                    initialExtend: 0.9)
+                  "receiver_address".tr,
+                  bodyBuilder: (controller) =>
+                      SelectRecipientAccountView<StellarAddress>(
+                          account: chain, scrollController: controller),
+                )
                 .then(setReceiver);
           },
         ),
@@ -198,7 +193,6 @@ class _CreateAccountOperationViewState extends State<CreateAccountOperationView>
             context
                 .openSliverBottomSheet<BigInt>(
                   "setup_output_amount".tr,
-                  initialExtend: 1,
                   child: SetupNetworkAmount(
                     buttonText: "setup_amount".tr,
                     token: asset.token,

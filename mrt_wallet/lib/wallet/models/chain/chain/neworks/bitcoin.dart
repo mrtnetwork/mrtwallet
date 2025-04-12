@@ -107,4 +107,10 @@ class BitcoinChain extends Chain<
         config: DefaultChainConfig.none,
         status: WalletChainStatus.ready);
   }
+
+  BitcoinBaseAddress? findAddressFromScript(Script script) {
+    return _addresses
+        .firstWhereOrNull((e) => e.networkAddress.toScriptPubKey() == script)
+        ?.networkAddress;
+  }
 }

@@ -320,18 +320,12 @@ class _SetupRippleMutlisigAddressViewState
                                                                     IXRPAddress>(
                                                                   "select_account"
                                                                       .tr,
-                                                                  minExtent:
-                                                                      0.5,
                                                                   child: SwitchOrSelectAccountView(
                                                                       account:
                                                                           widget
                                                                               .account,
                                                                       showMultiSig:
                                                                           false),
-                                                                  maxExtend:
-                                                                      0.9,
-                                                                  initialExtend:
-                                                                      0.7,
                                                                   centerContent:
                                                                       false,
                                                                 )
@@ -357,19 +351,15 @@ class _SetupRippleMutlisigAddressViewState
                                                             }
                                                             context
                                                                 .openSliverBottomSheet<
-                                                                    IXRPAddress>(
-                                                              "select_account"
-                                                                  .tr,
-                                                              minExtent: 0.5,
-                                                              child: SwitchOrSelectAccountView(
-                                                                  account: widget
-                                                                      .account,
-                                                                  showMultiSig:
-                                                                      false),
-                                                              maxExtend: 0.9,
-                                                              initialExtend:
-                                                                  0.7,
-                                                            )
+                                                                        IXRPAddress>(
+                                                                    "select_account"
+                                                                        .tr,
+                                                                    child: SwitchOrSelectAccountView(
+                                                                        account:
+                                                                            widget
+                                                                                .account,
+                                                                        showMultiSig:
+                                                                            false))
                                                                 .then(
                                                               (value) {
                                                                 if (value ==
@@ -400,9 +390,6 @@ class _SetupRippleMutlisigAddressViewState
                                                         ReceiptAddress<
                                                             XRPAddress>>(
                                                       "multi_sig_addr".tr,
-                                                      maxExtend: 1,
-                                                      minExtent: 0.8,
-                                                      initialExtend: 0.9,
                                                       bodyBuilder: (c) =>
                                                           SelectRecipientAccountView<
                                                                   XRPAddress>(

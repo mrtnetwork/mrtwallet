@@ -4,19 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:mrt_wallet/app/core.dart';
 import 'package:mrt_wallet/future/state_managment/state_managment.dart';
 import 'package:mrt_wallet/future/wallet/web3/web3.dart';
-import 'package:mrt_wallet/wallet/models/chain/address/core/address.dart';
+import 'package:mrt_wallet/wallet/models/models.dart';
 import 'package:mrt_wallet/wallet/web3/web3.dart';
 
-abstract class Web3StateContoller extends StateController
-    with Web3RequestControllerState {}
+abstract class Web3StateContoller<WEB3REQUEST extends Web3Request>
+    extends StateController {
+  WEB3REQUEST get web3Request;
 
-mixin Web3RequestControllerState on StateController {
-  bool get clientRequired => true;
-  Web3Request get web3Request;
-  StreamSubscription<dynamic>? onRequestError;
   final GlobalKey<Web3PageProgressState> progressKey =
       GlobalKey<Web3PageProgressState>();
-  ChainAccount? permissionAccount;
+  StreamSubscription<dynamic>? onRequestError;
   Future<void> initWeb3();
   bool get web3Closed => web3Request.info.isClosed;
 
@@ -31,6 +28,50 @@ mixin Web3RequestControllerState on StateController {
       default:
     }
   }
+
+  @override
+  void close() {
+    onRequestError?.cancel();
+    onRequestError = null;
+    super.close();
+  }
+}
+
+mixin Web3GlobalRequestControllerState<WEB3REQUEST extends Web3GlobalRequest>
+    on Web3StateContoller<WEB3REQUEST> {
+  Future<void> _readyWeb3() async {
+    notify();
+    final isReady = await MethodUtils.after(() async => _init());
+    if (isReady) {
+      await initWeb3();
+    }
+  }
+
+  Future<bool> _init() async {
+    if (web3Closed) {
+      progressKey.closedRequest();
+    } else {
+      onRequestError =
+          web3Request.info.stream.asBroadcastStream().listen(_onChangeStatus);
+      return true;
+    }
+
+    return false;
+  }
+
+  @override
+  void ready() {
+    super.ready();
+    _readyWeb3();
+  }
+}
+
+mixin Web3NetworkRequestControllerState<WEB3REQUEST extends WEB3CHAINREQUEST>
+    on Web3StateContoller<WEB3REQUEST> {
+  bool get clientRequired => true;
+  NETWORKCHAINACCOUNT? permissionAccount;
+  @override
+  WEB3REQUEST get web3Request;
 
   Future<bool> _init() async {
     if (web3Closed) {
@@ -67,12 +108,5 @@ mixin Web3RequestControllerState on StateController {
   void ready() {
     super.ready();
     _readyWeb3();
-  }
-
-  @override
-  void close() {
-    onRequestError?.cancel();
-    onRequestError = null;
-    super.close();
   }
 }

@@ -32,3 +32,7 @@ extension QuickJS<T extends JSAny> on T {
 extension QuickListOfString on JSArray<JSString> {
   List<String> get inDart => toDart.map((e) => e.toDart).toList();
 }
+
+extension QuickJSStringList on List<String> {
+  JSArray<JSString> get toJS => map((e) => e.toJS).toList().toJS;
+}

@@ -193,6 +193,14 @@ class ChainsHandler with CborSerializable {
             NetworkType.sui => Web3ChainNetworkData<WalletSuiNetwork>(
                 network: e.network.toNetwork(),
                 serviceIdentifier: e.clientNullable?.serviceIdentifier),
+            NetworkType.cosmos => Web3ChainNetworkData<WalletCosmosNetwork>(
+                network: e.network.toNetwork(),
+                serviceIdentifier: e.clientNullable?.serviceIdentifier),
+            NetworkType.bitcoinCash ||
+            NetworkType.bitcoinAndForked =>
+              Web3ChainNetworkData<WalletBitcoinNetwork>(
+                  network: e.network.toNetwork(),
+                  serviceIdentifier: e.clientNullable?.serviceIdentifier),
             _ => throw UnimplementedError()
           };
         })

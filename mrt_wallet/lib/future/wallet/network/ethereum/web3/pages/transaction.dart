@@ -21,7 +21,7 @@ class EthereumWeb3TransactionFieldsView extends StatelessWidget {
   final WalletProvider wallet;
   @override
   Widget build(BuildContext context) {
-    return Web3PageRequestControllerView<
+    return Web3NetworkPageRequestControllerView<
             Web3EthereumTransactionRequestController>(
         request: request,
         controller: () => Web3EthereumTransactionRequestController(
@@ -51,7 +51,7 @@ class EthereumWeb3TransactionFieldsView extends StatelessWidget {
                         padding: WidgetConstant.paddingVertical40,
                         onPressed: controller.trIsReady
                             ? () {
-                                controller.sedTransaction(
+                                controller.sendTransaction(
                                   () async => context.openSliverDialog(
                                       (context) => DialogTextView(
                                             text:

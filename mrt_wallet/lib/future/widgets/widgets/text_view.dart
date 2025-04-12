@@ -21,6 +21,7 @@ class _APPTextView extends State<APPTextView> with SafeState {
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      shrinkWrap: true,
       slivers: [
         SliverAppBar(
           pinned: true,
