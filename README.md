@@ -6,8 +6,8 @@ Welcome to MRT Wallet, the open-source wallet crafted for the decentralized futu
 
 ### Bitcoin and forked networks
 
-- **Features:** Comprehensive support for Bitcoin and forked bitcoin network transactions.
-- **Networks:** Bitcoin, BitcoinCash, Litecoin, DogeCoin, Dash, BitcoinSV and ..
+- **Features:** Full support for Bitcoin and transactions on forked Bitcoin-based networks.
+- **Supported Networks:** Bitcoin, Bitcoin Cash, Litecoin, Dogecoin, Dash, Bitcoin SV, and more.
 - **Web3:** Wallet Standard. (available on Chrome, Brave, Firefox, Microsoft Edge, Android, and macOS platforms.). [examples](https://github.com/mrtnetwork/mrt_wallet_web3_js_examples/blob/main/public/scripts/bitcoin.mjs)
 
 
